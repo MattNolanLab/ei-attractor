@@ -34,13 +34,13 @@ eqs+=exp_conductance('gi',Ei,taui) # from library.synapses
 eqs+=Current('''B : amp''')
 
 # Definition of 2d topography on a sheet and connections
-sheet_size = 32;  # Total no. of neurons will be sheet_size^2
+sheet_size = 40;  # Total no. of neurons will be sheet_size^2
 
 # Definition of connection parameters and setting the connection iteratively:
 # Mexican hat connectivity
 lambda_net = 13;
 beta = 3.0 / lambda_net**2;
-gamma = 1.05 * beta;
+gamma = 10 * beta;
 l = 2;
 a = 1;
 
@@ -84,21 +84,29 @@ for i in range(len(sheetGroup)):
         pos_i = translateIndexTo2d(i, sheet_size);
         pos_j = translateIndexTo2d(j, sheet_size);
         prefDir = getPreferredDirection(pos_j); # all as complex numbers
-        x = pos_i - pos_j - l*prefDir;
+        x = pos_i - pos_j
+        abs_x = abs(x)
+        if abs_x > sheet_size/2:
+            abs_x = sheet_size - abs_x
+        abs_x -= l*prefDir;
         #print math.e**(-gamma*abs(x)**2)
         w = a*math.e**(-gamma*(abs(x)**2)) - math.e**(-beta*(abs(x)**2));
         inhibConn[j, i] = abs(w)*nS
 
 
-# Velocity inputs - for now fake
-sheetGroup.B = linspace(0.5*namp, 0.5*namp, sheet_size**2)
+# Velocity inputs - for now zero velocity
+input = 0.3*namp
+sheetGroup.B = linspace(input, input, sheet_size**2)
 
 
 # Record the number of spikes
 M=SpikeMonitor(sheetGroup)
-MV = StateMonitor(sheetGroup, 'vm', record = 0)
+MV = StateMonitor(sheetGroup, 'vm', record = [480, 494])
 
-#print inhibConn.W
+sheetGroup.vm = EL + (VT-EL) * rand(len(sheetGroup))
+
+
+print inhibConn.W[:][16]
 
 print "Simulation running..."
 start_time=time.time()
@@ -107,5 +115,8 @@ duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
 print M.nspikes/sheet_size**2.,"spikes per neuron"
 raster_plot(M)
+figure();
+plot(MV.times/ms, MV[494]/mV)
+figure();
+plot(MV.times/ms, MV[480]/mV)
 show()
-#plot(MV.times/ms, MV[0]/mV)
