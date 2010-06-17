@@ -116,23 +116,19 @@ for j in range(len(sheetGroup)):
         i_x = i % sheet_size
         i_y = i // sheet_size
         
-        #if abs(j_x - i_x) > sheet_size/2:
-        #    if i_x > sheet_size/2:
-        #        i_x = i_x - sheet_size
-        #    else:
-        #        i_x = i_x + sheet_size
-        #if abs(j_y - i_y) > sheet_size/2:
-        #    if i_y > sheet_size/2:
-        #        i_y = i_y - sheet_size
-        #    else:
-        #        i_y = i_y + sheet_size
+        if abs(j_x - i_x) > sheet_size/2:
+            if i_x > sheet_size/2:
+                i_x = i_x - sheet_size
+            else:
+                i_x = i_x + sheet_size
+        if abs(j_y - i_y) > sheet_size/2:
+            if i_y > sheet_size/2:
+                i_y = i_y - sheet_size
+            else:
+                i_y = i_y + sheet_size
 
-        abs_x = math.sqrt((i_x - j_x -l*prefDir[0])**2 + (i_y - j_y -
-            l*prefDir[1])**2)
-        if (abs_x > sheet_size/2):
-            abs_x = sheet_size - abs_x
-
-        w = a*math.e**(-gamma*(abs_x**2)) - math.e**(-beta*(abs_x**2));
+        abs_x_sq = (i_x - j_x -l*prefDir[0])**2 + (i_y - j_y - l*prefDir[1])**2
+        w = a*math.e**(-gamma*(abs_x_sq)) - math.e**(-beta*(abs_x_sq));
         inhibConn[j, i] = connMult*abs(w)*nS
 
 duration=time.time()-start_time
