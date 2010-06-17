@@ -1,3 +1,4 @@
+import brian_no_units
 from brian import *
 
 from brian import *
@@ -5,6 +6,8 @@ from brian.library.IF import *
 from brian.library.synapses import *
 
 from scipy import linspace
+from optparse import OptionParser
+from datetime import datetime
 
 
 import time
@@ -33,90 +36,172 @@ eqs=exp_IF(C,gL,EL,VT,DeltaT)
 eqs+=exp_conductance('gi',Ei,taui) # from library.synapses
 eqs+=Current('''B : amp''')
 
+# Network parameters definition
+optParser = OptionParser()
+optParser.add_option("--lambda-net", type="float", default=13,
+        dest="lambda_net")
+optParser.add_option("-s", "--sheet-size", type="int", default=40, dest="sheet_size")
+optParser.add_option("-l", type="float", default=2.0, dest="l")
+optParser.add_option("-a", type="float", default=1.0, dest="a");
+optParser.add_option("-c", "--conn-mult", type="float", default=10.0,
+        dest="connMult")
+optParser.add_option("-w", "--write-data", action="store_true",
+        dest="write_data", default=False)
+optParser.add_option("-i", "--input", type="float", default=0.3, dest="input",
+        help="Feedforward constant input to all neurons")
+optParser.add_option("-p", "--print-only-conn", action="store_true",
+        dest="print_only_conn", default=False)
+
+(options, args) = optParser.parse_args()
+print "Options:"
+print options
+
+
 # Definition of 2d topography on a sheet and connections
-sheet_size = 40;  # Total no. of neurons will be sheet_size^2
+sheet_size = options.sheet_size;  # Total no. of neurons will be sheet_size^2
 
 # Definition of connection parameters and setting the connection iteratively:
 # Mexican hat connectivity
-lambda_net = 13;
-beta = 3.0 / lambda_net**2;
-gamma = 10 * beta;
-l = 2;
-a = 1;
+lambda_net = options.lambda_net
+beta = 3.0 / lambda_net**2
+gamma = 1.05 * beta
+l = options.l
+a = options.a
 
-def translateIndexTo2d(index, size):
+connMult = options.connMult
+
+
+#def translateIndexTo2d(index, size):
 # index - linear index of the neuron
 # size - size of the sheet (the 2d sheet is always square)
-    return complex(index % size - size/2, index // size - size/2)
+#    return complex(index % size - size/2, index // size - size/2)
 
-def getPreferredDirection(pos):
+def getPreferredDirection(pos_x, pos_y):
 # pos - complex number defining position of neuron in 2d sheet
-    pos4_x = pos.real % 4
-    pos2_y = pos.imag % 2
+    pos4_x = pos_x % 4
+    pos2_y = pos_y % 2
     if pos4_x == 0:
         if pos2_y == 0:
-            return complex(0, 1) # North
+            return [0, 1] # North
         else:
-            return complex(1, 0) # East
+            return [1, 0] # East
     elif pos4_x == 1:
         if pos2_y == 0:
-            return complex(0, -1) # South
+            return [0, -1] # South
         else:
-            return complex(-1, 0) # West
+            return [-1, 0] # West
     elif pos4_x == 2:
         if pos2_y == 0:
-            return complex(1, 0)
+            return [1, 0]
         else:
-            return complex(0, 1)
+            return [0, 1]
     else:
         if pos2_y == 0:
-            return complex(-1, 0)
+            return [-1, 0]
         else:
-            return complex(0, -1)
+            return [0, -1]
 
 
+
+start_time=time.time()
 
 sheetGroup=NeuronGroup(sheet_size**2,model=eqs,threshold=threshold,reset=EL,refractory=refractory)
-
 inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense');
-for i in range(len(sheetGroup)):
-    for j in range(len(sheetGroup)):
-        pos_i = translateIndexTo2d(i, sheet_size);
-        pos_j = translateIndexTo2d(j, sheet_size);
-        prefDir = getPreferredDirection(pos_j); # all as complex numbers
-        x = pos_i - pos_j
-        abs_x = abs(x)
-        if abs_x > sheet_size/2:
-            abs_x = sheet_size - abs_x
-        abs_x -= l*prefDir;
-        #print math.e**(-gamma*abs(x)**2)
-        w = a*math.e**(-gamma*(abs(x)**2)) - math.e**(-beta*(abs(x)**2));
-        inhibConn[j, i] = abs(w)*nS
 
+for j in range(len(sheetGroup)):
+    j_x = j % sheet_size
+    j_y = j // sheet_size
+    prefDir = getPreferredDirection(j_x, j_y) # all as complex numbers
+    for i in range(len(sheetGroup)):
+        i_x = i % sheet_size
+        i_y = i // sheet_size
+        
+        if abs(j_x - i_x) > sheet_size/2:
+            if i_x > sheet_size/2:
+                i_x = i_x - sheet_size
+            else:
+                i_x = i_x + sheet_size
+        if abs(j_y - i_y) > sheet_size/2:
+            if i_y > sheet_size/2:
+                i_y = i_y - sheet_size
+            else:
+                i_y = i_y + sheet_size
+
+        abs_x_sq = (i_x - j_x -l*prefDir[0])**2 + (i_y - j_y - l*prefDir[1])**2
+        w = a*math.e**(-gamma*(abs_x_sq)) - math.e**(-beta*(abs_x_sq));
+        inhibConn[j, i] = connMult*abs(w)*nS
+
+duration=time.time()-start_time
+print "Connection setup time:",duration,"seconds"
+
+
+# Plot connection matrix for neuron at position position defined by row_i
+if options.print_only_conn == True:
+    rows_i = [325, 355, 1405, 1435]
+
+    for row_i in rows_i:
+        #col_i = row_i
+        connRow = inhibConn[row_i, :]
+        #connCol = inhibConn[:, col_i]
+        
+        x = arange(0, sheet_size)
+        y = arange(0, sheet_size)
+        X, Y = meshgrid(x, y)
+        figure()
+        contour(X, Y, reshape(connRow, (sheet_size, sheet_size)))
+        #figure()
+        #contour(X, Y, reshape(connCol, (sheet_size, sheet_size)))
+    show()
+    exit()
 
 # Velocity inputs - for now zero velocity
-input = 0.3*namp
+input = options.input*namp
 sheetGroup.B = linspace(input, input, sheet_size**2)
 
 
 # Record the number of spikes
-M=SpikeMonitor(sheetGroup)
-MV = StateMonitor(sheetGroup, 'vm', record = [480, 494])
+Monitor = SpikeCounter(sheetGroup)
+#MV = StateMonitor(sheetGroup, 'vm', record = [480, 494])
 
 sheetGroup.vm = EL + (VT-EL) * rand(len(sheetGroup))
 
 
-print inhibConn.W[:][16]
-
 print "Simulation running..."
 start_time=time.time()
-run(5000*ms)
+run(5*second)
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
-print M.nspikes/sheet_size**2.,"spikes per neuron"
-raster_plot(M)
-figure();
-plot(MV.times/ms, MV[494]/mV)
-figure();
-plot(MV.times/ms, MV[480]/mV)
-show()
+
+print Monitor.count
+
+timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+dirName = 'results/'
+population_fname = dirName + timeSnapshot + '_spacePlot.eps'
+options_fname = dirName + timeSnapshot + '.params'
+count_fname = dirName + timeSnapshot + '_linePlot.eps'
+
+if (options.write_data):
+    f = open(options_fname, 'w')
+    f.write(str(options))
+    f.close()
+
+# print contour plot of firing
+x = arange(0, sheet_size);
+y = arange(0, sheet_size);
+X, Y = meshgrid(x, y)
+contour(X, Y, reshape(Monitor.count, (sheet_size, sheet_size)))
+if options.write_data:
+    savefig(population_fname, format="eps")
+
+figure()
+plot(Monitor.count)
+if options.write_data:
+    savefig(count_fname, format="eps")
+
+#figure();
+#plot(MV.times/ms, MV[494]/mV)
+#figure();
+#plot(MV.times/ms, MV[480]/mV)
+
+if options.write_data == False:
+    show()
