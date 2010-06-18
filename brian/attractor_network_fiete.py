@@ -6,21 +6,14 @@ from brian.library.IF import *
 from brian.library.synapses import *
 
 from scipy import linspace
+from scipy.io import loadmat
 from optparse import OptionParser
 from datetime import datetime
-
 
 import time
 import math
 
-
-# Directory and filenames constants
-timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-dirName = 'results/'
-population_fname = dirName + timeSnapshot + '_spacePlot.eps'
-options_fname = dirName + timeSnapshot + '.params'
-count_fname = dirName + timeSnapshot + '_linePlot.eps'
-conn_fname = dirName + timeSnapshot + "_conn.eps"
+from fiete_network import *
 
 
 # define provisional model parameters - these might be changed in the future
@@ -40,11 +33,17 @@ Ei=-80*mvolt
 taue=5*msecond
 taui=10*msecond
 
-eqs=exp_IF(C,gL,EL,VT,DeltaT)
-# Use only inhibitory connections from Burak&Fiete, 2009. Should work if the
-# velocity input is non-zero even when speed is zero.
-eqs+=exp_conductance('gi',Ei,taui) # from library.synapses
-eqs+=Current('''B : amp''')
+
+
+# Directory and filenames constants
+timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+dirName = 'results/'
+population_fname = dirName + timeSnapshot + '_spacePlot.eps'
+options_fname = dirName + timeSnapshot + '.params'
+count_fname = dirName + timeSnapshot + '_linePlot.eps'
+conn_fname = dirName + timeSnapshot + "_conn.eps"
+
+
 
 # Network parameters definition
 optParser = OptionParser()
@@ -68,107 +67,20 @@ print options
 
 
 # Definition of 2d topography on a sheet and connections
-sheet_size = options.sheet_size;  # Total no. of neurons will be sheet_size^2
+sheet_size = options.sheet_size  # Total no. of neurons will be sheet_size^2
 
 # Definition of connection parameters and setting the connection iteratively:
 # Mexican hat connectivity
-lambda_net = options.lambda_net
-beta = 3.0 / lambda_net**2
-gamma = 1.05 * beta
-l = options.l
-a = options.a
-
-connMult = options.connMult
-
-
-#def translateIndexTo2d(index, size):
-# index - linear index of the neuron
-# size - size of the sheet (the 2d sheet is always square)
-#    return complex(index % size - size/2, index // size - size/2)
-
-def getPreferredDirection(pos_x, pos_y):
-# pos - complex number defining position of neuron in 2d sheet
-    pos4_x = pos_x % 4
-    pos2_y = pos_y % 2
-    if pos4_x == 0:
-        if pos2_y == 0:
-            return [0, 1] # North
-        else:
-            return [1, 0] # East
-    elif pos4_x == 1:
-        if pos2_y == 0:
-            return [0, -1] # South
-        else:
-            return [-1, 0] # West
-    elif pos4_x == 2:
-        if pos2_y == 0:
-            return [1, 0]
-        else:
-            return [0, 1]
-    else:
-        if pos2_y == 0:
-            return [-1, 0]
-        else:
-            return [0, -1]
-
-
 
 start_time=time.time()
 
-sheetGroup=NeuronGroup(sheet_size**2,model=eqs,threshold=threshold,reset=EL,refractory=refractory)
-inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense');
+sheetGroup=NeuronGroup(sheet_size**2,model=get_exp_IF(C, gL, EL, VT, DeltaT, Ei,
+    taui),threshold=threshold,reset=EL,refractory=refractory)
+inhibConn = createConn(sheetGroup, options.sheet_size, options.lambda_net, options.l, options.a, options.connMult)
 
-for j in range(len(sheetGroup)):
-    j_x = j % sheet_size
-    j_y = j // sheet_size
-    prefDir = getPreferredDirection(j_x, j_y) # all as complex numbers
-    for i in range(len(sheetGroup)):
-        i_x = i % sheet_size
-        i_y = i // sheet_size
-        
-        if abs(j_x - i_x) > sheet_size/2:
-            if i_x > sheet_size/2:
-                i_x = i_x - sheet_size
-            else:
-                i_x = i_x + sheet_size
-        if abs(j_y - i_y) > sheet_size/2:
-            if i_y > sheet_size/2:
-                i_y = i_y - sheet_size
-            else:
-                i_y = i_y + sheet_size
-
-        abs_x_sq = (i_x - j_x -l*prefDir[0])**2 + (i_y - j_y - l*prefDir[1])**2
-        w = a*math.e**(-gamma*(abs_x_sq)) - math.e**(-beta*(abs_x_sq));
-        inhibConn[j, i] = connMult*abs(w)*nS
 
 duration=time.time()-start_time
 print "Connection setup time:",duration,"seconds"
-
-# Plot connection matrix for neuron at position position defined by row_i
-rows_i = [0.25*sheet_size**2 + 0.25*sheet_size, 0.25*sheet_size**2 +
-        0.75*sheet_size, 0.75*sheet_size**2 + 0.25*sheet_size,
-        0.75*sheet_size**2 + 0.75*sheet_size]
-plot_i = 1
-for row_i in rows_i:
-    #col_i = row_i
-    connRow = inhibConn[row_i, :]
-    #connCol = inhibConn[:, col_i]
-    
-    x = arange(0, sheet_size)
-    y = arange(0, sheet_size)
-    X, Y = meshgrid(x, y)
-    subplot(2,2, plot_i)
-    contour(X, Y, reshape(connRow, (sheet_size, sheet_size)))
-    #figure()
-    #contour(X, Y, reshape(connCol, (sheet_size, sheet_size)))
-    plot_i += 1
-xlabel("Neuron number")
-ylabel("Neuron number")
-if options.write_data:
-    savefig(conn_fname, format="eps")
-elif options.print_only_conn == True:
-    show()
-    exit()
 
 
 
@@ -183,10 +95,12 @@ Monitor = SpikeCounter(sheetGroup)
 
 sheetGroup.vm = EL + (VT-EL) * rand(len(sheetGroup))
 
+printConn(sheet_size, inhibConn, options.write_data, options.print_only_conn)
 
 print "Simulation running..."
 start_time=time.time()
-run(5*second)
+net = Network(sheetGroup, inhibConn, Monitor)
+net.run(5*second)
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
 
