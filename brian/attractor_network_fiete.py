@@ -13,6 +13,16 @@ from datetime import datetime
 import time
 import math
 
+
+# Directory and filenames constants
+timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+dirName = 'results/'
+population_fname = dirName + timeSnapshot + '_spacePlot.eps'
+options_fname = dirName + timeSnapshot + '.params'
+count_fname = dirName + timeSnapshot + '_linePlot.eps'
+conn_fname = dirName + timeSnapshot + "_conn.eps"
+
+
 # define provisional model parameters - these might be changed in the future
 C=200*pF
 taum=10*msecond
@@ -134,25 +144,33 @@ for j in range(len(sheetGroup)):
 duration=time.time()-start_time
 print "Connection setup time:",duration,"seconds"
 
-
 # Plot connection matrix for neuron at position position defined by row_i
-if options.print_only_conn == True:
-    rows_i = [325, 355, 1405, 1435]
-
-    for row_i in rows_i:
-        #col_i = row_i
-        connRow = inhibConn[row_i, :]
-        #connCol = inhibConn[:, col_i]
-        
-        x = arange(0, sheet_size)
-        y = arange(0, sheet_size)
-        X, Y = meshgrid(x, y)
-        figure()
-        contour(X, Y, reshape(connRow, (sheet_size, sheet_size)))
-        #figure()
-        #contour(X, Y, reshape(connCol, (sheet_size, sheet_size)))
+rows_i = [0.25*sheet_size**2 + 0.25*sheet_size, 0.25*sheet_size**2 +
+        0.75*sheet_size, 0.75*sheet_size**2 + 0.25*sheet_size,
+        0.75*sheet_size**2 + 0.75*sheet_size]
+plot_i = 1
+for row_i in rows_i:
+    #col_i = row_i
+    connRow = inhibConn[row_i, :]
+    #connCol = inhibConn[:, col_i]
+    
+    x = arange(0, sheet_size)
+    y = arange(0, sheet_size)
+    X, Y = meshgrid(x, y)
+    subplot(2,2, plot_i)
+    contour(X, Y, reshape(connRow, (sheet_size, sheet_size)))
+    #figure()
+    #contour(X, Y, reshape(connCol, (sheet_size, sheet_size)))
+    plot_i += 1
+xlabel("Neuron number")
+ylabel("Neuron number")
+if options.write_data:
+    savefig(conn_fname, format="eps")
+elif options.print_only_conn == True:
     show()
     exit()
+
+
 
 # Velocity inputs - for now zero velocity
 input = options.input*namp
@@ -174,27 +192,27 @@ print "Simulation time:",duration,"seconds"
 
 print Monitor.count
 
-timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-dirName = 'results/'
-population_fname = dirName + timeSnapshot + '_spacePlot.eps'
-options_fname = dirName + timeSnapshot + '.params'
-count_fname = dirName + timeSnapshot + '_linePlot.eps'
-
 if (options.write_data):
     f = open(options_fname, 'w')
     f.write(str(options))
     f.close()
 
+
 # print contour plot of firing
 x = arange(0, sheet_size);
 y = arange(0, sheet_size);
 X, Y = meshgrid(x, y)
+figure()
 contour(X, Y, reshape(Monitor.count, (sheet_size, sheet_size)))
+xlabel("Neuron number")
+ylabel("Neuron number")
 if options.write_data:
     savefig(population_fname, format="eps")
 
 figure()
 plot(Monitor.count)
+xlabel("Neuron number")
+ylabel("Spiking activity")
 if options.write_data:
     savefig(count_fname, format="eps")
 
