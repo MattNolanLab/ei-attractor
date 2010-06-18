@@ -13,6 +13,24 @@ from datetime import datetime
 import time
 import math
 
+# define provisional model parameters - these might be changed in the future
+C=200*pF
+taum=10*msecond
+gL=C/taum
+EL=-70*mV
+VT=-55*mV
+DeltaT=3*mV
+
+threshold = -20*mvolt;
+refractory = 2*ms;
+
+# Synapse parameters
+Ee=0*mvolt
+Ei=-80*mvolt
+taue=5*msecond
+taui=10*msecond
+
+
 
 def get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui):
     eqs=exp_IF(C,gL,EL,VT,DeltaT)
@@ -49,10 +67,11 @@ def getPreferredDirection(pos_x, pos_y):
         else:
             return [0, -1]
 
-def createConn(sheetGroup, sheet_size, lambda_net, l, a, connMult):
+def createNetwork(sheet_size, lambda_net, l, a, connMult):
     beta = 3.0 / lambda_net**2
     gamma = 1.05 * beta
 
+    sheetGroup=NeuronGroup(sheet_size**2,model=get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui),threshold=threshold,reset=EL,refractory=refractory)
     inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense');
     
     for j in range(len(sheetGroup)):
@@ -78,7 +97,9 @@ def createConn(sheetGroup, sheet_size, lambda_net, l, a, connMult):
             w = a*math.e**(-gamma*(abs_x_sq)) - math.e**(-beta*(abs_x_sq));
             inhibConn[j, i] = connMult*abs(w)*nS
 
-    return inhibConn
+    sheetGroup.vm = EL + (VT-EL) * rand(len(sheetGroup))
+
+    return [sheetGroup, inhibConn]
 
 
 def printConn(sheet_size, conn, write_data, print_only_conn):

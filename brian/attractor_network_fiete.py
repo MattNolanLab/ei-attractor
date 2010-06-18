@@ -16,24 +16,6 @@ import math
 from fiete_network import *
 
 
-# define provisional model parameters - these might be changed in the future
-C=200*pF
-taum=10*msecond
-gL=C/taum
-EL=-70*mV
-VT=-55*mV
-DeltaT=3*mV
-
-threshold = -20*mvolt;
-refractory = 2*ms;
-
-# Synapse parameters
-Ee=0*mvolt
-Ei=-80*mvolt
-taue=5*msecond
-taui=10*msecond
-
-
 
 # Directory and filenames constants
 timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
@@ -74,10 +56,7 @@ sheet_size = options.sheet_size  # Total no. of neurons will be sheet_size^2
 
 start_time=time.time()
 
-sheetGroup=NeuronGroup(sheet_size**2,model=get_exp_IF(C, gL, EL, VT, DeltaT, Ei,
-    taui),threshold=threshold,reset=EL,refractory=refractory)
-inhibConn = createConn(sheetGroup, options.sheet_size, options.lambda_net, options.l, options.a, options.connMult)
-
+[sheetGroup, inhibConn] = createNetwork(sheet_size, options.lambda_net, options.l, options.a, options.connMult)
 
 duration=time.time()-start_time
 print "Connection setup time:",duration,"seconds"
@@ -93,7 +72,6 @@ sheetGroup.B = linspace(input, input, sheet_size**2)
 Monitor = SpikeCounter(sheetGroup)
 #MV = StateMonitor(sheetGroup, 'vm', record = [480, 494])
 
-sheetGroup.vm = EL + (VT-EL) * rand(len(sheetGroup))
 
 printConn(sheet_size, inhibConn, options.write_data, options.print_only_conn)
 
