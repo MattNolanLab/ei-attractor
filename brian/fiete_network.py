@@ -67,11 +67,13 @@ def getPreferredDirection(pos_x, pos_y):
         else:
             return [0, -1]
 
-def createNetwork(sheet_size, lambda_net, l, a, connMult):
+def createNetwork(sheet_size, lambda_net, l, a, connMult, clock):
     beta = 3.0 / lambda_net**2
     gamma = 1.05 * beta
 
-    sheetGroup=NeuronGroup(sheet_size**2,model=get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui),threshold=threshold,reset=EL,refractory=refractory)
+    sheetGroup=NeuronGroup(sheet_size**2,model=get_exp_IF(C, gL, EL, VT, DeltaT,
+        Ei, taui),threshold=threshold,reset=EL,refractory=refractory,
+        clock=clock)
     inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense');
     
     for j in range(len(sheetGroup)):
