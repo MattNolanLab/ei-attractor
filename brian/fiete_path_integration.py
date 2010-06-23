@@ -23,6 +23,7 @@ vel_dt = 20*ms
 simulationClock = Clock(dt=sim_dt)
 velocityClock = Clock(dt=vel_dt)
 secondClock = Clock(dt=1*second)
+printStatusClock = Clock(dt=10*second)
 
 
 # Directory and filenames constants
@@ -85,6 +86,7 @@ def saveResultsToMat(fileName, SNMonitor, SNList, spikeMonitor, rateMonitor,
     # Save options as string - couldn't find any other way how to convert it to
     # variables
     outData['options'] = str(options)
+    outData['sheet_size'] = options.sheet_size
 
     savemat(fileName, outData, do_compression=True)
 
@@ -103,36 +105,39 @@ start_time=time.time()
 duration=time.time()-start_time
 print "Connection setup time:",duration,"seconds"
 
-ratData = loadmat("../../data/hafting_et_al_2005/Hafting_Fig2c_Trial1.mat")
+ratData = loadmat("../../data/hafting_et_al_2005/Hafting_Fig2c_Trial2.mat")
 #print ratData['pos_timeStamps']
 
 # Velocity inputs - for now zero velocity
-input = options.input*namp
-sheetGroup.B = linspace(input, input, sheet_size**2)
-vIndex = 10;  # Bad habit, but there are no static variables in python,
-                     # starting from 10 - since the first 10 items are NaN
-rat_pos_x = ratData['pos_x']
-rat_pos_y = ratData['pos_y']
+input = options.input
+sheetGroup.B = linspace(input*namp, input*namp, sheet_size**2)
+vIndex = 0  # Bad habit, but there are no static variables in python,
+rat_pos_x = ratData['pos_x'][0]
+rat_pos_y = ratData['pos_y'][0]#
 @network_operation(velocityClock)
 def updateVelocity():
     global vIndex
+    global input
     # the original data are in cm/s, however, we rather want m/s 
     #vel_x = (rat_pos_x[vIndex + 1] - rat_pos_x[vIndex])/vel_dt/100
     #vel_y = (rat_pos_y[vIndex + 1] - rat_pos_y[vIndex])/vel_dt/100
-    vel_x = 0.01
-    vel_y = 0.01
+    vel_x = 0
+    vel_y = 0
 
     i = 0
     for i_y in range(sheet_size):
         for i_x in range(sheet_size):
             prefDir = getPreferredDirection(i_x, i_y)
-            sheetGroup.B[i] = (0.3 + options.alpha*(prefDir[0]*vel_x +
+            sheetGroup.B[i] = (input + options.alpha*(prefDir[0]*vel_x +
                 prefDir[1]*vel_y))*namp
             i+=1
 
     vIndex+=1
 
 
+@network_operation(printStatusClock)
+def printStatus():
+    print "Simulated " + str(printStatusClock.t) + " seconds."
 
 # Record the number of spikes
 SNList = [sheet_size**2/2]
