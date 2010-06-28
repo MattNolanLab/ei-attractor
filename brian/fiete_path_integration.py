@@ -17,27 +17,6 @@ import math
 from fiete_network import *
 
 
-# Clock definitions
-sim_dt = 0.1*ms
-vel_dt = 20*ms
-simulationClock = Clock(dt=sim_dt)
-velocityClock = Clock(dt=vel_dt)
-secondClock = Clock(dt=1*second)
-printStatusClock = Clock(dt=10*second)
-
-
-# Directory and filenames constants
-timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-dirName = 'results/'
-population_fname = dirName + timeSnapshot + '_spacePlot.eps'
-options_fname = dirName + timeSnapshot + '.params'
-count_fname = dirName + timeSnapshot + '_linePlot.eps'
-conn_fname = dirName + timeSnapshot + "_conn.eps"
-
-output_fname = dirName + timeSnapshot + '_output.mat'
-
-
-
 # Network parameters definition
 optParser = OptionParser()
 optParser.add_option("--lambda-net", type="float", default=13,
@@ -57,10 +36,24 @@ optParser.add_option("--alpha", type="float", default=0.10315, dest="alpha",
         help="Network alpha parameter (see Burak&Fiete, 2009)")
 optParser.add_option("-t", "--time", type="float", default=5.0, dest="time",
         help="Total simulation time [seconds]")
+optParser.add_option("-u", '--update-interval', type=float, default=5.0,
+        dest="update_interval", help="Duration between simulation status printouts");
 
 (options, args) = optParser.parse_args()
 print "Options:"
 print options
+
+# Clock definitions
+sim_dt = 0.1*ms
+vel_dt = 20*ms
+simulationClock = Clock(dt=sim_dt)
+SNClock = Clock(dt=10*sim_dt)
+velocityClock = Clock(dt=vel_dt)
+secondClock = Clock(dt=1*second)
+printStatusClock = Clock(dt=options.update_interval*second)
+
+
+
 
 # Save the results of the simulation in a .mat file
 def saveResultsToMat(fileName, SNMonitor, SNList, spikeMonitor, rateMonitor,
@@ -116,13 +109,18 @@ rat_pos_x = ratData['pos_x'][0]
 rat_pos_y = ratData['pos_y'][0]#
 @network_operation(velocityClock)
 def updateVelocity():
+    #updateVelocityLinear()
+    updateVelocityRat()
+
+
+def updateVelocityRat():
     global vIndex
     global input
     # the original data are in cm/s, however, we rather want m/s 
-    #vel_x = (rat_pos_x[vIndex + 1] - rat_pos_x[vIndex])/vel_dt/100
-    #vel_y = (rat_pos_y[vIndex + 1] - rat_pos_y[vIndex])/vel_dt/100
-    vel_x = 0
-    vel_y = 0
+    vel_x = (rat_pos_x[vIndex + 1] - rat_pos_x[vIndex])/vel_dt/100
+    vel_y = (rat_pos_y[vIndex + 1] - rat_pos_y[vIndex])/vel_dt/100
+    #vel_x = 0
+    #vel_y = 0
 
     i = 0
     for i_y in range(sheet_size):
@@ -134,6 +132,38 @@ def updateVelocity():
 
     vIndex+=1
 
+linSize = 0.9   # m
+ratSpeed = 0.05 # m/s
+dts_side = linSize/ratSpeed/vel_dt # Number of vel_dts to get from one side to
+                                   # the other
+curr_pos_x = 0                                     
+
+def updateVelocityLinear():
+    global vIndex
+    global input
+    global curr_pos_x
+
+    dir = (vIndex // dts_side) % 2
+    if dir == 0:
+        vel_x = ratSpeed
+    else:
+        vel_x = -ratSpeed
+
+    vel_y = 0
+
+    i = 0
+    for i_y in range(sheet_size):
+        for i_x in range(sheet_size):
+            prefDir = getPreferredDirection(i_x, i_y)
+            sheetGroup.B[i] = (input + options.alpha*(prefDir[0]*vel_x +
+                prefDir[1]*vel_y))*namp
+            i+=1
+
+    ratData['pos_x'][0][vIndex] = curr_pos_x*100 # m --> cm
+    ratData['pos_y'][0][vIndex] = 0
+    curr_pos_x += vel_x*vel_dt
+    vIndex+=1
+
 
 @network_operation(printStatusClock)
 def printStatus():
@@ -143,7 +173,7 @@ def printStatus():
 SNList = [sheet_size**2/2]
 Monitor = SpikeCounter(sheetGroup)
 SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,
-        clock=simulationClock)
+        clock=SNClock)
 spikeMonitor = SpikeMonitor(sheetGroup)
 
 oneGroup = sheetGroup[sheet_size**2/2]
@@ -155,10 +185,22 @@ rateMonitor = PopulationRateMonitor(oneGroup, bin=200*ms)
 print "Simulation running..."
 start_time=time.time()
 net = Network(sheetGroup, inhibConn, Monitor, SNMonitor, spikeMonitor,
-        rateMonitor, updateVelocity)
+        rateMonitor, updateVelocity, printStatus)
 net.run(options.time*second)
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
+
+# Directory and filenames constants
+timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+dirName = 'results/'
+population_fname = dirName + timeSnapshot + '_spacePlot.eps'
+options_fname = dirName + timeSnapshot + '.params'
+count_fname = dirName + timeSnapshot + '_linePlot.eps'
+conn_fname = dirName + timeSnapshot + "_conn.eps"
+
+output_fname = dirName + timeSnapshot + '_output.mat'
+
+
 
 # write recorded data into .mat file
 if (options.write_data):

@@ -1,26 +1,25 @@
 % Print coloured 2d histogram of the population response
 %function printPopulationResponse(sheet_size, startTime, endTime)
 
-    sheet_size = 40;
-    startTime = 1100;
-    endTime = startTime+1;
+    %sheet_size = double(sheet_size);
+    dt_rat = 0.02; % sec
+    delta_t = 0.5; % sec
+    endTime = 6; % sec
     
-    xedges = 0:sheet_size-1;
-    yedges = 0:sheet_size-1;
+    firingPop = zeros(sheet_size, sheet_size);
     
-    id_x = [];
-    id_y = [];
-
-    for neuronID = 0:sheet_size^2 - 1
-        neuronSpikes = eval(['spikeMonitor_times_n' int2str(neuronID)]);
-        ids = find(neuronSpikes >= startTime & neuronSpikes <= endTime);
-        
-        id_x = [id_x (ids*0 + mod(neuronID, sheet_size))'];
-        id_y = [id_y (ids*0 + floor(neuronID/sheet_size))'];
+    for x_i = 0:(sheet_size-1)
+        for y_i = 0:(sheet_size-1)
+            neuronID = y_i*sheet_size + x_i;
+            neuronSpikes = eval(['spikeMonitor_times_n' int2str(neuronID)]);
+            firingRate = computeFiringRate(neuronSpikes, endTime, dt_rat, delta_t);
+            
+            firingPop(x_i+1, y_i+1) = firingRate(endTime/dt_rat);
+        end
     end
 
-    histmat = hist2(id_x, id_y, xedges, yedges);
-    pcolor(xedges,yedges,histmat);
+    %histmat = hist2(id_x, id_y, xedges, yedges);
+    pcolor(0:sheet_size-1,0:sheet_size-1,firingPop);
 
     colorbar;
     axis square tight;
