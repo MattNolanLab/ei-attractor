@@ -56,8 +56,7 @@ printStatusClock = Clock(dt=options.update_interval*second)
 
 
 # Save the results of the simulation in a .mat file
-def saveResultsToMat(fileName, SNMonitor, SNList, spikeMonitor, rateMonitor,
-        ratData, options):
+def saveResultsToMat(fileName, spikeMonitor, ratData, options):
     # SNMonitor - monitor of single neurons, defined by list
     # SNList - list of neuron numbers monitored (SN response)
     # spikeMonitor - monitor of spikes of all neurons
@@ -67,9 +66,9 @@ def saveResultsToMat(fileName, SNMonitor, SNList, spikeMonitor, rateMonitor,
     for k,v in spikeMonitor.spiketimes.iteritems():
         outData['spikeMonitor_times_n' + str(k)] = v
 
-    outData['SNMonitor_values'] = SNMonitor.values_
-    outData['SNMonitor_times'] = SNMonitor.times_
-    outData['SNList'] = SNList
+    #outData['SNMonitor_values'] = SNMonitor.values_
+    #outData['SNMonitor_times'] = SNMonitor.times_
+    #outData['SNList'] = SNList
 
     # Merge the rat position and timestamp data into the output so it is self
     # contained
@@ -170,28 +169,28 @@ def printStatus():
     print "Simulated " + str(printStatusClock.t) + " seconds."
 
 # Record the number of spikes
-SNList = [sheet_size**2/2]
-Monitor = SpikeCounter(sheetGroup)
-SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,
-        clock=SNClock)
-spikeMonitor = SpikeMonitor(sheetGroup)
+#SNList = [sheet_size**2/2]
+#Monitor = SpikeCounter(sheetGroup)
+#SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,
+#        clock=SNClock)
 
-oneGroup = sheetGroup[sheet_size**2/2]
-rateMonitor = PopulationRateMonitor(oneGroup, bin=200*ms)
+spikeGroupStart = (sheet_size**2)/4
+spikeGroupEnd = spikeGroupStart + (sheet_size**2)/2
+spikeMonitorG = sheetGroup[spikeGroupStart:spikeGroupEnd]
+spikeMonitor = SpikeMonitor(spikeMonitorG)
 
 
 #printConn(sheet_size, inhibConn, options.write_data, options.print_only_conn)
 
 print "Simulation running..."
 start_time=time.time()
-net = Network(sheetGroup, inhibConn, Monitor, SNMonitor, spikeMonitor,
-        rateMonitor, updateVelocity, printStatus)
+net = Network(sheetGroup, inhibConn, spikeMonitor, updateVelocity, printStatus)
 net.run(options.time*second)
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
 
 # Directory and filenames constants
-timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M")
 dirName = 'results/'
 population_fname = dirName + timeSnapshot + '_spacePlot.eps'
 options_fname = dirName + timeSnapshot + '.params'
@@ -207,8 +206,7 @@ if (options.write_data):
     #f = open(options_fname, 'w')
     #f.write(str(options))
     #f.close()
-    saveResultsToMat(output_fname, SNMonitor, SNList, spikeMonitor, rateMonitor,
-            ratData, options)
+    saveResultsToMat(output_fname, spikeMonitor, ratData, options)
 
 
 # print contour plot of firing
