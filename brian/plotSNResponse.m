@@ -35,4 +35,5 @@ function plotSNResponse(neuronSpikes, ratData_pos_x, ratData_pos_y, arenaDiam, h
 
     xlabel('Rat position [cm]');
     ylabel('Rat position [cm]');
+    title('Single neuron rate response');
 end

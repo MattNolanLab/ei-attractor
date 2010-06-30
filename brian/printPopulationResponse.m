@@ -1,10 +1,12 @@
 % Print coloured 2d histogram of the population response
 %function printPopulationResponse(sheet_size, startTime, endTime)
 
+close all;
+
     %sheet_size = double(sheet_size);
     dt_rat = 0.02; % sec
-    delta_t = 0.5; % sec
-    endTime = 6; % sec
+    delta_t = 2; % sec
+    endTime = 5; % sec
     
     firingPop = zeros(sheet_size, sheet_size);
     
