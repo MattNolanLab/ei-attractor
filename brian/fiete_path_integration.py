@@ -179,7 +179,6 @@ def printStatus():
 #spikeMonitorG = sheetGroup[spikeGroupStart:spikeGroupEnd]
 spikeMonitor = SpikeMonitor(sheetGroup)
 
-
 #printConn(sheet_size, inhibConn, options.write_data, options.print_only_conn)
 
 print "Simulation running..."
@@ -190,7 +189,7 @@ duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
 
 # Directory and filenames constants
-timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M")
+timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 dirName = 'results/'
 population_fname = dirName + timeSnapshot + '_spacePlot.eps'
 options_fname = dirName + timeSnapshot + '.params'
