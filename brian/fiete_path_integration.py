@@ -174,10 +174,10 @@ def printStatus():
 #SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,
 #        clock=SNClock)
 
-spikeGroupStart = (sheet_size**2)/4
-spikeGroupEnd = spikeGroupStart + (sheet_size**2)/2
-spikeMonitorG = sheetGroup[spikeGroupStart:spikeGroupEnd]
-spikeMonitor = SpikeMonitor(spikeMonitorG)
+#spikeGroupStart = (sheet_size**2)/4
+#spikeGroupEnd = spikeGroupStart + (sheet_size**2)/2
+#spikeMonitorG = sheetGroup[spikeGroupStart:spikeGroupEnd]
+spikeMonitor = SpikeMonitor(sheetGroup)
 
 
 #printConn(sheet_size, inhibConn, options.write_data, options.print_only_conn)
