@@ -9,7 +9,7 @@ clear all;
 % ratePlotFile  = [dir 'rateMap_'  params '.eps'];
 loadDir = 'results/';
 saveDir = 'results/fig/';
-fileBase = '2010-06-24T17-50';
+fileBase = '2010-07-02T22-04-45';
 
 loadFile = [loadDir fileBase '_output.mat'];
 load(loadFile);

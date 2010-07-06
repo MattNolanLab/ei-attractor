@@ -47,12 +47,12 @@ print options
 sim_dt = 0.1*ms
 vel_dt = 20*ms
 simulationClock = Clock(dt=sim_dt)
-SNClock = Clock(dt=10*sim_dt)
+#SNClock = Clock(dt=10*sim_dt)
 velocityClock = Clock(dt=vel_dt)
-secondClock = Clock(dt=1*second)
 printStatusClock = Clock(dt=options.update_interval*second)
 
-
+# Time for the network to settle down into an attractor state at the beginning
+network_setup_time = 5*second
 
 
 # Save the results of the simulation in a .mat file
@@ -183,10 +183,12 @@ spikeMonitor = SpikeMonitor(sheetGroup)
 
 print "Simulation running..."
 start_time=time.time()
-net = Network(sheetGroup, inhibConn, spikeMonitor, updateVelocity, printStatus)
+#net = Network(sheetGroup, inhibConn, printStatus)
+net = Network(sheetGroup, inhibConn, printStatus, updateVelocity, spikeMonitor)
 net.run(options.time*second)
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
+
 
 # Directory and filenames constants
 timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
@@ -207,29 +209,3 @@ if (options.write_data):
     #f.close()
     saveResultsToMat(output_fname, spikeMonitor, ratData, options)
 
-
-# print contour plot of firing
-#x = arange(0, sheet_size);
-#y = arange(0, sheet_size);
-#X, Y = meshgrid(x, y)
-#figure()
-#contour(X, Y, reshape(Monitor.count, (sheet_size, sheet_size)))
-#xlabel("Neuron number")
-#ylabel("Neuron number")
-#if options.write_data:
-#    savefig(population_fname, format="eps")
-#
-#figure()
-#plot(Monitor.count)
-#xlabel("Neuron number")
-#ylabel("Spiking activity")
-#if options.write_data:
-#    savefig(count_fname, format="eps")
-
-#figure();
-#plot(SNMonitor.times/ms, SNMonitor[sheet_size**2/2]/mV)
-#figure();
-#plot(MV.times/ms, MV[480]/mV)
-#
-#if options.write_data == False:
-#    show()

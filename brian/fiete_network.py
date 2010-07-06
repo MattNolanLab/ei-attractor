@@ -79,7 +79,7 @@ def createNetwork(sheet_size, lambda_net, l, a, connMult, clock):
     for j in range(len(sheetGroup)):
         j_x = j % sheet_size
         j_y = j // sheet_size
-        prefDir = getPreferredDirection(j_x, j_y) # all as complex numbers
+        prefDir = getPreferredDirection(j_x, j_y)
         for i in range(len(sheetGroup)):
             i_x = i % sheet_size
             i_y = i // sheet_size
