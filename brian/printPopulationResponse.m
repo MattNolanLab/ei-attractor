@@ -1,12 +1,15 @@
 % Print coloured 2d histogram of the population response
 %function printPopulationResponse(sheet_size, startTime, endTime)
 
-close all;
+%close all;
+
+    sheet_size = parseOptions(options);
 
     %sheet_size = double(sheet_size);
     dt_rat = 0.02; % sec
-    delta_t = 1; % sec
-    endTime = 0.5; % sec
+    delta_t = 0.8; % sec
+    startTime = 8;
+    endTime = startTime; % sec
     
     firingPop = zeros(sheet_size, sheet_size);
     
@@ -14,9 +17,9 @@ close all;
         for y_i = 0:(sheet_size-1)
             neuronID = y_i*sheet_size + x_i;
             neuronSpikes = eval(['spikeMonitor_times_n' int2str(neuronID)]);
-            firingRate = computeFiringRate(neuronSpikes, endTime, dt_rat, delta_t);
+            firingRate = computeFiringRate(neuronSpikes, startTime, endTime, dt_rat, delta_t);
             
-            firingPop(x_i+1, y_i+1) = firingRate(endTime/dt_rat);
+            firingPop(x_i+1, y_i+1) = firingRate(numel(firingRate));
         end
     end
 

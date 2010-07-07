@@ -9,7 +9,7 @@ clear all;
 % ratePlotFile  = [dir 'rateMap_'  params '.eps'];
 loadDir = 'results/';
 saveDir = 'results/fig/';
-fileBase = '2010-07-02T22-04-45';
+fileBase = '2010-07-07T13-30-41';
 
 loadFile = [loadDir fileBase '_output.mat'];
 load(loadFile);
@@ -32,7 +32,7 @@ delta_t = 1; % sec
 h = 5.0;  % cm
 arenaDiam = 180;   % cm
 
-for i = 801
+for i = 2049
     neuronNum = i-1;
 
     neuronSpikes = eval(['spikeMonitor_times_n' int2str(neuronNum)]);

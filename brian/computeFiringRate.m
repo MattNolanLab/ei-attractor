@@ -1,4 +1,4 @@
-function [firingRate] = computeFiringRate(spikeTimes, endTime, dt, delta_t)
+function [firingRate] = computeFiringRate(spikeTimes, startTime, endTime, dt, delta_t)
     % spikeTimes - an array of spike times to estimate the rate for
     % endTime - end time of the data to compute firing rate for
     % dt - time resolution
@@ -6,7 +6,7 @@ function [firingRate] = computeFiringRate(spikeTimes, endTime, dt, delta_t)
 
     nel = numel(spikeTimes);
     
-    times = 0:dt:endTime;
+    times = startTime:dt:endTime;
     firingRate = zeros(1, numel(times));
     
     if nel == 0
