@@ -59,3 +59,4 @@ function [spikeFig rateFig] = plotStatistics(fileBase, neuronIDs)
     end
 
 end
+

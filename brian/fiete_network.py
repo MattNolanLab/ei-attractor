@@ -34,6 +34,7 @@ taui=10*msecond
 
 def get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui):
     eqs=exp_IF(C,gL,EL,VT,DeltaT)
+    #eqs=leaky_IF(taum, EL)
     # Use only inhibitory connections from Burak&Fiete, 2009. Should work if the
     # velocity input is non-zero even when speed is zero.
     eqs+=exp_conductance('gi',Ei,taui) # from library.synapses
@@ -43,7 +44,7 @@ def get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui):
 
 # Get a preferred direction for a neuron
 def getPreferredDirection(pos_x, pos_y):
-# pos - complex number defining position of neuron in 2d sheet
+# pos_x/y - position of neuron in 2d sheet
     pos4_x = pos_x % 4
     pos2_y = pos_y % 2
     if pos4_x == 0:
@@ -75,12 +76,13 @@ def createNetwork(sheet_size, lambda_net, l, a, connMult, clock):
         Ei, taui),threshold=threshold,reset=EL,refractory=refractory,
         clock=clock)
     inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense');
+    inh_matrix = asarray(inhibConn.W)
     
-    for j in range(len(sheetGroup)):
+    for j in xrange(len(sheetGroup)):
         j_x = j % sheet_size
         j_y = j // sheet_size
         prefDir = getPreferredDirection(j_x, j_y)
-        for i in range(len(sheetGroup)):
+        for i in xrange(len(sheetGroup)):
             i_x = i % sheet_size
             i_y = i // sheet_size
             
@@ -97,7 +99,7 @@ def createNetwork(sheet_size, lambda_net, l, a, connMult, clock):
     
             abs_x_sq = (i_x - j_x -l*prefDir[0])**2 + (i_y - j_y - l*prefDir[1])**2
             w = a*math.e**(-gamma*(abs_x_sq)) - math.e**(-beta*(abs_x_sq));
-            inhibConn[j, i] = connMult*abs(w)*nS
+            inh_matrix[j, i] = connMult*abs(w)*nS
 
     sheetGroup.vm = EL + (VT-EL) * rand(len(sheetGroup))
 

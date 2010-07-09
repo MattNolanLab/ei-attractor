@@ -8,7 +8,7 @@
     %sheet_size = double(sheet_size);
     dt_rat = 0.02; % sec
     delta_t = 0.8; % sec
-    startTime = 8;
+    startTime = 5;
     endTime = startTime; % sec
     
     firingPop = zeros(sheet_size, sheet_size);

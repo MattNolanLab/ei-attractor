@@ -37,14 +37,16 @@ optParser.add_option("--alpha", type="float", default=0.10315, dest="alpha",
 optParser.add_option("-t", "--time", type="float", default=5.0, dest="time",
         help="Total simulation time [seconds]")
 optParser.add_option("-u", '--update-interval', type=float, default=5.0,
-        dest="update_interval", help="Duration between simulation status printouts");
+        dest="update_interval", help="Duration between simulation status printouts")
+optParser.add_option("--sim_dt", type=float, default=0.1, dest="sim_dt",
+        help="Simulation time step (ms)")
 
 (options, args) = optParser.parse_args()
 print "Options:"
 print options
 
 # Clock definitions
-sim_dt = 0.1*ms
+sim_dt = options.sim_dt*ms
 vel_dt = 20*ms
 simulationClock = Clock(dt=sim_dt)
 #SNClock = Clock(dt=10*sim_dt)
@@ -122,8 +124,8 @@ def updateVelocityRat():
     #vel_y = 0
 
     i = 0
-    for i_y in range(sheet_size):
-        for i_x in range(sheet_size):
+    for i_y in xrange(sheet_size):
+        for i_x in xrange(sheet_size):
             prefDir = getPreferredDirection(i_x, i_y)
             sheetGroup.B[i] = (input + options.alpha*(prefDir[0]*vel_x +
                 prefDir[1]*vel_y))*namp
