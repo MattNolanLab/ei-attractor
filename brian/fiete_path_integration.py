@@ -36,10 +36,12 @@ optParser.add_option("--alpha", type="float", default=0.10315, dest="alpha",
         help="Network alpha parameter (see Burak&Fiete, 2009)")
 optParser.add_option("-t", "--time", type="float", default=5.0, dest="time",
         help="Total simulation time [seconds]")
-optParser.add_option("-u", '--update-interval', type=float, default=5.0,
+optParser.add_option("-u", '--update-interval', type="float", default=5.0,
         dest="update_interval", help="Duration between simulation status printouts")
 optParser.add_option("--sim_dt", type=float, default=0.1, dest="sim_dt",
         help="Simulation time step (ms)")
+optParser.add_option("-n", "--job-num", type="int", default=-1, dest="job_num",
+        help="Use argument of this option to specify the output file name number, instead of using time")
 
 (options, args) = optParser.parse_args()
 print "Options:"
@@ -200,7 +202,10 @@ options_fname = dirName + timeSnapshot + '.params'
 count_fname = dirName + timeSnapshot + '_linePlot.eps'
 conn_fname = dirName + timeSnapshot + "_conn.eps"
 
-output_fname = dirName + timeSnapshot + '_output.mat'
+output_fname = dirName
+if options.job_num != -1:
+    output_fname = output_fname + 'job' + str(options.job_num)
+output_fname +=  '_' + timeSnapshot + '_output.mat'
 
 
 

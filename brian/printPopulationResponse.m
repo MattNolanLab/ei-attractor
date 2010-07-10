@@ -8,7 +8,7 @@
     %sheet_size = double(sheet_size);
     dt_rat = 0.02; % sec
     delta_t = 0.8; % sec
-    startTime = 5;
+    startTime = 60;
     endTime = startTime; % sec
     
     firingPop = zeros(sheet_size, sheet_size);
@@ -24,6 +24,7 @@
     end
 
     %histmat = hist2(id_x, id_y, xedges, yedges);
+    %figure;
     pcolor(0:sheet_size-1,0:sheet_size-1,firingPop);
 
     colorbar;
