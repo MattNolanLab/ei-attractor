@@ -1,7 +1,7 @@
 #!/bin/sh
 ########################################
 #                                      #
-# SGE MPI job script for ECDF Cluster  #
+# SGE job script for ECDF Cluster      #
 #                                      #
 # by ECDF System Team                  #
 # ecdf-systems-team@lists.ed.ac.uk     #
@@ -12,7 +12,7 @@
 
 #$ -N fiete_path_integration
 #$ -cwd
-#$ -l h_rt=04:00:00
+#$ -l h_rt=00:06:00
 
 # Initialise environment module
 
@@ -21,7 +21,7 @@
 # Use python 2.6
 
 module load python/2.6.3
-module load matlab/4.0-r2008b
+#module load matlab/4.0-r2008b
 
 export PYTHONPATH=/exports/work/informatics/s0966762/python-modules/lib/python2.6/site-packages
 
@@ -30,8 +30,12 @@ F_TIME="$2"
 F_ALPHA="$3"
 F_CONN_MULT="$4"
 F_JOB_ID=$5
+F_INPUT=$6
+F_TAUM=$7
+F_TAUI=$8
+F_LAMBDA_NET=$9
 
 
 # Run the program
-python2.6 fiete_path_integration.py -w -n $F_JOB_ID -s $F_SHEET_SIZE -t $F_TIME --alpha=$F_ALPHA -c $F_CONN_MULT
+python2.6 fiete_path_integration.py -w -n $F_JOB_ID -s $F_SHEET_SIZE -t $F_TIME --alpha=$F_ALPHA -c $F_CONN_MULT -i $F_INPUT --taum $F_TAUM --taui $F_TAUI --lambda-net=$F_LAMBDA_NET
 #matlab -nodisplay -r "d = dir('results/*job${F_JOB_ID}_*.mat'); plotStatistics(['results/' d(end).name], [2048]); exit"

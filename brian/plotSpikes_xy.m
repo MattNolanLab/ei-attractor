@@ -22,5 +22,5 @@ function plotSpikes_xy(neuronSpikes, ratData_pos_x, ratData_pos_y, dt_rat, neuro
     hold off;
     xlabel('Rat position - x [cm]');
     ylabel('Rat position - y [cm]');
-    title('Spike plot - single neuron response');
+    %title('Spike plot - single neuron response');
 end

@@ -8,10 +8,10 @@
 
 # Constant parameters
 F_SHEET_SIZE="64"
-F_TIME="1195"
+F_TIME="10"
 
 # Parameters different for each job
-CONN_MULT="20 40"
+CONN_MULT="20"
 #CONN_MULT="
 #    0.5000    1.0000    1.5000    2.0000    2.5000    3.0000    3.5000    4.0000    4.5000    5.0000    5.5000    6.0000    6.5000
 #    7.0000    7.5000    8.0000    8.5000    9.0000    9.5000   10.0000   10.5000   11.0000   11.5000   12.0000   12.5000   13.0000
@@ -22,25 +22,49 @@ CONN_MULT="20 40"
 #   39.5000   40.0000   40.5000   41.0000   41.5000   42.0000   42.5000   43.0000   43.5000   44.0000   44.5000   45.0000   45.5000
 #   46.0000   46.5000   47.0000   47.5000   48.0000   48.5000   49.0000   49.5000   50.0000"
 
+#F_ALPHA="0.025 0.027 0.03 0.035 0.04 0.045 0.050 0.055 0.060 0.07 0.08 0.09 0.100"
 F_ALPHA="0.015"
 
-REPEAT=20
+#F_INPUT="0.3000    0.4000    0.5000    0.6000    0.7000    0.8000"
+F_INPUT="0.3"
 
-job_id=1
+F_TAUM="10"
+
+F_TAUI="9"
+
+REPEAT=1
+
+F_LAMBDA_NET="14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"
+#F_LAMBDA_NET="20"
+
+job_id=10000
+for alpha in $F_ALPHA; do
+    for conn_mult in $CONN_MULT; do
+        for input in $F_INPUT; do
+            for taum in $F_TAUM; do
+                for taui in $F_TAUI; do
+                    for lambda_net in $F_LAMBDA_NET; do
+
+#####################
 repeat=1
 while [ $repeat -le $REPEAT ]; do
-    for alpha in $F_ALPHA; do
-        for conn_mult in $CONN_MULT; do
-            echo "conn_mult=$conn_mult"
-            echo "alpha=$alpha"
-            echo "job_id=$job_id"
-            qsub ./eddieBatch_fiete_path_integration.sh $F_SHEET_SIZE $F_TIME $alpha $conn_mult $job_id
-        
-            echo
-        
-            let job_id=$job_id+1
+    echo "conn_mult=$conn_mult"
+    echo "alpha=$alpha"
+    echo "job_id=$job_id"
+    echo "lambda_net=$lambda_net"
+
+    qsub ./eddieBatch_fiete_path_integration.sh $F_SHEET_SIZE $F_TIME $alpha $conn_mult $job_id $input $taum $taui $lambda_net
+
+    echo
+
+    let job_id=$job_id+1
+    let repeat=$repeat+1
+done
+#####################
+
+                    done
+                done
+            done
         done
     done
-
-    let repeat=$repeat+1
 done

@@ -42,6 +42,10 @@ optParser.add_option("--sim_dt", type=float, default=0.1, dest="sim_dt",
         help="Simulation time step (ms)")
 optParser.add_option("-n", "--job-num", type="int", default=-1, dest="job_num",
         help="Use argument of this option to specify the output file name number, instead of using time")
+optParser.add_option("--taum", type="float", default=10, dest="taum",
+        help="Neuron membrane time constant (ms)")
+optParser.add_option("--taui", type="float", default=10, dest="taui",
+        help="Inhibitory synaptic time constant (ms)")
 
 (options, args) = optParser.parse_args()
 print "Options:"
@@ -55,9 +59,6 @@ simulationClock = Clock(dt=sim_dt)
 velocityClock = Clock(dt=vel_dt)
 printStatusClock = Clock(dt=options.update_interval*second)
 
-# Time for the network to settle down into an attractor state at the beginning
-network_setup_time = 5*second
-
 
 # Save the results of the simulation in a .mat file
 def saveResultsToMat(fileName, spikeMonitor, ratData, options):
@@ -65,7 +66,7 @@ def saveResultsToMat(fileName, spikeMonitor, ratData, options):
     # SNList - list of neuron numbers monitored (SN response)
     # spikeMonitor - monitor of spikes of all neurons
     # rateMonitor - rate monitor of several neurons (TODO)
-    outData = dict()
+    outData = ratData
 
     for k,v in spikeMonitor.spiketimes.iteritems():
         outData['spikeMonitor_times_n' + str(k)] = v
@@ -76,8 +77,8 @@ def saveResultsToMat(fileName, spikeMonitor, ratData, options):
 
     # Merge the rat position and timestamp data into the output so it is self
     # contained
-    for k,v in ratData.iteritems():
-        outData['ratData_' + k] = v
+    #for k,v in ratData.iteritems():
+    #    outData['ratData_' + k] = v
 
     # Save options as string - couldn't find any other way how to convert it to
     # variables
@@ -96,7 +97,7 @@ sheet_size = options.sheet_size  # Total no. of neurons will be sheet_size^2
 start_time=time.time()
 
 [sheetGroup, inhibConn] = createNetwork(sheet_size, options.lambda_net,
-        options.l, options.a, options.connMult, simulationClock)
+        options.l, options.a, options.connMult, simulationClock, options.taum, options.taui)
 
 duration=time.time()-start_time
 print "Connection setup time:",duration,"seconds"
@@ -178,9 +179,10 @@ def printStatus():
 #SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,
 #        clock=SNClock)
 
-#spikeGroupStart = (sheet_size**2)/4
-#spikeGroupEnd = spikeGroupStart + (sheet_size**2)/2
-#spikeMonitorG = sheetGroup[spikeGroupStart:spikeGroupEnd]
+spikeGroupStart = int((sheet_size**2)*0.45)
+spikeGroupEnd = int(spikeGroupStart + (sheet_size**2)/10)
+spikeMonitorG = sheetGroup[spikeGroupStart:spikeGroupEnd]
+#spikeMonitor = SpikeMonitor(spikeMonitorG)
 spikeMonitor = SpikeMonitor(sheetGroup)
 
 #printConn(sheet_size, inhibConn, options.write_data, options.print_only_conn)

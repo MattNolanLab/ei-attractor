@@ -1,0 +1,5 @@
+job6000 - checking whether different membrane time constants produce stable
+          hexagonal patterns in the population response
+job7000 - checking for stable path integration, based on job6000
+job8000 - stable firing fields for taum=10, taui=1? 20 repeats
+job9000 - firing fields with different lambda_net
