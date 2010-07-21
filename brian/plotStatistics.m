@@ -27,8 +27,8 @@ function [spikeFig rateFig] = plotStatistics(fileName, neuronIDs)
     sheet_size = opt.sheet_size;
 
 
-    printSN = true;
-    printPop = false;
+    printSN = false;
+    printPop = true;
     saveFig = true;
     %saveFig = false;
 
@@ -52,16 +52,18 @@ function [spikeFig rateFig] = plotStatistics(fileName, neuronIDs)
 
             spikeFig = figure('Visible', 'off');
             plotSpikes_xy(neuronSpikes, pos_x, pos_y, dt_rat, neuronNum);
-            %title(['Spike plot - SN - input:' num2str(opt.input) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha)]);
-            title(['Spike plot - SN - taum: ' num2str(opt.taum) ', taui: ' num2str(opt.taui)]);
+            title(['Spike plot - SN - input:' num2str(opt.input) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
+            %title(['Spike plot - SN - taum: ' num2str(opt.taum) ', taui: ' num2str(opt.taui)]);
+            %title(['Spike plot - SN - lambda_net: ' num2str(opt.lambda_net)]);
             if saveFig
                 print('-depsc', spikePlotFile);
             end
 
             rateFig = figure('Visible', 'off');
             plotSNResponse(neuronSpikes, pos_x, pos_y, arenaDiam, h, dt_rat, neuronNum);
-            %title(['Rate plot - SN - input:' num2str(opt.input) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha)]);
-            title(['Rate plot - SN - taum: ' num2str(opt.taum) ', taui: ' num2str(opt.taui)]);
+            title(['Rate plot - SN - input:' num2str(opt.input) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
+            %title(['Rate plot - SN - taum: ' num2str(opt.taum) ', taui: ' num2str(opt.taui)]);
+            %title(['Rate plot - SN - lambda_net: ' num2str(opt.lambda_net)]);
             if saveFig
                 print('-depsc', ratePlotFile);
             end
@@ -70,10 +72,11 @@ function [spikeFig rateFig] = plotStatistics(fileName, neuronIDs)
 
     
     if printPop
+        disp 'Processing population firing rate'
         %
         % Print population firing rate at specified time
         %
-        startTime = 3;
+        startTime = 4;
         endTime = startTime; % sec
         delta_t = 1; % sec
 
@@ -91,8 +94,9 @@ function [spikeFig rateFig] = plotStatistics(fileName, neuronIDs)
 
         popFig = figure('Visible', 'off');
         pcolor(0:sheet_size-1,0:sheet_size-1,firingPop);
-        %title(['Population rate plot - input:' num2str(opt.input) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha)]);
-        title(['Population rate plot - taum: ' num2str(opt.taum) ', taui: ' num2str(opt.taui)]);
+        title(['Population rate plot - input:' num2str(opt.input) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
+        %title(['Population rate plot - taum: ' num2str(opt.taum) ', taui: ' num2str(opt.taui)]);
+        %title(['Population rate plot - SN - lambda_net: ' num2str(opt.lambda_net)]);
 
         colorbar;
         axis square tight;
