@@ -53,7 +53,7 @@ print options
 
 # Clock definitions
 sim_dt = options.sim_dt*ms
-vel_dt = 20*ms
+vel_dt = 3*second
 simulationClock = Clock(dt=sim_dt)
 #SNClock = Clock(dt=10*sim_dt)
 velocityClock = Clock(dt=vel_dt)
@@ -113,8 +113,8 @@ rat_pos_x = ratData['pos_x'][0]
 rat_pos_y = ratData['pos_y'][0]#
 @network_operation(velocityClock)
 def updateVelocity():
-    #updateVelocityLinear()
-    updateVelocityRat()
+    updateVelocityLinear()
+    #updateVelocityRat()
 
 
 def updateVelocityRat():
@@ -136,9 +136,9 @@ def updateVelocityRat():
 
     vIndex+=1
 
-linSize = 0.9   # m
-ratSpeed = 0.05 # m/s
-dts_side = linSize/ratSpeed/vel_dt # Number of vel_dts to get from one side to
+#linSize = 0.2   # m
+ratSpeed = 0.1 # m/s
+#dts_side = linSize/ratSpeed/vel_dt # Number of vel_dts to get from one side to
                                    # the other
 curr_pos_x = 0                                     
 
@@ -147,13 +147,54 @@ def updateVelocityLinear():
     global input
     global curr_pos_x
 
-    dir = (vIndex // dts_side) % 2
-    if dir == 0:
+    if vIndex == 0:
+        vel_x = 0
+        vel_y = ratSpeed
+    elif vIndex == 1:
+        vel_x = 0
+        vel_y = 0
+    elif vIndex == 2:
+        vel_x = ratSpeed/math.sqrt(2)
+        vel_y = ratSpeed/math.sqrt(2)
+    elif vIndex == 3:
+        vel_x = 0
+        vel_y = 0
+    elif vIndex == 4:
         vel_x = ratSpeed
-    else:
+        vel_y = 0
+    elif vIndex == 5:
+        vel_x = 0
+        vel_y = 0
+    elif vIndex == 6:
+        vel_x = ratSpeed/math.sqrt(2)
+        vel_y = -ratSpeed/math.sqrt(2)
+    elif vIndex == 7:
+        vel_x = 0
+        vel_y = 0
+    elif vIndex == 8:
+        vel_x = 0
+        vel_y = -ratSpeed
+    elif vIndex == 9:
+        vel_x = 0
+        vel_y = 0
+    elif vIndex == 10:
+        vel_x = -ratSpeed/math.sqrt(2)
+        vel_y = -ratSpeed/math.sqrt(2)
+    elif vIndex == 11:
+        vel_x = 0
+        vel_y = 0
+    elif vIndex == 12:
         vel_x = -ratSpeed
-
-    vel_y = 0
+        vel_y = 0
+    elif vIndex == 13:
+        vel_x = 0
+        vel_y = 0
+    elif vIndex == 14:
+        vel_x = -ratSpeed/math.sqrt(2)
+        vel_y = ratSpeed/math.sqrt(2)
+    else: 
+        vel_x = 0
+        vel_y = 0
 
     i = 0
     for i_y in range(sheet_size):
@@ -167,6 +208,7 @@ def updateVelocityLinear():
     ratData['pos_y'][0][vIndex] = 0
     curr_pos_x += vel_x*vel_dt
     vIndex+=1
+    vIndex = vIndex % 16
 
 
 @network_operation(printStatusClock)
