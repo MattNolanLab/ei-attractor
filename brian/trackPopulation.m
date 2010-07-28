@@ -1,6 +1,15 @@
-% Track the shift of population response throughout the simulation
+function trackPopulation(fileName)
+    % Track the shift of population response throughout the simulation
+    fileName
+    
+    saveDir = 'results/fig/';
+    [start_i end_i] = regexp(fileName, 'job\d+_\d\d\d\d-\d\d-\d\dT\d\d-\d\d-\d\d_', 'Start', 'End');
+    fileBase = fileName(start_i:end_i-1);
+    
+    load(fileName);
 
-%close all;
+    opt = parseOptions(options);
+    optStr = ['_s' num2str(opt.sheet_size) '_alpha' num2str(opt.alpha)];   
 
     opt = parseOptions(options);
     sheet_size = opt.sheet_size;
@@ -11,6 +20,8 @@
     delta_t = 0.5; % sec
     startTime = 0;
     endTime = 99; % sec
+    
+    saveFig = true;
     
     firingPop = zeros(sheet_size, sheet_size);
     
@@ -78,6 +89,7 @@
         %t
     end
     
+    figure('Visible', 'off');
     plot(blobPos_x, blobPos_y);
     xlim([0 80]); ylim([0 80]);
     axis square;
@@ -86,3 +98,10 @@
     ylabel('Neuron no.');
     title(['Blob position: connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
     
+    if saveFig
+        popPlotFile =  [saveDir fileBase '_tracking.eps'];
+        print('-depsc', popPlotFile);
+    end
+
+    
+end
