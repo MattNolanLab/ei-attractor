@@ -15,7 +15,7 @@ import math
 
 # define provisional model parameters - these might be changed in the future
 
-threshold = -20*mvolt;
+#threshold = -20*mvolt;
 refractory = 20*ms;
 
 # Synapse parameters
@@ -61,7 +61,8 @@ def getPreferredDirection(pos_x, pos_y):
         else:
             return [0, -1]
 
-def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms, taui_ms):
+def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms,
+        taui_ms, threshold):
     C=200*pF
     taum=taum_ms*msecond
     taui=taui_ms*msecond

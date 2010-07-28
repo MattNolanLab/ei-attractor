@@ -12,7 +12,7 @@ F_TIME="150"
 
 # Parameters different for each job
 #CONN_MULT="20"
-CONN_MULT="10 12 14"
+CONN_MULT="50 60 70 80 90 100 110 120 130 140 150"
 
 
 #F_ALPHA="0.025 0.027 0.03 0.035 0.04 0.045 0.050 0.055 0.060 0.07 0.08 0.09 0.100"
@@ -23,13 +23,13 @@ F_INPUT="0.3"
 
 F_TAUM="10"
 
-F_TAUI="9"
+F_TAUI="1"
 
 REPEAT=2
 
 F_LAMBDA_NET="20"
 
-job_id=13300
+job_id=16000
 for alpha in $F_ALPHA; do
     for conn_mult in $CONN_MULT; do
         for input in $F_INPUT; do
@@ -45,7 +45,7 @@ while [ $repeat -le $REPEAT ]; do
     echo "job_id=$job_id"
     echo "lambda_net=$lambda_net"
 
-    ./eddieBatch_fiete_path_integration.sh $F_SHEET_SIZE $F_TIME $alpha $conn_mult $job_id $input $taum $taui $lambda_net&
+    qsub ./eddieBatch_fiete_path_integration.sh $F_SHEET_SIZE $F_TIME $alpha $conn_mult $job_id $input $taum $taui $lambda_net
 
     echo
 

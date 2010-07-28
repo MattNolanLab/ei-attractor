@@ -46,6 +46,8 @@ optParser.add_option("--taum", type="float", default=10, dest="taum",
         help="Neuron membrane time constant (ms)")
 optParser.add_option("--taui", type="float", default=10, dest="taui",
         help="Inhibitory synaptic time constant (ms)")
+optParser.add_option("--threshold", type="float", default=-20, dest="threshold",
+        help="Integrate and fire spiking threshold")
 
 (options, args) = optParser.parse_args()
 print "Options:"
@@ -97,7 +99,8 @@ sheet_size = options.sheet_size  # Total no. of neurons will be sheet_size^2
 start_time=time.time()
 
 [sheetGroup, inhibConn] = createNetwork(sheet_size, options.lambda_net,
-        options.l, options.a, options.connMult, simulationClock, options.taum, options.taui)
+        options.l, options.a, options.connMult, simulationClock, options.taum,
+        options.taui, options.threshold)
 
 duration=time.time()-start_time
 print "Connection setup time:",duration,"seconds"

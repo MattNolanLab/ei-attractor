@@ -10,7 +10,7 @@
     dt_track = 0.1; % sec; dt for the tracking algorithm
     delta_t = 0.5; % sec
     startTime = 0;
-    endTime = 148; % sec
+    endTime = 99; % sec
     
     firingPop = zeros(sheet_size, sheet_size);
     
@@ -61,7 +61,11 @@
         % Simply threshold the population response to segment the image
         % This should easily work, since the blobs are coherent
         firingThr = 0.35;
-        thrFiringPop = double(im2bw(firingPop/max(max(firingPop)), firingThr));
+        thrFiringPop = zeros(sheet_size);
+        thr_i = find(firingPop/max(max(firingPop)) >= firingThr);
+        %thrFiringPop = reshape(firintPop, sheet_size^2, 1);
+        thrFiringPop(thr_i) = 1;
+        thrFiringPop = reshape(thrFiringPop, sheet_size, sheet_size);
 
         [r, c] = trackBlobs(thrFiringPop);
         
@@ -71,6 +75,14 @@
         currBlobPos_y = r(min_i);
         blobPos_x = [blobPos_x currBlobPos_x];
         blobPos_y = [blobPos_y currBlobPos_y];
-        t
+        %t
     end
+    
+    plot(blobPos_x, blobPos_y);
+    xlim([0 80]); ylim([0 80]);
+    axis square;
+    
+    xlabel('Neuron no.');
+    ylabel('Neuron no.');
+    title(['Blob position: connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
     
