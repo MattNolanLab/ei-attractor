@@ -1,9 +1,9 @@
-import brian_no_units
 from brian import *
 
 from brian import *
 from brian.library.IF import *
 from brian.library.synapses import *
+from brian.membrane_equations import *
 
 from scipy import linspace
 from scipy.io import loadmat
@@ -15,18 +15,19 @@ import math
 
 # define provisional model parameters - these might be changed in the future
 
-#threshold = -20*mvolt;
 refractory = 20*ms;
 
 # Synapse parameters
 Ee=0*mvolt
 Ei=-80*mvolt
-#taue=5*msecond
 
 
 
 def get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui):
-    eqs=exp_IF(C,gL,EL,VT,DeltaT)
+    eqs = MembraneEquation(C)+\
+           Current('Im=gL*(EL-vm)+gL*DeltaT*exp((vm-VT)/DeltaT):amp',\
+                   gL=gL,EL=EL,DeltaT=DeltaT,exp=exp,VT=VT)
+
     #eqs=leaky_IF(taum, EL)
     # Use only inhibitory connections from Burak&Fiete, 2009. Should work if the
     # velocity input is non-zero even when speed is zero.
@@ -62,10 +63,11 @@ def getPreferredDirection(pos_x, pos_y):
             return [0, -1]
 
 def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms,
-        taui_ms, threshold):
+        taui_ms, threshold_mV):
     C=200*pF
     taum=taum_ms*msecond
     taui=taui_ms*msecond
+    threshold=threshold_mV*mvolt
     gL=C/taum
     EL=-70*mV
     VT=-55*mV
@@ -74,12 +76,12 @@ def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms,
     beta = 3.0 / lambda_net**2
     gamma = 1.05 * beta
 
-    sheetGroup=NeuronGroup(sheet_size**2,model=get_exp_IF(C, gL, EL, VT, DeltaT,
-        Ei, taui),threshold=threshold,reset=EL,refractory=refractory,
+    sheetGroup=NeuronGroup(sheet_size**2,model=get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui),threshold=threshold,reset=EL,refractory=refractory,
         clock=clock)
     inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense');
     inh_matrix = asarray(inhibConn.W)
     
+    # Create toroidal connections matrix on the 2d sheet
     for j in xrange(len(sheetGroup)):
         j_x = j % sheet_size
         j_y = j // sheet_size
@@ -103,6 +105,7 @@ def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms,
             w = a*math.e**(-gamma*(abs_x_sq)) - math.e**(-beta*(abs_x_sq));
             inh_matrix[j, i] = connMult*abs(w)*nS
 
+    # Initialize membrane potential randomly
     sheetGroup.vm = EL + (VT-EL) * rand(len(sheetGroup))
 
     return [sheetGroup, inhibConn]

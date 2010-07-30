@@ -93,6 +93,7 @@ function [spikeFig rateFig] = plotStatistics(fileName, neuronIDs)
         end
 
         popFig = figure('Visible', 'off');
+        %popFig = figure();
         pcolor(0:sheet_size-1,0:sheet_size-1,firingPop);
         title(['Population rate plot - input:' num2str(opt.input) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
         %title(['Population rate plot - taum: ' num2str(opt.taum) ', taui: ' num2str(opt.taui)]);

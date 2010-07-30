@@ -12,7 +12,7 @@
 
 #$ -N fiete_path_integration
 #$ -cwd
-#$ -l h_rt=00:30:00
+#$ -l h_rt=00:40:00
 
 # Initialise environment module
 
@@ -35,8 +35,12 @@ F_INPUT=$6
 F_TAUM=$7
 F_TAUI=$8
 F_LAMBDA_NET=$9
+F_THRESHOLD=${10}
+F_L=${11}
 
 
 # Run the program
-python2.6 fiete_path_integration.py -w -n $F_JOB_ID -s $F_SHEET_SIZE -t $F_TIME --alpha=$F_ALPHA -c $F_CONN_MULT -i $F_INPUT --taum $F_TAUM --taui $F_TAUI --lambda-net=$F_LAMBDA_NET
+python2.6 fiete_path_integration.py -w -n $F_JOB_ID -s $F_SHEET_SIZE -t $F_TIME \
+    --alpha=$F_ALPHA -c $F_CONN_MULT -i $F_INPUT --taum $F_TAUM --taui $F_TAUI  \
+    --lambda-net=$F_LAMBDA_NET --threshold $F_THRESHOLD -l $F_L
 #matlab -nodisplay -r "d = dir('results/*job${F_JOB_ID}_*.mat'); plotStatistics(['results/' d(end).name], [2048]); exit"

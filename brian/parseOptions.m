@@ -15,4 +15,5 @@ function [optOut] = parseOptions(options)
     optOut.input = extractOptionNum('input', options);
     optOut.taum =  extractOptionNum('taum', options);
     optOut.taui = extractOptionNum('taui', options);
+    optOut.threshold = extractOptionNum('threshold', options);
 end

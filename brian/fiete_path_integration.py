@@ -47,7 +47,7 @@ optParser.add_option("--taum", type="float", default=10, dest="taum",
 optParser.add_option("--taui", type="float", default=10, dest="taui",
         help="Inhibitory synaptic time constant (ms)")
 optParser.add_option("--threshold", type="float", default=-20, dest="threshold",
-        help="Integrate and fire spiking threshold")
+        help="Integrate and fire spiking threshold (mV)")
 
 (options, args) = optParser.parse_args()
 print "Options:"
@@ -57,13 +57,13 @@ print options
 sim_dt = options.sim_dt*ms
 vel_dt = 3*second
 simulationClock = Clock(dt=sim_dt)
-#SNClock = Clock(dt=10*sim_dt)
+SNClock = Clock(dt=10*sim_dt)
 velocityClock = Clock(dt=vel_dt)
 printStatusClock = Clock(dt=options.update_interval*second)
 
 
 # Save the results of the simulation in a .mat file
-def saveResultsToMat(fileName, spikeMonitor, ratData, options):
+def saveResultsToMat(fileName, spikeMonitor, SNMonitor, ratData, options):
     # SNMonitor - monitor of single neurons, defined by list
     # SNList - list of neuron numbers monitored (SN response)
     # spikeMonitor - monitor of spikes of all neurons
@@ -73,9 +73,9 @@ def saveResultsToMat(fileName, spikeMonitor, ratData, options):
     for k,v in spikeMonitor.spiketimes.iteritems():
         outData['spikeMonitor_times_n' + str(k)] = v
 
-    #outData['SNMonitor_values'] = SNMonitor.values_
-    #outData['SNMonitor_times'] = SNMonitor.times_
-    #outData['SNList'] = SNList
+    outData['SNMonitor_values'] = SNMonitor.values_
+    outData['SNMonitor_times'] = SNMonitor.times_
+    outData['SNList'] = SNList
 
     # Merge the rat position and timestamp data into the output so it is self
     # contained
@@ -219,10 +219,10 @@ def printStatus():
     print "Simulated " + str(printStatusClock.t) + " seconds."
 
 # Record the number of spikes
-#SNList = [sheet_size**2/2]
+SNList = [sheet_size**2/4, sheet_size**2/2, (sheet_size**2)*3/4]
 #Monitor = SpikeCounter(sheetGroup)
-#SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,
-#        clock=SNClock)
+SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,
+        clock=SNClock)
 
 spikeGroupStart = int((sheet_size**2)*0.45)
 spikeGroupEnd = int(spikeGroupStart + (sheet_size**2)/10)
@@ -235,7 +235,8 @@ spikeMonitor = SpikeMonitor(sheetGroup)
 print "Simulation running..."
 start_time=time.time()
 #net = Network(sheetGroup, inhibConn, printStatus)
-net = Network(sheetGroup, inhibConn, printStatus, updateVelocity, spikeMonitor)
+net = Network(sheetGroup, inhibConn, printStatus, updateVelocity, spikeMonitor,
+        SNMonitor)
 net.run(options.time*second)
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
@@ -261,5 +262,5 @@ if (options.write_data):
     #f = open(options_fname, 'w')
     #f.write(str(options))
     #f.close()
-    saveResultsToMat(output_fname, spikeMonitor, ratData, options)
+    saveResultsToMat(output_fname, spikeMonitor, SNMonitor, ratData, options)
 
