@@ -1,4 +1,4 @@
-lambda = 20;
+lambda = 13;
 beta = 3/lambda^2;
 gamma = 1.05*beta;
 a = 1;

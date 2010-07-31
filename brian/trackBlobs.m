@@ -1,6 +1,16 @@
-function [segCenters_r segCenters_c] = trackBlobs(thrFiringPop)
+function [segCenters_r segCenters_c] = trackBlobs(firingPop)
 
-    sheet_size = size(thrFiringPop, 1);
+    sheet_size = size(firingPop, 1);
+    
+    % Simply threshold the population response to segment the image
+    % This should easily work, since the blobs are coherent
+    firingThr = 0.35;
+    
+    thrFiringPop = zeros(sheet_size);
+    thr_i = find(firingPop/max(max(firingPop)) >= firingThr);
+    %thrFiringPop = reshape(firintPop, sheet_size^2, 1);
+    thrFiringPop(thr_i) = 1;
+    thrFiringPop = reshape(thrFiringPop, sheet_size, sheet_size);
 
     % Segment no. for each pixel
     % -1: no segment

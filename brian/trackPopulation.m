@@ -11,7 +11,6 @@ function trackPopulation(fileName)
     opt = parseOptions(options);
     optStr = ['_s' num2str(opt.sheet_size) '_alpha' num2str(opt.alpha)];   
 
-    opt = parseOptions(options);
     sheet_size = opt.sheet_size;
 
     %sheet_size = double(sheet_size);
@@ -19,7 +18,7 @@ function trackPopulation(fileName)
     dt_track = 0.1; % sec; dt for the tracking algorithm
     delta_t = 0.5; % sec
     startTime = 0;
-    endTime = 99; % sec
+    endTime = 150; % sec
     
     saveFig = true;
     
@@ -39,7 +38,7 @@ function trackPopulation(fileName)
             neuronSpikes = eval(['spikeMonitor_times_n' int2str(neuronID)]);
             e_size = size(neuronSpikes, 1);
             if (e_size == 0)
-                spikeHist(neuronID+1, :) = e_size;
+                spikeHist(neuronID+1, :) = 0;
             else
                 spikeHist(neuronID+1, :) = histc(neuronSpikes, edges);
             end
@@ -47,56 +46,60 @@ function trackPopulation(fileName)
     end
     
     
-    blobPos_x = [];
-    blobPos_y = [];
+    blobPos_x = [0];
+    blobPos_y = [0];
     
-    currBlobPos_x = sheet_size/2;
-    currBlobPos_y = sheet_size/2;
-    for t = startTime+delta_t/dt_track/2:dt_track:endTime-delta_t/dt_track/2
-        for x_i = 0:(sheet_size-1)
-            for y_i = 0:(sheet_size-1)
-                neuronID = y_i*sheet_size + x_i;
-                
-                % take the window at position specified by t and sum up
-                % number of spikes
-                hist_i = fix(t/dt_track + 1);
-                nbins = fix(delta_t/dt_track/2);
-                bins = spikeHist(neuronID+1, hist_i-nbins:hist_i+nbins);
-
-                firingPop(x_i+1, y_i+1) = sum(bins)/delta_t;
-            end
-        end
-
-        firingPop = firingPop';
-
-        % Simply threshold the population response to segment the image
-        % This should easily work, since the blobs are coherent
-        firingThr = 0.35;
-        thrFiringPop = zeros(sheet_size);
-        thr_i = find(firingPop/max(max(firingPop)) >= firingThr);
-        %thrFiringPop = reshape(firintPop, sheet_size^2, 1);
-        thrFiringPop(thr_i) = 1;
-        thrFiringPop = reshape(thrFiringPop, sheet_size, sheet_size);
-
-        [r, c] = trackBlobs(thrFiringPop);
+    t_start = startTime+delta_t/2;
+    t_end = endTime-delta_t/2;
+    
+    firingPop = getFiringPop(spikeHist, t_start, dt_track, delta_t);
+    [currBlobPos_r currBlobPos_c] = trackBlobs(firingPop);
+    
+    for t = t_start:dt_track:t_end
+        firingPop = getFiringPop(spikeHist, t, dt_track, delta_t);
+        [r, c] = trackBlobs(firingPop);
         
         % Find the nearest blob to the last position
-        [minDist min_i] = min((r-currBlobPos_y).^2 + (c-currBlobPos_x).^2);
-        currBlobPos_x = c(min_i);
-        currBlobPos_y = r(min_i);
-        blobPos_x = [blobPos_x currBlobPos_x];
-        blobPos_y = [blobPos_y currBlobPos_y];
-        %t
+        curr_r = repmat(currBlobPos_r', 1, size(r, 2));
+        curr_c = repmat(currBlobPos_c', 1, size(c, 2));
+        
+        r = repmat(r, size(currBlobPos_r, 2), 1);
+        c = repmat(c, size(currBlobPos_c, 2), 1);
+        
+        % Don't change order of r - blobDist_r neither for c. It is
+        % important for minimum in the next step
+        dist = (r-curr_r).^2 + (c-curr_c).^2;
+        [minDist min_i] = min(dist);
+        [sortDist sort_i] = sort(minDist);
+        
+        nBlobs = size(sort_i, 2);
+        quasiMedian_i = round(nBlobs/2);
+        
+        new_r = r(1, sort_i(quasiMedian_i-2:quasiMedian_i+2));
+        new_c = c(1, sort_i(quasiMedian_i-2:quasiMedian_i+2));
+        
+        old_r = currBlobPos_r(min_i(sort_i(quasiMedian_i-2:quasiMedian_i+2)));
+        old_c = currBlobPos_c(min_i(sort_i(quasiMedian_i-2:quasiMedian_i+2)));
+
+        r_shift = mean(new_r - old_r);
+        c_shift = mean(new_c - old_c);
+        
+        blobPos_x = [blobPos_x (blobPos_x(end) + c_shift)];
+        blobPos_y = [blobPos_y (blobPos_y(end) + r_shift)];
+        
+        currBlobPos_r = r(1, :);
+        currBlobPos_c = c(1, :);
+        t
     end
     
     figure('Visible', 'off');
     plot(blobPos_x, blobPos_y);
-    xlim([0 80]); ylim([0 80]);
+    %xlim([0 sheet_size]); ylim([0 sheet_size]);
     axis square;
     
     xlabel('Neuron no.');
     ylabel('Neuron no.');
-    title(['Blob position: connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
+    title(['Blob position: threshold:' num2str(opt.threshold) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
     
     if saveFig
         popPlotFile =  [saveDir fileBase '_tracking.eps'];

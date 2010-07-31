@@ -52,7 +52,7 @@ function [spikeFig rateFig] = plotStatistics(fileName, neuronIDs)
 
             spikeFig = figure('Visible', 'off');
             plotSpikes_xy(neuronSpikes, pos_x, pos_y, dt_rat, neuronNum);
-            title(['Spike plot - SN - input:' num2str(opt.input) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
+            title(['Spike plot - SN - l: ' num2str(opt.l) ', threshold:' num2str(opt.threshold) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
             %title(['Spike plot - SN - taum: ' num2str(opt.taum) ', taui: ' num2str(opt.taui)]);
             %title(['Spike plot - SN - lambda_net: ' num2str(opt.lambda_net)]);
             if saveFig
@@ -61,7 +61,7 @@ function [spikeFig rateFig] = plotStatistics(fileName, neuronIDs)
 
             rateFig = figure('Visible', 'off');
             plotSNResponse(neuronSpikes, pos_x, pos_y, arenaDiam, h, dt_rat, neuronNum);
-            title(['Rate plot - SN - input:' num2str(opt.input) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
+            title(['Rate plot - SN - l: ' num2str(opt.l) ', threshold:' num2str(opt.threshold) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
             %title(['Rate plot - SN - taum: ' num2str(opt.taum) ', taui: ' num2str(opt.taui)]);
             %title(['Rate plot - SN - lambda_net: ' num2str(opt.lambda_net)]);
             if saveFig
@@ -95,7 +95,7 @@ function [spikeFig rateFig] = plotStatistics(fileName, neuronIDs)
         popFig = figure('Visible', 'off');
         %popFig = figure();
         pcolor(0:sheet_size-1,0:sheet_size-1,firingPop);
-        title(['Population rate plot - input:' num2str(opt.input) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
+        title(['Population rate plot - l: ' num2str(opt.l) ', threshold:' num2str(opt.threshold) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
         %title(['Population rate plot - taum: ' num2str(opt.taum) ', taui: ' num2str(opt.taui)]);
         %title(['Population rate plot - SN - lambda_net: ' num2str(opt.lambda_net)]);
 
