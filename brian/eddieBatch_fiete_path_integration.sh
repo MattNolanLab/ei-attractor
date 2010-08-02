@@ -24,8 +24,8 @@
 module load python/2.6.3
 #module load matlab/4.0-r2008b
 
-#export PYTHONPATH=/exports/work/informatics/s0966762/python-modules/lib/python2.6/site-packages
-export PYTHONPATH=/exports/home/scratch/s0966762/python-modules/lib/python2.6/site-packages
+export PYTHONPATH=/exports/work/informatics/s0966762/python-modules/lib/python2.6/site-packages
+#export PYTHONPATH=/exports/home/scratch/s0966762/python-modules/lib/python2.6/site-packages
 
 F_SHEET_SIZE="$1"
 F_TIME="$2"

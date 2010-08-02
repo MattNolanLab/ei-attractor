@@ -57,7 +57,7 @@ print options
 
 # Clock definitions
 sim_dt = options.sim_dt*ms
-vel_dt = 3*second
+vel_dt = 0.02*second
 simulationClock = Clock(dt=sim_dt)
 SNClock = Clock(dt=10*sim_dt)
 velocityClock = Clock(dt=vel_dt)
@@ -127,8 +127,8 @@ def updateVelocityRat():
     global vIndex
     global input
     # the original data are in cm/s, however, we rather want m/s 
-    vel_x = (rat_pos_x[vIndex + 1] - rat_pos_x[vIndex])/vel_dt/100
-    vel_y = (rat_pos_y[vIndex + 1] - rat_pos_y[vIndex])/vel_dt/100
+    vel_x = (rat_pos_x[vIndex + 1] - rat_pos_x[vIndex])/vel_dt/100*second
+    vel_y = (rat_pos_y[vIndex + 1] - rat_pos_y[vIndex])/vel_dt/100*second
     #vel_x = 0
     #vel_y = 0
 

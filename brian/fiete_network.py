@@ -24,9 +24,10 @@ Ei=-80*mvolt
 
 
 def get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui):
-    eqs = MembraneEquation(C)+\
-           Current('Im=gL*(EL-vm)+gL*DeltaT*exp((vm-VT)/DeltaT):amp',\
-                   gL=gL,EL=EL,DeltaT=DeltaT,exp=exp,VT=VT)
+    eqs=exp_IF(C,gL,EL,VT,DeltaT)
+    #eqs = MembraneEquation(C)+\
+    #       Current('Im=gL*(EL-vm)+gL*DeltaT*exp((vm-VT)/DeltaT):amp',\
+    #               gL=gL,EL=EL,DeltaT=DeltaT,exp=exp,VT=VT)
 
     #eqs=leaky_IF(taum, EL)
     # Use only inhibitory connections from Burak&Fiete, 2009. Should work if the
