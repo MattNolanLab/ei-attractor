@@ -48,6 +48,8 @@ optParser.add_option("--taui", type="float", default=10, dest="taui",
         help="Inhibitory synaptic time constant (ms)")
 optParser.add_option("--threshold", type="float", default=-20, dest="threshold",
         help="Integrate and fire spiking threshold (mV)")
+optParser.add_option("--record-sn", action="store_true", dest="record_sn",
+        default=False, help="Record single neuron responses");
 
 (options, args) = optParser.parse_args()
 print "Options:"
@@ -73,9 +75,10 @@ def saveResultsToMat(fileName, spikeMonitor, SNMonitor, ratData, options):
     for k,v in spikeMonitor.spiketimes.iteritems():
         outData['spikeMonitor_times_n' + str(k)] = v
 
-    outData['SNMonitor_values'] = SNMonitor.values_
-    outData['SNMonitor_times'] = SNMonitor.times_
-    outData['SNList'] = SNList
+    if options.record_sn == True:
+        outData['SNMonitor_values'] = SNMonitor.values_
+        outData['SNMonitor_times'] = SNMonitor.times_
+        outData['SNList'] = SNList
 
     # Merge the rat position and timestamp data into the output so it is self
     # contained
@@ -116,8 +119,8 @@ rat_pos_x = ratData['pos_x'][0]
 rat_pos_y = ratData['pos_y'][0]#
 @network_operation(velocityClock)
 def updateVelocity():
-    updateVelocityLinear()
-    #updateVelocityRat()
+    #updateVelocityLinear()
+    updateVelocityRat()
 
 
 def updateVelocityRat():
@@ -220,7 +223,6 @@ def printStatus():
 
 # Record the number of spikes
 SNList = [sheet_size**2/4, sheet_size**2/2, (sheet_size**2)*3/4]
-#Monitor = SpikeCounter(sheetGroup)
 SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,
         clock=SNClock)
 
@@ -234,9 +236,10 @@ spikeMonitor = SpikeMonitor(sheetGroup)
 
 print "Simulation running..."
 start_time=time.time()
-#net = Network(sheetGroup, inhibConn, printStatus)
-net = Network(sheetGroup, inhibConn, printStatus, updateVelocity, spikeMonitor,
-        SNMonitor)
+net = Network(sheetGroup, inhibConn, printStatus, updateVelocity, spikeMonitor)
+if options.record_sn == True:
+    net.add(SNMonitor)
+
 net.run(options.time*second)
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"

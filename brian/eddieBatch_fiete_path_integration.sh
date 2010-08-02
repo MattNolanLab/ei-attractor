@@ -12,7 +12,8 @@
 
 #$ -N fiete_path_integration
 #$ -cwd
-#$ -l h_rt=00:40:00
+#$ -l h_rt=05:00:00
+#$ -pe memory 3
 
 # Initialise environment module
 
