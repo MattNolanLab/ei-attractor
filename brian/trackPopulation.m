@@ -1,4 +1,4 @@
-function trackPopulation(fileName)
+function trackPopulation(fileName, oldFormat, startTime, endTime)
     % Track the shift of population response throughout the simulation
     fileName
     
@@ -7,6 +7,13 @@ function trackPopulation(fileName)
     fileBase = fileName(start_i:end_i-1);
     
     load(fileName);
+    
+    if (oldFormat)
+        pos_x = ratData_pos_x;
+        pos_y = ratData_pos_y;
+    end
+    
+
 
     opt = parseOptions(options);
     optStr = ['_s' num2str(opt.sheet_size) '_alpha' num2str(opt.alpha)];   
@@ -17,8 +24,8 @@ function trackPopulation(fileName)
     dt_rat = 0.02; % sec
     dt_track = 0.1; % sec; dt for the tracking algorithm
     delta_t = 0.5; % sec
-    startTime = 0;
-    endTime = 150; % sec
+    %startTime = 0;
+    %endTime = 150; % sec
     
     saveFig = true;
     
@@ -45,7 +52,7 @@ function trackPopulation(fileName)
     blobPos_r = [0];
     blobPos_c = [0];
     
-    t_start = startTime+delta_t/2;
+    t_start = startTime;
     t_end = endTime-delta_t/2;
     
     firingPop = getFiringPop(spikeHist, t_start, dt_track, delta_t);
@@ -66,33 +73,13 @@ function trackPopulation(fileName)
         firingPop = getFiringPop(spikeHist, t, dt_track, delta_t);
         [r, c] = trackBlobs(firingPop);
         
-        % Find the blob nearest to the last position
-        %curr_r = repmat(currBlobPos_r', 1, size(r, 2));
-        %curr_c = repmat(currBlobPos_c', 1, size(c, 2));
-        
-        %r = repmat(r, size(currBlobPos_r, 2), 1);
-        %c = repmat(c, size(currBlobPos_c, 2), 1);
-        
-        % Don't change order of r - blobDist_r neither for c. It is
-        % important for minimum in the next step
-        
+        % Find blob nearest to the last position and record its position
         dist = (r-currBlobPos_r).^2 + (c-currBlobPos_c).^2;
         [minDist min_i] = min(dist);
         
-        %[sortDist sort_i] = sort(minDist);        
-        %nBlobs = size(sort_i, 2);
-        %quasiMedian_i = round(nBlobs/2);
-        
         new_r = r(min_i);
         new_c = c(min_i);
-        
-        %old_r = currBlobPos_r(min_i(sort_i(quasiMedian_i-2:quasiMedian_i+2)));
-        %old_c = currBlobPos_c(min_i(sort_i(quasiMedian_i-2:quasiMedian_i+2)));
-
-        %r_shift = mean(new_r - old_r);
-        %c_shift = mean(new_c - old_c);
-        
-        
+                
         blobPos_r = [blobPos_r (new_r - shift_r)];
         blobPos_c = [blobPos_c (new_c - shift_c)];
 
@@ -101,6 +88,7 @@ function trackPopulation(fileName)
         minEdgeDist =  10;
         if (sheet_size - new_r < minEdgeDist || new_r < minEdgeDist || ...
             sheet_size - new_c < minEdgeDist || new_c < minEdgeDist)
+        
             disp('change of blob');
             [cMin cMin_i] = min((r - c_r).^2 + (c - c_c).^2);
             currBlobPos_r = r(cMin_i);
@@ -116,19 +104,58 @@ function trackPopulation(fileName)
         %t
     end
     
-    figure('Visible', 'off');
-    plot(blobPos_c, blobPos_r);
-    %xlim([0 sheet_size]); ylim([0 sheet_size]);
-    axis square;
+    % Integrate the velocity of the rat and velocity of the neural pattern
+    % to obtain scaling factor
+    startInt = 10; %sec
+    endInt = 12; %sec
     
-    xlabel('Neuron no.');
-    ylabel('Neuron no.');
-    title(['Blob position: threshold:' num2str(opt.threshold) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
+    startBlobPos_i = (startInt-startTime)/dt_track + 1; % compensate for the time shift of start of tracking
+    endBlobPos_i   = (endInt-startTime)/dt_track + 1;
+    
+    startRatPos_i = startInt/dt_rat + 1; % rat timestamps begin at 0
+    endRatPos_i = endInt/dt_rat + 1;
+    
+    blobDist = sqrt((blobPos_r(endBlobPos_i) - blobPos_r(startBlobPos_i))^2 + ...
+        (blobPos_c(endBlobPos_i) - blobPos_c(startBlobPos_i))^2);
+    
+    ratDist = sqrt((pos_x(startRatPos_i) - pos_x(endRatPos_i))^2 + ...
+        (pos_y(startRatPos_i) - pos_y(endRatPos_i))^2);
+    
+    % Scale factor is the fraction of how much the rat traveled in the
+    % estimation period to how many neurons the population firing pattern
+    % traveled
+    scaleFactor = ratDist/blobDist
+    
+    % It should suffice to multiply the neuron position by the scale factor
+    % to obtain the trajectory in cm
+    blobPos_cm_r = pos_y(1) + blobPos_r * scaleFactor;
+    blobPos_cm_c = pos_x(1) + blobPos_c * scaleFactor;
+    
+    startRatDrift_i = ceil(t_start/dt_rat + 1);
+    endRatDrift_i = ceil(t_end/dt_rat + 1);
+    nDrift = startRatDrift_i:dt_track/dt_rat:endRatDrift_i;
+    drift = sqrt((blobPos_cm_r(1:numel(nDrift)) - pos_y(nDrift)).^2 + ...
+        (blobPos_cm_c(1:numel(nDrift)) - pos_x(nDrift)).^2);
+    
+    fontSize = 14;
+    
+    figure('Visible', 'off');
+    subplot(1, 1, 1, 'FontSize', fontSize);
+    times = t_start:dt_track:t_end;
+    plot(times(1:numel(nDrift)), drift, 'k');
+    
+    xlabel('Time (s)');
+    ylabel('Drift (cm)');
+    %title(['Estimated drift: threshold: ' num2str(opt.threshold) ', connMult: ' num2str(opt.connMult) ', alpha: ' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
+    
+    
+%     figure(2);
+%     plot(blobPos_cm_c, blobPos_cm_r);
+%     xlim([0 sheet_size]); ylim([0 sheet_size]);
+%     axis equal;    
     
     if saveFig
         popPlotFile =  [saveDir fileBase '_tracking.eps'];
         print('-depsc', popPlotFile);
     end
-
-    
 end
