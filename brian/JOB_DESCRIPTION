@@ -12,3 +12,5 @@ Final jobs
 
 job20000  - Test path integration precision as a function of sheet size
 job21000  - Estimate how lambda_net influences blob spacing
+job22000  - New path integration tests - with Hafting rat position data which do
+            not contain abrupt shift in the middle of the simulation

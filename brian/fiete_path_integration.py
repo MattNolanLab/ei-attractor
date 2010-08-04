@@ -115,8 +115,8 @@ ratData = loadmat("../../data/hafting_et_al_2005/Hafting_Fig2c_Trial1_preprocess
 input = options.input
 sheetGroup.B = linspace(input*namp, input*namp, sheet_size**2)
 vIndex = 0  # Bad habit, but there are no static variables in python,
-rat_pos_x = ratData['pos_x'][0]
-rat_pos_y = ratData['pos_y'][0]#
+rat_pos_x = ratData['pos_x']
+rat_pos_y = ratData['pos_y']
 @network_operation(velocityClock)
 def updateVelocity():
     #updateVelocityLinear()
