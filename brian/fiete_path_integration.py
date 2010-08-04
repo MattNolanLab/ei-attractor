@@ -108,7 +108,7 @@ start_time=time.time()
 duration=time.time()-start_time
 print "Connection setup time:",duration,"seconds"
 
-ratData = loadmat("../../data/hafting_et_al_2005/Hafting_Fig2c_Trial2.mat")
+ratData = loadmat("../../data/hafting_et_al_2005/Hafting_Fig2c_Trial1_preprocessed.mat")
 #print ratData['pos_timeStamps']
 
 # Velocity inputs - for now zero velocity
