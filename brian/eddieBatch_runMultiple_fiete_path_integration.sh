@@ -13,7 +13,7 @@ F_TIME="1200"
 CONN_MULT="20"
 
 #F_ALPHA="0.013 0.014 0.015 0.016 0.017 0.018 0.019 0.020 0.021 0.023 0.025 0.027 0.03 0.035 0.04 0.045 0.050 0.055 0.060 0.07 0.08 0.09 0.100"
-F_ALPHA="0.02"
+F_ALPHA="0.013"
 
 #F_INPUT="0.3000    0.4000    0.5000    0.6000    0.7000    0.8000"
 F_INPUT="0.3"
@@ -24,7 +24,7 @@ F_TAUI="10"
 
 REPEAT=1
 
-F_LAMBDA_NET="13"
+F_LAMBDA_NET="20"
 
 #F_THRESHOLD="-60 -59 -58 -57 -56 -55 -54 -53 -52 -51 -50 -40 -30 -20"
 F_THRESHOLD="-20"
@@ -32,7 +32,7 @@ F_THRESHOLD="-20"
 #F_L="0 1 2 3 4 5 6 7 8 9 10"
 F_L="2"
 
-job_id=21000
+job_id=22000
 for alpha in $F_ALPHA; do
     for conn_mult in $CONN_MULT; do
         for input in $F_INPUT; do
@@ -53,7 +53,7 @@ while [ $repeat -le $REPEAT ]; do
     echo "lambda_net=$lambda_net"
     echo "threshold=$threshold"
 
-    ./eddieBatch_fiete_path_integration.sh $sheet_size $F_TIME $alpha $conn_mult $job_id $input $taum $taui $lambda_net $threshold $l_param&
+    qsub ./eddieBatch_fiete_path_integration.sh $sheet_size $F_TIME $alpha $conn_mult $job_id $input $taum $taui $lambda_net $threshold $l_param
 
     echo
 
