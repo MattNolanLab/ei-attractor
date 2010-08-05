@@ -50,6 +50,8 @@ optParser.add_option("--threshold", type="float", default=-20, dest="threshold",
         help="Integrate and fire spiking threshold (mV)")
 optParser.add_option("--record-sn", action="store_true", dest="record_sn",
         default=False, help="Record single neuron responses");
+optParser.add_option("--record-sn-row", action="store_true",
+    dest="record_sn_row", default=False, help="Record membrane potential of row in the middle of the sheet")
 
 (options, args) = optParser.parse_args()
 print "Options:"
@@ -59,7 +61,7 @@ print options
 sim_dt = options.sim_dt*ms
 vel_dt = 0.02*second
 simulationClock = Clock(dt=sim_dt)
-SNClock = Clock(dt=10*sim_dt)
+SNClock = Clock(dt=1*sim_dt)
 velocityClock = Clock(dt=vel_dt)
 printStatusClock = Clock(dt=options.update_interval*second)
 
@@ -222,7 +224,10 @@ def printStatus():
     print "Simulated " + str(printStatusClock.t) + " seconds."
 
 # Record the number of spikes
-SNList = [sheet_size**2/4, sheet_size**2/2, (sheet_size**2)*3/4]
+if options.record_sn_row == True:
+    SNList = range(sheet_size**2 / 2, sheet_size**2 / 2 + sheet_size)
+else:
+    SNList = [sheet_size**2/4, sheet_size**2/2, (sheet_size**2)*3/4]
 SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,
         clock=SNClock)
 
