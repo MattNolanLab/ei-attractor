@@ -28,7 +28,7 @@ function [spikeFig rateFig] = plotStatistics(fileName, neuronIDs)
 
 
     printSN = true;
-    printPop = false;
+    printPop = true;
     saveFig = true;
     %saveFig = false;
 
@@ -92,20 +92,27 @@ function [spikeFig rateFig] = plotStatistics(fileName, neuronIDs)
             end
         end
 
+        fontSize = 22;
         popFig = figure('Visible', 'off');
-        %popFig = figure();
-        pcolor(0:sheet_size-1,0:sheet_size-1,firingPop);
-        title(['Population rate plot - l: ' num2str(opt.l) ', threshold:' num2str(opt.threshold) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
+        subplot(1, 1, 1, 'FontSize', fontSize);
+        pcolor(1:sheet_size,1:sheet_size,firingPop);
+        %title(['Population rate plot - l: ' num2str(opt.l) ', threshold:' num2str(opt.threshold) ', connMult: ' num2str(opt.connMult) ', alpha:' num2str(opt.alpha) ',lambda_{net}: ' num2str(opt.lambda_net)]);
         %title(['Population rate plot - taum: ' num2str(opt.taum) ', taui: ' num2str(opt.taui)]);
         %title(['Population rate plot - SN - lambda_net: ' num2str(opt.lambda_net)]);
+        
+        xlabel('Neuron number');
+        ylabel('Neuron number');
 
-        colorbar;
+        %colorbar;
         axis square tight;
-        shading interp;    
+        shading flat;
+        
+        set(gca, 'XTick', [1 sheet_size]);
+        set(gca, 'YTick', [1 sheet_size])
 
         if saveFig
             popPlotFile =  [saveDir fileBase optStr '_popRateMap.eps'];
-            print('-depsc', popPlotFile);
+            print('-depsc2', popPlotFile);
         end
     end
 end

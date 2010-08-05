@@ -134,8 +134,8 @@ function trackPopulation(fileName, oldFormat, startTime, endTime)
     startRatDrift_i = ceil(t_start/dt_rat + 1);
     endRatDrift_i = ceil(t_end/dt_rat + 1);
     nDrift = startRatDrift_i:dt_track/dt_rat:endRatDrift_i;
-    drift = sqrt((blobPos_cm_r(1:numel(nDrift)) - pos_y(nDrift)).^2 + ...
-        (blobPos_cm_c(1:numel(nDrift)) - pos_x(nDrift)).^2);
+    drift = sqrt((blobPos_cm_r(1:numel(nDrift))' - pos_y(nDrift)).^2 + ...
+        (blobPos_cm_c(1:numel(nDrift))' - pos_x(nDrift)).^2);
     
     fontSize = 14;
     

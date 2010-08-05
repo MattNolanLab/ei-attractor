@@ -9,7 +9,7 @@
     %sheet_size = double(sheet_size);
     dt_rat = 0.02; % sec
     delta_t = 0.5; % sec
-    startTime = 4;
+    startTime = 10;
     endTime = startTime; % sec
     
     firingPop = zeros(sheet_size, sheet_size);
@@ -27,7 +27,7 @@
     firingPop = firingPop';
 
     %histmat = hist2(id_x, id_y, xedges, yedges);
-    figure(1);
+    figure(2);
     pcolor(0:sheet_size-1,0:sheet_size-1,firingPop);
     axis square tight;
     colorbar;

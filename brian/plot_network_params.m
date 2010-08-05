@@ -1,8 +1,8 @@
-lambda = 13;
-beta = 3/lambda^2;
+lambda = 20;
+beta = 6/lambda^2;
 gamma = 1.05*beta;
 a = 1;
-connMult = 4;
+connMult = 20;
 
 abs_x = -40:0.1:40;
 fun = a*exp(-gamma*abs_x.^2) - exp(-beta*abs_x.^2);
