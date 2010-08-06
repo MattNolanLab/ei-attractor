@@ -4,7 +4,8 @@ function [segCenters_r segCenters_c] = trackBlobs(firingPop)
     
     % Simply threshold the population response to segment the image
     % This should easily work, since the blobs are coherent
-    firingThr = 0.35;
+    firingThr = 0.25;
+    blobNThreshold = 15;
     
     thrFiringPop = zeros(sheet_size);
     thr_i = find(firingPop/max(max(firingPop)) >= firingThr);
@@ -58,7 +59,11 @@ function [segCenters_r segCenters_c] = trackBlobs(firingPop)
     segCenters_c = [];
     for it = 1:segn
         [r, c] = find(segFiringPop == it-1);
-        segCenters_r(it) = mean(r);
-        segCenters_c(it) = mean(c);
+        
+        % reject blobs which have less than the threshold number of points
+        if (numel(r) >= blobNThreshold)
+            segCenters_r = [segCenters_r mean(r)];
+            segCenters_c = [segCenters_c mean(c)];
+        end
     end
 end

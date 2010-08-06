@@ -20,14 +20,11 @@ function trackPopulation(fileName, oldFormat, startTime, endTime)
 
     sheet_size = opt.sheet_size;
 
-    %sheet_size = double(sheet_size);
     dt_rat = 0.02; % sec
     dt_track = 0.1; % sec; dt for the tracking algorithm
-    delta_t = 0.5; % sec
-    %startTime = 0;
-    %endTime = 150; % sec
+    delta_t = 0.25; % sec
     
-    saveFig = true;
+    saveFig = false;
     
     firingPop = zeros(sheet_size, sheet_size);
     
@@ -101,13 +98,13 @@ function trackPopulation(fileName, oldFormat, startTime, endTime)
             currBlobPos_c = new_c;
         end
         
-        %t
+        t
     end
     
     % Integrate the velocity of the rat and velocity of the neural pattern
     % to obtain scaling factor
-    startInt = 10; %sec
-    endInt = 12; %sec
+    startInt = 12; %sec
+    endInt = 14; %sec
     
     startBlobPos_i = (startInt-startTime)/dt_track + 1; % compensate for the time shift of start of tracking
     endBlobPos_i   = (endInt-startTime)/dt_track + 1;
@@ -139,7 +136,7 @@ function trackPopulation(fileName, oldFormat, startTime, endTime)
     
     fontSize = 14;
     
-    figure('Visible', 'off');
+    figure; %('Visible', 'off');
     subplot(1, 1, 1, 'FontSize', fontSize);
     times = t_start:dt_track:t_end;
     plot(times(1:numel(nDrift)), drift, 'k');
