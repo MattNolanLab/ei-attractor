@@ -18,9 +18,7 @@ function plotSpikes_xy(neuronSpikes, ratData_pos_x, ratData_pos_y, dt_rat, neuro
     %fig = figure;
     plot(ratData_pos_x, ratData_pos_y);
     hold all;
-    plot(neuronPos_x, neuronPos_y, '.r', 'MarkerSize', 8);
+    plot(neuronPos_x, neuronPos_y, '.r', 'MarkerSize', 6);
     hold off;
-    xlabel('Rat position - x [cm]');
-    ylabel('Rat position - y [cm]');
-    %title('Spike plot - single neuron response');
+    axis square tight;
 end

@@ -29,11 +29,11 @@ function plotSNResponse(neuronSpikes, ratData_pos_x, ratData_pos_y, arenaDiam, h
 
     pcolor(xedges,yedges,firingHist');
 
-    colorbar;
+    %colorbar;
     axis square tight;
     shading interp;
 
-    xlabel('Rat position [cm]');
-    ylabel('Rat position [cm]');
+    %xlabel('Rat position [cm]');
+    %ylabel('Rat position [cm]');
     %title('Single neuron rate response');
 end

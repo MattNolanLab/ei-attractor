@@ -4,7 +4,7 @@ function [segCenters_r segCenters_c] = trackBlobs(firingPop)
     
     % Simply threshold the population response to segment the image
     % This should easily work, since the blobs are coherent
-    firingThr = 0.25;
+    firingThr = 0.35;
     blobNThreshold = 15;
     
     thrFiringPop = zeros(sheet_size);
