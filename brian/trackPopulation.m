@@ -1,6 +1,13 @@
-function trackPopulation(fileName, oldFormat, startTime, endTime)
+%function trackPopulation(fileName, oldFormat, startTime, endTime)
     % Track the shift of population response throughout the simulation
-    fileName
+    
+    jobId = 22204;
+    d = dir(['results/job' num2str(jobId) '*.mat']);
+    fileName = ['results/' d(end).name]
+    
+    oldFormat = false;
+    startTime = 4;
+    endTime = 1200;
     
     saveDir = 'results/fig/';
     [start_i end_i] = regexp(fileName, 'job\d+_\d\d\d\d-\d\d-\d\dT\d\d-\d\d-\d\d_', 'Start', 'End');
@@ -21,10 +28,10 @@ function trackPopulation(fileName, oldFormat, startTime, endTime)
     sheet_size = opt.sheet_size;
 
     dt_rat = 0.02; % sec
-    dt_track = 0.1; % sec; dt for the tracking algorithm
-    delta_t = 0.25; % sec
+    dt_track = 0.02; % sec; dt for the tracking algorithm
+    delta_t = 0.5; % sec
     
-    saveFig = false;
+    saveFig = true;
     
     firingPop = zeros(sheet_size, sheet_size);
     
@@ -66,6 +73,8 @@ function trackPopulation(fileName, oldFormat, startTime, endTime)
     shift_r = currBlobPos_r - blobPos_r(end);
     shift_c = currBlobPos_c - blobPos_c(end);
     
+    updateId = 0;
+    nUpdate = 100;
     for t = t_start:dt_track:t_end
         firingPop = getFiringPop(spikeHist, t, dt_track, delta_t);
         [r, c] = trackBlobs(firingPop);
@@ -98,7 +107,10 @@ function trackPopulation(fileName, oldFormat, startTime, endTime)
             currBlobPos_c = new_c;
         end
         
-        t
+        if (mod(updateId, nUpdate) == 0)
+            t
+        end
+        updateId = updateId + 1;
     end
     
     % Integrate the velocity of the rat and velocity of the neural pattern
@@ -125,11 +137,11 @@ function trackPopulation(fileName, oldFormat, startTime, endTime)
     
     % It should suffice to multiply the neuron position by the scale factor
     % to obtain the trajectory in cm
-    blobPos_cm_r = pos_y(1) + blobPos_r * scaleFactor;
-    blobPos_cm_c = pos_x(1) + blobPos_c * scaleFactor;
+    blobPos_cm_r = pos_y(t_start/dt_rat + 1) + blobPos_r * scaleFactor;
+    blobPos_cm_c = pos_x(t_start/dt_rat + 1) + blobPos_c * scaleFactor;
     
-    startRatDrift_i = ceil(t_start/dt_rat + 1);
-    endRatDrift_i = ceil(t_end/dt_rat + 1);
+    startRatDrift_i = ceil(t_start/dt_rat) + 1;
+    endRatDrift_i = ceil(t_end/dt_rat) + 1;
     nDrift = startRatDrift_i:dt_track/dt_rat:endRatDrift_i;
     drift = sqrt((blobPos_cm_r(1:numel(nDrift))' - pos_y(nDrift)).^2 + ...
         (blobPos_cm_c(1:numel(nDrift))' - pos_x(nDrift)).^2);
@@ -138,8 +150,8 @@ function trackPopulation(fileName, oldFormat, startTime, endTime)
     
     figure; %('Visible', 'off');
     subplot(1, 1, 1, 'FontSize', fontSize);
-    times = t_start:dt_track:t_end;
-    plot(times(1:numel(nDrift)), drift, 'k');
+    times = (1:numel(nDrift)) * dt_track + t_start;
+    plot(times, drift, 'k');
     
     xlabel('Time (s)');
     ylabel('Drift (cm)');
@@ -155,4 +167,4 @@ function trackPopulation(fileName, oldFormat, startTime, endTime)
         popPlotFile =  [saveDir fileBase '_tracking.eps'];
         print('-depsc', popPlotFile);
     end
-end
+%end

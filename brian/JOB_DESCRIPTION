@@ -14,4 +14,9 @@ job20000  - Test path integration precision as a function of sheet size
 job21000  - Estimate how lambda_net influences blob spacing
 job22000  - New path integration tests - with Hafting rat position data which do
             not contain abrupt shift in the middle of the simulation
-job22000  - Path integration tests - alpha = 0.015
+job22100  - Path integration tests - alpha = 0.015
+job22200  - Path integration tests - alpha = 0.013, lambda_net=13
+
+job23000  - 30s of simulation with SN membrane responses (one row in the middle
+            of the sheet, monitor dt = 1ms)
+job23100  - 50s, monitor_dt=0.1ms, otherwise same as job23000
