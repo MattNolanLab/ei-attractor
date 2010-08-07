@@ -20,3 +20,7 @@ job22200  - Path integration tests - alpha = 0.013, lambda_net=13
 job23000  - 30s of simulation with SN membrane responses (one row in the middle
             of the sheet, monitor dt = 1ms)
 job23100  - 50s, monitor_dt=0.1ms, otherwise same as job23000
+job23200  - 50s single neuron responses, included synaptic conductance
+job23300  - 50s single neuron responses, rat moving to the right all the time
+job23400  - rat moving up/down
+job23500  - rat not moving at all

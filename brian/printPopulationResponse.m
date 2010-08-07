@@ -9,7 +9,7 @@
     %sheet_size = double(sheet_size);
     dt_rat = 0.02; % sec
     delta_t = 0.25; % sec
-    startTime = 8.74;
+    startTime = 4;
     endTime = startTime; % sec
     
     firingPop = zeros(sheet_size, sheet_size);
@@ -27,12 +27,16 @@
     firingPop = firingPop';
 
     %histmat = hist2(id_x, id_y, xedges, yedges);
-    figure(2);
+    figure(3);
+    hold off;
     pcolor(0:sheet_size-1,0:sheet_size-1,firingPop);
     axis square tight;
     colorbar;
-    shading faceted;
+    shading flat;
     colormap(jet);
+    
+    SNList_nID = 20;
+    drawPin(double(SNList(SNList_nID)), sheet_size, [1 1 0]);
     
 %     fourierPop = rot90(fftshift(fft2(firingPop)));
 %     absFourierPop = abs(fourierPop);
