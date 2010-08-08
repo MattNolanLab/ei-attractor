@@ -17,7 +17,7 @@
     for x_i = 0:(sheet_size-1)
         for y_i = 0:(sheet_size-1)
             neuronID = y_i*sheet_size + x_i;
-            neuronSpikes = eval(['spikeMonitor_times_n' int2str(neuronID)]);
+            neuronSpikes = eval(['spikeMonitor_times_n' num2str(neuronID)]);
             firingRate = computeFiringRate(neuronSpikes, startTime, endTime, dt_rat, delta_t);
             
             firingPop(x_i+1, y_i+1) = firingRate(numel(firingRate));
@@ -35,7 +35,7 @@
     shading flat;
     colormap(jet);
     
-    SNList_nID = 20;
+    SNList_nID = 38;
     drawPin(double(SNList(SNList_nID)), sheet_size, [1 1 0]);
     
 %     fourierPop = rot90(fftshift(fft2(firingPop)));
