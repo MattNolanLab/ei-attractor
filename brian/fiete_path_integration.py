@@ -67,7 +67,7 @@ printStatusClock = Clock(dt=options.update_interval*second)
 
 
 # Save the results of the simulation in a .mat file
-def saveResultsToMat(fileName, spikeMonitor, SNMonitor, ratData, options):
+def saveResultsToMat(fileName, options):
     # SNMonitor - monitor of single neurons, defined by list
     # SNList - list of neuron numbers monitored (SN response)
     # spikeMonitor - monitor of spikes of all neurons
@@ -79,7 +79,9 @@ def saveResultsToMat(fileName, spikeMonitor, SNMonitor, ratData, options):
 
     if options.record_sn == True:
         outData['SNMonitor_values'] = SNMonitor.values_
-        outData['SNMonitor_times'] = SNMonitor.times_
+        outData['SNMonitor_times'] =  SNMonitor.times_
+        outData['SNgMonitor_times'] = SNgMonitor.times_
+        outData['SNgMonitor_values'] =SNgMonitor.values_ 
         outData['SNList'] = SNList
 
     # Merge the rat position and timestamp data into the output so it is self
@@ -122,7 +124,10 @@ rat_pos_y = ratData['pos_y']
 @network_operation(velocityClock)
 def updateVelocity():
     #updateVelocityLinear()
-    updateVelocityRat()
+    #updateVelocityRat()
+    #updateVelocityUp()
+    updateVelocityZero()
+
 
 
 def updateVelocityRat():
@@ -149,6 +154,26 @@ ratSpeed = 0.1 # m/s
 #dts_side = linSize/ratSpeed/vel_dt # Number of vel_dts to get from one side to
                                    # the other
 curr_pos_x = 0                                     
+
+
+def updateVelocityZero():
+    # Velocity is zero, do nothing
+    nothing = 5
+
+
+def updateVelocityUp():
+    # Move the rat always to the right
+    vel_x = 0
+    vel_y = ratSpeed
+
+    i = 0
+    for i_y in range(sheet_size):
+        for i_x in range(sheet_size):
+            prefDir = getPreferredDirection(i_x, i_y)
+            sheetGroup.B[i] = (input + options.alpha*(prefDir[0]*vel_x +
+                prefDir[1]*vel_y))*namp
+            i+=1
+
 
 def updateVelocityLinear():
     global vIndex
@@ -230,6 +255,8 @@ else:
     SNList = [sheet_size**2/4, sheet_size**2/2, (sheet_size**2)*3/4]
 SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,
         clock=SNClock)
+SNgMonitor = StateMonitor(sheetGroup, 'gi', record = SNList,
+        clock=SNClock)
 
 spikeGroupStart = int((sheet_size**2)*0.45)
 spikeGroupEnd = int(spikeGroupStart + (sheet_size**2)/10)
@@ -244,6 +271,7 @@ start_time=time.time()
 net = Network(sheetGroup, inhibConn, printStatus, updateVelocity, spikeMonitor)
 if options.record_sn == True:
     net.add(SNMonitor)
+    net.add(SNgMonitor)
 
 net.run(options.time*second)
 duration=time.time()-start_time
@@ -270,5 +298,5 @@ if (options.write_data):
     #f = open(options_fname, 'w')
     #f.write(str(options))
     #f.close()
-    saveResultsToMat(output_fname, spikeMonitor, SNMonitor, ratData, options)
+    saveResultsToMat(output_fname, options)
 
