@@ -3,7 +3,7 @@
 
 %clear all;
 close all;
-hold off;
+%hold off;
 
 firingTime = 4; %sec
 delta_t = 1; % Time window (sec)
@@ -22,10 +22,10 @@ edgeThreshold = 5;
 fileInd = 1:fileStep:nFiles; 
 
 % Firstly process firing rates from all specified files
-%  for it = fileInd
-%      disp(['Processing file: ' files(it).name]);
-%      [firingPop(:, :, (it-1)/fileStep+1) opts((it-1)/fileStep+1)] = getFiringPopFromFile([folder files(it).name], firingTime, delta_t);
-%  end
+% for it = fileInd
+%     disp(['Processing file: ' files(it).name]);
+%     [firingPop(:, :, (it-1)/fileStep+1) opts((it-1)/fileStep+1)] = getFiringPopFromFile([folder files(it).name], firingTime, delta_t);
+% end
 
 sheet_size = opts(1).sheet_size;
 
@@ -57,8 +57,34 @@ for it = 1:nFiles;
     estDist(it) = mean(sortDist(2, :))
 end
 
+fontSize = 16;
+figure1 = figure('Position', [650, 500, 1000, 420]);
+%hold on;
+
+% ------------------------------------------------------------------------
+% Print population responses
+% ------------------------------------------------------------------------
+%firingPop_t = 4; % sec, for populationResponseFigure
+%dt_rat = 0.02;
+%delta_t = 0.25;
+
+for pID = 1:nFiles
+    sp_num = fix((pID-1)/4)*9 + mod(pID-1, 4) + 1;
+    subplot(4, 9, sp_num, 'FontSize', fontSize);
+    popRespFigFromFiringPop(firingPop(:, :, pID), sheet_size, false);
+    set(gca(), 'XTick', [], 'YTick', []);
+    xlabel(['\lambda = ' num2str(opts(pID).lambda_net)]);
+end
+
+% ------------------------------------------------------------------------
+% Print the plot actually
+% ------------------------------------------------------------------------
+subplot(4,8, [5:8 13:16 21:24 29:32], 'FontSize', fontSize);
+
 createFigureSpacing([opts.lambda_net], estDist);
+axis square
 
 printDir = '../../thesis/src/fig/';
 printFile = 'blobSpacingPlot.eps';
-print('-depsc', [printDir printFile]);
+set(gcf,'PaperPositionMode','auto');
+print('-depsc2', [printDir printFile]);

@@ -2,7 +2,7 @@
 
 close all;
 
-%load results/membrane_potential/job23101_2010-08-05T09-54-38_output.mat
+load results/membrane_potential/job23101_2010-08-05T09-54-38_output.mat
 %load results/job23101_2010-08-05T09-54-38_output.mat
 
 dt_rat = 0.02;  % sec

@@ -22,13 +22,4 @@ end
 
 firingPop = firingPop';
 
-%histmat = hist2(id_x, id_y, xedges, yedges);
-%figure(3);
-hold off;
-pcolor(1:sheet_size,1:sheet_size,firingPop);
-axis square tight;
-shading flat;
-set(gca(), 'XTick', [1 sheet_size], 'YTick', [1 sheet_size]);
-
-%SNList_nID = 38;
-drawPin(double(SNList(SNList_nID)), sheet_size, [1 1 0]);
+popRespFigFromFiringPop(firingPop, sheet_size, double(SNList(SNList_nID)));
