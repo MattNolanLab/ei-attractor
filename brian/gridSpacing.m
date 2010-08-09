@@ -86,5 +86,5 @@ axis square
 
 printDir = '../../thesis/src/fig/';
 printFile = 'blobSpacingPlot.eps';
-set(gcf,'PaperPositionMode','auto');
-print('-depsc2', [printDir printFile]);
+set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
+print('-depsc', [printDir printFile]);

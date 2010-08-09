@@ -8,8 +8,8 @@
 
     %sheet_size = double(sheet_size);
     dt_rat = 0.02; % sec
-    delta_t = 0.25; % sec
-    startTime = 4;
+    delta_t = 0.5; % sec
+    startTime = 23;
     endTime = startTime; % sec
     
     firingPop = zeros(sheet_size, sheet_size);
@@ -35,8 +35,8 @@
     shading flat;
     colormap(jet);
     
-    SNList_nID = 38;
-    drawPin(double(SNList(SNList_nID)), sheet_size, [1 1 0]);
+    %SNList_nID = 38;
+    %drawPin(double(SNList(SNList_nID)), sheet_size, [1 1 0]);
     
 %     fourierPop = rot90(fftshift(fft2(firingPop)));
 %     absFourierPop = abs(fourierPop);

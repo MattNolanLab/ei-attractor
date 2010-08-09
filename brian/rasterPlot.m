@@ -3,7 +3,7 @@
 opt = parseOptions(options);
 sheet_size = opt.sheet_size;
 
-close all;
+%close all;
 figure;
 hold on;
 
@@ -12,7 +12,7 @@ for x_i = 0:(sheet_size-1)
         neuronID = y_i*sheet_size + x_i;
         neuronSpikes = eval(['spikeMonitor_times_n' int2str(neuronID)]);
         nID = neuronID + zeros(size(neuronSpikes));
-        plot(neuronSpikes, nID, '.');
+        plot(neuronSpikes, nID, '.', 'MarkerSize', 6);
     end
 end
 

@@ -27,7 +27,7 @@ function [spikeFig rateFig] = plotStatistics(fileName, neuronIDs)
     sheet_size = opt.sheet_size;
 
 
-    printSN = true;
+    printSN = false;
     printPop = true;
     saveFig = true;
     %saveFig = false;
