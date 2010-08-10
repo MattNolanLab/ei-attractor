@@ -46,22 +46,22 @@ def getPreferredDirection(pos_x, pos_y):
         if pos2_y == 0:
             return [0, 1] # North
         else:
-            return [1, 0] # East
+            return [0, -1] # South
     elif pos4_x == 1:
+        if pos2_y == 0:
+            return [-1, 0] # West
+        else:
+            return [1, 0] # East
+    elif pos4_x == 2:
         if pos2_y == 0:
             return [0, -1] # South
         else:
-            return [-1, 0] # West
-    elif pos4_x == 2:
-        if pos2_y == 0:
-            return [1, 0]
-        else:
-            return [0, 1]
+            return [0, 1]  # North
     else:
         if pos2_y == 0:
-            return [-1, 0]
+            return [1, 0] # East
         else:
-            return [0, -1]
+            return [-1, 0] # West
 
 def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms,
         taui_ms, threshold_mV):
