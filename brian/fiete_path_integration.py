@@ -250,7 +250,8 @@ def printStatus():
 
 # Record the number of spikes
 if options.record_sn_row == True:
-    SNList = range(sheet_size**2 / 2, sheet_size**2 / 2 + sheet_size)
+    #SNList = range(sheet_size**2 / 2, sheet_size**2 / 2 + sheet_size)
+    SNList = range(0, sheet_size**2, sheet_size+1)
 else:
     SNList = [sheet_size**2/4, sheet_size**2/2, (sheet_size**2)*3/4]
 SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,

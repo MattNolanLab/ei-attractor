@@ -31,3 +31,5 @@ job23200  - 50s single neuron responses, included synaptic conductance
 job23300  - 50s single neuron responses, rat moving to the right all the time
 job23400  - rat moving up/down
 job23500  - rat not moving at all
+job23600  - the same - monitoring diagonal instead of row in the middle of the
+            sheet
