@@ -98,9 +98,10 @@ def saveResultsToMat(fileName, options):
 
     savemat(fileName, outData, do_compression=True)
 
-def saveConnectionsToMat(fileName, conn)
-    outData['connections'] = conn
-    savemat(fileName, outData, do_compression=True);
+def saveConnectionsToMat(fileName, conn):
+    outData = {};
+    outData['connections'] = asarray(conn.W)
+    savemat(fileName, outData, do_compression=True)
 
 # Definition of 2d topography on a sheet and connections
 sheet_size = options.sheet_size  # Total no. of neurons will be sheet_size^2
