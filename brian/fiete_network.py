@@ -12,6 +12,7 @@ from datetime import datetime
 
 import time
 import math
+import random
 
 # define provisional model parameters - these might be changed in the future
 
@@ -63,6 +64,11 @@ def getPreferredDirection(pos_x, pos_y):
         else:
             return [-1, 0] # West
 
+def getPreferredDirectionRandom(pos_x, pos_y):
+    # return random preferred direction on the sheet
+    return random.choice([[0, 1], [0, -1], [-1, 0], [1, 0]]);
+
+
 def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms,
         taui_ms, threshold_mV):
     C=200*pF
@@ -86,7 +92,8 @@ def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms,
     for j in xrange(len(sheetGroup)):
         j_x = j % sheet_size
         j_y = j // sheet_size
-        prefDir = getPreferredDirection(j_x, j_y)
+        #prefDir = getPreferredDirection(j_x, j_y)
+        prefDir = getPreferredDirectionRandom(j_x, j_y)
         for i in xrange(len(sheetGroup)):
             i_x = i % sheet_size
             i_y = i // sheet_size
