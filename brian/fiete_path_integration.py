@@ -52,6 +52,8 @@ optParser.add_option("--record-sn", action="store_true", dest="record_sn",
         default=False, help="Record single neuron responses");
 optParser.add_option("--record-sn-row", action="store_true",
     dest="record_sn_row", default=False, help="Record membrane potential of row in the middle of the sheet")
+optParser.add_option("--save-conn", action="store_true", dest="save_conn",
+        default=False, help="Do nothing but save connection matrix to file")
 
 (options, args) = optParser.parse_args()
 print "Options:"
@@ -96,6 +98,9 @@ def saveResultsToMat(fileName, options):
 
     savemat(fileName, outData, do_compression=True)
 
+def saveConnectionsToMat(fileName, conn)
+    outData['connections'] = conn
+    savemat(fileName, outData, do_compression=True);
 
 # Definition of 2d topography on a sheet and connections
 sheet_size = options.sheet_size  # Total no. of neurons will be sheet_size^2
@@ -111,6 +116,11 @@ start_time=time.time()
 
 duration=time.time()-start_time
 print "Connection setup time:",duration,"seconds"
+
+# Print connections if necessary and exit
+if (options.save_conn):
+    saveConnectionsToMat("results/connection_matrix.mat", inhibConn)
+    exit();
 
 ratData = loadmat("../../data/hafting_et_al_2005/Hafting_Fig2c_Trial1_preprocessed.mat")
 #print ratData['pos_timeStamps']
