@@ -8,7 +8,8 @@ close all;
 firingTime = 4; %sec
 delta_t = 1; % Time window (sec)
 
-folder = 'results/static_wave/lambda_net/';
+%folder = 'results/static_wave/lambda_net/';
+folder = 'results/';
 files = dir([folder '/job213*.mat'])
 
 nFiles = numel(files);
@@ -68,7 +69,7 @@ figure1 = figure('Position', [650, 500, 1000, 420]);
 %dt_rat = 0.02;
 %delta_t = 0.25;
 
-for pID = 1:nFiles
+for pID = 1:16
     sp_num = fix((pID-1)/4)*9 + mod(pID-1, 4) + 1;
     subplot(4, 9, sp_num, 'FontSize', fontSize);
     popRespFigFromFiringPop(firingPop(:, :, pID), sheet_size, false);
@@ -80,7 +81,6 @@ end
 % Print the plot actually
 % ------------------------------------------------------------------------
 subplot(4,8, [5:8 13:16 21:24 29:32], 'FontSize', fontSize);
-
 createFigureSpacing([opts.lambda_net], estDist);
 axis square
 

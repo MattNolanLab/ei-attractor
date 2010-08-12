@@ -1,6 +1,8 @@
 % Illustrate conductance dynamics of the network
 conductance_freq_fileName = 'conductance_freq_static.eps';
 
+%load results/job23502_2010-08-07T19-37-40_output.mat
+
 opt = parseOptions(options);
 sheet_size = opt.sheet_size;
 
@@ -27,7 +29,7 @@ plot(SNMonitor_times, SNMonitor_values(SNList_nID, :)*mVolt, 'LineWidth', 2);
 % ------------------------------------------------
 % Plot membrane potential and conductance
 % ------------------------------------------------
-fontSize = 18;
+fontSize = 16;
 figure('Position', [900, 300, 1100, 500]);
 
 x_limits = [7 8];
@@ -103,5 +105,10 @@ print('-depsc2', [outputDir conductance_freq_fileName]);
 % plot((corrTimes - numel(signal)+1)*dt, corr);
 % xlim([0 numel(signal)*dt]);
 
+
+% ------------------------------------------------
+% Plot the spiking neuron
+% ------------------------------------------------
+%figure;
 
 

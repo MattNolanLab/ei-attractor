@@ -1,6 +1,6 @@
 % Plot of average maximum drift in both directions, over 200 s of
 % simulation withou any velocity input
-
+close all;
 
 startTime = 10;
 endTime = 200;
@@ -8,13 +8,14 @@ endTime = 200;
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
 
-preprocess = true;
+preprocess = false;
     
-jobNums = 21600:21679;
+jobNums = 22000:22099;
 
 % Preprocess tracking data if necessary
 if (preprocess == true)
-    folder = 'results/static_wave/zero_velocity/';
+    %folder = 'results/static_wave/zero_velocity/';
+    folder = 'results/';
 
     nFiles = numel(jobNums);
     
@@ -26,6 +27,7 @@ if (preprocess == true)
         d = dir([folder 'job' num2str(jobNums(f_it)) '*.mat'])
         % Load file which contains the tracking data and extract the spike
         % histogram and blob positions
+        d(end).name
         load([folder d(end).name]);       
         opts = parseOptions(options);
         sheet_size = opts.sheet_size;
@@ -45,9 +47,10 @@ if (preprocess == true)
     end
     clear spikeHist
 
-    save('-v7.3', 'results/driftsResults.mat');
+    save('-v7.3', ['results/driftsResults_' num2str(jobNums(1)) '-' num2str(jobNums(end)) '.mat']);
     
-else
+else  
+    % Assuming results/driftResults.mat has been loaded
 end
 
 
@@ -55,3 +58,50 @@ end
 % ------------------------------------------------------------------------
 % Plot  both drifts in x and y directions
 % ------------------------------------------------------------------------
+%plotTrack_r = abs(blobTracks_r);
+%plotTrack_c = abs(blobTracks_c);
+
+max_r = max(blobTracks_r);
+max_c = max(blobTracks_c);
+min_r = min(blobTracks_r);
+min_c = min(blobTracks_c);
+
+max_min_r = [max_r; min_r];
+max_min_c = [max_c; min_c];
+
+[absMax_r absMax_ri] = max(abs(max_min_r));
+[absMax_c absMax_ci] = max(abs(max_min_c));
+
+[absMax_rr absMax_rri] = max(absMax_r);
+
+
+fontSize = 14;
+figure('Position', [883 528 800 420]);
+times = 0:dt_track:endTime-startTime-delta_t/2;
+subplot(2, 5, [1 2 3], 'FontSize', fontSize);
+plot(times, blobTracks_c(1:numel(times), absMax_rri), 'b');
+ylabel('X drift (neurons)');
+subplot(2, 5, [6 7 8], 'FontSize', fontSize);
+plot(times, blobTracks_r(1:numel(times), absMax_rri), 'b');
+%ylim([-5 25]);
+
+xlabel('Time (s)');
+ylabel('Y drift (neurons)');
+%axis normal;
+
+subplot(1, 10, [8 9 10], 'FontSize', fontSize);
+plot(max_min_c(absMax_ci, :), max_min_r(absMax_ri, :), 'ok', 'MarkerFaceColor', 'k', 'MarkerSize', 4);
+xlabel('X drift (neurons)');
+ylabel('Y drift (neurons)');
+hold on;
+plot(max_min_c(absMax_ci(absMax_rri), absMax_rri), max_min_r(absMax_ri(absMax_rri), absMax_rri), 'sb', 'MarkerSize', 30);
+%plot(max_min_c(absMax_ci(absMax_rri), absMax_rri), max_min_r(absMax_ri(absMax_rri), absMax_rri), 'ob', 'MarkerFaceColor', 'b');
+%quiver(max_c(max_ri), max_r(max_ri), -5, -5);
+hold off;
+axis equal;
+%ylim([0 24]);
+%xlim([0 14]);
+
+
+set(gcf,'PaperPositionMode','auto');
+print('-depsc2', '../../thesis/src/fig/maximumDrifts_randomPrefDir.eps');
