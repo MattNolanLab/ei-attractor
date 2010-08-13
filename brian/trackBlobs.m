@@ -1,4 +1,4 @@
-function [segCenters_r segCenters_c] = trackBlobs(firingPop)
+function [segCenters_r segCenters_c, thrFiringPop, segFiringPop] = trackBlobs(firingPop)
 
     sheet_size = size(firingPop, 1);
     
