@@ -92,8 +92,8 @@ def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms,
     for j in xrange(len(sheetGroup)):
         j_x = j % sheet_size
         j_y = j // sheet_size
-        #prefDir = getPreferredDirection(j_x, j_y)
-        prefDir = getPreferredDirectionRandom(j_x, j_y)
+        prefDir = getPreferredDirection(j_x, j_y)
+        #prefDir = getPreferredDirectionRandom(j_x, j_y)
         for i in xrange(len(sheetGroup)):
             i_x = i % sheet_size
             i_y = i // sheet_size

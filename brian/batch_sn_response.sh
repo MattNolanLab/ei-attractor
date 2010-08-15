@@ -11,11 +11,11 @@
 
 F_SHEET_SIZE="96"
 
-F_TIME="10"
+F_TIME="30"
 
 CONN_MULT="20"
 
-F_ALPHA="0.015"
+F_ALPHA="0.013"
 
 F_INPUT="0.3"
 
@@ -31,7 +31,7 @@ F_THRESHOLD="-20"
 
 F_L="2"
 
-job_id=23500
+job_id=23600
 for alpha in $F_ALPHA; do
     for conn_mult in $CONN_MULT; do
         for input in $F_INPUT; do
