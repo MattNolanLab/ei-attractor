@@ -10,7 +10,7 @@ figure('Position', [878 452 600 350]);
 
 subplot(1, 1, 1, 'FontSize', fontSize);
 
-lam = [13 25];
+lam = [16.667 25];
 
 for l_it = 1:numel(lam)
     lambda = lam(l_it);
@@ -33,5 +33,5 @@ set(legend1,'Position',[0.6457 0.1672 0.2312 0.2038]);
 
 
 
-set(gcf,'PaperPositionMode','auto');
-print('-depsc2', '../../thesis/src/fig/connectivityFunction.eps');
+%set(gcf,'PaperPositionMode','auto');
+%print('-depsc2', '../../thesis/src/fig/connectivityFunction.eps');

@@ -52,3 +52,6 @@ title('');
 
 set(gcf,'PaperPositionMode','auto');
 print('-depsc2', '../../thesis/src/fig/ratTrajectory.eps');
+
+figure();
+plot(c, r, '.');

@@ -75,3 +75,7 @@ title 'D'
 
 set(gcf(), 'PaperPositionMode', 'auto', 'Renderer', 'painters');
 print -depsc2 '../../thesis/src/fig/blobTracking.eps';
+
+
+%figure();
+%plot(c, r, '.', 'MarkerSize', 6);

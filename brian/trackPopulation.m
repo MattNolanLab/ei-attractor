@@ -8,8 +8,8 @@ close all;
     % been done and results saved to tracking*.mat file
     loadFlag = false;
     
-    jobId = 21501;
-    folder = 'results/static_wave/zero_velocity/';
+    jobId = 22204;
+    folder = 'results/path_integration/sheet_size/';
     d = dir([folder 'job' num2str(jobId) '*.mat']);
     fileName = [folder d(end).name]
     
@@ -19,8 +19,8 @@ close all;
     dt_track = 0.1; % sec; dt for the tracking algorithm
     delta_t = 0.25; % sec
 
-    startTime = 10; t_start = startTime;
-    endTime = 25; t_end = endTime - delta_t/2;
+    startTime = 4; t_start = startTime;
+    endTime = 1200; t_end = endTime - delta_t/2;
     
     
     saveDir = 'results/fig/';
@@ -85,18 +85,19 @@ close all;
     
     
     fontSize = 15;
-    figure('Position', [1000, 300, 500, 500]);
+    figure('Position', [1000, 300, 600, 500]);
     subplot(2, 2, [3 4], 'FontSize', fontSize);
     times = (1:numel(nDrift)) * dt_track + t_start;
     plot(times, drift, 'k');
     
     xlabel('Time (s)');
     ylabel('Drift (cm)');
+    title 'C';
     
     %---------------------------------------------
     % Plot single neuron rate and spike responses
     %---------------------------------------------
-    neuronNum = sheet_size^2 / 2;
+    neuronNum = sheet_size^2 / 2 + sheet_size/2;
     neuronSpikes = eval(['spikeMonitor_times_n' int2str(neuronNum)]);
     h = 5.0;  % cm
     arenaDiam = 180;   % cm
@@ -111,6 +112,7 @@ close all;
     set(gca(), 'YTick', [-arenaDiam/2 arenaDiam/2]);
     %set(gca(), 'XTick', []);
     %set(gca(), 'YTick', []);
+    title 'A';
 
     
     subplot(2, 2, 2, 'FontSize', fontSize);
@@ -121,10 +123,12 @@ close all;
     set(gca(), 'YTick', [-arenaDiam/2 arenaDiam/2]);
     %set(gca(), 'XTick', []);
     %set(gca(), 'YTick', []);
+    title 'B';
 
      
     if saveFig
         popPlotFile =  [saveDir fileBase '_tracking.eps'];
+        set(gcf(), 'PaperPositionMode', 'auto', 'Renderer', 'painters');
         print('-depsc', popPlotFile);
         
         for n_it = [0:neuronNum - 1 neuronNum+1:sheet_size^2-1]
