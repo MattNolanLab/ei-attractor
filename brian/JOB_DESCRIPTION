@@ -18,6 +18,17 @@ job21500  - Static responses - lambda_net=13&20; 20 repeats
 job21600  - the same as 21500, but repeated 80 times to produce 100 recordings
 job21800  - The preferred directions have been changed to cancel each other in
             both rows and columns, 100 repeats with lambda_net = 13
+job21900  - zero velocity, l = 0, 100 repeats
+job22000  - zero velocity, preferred directions are randomly distibuted, 100
+            repeats
+job22100  - zero velocity, preferred direction are again systematic, trying
+            lambda_net = 16.667
+job30000  - zero velocity, preferred directions are again systematic - NS -
+            trying l=1 instead of l=2, with lambda_net=16.667
+job30100  - zero velocity, preferred directions are
+            NW
+            SE
+            lambda_net = 13, l = 2
 
 job22000  - New path integration tests - with Hafting rat position data which do
             not contain abrupt shift in the middle of the simulation
