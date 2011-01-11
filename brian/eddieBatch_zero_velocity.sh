@@ -30,7 +30,7 @@ F_THRESHOLD="-20"
 
 F_L="2"
 
-job_id=21800
+job_id=40000
 for alpha in $F_ALPHA; do
     for conn_mult in $CONN_MULT; do
         for input in $F_INPUT; do

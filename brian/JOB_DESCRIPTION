@@ -44,3 +44,10 @@ job23400  - rat moving up/down
 job23500  - rat not moving at all
 job23600  - the same - monitoring diagonal instead of row in the middle of the
             sheet
+
+
+PhD. project initial testing jobs
+---------------------------------
+
+job40000  - 100 zero velocity runs, preferred directions distributed according
+            to the Burak&Fiete, 2009 paper

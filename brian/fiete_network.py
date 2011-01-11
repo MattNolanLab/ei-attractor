@@ -41,28 +41,18 @@ def get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui):
 # Get a preferred direction for a neuron
 def getPreferredDirection(pos_x, pos_y):
 # pos_x/y - position of neuron in 2d sheet
-    pos4_x = pos_x % 4
+    pos4_x = pos_x % 2
     pos2_y = pos_y % 2
     if pos4_x == 0:
         if pos2_y == 0:
-            return [0, 1] # North
+            return [-1, 0] # Left
         else:
-            return [0, -1] # South
-    elif pos4_x == 1:
-        if pos2_y == 0:
-            return [-1, 0] # West
-        else:
-            return [1, 0] # East
-    elif pos4_x == 2:
-        if pos2_y == 0:
-            return [0, -1] # South
-        else:
-            return [0, 1]  # North
+            return [0, -1] # Down
     else:
         if pos2_y == 0:
-            return [1, 0] # East
+            return [0, 1] # up
         else:
-            return [-1, 0] # West
+            return [1, 0] # Right
 
 def getPreferredDirectionRandom(pos_x, pos_y):
     # return random preferred direction on the sheet

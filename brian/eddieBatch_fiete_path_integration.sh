@@ -12,20 +12,19 @@
 
 #$ -N fiete_path_integration
 #$ -cwd
-#$ -l h_rt=05:00:00
-#$ -pe memory 3
+#$ -l h_rt=02:00:00
+#$ -pe memory-2G 2
 
 # Initialise environment module
 
-#. /etc/profile.d/modules.sh
+. /etc/profile.d/modules.sh
 
 # Use python 2.6
 
-#module load python/2.6.3
+module load python/2.6.3
 #module load matlab/4.0-r2008b
 
-#export PYTHONPATH=/exports/work/informatics/s0966762/python-modules/lib/python2.6/site-packages
-#export PYTHONPATH=/exports/home/scratch/s0966762/python-modules/lib/python2.6/site-packages
+export PYTHONPATH=/exports/work/informatics/s0966762/python-modules/lib/python2.6/site-packages
 
 F_SHEET_SIZE="$1"
 F_TIME="$2"
@@ -41,7 +40,7 @@ F_L=${11}
 
 
 # Run the program
-nice python2.6 fiete_path_integration.py -w -n $F_JOB_ID -s $F_SHEET_SIZE -t $F_TIME \
+python2.6 fiete_path_integration.py -w -n $F_JOB_ID -s $F_SHEET_SIZE -t $F_TIME \
     --alpha=$F_ALPHA -c $F_CONN_MULT -i $F_INPUT --taum $F_TAUM --taui $F_TAUI  \
     --lambda-net=$F_LAMBDA_NET --threshold $F_THRESHOLD -l $F_L
 #matlab -nodisplay -r "d = dir('results/*job${F_JOB_ID}_*.mat'); plotStatistics(['results/' d(end).name], [2048]); exit"
