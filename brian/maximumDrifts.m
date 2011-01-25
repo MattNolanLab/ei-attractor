@@ -1,5 +1,18 @@
 % Plot of average maximum drift in both directions, over 200 s of
-% simulation withou any velocity input
+% simulation.
+%
+% All the input files should contain whole population spike responses of
+% the rat without any velocity input, i.e. the rat not moving
+%
+% Algorithm:
+%  1. jobNums specifies range of job numbers to use
+%  2. if preprocess is true, the files are read from disk from directory
+%     specified by 'folder' and relative drifts extracted from each file
+%  3. Drifts are stored in 'blobTracks_r/c' array
+%  4. Then a 2D plot is created by plotting maximum drift in x and y
+%     direction, plus a detailed plot of how the blobs in population
+%     response drift, created from run which is most erroneous
+
 close all;
 
 startTime = 10;
@@ -10,7 +23,7 @@ delta_t = 0.25; % Should be this value.
 
 preprocess = false;
     
-jobNums = 22000:22099;
+jobNums = 40000:40099;
 
 % Preprocess tracking data if necessary
 if (preprocess == true)
@@ -104,4 +117,4 @@ axis equal;
 
 
 set(gcf,'PaperPositionMode','auto');
-print('-depsc2', '../../thesis/src/fig/maximumDrifts_randomPrefDir.eps');
+print('-depsc2', 'results/maximumDrifts_Burak-Fiete-prefDirs.eps');

@@ -6,10 +6,10 @@ close all;
 
     % Load file and process? If not - assuming the tracking has already
     % been done and results saved to tracking*.mat file
-    loadFlag = false;
+    loadFlag = true;
     
-    jobId = 22204;
-    folder = 'results/path_integration/sheet_size/';
+    jobId = 40000;
+    folder = 'results/';
     d = dir([folder 'job' num2str(jobId) '*.mat']);
     fileName = [folder d(end).name]
     
@@ -20,7 +20,7 @@ close all;
     delta_t = 0.25; % sec
 
     startTime = 4; t_start = startTime;
-    endTime = 1200; t_end = endTime - delta_t/2;
+    endTime = 200; t_end = endTime - delta_t/2;
     
     
     saveDir = 'results/fig/';
