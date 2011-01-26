@@ -11,7 +11,10 @@ cc = reshape(ISIs, 1, sz);
 edges = [fliplr((dt/2:dt:range)*-1) dt/2:dt:range];
 cc = histc(cc, edges);
 %cc = cc - sz*dt/T^2;
-bar(edges, cc, 'histc')
+bar(gca, edges, cc, 'histc')
 grid on;
+
+xlabel('Time (s)');
+ylabel('Interval count');
 
 end
