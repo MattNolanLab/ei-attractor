@@ -13,6 +13,7 @@ cc = histc(cc, edges);
 %cc = cc - sz*dt/T^2;
 bar(gca, edges, cc, 'histc')
 grid on;
+axis tight;
 
 xlabel('Time (s)');
 ylabel('Interval count');

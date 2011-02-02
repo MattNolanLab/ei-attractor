@@ -8,7 +8,16 @@ endTime = 200;
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
 
-preprocess = true;
+% Correlogram start and end time setting
+corrStartT = 80; % sec
+corrEndT = corrStartT + 10; % sec
+
+% Correlogram parameters
+corr_dt = 0.02; %sec
+corr_range = 0.5;
+corr_T = 200;
+
+preprocess = false;
 
 if preprocess
     disp 'Creating spike histogram';
@@ -18,7 +27,7 @@ end
 
 
 % Get positions of blobs and neuron numbers around the centers
-blobEstTime = 20; % sec
+blobEstTime = corrStartT; % sec
 firingPop = getFiringPop(spikeHist, blobEstTime, dt_track, delta_t);
 [r, c] = trackBlobs(firingPop);
 r = fix(r)
@@ -43,14 +52,20 @@ for blobID = 1:numel(r);
         if (neuronNum < 1 || neuronNum > sheet_size^2)
             continue;
         end
-        crossCorrelation(spikeCell{blobCenterNID}, spikeCell{neuronNum}, ...
-            0.0075, 0.25, 200);
+        
+        % Setup spikes from the specified interval
+        spikes1 = spikeCell{blobCenterNID};
+        spikes1 = spikes1(find(spikes1 >= corrStartT & spikes1 <= corrEndT));
+        spikes2 = spikeCell{neuronNum};
+        spikes2 = spikes2(find(spikes2 >= corrStartT & spikes2 <= corrEndT));
+        
+        crossCorrelation(spikes1, spikes2, corr_dt, corr_range, corr_T);
         title(['n' int2str(blobCenterNID) ', n' ...
             int2str(neuronNum)]);
     end
     
-    fileName = ['cross_corr_n' int2str(blobCenterNID(1)) '_neighborhood'];
+    fileName = ['cross_corr_10s_n' int2str(blobCenterNID(1)) '_neighborhood'];
     
     set(gcf,'PaperPositionMode','auto');
-    print('-depsc2', ['results/fig/spike_statistics/within_blob_corr/unstable_net/' fileName]);
+    print('-depsc2', ['results/fig/spike_statistics/within_blob_corr/stable_net/' fileName]);
 end
