@@ -13,19 +13,24 @@ expo = exp(-(e_t)/tc);
 N = numel(neuronIDs);
 D = nan * ones(N);
 
+for it = 1:N
+    nid = neuronIDs(it);
+    extractCell{it} = spikeCell{nid}(find(spikeCell{nid} >= startTime & spikeCell{nid} <= endTime));
+end
+
 for it1 = 1:N
     it1
-    if (numel(spikeCell{neuronIDs(it1)}) < spikeNumThreshold)
+    if (numel(extractCell{it1}) < spikeNumThreshold)
         continue;
     end
-    response1 = createSpikeHistCell(neuronIDs(it1), spikeCell, dt, startTime, endTime);
+    response1 = createSpikeHistCell(it1, extractCell, dt, startTime, endTime);
     
     for it2 = it1:N
-        if (numel(spikeCell{neuronIDs(it2)}) < spikeNumThreshold)
+        if (numel(extractCell{it2}) < spikeNumThreshold)
             continue;
         end
 
-        response2 = createSpikeHistCell(neuronIDs(it2), spikeCell, dt, startTime, endTime);
+        response2 = createSpikeHistCell(it2, extractCell, dt, startTime, endTime);
         D(it1, it2) = 1/tc * trapz((response1 - response2).^2)*dt;
     end
 end
