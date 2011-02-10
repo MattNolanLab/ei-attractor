@@ -20,9 +20,9 @@ opt = parseOptions(options);
 % MvR distance parameters
 tc = 0.025;
 dt = 0.001;
-startT = 100;
-endT = 102;
-spikeCntThreshold = 15;
+startT = 0;
+endT = 1;
+spikeCntThreshold = 5;
 
 % Correlogram start and end time setting
 corrStartT = 0; % sec
@@ -117,8 +117,10 @@ title('MvR distance, normalized by (N+M)/2');
 D_nnan = D(find(~isnan(D)));
 avg_D = mean(D_nnan)
 sum_D = sum(D_nnan)
+
+hist_precision = 40;
 figure;
-hist(D_nnan, 30);
+hist(D_nnan, hist_precision);
 xlabel('D_{MvR}');
 ylabel('Count (pairs)');
 title('Histogram of distances of pairs of neurons');
