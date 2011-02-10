@@ -9,7 +9,7 @@ function rasterPlot(spikeCell, neuronIDs, flat)
 %sheet_size = opt.sheet_size;
 
 %close all;
-figure;
+%figure;
 hold on;
 
 if neuronIDs == -1

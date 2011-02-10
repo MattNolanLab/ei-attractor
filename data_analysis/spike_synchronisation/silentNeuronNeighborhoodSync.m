@@ -18,11 +18,11 @@ close all;
 opt = parseOptions(options);
 
 % MvR distance parameters
-tc = 0.025;
-dt = 0.001;
+tc = 0.010;
+dt = 0.005;
 startT = 0;
-endT = 1;
-spikeCntThreshold = 5;
+endT = 2;
+spikeCntThreshold = 10;
 
 % Correlogram start and end time setting
 corrStartT = 0; % sec
@@ -34,14 +34,14 @@ corr_range = 0.5;
 corr_T = 10;
 
 % Neighborhood radius - in neural units
-rad = 13;
+rad = 10;
 
 
 % The value of venterListID has been determined from freq. spectra of Vm recordings of the
 % neurons see script figureMembraneVFreq.m
 %centerListID = 51;
 %nID = double(SNList(centerListID));
-nID = 5330; % job40000 - estimated from raster plot
+nID = 4728; % job40000 - estimated from raster plot
 %nID = 7170; % job40003
 center_r = fix(nID/sheet_size);
 center_c = mod(nID, sheet_size);
