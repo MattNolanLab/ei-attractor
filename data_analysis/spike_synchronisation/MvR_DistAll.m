@@ -27,6 +27,7 @@ for it1 = 1:N
         continue;
     end
     response1 = createSpikeHistCell(it1, extractCell, dt, startTime, endTime);
+    response1 = conv(response1, expo);
     
     for it2 = it1:N
         n2_spikeCnt = numel(extractCell{it2});
@@ -35,6 +36,7 @@ for it1 = 1:N
         end
 
         response2 = createSpikeHistCell(it2, extractCell, dt, startTime, endTime);
+        response2 = conv(response2, expo);
         % normalize against spike count
         spikeCnt_coeff = (n1_spikeCnt + n2_spikeCnt)/2;
         %spikeCnt_coeff = 1;

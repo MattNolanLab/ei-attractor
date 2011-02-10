@@ -32,4 +32,7 @@ end
 
 hold off;
 
+xlabel('Time (s)');
+ylabel('Neuron no.');
+
 end
