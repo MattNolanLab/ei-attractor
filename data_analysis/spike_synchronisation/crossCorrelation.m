@@ -1,12 +1,7 @@
 function [cc, edges] = crossCorrelation(N1, N2, dt, range, T)
 % CROSSCORRELATION Compute correlations statistics between two neurons
 
-[mesh1, mesh2] = meshgrid(N1, N2);
-ISIs = mesh1 - mesh2;
-sz = size(ISIs);
-sz = sz(1)*sz(2);
-
-cc = reshape(ISIs, 1, sz);
+cc = ISIpairs(N1, N2);
 
 edges = [fliplr((dt/2:dt:range)*-1) dt/2:dt:range];
 cc = histc(cc, edges);

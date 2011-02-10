@@ -22,7 +22,6 @@ preprocess = false;
 if preprocess
     disp 'Creating spike histogram';
     createSpikeHist;  % script - computes spikeHist for current file        
-    createSpikeCell;  % script - transforms spike times to a cell array
 end
 
 

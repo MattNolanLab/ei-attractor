@@ -1,16 +1,16 @@
 a = 1;
 connMult = 20;
 
-abs_x = -48:0.01:48;
+abs_x = -25:0.01:25;
 
 
 fontSize = 14;
-close all;
+%close all;
 figure('Position', [878 452 600 350]);
 
 subplot(1, 1, 1, 'FontSize', fontSize);
 
-lam = [13];
+lam = [20];
 
 for l_it = 1:numel(lam)
     lambda = lam(l_it);

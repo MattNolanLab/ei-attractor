@@ -8,6 +8,8 @@ function [D] = MvR_DistAll(neuronIDs, spikeCell, tc, dt, startTime, endTime, spi
 expo_dur = 10*tc; %sec
 e_t = 0:dt:expo_dur;
 expo = exp(-(e_t)/tc);
+%expo = 1 - e_t/tc;
+%expo = ones(1, numel(e_t));
 
 
 N = numel(neuronIDs);
@@ -20,17 +22,22 @@ end
 
 for it1 = 1:N
     it1
-    if (numel(extractCell{it1}) < spikeNumThreshold)
+    n1_spikeCnt = numel(extractCell{it1});
+    if (n1_spikeCnt < spikeNumThreshold)
         continue;
     end
     response1 = createSpikeHistCell(it1, extractCell, dt, startTime, endTime);
     
     for it2 = it1:N
-        if (numel(extractCell{it2}) < spikeNumThreshold)
+        n2_spikeCnt = numel(extractCell{it2});
+        if (n2_spikeCnt < spikeNumThreshold)
             continue;
         end
 
         response2 = createSpikeHistCell(it2, extractCell, dt, startTime, endTime);
-        D(it1, it2) = 1/tc * trapz((response1 - response2).^2)*dt;
+        % normalize against spike count
+        spikeCnt_coeff = (n1_spikeCnt + n2_spikeCnt)/2;
+        %spikeCnt_coeff = 1;
+        D(it1, it2) = 1/tc * trapz((response1 - response2).^2)*dt / spikeCnt_coeff;
     end
 end

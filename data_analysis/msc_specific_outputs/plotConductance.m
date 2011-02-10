@@ -1,7 +1,7 @@
 % Illustrate conductance dynamics of the network
 conductance_freq_fileName = 'conductance_freq_static.eps';
 
-load results/job23502_2010-08-07T19-37-40_output.mat
+%load results/job23502_2010-08-07T19-37-40_output.mat
 
 opt = parseOptions(options);
 sheet_size = opt.sheet_size;
@@ -11,12 +11,12 @@ close all;
 %hold off;
 
 dt = 0.0001; %s
-dt_rat = 0.02; % s - population response
 delta_t = 0.25; % s - size of window for firing rate estimation
-firingPop_t = 5;
+firingPop_t = 5; % sec
+dt_rat = 0.02; %sec
 
-SNList_nID = 21;
-neuronID = SNList(SNList_nID);
+SNList_nID = 51
+neuronID = SNList(SNList_nID)
 
 mVolt = 1000;
 nS = 1e9;
@@ -32,7 +32,7 @@ plot(SNMonitor_times, SNMonitor_values(SNList_nID, :)*mVolt);
 fontSize = 16;
 figure('Position', [900, 300, 1100, 500]);
 
-x_limits = [7 8];
+x_limits = [7 10];
 y_limits = [-61 -53];
 
 start_i = x_limits(1)/dt + 1;
@@ -67,14 +67,7 @@ title 'C'
 % ------------------------------------------------
 % Plot the Fourier transform of membrane potential
 % ------------------------------------------------
-Fs = 1/dt;
-signalMean = mean(signal);
-signal = signal - signalMean;
-sL = numel(signal);
-
-NFFT = 2^nextpow2(sL); % Next power of 2 from length of y
-Y = fft(signal,NFFT)/sL;
-f = Fs/2*linspace(0,1,NFFT/2+1);
+[Y, f, NFFT] = fourierTrans(signal, dt);
 
 % Plot single-sided amplitude spectrum.
 %figure;
@@ -95,8 +88,8 @@ subplot(7, 3, [3 6 9], 'FontSize', fontSize);
 populationResponseFigure
 title 'B';
 
-set(gcf,'PaperPositionMode','auto');
-print('-depsc2', [outputDir conductance_freq_fileName]);
+%set(gcf,'PaperPositionMode','auto');
+%print('-depsc2', [outputDir conductance_freq_fileName]);
 
 
 % ------------------------------------------------

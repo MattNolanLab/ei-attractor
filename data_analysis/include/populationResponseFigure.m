@@ -13,7 +13,7 @@ firingPop = zeros(sheet_size, sheet_size);
 for x_i = 0:(sheet_size-1)
     for y_i = 0:(sheet_size-1)
         neuronID = y_i*sheet_size + x_i;
-        neuronSpikes = eval(['spikeMonitor_times_n' num2str(neuronID)]);
+        neuronSpikes = spikeCell{neuronID+1};
         firingRate = computeFiringRate(neuronSpikes, firingPop_t, firingPop_t, dt_rat, delta_t);
 
         firingPop(x_i+1, y_i+1) = firingRate(numel(firingRate));
