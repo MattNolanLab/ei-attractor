@@ -15,7 +15,7 @@ dt = 0.001;
 startT = 0;
 endT = 200;
 ISI = 0.1; % average isi
-rad = 10; % Neighborhood radius - in neural units
+rad = 26; % Neighborhood radius - in neural units
 
 syncWinT = 2; % sec
 syncWin = syncWinT/dt;
@@ -44,6 +44,12 @@ for it = 1:numel(neigh_NID)
     end
 end
 neigh_NID(it_del) = [];
+
+% Check for the neighborhood neurons
+figure(1);
+plot(mod(neigh_NID-1, sheet_size), fix((neigh_NID-1)./sheet_size), '.');
+display('Displaying the neighborhood plot. Press any key to continue.');
+pause;
 
 
 % Create the spike response function for the neighborhood neurons and
@@ -96,11 +102,15 @@ meanTimedSync = [];
 for t = 1:numel(timeSteps)
     validIDs = find(~isnan(pairTimedSync(:, t)) & pairTimedSync(:, t) ~= 0);
     meanTimedSync(t) = mean(pairTimedSync(validIDs, t));
+    stdTimedSync(t) = std(pairTimedSync(validIDs, t));
 end
 
 figure(2);
 plot((timeSteps-1)/syncWin*syncWinT, meanTimedSync);
 ylim([0 1]);
+xlabel('Time (s)');
+ylabel('Mean D^2_{MvR} of pairs (norm. by (N+M)/2');
+title(['Time dependent sync. measure. Blob. t_c = ' num2str(tc) ' s.']);
 
 
 % -------------------------------------------------------------------------
