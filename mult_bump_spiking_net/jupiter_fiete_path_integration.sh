@@ -8,24 +8,7 @@
 #                                      #
 ########################################
 
-# Grid Engine options
-
-#$ -N fiete_path_integration
-#$ -P inf_ndtc
-#$ -cwd
-#$ -l h_rt=00:30:00
-# -pe memory-2G 1
-
-# Initialise environment module
-
-. /etc/profile.d/modules.sh
-
-# Use python 2.6
-
-module load python/2.6.3
-#module load matlab/4.0-r2008b
-
-export PYTHONPATH=/exports/work/informatics/s0966762/python-modules/lib/python2.6/site-packages
+export PYTHONPATH=/disk/scratch/s0966762/lib/python2.6/site-packages
 
 F_SHEET_SIZE="$1"
 F_TIME="$2"

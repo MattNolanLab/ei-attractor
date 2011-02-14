@@ -46,4 +46,4 @@ end
 
 set(gcf,'PaperPositionMode','auto');
 fileName = 'membraneVFreq.eps'
-print('-depsc2', ['fig/' fileName]);
+print('-depsc2', ['results/time_dependent_sync/stable_net/' fileName]);

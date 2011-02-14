@@ -11,9 +11,10 @@
 # Grid Engine options
 
 #$ -N fiete_path_integration
+#$ -P inf_ndtc
 #$ -cwd
-#$ -l h_rt=02:00:00
-#$ -pe memory-2G 2
+#$ -l h_rt=00:30:00
+# -pe memory-2G 1
 
 # Initialise environment module
 
@@ -37,10 +38,11 @@ F_TAUI=$8
 F_LAMBDA_NET=$9
 F_THRESHOLD=${10}
 F_L=${11}
+F_NOISE_SIGMA=${12}
 
 
 # Run the program
 python2.6 fiete_path_integration.py -w -n $F_JOB_ID -s $F_SHEET_SIZE -t $F_TIME \
     --alpha=$F_ALPHA -c $F_CONN_MULT -i $F_INPUT --taum $F_TAUM --taui $F_TAUI  \
-    --lambda-net=$F_LAMBDA_NET --threshold $F_THRESHOLD -l $F_L
-#matlab -nodisplay -r "d = dir('results/*job${F_JOB_ID}_*.mat'); plotStatistics(['results/' d(end).name], [2048]); exit"
+    --lambda-net=$F_LAMBDA_NET --threshold $F_THRESHOLD -l $F_L \
+    --noise-sigma $F_NOISE_SIGMA

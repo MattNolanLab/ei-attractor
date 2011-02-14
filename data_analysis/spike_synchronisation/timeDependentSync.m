@@ -4,7 +4,7 @@
 % Just now, we assume that population response doesn't move
 
 path('../include/', path);
-%close all;
+close all;
 
 opt = parseOptions(options);
 
@@ -110,7 +110,7 @@ plot((timeSteps-1)/syncWin*syncWinT, meanTimedSync);
 ylim([0 1]);
 xlabel('Time (s)');
 ylabel('Mean D^2_{MvR} of pairs (norm. by (N+M)/2');
-title(['Time dependent sync. measure. Blob. t_c = ' num2str(tc) ' s.']);
+title(['Time dependent sync. measure. Blob and around. t_c = ' num2str(tc) ' s.']);
 
 
 % -------------------------------------------------------------------------

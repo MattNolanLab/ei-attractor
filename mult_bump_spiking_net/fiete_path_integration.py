@@ -30,7 +30,7 @@ optParser.add_option("-w", "--write-data", action="store_true",
         dest="write_data", default=False)
 optParser.add_option("-i", "--input", type="float", default=0.3, dest="input",
         help="Feedforward constant input to all neurons")
-optParser.add_option("--noise-sigma", type="float", default=0, dest="noise_sigma", help="Input current Gaussian noise sigma (nA)")
+optParser.add_option("--noise-sigma", type="float", default=0, dest="noise_sigma", help="Input current Gaussian noise sigma (mV)")
 optParser.add_option("-p", "--print-only-conn", action="store_true",
         dest="print_only_conn", default=False)
 optParser.add_option("--alpha", type="float", default=0.10315, dest="alpha",
@@ -78,8 +78,11 @@ def saveResultsToMat(fileName, options):
     # rateMonitor - rate monitor of several neurons (TODO)
     outData = ratData
 
+    spikeCell = empty((options.sheet_size**2), dtype=object);
+
     for k,v in spikeMonitor.spiketimes.iteritems():
-        outData['spikeMonitor_times_n' + str(k)] = v
+        spikeCell[k] = v
+    outData['spikeCell'] = spikeCell
 
     if options.record_sn == True:
         outData['SNMonitor_values'] = SNMonitor.values_
