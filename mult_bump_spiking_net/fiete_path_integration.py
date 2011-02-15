@@ -65,7 +65,7 @@ print options
 sim_dt = options.sim_dt*ms
 vel_dt = 0.02*second
 simulationClock = Clock(dt=sim_dt)
-SNClock = Clock(dt=1*sim_dt)
+SNClock = Clock(dt=10*ms)
 velocityClock = Clock(dt=vel_dt)
 printStatusClock = Clock(dt=options.update_interval*second)
 
@@ -269,7 +269,8 @@ if options.record_sn_row == True:
     #SNList = range(sheet_size**2 / 2, sheet_size**2 / 2 + sheet_size)
     SNList = range(0, sheet_size**2, sheet_size+1)
 else:
-    SNList = [sheet_size**2/4, sheet_size**2/2, (sheet_size**2)*3/4]
+    #SNList = [sheet_size**2/4, sheet_size**2/2, (sheet_size**2)*3/4]
+    SNList = True
 SNMonitor = StateMonitor(sheetGroup, 'vm', record = SNList,
         clock=SNClock)
 SNgMonitor = StateMonitor(sheetGroup, 'gi', record = SNList,

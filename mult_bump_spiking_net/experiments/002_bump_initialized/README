@@ -1,0 +1,13 @@
+Experiment description
+----------------------
+
+Test whether proper initial conditions of membrane potential can influence bump
+stability.
+
+Hypothesis: Because membrane potential of neurons is initialized randomly, it might happen that the network does not start from a proper hexagonal bumps state. This might cause instabilities in the network.
+
+- The network will start from fixed initial conditions - proper bump with respect to network parameters (saved in file)
+- Gaussian noise will (can) be added to initial conditions.
+- No other noise in the network
+
+- This will be compared to the case when neurons' membrane potentials are initialized randomly
