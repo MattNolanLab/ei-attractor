@@ -13,8 +13,8 @@
 #$ -N fiete_path_integration
 #$ -P inf_ndtc
 #$ -cwd
-#$ -l h_rt=00:30:00
-# -pe memory-2G 1
+#$ -l h_rt=02:00:00
+#$ -pe memory-2G 2
 
 # Initialise environment module
 
