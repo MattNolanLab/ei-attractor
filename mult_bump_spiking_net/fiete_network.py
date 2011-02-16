@@ -68,7 +68,7 @@ def getPreferredDirectionRandom(pos_x, pos_y):
 
 
 def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms,
-        taui_ms, threshold_mV, noise_sigma_mV):
+        taui_ms, threshold_mV, noise_sigma_mV, W = None):
     C=200*pF
     taum=taum_ms*msecond
     taui=taui_ms*msecond
@@ -83,33 +83,40 @@ def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms,
     gamma = 1.05 * beta
 
     sheetGroup=NeuronGroup(sheet_size**2,model=get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui, noise_sigma),threshold=threshold,reset=EL,refractory=refractory, clock=clock)
-    inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense');
-    inh_matrix = asarray(inhibConn.W)
+
+    if (W == None):
+        inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense');
+        inh_matrix = asarray(inhibConn.W)
     
-    # Create toroidal connections matrix on the 2d sheet
-    for j in xrange(len(sheetGroup)):
-        j_x = j % sheet_size
-        j_y = j // sheet_size
-        prefDir = getPreferredDirection(j_x, j_y)
-        #prefDir = getPreferredDirectionRandom(j_x, j_y)
-        for i in xrange(len(sheetGroup)):
-            i_x = i % sheet_size
-            i_y = i // sheet_size
-            
-            if abs(j_x - i_x) > sheet_size/2:
-                if i_x > sheet_size/2:
-                    i_x = i_x - sheet_size
-                else:
-                    i_x = i_x + sheet_size
-            if abs(j_y - i_y) > sheet_size/2:
-                if i_y > sheet_size/2:
-                    i_y = i_y - sheet_size
-                else:
-                    i_y = i_y + sheet_size
-    
-            abs_x_sq = (i_x - j_x -l*prefDir[0])**2 + (i_y - j_y - l*prefDir[1])**2
-            w = a*math.e**(-gamma*(abs_x_sq)) - math.e**(-beta*(abs_x_sq));
-            inh_matrix[j, i] = connMult*abs(w)*nS
+        # Create toroidal connections matrix on the 2d sheet
+        for j in xrange(len(sheetGroup)):
+            j_x = j % sheet_size
+            j_y = j // sheet_size
+            prefDir = getPreferredDirection(j_x, j_y)
+            #prefDir = getPreferredDirectionRandom(j_x, j_y)
+            for i in xrange(len(sheetGroup)):
+                i_x = i % sheet_size
+                i_y = i // sheet_size
+                
+                if abs(j_x - i_x) > sheet_size/2:
+                    if i_x > sheet_size/2:
+                        i_x = i_x - sheet_size
+                    else:
+                        i_x = i_x + sheet_size
+                if abs(j_y - i_y) > sheet_size/2:
+                    if i_y > sheet_size/2:
+                        i_y = i_y - sheet_size
+                    else:
+                        i_y = i_y + sheet_size
+        
+                abs_x_sq = (i_x - j_x -l*prefDir[0])**2 + (i_y - j_y - l*prefDir[1])**2
+                w = a*math.e**(-gamma*(abs_x_sq)) - math.e**(-beta*(abs_x_sq));
+                inh_matrix[j, i] = connMult*abs(w)*nS
+    else:
+        inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense')
+        print 'Initializing connections from file...'
+        inhibConn.connect(sheetGroup, sheetGroup, W)
+
 
     # Initialize membrane potential randomly
     if (noise_sigma == 0):

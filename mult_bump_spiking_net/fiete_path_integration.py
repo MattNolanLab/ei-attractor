@@ -69,6 +69,10 @@ SNClock = Clock(dt=10*ms)
 velocityClock = Clock(dt=vel_dt)
 printStatusClock = Clock(dt=options.update_interval*second)
 
+# Provisional loading of connection weights and initial conditions from a mat file (settings)
+connFileName = '../../central_data_store/data/connections_96.mat'
+initCondFileName = '../../data/initial_conditions/initial_conditions_96.mat'
+
 
 # Save the results of the simulation in a .mat file
 def saveResultsToMat(fileName, options):
@@ -108,6 +112,14 @@ def saveConnectionsToMat(fileName, conn):
     outData['connections'] = asarray(conn.W)
     savemat(fileName, outData, do_compression=True)
 
+
+def loadConnectionsFromMat(fileName):
+    return loadmat(fileName)['connections']
+
+def loadInitialConditions(fileName):
+    return loadmat(fileName)
+
+
 # Definition of 2d topography on a sheet and connections
 sheet_size = options.sheet_size  # Total no. of neurons will be sheet_size^2
 
@@ -116,12 +128,18 @@ sheet_size = options.sheet_size  # Total no. of neurons will be sheet_size^2
 
 start_time=time.time()
 
+W = loadConnectionsFromMat(connFileName)
+initCond = loadInitialConditions(initCondFileName)
+
+print "Starting network and connections initialization..."
 [sheetGroup, inhibConn] = createNetwork(sheet_size, options.lambda_net,
         options.l, options.a, options.connMult, simulationClock, options.taum,
-        options.taui, options.threshold, options.noise_sigma)
+        options.taui, options.threshold, options.noise_sigma, W)
+# Provisional - set initial conditions from file
+sheetGroup.vm = initCond['membrane_potentials']
 
 duration=time.time()-start_time
-print "Connection setup time:",duration,"seconds"
+print "Network setup time:",duration,"seconds"
 
 # Print connections if necessary and exit
 if (options.save_conn):

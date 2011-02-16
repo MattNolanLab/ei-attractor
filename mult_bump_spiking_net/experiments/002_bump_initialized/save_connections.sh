@@ -1,20 +1,15 @@
 #!/bin/sh
 
-########################################
-# Submit fiete_path_integration.py jobs
-# with different network parameters
-# into the cluster
-########################################
-
+export PYTHONPATH=/disk/scratch/s0966762/lib/python2.6/site-packages
 BASE=../..
 cd $BASE
-EDDIE=0  # if eddie, submit on a cluster using qsub
 
-# different lambda_net parameters
+# Produce recordings of membrane potentials of all single neurons
+# This requires changes in the python codes
 
 F_SHEET_SIZE="96"
 
-F_TIME="20"
+F_TIME="30"
 
 CONN_MULT="20"
 
@@ -28,18 +23,13 @@ F_TAUI="10"
 
 REPEAT=1
 
-F_LAMBDA_NET="13"
+F_LAMBDA_NET="20"
 
 F_THRESHOLD="-20"
 
 F_L="2"
 
-#F_NOISE_SIGMA="0.01 0.1 0.2 0.3 0.4 0.5"
-F_NOISE_SIGMA="0"
-
-
-
-job_id=2001
+job_id=1010
 for alpha in $F_ALPHA; do
     for conn_mult in $CONN_MULT; do
         for input in $F_INPUT; do
@@ -49,7 +39,6 @@ for alpha in $F_ALPHA; do
                         for threshold in $F_THRESHOLD; do
                             for l_param in $F_L; do
                                 for sheet_size in $F_SHEET_SIZE; do
-                                    for noise_sigma in $F_NOISE_SIGMA; do
 
 #####################
 repeat=1
@@ -60,16 +49,10 @@ while [ $repeat -le $REPEAT ]; do
     echo "job_id=$job_id"
     echo "lambda_net=$lambda_net"
     echo "threshold=$threshold"
-    echo "noise_sigma=$noise_sigma"
 
-
-    if [ $EDDIE -eq 1 ]
-    then
-        qsub eddieBatch_fiete_path_integration.sh $sheet_size $F_TIME $alpha $conn_mult $job_id $input $taum $taui $lambda_net $threshold $l_param $noise_sigma
-    else
-        pwd
-        ./jupiter_fiete_path_integration.sh $sheet_size $F_TIME $alpha $conn_mult $job_id $input $taum $taui $lambda_net $threshold $l_param $noise_sigma&
-    fi
+    nice python2.6 fiete_path_integration.py --save-conn --record-sn -w -n $job_id -s $sheet_size -t $F_TIME \
+        --alpha=$alpha -c $conn_mult -i $input --taum $taum --taui $taui  \
+        --lambda-net=$lambda_net --threshold $threshold -l $l_param&
 
     echo
 
@@ -78,7 +61,6 @@ while [ $repeat -le $REPEAT ]; do
 done
 #####################
 
-                                    done
                                 done
                             done
                         done
