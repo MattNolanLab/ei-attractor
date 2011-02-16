@@ -13,6 +13,7 @@ from datetime import datetime
 
 import time
 import math
+import sys
 
 from fiete_network import *
 
@@ -281,6 +282,7 @@ def updateVelocityLinear():
 @network_operation(printStatusClock)
 def printStatus():
     print "Simulated " + str(printStatusClock.t) + " seconds."
+    sys.stdout.flush()
 
 # Record the number of spikes
 if options.record_sn_row == True:

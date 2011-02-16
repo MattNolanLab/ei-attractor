@@ -8,13 +8,13 @@
 
 BASE=../..
 cd $BASE
-EDDIE=0  # if eddie, submit on a cluster using qsub
+EDDIE=1  # if eddie, submit on a cluster using qsub
 
 # different lambda_net parameters
 
 F_SHEET_SIZE="96"
 
-F_TIME="20"
+F_TIME="200"
 
 CONN_MULT="20"
 
@@ -26,7 +26,7 @@ F_TAUM="10"
 
 F_TAUI="10"
 
-REPEAT=1
+REPEAT=10
 
 F_LAMBDA_NET="13"
 
@@ -39,7 +39,7 @@ F_NOISE_SIGMA="0"
 
 
 
-job_id=2001
+job_id=1000
 for alpha in $F_ALPHA; do
     for conn_mult in $CONN_MULT; do
         for input in $F_INPUT; do
