@@ -23,44 +23,46 @@ delta_t = 0.25; % Should be this value.
 
 preprocess = false;
     
-jobNums = 40000:40099;
+jobNums = 2100:2199;
+
+% Options needed from at least one run
+%opts = parseOptions(options);
+%sheet_size = opts.sheet_size;
 
 % Preprocess tracking data if necessary
 if (preprocess == true)
     %folder = 'results/static_wave/zero_velocity/';
-    folder = 'results/';
+    folder = '../../../central_data_store/simulation_data/multiple_bump_spiking_net/002_bump_initialized/';
 
     nFiles = numel(jobNums);
     
     spikeHist_arr = [];
-    blobTracks_r = [];
-    blobTracks_c = [];
+    blobTracks_r = zeros(numel(startTime:dt_track:endTime)-1, numel(jobNums));
+    blobTracks_c = blobTracks_r;
 
-    for f_it = 1:nFiles
+    parfor f_it = 1:nFiles
         d = dir([folder 'job' num2str(jobNums(f_it)) '*.mat'])
         % Load file which contains the tracking data and extract the spike
         % histogram and blob positions
         d(end).name
-        load([folder d(end).name]);       
-        opts = parseOptions(options);
-        sheet_size = opts.sheet_size;
+        %clear spikeCell
+        dataLoad = load([folder d(end).name], 'spikeCell');       
+        spikeCell = dataLoad.spikeCell;
+        %opts = parseOptions(dataLoad.options);
         disp 'Creating spike histogram';
-        createSpikeHist;  % script - computes spikeHist for current file        
-        spikeHist_arr(:, :, f_it) = spikeHist;
+        spikeHist = createSpikeHistCell(1:numel(spikeCell), spikeCell, ...
+            dt_track, 0, endTime);
         
         disp 'Tracking blobs'
         [blobTracks_r(:, f_it) blobTracks_c(:, f_it)] = ...
-            trackPopulationDrift(startTime, endTime, ...
-            spikeHist_arr(:, :, f_it), dt_track, delta_t);        
+            trackPopulationDrift(startTime, endTime, spikeHist, ...
+            dt_track, delta_t);        
     end
     
     
-    for n_it = 0:sheet_size^2-1
-        clear(['spikeMonitor_times_n' num2str(n_it)]);
-    end
-    clear spikeHist
+    clear spikeHist spikeCell
 
-    save('-v7.3', ['results/driftsResults_' num2str(jobNums(1)) '-' num2str(jobNums(end)) '.mat']);
+    save('-v7.3', [folder 'driftsResults_' num2str(jobNums(1)) '-' num2str(jobNums(end)) '.mat']);
     
 else  
     % Assuming results/driftResults.mat has been loaded
@@ -103,7 +105,10 @@ ylabel('Y drift (neurons)');
 %axis normal;
 
 subplot(1, 10, [8 9 10], 'FontSize', fontSize);
-plot(max_min_c(absMax_ci, :), max_min_r(absMax_ri, :), 'ok', 'MarkerFaceColor', 'k', 'MarkerSize', 4);
+for it = 1:size(blobTracks_r, 2)
+    hold on;
+    plot(max_min_c(absMax_ci(it), it), max_min_r(absMax_ri(it), it), '.', 'MarkerFaceColor', 'k', 'MarkerSize', 5);
+end
 xlabel('X drift (neurons)');
 ylabel('Y drift (neurons)');
 hold on;
@@ -117,4 +122,4 @@ axis equal;
 
 
 set(gcf,'PaperPositionMode','auto');
-print('-depsc2', 'results/maximumDrifts_Burak-Fiete-prefDirs.eps');
+print('-depsc2', 'results/bump_initialized-maximumDrifts.eps');
