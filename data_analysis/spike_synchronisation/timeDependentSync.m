@@ -1,55 +1,28 @@
-% Specify a neuron ID and its neighborhood radius, to create a figure of a
-% synchronization index (defined by a MvR distance)
-%
-% Just now, we assume that population response doesn't move
+function [pairTimedSync, meanTimedSync, stdTimedSync, neigh_NID] = timeDependentSync(spikeCell, tc, dt, startT, endT, avgISI, rad, nID, syncWinT)
 
-path('../include/', path);
-close all;
+sheet_size = sqrt(numel(spikeCell)); % assuming square sheet - ugly -> FIXME
 
-opt = parseOptions(options);
-
-% MvR distance parameters
-tc = 0.025;
+% Sync measure parameters
 expo_dur = 10*tc; %sec
-dt = 0.001;
-startT = 0;
-endT = 200;
-ISI = 0.1; % average isi
-rad = 26; % Neighborhood radius - in neural units
-
-syncWinT = 2; % sec
 syncWin = syncWinT/dt;
+spikeCntThreshold = syncWinT/avgISI/2;
 
-spikeCntThreshold = syncWinT/ISI/2;
 
-
-% The value of venterListID has been determined from freq. spectra of Vm recordings of the
-% neurons see script figureMembraneVFreq.m
-
-nID = 4728; % job40000 - estimated from raster plot
-%nID = 7170; % job40003
 center_r = fix(nID/sheet_size);
 center_c = mod(nID, sheet_size);
 
 [neigh_r, neigh_c] = getBlobNeighborhood(center_r, center_c, rad, sheet_size);
 neigh_NID = neigh_r*sheet_size + neigh_c + 1;
 
-
 % Remove neurons which have spike count < threshold
 it_del = [];
 for it = 1:numel(neigh_NID)
     spikes = spikeCell{neigh_NID(it)};
-    if numel(find(spikes >= startT & spikes <= endT)) < (endT-startT)/ISI/2;
+    if numel(find(spikes >= startT & spikes <= endT)) < (endT-startT)/avgISI/2;
         it_del = [it_del it];
     end
 end
 neigh_NID(it_del) = [];
-
-% Check for the neighborhood neurons
-figure(1);
-plot(mod(neigh_NID-1, sheet_size), fix((neigh_NID-1)./sheet_size), '.');
-display('Displaying the neighborhood plot. Press any key to continue.');
-pause;
 
 
 % Create the spike response function for the neighborhood neurons and
@@ -73,7 +46,7 @@ timeSteps = 1:syncWin:sz(2);
 
 for it1 = 1:N
     it1
-    for it2 = it1:N
+    for it2 = it1+1:N
         fmg = (response(it1, :) - response(it2, :)).^2;
         real_t = startT;
         for t = 1:numel(timeSteps)
@@ -105,22 +78,4 @@ for t = 1:numel(timeSteps)
     stdTimedSync(t) = std(pairTimedSync(validIDs, t));
 end
 
-figure(2);
-plot((timeSteps-1)/syncWin*syncWinT, meanTimedSync);
-ylim([0 1]);
-xlabel('Time (s)');
-ylabel('Mean D^2_{MvR} of pairs (norm. by (N+M)/2');
-title(['Time dependent sync. measure. Blob and around. t_c = ' num2str(tc) ' s.']);
-
-
-% -------------------------------------------------------------------------
-% Raster plot of neighborhood neurons
-% -------------------------------------------------------------------------
-figure(3);
-rasterPlot(spikeCell, neigh_NID, true);
-title(['Raster plot of neighborhood neurons of neuron (r: ' ...
-    int2str(center_r) ', c: ' int2str(center_c) ')']);
-xlim([startT endT]);
-
-
-
+end
