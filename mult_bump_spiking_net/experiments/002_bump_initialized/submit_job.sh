@@ -26,7 +26,7 @@ F_TAUM="10"
 
 F_TAUI="10"
 
-REPEAT=10
+REPEAT=100
 
 F_LAMBDA_NET="13"
 
@@ -39,7 +39,7 @@ F_NOISE_SIGMA="0"
 
 
 
-job_id=1000
+job_id=2100
 for alpha in $F_ALPHA; do
     for conn_mult in $CONN_MULT; do
         for input in $F_INPUT; do

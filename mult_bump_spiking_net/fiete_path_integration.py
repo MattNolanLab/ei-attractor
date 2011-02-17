@@ -14,6 +14,7 @@ from datetime import datetime
 import time
 import math
 import sys
+import numpy as np
 
 from fiete_network import *
 
@@ -73,6 +74,7 @@ printStatusClock = Clock(dt=options.update_interval*second)
 # Provisional loading of connection weights and initial conditions from a mat file (settings)
 connFileName = '../../central_data_store/data/connections_96.mat'
 initCondFileName = '../../data/initial_conditions/initial_conditions_96.mat'
+vm_init_rand = 10*mV
 
 
 # Save the results of the simulation in a .mat file
@@ -137,7 +139,9 @@ print "Starting network and connections initialization..."
         options.l, options.a, options.connMult, simulationClock, options.taum,
         options.taui, options.threshold, options.noise_sigma, W)
 # Provisional - set initial conditions from file
-sheetGroup.vm = initCond['membrane_potentials']
+rndNoise = np.random.normal(initCond['membrane_potentials'], vm_init_rand)
+sheetGroup.vm = rndNoise
+
 
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
