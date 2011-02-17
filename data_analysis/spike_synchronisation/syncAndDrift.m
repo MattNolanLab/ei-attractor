@@ -7,7 +7,7 @@ path('../include/', path);
 close all;
 clear all;
 
-jobNums = 40000:40003;
+jobNums = 40000:40040;
 dataFolder = '../../../central_data_store/simulation_data/spike_synchronization/';
 outputFolder = '../../../central_data_store/data_analysis/spike_synchronisation/time_dependent_sync/SyncAndDrift/'
 load([dataFolder 'driftsResults_40000-40099.mat'], 'blobTracks_c', 'blobTracks_r');
@@ -51,16 +51,16 @@ parfor jobNum = jobNums
 
     sz = size(pairTimedSync);
 
-    figure('Position', [883 528 600 700], 'Visible', 'off');
+    figure('Position', [883 528 800 900]); %, 'Visible', 'off');
     % -------------------------------------------------------------------------
     % Plot time dependent histogram map of sync. coefficient
     % -------------------------------------------------------------------------
-    subplot(3, 1, 1);
+    cb_ax = subplot(12, 1, [1 2 3 4]);
     [timedHist, binCenters] = hist(pairTimedSync, 40);
     pcolor(startT:syncWinT:endT, binCenters, timedHist);
     xlim([startT endT]);
     shading flat;
-    %colorbar;
+    colorbar('NorthOutside');
     xlabel('Time (s)');
     ylabel('D^2_{MvR}');
     title('Time dependent proportion of pairs of spikes given a sync. coeff');
@@ -70,7 +70,7 @@ parfor jobNum = jobNums
     % Plot time dependent average sync. coefficient
     % -------------------------------------------------------------------------
 
-    subplot(3, 1, 2);
+    subplot(12, 1, [6 7 8]);
     plot(startT:syncWinT:endT, meanTimedSync);
     xlim([startT endT]);
     ylim([0 1]);
@@ -109,7 +109,7 @@ parfor jobNum = jobNums
     
     
     job_id = jobNum - jobNums(1) + 1;
-    subplot(3, 1, 3);
+    subplot(12, 1, [10 11 12]);
     plot(trackTimeAxis, sqrt(blobTracks_r(:, job_id).^2 + blobTracks_c(:, job_id).^2));
     xlim([startT endT]);
     
