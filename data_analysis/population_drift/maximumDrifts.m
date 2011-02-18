@@ -21,9 +21,9 @@ endTime = 200;
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
 
-preprocess = false;
+preprocess = true;
     
-jobNums = 2100:2199;
+jobNums = 10200:10299;
 
 % Options needed from at least one run
 %opts = parseOptions(options);
@@ -32,7 +32,7 @@ jobNums = 2100:2199;
 % Preprocess tracking data if necessary
 if (preprocess == true)
     %folder = 'results/static_wave/zero_velocity/';
-    folder = '../../../central_data_store/simulation_data/multiple_bump_spiking_net/002_bump_initialized/';
+    folder = 'data/sigma_0_2/';
 
     nFiles = numel(jobNums);
     
@@ -41,7 +41,12 @@ if (preprocess == true)
     blobTracks_c = blobTracks_r;
 
     parfor f_it = 1:nFiles
+        jobNums(f_it)
         d = dir([folder 'job' num2str(jobNums(f_it)) '*.mat'])
+        if (numel(d) == 0)
+            warning(['Could not open job no.' num2str(jobNums(f_it))]);
+            continue;
+        end
         % Load file which contains the tracking data and extract the spike
         % histogram and blob positions
         d(end).name
@@ -122,4 +127,4 @@ axis equal;
 
 
 set(gcf,'PaperPositionMode','auto');
-print('-depsc2', 'results/bump_initialized-maximumDrifts.eps');
+print('-depsc2', 'results/noise_sigma_0_2-maximumDrifts.eps');
