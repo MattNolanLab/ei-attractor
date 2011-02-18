@@ -11,7 +11,7 @@ opt = parseOptions(options);
 % MvR distance parameters
 tc = 0.025;
 dt = 0.001;
-startT = 0;
+startT = 10;
 endT = 200;
 ISI = 0.1; % average isi
 rad = 20; % Neighborhood radius - in neural units

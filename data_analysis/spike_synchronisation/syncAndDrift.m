@@ -7,10 +7,10 @@ path('../include/', path);
 close all;
 clear all;
 
-jobNums = 40000:40040;
-dataFolder = '../../../central_data_store/simulation_data/spike_synchronization/';
+jobNums = 2100 + [17 18 34 35 64:69 73 74 75 78 79 80 83:85 88 91:99];
+dataFolder = '../../../central_data_store/simulation_data/multiple_bump_spiking_net/002_bump_initialized/';
 outputFolder = '../../../central_data_store/data_analysis/spike_synchronisation/time_dependent_sync/SyncAndDrift/'
-load([dataFolder 'driftsResults_40000-40099.mat'], 'blobTracks_c', 'blobTracks_r');
+load([dataFolder 'driftsResults_2100-2199.mat'], 'blobTracks_c', 'blobTracks_r');
 
 
 % MvR distance parameters
@@ -19,39 +19,33 @@ dt = 0.001;
 startT = 10;
 endT = 200;
 ISI = 0.1; % average isi
-rad = 20; % Neighborhood radius - in neural units
+rad = 30; % Neighborhood radius - in neural units
 
 syncWinT = 2; % sec
-
-
 
 % The value of venterListID has been determined from freq. spectra of Vm recordings of the
 % neurons see script figureMembraneVFreq.m
 
-nID = 4728; % job40000 - estimated from raster plot
-%nID = 7170; % job40003
-
-spikes_runs = {};
+%nID = 4728; % job40000 - estimated from raster plot
+nID = 4487; % job2000
 for jobNum = jobNums
+    cell_id = jobNum - jobNums(1) + 1
+    
     d = dir([dataFolder 'job' num2str(jobNum) '*.mat'])
     % Load file which contains the tracking data and extract the spike
     % histogram and blob positions
     d(end).name
     clear spikeCell;
-    load([dataFolder d(end).name], 'spikeCell');      
-    %opt = parseOptions(options);
-    spikes_runs{jobNum-jobNums(1)+1} = spikeCell;
-end
+    dataLoad = load([dataFolder d(end).name], 'spikeCell', 'sheet_size');   
+    sheet_size = double(dataLoad.sheet_size);
 
-parfor jobNum = jobNums
-    cell_id = jobNum - jobNums(1) + 1
 
     [pairTimedSync, meanTimedSync, stdTimedSync, neigh_NID] = ...
-        timeDependentSync(spikes_runs{cell_id}, tc, dt, startT, endT, ISI, rad, nID, syncWinT);
+        timeDependentSync(dataLoad.spikeCell, tc, dt, startT, endT, ISI, rad, nID, syncWinT);
 
     sz = size(pairTimedSync);
 
-    figure('Position', [883 528 800 900]); %, 'Visible', 'off');
+    figure('Position', [883 528 800 900], 'Visible', 'off');
     % -------------------------------------------------------------------------
     % Plot time dependent histogram map of sync. coefficient
     % -------------------------------------------------------------------------
@@ -77,10 +71,6 @@ parfor jobNum = jobNums
     xlabel('Time (s)');
     ylabel('Mean D^2_{MvR}');
     title(['Time dependent sync. measure. Blob and around. t_c = ' num2str(tc) ' s.']);
-
-%     % Check for the neighborhood neurons
-%     figure(2);
-%     plot(mod(neigh_NID-1, sheet_size), fix((neigh_NID-1)./sheet_size), '.');
 
 
 
@@ -120,6 +110,11 @@ parfor jobNum = jobNums
     
     set(gcf,'PaperPositionMode','auto');
     print('-depsc2', [outputFolder 'SyncAndDrift_job' num2str(jobNum) '.eps']);
+    
+    
+    % Check for the neighborhood neurons
+    %figure(2);
+    %plot(mod(neigh_NID-1, sheet_size), fix((neigh_NID-1)./sheet_size), '.');
 end
 
 
