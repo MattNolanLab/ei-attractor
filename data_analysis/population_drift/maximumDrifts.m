@@ -23,7 +23,7 @@ delta_t = 0.25; % Should be this value.
 
 preprocess = true;
     
-jobNums = 10200:10299;
+jobNums = 10400:10499;
 
 % Options needed from at least one run
 %opts = parseOptions(options);
@@ -32,7 +32,7 @@ jobNums = 10200:10299;
 % Preprocess tracking data if necessary
 if (preprocess == true)
     %folder = 'results/static_wave/zero_velocity/';
-    folder = 'data/sigma_0_2/';
+    folder = 'data/sigma_0_4/';
 
     nFiles = numel(jobNums);
     
@@ -127,4 +127,4 @@ axis equal;
 
 
 set(gcf,'PaperPositionMode','auto');
-print('-depsc2', 'results/noise_sigma_0_2-maximumDrifts.eps');
+print('-depsc2', 'output/001_noisy_membrane_potential/noise_sigma_0_4-maximumDrifts.eps');
