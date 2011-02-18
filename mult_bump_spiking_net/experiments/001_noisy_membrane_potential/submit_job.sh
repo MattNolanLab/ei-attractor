@@ -38,7 +38,7 @@ F_NOISE_SIGMA="0.01 0.1 0.2 0.3 0.4 0.5"
 
 
 
-job_id=1000
+job_id=10000
 for alpha in $F_ALPHA; do
     for conn_mult in $CONN_MULT; do
         for input in $F_INPUT; do
