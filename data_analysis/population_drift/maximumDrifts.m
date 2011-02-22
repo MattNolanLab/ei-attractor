@@ -23,7 +23,7 @@ delta_t = 0.25; % Should be this value.
 
 preprocess = true;
     
-jobNums = 10400:10499;
+jobNums = 20200:20299;
 
 % Options needed from at least one run
 %opts = parseOptions(options);
@@ -32,7 +32,7 @@ jobNums = 10400:10499;
 % Preprocess tracking data if necessary
 if (preprocess == true)
     %folder = 'results/static_wave/zero_velocity/';
-    folder = 'data/sigma_0_4/';
+    folder = 'data/multiple_bump_spiking_net/003_timeNoise_noInitNoise/sigma_0_1/';
 
     nFiles = numel(jobNums);
     
@@ -127,4 +127,4 @@ axis equal;
 
 
 set(gcf,'PaperPositionMode','auto');
-print('-depsc2', 'output/001_noisy_membrane_potential/noise_sigma_0_4-maximumDrifts.eps');
+print('-depsc2', 'output/003_timeNoise_noInitNoise/noise_sigma_0_1-maximumDrifts.eps');
