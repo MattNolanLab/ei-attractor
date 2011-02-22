@@ -110,9 +110,10 @@ def saveResultsToMat(fileName, options):
 
     savemat(fileName, outData, do_compression=True)
 
-def saveConnectionsToMat(fileName, conn):
+def saveConnectionsToMat(fileName, conn, options):
     outData = {};
     outData['connections'] = asarray(conn.W)
+    outData['options'] = str(options)
     savemat(fileName, outData, do_compression=True)
 
 
@@ -132,6 +133,7 @@ sheet_size = options.sheet_size  # Total no. of neurons will be sheet_size^2
 start_time=time.time()
 
 W = loadConnectionsFromMat(connFileName)
+#W = None
 initCond = loadInitialConditions(initCondFileName)
 
 print "Starting network and connections initialization..."
@@ -149,7 +151,7 @@ print "Network setup time:",duration,"seconds"
 
 # Print connections if necessary and exit
 if (options.save_conn):
-    saveConnectionsToMat("results/connection_matrix.mat", inhibConn)
+    saveConnectionsToMat("results/connection_matrix.mat", inhibConn, options)
     exit();
 
 ratData = loadmat("../../data/hafting_et_al_2005/Hafting_Fig2c_Trial1_preprocessed.mat")
