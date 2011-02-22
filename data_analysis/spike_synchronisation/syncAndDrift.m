@@ -7,7 +7,7 @@ path('../include/', path);
 close all;
 clear all;
 
-jobNums = 2100 + [17 18 34 35 64:69 73 74 75 78 79 80 83:85 88 91:99];
+jobNums = 2100 + [67:69 73 74 75 78 79 80 83:85 88 91:99];
 dataFolder = '../../../central_data_store/simulation_data/multiple_bump_spiking_net/002_bump_initialized/';
 outputFolder = '../../../central_data_store/data_analysis/spike_synchronisation/time_dependent_sync/SyncAndDrift/'
 load([dataFolder 'driftsResults_2100-2199.mat'], 'blobTracks_c', 'blobTracks_r');
@@ -28,7 +28,8 @@ syncWinT = 2; % sec
 
 %nID = 4728; % job40000 - estimated from raster plot
 nID = 4487; % job2000
-for jobNum = jobNums
+parfor it = 1:numel(jobNums)
+    jobNum = jobNums(it)
     cell_id = jobNum - jobNums(1) + 1
     
     d = dir([dataFolder 'job' num2str(jobNum) '*.mat'])
