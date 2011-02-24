@@ -14,36 +14,30 @@ import random
 
 # define provisional model parameters - these might be changed in the future
 
-refractory = 20*ms;
-
-# Synapse parameters
-Ee=0*mvolt
-Ei=-80*mvolt
 
 
-
-def get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui, noise_sigma):
-    #eqs=exp_IF(C,gL,EL,VT,DeltaT)
-    taum = C/gL
-    eqs = '''
-        dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
-        Im = gL*(EL-vm)+gL*DeltaT*exp((vm-VT)/DeltaT) + gi*(Ei - vm) + B  : amp
-        dgi/dt = -gi/taui : siemens
-        B : amp
-        '''
-    #eqs = MembraneEquation(C)+\
-    #       Current('Im=gL*(EL-vm)+gL*DeltaT*exp((vm-VT)/DeltaT):amp',\
-    #               gL=gL,EL=EL,DeltaT=DeltaT,exp=exp,VT=VT)
-
-    #eqs=leaky_IF(taum, EL)
-    # Use only inhibitory connections from Burak&Fiete, 2009. Should work if the
-    # velocity input is non-zero even when speed is zero.
-    #eqs+=exp_conductance('gi',Ei,taui) # from library.synapses
-    #eqs+=Current('''B : amp''')
-
-    # Noise current
-    #eqs+=Current('xi/taum**.5 : amp',taum=taum)
-    return eqs
+#def get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui, noise_sigma):
+#    #eqs=exp_IF(C,gL,EL,VT,DeltaT)
+#    taum = C/gL
+#    eqs = '''
+#        dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
+#        Im = gL*(EL-vm)+gL*DeltaT*exp((vm-VT)/DeltaT) + gi*(Ei - vm) + B  : amp
+#        dgi/dt = -gi/taui : siemens
+#        B : amp
+#        '''
+#    #eqs = MembraneEquation(C)+\
+#    #       Current('Im=gL*(EL-vm)+gL*DeltaT*exp((vm-VT)/DeltaT):amp',\
+#    #               gL=gL,EL=EL,DeltaT=DeltaT,exp=exp,VT=VT)
+#
+#    #eqs=leaky_IF(taum, EL)
+#    # Use only inhibitory connections from Burak&Fiete, 2009. Should work if the
+#    # velocity input is non-zero even when speed is zero.
+#    #eqs+=exp_conductance('gi',Ei,taui) # from library.synapses
+#    #eqs+=Current('''B : amp''')
+#
+#    # Noise current
+#    #eqs+=Current('xi/taum**.5 : amp',taum=taum)
+#    return eqs
 
 
 # Get a preferred direction for a neuron
@@ -67,22 +61,49 @@ def getPreferredDirectionRandom(pos_x, pos_y):
     return random.choice([[0, 1], [0, -1], [-1, 0], [1, 0]]);
 
 
-def createNetwork(sheet_size, lambda_net, l, a, connMult, clock, taum_ms,
-        taui_ms, threshold_mV, noise_sigma_mV, W = None):
+def createNetwork(options, clock, W = None):
+
     C=200*pF
-    taum=taum_ms*msecond
-    taui=taui_ms*msecond
-    threshold=threshold_mV*mvolt
-    noise_sigma = noise_sigma_mV*mvolt
+    refractory = 20*ms;
+    
+    # Synapse parameters
+    Ee=0*mvolt
+    Ei=-80*mvolt
+
+    sheet_size = options.sheet_size
+    l = options.l
+    a = options.a
+    connMult = options.connMult
+
+    taum = options.taum*msecond
+    taui = options.taui*msecond
+    threshold = options.threshold*mvolt
+    noise_sigma = options.noise_sigma*mvolt
+
     gL=C/taum
     EL=-70*mV
     VT=-55*mV
     DeltaT=3*mV
 
-    beta = 3.0 / lambda_net**2
+    beta = 3.0 / options.lambda_net**2
     gamma = 1.05 * beta
 
-    sheetGroup=NeuronGroup(sheet_size**2,model=get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui, noise_sigma),threshold=threshold,reset=EL,refractory=refractory, clock=clock)
+    # Setup neuron equations
+    # Using exponential integrate and fire model
+    eqs = '''
+        dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
+        Im = gL*(EL-vm)+gL*DeltaT*exp((vm-VT)/DeltaT) + gi*(Ei - vm) + B  : amp
+        dgi/dt = -gi/taui : siemens
+        B : amp
+        '''
+
+    sheetGroup = NeuronGroup(
+            options.sheet_size**2,
+            model=eqs,
+            threshold=threshold,
+            reset=EL,
+            refractory=refractory,
+            clock=clock)
 
     if (W == None):
         inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense');
