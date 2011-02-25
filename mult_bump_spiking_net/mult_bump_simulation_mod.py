@@ -58,23 +58,41 @@ def getOptParser():
 
 
 # Save the results of the simulation in a .mat file
-def saveResultsToMat(fileName, options, ratData, spikeMonitor, SNMonitor,
+def saveResultsToMat(options, ratData, spikeMonitor, SNMonitor,
         SNgMonitor):
     # SNMonitor - monitor of single neurons, defined by list
     # SNList - list of neuron numbers monitored (SN response)
     # spikeMonitor - monitor of spikes of all neurons
     # rateMonitor - rate monitor of several neurons (TODO)
-    outData = ratData
+
+    # Directory and filenames
+    timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+    dirName = options.output_dir
+    
+    output_fname = dirName
+    if options.job_num != -1:
+        output_fname = output_fname + 'job' + str(options.job_num)
+    output_fname +=  '_' + timeSnapshot + '_output.mat'
+
+    # Start saving everything
+    if ratData == None:
+        outData = {}
+    else:
+        outData = ratData
 
     spikeCell = empty((options.sheet_size**2), dtype=object);
 
-    for k,v in spikeMonitor.spiketimes.iteritems():
-        spikeCell[k] = v
-    outData['spikeCell'] = spikeCell
+    if spikeMonitor != None:
+        for k,v in spikeMonitor.spiketimes.iteritems():
+            spikeCell[k] = v
+        outData['spikeCell'] = spikeCell
 
-    if options.record_sn == True:
+    if SNMonitor != None:
         outData['SNMonitor_values'] = SNMonitor.values_
         outData['SNMonitor_times'] =  SNMonitor.times_
+        outData['SNList'] = SNList
+
+    if SNgMonitor != None:
         outData['SNgMonitor_times'] = SNgMonitor.times_
         outData['SNgMonitor_values'] =SNgMonitor.values_ 
         outData['SNList'] = SNList
@@ -89,7 +107,7 @@ def saveResultsToMat(fileName, options, ratData, spikeMonitor, SNMonitor,
     outData['options'] = str(options)
     outData['sheet_size'] = options.sheet_size
 
-    savemat(fileName, outData, do_compression=True)
+    savemat(output_fname, outData, do_compression=True)
 
 def saveConnectionsToMat(fileName, conn, options):
     outData = {};
