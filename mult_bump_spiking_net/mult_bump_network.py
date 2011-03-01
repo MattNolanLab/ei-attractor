@@ -132,7 +132,7 @@ def createNetwork(options, clock, W = None):
         
                 abs_x_sq = (i_x - j_x -l*prefDir[0])**2 + (i_y - j_y - l*prefDir[1])**2
                 w = a*math.e**(-gamma*(abs_x_sq)) - math.e**(-beta*(abs_x_sq));
-                inh_matrix[j, i] = connMult*abs(w)*nS
+                inh_matrix[j, i] = connMult*abs(w)*1e-9
     else:
         inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense')
         print 'Initializing connections from file...'
