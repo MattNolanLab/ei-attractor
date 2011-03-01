@@ -3,7 +3,7 @@ close all;
 
 opt = parseOptions(options);
 
-endTime = 200;
+endTime = 30;
 
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.

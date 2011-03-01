@@ -48,10 +48,6 @@ def getOptParser():
             help="Inhibitory synaptic time constant (ms)")
     optParser.add_option("--threshold", type="float", default=-20, dest="threshold",
             help="Integrate and fire spiking threshold (mV)")
-    optParser.add_option("--record-sn", action="store_true", dest="record_sn",
-            default=False, help="Record single neuron responses");
-    optParser.add_option("--record-sn-row", action="store_true",
-        dest="record_sn_row", default=False, help="Record membrane potential of row in the middle of the sheet")
     optParser.add_option("--output-dir", type="string", default="results/", dest="output_dir", help="Output directory path.")
 
     return optParser
