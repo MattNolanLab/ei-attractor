@@ -8,7 +8,15 @@
 #                                      #
 ########################################
 
-export PYTHONPATH=/disk/scratch/s0966762/lib/python2.6/site-packages
+# Initialise environment module
+
+. /etc/profile.d/modules.sh
+
+# Use python 2.6
+
+module load python/2.6.3
+
+export PYTHONPATH=/exports/work/informatics/s0966762/python-modules/lib/python2.6/site-packages
 
 F_SHEET_SIZE="$1"
 F_TIME="$2"

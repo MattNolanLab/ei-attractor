@@ -34,8 +34,8 @@ velocityClock = Clock(dt=vel_dt)
 printStatusClock = Clock(dt=options.update_interval*second)
 
 # Provisional loading of connection weights and initial conditions from a mat file (settings)
-connFileName = '../../central_data_store/data/connections_96.mat'
-initCondFileName = '../../data/initial_conditions/initial_conditions_96.mat'
+connFileName = '../../central_data_store/data/connections_96_l0.mat'
+initCondFileName = '../../data/initial_conditions/initial_conditions_96_transposed.mat'
 vm_init_rand = 10.0*mV
 
 
