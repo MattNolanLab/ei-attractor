@@ -21,9 +21,9 @@ endTime = 200;
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
 
-preprocess = true;
+preprocess = false;
     
-jobNums = 20600:20699;
+jobNums = 30000:30099;
 
 % Options needed from at least one run
 %opts = parseOptions(options);
@@ -32,7 +32,7 @@ jobNums = 20600:20699;
 % Preprocess tracking data if necessary
 if (preprocess == true)
     %folder = 'results/static_wave/zero_velocity/';
-    folder = 'data/multiple_bump_spiking_net/003_timeNoise_noInitNoise/sigma_0_5/';
+    folder = 'data/multiple_bump_spiking_net/004_NoisyNetwork_NoPrefDirs/correction_l0/sigma_0_1/';
 
     nFiles = numel(jobNums);
     
@@ -92,7 +92,7 @@ max_min_c = [max_c; min_c];
 [absMax_r absMax_ri] = max(abs(max_min_r));
 [absMax_c absMax_ci] = max(abs(max_min_c));
 
-[absMax_rr absMax_rri] = max(absMax_r);
+[absMax_rr absMax_rri] = max(absMax_c);
 
 
 fontSize = 14;
@@ -127,4 +127,4 @@ axis equal;
 
 
 set(gcf,'PaperPositionMode','auto');
-print('-depsc2', 'output/003_timeNoise_noInitNoise/noise_sigma_0_5-maximumDrifts.eps');
+%print('-depsc2', 'output/003_timeNoise_noInitNoise/noise_sigma_0_5-maximumDrifts.eps');

@@ -9,7 +9,7 @@ min_stat = 750; % minimal no.of ISI samples
 
 % load
 
-createISI;  % script to compute ISI cell array - side effects
+isi = createISI(spikeCell);
 
 for nID = 1:sheet_size^2
     tmp_isi = isi{nID};

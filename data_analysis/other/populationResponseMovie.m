@@ -29,3 +29,5 @@ for t = 0:dt_track:endTime
     
     it = it+1;
 end
+
+clear spikeHist;
