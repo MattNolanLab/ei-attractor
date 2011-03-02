@@ -21,9 +21,9 @@ endTime = 200;
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
 
-preprocess = true;
+preprocess = false;
     
-jobNums = 30000:30099;
+jobNums = 10000:10099;
 
 % Options needed from at least one run
 %opts = parseOptions(options);
@@ -31,7 +31,7 @@ jobNums = 30000:30099;
 
 % Preprocess tracking data if necessary
 if (preprocess == true)
-    folder = 'data/006_StartFromEL/lambda_net_13/';
+    folder = 'data/006_StartFromEL/lambda_net_20/';
 
     nFiles = numel(jobNums);
     
@@ -105,8 +105,9 @@ for it = 1:size(blobTracks_r, 2)
 end
 xlabel('X drift (neurons)');
 ylabel('Y drift (neurons)');
+title('Maximum population drifts in X and Y directions, noise\_sigma = 0.01 mV');
 axis equal;
 
 
 set(gcf,'PaperPositionMode','auto');
-print('-depsc2', 'output/006_StartFromEL/lambda_net_13-maximumDrifts.eps');
+print('-depsc2', 'output/006_StartFromEL/noise_sigma_0_01-maximumDrifts.eps');
