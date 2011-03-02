@@ -3,7 +3,8 @@ close all;
 
 opt = parseOptions(options);
 
-endTime = 30;
+startTime = 0;
+endTime = 70;
 
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
@@ -18,7 +19,7 @@ set(gcf, 'Visible', 'off');
 
 disp 'Printing frames';
 it = 1;
-for t = 0:dt_track:endTime
+for t = startTime:dt_track:endTime
     t
     firingPop = getFiringPop(spikeHist, t, dt_track, delta_t);
     image(firingPop, 'Parent', gca);

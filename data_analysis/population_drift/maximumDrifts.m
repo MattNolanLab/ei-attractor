@@ -21,7 +21,7 @@ endTime = 200;
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
 
-preprocess = false;
+preprocess = true;
     
 jobNums = 30000:30099;
 
@@ -31,8 +31,7 @@ jobNums = 30000:30099;
 
 % Preprocess tracking data if necessary
 if (preprocess == true)
-    %folder = 'results/static_wave/zero_velocity/';
-    folder = 'data/multiple_bump_spiking_net/004_NoisyNetwork_NoPrefDirs/correction_l0/sigma_0_1/';
+    folder = 'data/006_StartFromEL/lambda_net_13/';
 
     nFiles = numel(jobNums);
     
@@ -97,34 +96,17 @@ max_min_c = [max_c; min_c];
 
 fontSize = 14;
 figure('Position', [883 528 800 420]);
-times = 0:dt_track:endTime-startTime-delta_t/2;
-subplot(2, 5, [1 2 3], 'FontSize', fontSize);
-plot(times, blobTracks_c(1:numel(times), absMax_rri), 'b');
-ylabel('X drift (neurons)');
-subplot(2, 5, [6 7 8], 'FontSize', fontSize);
-plot(times, blobTracks_r(1:numel(times), absMax_rri), 'b');
-%ylim([-5 25]);
 
-xlabel('Time (s)');
-ylabel('Y drift (neurons)');
-%axis normal;
 
-subplot(1, 10, [8 9 10], 'FontSize', fontSize);
+subplot(1, 1, 1, 'FontSize', fontSize);
 for it = 1:size(blobTracks_r, 2)
     hold on;
     plot(max_min_c(absMax_ci(it), it), max_min_r(absMax_ri(it), it), '.', 'MarkerFaceColor', 'k', 'MarkerSize', 5);
 end
 xlabel('X drift (neurons)');
 ylabel('Y drift (neurons)');
-hold on;
-plot(max_min_c(absMax_ci(absMax_rri), absMax_rri), max_min_r(absMax_ri(absMax_rri), absMax_rri), 'sb', 'MarkerSize', 30);
-%plot(max_min_c(absMax_ci(absMax_rri), absMax_rri), max_min_r(absMax_ri(absMax_rri), absMax_rri), 'ob', 'MarkerFaceColor', 'b');
-%quiver(max_c(max_ri), max_r(max_ri), -5, -5);
-hold off;
 axis equal;
-%ylim([0 24]);
-%xlim([0 14]);
 
 
 set(gcf,'PaperPositionMode','auto');
-%print('-depsc2', 'output/003_timeNoise_noInitNoise/noise_sigma_0_5-maximumDrifts.eps');
+print('-depsc2', 'output/006_StartFromEL/lambda_net_13-maximumDrifts.eps');
