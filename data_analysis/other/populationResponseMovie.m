@@ -1,10 +1,11 @@
 % Create population response movie
 close all;
+clear M;
 
 opt = parseOptions(options);
 
 startTime = 0;
-endTime = 70;
+endTime = 20;
 
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
@@ -14,7 +15,7 @@ disp 'Creating spike histogram';
 spikeHist = createSpikeHistCell(1:numel(spikeCell), spikeCell, ...
     dt_track, 0, endTime);
 
-figure(1);
+figure(2);
 set(gcf, 'Visible', 'off');
 
 disp 'Printing frames';

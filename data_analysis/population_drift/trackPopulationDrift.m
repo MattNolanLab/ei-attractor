@@ -10,6 +10,7 @@ function [blobPos_r, blobPos_c] = trackPopulationDrift(startTime, endTime, spike
     t_end = endTime-delta_t/2;
 
     firingPop = getFiringPop(spikeHist, t_start, dt_track, delta_t);
+    firingPop = reshape(firingPop, sheet_size, sheet_size)';
     [currBlobPos_r currBlobPos_c] = trackBlobs(firingPop);
 
     % Find a blob nearest to the center of sheet
@@ -27,6 +28,7 @@ function [blobPos_r, blobPos_c] = trackPopulationDrift(startTime, endTime, spike
     nUpdate = 100;
     for t = t_start:dt_track:t_end
         firingPop = getFiringPop(spikeHist, t, dt_track, delta_t);
+        firingPop = reshape(firingPop, sheet_size, sheet_size)';
         [r, c] = trackBlobs(firingPop);
 
         % Find blob nearest to the last position and record its position

@@ -14,24 +14,21 @@
 %     response drift, created from run which is most erroneous
 path('../include/', path);
 close all;
+clear all;
 
 startTime = 10;
-endTime = 200;
+endTime = 30;
 
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
 
-preprocess = false;
-    
-jobNums = 10000:10099;
+preprocess = true;
 
-% Options needed from at least one run
-%opts = parseOptions(options);
-%sheet_size = opts.sheet_size;
+folder = 'data/001_noisy_membrane_potential/sigma_0_01/';
+jobNums = 10000:10099;
 
 % Preprocess tracking data if necessary
 if (preprocess == true)
-    folder = 'data/006_StartFromEL/lambda_net_20/';
 
     nFiles = numel(jobNums);
     
@@ -39,7 +36,7 @@ if (preprocess == true)
     blobTracks_r = zeros(numel(startTime:dt_track:endTime)-1, numel(jobNums));
     blobTracks_c = blobTracks_r;
 
-    parfor f_it = 1:nFiles
+    for f_it = 1:nFiles
         jobNums(f_it)
         d = dir([folder 'job' num2str(jobNums(f_it)) '*.mat'])
         if (numel(d) == 0)
@@ -69,7 +66,7 @@ if (preprocess == true)
     save('-v7.3', [folder 'driftsResults_' num2str(jobNums(1)) '-' num2str(jobNums(end)) '.mat']);
     
 else  
-    % Assuming results/driftResults.mat has been loaded
+    load([folder '/driftsResults_' num2str(jobNums(1)) '-' num2str(jobNums(end))]);
 end
 
 
@@ -77,9 +74,6 @@ end
 % ------------------------------------------------------------------------
 % Plot  both drifts in x and y directions
 % ------------------------------------------------------------------------
-%plotTrack_r = abs(blobTracks_r);
-%plotTrack_c = abs(blobTracks_c);
-
 max_r = max(blobTracks_r);
 max_c = max(blobTracks_c);
 min_r = min(blobTracks_r);
@@ -105,9 +99,45 @@ for it = 1:size(blobTracks_r, 2)
 end
 xlabel('X drift (neurons)');
 ylabel('Y drift (neurons)');
-title('Maximum population drifts in X and Y directions, noise\_sigma = 0.01 mV');
+title(['Maximum drifts in X and Y directions, ' ...
+    'bump NO initialisation, noise\_sigma = 0.01 mV']);
 axis equal;
 
 
 set(gcf,'PaperPositionMode','auto');
-print('-depsc2', 'output/006_StartFromEL/noise_sigma_0_01-maximumDrifts.eps');
+%print('-depsc2', ...
+%   'output/001_noisy_membrane_potential/noise_sigma_0_01-maximumDrifts.eps');
+
+
+% ------------------------------------------------------------------------
+% Plot high drifts in both directions
+% ------------------------------------------------------------------------
+highDriftThreshold_c = 4;
+highDriftThreshold_r = 4;
+
+high_id_c = find(absMax_c > highDriftThreshold_c);
+high_id_r = find(absMax_r > highDriftThreshold_r);
+
+figure('Position', [0 0 800, 500]);
+subplot(2, 1, 1);
+if (numel(high_id_c) >0)
+    plot(startTime:dt_track:endTime-dt_track, blobTracks_c(:, high_id_c));
+end
+ylabel('X Drift (neurons)');
+title(['Detailed drifts of populations that reach absmax > ' num2str(highDriftThreshold_c)]);
+for it = 1:numel(high_id_c)
+    leg_c{it} = ['job ' num2str(high_id_c(it))];
+end
+legend(leg_c, 'Location', 'SouthEast');
+
+subplot(2, 1, 2);
+if (numel(high_id_r) > 0)
+    plot(startTime:dt_track:endTime-dt_track, blobTracks_r(:, high_id_r));
+end
+xlabel('Time (s)');
+ylabel('Y Drift (neurons)');
+title(['Detailed drifts of populations that reach absmax > ' num2str(highDriftThreshold_r)]);
+for it = 1:numel(high_id_c)
+    leg_c{it} = ['job ' num2str(high_id_c(it))];
+end
+legend(leg_c, 'Location', 'SouthEast');
