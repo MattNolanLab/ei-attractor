@@ -120,24 +120,18 @@ def loadInitialConditions(fileName):
 
 
 
-def updateVelocityRat():
-    global vIndex
-    global input
-    # the original data are in cm/s, however, we rather want m/s 
-    vel_x = (rat_pos_x[vIndex + 1] - rat_pos_x[vIndex])/vel_dt/100*second
-    vel_y = (rat_pos_y[vIndex + 1] - rat_pos_y[vIndex])/vel_dt/100*second
-    #vel_x = 0
-    #vel_y = 0
-
-    i = 0
-    for i_y in xrange(sheet_size):
-        for i_x in xrange(sheet_size):
-            prefDir = getPreferredDirection(i_x, i_y)
-            sheetGroup.B[i] = (input + options.alpha*(prefDir[0]*vel_x +
-                prefDir[1]*vel_y))*namp
-            i+=1
-
-    vIndex+=1
+#def updateVelocityRat(vIndex, input, rat_pos_x, rat_pos_y, sheetGroup, vel_dt):
+#    # the original data are in cm/s, however, we rather want m/s 
+#    vel_x = (rat_pos_x[vIndex + 1] - rat_pos_x[vIndex])/vel_dt/100*second
+#    vel_y = (rat_pos_y[vIndex + 1] - rat_pos_y[vIndex])/vel_dt/100*second
+#
+#    i = 0
+#    for i_y in xrange(sheet_size):
+#        for i_x in xrange(sheet_size):
+#            prefDir = getPreferredDirection(i_x, i_y)
+#            sheetGroup.B[i] = (input + options.alpha*(prefDir[0]*vel_x +
+#                prefDir[1]*vel_y))*namp
+#            i+=1
 
 
 def updateVelocityZero():

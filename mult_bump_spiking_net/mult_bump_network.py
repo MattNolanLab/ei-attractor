@@ -12,33 +12,6 @@ import time
 import math
 import random
 
-# define provisional model parameters - these might be changed in the future
-
-
-
-#def get_exp_IF(C, gL, EL, VT, DeltaT, Ei, taui, noise_sigma):
-#    #eqs=exp_IF(C,gL,EL,VT,DeltaT)
-#    taum = C/gL
-#    eqs = '''
-#        dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
-#        Im = gL*(EL-vm)+gL*DeltaT*exp((vm-VT)/DeltaT) + gi*(Ei - vm) + B  : amp
-#        dgi/dt = -gi/taui : siemens
-#        B : amp
-#        '''
-#    #eqs = MembraneEquation(C)+\
-#    #       Current('Im=gL*(EL-vm)+gL*DeltaT*exp((vm-VT)/DeltaT):amp',\
-#    #               gL=gL,EL=EL,DeltaT=DeltaT,exp=exp,VT=VT)
-#
-#    #eqs=leaky_IF(taum, EL)
-#    # Use only inhibitory connections from Burak&Fiete, 2009. Should work if the
-#    # velocity input is non-zero even when speed is zero.
-#    #eqs+=exp_conductance('gi',Ei,taui) # from library.synapses
-#    #eqs+=Current('''B : amp''')
-#
-#    # Noise current
-#    #eqs+=Current('xi/taum**.5 : amp',taum=taum)
-#    return eqs
-
 
 # Get a preferred direction for a neuron
 def getPreferredDirection(pos_x, pos_y):
