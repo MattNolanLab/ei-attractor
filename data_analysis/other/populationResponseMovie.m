@@ -2,7 +2,7 @@
 path('../include', path);
 
 startTime = 0;
-endTime = 10;
+endTime = 20;
 
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
@@ -27,9 +27,9 @@ for f_it = 1:nFiles
     % histogram and blob positions
     d(end).name
     %clear spikeCell
-    dataLoad = load([folder d(end).name], 'spikeCell');       
+    dataLoad = load([folder d(end).name], 'spikeCell', 'options');       
     spikeCell = dataLoad.spikeCell;
-    %opts = parseOptions(dataLoad.options);
+    opts = parseOptions(dataLoad.options);
 
     disp 'Creating spike histogram';
     spikeHist = createSpikeHistCell(1:numel(spikeCell), spikeCell, ...
@@ -43,8 +43,11 @@ for f_it = 1:nFiles
     for t = startTime:dt_track:endTime
         t
         firingPop = getFiringPop(spikeHist, t, dt_track, delta_t);
-        firingPop = reshape(firingPop, sheet_size, sheet_size)';
+        firingPop = reshape(firingPop, opts.sheet_size, opts.sheet_size)';
         image(firingPop, 'Parent', gca);
+        title(['Blob spacing: lambda\_net = ' num2str(opts.lambda_net)]);
+        xlabel('Neuron no.');
+        ylabel('Neuron no.');
         axis equal tight;
         colorbar;
 
