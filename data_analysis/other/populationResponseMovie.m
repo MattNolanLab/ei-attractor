@@ -2,7 +2,7 @@
 path('../include', path);
 
 startTime = 0;
-endTime = 20;
+endTime = 50;
 
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.

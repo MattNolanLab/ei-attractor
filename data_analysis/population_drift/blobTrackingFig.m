@@ -24,16 +24,16 @@ if preprocess == true
     spikeHist = createSpikeHistCell(1:sheet_size^2, spikeCell, dt_track, startTime, endTime);  % a script - side effects
 end
 
-t = 100;
+t = 20;
 firingPop = getFiringPop(spikeHist, t, dt_track, delta_t);
-firingPop = reshape(firingPop, sheet_size, sheet_size)';
-[r, c, thrFiringPop, segFiringPop] = trackBlobs(firingPop);
+firingPop = reshape(firingPop, sheet_size, sheet_size);
+[r, c, thrFiringPop, segFiringPop] = trackSingleBlob(firingPop);
 
 fontSize = 14;
 figure('Position', [680 660 1000 280]);
 
 subplot(1, 4, 1, 'FontSize', fontSize);
-pcolor(firingPop);
+pcolor(firingPop');
 colormap(gca(), 'Jet');
 axis square;
 shading flat;
@@ -60,22 +60,22 @@ set(gca(), 'YTick', []);
 title 'C'
 
 
-t = 419;
-firingPop = getFiringPop(spikeHist, t, dt_track, delta_t);
-[r, c, thrFiringPop, segFiringPop] = trackBlobs(firingPop);
-
-subplot(1, 4, 4, 'FontSize', fontSize);
-pcolor(firingPop);
-hold on;
-plot(c, r, 'ok', 'LineWidth', 3, 'MarkerSize', 2)
-axis square;
-shading flat;
-set(gca(), 'XTick', []);
-set(gca(), 'YTick', []);
-title 'D'
-
-set(gcf(), 'PaperPositionMode', 'auto', 'Renderer', 'painters');
-print -depsc2 '../../thesis/src/fig/blobTracking.eps';
+% t = 419;
+% firingPop = getFiringPop(spikeHist, t, dt_track, delta_t);
+% [r, c, thrFiringPop, segFiringPop] = trackBlobs(firingPop);
+% 
+% subplot(1, 4, 4, 'FontSize', fontSize);
+% pcolor(firingPop);
+% hold on;
+% plot(c, r, 'ok', 'LineWidth', 3, 'MarkerSize', 2)
+% axis square;
+% shading flat;
+% set(gca(), 'XTick', []);
+% set(gca(), 'YTick', []);
+% title 'D'
+% 
+% set(gcf(), 'PaperPositionMode', 'auto', 'Renderer', 'painters');
+% print -depsc2 '../../thesis/src/fig/blobTracking.eps';
 
 
 %figure();
