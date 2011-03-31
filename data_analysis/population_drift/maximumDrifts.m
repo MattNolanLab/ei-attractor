@@ -22,13 +22,88 @@ endTime = 30;
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
 
-preprocess = true;
 
-folder = 'data/001_noisy_membrane_potential/sigma_0_01/';
-jobNums = 10000:10099;
+% -------------------------------------------------------------------------
+% Parameters
+% -------------------------------------------------------------------------
+folders.noisy_membrane_potential_001 = 'data/001_noisy_membrane_potential/sigma_0_01/';
+
+Burak_Fiete_PrefDirs_000_001.folder = 'data/000_001_Burak_Fiete_PrefDirs/';
+Burak_Fiete_PrefDirs_000_001.jobNums = 40000:40099;
+Burak_Fiete_PrefDirs_000_001.title = '';
+Burak_Fiete_PrefDirs_000_001.preprocess = false;
+Burak_Fiete_PrefDirs_000_001.xlim = [-20 20];
+Burak_Fiete_PrefDirs_000_001.ylim = [-15 15];
+Burak_Fiete_PrefDirs_000_001.output = 'output/000_001_Burak_Fiete_PrefDirs/maximumDrifts-40000-40099.eps';
+
+
+bump_initialized_002.folder = 'data/002_bump_initialized/';
+bump_initialized_002.jobNums = 2100:2199;
+bump_initialized_002.title = '';
+bump_initialized_002.preprocess = false;
+bump_initialized_002.xlim = [-20 20];
+bump_initialized_002.ylim = [-15 15];
+bump_initialized_002.output = 'output/002_bump_initialized/maximumDrifts-2100-2199.eps';
+
+timeNoise_noInitNoise_003.sigma_0_1.folder = 'data/003_timeNoise_noInitNoise/sigma_0_1/';
+timeNoise_noInitNoise_003.sigma_0_1.jobNums = 20200:20299;
+timeNoise_noInitNoise_003.sigma_0_1.title = '';
+timeNoise_noInitNoise_003.sigma_0_1.preprocess = false;
+timeNoise_noInitNoise_003.sigma_0_1.xlim = [-10 10];
+timeNoise_noInitNoise_003.sigma_0_1.ylim = [-10 10];
+timeNoise_noInitNoise_003.sigma_0_1.output = 'output/003_timeNoise_noInitNoise/noise_sigma_0_1-maximumDrifts.eps';
+
+StartFromEL_006.lambda_net_20.folder = 'data/006_StartFromEL/lambda_net_20';
+StartFromEL_006.lambda_net_20.jobNums = 30100:30199;
+StartFromEL_006.lambda_net_20.title = '';
+StartFromEL_006.lambda_net_20.preprocess = false;
+StartFromEL_006.lambda_net_20.xlim = [-10 10];
+StartFromEL_006.lambda_net_20.ylim = [-10 10];
+StartFromEL_006.lambda_net_20.output = 'output/006_StartFromEL/lambda_net_20-maximumDrifts.eps';
+
+SpacingDrifts_009.lambda_net_13.folder = 'data/009_SpacingDrifts/lambda_net_13/';
+SpacingDrifts_009.lambda_net_13.jobNums = 90000:90099;
+SpacingDrifts_009.lambda_net_13.title = '';
+SpacingDrifts_009.lambda_net_13.preprocess = false;
+SpacingDrifts_009.lambda_net_13.xlim = [-10 10];
+SpacingDrifts_009.lambda_net_13.ylim = [-10 10];
+SpacingDrifts_009.lambda_net_13.output = 'output/009_SpacingDrifts/lambda_net_13-maximumDrifts.eps';
+
+SpacingDrifts_009.lambda_net_14.folder = 'data/009_SpacingDrifts/lambda_net_14/';
+SpacingDrifts_009.lambda_net_14.jobNums = 90100:90199;
+SpacingDrifts_009.lambda_net_14.title = '';
+SpacingDrifts_009.lambda_net_14.preprocess = false;
+SpacingDrifts_009.lambda_net_14.xlim = [-10 10];
+SpacingDrifts_009.lambda_net_14.ylim = [-10 10];
+SpacingDrifts_009.lambda_net_14.output = 'output/009_SpacingDrifts/lambda_net_14-maximumDrifts.eps';
+
+SpacingDrifts_009.lambda_net_16.folder = 'data/009_SpacingDrifts/lambda_net_16/';
+SpacingDrifts_009.lambda_net_16.jobNums = 90200:90299;
+SpacingDrifts_009.lambda_net_16.title = '';
+SpacingDrifts_009.lambda_net_16.preprocess = false;
+SpacingDrifts_009.lambda_net_16.xlim = [-10 10];
+SpacingDrifts_009.lambda_net_16.ylim = [-10 10];
+SpacingDrifts_009.lambda_net_16.output = 'output/009_SpacingDrifts/lambda_net_16-maximumDrifts.eps';
+
+SpacingDrifts_009.lambda_net_18.folder = 'data/009_SpacingDrifts/lambda_net_18/';
+SpacingDrifts_009.lambda_net_18.jobNums = 90300:90399;
+SpacingDrifts_009.lambda_net_18.title = '';
+SpacingDrifts_009.lambda_net_18.preprocess = false;
+SpacingDrifts_009.lambda_net_18.xlim = [-10 10];
+SpacingDrifts_009.lambda_net_18.ylim = [-10 10];
+SpacingDrifts_009.lambda_net_18.output = 'output/009_SpacingDrifts/lambda_net_18-maximumDrifts.eps';
+
+% -------------------------------------------------------------------------
+% End parameters
+% -------------------------------------------------------------------------
+params = SpacingDrifts_009.lambda_net_18;
+
+
+folder = params.folder; %'data/001_noisy_membrane_potential/sigma_0_01/';
+jobNums = params.jobNums;
 
 % Preprocess tracking data if necessary
-if (preprocess == true)
+if (params.preprocess == true)
 
     nFiles = numel(jobNums);
     
@@ -95,25 +170,28 @@ figure('Position', [883 528 800 420]);
 subplot(1, 1, 1, 'FontSize', fontSize);
 for it = 1:size(blobTracks_r, 2)
     hold on;
-    plot(max_min_c(absMax_ci(it), it), max_min_r(absMax_ri(it), it), '.', 'MarkerFaceColor', 'k', 'MarkerSize', 5);
+    plot(max_min_c(absMax_ci(it), it), max_min_r(absMax_ri(it), it), 'o', 'MarkerFaceColor', 'b', 'MarkerSize', 2);
 end
 xlabel('X drift (neurons)');
 ylabel('Y drift (neurons)');
-title(['Maximum drifts in X and Y directions, ' ...
-    'bump NO initialisation, noise\_sigma = 0.01 mV']);
+
+title(params.title);
+% title(['Maximum drifts in X and Y directions, ' ...
+%     'bump NO initialisation, noise\_sigma = 0.01 mV']);
 axis equal;
+xlim(params.xlim);
+ylim(params.ylim);
 
 
 set(gcf,'PaperPositionMode','auto');
-%print('-depsc2', ...
-%   'output/001_noisy_membrane_potential/noise_sigma_0_01-maximumDrifts.eps');
+print('-depsc2', params.output);
 
 
 % ------------------------------------------------------------------------
 % Plot high drifts in both directions
 % ------------------------------------------------------------------------
-highDriftThreshold_c = 4;
-highDriftThreshold_r = 4;
+highDriftThreshold_c = 6;
+highDriftThreshold_r = 6;
 
 high_id_c = find(absMax_c > highDriftThreshold_c);
 high_id_r = find(absMax_r > highDriftThreshold_r);
@@ -126,7 +204,7 @@ end
 ylabel('X Drift (neurons)');
 title(['Detailed drifts of populations that reach absmax > ' num2str(highDriftThreshold_c)]);
 for it = 1:numel(high_id_c)
-    leg_c{it} = ['job ' num2str(high_id_c(it))];
+    leg_c{it} = ['job ' num2str(high_id_c(it) - 1)];
 end
 legend(leg_c, 'Location', 'SouthEast');
 
@@ -137,7 +215,7 @@ end
 xlabel('Time (s)');
 ylabel('Y Drift (neurons)');
 title(['Detailed drifts of populations that reach absmax > ' num2str(highDriftThreshold_r)]);
-for it = 1:numel(high_id_c)
-    leg_c{it} = ['job ' num2str(high_id_c(it))];
+for it = 1:numel(high_id_r)
+    leg_c{it} = ['job ' num2str(high_id_r(it) - 1)];
 end
 legend(leg_c, 'Location', 'SouthEast');
