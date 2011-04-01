@@ -24,7 +24,7 @@ delta_t = 0.25; % Should be this value.
 
 
 driftsParams;  % include parameters
-params = SpacingDrifts_009.lambda_net_18;
+params = prefDirs_NS;
 
 
 folder = params.folder; 
@@ -58,7 +58,7 @@ print('-depsc2', params.output);
 % Plot high drifts in both directions
 % ------------------------------------------------------------------------
 highDriftThreshold_c = 5;
-highDriftThreshold_r = 5;
+highDriftThreshold_r = 10;
 
 high_id_c = find(absMax_c > highDriftThreshold_c);
 high_id_r = find(absMax_r > highDriftThreshold_r);

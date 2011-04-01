@@ -17,7 +17,9 @@ function [absMax_r, absMax_c] = plotMaximumDrifts(ax, params, blobTracks_r, blob
     
     for it = 1:size(blobTracks_r, 2)
         hold on;
-        plot(ax, max_min_c(absMax_ci(it), it), max_min_r(absMax_ri(it), it), 'o', 'MarkerFaceColor', 'b', 'MarkerSize', 2);
+        plot(ax, max_min_c(absMax_ci(it), it), max_min_r(absMax_ri(it), it), 'o', ...
+             'MarkerFaceColor', params.MarkerFaceColor, 'MarkerEdgeColor', ...
+             params.MarkerFaceColor, 'MarkerSize', 3);
     end
     xlabel('X drift (neurons)');
     ylabel('Y drift (neurons)');
