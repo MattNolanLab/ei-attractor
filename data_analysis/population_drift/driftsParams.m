@@ -11,6 +11,7 @@ prefDirs_NS_000_005.ylim = [-20 20];
 prefDirs_NS_000_005.output = 'output/000_005_prefDirs_NS/maximumDrifts-21800-21899.eps';
 prefDirs_NS_000_005.MarkerFaceColor = 'b';
 
+% ----------------------------------------------------------------------------
 
 Burak_Fiete_PrefDirs_000_001.folder = 'data/000_001_Burak_Fiete_PrefDirs/';
 Burak_Fiete_PrefDirs_000_001.jobNums = 40000:40099;
@@ -21,15 +22,18 @@ Burak_Fiete_PrefDirs_000_001.ylim = [-20 20];
 Burak_Fiete_PrefDirs_000_001.output = 'output/000_001_Burak_Fiete_PrefDirs/maximumDrifts-40000-40099.eps';
 Burak_Fiete_PrefDirs_000_001.MarkerFaceColor = 'b';
 
+% ----------------------------------------------------------------------------
 
 bump_initialized_002.folder = 'data/002_bump_initialized/';
 bump_initialized_002.jobNums = 2100:2199;
 bump_initialized_002.title = '';
 bump_initialized_002.preprocess = false;
 bump_initialized_002.xlim = [-20 20];
-bump_initialized_002.ylim = [-15 15];
+bump_initialized_002.ylim = [-20 20];
 bump_initialized_002.output = 'output/002_bump_initialized/maximumDrifts-2100-2199.eps';
 bump_initialized_002.MarkerFaceColor = 'b';
+
+% ----------------------------------------------------------------------------
 
 timeNoise_noInitNoise_003.sigma_0_1.folder = 'data/003_timeNoise_noInitNoise/sigma_0_1/';
 timeNoise_noInitNoise_003.sigma_0_1.jobNums = 20200:20299;
@@ -40,12 +44,43 @@ timeNoise_noInitNoise_003.sigma_0_1.ylim = [-10 10];
 timeNoise_noInitNoise_003.sigma_0_1.output = 'output/003_timeNoise_noInitNoise/noise_sigma_0_1-maximumDrifts.eps';
 timeNoise_noInitNoise_003.sigma_0_1.MarkerFaceColor = 'b';
 
+timeNoise_noInitNoise_003.sigma_0_2.folder = 'data/003_timeNoise_noInitNoise/sigma_0_2/';
+timeNoise_noInitNoise_003.sigma_0_2.jobNums = 20300:20399;
+timeNoise_noInitNoise_003.sigma_0_2.title = '';
+timeNoise_noInitNoise_003.sigma_0_2.preprocess = false;
+timeNoise_noInitNoise_003.sigma_0_2.xlim = [-10 10];
+timeNoise_noInitNoise_003.sigma_0_2.ylim = [-3 3];
+timeNoise_noInitNoise_003.sigma_0_2.output = 'output/003_timeNoise_noInitNoise/noise_sigma_0_2-maximumDrifts.eps';
+timeNoise_noInitNoise_003.sigma_0_2.MarkerFaceColor = 'b';
+
+% ----------------------------------------------------------------------------
+
+NoisyNetwork_NoPrefDirs_004.sigma_0_1.folder = 'data/004_NoisyNetwork_NoPrefDirs/correction_l0/sigma_0_1/';
+NoisyNetwork_NoPrefDirs_004.sigma_0_1.jobNums = 30000:30099;
+NoisyNetwork_NoPrefDirs_004.sigma_0_1.title = '';
+NoisyNetwork_NoPrefDirs_004.sigma_0_1.preprocess = false;
+NoisyNetwork_NoPrefDirs_004.sigma_0_1.xlim = [-10 10];
+NoisyNetwork_NoPrefDirs_004.sigma_0_1.ylim = [-3 3];
+NoisyNetwork_NoPrefDirs_004.sigma_0_1.output = 'output/004_NoisyNetwork_NoPrefDirs/correction_l0/noise_sigma_0_1-maximumDrifts.eps';
+NoisyNetwork_NoPrefDirs_004.sigma_0_1.MarkerFaceColor = 'b';
+
+NoisyNetwork_NoPrefDirs_004.transp.sigma_0_1.folder = 'data/004_NoisyNetwork_NoPrefDirs/correction_l0/init_cond_transposed/sigma_0_1/';
+NoisyNetwork_NoPrefDirs_004.transp.sigma_0_1.jobNums = 40000:40099;
+NoisyNetwork_NoPrefDirs_004.transp.sigma_0_1.title = '';
+NoisyNetwork_NoPrefDirs_004.transp.sigma_0_1.preprocess = false;
+NoisyNetwork_NoPrefDirs_004.transp.sigma_0_1.xlim = [-3 3];
+NoisyNetwork_NoPrefDirs_004.transp.sigma_0_1.ylim = [-10 10];
+NoisyNetwork_NoPrefDirs_004.transp.sigma_0_1.output = 'output/004_NoisyNetwork_NoPrefDirs/correction_l0/init_cond_transposed/noise_sigma_0_1-maximumDrifts.eps';
+NoisyNetwork_NoPrefDirs_004.transp.sigma_0_1.MarkerFaceColor = 'b';
+
+% ----------------------------------------------------------------------------
+
 StartFromEL_006.lambda_net_20.folder = 'data/006_StartFromEL/lambda_net_20';
 StartFromEL_006.lambda_net_20.jobNums = 30100:30199;
 StartFromEL_006.lambda_net_20.title = '';
 StartFromEL_006.lambda_net_20.preprocess = false;
-StartFromEL_006.lambda_net_20.xlim = [-10 10];
-StartFromEL_006.lambda_net_20.ylim = [-10 10];
+StartFromEL_006.lambda_net_20.xlim = [-20 20];
+StartFromEL_006.lambda_net_20.ylim = [-20 20];
 StartFromEL_006.lambda_net_20.output = 'output/006_StartFromEL/lambda_net_20-maximumDrifts.eps';
 StartFromEL_006.lambda_net_20.lambda_net = 20;
 StartFromEL_006.lambda_net_20.MarkerFaceColor = 'b';

@@ -24,7 +24,7 @@ delta_t = 0.25; % Should be this value.
 
 
 driftsParams;  % include parameters
-params = prefDirs_NS;
+params = StartFromEL_006.lambda_net_20;
 
 
 folder = params.folder; 
@@ -44,9 +44,10 @@ end
 % Plot  both drifts in x and y directions
 % ------------------------------------------------------------------------
 
-fontSize = 14;
-figure('Position', [883 528 800 420]);
+fontSize = 16;
+figure('Position', [883 528 800 600]);
 subplot(1, 1, 1, 'FontSize', fontSize);
+box on;
     
 [absMax_r, absMax_c] = plotMaximumDrifts(gca, params, blobTracks_r, blobTracks_c);
 

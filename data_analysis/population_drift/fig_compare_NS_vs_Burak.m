@@ -32,8 +32,8 @@ par{1}.MarkerFaceColor = [0 0 1];
 par{2}.MarkerFaceColor = [1 0 0];
 
 
-fontSize = 14;
-figure('Position', [883 528 1000 600]);
+fontSize = 16;
+figure('Position', [883 528 800 600]);
 
 for par_it = 1:numel(par)
     params = par{par_it};
@@ -54,6 +54,7 @@ for par_it = 1:numel(par)
     % Plot  both drifts in x and y directions
     % ------------------------------------------------------------------------
     subplot(1, 1, 1, 'FontSize', fontSize);
+    box on;
     plotMaximumDrifts(gca, params, blobTracks_r, blobTracks_c);
 end
 
