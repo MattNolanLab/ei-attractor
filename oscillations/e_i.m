@@ -2,116 +2,69 @@
 clear all;
 close all;
 
-Ne = 800
-Ni = 200
-N = Ne + Ni
-
 % All variables are in basic units, i.e. s, volt, etc.
-taum_e = 10e-3;
-taum_i = 2e-3;
+opt.Ne = 800;
+opt.Ni = 200;
+N = opt.Ne + opt.Ni;
 
-taue = 1e-3;
-taui = 5e-3;
-Vt = -59e-3;
-Vr = -62e-3;
-El = -60e-3;
-we = 100e-3 / N
-wi = 50e-3 / N
 
-e_sparseness = 0.75
-i_sparseness = 0.75
+% Excitatory cells
+opt.taum_e = 9.3e-3;
+opt.taue = 2e-3;
+opt.El_e = -68.5e-3;
+opt.Vt_e = -50.0e-3;
+opt.Vr_e = -60.0e-3;
+opt.e_sparseness = 0.75;
+opt.Ie = 30.0e-3;
+%we = 1/(taue*1000) * 700e-3 / N; % normalize the weight by time constant to inject constant charge
+opt.we = 120e-3 / N;
 
-Ie = 1.4e-3
-Ii = 0;
+
+% Inhibitory cell
+opt.taum_i = 10e-3;
+opt.taui = 5e-3;
+opt.El_i = -60e-3;
+opt.Vt_i = -50e-3;
+opt.Vr_i = -58e-3;
+opt.i_sparseness = 0.75;
+opt.Ii = 5e-3;
+%wi = 1/(taui*1000) * 600e-3 / N;
+opt.wi = 0e-3 / N;
+
+
 
 % Noise normalized per time unit (ms)
-noise_sigma = 0.5e-3 / 1e-3;
+opt.noise_sigma = 0.05e-3 / 1e-3;
+
+
 
 % Euler settings
-dt = 0.1e-3  % 0.1 ms
+opt.dt = 0.1e-3  % 0.1 ms
+dt = opt.dt;
 
 
-% Build excitatory neurons state
-Ve = Vr + (Vt - Vr) * rand(Ne, 1);
-Vi = Vr + (Vt - Vr) * rand(Ni, 1);
+% Firing rate sliding window length
+opt.rateWindowLen = 0.005; %ms
+rateWindowLen = opt.rateWindowLen;
 
-ge = zeros(Ni, 1);
-gi = zeros(Ne, 1);
+% Vm monitor, neuron index
+opt.Emon_i = 100;
+opt.Imon_i = 100;
 
-spikeMon_e = {};
-spikeMon_i = {};
+% simulation time
+opt.T = 0.5;
 
-Emon_i = 200;
-Imon_i = 100;
-Vmon_e = [];
-Vmon_i = [];
-Vmon_t = [];
 
-% Setup connections Mij: j --> i
-% Assuming constant and uniform excitatory/inhibitory weights
-Me = rand(Ni, Ne);
-Mi = rand(Ne, Ni);
-Me = double(Me <= e_sparseness);
-Mi = double(Mi <= i_sparseness);
+[spikeRecord_e, spikeRecord_i, spikeTimes, Vmon, times] = simulateEI(opt);
+spikeMon_e = spikeTimes.e;
+spikeMon_i = spikeTimes.i;
+t_spike = spikeTimes.t_spike;
 
-% Simulation
-T = 2.5;
-times = 0:dt:T;
 
-spikeRecord_e = zeros(Ne, size(times, 2));
+firingRate = getFiringRate(spikeRecord_e, dt, rateWindowLen);
 
-display 'Simulation running...'
-t = 0;
 
-fired_e = zeros(Ne, 1);
-fired_i = zeros(Ni, 1);
-f_i = 1;
-t_spike = [];
-
-t_i = 1;
-for t = times
-    Vmon_e = [Vmon_e Ve(Emon_i)];
-    Vmon_i = [Vmon_i Vi(Imon_i)];
-    Vmon_t = [Vmon_t t];
-    
-
-    % Check if neurons fired and add to syn. conductances
-    
-    gi = gi + Mi*fired_i * wi;
-    ge = ge + Me*fired_e * we;
-    
-    dVe = dt * 1/taum_e * (El - Ve - gi + Ie);
-    dVi = dt * 1/taum_i * (El - Vi + ge + Ii);
-    
-    dge = dt * -1/taue * ge;
-    dgi = dt * -1/taui * gi;
-    
-    Ve = Ve + dVe + dt*noise_sigma*randn(Ne, 1);
-    Vi = Vi + dVi + dt*noise_sigma*randn(Ni, 1);
-    ge = ge + dge;
-    gi = gi + dgi;
-    
-    fired_e = Ve > Vt;
-    fired_i = Vi > Vt;
-    
-    Ve(fired_e) = Vr;
-    Vi(fired_i) = Vr;
-    
-    if (nnz(fired_e) || nnz(fired_i))
-        spikeMon_e{f_i} = find(fired_e);
-        spikeMon_i{f_i} = find(fired_i);
-        t_spike(f_i) = t;
-        f_i = f_i + 1;
-    end
-    
-    spikeRecord_e(:, t_i) = double(fired_e);
-   
-    %t = t + dt;
-    
-    t_i = t_i + 1;
-end
-
-x_lim = [2 2.5];
+x_lim = [0 opt.T];
 
 % Plot the results
 figure('Position', [800 528 1200 800]);
@@ -123,16 +76,16 @@ end
 title('Pyramidal neurons');
 ylabel('Neuron number');
 xlim(x_lim);
-ylim([1 Ne]);
+ylim([1 opt.Ne]);
 
 subplot(5, 1, 2);
-plot(times, getFiringRate(spikeRecord_e, dt, 0.005));
+plot(times, firingRate);
 ylabel('Firing rate (Hz)');
 xlim(x_lim);
 
 
 subplot(5, 1, 3);
-plot(Vmon_t, Vmon_e*1000);
+plot(Vmon.t, Vmon.e*1000);
 %title('Pyramidal neuron');
 ylabel('Vm (mV)');
 xlim(x_lim);
@@ -147,11 +100,11 @@ end
 title('Interneurons');
 ylabel('Neuron number');
 xlim(x_lim);
-ylim([1 Ni]);
+ylim([1 opt.Ni]);
 
 
 subplot(5, 1, 5);
-plot(Vmon_t, Vmon_i*1000);
+plot(Vmon.t, Vmon.i*1000);
 %title('Interneuron');
 ylabel('Vm (mV)');
 xlabel('Time (s)');
@@ -159,6 +112,13 @@ xlim(x_lim);
 
 hold off;
 
-%figure();
 
+%
+% Plot firing rate fft
+%
+figure();
+[Y f NFFT] = fourierTrans(firingRate, dt);
+Y_abs = 2*abs(Y(1:NFFT/2+1));
+plot(f,Y_abs);
+xlim([0 200]);
 
