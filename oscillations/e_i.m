@@ -15,9 +15,9 @@ opt.El_e = -68.5e-3;
 opt.Vt_e = -50.0e-3;
 opt.Vr_e = -60.0e-3;
 opt.e_sparseness = 0.75;
-opt.Ie = 20.0e-3;
+opt.Ie = 18.56e-3;
 %we = 1/(taue*1000) * 700e-3 / N; % normalize the weight by time constant to inject constant charge
-opt.we = 120e-3 / N;
+opt.we = 140e-3 / N;
 
 
 % Inhibitory cell
@@ -27,13 +27,13 @@ opt.El_i = -60e-3;
 opt.Vt_i = -50e-3;
 opt.Vr_i = -58e-3;
 opt.i_sparseness = 0.75;
-opt.Ii = 5e-3;
+opt.Ii = 6e-3;
 %wi = 1/(taui*1000) * 600e-3 / N;
-opt.wi = 70e-3 / N;
+opt.wi = 15e-3 / N;
 
 
 % Noise normalized per time unit (ms)
-opt.noise_sigma = 0.5e-3 / 1e-3;
+opt.noise_sigma = 0.1e-3 / 1e-3;
 
 
 
@@ -43,7 +43,7 @@ dt = opt.dt;
 
 
 % Firing rate sliding window length
-opt.rateWindowLen = 0.002; %ms
+opt.rateWindowLen = 0.005; %ms
 rateWindowLen = opt.rateWindowLen;
 
 % Vm monitor, neuron index
@@ -51,7 +51,7 @@ opt.Emon_i = 100;
 opt.Imon_i = 100;
 
 % simulation time
-opt.T = 0.5;
+opt.T = 2;
 
 tic;
 

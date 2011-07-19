@@ -19,9 +19,9 @@ opt.El_e = -68.5e-3;
 opt.Vt_e = -50.0e-3;
 opt.Vr_e = -60.0e-3;
 opt.e_sparseness = 0.75;
-%opt.Ie = 30.0e-3;
+opt.Ie = 18.5e-3;
 %we = 1/(taue*1000) * 700e-3 / N; % normalize the weight by time constant to inject constant charge
-opt.we = 120e-3 / N;
+opt.we = 140e-3 / N;
 
 
 % Inhibitory cell
@@ -31,13 +31,13 @@ opt.El_i = -60e-3;
 opt.Vt_i = -50e-3;
 opt.Vr_i = -58e-3;
 opt.i_sparseness = 0.75;
-opt.Ii = 5e-3;
+opt.Ii = 6e-3;
 %wi = 1/(taui*1000) * 600e-3 / N;
-opt.wi = 70e-3 / N;
+opt.wi = 15e-3 / N;
 
 
 % Noise normalized per time unit (ms)
-opt.noise_sigma = 0.5e-3 / 1e-3;
+opt.noise_sigma = 0.1e-3 / 1e-3;
 
 
 % Euler settings
@@ -60,10 +60,10 @@ opt.T = 2.5;
 % 
 % Create simulation results
 %
-nTrials = 100;
+nTrials = 25;
 
 param_i = 1;
-for Ie = 19e-3:1e-3:30e-3
+for Ie = 18.5e-3:0.01e-3:18.7e-3
     opt.Ie = Ie;
     Ie
     
@@ -90,4 +90,4 @@ for Ie = 19e-3:1e-3:30e-3
 end
 
 clear tmpresults;
-save('-v7.3', ['e_input_current_output_' date '.mat']);
+save('-v7.3', ['e_input_current_output_' date '_001.mat']);
