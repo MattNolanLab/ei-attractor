@@ -2,6 +2,7 @@ from brian import *
 from brian.library.IF import *
 from brian.library.synapses import *
 from brian.membrane_equations import *
+from brian.library.ionic_currents import *
 
 from scipy import linspace
 #from scipy.io import loadmat
@@ -12,17 +13,47 @@ from datetime import datetime
 #import math
 #import random
 
+class Bunch:
+    def __init__(self, **kwds):
+        self.__dict__.update(kwds)
+
+options = Bunch(
+        stellate = Bunch(
+            Ei   = -10 * mV,
+            taui = 10 * msecond,
+            C    = 1 * uF,
+            gl   = 0.3 * msiemens,
+            El   = 10.6 * mV,
+            gK   = 36 * msiemens,
+            EK   = -12 * mV,
+            gNa  = 120 * msiemens,
+            ENa  = 120 * mV,
+            N    = 100),
+        interneurons = Bunch(
+            Ee   = 10 * mV,
+            taue = 2 * msecond,
+            C    = 1 * uF,
+            gl   = 0.3 * msiemens,
+            El   = 10.6 * mV,
+            gK   = 36 * msiemens,
+            EK   = -12 * mV,
+            gNa  = 120 * msiemens,
+            ENa  = 120 * mV,
+            N    = 100),
+        exc_weight = 0,
+        inh_weight = 0)
+
+
+options.exc_weight = 1/(options.stellate.N + options.stellate.N)
+options.inh_weight = 1/(options.stellate.N + options.stellate.N)
 
 def createStellateCells(options):
     st = options.stellate
 
-    Ei = st.Ei
-    taui = st.taui
-
-    eqs = MembraneEquation(st.C) + leak_current(st.Gl, st.El)
-    eqs += K_current_HH(st.GK, st.EK) + Na_current_HH(st.GNa, st.ENa)
-    eqs += Current('gi*(Ei - vm): amp')
-    eqs += 'dgi/dt = -gi/taui : siemens')
+    eqs = MembraneEquation(st.C) + leak_current(st.gl, st.El)
+    eqs += K_current_HH(st.gK, st.EK) + Na_current_HH(st.gNa, st.ENa)
+    eqs += Current('gi*(Ei - vm) : amp', Ei=st.Ei)
+    eqs += Equations('dgi/dt = -gi/taui : siemens', taui=st.taui)
     eqs += Current('I:amp')
 
     return NeuronGroup(st.N, eqs, implicit=True, freeze=True)
@@ -34,10 +65,10 @@ def createInterneurons(options):
     Ee = int.Ee
     taue = int.taue
 
-    eqs = MembraneEquation(int.C) + leak_current(int.Gl, int.El)
-    eqs += K_current_HH(int.GK, int.EK) + Na_current_HH(int.GNa, int.ENa)
+    eqs = MembraneEquation(int.C) + leak_current(int.gl, int.El)
+    eqs += K_current_HH(int.gK, int.EK) + Na_current_HH(int.gNa, int.ENa)
     eqs += Current('ge*(Ee - vm): amp')
-    eqs += 'dge/dt = -ge/taue : siemens')
+    eqs += 'dge/dt = -ge/taue : siemens'
     eqs += Current('I:amp')
 
     return NeuronGroup(int.N, eqs, implicit=True, freeze=True)
@@ -61,3 +92,11 @@ def createNetwork(options):
             delay=options.delay,
             spareness=options.sparseness,
             weight=options.inh_weight)
+
+
+
+###############################################################################
+
+net = createNetwork(options)
+
+

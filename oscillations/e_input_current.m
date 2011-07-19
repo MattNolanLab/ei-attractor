@@ -54,16 +54,16 @@ opt.Emon_i = 100;
 opt.Imon_i = 100;
 
 % simulation time
-opt.T = 0.1;
+opt.T = 2.5;
 
 
 % 
 % Create simulation results
 %
-nTrials = 3;
+nTrials = 100;
 
 param_i = 1;
-for Ie = 18.5e-3:1e-3:20e-3
+for Ie = 19e-3:1e-3:30e-3
     opt.Ie = Ie;
     Ie
     
@@ -89,4 +89,5 @@ for Ie = 18.5e-3:1e-3:20e-3
     param_i = param_i + 1;
 end
 
+clear tmpresults;
 save('-v7.3', ['e_input_current_output_' date '.mat']);
