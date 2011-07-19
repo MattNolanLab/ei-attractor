@@ -1,4 +1,4 @@
-function [spikeRecord_e, spikeRecord_i, spikeTimes, Vmon, times] = simulateEI(o)
+function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(o)
     % Simulation of excitatory-inhibitory neural loop
     % Spikerecord_e/i -- sparse (every timestep) spiking activity
     % spikeTimes - dense activity sorted out by spike time
@@ -65,7 +65,8 @@ function [spikeRecord_e, spikeRecord_i, spikeTimes, Vmon, times] = simulateEI(o)
     T = o.T;
     times = 0:dt:T;
 
-    spikeRecord_e = zeros(Ne, size(times, 2));
+    spikeRecord_e = sparse(Ne, size(times, 2));
+    spikeRecord_i = sparse(Ni, size(times, 2));
 
 %    display 'Simulation running...'
     t = 0;
@@ -104,25 +105,13 @@ function [spikeRecord_e, spikeRecord_i, spikeTimes, Vmon, times] = simulateEI(o)
         Ve(fired_e) = Vr_e;
         Vi(fired_i) = Vr_i;
 
-        if (nnz(fired_e) || nnz(fired_i))
-            spikeMon_e{f_i} = find(fired_e);
-            spikeMon_i{f_i} = find(fired_i);
-            t_spike(f_i) = t;
-            f_i = f_i + 1;
-        end
-
         spikeRecord_e(:, t_i) = double(fired_e);
+        spikeRecord_i(:, t_i) = double(fired_i);
 
         t_i = t_i + 1;
     end
 
 
-    spikeTimes.e = spikeMon_e;
-    spikeTimes.i = spikeMon_i;
-    spikeTimes.t_spike = t_spike;
-
-    spikeRecord_i = nan;
-    
     Vmon.e = Vmon_e;
     Vmon.i = Vmon_i;
     Vmon.t = Vmon_t;

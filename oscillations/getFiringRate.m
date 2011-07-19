@@ -4,7 +4,7 @@ function [firingRate] = getFiringRate(spikeHist, dt, win_len)
 
     N = size(spikeHist, 1);  % Number of neurons in population
     s_hist = sum(spikeHist);
-    nbins_half = fix(win_len/dt/2)
+    nbins_half = fix(win_len/dt/2);
     
     firingRate = zeros(1, size(spikeHist, 2));
     
