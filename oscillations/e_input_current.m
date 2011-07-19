@@ -63,7 +63,7 @@ opt.T = 2.5;
 nTrials = 25;
 
 param_i = 1;
-for Ie = 18.5e-3:0.01e-3:18.7e-3
+for Ie = 18.5e-3:0.05e-3:24.5e-3
     opt.Ie = Ie;
     Ie
     
@@ -90,4 +90,4 @@ for Ie = 18.5e-3:0.01e-3:18.7e-3
 end
 
 clear tmpresults;
-save('-v7.3', ['e_input_current_output_' date '_001.mat']);
+save('-v7.3', ['e_input_current_output_' date '_002.mat']);
