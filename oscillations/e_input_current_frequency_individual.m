@@ -7,6 +7,7 @@ fontSize = 14;
 
 
 %load e_input_current_output_19-Jul-2011;
+outputDir = 'output/2011-07-25';
 
 fontSize = 16;
 
@@ -15,7 +16,7 @@ nTrials = size(results, 2);
 
 trial_it = 1;
 
-Ie_all = [18.6 18.8 19.2 19.6 19.8] .* 1e-3; 
+Ie_all = 20e-3; %[18.6 18.8 19.2 19.6 19.8] .* 1e-3; 
 find_eps = 1e-9;
 
 for Ie = Ie_all
@@ -53,7 +54,7 @@ for Ie = Ie_all
         % Population frequency
         [Y f NFFT] = fourierTrans(firingRate_e, opt.dt);
         Y_abs = 2*abs(Y(1:NFFT/2+1));
-        Y_abs = Y_abs.^2;
+        %Y_abs = Y_abs.^2;
 
         subplot(sp_rows, sp_cols, trial_it, 'FontSize', fontSize);
         plot(f,Y_abs);
@@ -67,7 +68,7 @@ for Ie = Ie_all
     end
 
     set(gcf,'PaperPositionMode','auto');
-    print('-depsc2', sprintf('output/2011-07-19/e_input_current_power_spectrum_detail_Ie_%.3fmV.eps', opt.Ie*1000));
+    print('-depsc2', sprintf('%s/e_input_current_power_spectrum_detail_Ie_%.3fmV.eps', outputDir, opt.Ie*1000));
 
 
     figure('Visible', 'off');
@@ -78,7 +79,7 @@ for Ie = Ie_all
     ylabel('Power (Hz^2)');
 
     set(gcf,'PaperPositionMode','auto');
-    print('-depsc2', sprintf('output/2011-07-19/e_input_current_power_spectrum_average_Ie_%.3fmV.eps', opt.Ie*1000));
+    print('-depsc2', sprintf('%s/e_input_current_power_spectrum_average_Ie_%.3fmV.eps', outputDir, opt.Ie*1000));
     
     
     
@@ -127,6 +128,6 @@ for Ie = Ie_all
     hold off;
 
     set(gcf,'PaperPositionMode','auto');
-    print('-depsc2', sprintf('output/2011-07-19/e_input_current_population_detail_Ie_%.3fmV.eps', opt.Ie*1000));
+    print('-depsc2', sprintf('%s/e_input_current_population_detail_Ie_%.3fmV.eps', outputDir, opt.Ie*1000));
 
 end

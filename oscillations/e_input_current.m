@@ -46,7 +46,7 @@ dt = opt.dt;
 
 
 % Firing rate sliding window length
-opt.rateWindowLen = 0.005; %ms
+opt.rateWindowLen = 0.002; %ms
 rateWindowLen = opt.rateWindowLen;
 
 % Vm monitor, neuron index

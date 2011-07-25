@@ -11,7 +11,7 @@ fontSize = 16;
 nParam  = size(results, 1);
 nTrials = size(results, 2);
 
-Ie_all = 18.7e-3; %[18.6 18.8 19.2 19.6 19.8] .* 1e-3; 
+Ie_all = 20e-3; %[18.6 18.8 19.2 19.6 19.8] .* 1e-3; 
 find_eps = 1e-9;
 
 for Ie = Ie_all
@@ -38,6 +38,7 @@ for Ie = Ie_all
         t_start_i = t_start/res.opt.dt + 1;
         t_end_i   = t_end/res.opt.dt + 1;
 
+        
         firingRate_e = res.firingRate_e(t_start_i:t_end_i);
         opt = res.opt;
 
@@ -45,7 +46,7 @@ for Ie = Ie_all
         % Plot detailed responses of a randomly selected trial
         x_lim = [1.5 2.5];
 
-        figure('Position', [800 0 1400 1000]); %, 'Visible', 'off');
+        figure('Position', [800 0 1400 1000], 'Visible', 'off');
         subplot(5, 1, 1, 'FontSize', fontSize);
         spikeCellRasterPlot(res.spikeCell_e, '.');
         title('Pyramidal neurons');
@@ -84,6 +85,6 @@ for Ie = Ie_all
         hold off;
 
         set(gcf,'PaperPositionMode','auto');
-        %print('-depsc2', sprintf('output/2011-07-19/e_input_current_population_detail_Ie_%.3fmV_trial_%.3d.eps', opt.Ie*1000), trial_it);
+        print('-depsc2', sprintf('%s/e_input_current_population_detail_Ie_%.3fmV_trial_%.3d.eps', 'output/2011-07-25', opt.Ie*1000, trial_it));
     end
 end
