@@ -63,7 +63,7 @@ opt.T = 2.5;
 nTrials = 25;
 
 param_i = 1;
-we_vec = [100 120 140 160 180 200 220 240];
+we_vec = [100 120 140 160 180 200 220 240] *1e-3 / N
 opt.we_vec = we_vec;
 for we = we_vec
     opt.we = we;
