@@ -21,7 +21,7 @@ opt.Vr_e = -60.0e-3;
 opt.e_sparseness = 0.75;
 opt.Ie = 18.5e-3;
 %we = 1/(taue*1000) * 700e-3 / N; % normalize the weight by time constant to inject constant charge
-opt.we = 140e-3 / N;
+opt.we = 180e-3 / N;
 
 
 % Inhibitory cell
@@ -63,7 +63,7 @@ opt.T = 2.5;
 nTrials = 25;
 
 param_i = 1;
-for Ie = 18.5e-3:0.05e-3:24.5e-3
+for Ie = 18.5e-3:0.05e-3:21e-3
     opt.Ie = Ie;
     Ie
     
@@ -90,4 +90,4 @@ for Ie = 18.5e-3:0.05e-3:24.5e-3
 end
 
 clear tmpresults;
-save('-v7.3', ['e_input_current_output_' date '_002.mat']);
+save('-v7.3', ['e_input_current_output_' date '_003.mat']);
