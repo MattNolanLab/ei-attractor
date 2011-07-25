@@ -79,4 +79,54 @@ for Ie = Ie_all
 
     set(gcf,'PaperPositionMode','auto');
     print('-depsc2', sprintf('output/2011-07-19/e_input_current_power_spectrum_average_Ie_%.3fmV.eps', opt.Ie*1000));
+    
+    
+    
+    % Plot detailed responses of a randomly selected trial
+    res = results(par_it, 1);
+    opt = res.opt;
+    
+    x_lim = [1.5 2.5];
+    
+    figure('Position', [800 0 1400 1000], 'Visible', 'off');
+    subplot(5, 1, 1, 'FontSize', fontSize);
+    spikeCellRasterPlot(res.spikeCell_e, '.');
+    title('Pyramidal neurons');
+    ylabel('Neuron number');
+    xlim(x_lim);
+    ylim([1 opt.Ne]);
+
+    subplot(5, 1, 2, 'FontSize', fontSize);
+    plot(res.times, res.firingRate_e);
+    ylabel('Firing rate (Hz)');
+    xlim(x_lim);
+
+
+    subplot(5, 1, 3, 'FontSize', fontSize);
+    plot(res.Vmon.t, res.Vmon.e*1000);
+    %title('Pyramidal neuron');
+    ylabel('Vm (mV)');
+    xlim(x_lim);
+
+
+    subplot(5, 1, 4, 'FontSize', fontSize);
+    spikeCellRasterPlot(res.spikeCell_i, '.');
+    title('Interneurons');
+    ylabel('Neuron number');
+    xlim(x_lim);
+    ylim([1 opt.Ni]);
+
+
+    subplot(5, 1, 5, 'FontSize', fontSize);
+    plot(res.Vmon.t, res.Vmon.i*1000);
+    %title('Interneuron');
+    ylabel('Vm (mV)');
+    xlabel('Time (s)');
+    xlim(x_lim);
+
+    hold off;
+
+    set(gcf,'PaperPositionMode','auto');
+    print('-depsc2', sprintf('output/2011-07-19/e_input_current_population_detail_Ie_%.3fmV.eps', opt.Ie*1000));
+
 end
