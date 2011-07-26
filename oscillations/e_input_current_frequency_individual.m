@@ -7,7 +7,7 @@ fontSize = 14;
 
 
 %load e_input_current_output_19-Jul-2011;
-outputDir = 'output/2011-07-25';
+outputDir = 'output/2011-07-26';
 
 fontSize = 16;
 
@@ -16,7 +16,7 @@ nTrials = size(results, 2);
 
 trial_it = 1;
 
-Ie_all = 20e-3; %[18.6 18.8 19.2 19.6 19.8] .* 1e-3; 
+Ie_all = 19.9e-3; %[18.6 18.8 19.2 19.6 19.8] .* 1e-3; 
 find_eps = 1e-9;
 
 for Ie = Ie_all

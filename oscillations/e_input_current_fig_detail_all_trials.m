@@ -5,13 +5,14 @@ clearvars -except results;
 
 
 %load e_input_current_output_19-Jul-2011;
+outputDir = 'output/2011-07-19';
 
 fontSize = 16;
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
 
-Ie_all = 20e-3; %[18.6 18.8 19.2 19.6 19.8] .* 1e-3; 
+Ie_all = [19.5 19.6 19.7] * 1e-3;
 find_eps = 1e-9;
 
 for Ie = Ie_all
@@ -85,6 +86,6 @@ for Ie = Ie_all
         hold off;
 
         set(gcf,'PaperPositionMode','auto');
-        print('-depsc2', sprintf('%s/e_input_current_population_detail_Ie_%.3fmV_trial_%.3d.eps', 'output/2011-07-25', opt.Ie*1000, trial_it));
+        print('-depsc2', sprintf('%s/e_input_current_population_detail_Ie_%.3fmV_trial_%.3d.eps', outputDir, opt.Ie*1000, trial_it));
     end
 end

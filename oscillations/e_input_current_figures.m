@@ -10,9 +10,9 @@ nParam  = size(results, 1);
 nTrials = size(results, 2);
 
 trial_it = 1;
-nPar = 51;
+nPar = 40;
 
-dc_ratio = 1/15; % asynchronous mode detection
+dc_ratio = 1/20; % asynchronous mode detection
 win_len = 0.002;
 
 
@@ -21,14 +21,14 @@ t_end   = 2.5;
 
 for par_it = 1:nPar
     for trial_it = 1:nTrials
-        trial_it
+        trial_it;
         res = results(par_it, trial_it);
         
         t_start_i = t_start/res.opt.dt + 1;
         t_end_i   = t_end/res.opt.dt + 1;
     
-        firingRate_e = getFiringRate(res.spikeRecord_e(:, t_start_i:t_end_i), res.opt.dt, win_len);
-        %firingRate_e = firingRate_e(t_start_i:t_end_i);
+        %firingRate_e = getFiringRate(res.spikeRecord_e(:, t_start_i:t_end_i), res.opt.dt, win_len);
+        firingRate_e = res.firingRate_e(t_start_i:t_end_i);
         opt = res.opt;
 
         
@@ -59,6 +59,9 @@ for par_it = 1:nPar
     end
 end
 
+nan_fmax = mean(fmax);
+nan_fmax(find(isnan(mean(fmax)))) = 0;
+nan_fmax(find(nan_fmax > 0)) = nan;
 
 % Print the population and excitatory cells frequency depending on input
 % parameter
@@ -72,7 +75,10 @@ hold on;
 plot_h = errorbar([Ie*1000; Ie*1000; Ie*1000]', ...
     [mean(fmax); mean(e_mfr); mean(i_mfr)]', ...
     [std(fmax); std(e_mfr); std(i_mfr)]', ...
-    'LineWidth', 1);
+    '-o', 'LineWidth', 1);
+hold on;
+plot(Ie*1000, nan_fmax, '-o', 'LineWidth', 1);
+
 %errorbar_tick(plot_h, 80);
 %errorbar(Ie*1000, mean(e_mfr), std(e_mfr));
 xlabel('Input drive (mV)');
