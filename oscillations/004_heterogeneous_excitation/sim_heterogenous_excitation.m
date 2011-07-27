@@ -41,15 +41,15 @@ opt.wi = 15e-3 / N;
 % Current distribution settings
 % Diameter of the activated area
 opt.D = 100e-6; % micrometers
-opt.input_spread = 0.75*opt.D;
+opt.input_spread = 10*opt.D;
 
 
 % Noise normalized per time unit (ms)
-opt.noise_sigma = 0.15e-3 / 1e-3;
+opt.noise_sigma = 0.01e-3;
 
 
 % Euler settings
-opt.dt = 0.1e-3  % 0.1 ms
+opt.dt = 0.5e-3  % 0.1 ms
 dt = opt.dt;
 
 
@@ -68,7 +68,7 @@ opt.T = 2.5;
 % 
 % Create simulation results
 %
-nTrials = 25;
+nTrials = 16;
 
 param_i = 1;
 for Ie_max = 18.5e-3:0.05e-3:21e-3

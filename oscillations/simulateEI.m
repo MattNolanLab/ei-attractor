@@ -94,8 +94,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(o)
         dge = dt * -1/taue * ge;
         dgi = dt * -1/taui * gi;
 
-        Ve = Ve + dVe + dt*noise_sigma*randn(Ne, 1);
-        Vi = Vi + dVi + dt*noise_sigma*randn(Ni, 1);
+        Ve = Ve + dVe + noise_sigma*randn(Ne, 1);
+        Vi = Vi + dVi + noise_sigma*randn(Ni, 1);
         ge = ge + dge;
         gi = gi + dgi;
 
