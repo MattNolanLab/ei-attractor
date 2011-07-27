@@ -73,7 +73,6 @@ nTrials = 25;
 param_i = 1;
 for Ie_max = 18.5e-3:0.05e-3:21e-3
     opt.Ie_max = Ie_max;
-    opt.Ii_max = Ie_max; % the same as Ie
     Ie_max
     
     % Now assume neurons are uniformly distributed in the specified area,
