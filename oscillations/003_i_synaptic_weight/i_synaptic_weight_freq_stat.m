@@ -2,6 +2,8 @@
 close all;
 clearvars -except results;
 
+path('..', path);
+
 %load e_input_current_output_19-Jul-2011;
 
 fontSize = 16;
@@ -27,8 +29,8 @@ for par_it = 1:nPar
         t_start_i = t_start/res.opt.dt + 1;
         t_end_i   = t_end/res.opt.dt + 1;
     
-        firingRate_e = getFiringRate(res.spikeRecord_e(:, t_start_i:t_end_i), res.opt.dt, win_len);
-        %firingRate_e = firingRate_e(t_start_i:t_end_i);
+        %firingRate_e = getFiringRate(res.spikeRecord_e(:, t_start_i:t_end_i), res.opt.dt, win_len);
+        firingRate_e = res.firingRate_e(t_start_i:t_end_i);
         opt = res.opt;
 
         
