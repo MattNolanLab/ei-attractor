@@ -3,6 +3,8 @@
 close all;
 clearvars -except results;
 
+path('..', path);
+
 %load e_input_current_output_19-Jul-2011;
 
 fontSize = 16;
@@ -11,7 +13,7 @@ nParam  = size(results, 1);
 nTrials = size(results, 2);
 
 trial_it = 1;
-nPar = 40;
+nPar = 1;
 
 dc_ratio = 1/20; % asynchronous mode detection
 win_len = 0.002;

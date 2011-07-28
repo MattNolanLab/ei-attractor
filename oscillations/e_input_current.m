@@ -37,7 +37,7 @@ opt.wi = 15e-3 / N;
 
 
 % Noise normalized per time unit (ms)
-opt.noise_sigma = 0.1e-3 / 1e-3;
+opt.noise_sigma = 0.01e-3;
 
 
 % Euler settings

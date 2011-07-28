@@ -5,14 +5,14 @@ clearvars -except results;
 
 
 %load e_input_current_output_19-Jul-2011;
-outputDir = 'output/2011-07-19';
+outputDir = 'output';
 
 fontSize = 16;
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
 
-Ie_all = [19.7] * 1e-3;
+Ie_all = [19.9] * 1e-3;
 find_eps = 1e-9;
 
 for Ie = Ie_all
@@ -47,7 +47,7 @@ for Ie = Ie_all
         % Plot detailed responses of a randomly selected trial
         x_lim = [1.5 2.5];
 
-        figure('Position', [800 0 1400 1000], 'Visible', 'on');
+        figure('Position', [800 0 1400 1000], 'Visible', 'off');
         subplot(5, 1, 1, 'FontSize', fontSize);
         spikeCellRasterPlot(res.spikeCell_e, '.');
         title('Pyramidal neurons');
@@ -86,6 +86,6 @@ for Ie = Ie_all
         hold off;
 
         set(gcf,'PaperPositionMode','auto');
-%        print('-depsc2', sprintf('%s/e_input_current_population_detail_Ie_%.3fmV_trial_%.3d.eps', outputDir, opt.Ie*1000, trial_it));
+        print('-depsc2', sprintf('%s/e_input_current_population_detail_Ie_%.3fmV_trial_%.3d.eps', outputDir, opt.Ie_max*1000, trial_it));
     end
 end
