@@ -10,7 +10,7 @@ nParam  = size(results, 1);
 nTrials = size(results, 2);
 
 trial_it = 1;
-nPar = 40;
+nPar = 31;
 
 dc_ratio = 1/20; % asynchronous mode detection
 win_len = 0.002;
@@ -39,7 +39,8 @@ for par_it = 1:nPar
 % 
 %         
 %         [maxF maxFI] = max(Y_abs);
-        fmax(trial_it, par_it) = getPopOscillationFreq(firingRate_e, dc_ratio, opt.dt);
+        %fmax(trial_it, par_it) = getPopOscillationFreq(firingRate_e, dc_ratio, opt.dt);
+        fmax(trial_it, par_it) = getPopOscFreqAutoCorr(firingRate_e, opt.dt, 10);
 
         
         spikeRecord_e = res.spikeRecord_e(:, t_start_i:t_end_i);
@@ -87,30 +88,30 @@ legend('Oscillation', 'E firing rate', 'I firing rate', 'Location', 'SouthEast')
 axis tight;
 
 
-% Create histograms of maximum oscillation frequency for each parameter
-% value
-sp_cols = 5;
-sp_rows = ceil(nPar/sp_cols);
-figure('Position', [840 800 1100 1000]);
-fontSize = 14;
-for par_it = 1:nPar
-    subplot(sp_rows, sp_cols, par_it, 'FontSize', fontSize);
-    hist(fmax(:, par_it));
-    title(sprintf('Ie = %.2f mV', results(par_it, 1).opt.Ie*1000));
-end
-
-
-% Histograms of average firing frequency
-sp_cols = 5;
-sp_rows = ceil(nTrials/sp_cols);
-figure('Position', [840 800 1100 1000]);
-fontSize = 14;
-par_it = 5;
-for trial_it = 1:nTrials
-    subplot(sp_rows, sp_cols, trial_it, 'FontSize', fontSize);
-    hist(i_mfr_all(:, trial_it, par_it));
-    title(sprintf('f = %.2f Hz', fmax(trial_it, par_it)));
-end
-set(gcf,'PaperPositionMode','auto');
-%print('-depsc2', sprintf('output/2011-07-19/e_input_current_interneuron_firing_rates_trials_Ie_%.3f.eps', results(par_it, 1).opt.Ie*1000));
-
+% % Create histograms of maximum oscillation frequency for each parameter
+% % value
+% sp_cols = 5;
+% sp_rows = ceil(nPar/sp_cols);
+% figure('Position', [840 800 1100 1000]);
+% fontSize = 14;
+% for par_it = 1:nPar
+%     subplot(sp_rows, sp_cols, par_it, 'FontSize', fontSize);
+%     hist(fmax(:, par_it));
+%     title(sprintf('Ie = %.2f mV', results(par_it, 1).opt.Ie*1000));
+% end
+% 
+% 
+% % Histograms of average firing frequency
+% sp_cols = 5;
+% sp_rows = ceil(nTrials/sp_cols);
+% figure('Position', [840 800 1100 1000]);
+% fontSize = 14;
+% par_it = 5;
+% for trial_it = 1:nTrials
+%     subplot(sp_rows, sp_cols, trial_it, 'FontSize', fontSize);
+%     hist(i_mfr_all(:, trial_it, par_it));
+%     title(sprintf('f = %.2f Hz', fmax(trial_it, par_it)));
+% end
+% set(gcf,'PaperPositionMode','auto');
+% %print('-depsc2', sprintf('output/2011-07-19/e_input_current_interneuron_firing_rates_trials_Ie_%.3f.eps', results(par_it, 1).opt.Ie*1000));
+% 

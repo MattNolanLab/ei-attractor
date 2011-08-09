@@ -1,4 +1,4 @@
-function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(o)
+function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(o, net_data)
     % Simulation of excitatory-inhibitory neural loop
     % Spikerecord_e/i -- sparse (every timestep) spiking activity
     % spikeTimes - dense activity sorted out by spike time
@@ -39,8 +39,12 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(o)
 
 
     % Build excitatory neurons state
-    Ve = Vr_e + (Vt_e - Vr_e) * rand(Ne, 1);
-    Vi = Vr_i + (Vt_i - Vr_i) * rand(Ni, 1);
+%     Ve = Vr_e + (Vt_e - Vr_e) * rand(Ne, 1);
+%     Vi = Vr_i + (Vt_i - Vr_i) * rand(Ni, 1);
+
+    Ve = Vr_e + o.sigma_init_cond * rand(Ne, 1);
+    Vi = Vr_i + o.sigma_init_cond * rand(Ni, 1);
+
 
     ge = zeros(Ni, 1);
     gi = zeros(Ne, 1);
@@ -56,10 +60,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(o)
 
     % Setup connections Mij: j --> i
     % Assuming constant and uniform excitatory/inhibitory weights
-    Me = rand(Ni, Ne);
-    Mi = rand(Ne, Ni);
-    Me = double(Me <= e_sparseness);
-    Mi = double(Mi <= i_sparseness);
+    Me = net_data.Me;
+    Mi = net_data.Mi;
 
     % Simulation
     T = o.T;

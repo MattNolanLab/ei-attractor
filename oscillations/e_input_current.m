@@ -37,11 +37,12 @@ opt.wi = 15e-3 / N;
 
 
 % Noise normalized per time unit (ms)
-opt.noise_sigma = 0.01e-3;
+opt.noise_sigma = 0.02e-3;
+opt.sigma_init_cond = 2e-3; % 2mV
 
 
 % Euler settings
-opt.dt = 0.1e-3  % 0.1 ms
+opt.dt = 0.5e-3  % 0.1 ms
 dt = opt.dt;
 
 
@@ -60,16 +61,19 @@ opt.T = 2.5;
 % 
 % Create simulation results
 %
-nTrials = 25;
+nTrials = 8;
+
+% The same network structure for all simulations
+[net_data.Me net_data.Mi] = MeMi(opt);
 
 param_i = 1;
-for Ie = 18.5e-3:0.05e-3:21e-3
+for Ie = 18.5e-3:0.05e-3:20e-3
     opt.Ie = Ie;
     Ie
     
     parfor trialNum = 1:nTrials
         trialNum
-        [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(opt);
+        [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(opt, net_data);
         
         tmpresults(trialNum).spikeRecord_e = spikeRecord_e;
         tmpresults(trialNum).spikeRecord_i = spikeRecord_i;
@@ -90,4 +94,4 @@ for Ie = 18.5e-3:0.05e-3:21e-3
 end
 
 clear tmpresults;
-save('-v7.3', ['e_input_current_output_' date '_004.mat']);
+save('-v7.3', ['e_input_current_output_' date '_006.mat']);

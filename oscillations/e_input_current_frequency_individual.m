@@ -16,7 +16,7 @@ nTrials = size(results, 2);
 
 trial_it = 1;
 
-Ie_all = 19.9e-3; %[18.6 18.8 19.2 19.6 19.8] .* 1e-3; 
+Ie_all = 18.5e-3; %[18.6 18.8 19.2 19.6 19.8] .* 1e-3; 
 find_eps = 1e-9;
 
 for Ie = Ie_all

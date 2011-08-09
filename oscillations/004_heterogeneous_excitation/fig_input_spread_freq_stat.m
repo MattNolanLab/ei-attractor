@@ -15,7 +15,7 @@ nTrials = size(results, 2);
 trial_it = 1;
 nPar = nParam;
 
-dc_ratio = 1/20; % asynchronous mode detection
+dc_ratio = 1/15; % asynchronous mode detection
 win_len = 0.002;
 
 
@@ -62,8 +62,8 @@ for par_it = 1:nPar
     end
 end
 
-nan_fmax = mean(fmax);
-nan_fmax(find(isnan(mean(fmax)))) = 0;
+nan_fmax = mean(fmax, 1);
+nan_fmax(find(isnan(mean(fmax, 1)))) = 0;
 nan_fmax(find(nan_fmax > 0)) = nan;
 
 % Print the population and excitatory cells frequency depending on input
@@ -73,13 +73,13 @@ is_vec = results(1, 1).opt.input_spread_vec / D;
 
 figure('Position', [840 800 800 500]);
 subplot(1, 1, 1, 'FontSize', fontSize);
-hold on;
+%hold on;
 plot_h = errorbar([is_vec; is_vec; is_vec]', ...
     [mean(fmax, 1); mean(e_mfr, 1); mean(i_mfr, 1)]', ...
     [std(fmax, 0, 1); std(e_mfr, 0, 1); std(i_mfr, 0, 1)]', ...
     '-o', 'LineWidth', 1);
-hold on;
-plot(is_vec, nan_fmax, '-o', 'LineWidth', 1);
+hold all;
+plot(is_vec', nan_fmax', '-o', 'LineWidth', 1);
 
 xlabel('Normalized input spread');
 ylabel('Frequency (Hz)');

@@ -5,14 +5,14 @@ clearvars -except results;
 
 
 %load e_input_current_output_19-Jul-2011;
-outputDir = 'output/2011-07-19';
+outputDir = 'output_local/';
 
 fontSize = 16;
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
 
-Ie_all = [19.5 19.6 19.7] * 1e-3;
+Ie_all = [19.85:0.05:20] * 1e-3;
 find_eps = 1e-9;
 
 for Ie = Ie_all
@@ -28,12 +28,13 @@ for Ie = Ie_all
         continue;
     end;
 
-    t_start = 1.5;
+    t_start = 0;
     t_end   = 2.5;
     f_lim = [0 200];
+    x_lim = [1.5 2.5];
 
     
-    for trial_it = 1:nTrials
+    parfor trial_it = 1:nTrials
         res = results(par_it, trial_it);
 
         t_start_i = t_start/res.opt.dt + 1;
@@ -45,7 +46,6 @@ for Ie = Ie_all
 
 
         % Plot detailed responses of a randomly selected trial
-        x_lim = [1.5 2.5];
 
         figure('Position', [800 0 1400 1000], 'Visible', 'off');
         subplot(5, 1, 1, 'FontSize', fontSize);
