@@ -61,7 +61,7 @@ opt.T = 2.5;
 % 
 % Create simulation results
 %
-nTrials = 8;
+nTrials = 25;
 
 % The same network structure for all simulations
 [net_data.Me net_data.Mi] = MeMi(opt);
@@ -94,4 +94,4 @@ for Ie = 18.5e-3:0.05e-3:20e-3
 end
 
 clear tmpresults;
-save('-v7.3', ['e_input_current_output_' date '_006.mat']);
+save('-v7.3', ['e_input_current_output_' date '_007.mat']);
