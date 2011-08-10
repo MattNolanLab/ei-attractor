@@ -1,7 +1,7 @@
 function plotTrialDetails(results, par_it, trial_it, plot_options)
     % Raster plot and Vm of population and recorded neurons
    
-    res = results(par_it, 1);
+    res = results(par_it, trial_it);
     opt = res.opt;
     
     x_lim = plot_options.x_lim;
