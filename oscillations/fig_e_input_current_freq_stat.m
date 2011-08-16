@@ -12,8 +12,7 @@ nTrials = size(results, 2);
 trial_it = 1;
 nPar = 31;
 
-dc_ratio = 1/20; % asynchronous mode detection
-win_len = 0.002;
+freqEstnPeaks = 10;
 
 
 t_start = 1.5;
@@ -32,26 +31,16 @@ for par_it = 1:nPar
         opt = res.opt;
 
         
-        % Population frequency
-%         [Y f NFFT] = fourierTrans(firingRate_e, opt.dt);
-%         Y_abs = 2*abs(Y(1:NFFT/2+1));
-%         Y_abs = Y_abs.^2;
-% 
-%         
-%         [maxF maxFI] = max(Y_abs);
-        %fmax(trial_it, par_it) = getPopOscillationFreq(firingRate_e, dc_ratio, opt.dt);
-        fmax(trial_it, par_it) = getPopOscFreqAutoCorr(firingRate_e, opt.dt, 10);
+        [fmax(trial_it, par_it) coherence(trial_it, par_it)] = getPopOscFreqAutoCorr(firingRate_e, opt.dt, freqEstnPeaks);
 
         
         spikeRecord_e = res.spikeRecord_e(:, t_start_i:t_end_i);
         spikeRecord_i = res.spikeRecord_i(:, t_start_i:t_end_i);        
-        times = res.times(t_start_i:t_end_i);
 
         spikeCnt_i = sum(spikeRecord_i');
         
         % mean firing rates of neurons in this trial
         mfr_T = t_end - t_start;
-
         
         e_mfr_all(:, trial_it, par_it) = full(sum(spikeRecord_e')/mfr_T);
         i_mfr_all(:, trial_it, par_it) = full(sum(spikeRecord_i')/mfr_T);
@@ -60,9 +49,6 @@ for par_it = 1:nPar
     end
 end
 
-nan_fmax = mean(fmax);
-nan_fmax(find(isnan(mean(fmax)))) = 0;
-nan_fmax(find(nan_fmax > 0)) = nan;
 
 % Print the population and excitatory cells frequency depending on input
 % parameter
@@ -70,18 +56,23 @@ for par_it = 1:nPar
     Ie(par_it) = results(par_it, 1).opt.Ie;
 end
 
-figure('Position', [840 800 800 500]);
-subplot(1, 1, 1, 'FontSize', fontSize);
+figure('Position', [840 800 800 900]);
+subplot(5, 1, [1 2 3 4], 'FontSize', fontSize);
 hold on;
 plot_h = errorbar([Ie*1000; Ie*1000; Ie*1000]', ...
     [mean(fmax); mean(e_mfr); mean(i_mfr)]', ...
     [std(fmax); std(e_mfr); std(i_mfr)]', ...
     '-o', 'LineWidth', 1);
-hold on;
-plot(Ie*1000, nan_fmax, '-o', 'LineWidth', 1);
 
-xlabel('Input drive (mV)');
 ylabel('Frequency (Hz)');
-legend('Oscillation', 'E firing rate', 'I firing rate', 'Location', 'SouthEast');
-axis tight;
+legend('E pop oscillation', 'E firing rate', 'I firing rate', 'Location', 'NorthWest');
+xlim([Ie(1) Ie(end)]*1000);
+grid on;
 
+subplot(5,1,[5], 'FontSize', fontSize);
+plot(Ie*1000, mean(coherence), '-o');
+ylabel('Coherence');
+xlabel('Input drive (mV)');
+legend('E population', 'Location', 'SouthWest');
+xlim([Ie(1) Ie(end)]*1000);
+grid on;

@@ -5,12 +5,12 @@ outputDir = 'output_local/';
 outputFileRef = '008';
 fontSize = 16;
 
-par_it = 21;
+par_it = 19;
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
 
-ddC_eps = -0.005;
+ddC_eps = 0;
 min_peak_ratio = 1/10;
 
 
@@ -22,7 +22,7 @@ parfor trial_it = 1:nTrials
 
     signal = res.firingRate_e;
     s_len = numel(signal);
-    C = xcorr(signal, 'coeff');
+    C = xcorr(signal - mean(signal), 'coeff');
 
     plot_C = C(s_len:end);
     plot_times = [0:numel(plot_C)-3] * res.opt.dt * 1000;
@@ -43,7 +43,7 @@ parfor trial_it = 1:nTrials
     plot(plot_times(peak_i), C_peak, 'o');
     
     xlim([0 200]);
-    ylim([0 1]);
+    %ylim([0 1]);
     xlabel('Autocorrelation time shift (ms)');
     ylabel('Normalized correlation');
     

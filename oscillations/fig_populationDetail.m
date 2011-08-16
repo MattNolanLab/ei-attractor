@@ -1,6 +1,8 @@
 function fig_populationDetail(res, x_lim, T_i, fontSize)
-    firingRate_e = res.firingRate_e(T_i.start:T_i.end);
+    %firingRate_e = res.firingRate_e(T_i.start:T_i.end);
     opt = res.opt;
+    
+    hold off;
 
     subplot(5, 1, 1, 'FontSize', fontSize);
     spikeCellRasterPlot(res.spikeCell_e, '.');
@@ -39,6 +41,5 @@ function fig_populationDetail(res, x_lim, T_i, fontSize)
     xlim(x_lim);
     box on;
     
-    hold off;
 
 end
