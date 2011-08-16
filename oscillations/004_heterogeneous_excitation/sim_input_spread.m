@@ -45,6 +45,7 @@ opt.input_spread = 10*opt.D;
 
 % Noise (mV)
 opt.noise_sigma = 0.01e-3;
+opt.sigma_init_cond = 2e-3; % 2mV
 
 
 % Euler settings
@@ -70,6 +71,10 @@ opt.input_spread_vec = [0:0.25:5]*opt.D;
 %
 nTrials = 25;
 param_i = 1;
+
+% The same network structure for all simulations
+[net_data.Me net_data.Mi] = MeMi(opt);
+
 for spread = opt.input_spread_vec
     opt.input_spread = spread;
     
@@ -82,7 +87,7 @@ for spread = opt.input_spread_vec
     
     parfor trialNum = 1:nTrials
         trialNum
-        [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(opt);
+        [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(opt, net_data);
         
         tmpresults(trialNum).spikeRecord_e = spikeRecord_e;
         tmpresults(trialNum).spikeRecord_i = spikeRecord_i;
@@ -103,4 +108,4 @@ for spread = opt.input_spread_vec
 end
 
 clear tmpresults;
-save('-v7.3', ['e_gaussian_spread_' date '_001.mat']);
+save('-v7.3', sprintf('002_e_gaussian_spread_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));

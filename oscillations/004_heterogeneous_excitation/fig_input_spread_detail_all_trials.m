@@ -3,9 +3,11 @@
 close all;
 clearvars -except results;
 
+path('..', path);
+
 
 %load e_input_current_output_19-Jul-2011;
-outputDir = 'output';
+outputDir = 'output_local';
 
 fontSize = 16;
 
@@ -15,6 +17,7 @@ nTrials = size(results, 2);
 spread_all = 0:0.25:5;
 find_eps = 1e-9;
 D = results(1, 1).opt.D;
+dt = results(1,1).opt.dt;
 
 for spread = spread_all
     par_it = 1;
@@ -33,12 +36,11 @@ for spread = spread_all
     t_end   = 2.5;
     f_lim = [0 200];
 
+    T_i.start = t_start/dt + 1;
+    T_i.end   = t_end/dt + 1;
     
-    for trial_it = 1:nTrials
+    parfor trial_it = 1:nTrials
         res = results(par_it, trial_it);
-
-        T_i.start = t_start/res.opt.dt + 1;
-        T_i.end   = t_end/res.opt.dt + 1;
 
         
         % Plot detailed responses of a randomly selected trial
@@ -50,6 +52,6 @@ for spread = spread_all
         
 
         set(gcf,'PaperPositionMode','auto');
-        print('-depsc2', sprintf('%s/e_input_spread_population_detail_spread_%3.3f_trial_%.3d.eps', outputDir, opt.input_spread/D, trial_it));
+        print('-depsc2', sprintf('%s/002_e_input_spread_population_detail_spread_%3.3f_trial_%.3d.eps', outputDir, opt.input_spread/D, trial_it));
     end
 end

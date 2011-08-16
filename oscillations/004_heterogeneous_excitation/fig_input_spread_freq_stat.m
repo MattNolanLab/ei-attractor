@@ -18,6 +18,8 @@ nPar = nParam;
 dc_ratio = 1/15; % asynchronous mode detection
 win_len = 0.002;
 
+autoCorrNPeaks = 5;
+
 
 t_start = 1.5;
 t_end   = 2.5;
@@ -42,7 +44,7 @@ for par_it = 1:nPar
 % 
 %         
 %         [maxF maxFI] = max(Y_abs);
-        fmax(trial_it, par_it) = getPopOscillationFreq(firingRate_e, dc_ratio, opt.dt);
+        [fmax(trial_it, par_it) coherence(trial_it, par_it)] = getPopOscFreqAutoCorr(firingRate_e, opt.dt, autoCorrNPeaks);
 
         
         spikeRecord_e = res.spikeRecord_e(:, t_start_i:t_end_i);
@@ -62,26 +64,33 @@ for par_it = 1:nPar
     end
 end
 
-nan_fmax = mean(fmax, 1);
-nan_fmax(find(isnan(mean(fmax, 1)))) = 0;
-nan_fmax(find(nan_fmax > 0)) = nan;
+% nan_fmax = mean(fmax, 1);
+% nan_fmax(find(isnan(mean(fmax, 1)))) = 0;
+% nan_fmax(find(nan_fmax > 0)) = nan;
 
 % Print the population and excitatory cells frequency depending on input
 % parameter
 D = results(1, 1).opt.D;  % radius of the microcircuit
 is_vec = results(1, 1).opt.input_spread_vec / D;
 
-figure('Position', [840 800 800 500]);
-subplot(1, 1, 1, 'FontSize', fontSize);
-%hold on;
+figure('Position', [840 800 800 900]);
+subplot(5, 1, [1 2 3 4], 'FontSize', fontSize);
+grid on;
 plot_h = errorbar([is_vec; is_vec; is_vec]', ...
     [mean(fmax, 1); mean(e_mfr, 1); mean(i_mfr, 1)]', ...
     [std(fmax, 0, 1); std(e_mfr, 0, 1); std(i_mfr, 0, 1)]', ...
     '-o', 'LineWidth', 1);
-hold all;
-plot(is_vec', nan_fmax', '-o', 'LineWidth', 1);
 
 xlabel('Normalized input spread');
 ylabel('Frequency (Hz)');
 legend('Oscillation', 'E firing rate', 'I firing rate', 'Location', 'SouthEast');
 axis tight;
+
+
+subplot(5,1,[5], 'FontSize', fontSize);
+plot(is_vec, mean(coherence), '-o');
+ylabel('Coherence');
+xlabel('Input drive (mV)');
+legend('E population', 'Location', 'SouthWest');
+%xlim([Ie(1) Ie(end)]*1000);
+grid on;
