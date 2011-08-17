@@ -6,7 +6,7 @@
 clear all;
 close all;
 
-path('..', path);
+path('../include/', path);
 
 % All variables are in basic units, i.e. s, volt, etc.
 opt.Ne = 800;
