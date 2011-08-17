@@ -3,7 +3,7 @@
 close all;
 clearvars -except results;
 
-path('..', path);
+path('../include/', path);
 
 %load e_input_current_output_19-Jul-2011;
 
@@ -18,7 +18,7 @@ nPar = nParam;
 dc_ratio = 1/15; % asynchronous mode detection
 win_len = 0.002;
 
-autoCorrNPeaks = 5;
+autoCorrNPeaks = 10;
 
 
 t_start = 1.5;
@@ -85,12 +85,12 @@ xlabel('Normalized input spread');
 ylabel('Frequency (Hz)');
 legend('Oscillation', 'E firing rate', 'I firing rate', 'Location', 'SouthEast');
 axis tight;
+xlim([opt.input_spread_vec(1)/D opt.input_spread_vec(end)/D]);
 
 
 subplot(5,1,[5], 'FontSize', fontSize);
 plot(is_vec, mean(coherence), '-o');
 ylabel('Coherence');
 xlabel('Input drive (mV)');
-legend('E population', 'Location', 'SouthWest');
-%xlim([Ie(1) Ie(end)]*1000);
+legend('E population', 'Location', 'SouthEast');
 grid on;

@@ -6,11 +6,11 @@ cc = ISIpairs(N1, N2);
 edges = [fliplr((dt/2:dt:range)*-1) dt/2:dt:range];
 cc = histc(cc, edges);
 %cc = cc - sz*dt/T^2;
-bar(gca, edges, cc, 'histc')
-grid on;
-axis tight;
+%bar(gca, edges, cc, 'histc')
+%grid on;
+%axis tight;
 
-xlabel('Time (s)');
-ylabel('Interval count');
+%xlabel('Time (s)');
+%ylabel('Interval count');
 
 end

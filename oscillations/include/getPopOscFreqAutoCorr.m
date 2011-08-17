@@ -18,7 +18,7 @@ function [F, coherence] = getPopOscFreqAutoCorr(signal, dt, nPeaks)
     max_peak = max(C_peak);
     peak_i(find(C_peak < min_peak_ratio)) = [];
     
-    if numel(peak_i) ~= 0
+    if numel(peak_i) >= nPeaks
         % Add peak at zero to filtered peaks
         peak_i = [1 peak_i];
         C_peak = C(peak_i);
@@ -29,6 +29,6 @@ function [F, coherence] = getPopOscFreqAutoCorr(signal, dt, nPeaks)
     else
         % no peaks detected, assume asynchronous signal
         F = 0;
-        coherence = nan;
+        coherence = 0;
     end
 end
