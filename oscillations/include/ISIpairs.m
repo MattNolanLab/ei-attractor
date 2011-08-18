@@ -5,5 +5,5 @@ function [isi] = ISIpairs(N1, N2)
 % Absolute value not provided
 
 [mesh1, mesh2] = meshgrid(N1, N2);
-isi = mesh1 - mesh2;
+isi = mesh2 - mesh1;
 isi = reshape(isi, 1, numel(N1)*numel(N2));

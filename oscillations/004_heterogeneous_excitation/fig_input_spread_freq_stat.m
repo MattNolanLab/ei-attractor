@@ -81,7 +81,6 @@ plot_h = errorbar([is_vec; is_vec; is_vec]', ...
     [std(fmax, 0, 1); std(e_mfr, 0, 1); std(i_mfr, 0, 1)]', ...
     '-o', 'LineWidth', 1);
 
-xlabel('Normalized input spread');
 ylabel('Frequency (Hz)');
 legend('Oscillation', 'E firing rate', 'I firing rate', 'Location', 'SouthEast');
 axis tight;
@@ -91,6 +90,8 @@ xlim([opt.input_spread_vec(1)/D opt.input_spread_vec(end)/D]);
 subplot(5,1,[5], 'FontSize', fontSize);
 plot(is_vec, mean(coherence), '-o');
 ylabel('Coherence');
-xlabel('Input drive (mV)');
+xlabel('Normalized input spread');
 legend('E population', 'Location', 'SouthEast');
 grid on;
+xlim([opt.input_spread_vec(1)/D opt.input_spread_vec(end)/D]);
+axis tight;
