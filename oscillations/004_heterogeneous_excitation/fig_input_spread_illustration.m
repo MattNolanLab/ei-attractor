@@ -2,7 +2,7 @@
 
 close all;
 
-Ie_max =  19.3;
+Ie_max =  24;
 sigma_vec = [0.5 1 2 5 10];
 thr = 18.5;
 

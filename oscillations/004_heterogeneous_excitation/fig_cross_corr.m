@@ -6,9 +6,11 @@
 close all;
 clearvars -except results;
 
+path('../include', path);
+
 outputDir = 'output_local';
 
-par_it = 4;
+par_it = 5;
 trial_it = 8;
 
 res = results(par_it, trial_it);
