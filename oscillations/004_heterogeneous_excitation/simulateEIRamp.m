@@ -99,7 +99,7 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
         ge = ge + dge;
         gi = gi + dgi;
         
-        Ie = Ie + o.dIe*dt; max(Ie)
+        Ie = Ie + o.dIe*dt;
         Ii = Ii + o.dIi*dt;
 
         fired_e = Ve > Vt_e;
