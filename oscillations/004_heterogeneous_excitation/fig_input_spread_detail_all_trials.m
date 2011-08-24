@@ -8,20 +8,20 @@ path('..', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local';
-outputNum = '003';
+outputNum = '004';
 
 fontSize = 16;
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
 
-spread_all = [0.5 2 4 5 10];
+spread_all = [5];
 find_eps = 1e-9;
 D = results(1, 1).opt.D;
 dt = results(1,1).opt.dt;
 
-t_start = 58;
-t_end   = 60;
+t_start = 15;
+t_end   = 18;
 f_lim = [0 200];
 
 
@@ -44,12 +44,10 @@ for spread = spread_all
     parfor trial_it = 1:nTrials
         res = results(par_it, trial_it);
 
-        
-        % Plot detailed responses of a randomly selected trial
         x_lim = [t_start t_end];
         opt = res.opt;
 
-        figure('Position', [800 0 1400 1000], 'Visible', 'off');
+        figure('Position', [0 0 1680 1050], 'Visible', 'off');
         fig_populationDetail(res, x_lim, T_i, fontSize);
         
 
