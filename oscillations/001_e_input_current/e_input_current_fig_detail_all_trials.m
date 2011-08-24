@@ -6,14 +6,14 @@ clearvars -except results;
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local/';
-outputFileRef = '008';
+outputFileRef = '009';
 
 fontSize = 16;
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
 
-Ie_all = [19.9 19.95 20] * 1e-3;
+Ie_all = [19] * 1e-3;
 find_eps = 1e-9;
 
 for Ie = Ie_all

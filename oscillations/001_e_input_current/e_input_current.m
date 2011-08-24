@@ -35,6 +35,8 @@ opt.Ii = 6e-3;
 %wi = 1/(taui*1000) * 600e-3 / N;
 opt.wi = 15e-3 / N;
 
+opt.spikeVm = 0;
+
 
 % Noise normalized per time unit (ms)
 opt.noise_sigma = 0.02e-3;
@@ -61,13 +63,13 @@ opt.T = 2.5;
 % 
 % Create simulation results
 %
-nTrials = 100;
+nTrials = 4;
 
 % The same network structure for all simulations
 [net_data.Me net_data.Mi] = MeMi(opt);
 
 param_i = 1;
-for Ie = 18.5e-3:0.05e-3:20e-3
+for Ie = 19e-3
     opt.Ie = Ie;
     Ie
     
@@ -94,4 +96,4 @@ for Ie = 18.5e-3:0.05e-3:20e-3
 end
 
 clear tmpresults;
-save('-v7.3', sprintf('008_e_input_current_output_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
+save('-v7.3', sprintf('009_e_input_current_output_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));

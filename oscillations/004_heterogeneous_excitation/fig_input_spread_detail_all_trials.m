@@ -8,7 +8,7 @@ path('..', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local';
-outputNum = '005';
+outputNum = '006';
 
 fontSize = 16;
 
@@ -20,10 +20,10 @@ find_eps = 1e-9;
 D = results(1, 1).opt.D;
 dt = results(1,1).opt.dt;
 
-N_spikes = 50;
+N_spikes = 25;
 
-t_start = 10;
-t_end   = 15;
+t_start = 4;
+t_end   = 5;
 f_lim = [0 200];
 
 

@@ -40,6 +40,8 @@ opt.Ii_0 = 0;
 opt.Ii_max = 8e-3;
 opt.wi = 20e-3 / N;
 
+opt.spikeVm = 0;
+
 
 
 % Current distribution settings
@@ -74,7 +76,7 @@ opt.input_spread_vec = [5]*opt.D;
 % 
 % Create simulation results
 %
-nTrials = 100;
+nTrials = 8;
 param_i = 1;
 
 % The same network structure for all simulations
