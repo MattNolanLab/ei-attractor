@@ -73,15 +73,28 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(o, net_data)
 %    display 'Simulation running...'
     t = 0;
 
-    fired_e = zeros(Ne, 1);
-    fired_i = zeros(Ni, 1);
+    fired_e = zeros(Ne, 1) * false;
+    fired_i = zeros(Ni, 1) * false;
     f_i = 1;
     t_spike = [];
+    
+    
 
     t_i = 1;
     for t = times
+        fired_e = Ve > Vt_e;
+        fired_i = Vi > Vt_i;
+
+        Ve(fired_e) = Vr_e;
+        Vi(fired_i) = Vr_i;
+
+        spikeRecord_e(:, t_i) = double(fired_e);
+        spikeRecord_i(:, t_i) = double(fired_i);
+
         Vmon_e = [Vmon_e Ve(Emon_i)];
         Vmon_i = [Vmon_i Vi(Imon_i)];
+        Vmon_e(fired_e(Emon_i), t_i) = o.spikeVm;
+        Vmon_i(fired_i(Imon_i), t_i) = o.spikeVm;
         Vmon_t = [Vmon_t t];
 
 
@@ -100,15 +113,6 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(o, net_data)
         Vi = Vi + dVi + noise_sigma*randn(Ni, 1);
         ge = ge + dge;
         gi = gi + dgi;
-
-        fired_e = Ve > Vt_e;
-        fired_i = Vi > Vt_i;
-
-        Ve(fired_e) = Vr_e;
-        Vi(fired_i) = Vr_i;
-
-        spikeRecord_e(:, t_i) = double(fired_e);
-        spikeRecord_i(:, t_i) = double(fired_i);
 
         t_i = t_i + 1;
     end
