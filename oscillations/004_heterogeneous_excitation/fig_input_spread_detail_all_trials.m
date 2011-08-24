@@ -8,20 +8,22 @@ path('..', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local';
-outputNum = '004';
+outputNum = '005';
 
 fontSize = 16;
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
 
-spread_all = [5];
+spread_all = [0.5 2 5 10];
 find_eps = 1e-9;
 D = results(1, 1).opt.D;
 dt = results(1,1).opt.dt;
 
-t_start = 15;
-t_end   = 18;
+N_spikes = 50;
+
+t_start = 10;
+t_end   = 15;
 f_lim = [0 200];
 
 
@@ -48,7 +50,7 @@ for spread = spread_all
         opt = res.opt;
 
         figure('Position', [0 0 1680 1050], 'Visible', 'off');
-        fig_populationDetail(res, x_lim, T_i, fontSize);
+        fig_populationDetail(res, x_lim, T_i, fontSize, N_spikes);
         
 
         set(gcf,'PaperPositionMode','auto', 'Renderer', 'Painters');

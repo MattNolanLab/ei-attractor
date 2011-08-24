@@ -1,15 +1,14 @@
-function fig_populationDetail(res, x_lim, T_i, fontSize)
-    %firingRate_e = res.firingRate_e(T_i.start:T_i.end);
+function fig_populationDetail(res, x_lim, T_i, fontSize, N)
     opt = res.opt;
     
     hold off;
 
     subplot(5, 1, 1, 'FontSize', fontSize);
-    spikeCellRasterPlot(res.spikeCell_e, '.');
+    spikeCellRasterPlot(res.spikeCell_e, '.', N);
     title('Pyramidal neurons');
     ylabel('Neuron number');
     xlim(x_lim);
-    ylim([1 opt.Ne]);
+    ylim([1 N]);
     box on;
 
     subplot(5, 1, 2, 'FontSize', fontSize);
@@ -26,11 +25,11 @@ function fig_populationDetail(res, x_lim, T_i, fontSize)
     box on;
 
     subplot(5, 1, 4, 'FontSize', fontSize);
-    spikeCellRasterPlot(res.spikeCell_i, '.');
+    spikeCellRasterPlot(res.spikeCell_i, '.', N);
     title('Interneurons');
     ylabel('Neuron number');
     xlim(x_lim);
-    ylim([1 opt.Ni]);
+    ylim([1 N]);
     box on;
 
     subplot(5, 1, 5, 'FontSize', fontSize);

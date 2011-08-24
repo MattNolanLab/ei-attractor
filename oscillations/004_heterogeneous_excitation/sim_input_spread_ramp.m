@@ -67,14 +67,14 @@ opt.Emon_i = 100;
 opt.Imon_i = 100;
 
 % simulation time
-opt.T = 20;
+opt.T = 15;
 
-opt.input_spread_vec = [0.5 2 5 10]*opt.D;
+opt.input_spread_vec = [5]*opt.D;
 
 % 
 % Create simulation results
 %
-nTrials = 4;
+nTrials = 100;
 param_i = 1;
 
 % The same network structure for all simulations
@@ -122,4 +122,4 @@ for spread = opt.input_spread_vec
 end
 
 clear tmpresults;
-save('-v7.3', sprintf('005_gaussian_spread_ramp_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
+save('-v7.3', sprintf('006_gaussian_spread_ramp_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
