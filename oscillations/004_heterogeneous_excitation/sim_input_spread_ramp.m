@@ -76,7 +76,7 @@ opt.input_spread_vec = [5]*opt.D;
 % 
 % Create simulation results
 %
-nTrials = 8;
+nTrials = 24;
 param_i = 1;
 
 % The same network structure for all simulations

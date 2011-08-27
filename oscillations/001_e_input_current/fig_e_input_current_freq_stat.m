@@ -2,6 +2,8 @@
 close all;
 clearvars -except results;
 
+path('../include', path);
+
 %load e_input_current_output_19-Jul-2011;
 
 fontSize = 16;
@@ -68,6 +70,7 @@ ylabel('Frequency (Hz)');
 legend('E pop oscillation', 'E firing rate', 'I firing rate', 'Location', 'NorthWest');
 xlim([Ie(1) Ie(end)]*1000);
 grid on;
+box on;
 
 subplot(5,1,[5], 'FontSize', fontSize);
 plot(Ie*1000, mean(coherence), '-o');

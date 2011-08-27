@@ -3,7 +3,7 @@
 close all;
 clearvars -except results;
 
-path('..', path);
+path('../include', path);
 
 
 %load e_input_current_output_19-Jul-2011;
@@ -22,7 +22,7 @@ dt = results(1,1).opt.dt;
 
 N_spikes = 25;
 
-t_start = 4;
+t_start = 0;
 t_end   = 5;
 f_lim = [0 200];
 
