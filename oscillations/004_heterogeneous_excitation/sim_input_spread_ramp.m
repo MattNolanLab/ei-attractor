@@ -65,8 +65,8 @@ opt.rateWindowLen = 0.005; %ms
 rateWindowLen = opt.rateWindowLen;
 
 % Vm monitor, neuron index
-opt.Emon_i = 100;
-opt.Imon_i = 100;
+opt.Emon_i = [100 110 120 130 140 150 200 300 400 500 600 700 800];
+opt.Imon_i = [100 110 120 130 140 150 160 170 180 190];
 
 % simulation time
 opt.T = 15;
@@ -124,4 +124,4 @@ for spread = opt.input_spread_vec
 end
 
 clear tmpresults;
-save('-v7.3', sprintf('006_gaussian_spread_ramp_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
+save('-v7.3', sprintf('007_gaussian_spread_ramp_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
