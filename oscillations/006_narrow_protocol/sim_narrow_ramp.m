@@ -76,12 +76,13 @@ param_i = 1;
 % The same network structure for all simulations
 [net_data.Me net_data.Mi] = MeMi(opt);
 
-opt.input_spread = spread;
 opt.dists_e = opt.D*rand(opt.Ne, 1);
 opt.dists_i = opt.D*rand(opt.Ni, 1);    
 
 
 for spread = opt.input_spread_vec
+
+    opt.input_spread = spread;
     
     % Now assume neurons are uniformly distributed in the specified area,
     % generate their distances and input current according to the specified
