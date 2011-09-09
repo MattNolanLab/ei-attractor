@@ -8,7 +8,7 @@ path('../include', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local';
-outputNum = '006';
+outputNum = '007';
 
 fontSize = 16;
 

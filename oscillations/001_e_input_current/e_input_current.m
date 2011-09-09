@@ -5,6 +5,8 @@
 clear all;
 close all;
 
+path('../include', path);
+
 
 % All variables are in basic units, i.e. s, volt, etc.
 opt.Ne = 800;
@@ -57,19 +59,19 @@ opt.Emon_i = 100;
 opt.Imon_i = 100;
 
 % simulation time
-opt.T = 2.5;
+opt.T = 3;
 
 
 % 
 % Create simulation results
 %
-nTrials = 4;
+nTrials = 24;
 
 % The same network structure for all simulations
 [net_data.Me net_data.Mi] = MeMi(opt);
 
 param_i = 1;
-for Ie = 19e-3
+for Ie = 19.45e-3
     opt.Ie = Ie;
     Ie
     
