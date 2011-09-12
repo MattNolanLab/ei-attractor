@@ -11,8 +11,6 @@ outputNum = '003';
 nParam  = size(results, 1);
 nTrials = size(results, 2);
 
-spread_all = [0.5 2 5 10];
-find_eps = 1e-9;
 D = results(1, 1).opt.D;
 dt = results(1,1).opt.dt;
 
