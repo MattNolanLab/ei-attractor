@@ -41,11 +41,11 @@ opt.spikeVm = 0;
 % Current distribution settings
 % Diameter of the activated area
 opt.D = 100e-6; % micrometers
-opt.input_spread = 10*opt.D;
+opt.input_spread = 2*opt.D;
 
 
 % Noise (mV)
-opt.noise_sigma = 0.02e-3;
+opt.noise_sigma_vec = 0.02e-3:0.005e-3:0.2e-3;
 opt.sigma_init_cond = 2e-3; % 2mV
 
 
@@ -63,9 +63,8 @@ opt.Emon_i = [100 110 120 130 140 150 200 300 400 500 600 700 800];
 opt.Imon_i = [100 110 120 130 140 150 160 170 180 190];
 
 % simulation time
-opt.T = 8;
+opt.T = 10;
 
-opt.input_spread_vec = [2]*opt.D;
 
 % 
 % Create simulation results
@@ -80,23 +79,23 @@ opt.dists_e = opt.D*rand(opt.Ne, 1);
 opt.dists_i = opt.D*rand(opt.Ni, 1);    
 
 
-for spread = opt.input_spread_vec
+% Now assume neurons are uniformly distributed in the specified area,
+% generate their distances and input current according to the specified
+% spread function
+opt.Ie = gaussianSpread(opt.dists_e, opt.input_spread, opt.Ie_0);
+opt.Ii = gaussianSpread(opt.dists_i, opt.input_spread, opt.Ii_0);
 
-    opt.input_spread = spread;
-    
-    % Now assume neurons are uniformly distributed in the specified area,
-    % generate their distances and input current according to the specified
-    % spread function
-    opt.Ie = gaussianSpread(opt.dists_e, opt.input_spread, opt.Ie_0);
-    opt.Ii = gaussianSpread(opt.dists_i, opt.input_spread, opt.Ii_0);
-    
-    Ie_max = gaussianSpread(opt.dists_e, opt.input_spread, opt.Ie_max);
-    Ii_max = gaussianSpread(opt.dists_i, opt.input_spread, opt.Ii_max);
-    
-    opt.dIe = (Ie_max - opt.Ie) / opt.T;
-    opt.dIi = (Ii_max - opt.Ii) / opt.T;
+Ie_max = gaussianSpread(opt.dists_e, opt.input_spread, opt.Ie_max);
+Ii_max = gaussianSpread(opt.dists_i, opt.input_spread, opt.Ii_max);
 
-    
+opt.dIe = (Ie_max - opt.Ie) / opt.T;
+opt.dIi = (Ii_max - opt.Ii) / opt.T;
+
+
+for noise_sigma = opt.noise_sigma_vec
+
+    opt.noise_sigma = noise_sigma;
+        
     parfor trialNum = 1:nTrials
         trialNum
         [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(opt, net_data);
@@ -121,4 +120,4 @@ for spread = opt.input_spread_vec
 end
 
 clear tmpresults;
-save('-v7.3', sprintf('001_narrow_ramp_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
+save('-v7.3', sprintf('002_narrow_ramp_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
