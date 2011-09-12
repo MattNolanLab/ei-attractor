@@ -7,8 +7,8 @@ path('../include', path);
 
 
 %load e_input_current_output_19-Jul-2011;
-outputDir = 'output_local';
-outputNum = '007';
+outputDir = '../006_narrow_protocol/output_local';
+outputNum = '001';
 
 fontSize = 16;
 
@@ -22,8 +22,8 @@ dt = results(1,1).opt.dt;
 
 N_spikes = 25;
 
-t_start = 0;
-t_end   = 5;
+t_start = 5;
+t_end   = 7;
 f_lim = [0 200];
 
 

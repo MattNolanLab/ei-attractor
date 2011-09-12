@@ -75,10 +75,7 @@ trial_it = 2;
 
     
  
-    % Two excitatory neurons and an inhibitory one
-    e_nid = [100 200];
-    i_nid = 100;
-    
+    % Two excitatory neurons and an inhibitory one    
     figure('Position', [800 0 1000 700]);
 
     subplot(2, 1, 1, 'FontSize', fontSize);
