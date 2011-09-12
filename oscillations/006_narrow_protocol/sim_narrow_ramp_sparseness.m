@@ -36,7 +36,7 @@ opt.wi = 20e-3 / N;
 
 opt.spikeVm = 0;
 
-opt.sparseness_vec = 0.1:0.1:0.7
+opt.sparseness_vec = 0.1:0.1:0.8
 
 % Current distribution settings
 % Diameter of the activated area
@@ -70,9 +70,6 @@ opt.T = 10;
 % Create simulation results
 %
 
-% The same network structure for all simulations
-[net_data.Me net_data.Mi] = MeMi(opt);
-
 opt.dists_e = opt.D*rand(opt.Ne, 1);
 opt.dists_i = opt.D*rand(opt.Ni, 1);    
 
@@ -94,7 +91,11 @@ param_i = 1;
 
 for sparseness = opt.sparseness_vec
 
-    opt.sparseness = sparseness
+    opt.e_sparseness = sparseness;
+    opt.i_sparseness = sparseness
+
+    [net_data.Me net_data.Mi] = MeMi(opt);
+
         
     parfor trialNum = 1:nTrials
         trialNum
