@@ -20,7 +20,7 @@ opt.Vr_e = -60.0e-3;
 %opt.e_sparseness = 0.75;
 opt.Ie_0 = 0e-3;
 opt.Ie_max = 40e-3;
-opt.we_vec = [50:50:400] *1e-3 / N;
+opt.we_vec = [50:50:1000] *1e-3 / N;
 
 
 % Inhibitory cell
@@ -36,8 +36,8 @@ opt.wi = 20e-3 / N;
 
 opt.spikeVm = 0;
 
-opt.e_sparseness = 0.8;
-opt.i_sparseness = 0.8;
+opt.e_sparseness = 0.1;
+opt.i_sparseness = 0.1;
 
 % Current distribution settings
 % Diameter of the activated area
@@ -121,4 +121,4 @@ for we = opt.we_vec
 end
 
 clear tmpresults;
-save('-v7.3', sprintf('005_narrow_ramp_we_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
+save('-v7.3', sprintf('006_narrow_ramp_we_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
