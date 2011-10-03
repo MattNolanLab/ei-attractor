@@ -22,14 +22,14 @@ t_start = 5;
 t_end   = 7;
 f_lim = [0 200];
 
-par_it = 8;
+par_it = 1;
 trial_it = 1;
 
 
 res = results(par_it, trial_it);
 opt = res.opt;
 
-x_lim = [4 10];
+x_lim = [2 12];
 
 ti_start = x_lim(1)/opt.dt + 1;
 ti_end = x_lim(2)/opt.dt + 1;
@@ -38,27 +38,32 @@ win_len = 0.5 / dt; %s
 plot_opt.fontSize = 16;
 plot_opt.x_lim = x_lim;
 
-% parfor it1 = 1:size(res.Vmon.e, 1)
-%     for it2 = it1+1:size(res.Vmon.e, 1)
-%         figure('Position', [0 0 1600 800], 'Visible', 'off');
-%         
-%         Vm_correlations_EE(res, it1, it2, ti_start, ti_end, win_len, plot_opt);
-% 
-%         set(gcf,'PaperPositionMode','auto');    
-%         print('-depsc2', sprintf('%s/%s_narrow_2Vm_exc_%3.3f_trial_%.3d_nid_%.3d_%.3d.eps', ...
-%                 outputDir, outputNum, opt.input_spread/D, trial_it, res.opt.Emon_i(it1), res.opt.Emon_i(it2)));    
-%     end
-% end
 
 
-parfor it1 = 1%:size(res.Vmon.i, 1)
-    for it2 = it1+1:size(res.Vmon.i, 1)
+parfor it1 = 1:size(res.Vmon.e, 1)
+    for it2 = 1:size(res.Vmon.i, 1)
         figure('Position', [0 0 1600 800], 'Visible', 'off');
         
-        Vm_correlations_II(res, it1, it2, ti_start, ti_end, win_len, plot_opt);
+        s1 = res.Vmon.e(it1, ti_start:ti_end);
+        s2 = res.Vmon.i(it2, ti_start:ti_end);
+
+        subplot(2, 1, 1, 'FontSize', plot_opt.fontSize);
+        plot(res.Vmon.t(ti_start:ti_end), s1*1000, 'r');
+        ylabel('Vm (mV)');
+        box off;
+        axis tight;
+        xlim(plot_opt.x_lim);
+
+        subplot(2, 1, 2, 'FontSize', plot_opt.fontSize);
+        plot(res.Vmon.t(ti_start:ti_end), s2*1000, 'b');
+        ylabel('Vm (mV)');
+        box off;
+        axis tight;
+        xlim(plot_opt.x_lim);
+
         
         set(gcf,'PaperPositionMode','auto');    
-        print('-depsc2', sprintf('%s/%s_narrow_2Vm_inh_%3.3f_trial_%.3d_nid_%.3d_%.3d.eps', ...
+        print('-depsc2', sprintf('%s/%s_narrow_2Vm_EI_spiking_%3.3f_trial_%.3d_nid_%.3d_%.3d.eps', ...
                 outputDir, outputNum, opt.input_spread/D, trial_it, res.opt.Emon_i(it1), res.opt.Emon_i(it2)));    
     end
 end
