@@ -13,26 +13,26 @@ N = opt.Ne + opt.Ni;
 
 % Excitatory cells
 opt.taum_e = 9.3e-3;
-opt.taue = 5e-3;
+opt.taue = 2e-3;
 opt.El_e = -68.5e-3;
 opt.Vt_e = -50.0e-3;
-opt.Vr_e = -60.0e-3;
+opt.Vr_e = -68.5e-3;
 %opt.e_sparseness = 0.75;
 opt.Ie_0 = 0e-3;
 opt.Ie_max = 40e-3;
-opt.we_vec = [800:100:2000] *1e-3 / N;
+opt.we_vec = [4000] * 1e-3 / N;
 
 
 % Inhibitory cell
-opt.taum_i = 10e-3;
-opt.taui = 5e-3;
+opt.taum_i = 5e-3;
+opt.taui = 10e-3;
 opt.El_i = -60e-3;
 opt.Vt_i = -50e-3;
-opt.Vr_i = -58e-3;
+opt.Vr_i = -60e-3;
 %opt.i_sparseness = 0.75;
 opt.Ii_0 = 0;
 opt.Ii_max = 9e-3;
-opt.wi = 20e-3 / N;
+opt.wi = 200e-3 / N;
 
 opt.spikeVm = 0;
 

@@ -7,7 +7,7 @@ path('../include', path);
 
 
 %load e_input_current_output_19-Jul-2011;
-outputDir = '../006_narrow_protocol/output_local';
+outputDir = 'output_local/';
 outputNum = '002';
 
 fontSize = 16;
@@ -15,7 +15,7 @@ fontSize = 16;
 nParam  = size(results, 1);
 nTrials = size(results, 2);
 
-spread_all = [0.5 2 5 10];
+spread_all = [2];
 find_eps = 1e-9;
 D = results(1, 1).opt.D;
 dt = results(1,1).opt.dt;
@@ -23,12 +23,12 @@ dt = results(1,1).opt.dt;
 N_spikes = 25;
 
 t_start = 5;
-t_end   = 7;
+t_end   = 10;
 f_lim = [0 200];
 
 
 for spread = spread_all
-    par_it = 1;
+    par_it = 6;
     while par_it <= nParam
         if abs(results(par_it, 1).opt.input_spread/D - spread) < find_eps
             break;

@@ -6,7 +6,7 @@ path('../include', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local';
-outputNum = '006';
+outputNum = '007';
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
@@ -30,7 +30,7 @@ for par_it = 1:size(results, 1)
     res = results(par_it, trial_it);
     opt = res.opt;
 
-    x_lim = [2 12];
+    x_lim = [0 10];
 
     ti_start = x_lim(1)/opt.dt + 1;
     ti_end = x_lim(2)/opt.dt + 1;
@@ -39,8 +39,8 @@ for par_it = 1:size(results, 1)
     plot_opt.fontSize = 16;
     plot_opt.x_lim = x_lim;
 
-    parfor it1 = 1:3%size(res.Vmon.e, 1)
-        for it2 = 1:3%size(res.Vmon.i, 1)
+    parfor it1 = 1:size(res.Vmon.e, 1)
+        for it2 = 1:size(res.Vmon.i, 1)
             figure('Position', [0 0 1600 800], 'Visible', 'off');
 
             s1 = res.Vmon.e(it1, ti_start:ti_end);
@@ -50,14 +50,14 @@ for par_it = 1:size(results, 1)
             plot(res.Vmon.t(ti_start:ti_end), s1*1000, 'r');
             ylabel('Vm (mV)');
             box off;
-            axis tight;
+            %axis tight;
             xlim(plot_opt.x_lim);
 
             subplot(2, 1, 2, 'FontSize', plot_opt.fontSize);
             plot(res.Vmon.t(ti_start:ti_end), s2*1000, 'b');
             ylabel('Vm (mV)');
             box off;
-            axis tight;
+            %axis tight;
             xlim(plot_opt.x_lim);
 
 
