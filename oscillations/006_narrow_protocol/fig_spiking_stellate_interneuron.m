@@ -6,7 +6,7 @@ path('../include', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local';
-outputNum = '005';
+outputNum = '006';
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);

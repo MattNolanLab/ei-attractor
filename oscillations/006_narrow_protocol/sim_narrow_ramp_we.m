@@ -13,14 +13,14 @@ N = opt.Ne + opt.Ni;
 
 % Excitatory cells
 opt.taum_e = 9.3e-3;
-opt.taue = 2e-3;
+opt.taue = 5e-3;
 opt.El_e = -68.5e-3;
 opt.Vt_e = -50.0e-3;
 opt.Vr_e = -60.0e-3;
 %opt.e_sparseness = 0.75;
 opt.Ie_0 = 0e-3;
 opt.Ie_max = 40e-3;
-opt.we_vec = [50:50:1000] *1e-3 / N;
+opt.we_vec = [800:100:2000] *1e-3 / N;
 
 
 % Inhibitory cell
@@ -36,7 +36,7 @@ opt.wi = 20e-3 / N;
 
 opt.spikeVm = 0;
 
-opt.e_sparseness = 0.1;
+opt.e_sparseness = 0.01;
 opt.i_sparseness = 0.1;
 
 % Current distribution settings
@@ -64,7 +64,7 @@ opt.Emon_i = [100 110 120 130 140 150 200 300 400 500 600 700 800];
 opt.Imon_i = [100 110 120 130 140 150 160 170 180 190];
 
 % simulation time
-opt.T = 15;
+opt.T = 12;
 
 
 % 
@@ -97,7 +97,7 @@ for we = opt.we_vec
     [net_data.Me net_data.Mi] = MeMi(opt);
 
         
-    parfor trialNum = 1:nTrials
+    for trialNum = 1:nTrials
         trialNum
         [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(opt, net_data);
         
@@ -121,4 +121,4 @@ for we = opt.we_vec
 end
 
 clear tmpresults;
-save('-v7.3', sprintf('006_narrow_ramp_we_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
+save('-v7.3', sprintf('007_narrow_ramp_we_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
