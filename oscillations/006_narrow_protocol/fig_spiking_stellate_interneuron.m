@@ -6,7 +6,7 @@ path('../include', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local';
-outputNum = '007';
+outputNum = '005';
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
@@ -39,8 +39,8 @@ for par_it = 1:size(results, 1)
     plot_opt.fontSize = 16;
     plot_opt.x_lim = x_lim;
 
-    parfor it1 = 1:size(res.Vmon.e, 1)
-        for it2 = 1:size(res.Vmon.i, 1)
+    parfor it1 = 1:3%size(res.Vmon.e, 1)
+        for it2 = 1:3%size(res.Vmon.i, 1)
             figure('Position', [0 0 1600 800], 'Visible', 'off');
 
             s1 = res.Vmon.e(it1, ti_start:ti_end);
@@ -52,13 +52,16 @@ for par_it = 1:size(results, 1)
             box off;
             %axis tight;
             xlim(plot_opt.x_lim);
+            legend('Stellate cells', 'Location', 'NorthWest');
 
             subplot(2, 1, 2, 'FontSize', plot_opt.fontSize);
             plot(res.Vmon.t(ti_start:ti_end), s2*1000, 'b');
+            xlabel('Time (s)');
             ylabel('Vm (mV)');
             box off;
             %axis tight;
             xlim(plot_opt.x_lim);
+            legend('Interneurons', 'Location', 'NorthWest');
 
 
             set(gcf,'PaperPositionMode','auto');    
