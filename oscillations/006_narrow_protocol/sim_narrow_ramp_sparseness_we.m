@@ -14,8 +14,8 @@ global_opt.Ne = 800;
 global_opt.Ni = 200;
 N = global_opt.Ne + global_opt.Ni;
 
-global_opt.sparseness_vec = [0.7:0.1:0.8];
-global_opt.we_vec = [50:50:100] *1e-3 / N;
+global_opt.sparseness_vec = [0.05:0.05:0.7];
+global_opt.we_vec = [100:100:2000] *1e-3 / N;
 
 
 Nspar = numel(global_opt.sparseness_vec);
@@ -80,8 +80,8 @@ for it = 1:Nspar*Nwe
         rateWindowLen = opt.rateWindowLen;
 
         % Vm monitor, neuron index
-        opt.Emon_i = [100 110 120 130];
-        opt.Imon_i = [100 110 120 130];
+        opt.Emon_i = [100];
+        opt.Imon_i = [100];
 
         % simulation time
         opt.T = 15;
@@ -122,8 +122,8 @@ for it = 1:Nspar*Nwe
             trialNum
             [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(opt, net_data);
 
-            tmpresults(trialNum).spikeRecord_e = spikeRecord_e;
-            tmpresults(trialNum).spikeRecord_i = spikeRecord_i;
+            %tmpresults(trialNum).spikeRecord_e = spikeRecord_e;
+            %tmpresults(trialNum).spikeRecord_i = spikeRecord_i;
             tmpresults(trialNum).Vmon = Vmon;
             tmpresults(trialNum).times = times;
 
@@ -140,5 +140,5 @@ for it = 1:Nspar*Nwe
     %end
 end
 
-clear tmpresults;
+clearvars -except results;
 save('-v7.3', sprintf('008_narrow_ramp_sparseness_we_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
