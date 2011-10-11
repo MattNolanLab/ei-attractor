@@ -10,8 +10,8 @@ clear all;
     % been done and results saved to tracking*.mat file
     loadFlag = true;
     
-    jobId = 40106;
-    folder = 'simulation_data/000_003_Burak_Fiete_Path_Integ/';
+    jobId = 5000;
+    folder = 'simulation_data/007_mult_bump_path_integ/';
     d = dir([folder 'job' num2str(jobId) '*.mat']);
     fileName = [folder d(end).name]
     
@@ -99,12 +99,12 @@ clear all;
     %---------------------------------------------
     % Plot single neuron rate and spike responses
     %---------------------------------------------
-    neuronNum = sheet_size^2 / 2 + sheet_size/2;
-    neuronSpikes = eval(['spikeMonitor_times_n' int2str(neuronNum)]);
+    neuronNum = 20;%sheet_size^2 / 2 + sheet_size/2;
+    neuronSpikes = spikeCell{neuronNum};
     h = 5.0;  % cm
     arenaDiam = 180;   % cm
 
-    subplot(2, 2, 1, 'FontSize', fontSize);
+    subplot(1, 2, 1, 'FontSize', fontSize);
     plotSpikes_xy(neuronSpikes, pos_x, pos_y, dt_rat, neuronNum);
     %xlabel('Rat position [cm]');
     %ylabel('Rat position [cm]');
@@ -117,7 +117,7 @@ clear all;
     title 'A';
 
     
-    subplot(2, 2, 2, 'FontSize', fontSize);
+    subplot(1, 2, 2, 'FontSize', fontSize);
     plotSNResponse(neuronSpikes, pos_x, pos_y, arenaDiam, h, dt_rat, neuronNum);
     xlim([-arenaDiam/2 arenaDiam/2]);
     ylim([-arenaDiam/2 arenaDiam/2]);
