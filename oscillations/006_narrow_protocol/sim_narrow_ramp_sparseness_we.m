@@ -22,8 +22,8 @@ Nspar = numel(global_opt.sparseness_vec);
 Nwe = numel(global_opt.we_vec);
 
 for it = 1:Nspar*Nwe
-    sparseness = global_opt.sparseness_vec(fix((it-1)/Nspar) + 1)
-    we = global_opt.we_vec(mod(it-1, Nspar) + 1)
+    sparseness = global_opt.sparseness_vec(fix((it-1)/Nwe) + 1)
+    we = global_opt.we_vec(mod(it-1, Nwe) + 1)
     
     %for we = opt.we_vec
         opt = global_opt;
