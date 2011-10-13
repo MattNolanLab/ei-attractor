@@ -14,8 +14,8 @@ global_opt.Ne = 800;
 global_opt.Ni = 200;
 N = global_opt.Ne + global_opt.Ni;
 
-global_opt.sparseness_vec = [0.05:0.05:0.7];
-global_opt.we_vec = [100:100:2000] *1e-3 / N;
+global_opt.sparseness_vec = [0.01 0.05:0.05:0.35];
+global_opt.we_vec = [200:200:4000] *1e-3 / N;
 
 
 Nspar = numel(global_opt.sparseness_vec);
