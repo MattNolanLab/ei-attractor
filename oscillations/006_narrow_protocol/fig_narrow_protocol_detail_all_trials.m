@@ -8,7 +8,7 @@ path('../include', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local/';
-outputNum = '002';
+outputNum = '009';
 
 fontSize = 16;
 
@@ -22,13 +22,13 @@ dt = results(1,1).opt.dt;
 
 N_spikes = 25;
 
-t_start = 5;
-t_end   = 10;
+t_start = 7;
+t_end   = 12;
 f_lim = [0 200];
 
 
 for spread = spread_all
-    par_it = 6;
+    par_it = 1;
     while par_it <= nParam
         if abs(results(par_it, 1).opt.input_spread/D - spread) < find_eps
             break;

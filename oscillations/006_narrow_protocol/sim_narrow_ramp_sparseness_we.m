@@ -14,14 +14,14 @@ global_opt.Ne = 800;
 global_opt.Ni = 200;
 N = global_opt.Ne + global_opt.Ni;
 
-global_opt.sparseness_vec = [0.01 0.05:0.05:0.35];
-global_opt.we_vec = [200:200:4000] *1e-3 / N;
+global_opt.sparseness_vec = [0.01];
+global_opt.we_vec = [4000] *1e-3 / N;
 
 
 Nspar = numel(global_opt.sparseness_vec);
 Nwe = numel(global_opt.we_vec);
 
-for it = 1:Nspar*Nwe
+parfor it = 1:Nspar*Nwe
     sparseness = global_opt.sparseness_vec(fix((it-1)/Nwe) + 1)
     we = global_opt.we_vec(mod(it-1, Nwe) + 1)
     
@@ -44,19 +44,19 @@ for it = 1:Nspar*Nwe
 
         % Inhibitory cell
         opt.taum_i = 10e-3;
-        opt.taui = 5e-3;
+        opt.taui = 10e-3;
         opt.El_i = -60e-3;
         opt.Vt_i = -50e-3;
         opt.Vr_i = -58e-3;
         opt.Ii_0 = 0;
         opt.Ii_max = 9e-3;
-        opt.wi = 20e-3 / N;
+        opt.wi = 800e-3 / N;
 
         opt.spikeVm = 0;
 
         opt.sparseness_vec = global_opt.sparseness_vec;
         opt.e_sparseness = sparseness;
-        opt.i_sparseness = sparseness;
+        opt.i_sparseness = 0.8;
 
 
         % Current distribution settings
@@ -71,7 +71,7 @@ for it = 1:Nspar*Nwe
 
 
         % Euler settings
-        opt.dt = 0.5e-3  % 0.5 ms
+        opt.dt = 0.1e-3  % 0.1 ms
         dt = opt.dt;
 
 
@@ -80,8 +80,8 @@ for it = 1:Nspar*Nwe
         rateWindowLen = opt.rateWindowLen;
 
         % Vm monitor, neuron index
-        opt.Emon_i = [100];
-        opt.Imon_i = [100];
+        opt.Emon_i = [100 120 140 160 180];
+        opt.Imon_i = [100 120 140 160 180];
 
         % simulation time
         opt.T = 15;
@@ -111,19 +111,20 @@ for it = 1:Nspar*Nwe
 
         net_data = struct();
     
-
         %
         % Start loop
         %        
         [net_data.Me net_data.Mi] = MeMi(opt);
 
-
+        tmpresults = [];
         for trialNum = 1:nTrials
             trialNum
             [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(opt, net_data);
 
-            %tmpresults(trialNum).spikeRecord_e = spikeRecord_e;
-            %tmpresults(trialNum).spikeRecord_i = spikeRecord_i;
+            tmpresults(trialNum).spikeRecord_e = spikeRecord_e;
+            tmpresults(trialNum).spikeRecord_i = spikeRecord_i;
+            tmpresults(trialNum).Me = net_data.Me;
+            tmpresults(trialNum).Mi = net_data.Mi;
             tmpresults(trialNum).Vmon = Vmon;
             tmpresults(trialNum).times = times;
 
@@ -141,4 +142,4 @@ for it = 1:Nspar*Nwe
 end
 
 clearvars -except results;
-save('-v7.3', sprintf('008_narrow_ramp_sparseness_we_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
+save('-v7.3', sprintf('009_narrow_ramp_sparseness_we_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));

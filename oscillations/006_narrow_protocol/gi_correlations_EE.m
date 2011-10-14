@@ -1,12 +1,12 @@
-function Vm_correlations_EE(res, it1, it2, ti_start, ti_end, win_len, plot_opt)
+function gi_correlations_EE(res, it1, it2, ti_start, ti_end, win_len, plot_opt)
     % plot sliding correlation coefficient of two excitatory neurons
 
-    s1 = res.Vmon.e(it1, ti_start:ti_end);
-    s2 = res.Vmon.e(it2, ti_start:ti_end);
+    s1 = -res.Vmon.gi(it1, ti_start:ti_end);
+    s2 = -res.Vmon.gi(it2, ti_start:ti_end);
 
     subplot(3, 1, 1, 'FontSize', plot_opt.fontSize);
     plot(res.Vmon.t(ti_start:ti_end), [s1; s2]*1000);
-    ylabel('Vm (mV)');
+    ylabel('Syn. current (mA)');
     box on;
 %        axis tight;
     xlim(plot_opt.x_lim);
@@ -26,6 +26,5 @@ function Vm_correlations_EE(res, it1, it2, ti_start, ti_end, win_len, plot_opt)
     box on;
     xlabel('Time (s)');
     title('Interneurons');
-    
 
 end

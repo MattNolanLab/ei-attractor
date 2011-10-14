@@ -9,7 +9,7 @@ path('../include', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local';
-outputNum = '005';
+outputNum = '008';
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
@@ -67,6 +67,33 @@ mean_first_i = reshape(mean_first_i, Nwe, Nsp);
 
 figure;
 [grid_sp, grid_we] = meshgrid(sp_vec, we_vec);
-surf(grid_sp, grid_we, mean_first_i - mean_first_e);
+lag = mean_first_i - mean_first_e;
+surf(grid_sp, grid_we*1000, lag);
 xlabel('Sparseness');
-ylabel('Synaptic strength');
+ylabel('Synaptic strength (mV)');
+zlabel('Lag (s)');
+view(45, 45);
+
+set(gcf,'PaperPositionMode','auto');    
+print('-depsc2', sprintf('%s/%s_narrow_lag_EI_3d.eps', ...
+        outputDir, outputNum));    
+
+
+figure;
+plot(sp_vec, lag);
+xlabel('Sparseness');
+ylabel('Lag (s)');
+
+set(gcf,'PaperPositionMode','auto');    
+print('-depsc2', sprintf('%s/%s_narrow_lag_EI_sparseness.eps', ...
+        outputDir, outputNum));    
+
+
+figure;
+plot(we_vec*1000, lag');
+xlabel('Syn. strength (mV)');
+ylabel('Lag (s)');
+
+set(gcf,'PaperPositionMode','auto');    
+print('-depsc2', sprintf('%s/%s_narrow_lag_EI_we.eps', ...
+        outputDir, outputNum));    
