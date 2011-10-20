@@ -14,8 +14,8 @@ global_opt.Ne = 800;
 global_opt.Ni = 200;
 N = global_opt.Ne + global_opt.Ni;
 
-global_opt.sparseness_vec = [0.01];
-global_opt.we_vec = [4000] *1e-3 / N;
+global_opt.sparseness_vec = [0.01 0.05 0.1:0.8];
+global_opt.we_vec = [200:200:4000] *1e-3 / N;
 
 
 Nspar = numel(global_opt.sparseness_vec);
@@ -36,7 +36,7 @@ parfor it = 1:Nspar*Nwe
         opt.El_e = -68.5e-3;
         opt.Vt_e = -50.0e-3;
         opt.Vr_e = -60.0e-3;
-        opt.Ie_0 = 0e-3;
+        opt.Ie_0 = 40e-3;
         opt.Ie_max = 40e-3;
         opt.we_vec = global_opt.we_vec;
         opt.we = we;
@@ -48,7 +48,7 @@ parfor it = 1:Nspar*Nwe
         opt.El_i = -60e-3;
         opt.Vt_i = -50e-3;
         opt.Vr_i = -58e-3;
-        opt.Ii_0 = 0;
+        opt.Ii_0 = 9e-3;
         opt.Ii_max = 9e-3;
         opt.wi = 800e-3 / N;
 
@@ -80,11 +80,11 @@ parfor it = 1:Nspar*Nwe
         rateWindowLen = opt.rateWindowLen;
 
         % Vm monitor, neuron index
-        opt.Emon_i = [100 120 140 160 180];
-        opt.Imon_i = [100 120 140 160 180];
+        opt.Emon_i = [100 120];
+        opt.Imon_i = [100 120 140];
 
         % simulation time
-        opt.T = 15;
+        opt.T = 5;
 
 
         % 
@@ -142,4 +142,4 @@ parfor it = 1:Nspar*Nwe
 end
 
 clearvars -except results;
-save('-v7.3', sprintf('009_narrow_ramp_sparseness_we_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
+save('-v7.3', sprintf('010_narrow_const_sparseness_we_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));

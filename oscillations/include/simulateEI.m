@@ -54,9 +54,11 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(o, net_data)
 
     Emon_i = o.Emon_i;
     Imon_i = o.Imon_i;
-    Vmon_e = [];
-    Vmon_i = [];
-    Vmon_t = [];
+    Vmon_e = zeros(numel(Emon_i), numel(times));
+    Vmon_i = zeros(numel(Imon_i), numel(times));
+    Vmon_ge = zeros(numel(Imon_i), numel(times));
+    Vmon_gi = zeros(numel(Emon_i), numel(times));
+    Vmon_t = times;
 
     % Setup connections Mij: j --> i
     % Assuming constant and uniform excitatory/inhibitory weights
@@ -91,17 +93,19 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(o, net_data)
         spikeRecord_e(:, t_i) = double(fired_e);
         spikeRecord_i(:, t_i) = double(fired_i);
 
-        Vmon_e = [Vmon_e Ve(Emon_i)];
-        Vmon_i = [Vmon_i Vi(Imon_i)];
+        gi = gi + Mi*fired_i * wi;
+        ge = ge + Me*fired_e * we;
+
+
+        Vmon_e(:, t_i) = Ve(Emon_i);
+        Vmon_i(:, t_i) = Vi(Imon_i);
         Vmon_e(fired_e(Emon_i), t_i) = o.spikeVm;
         Vmon_i(fired_i(Imon_i), t_i) = o.spikeVm;
-        Vmon_t = [Vmon_t t];
+        Vmon_ge(:, t_i) = ge(Imon_i);
+        Vmon_gi(:, t_i) = gi(Emon_i);
 
 
         % Check if neurons fired and add to syn. conductances
-
-        gi = gi + Mi*fired_i * wi;
-        ge = ge + Me*fired_e * we;
 
         dVe = dt * 1/taum_e * (El_e - Ve - gi + Ie);
         dVi = dt * 1/taum_i * (El_i - Vi + ge + Ii);
@@ -120,6 +124,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEI(o, net_data)
 
     Vmon.e = Vmon_e;
     Vmon.i = Vmon_i;
+    Vmon.ge = Vmon_ge;
+    Vmon.gi = Vmon_gi;
     Vmon.t = Vmon_t;
 
 end

@@ -9,7 +9,7 @@ path('../include', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local';
-outputNum = '008';
+outputNum = '009';
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
@@ -28,91 +28,105 @@ Nsp = size(results(1,1).opt.sparseness_vec, 2);
 par_it = 1;
 trial_it = 1;
 
-Ne_it = 10;
 Ni_it = 1;
+Ne_it = 1;
 
 res = results(par_it, trial_it);
 
-% % E and I synaptic kernels
-% ker_dt = res.opt.dt;
-% 
-% I_ker_T = 10 * res.opt.taui;
-% I_ker_t = 0:ker_dt:I_ker_T;
-% I_ker = exp(-I_ker_t/res.opt.taui);
-% 
-% E_ker_T = 10 * res.opt.taue;
-% E_ker_t = 0:ker_dt:E_ker_T;
-% E_ker = exp(-E_ker_t/res.opt.taue);
-% 
-% % Plot synaptic currents onto stellate cell
-% pre_I_cells = find(results(par_it, trial_it).Mi(Ne_it, :) == 1);
-% if (numel(pre_I_cells) == 0)
-%     error(sprintf('No I cells were connected to E cell no. %d', Ne_it));
-% end
+ge_sig = res.Vmon.ge(Ni_it, :)*mA;
+gi_sig = -res.Vmon.gi(Ne_it, :)*mA;
 
 
-% pre_E_cells = find(res.Me(Ni_it, :) == 1);
-% if (numel(pre_E_cells) == 0)
-%     error(sprintf('No E cells were connected to I cell no. %d', Ni_it));
-% end
-% 
-% figure;
-% I_post_spikes = full(sum(res.spikeRecord_e(pre_E_cells, :))) * res.opt.we;
-% I_post_current = conv(I_post_spikes, E_ker, 'same');
-figure();
-plot(res.times, res.Vmon.ge*1000);
+% Time 1
+figure('Position', [800 800 1000 600]);
+x_lim = [7.8 8];
+subplot(2,1,1, 'FontSize', fontSize);
+plot(res.times, gi_sig);
+xlabel('Time (s)');
+ylabel('Syn. current (mA)');
+title('Stellate cell');
+xlim(x_lim);
+
+subplot(2, 1, 2, 'FontSize', fontSize);
+plot(res.times, ge_sig);
 xlabel('Time (s)');
 ylabel('Syn. current (mA)');
 title('Interneuron');
+xlim(x_lim);
+
+set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
+print('-depsc2', sprintf('%s/%s_gi_ge_currents_time1.eps', ...
+        outputDir, outputNum));    
 
 
-
-figure();
-
-gi_sig = - res.Vmon.gi*mA;
-
-% E_post_spikes = full(sum(res.spikeRecord_i(pre_I_cells, :))) * res.opt.wi;
-% E_post_current = conv(E_post_spikes, I_ker, 'same');
+% Time 2
+figure('Position', [800 800 1000 600]);
+x_lim = [14 14.2];
 subplot(2,1,1, 'FontSize', fontSize);
 plot(res.times, gi_sig);
-xlabel('Time');
+xlabel('Time (s)');
 ylabel('Syn. current (mA)');
 title('Stellate cell');
+xlim(x_lim);
+
+subplot(2, 1, 2, 'FontSize', fontSize);
+plot(res.times, ge_sig);
+xlabel('Time (s)');
+ylabel('Syn. current (mA)');
+title('Interneuron');
+xlim(x_lim);
+
+set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
+print('-depsc2', sprintf('%s/%s_gi_ge_currents_time2.eps', ...
+        outputDir, outputNum));    
 
 
-set(gca, 'FontSize', fontSize);
-F = 0:2:150;
-[Y, F, T, P] = spectrogram(gi_sig, 1024, 940, F, 1/res.opt.dt);
-% The following code produces the same result as calling
-% spectrogram with no outputs:
 
-%filt = find(P < 1e-1);
-%P(filt) = nan;
-plot_dB = false;
+for Ne_it = 1%:numel(res.opt.Emon_i)
+    figure('Position', [800 800 1000 600]);
 
-if (plot_dB)
-    P_plot = 10*log10(abs(P));
-    power_label = 'Power (dB)';
-else
-    P_plot = abs(P);
-    power_label = 'Power';
+    gi_sig = - res.Vmon.gi(Ne_it, :)*mA;
+
+    plot_opt.fontSize = 14;
+    plot_opt.F = 10:1:100;
+    plot_opt.sampling_rate = 1e4;
+    plot_opt.win_len = 2000;
+    
+    which_cell = 'stellate';
+    
+    
+    plot_opt.plot_dB = false;
+    plot_opt.x_lim = [0 10];
+    
+    plot_g_freq(gi_sig, res.times, which_cell, plot_opt);
+
+    set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
+    print('-depsc2', sprintf('%s/%s_gi_spectrogram_N%.3d.eps', ...
+            outputDir, outputNum, Ne_it));    
+
+        
+%     figure('Position', [800 800 1000 600]);
+%     f_ax = subplot(3,1,[1 2], 'FontSize', fontSize);
+%     
+%     [fmax fmax_i] = max(P_plot);
+%     plot(T, F(fmax_i))
+%     
+%     P_ax = subplot(3, 1, 3, 'FontSize', fontSize);
+%     plot(T, fmax);
+%     
+%     f_pos = get(f_ax, 'Position');
+%     P_pos = get(P_ax, 'Position');
+% 
+%     f_pos(2) = P_pos(2) + P_pos(4) + gap;
+%     set(f_ax, 'Position', f_pos, 'XTick', []);
+%     xlabel('Time (s)');    
+
 end
 
-min_P = min(min(P_plot));
-max_P = max(max(P_plot));
 
-subplot(2,1,2, 'FontSize', fontSize)
-surf(T,F,P_plot,'EdgeColor','none');
-axis xy; axis tight; %view(0,90);
-%zlim([min_P max_P]);
-xlabel('Time');
-ylabel('Frequency (Hz)');
-zlabel(power_label);
-colormap jet;
-view(-90, -90)
-%colorbar;
+figure('Position', [800 800 1000 600]);
+which_cell = 'interneuron';
+plot_g_freq(res.Vmon.ge(Ni_it, :)*mA, res.times, which_cell, plot_opt);
 
-set(gcf,'PaperPositionMode','auto');
-print('-depsc2', 'wide_c003_Current_2_spectrogram_non_dB.eps');
 
 
