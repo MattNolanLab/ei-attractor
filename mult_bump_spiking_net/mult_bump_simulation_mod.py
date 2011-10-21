@@ -16,7 +16,7 @@ import math
 import sys
 import numpy as np
 
-from mult_bump_network import *
+#from mult_bump_network import *
 
 
 def getOptParser():
@@ -46,6 +46,8 @@ def getOptParser():
             help="Neuron membrane time constant (ms)")
     optParser.add_option("--taui", type="float", default=10, dest="taui",
             help="Inhibitory synaptic time constant (ms)")
+    optParser.add_option("--EL", type="float", default=-70, dest="EL",
+            help="Resting membrane potential of neurons (mV)")
     optParser.add_option("--threshold", type="float", default=-20, dest="threshold",
             help="Integrate and fire spiking threshold (mV)")
     optParser.add_option("--output-dir", type="string", default="results/", dest="output_dir", help="Output directory path.")

@@ -25,7 +25,7 @@ Ni = size(results(1,1).spikeCell_i, 2);
 Nwe = size(results(1,1).opt.we_vec, 2);
 Nsp = size(results(1,1).opt.sparseness_vec, 2);
 
-par_it = 1;
+par_it = 20;
 trial_it = 1;
 
 Ni_it = 1;
@@ -90,7 +90,7 @@ for Ne_it = 1%:numel(res.opt.Emon_i)
     plot_opt.fontSize = 14;
     plot_opt.F = 10:1:100;
     plot_opt.sampling_rate = 1e4;
-    plot_opt.win_len = 2000;
+    plot_opt.win_len = 3000;
     
     which_cell = 'stellate';
     
@@ -98,28 +98,29 @@ for Ne_it = 1%:numel(res.opt.Emon_i)
     plot_opt.plot_dB = false;
     plot_opt.x_lim = [0 10];
     
-    plot_g_freq(gi_sig, res.times, which_cell, plot_opt);
+    [Y F T P P_plot] = plot_g_freq(gi_sig, res.times, which_cell, plot_opt);
 
     set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
     print('-depsc2', sprintf('%s/%s_gi_spectrogram_N%.3d.eps', ...
             outputDir, outputNum, Ne_it));    
 
         
-%     figure('Position', [800 800 1000 600]);
-%     f_ax = subplot(3,1,[1 2], 'FontSize', fontSize);
-%     
-%     [fmax fmax_i] = max(P_plot);
-%     plot(T, F(fmax_i))
-%     
-%     P_ax = subplot(3, 1, 3, 'FontSize', fontSize);
-%     plot(T, fmax);
-%     
-%     f_pos = get(f_ax, 'Position');
-%     P_pos = get(P_ax, 'Position');
-% 
-%     f_pos(2) = P_pos(2) + P_pos(4) + gap;
-%     set(f_ax, 'Position', f_pos, 'XTick', []);
-%     xlabel('Time (s)');    
+    figure('Position', [800 800 1000 600]);
+    %gap = 0.3;
+    f_ax = subplot(3,1,[1 2], 'FontSize', fontSize);
+    
+    [fmax fmax_i] = max(P_plot);
+    plot(T, F(fmax_i))
+    
+    P_ax = subplot(3, 1, 3, 'FontSize', fontSize);
+    plot(T, fmax);
+    
+    f_pos = get(f_ax, 'Position');
+    P_pos = get(P_ax, 'Position');
+
+    %f_pos(2) = P_pos(2) + P_pos(4) + gap;
+    %set(f_ax, 'Position', f_pos, 'XTick', []);
+    xlabel('Time (s)');    
 
 end
 

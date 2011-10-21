@@ -10,7 +10,7 @@ clear all;
     % been done and results saved to tracking*.mat file
     loadFlag = true;
     
-    jobId = 5000;
+    jobId = 5004;
     folder = 'simulation_data/007_mult_bump_path_integ/';
     d = dir([folder 'job' num2str(jobId) '*.mat']);
     fileName = [folder d(end).name]
@@ -138,6 +138,6 @@ clear all;
         end
         clear spikeHist
         
-        save('-v7.3', [folder 'data_analysis/tracking_' d(end).name]);
+        %save('-v7.3', [folder 'data_analysis/tracking_' d(end).name]);
     end
 %end

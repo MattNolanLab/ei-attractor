@@ -4,13 +4,13 @@ close all;
 clear all;
 
 startTime = 0;
-endTime = 200;
+endTime = 5;
 
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
 
-folder = 'simulation_data/000_001_Burak_Fiete_PrefDirs/';
-jobNums = 40056
+folder = 'simulation_data/010_taui_drifts/';
+jobNums = 91000:91039;
 
 
 nFiles = numel(jobNums);    
@@ -47,7 +47,7 @@ for f_it = 1:nFiles
         firingPop = getFiringPop(spikeHist, t, dt_track, delta_t);
         firingPop = reshape(firingPop, opts.sheet_size, opts.sheet_size)';
         image(firingPop, 'Parent', gca);
-        title(['Blob spacing: lambda\_net = ' num2str(opts.lambda_net)]);
+        title(sprintf('taui = %d', opts.taui));
         xlabel('Neuron no.');
         ylabel('Neuron no.');
         axis equal tight;
@@ -58,7 +58,7 @@ for f_it = 1:nFiles
         it = it+1;
     end
 
-    outFile = ['output/000_001_Burak_Fiete_PrefDirs/' num2str(jobNums(f_it)) '_movie.avi'];
+    outFile = ['output_local/job' num2str(jobNums(f_it)) '_movie.avi'];
     movie2avi(M, outFile, 'FPS', 10);
     
     clear spikeHist;
