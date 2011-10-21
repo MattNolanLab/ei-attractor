@@ -1,6 +1,6 @@
 % Convert all files specified by jobNums into spikeCell representation
-jobNums = 40005:40099;
-dataFolder = '../../../central_data_store/simulation_data/spike_synchronization/';
+jobNums = 21900:21999;
+dataFolder = '../../../central_data_store/simulation_data/000_002_NoPrefDirs_RandomInit/';
 
 for jobNum = jobNums
     d = dir([dataFolder 'job' num2str(jobNum) '*.mat'])

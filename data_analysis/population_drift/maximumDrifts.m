@@ -23,13 +23,39 @@ dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
 
 
-driftsParams;  % include parameters
-params = StartFromEL_006.lambda_net_20;
+folder = 'data/000_002_NoPrefDirs_RandomInit/';
+jobNums = 21900:21999;
 
 
 folder = params.folder; 
 jobNums = params.jobNums;
 
+    parfor f_it = 1:nFiles
+        jobNums(f_it)
+        d = dir([folder 'job' num2str(jobNums(f_it)) '*.mat'])
+        if (numel(d) == 0)
+            warning(['Could not open job no.' num2str(jobNums(f_it))]);
+            continue;
+        end
+        % Load file which contains the tracking data and extract the spike
+        % histogram and blob positions
+        d(end).name
+        %clear spikeCell
+        dataLoad = load([folder d(end).name], 'spikeCell');       
+        spikeCell = dataLoad.spikeCell;
+        %opts = parseOptions(dataLoad.options);
+        disp 'Creating spike histogram';
+        spikeHist = createSpikeHistCell(1:numel(spikeCell), spikeCell, ...
+            dt_track, 0, endTime);
+        
+        disp 'Tracking blobs'
+        [blobTracks_r(:, f_it) blobTracks_c(:, f_it)] = ...
+            trackPopulationDrift(startTime, endTime, spikeHist, ...
+            dt_track, delta_t);        
+    end
+    
+    
+    clear spikeHist spikeCell
 
 % Preprocess tracking data if necessary
 if (params.preprocess == true)
@@ -47,12 +73,20 @@ end
 fontSize = 16;
 figure('Position', [883 528 800 600]);
 subplot(1, 1, 1, 'FontSize', fontSize);
-box on;
-    
-[absMax_r, absMax_c] = plotMaximumDrifts(gca, params, blobTracks_r, blobTracks_c);
+for it = 1:size(blobTracks_r, 2)
+    hold on;
+    plot(max_min_c(absMax_ci(it), it), max_min_r(absMax_ri(it), it), '.', 'MarkerFaceColor', 'k', 'MarkerSize', 5);
+end
+xlabel('X drift (neurons)');
+ylabel('Y drift (neurons)');
+%title(['Maximum drifts in X and Y directions, ' ...
+%    'bump NO initialisation, lambda\_net = 18']);
+title('Maximum drifts in X and Y directions, Burak&Fiete preferred directions');
+axis equal;
 
 set(gcf,'PaperPositionMode','auto');
-print('-depsc2', params.output);
+print('-depsc2', ...
+   'output/000_002_NoPrefDirs_RandomInit/noPrefDirs_RandomInit-maximumDrifts.eps');
 
 
 % ------------------------------------------------------------------------
@@ -83,7 +117,7 @@ end
 xlabel('Time (s)');
 ylabel('Y Drift (neurons)');
 title(['Detailed drifts of populations that reach absmax > ' num2str(highDriftThreshold_r)]);
-for it = 1:numel(high_id_r)
-    leg_c{it} = ['job ' num2str(high_id_r(it) - 1)];
+for it = 1:numel(high_id_c)
+    leg_c{it} = ['job ' num2str(high_id_c(it) - 1)];
 end
 legend(leg_c, 'Location', 'SouthEast');

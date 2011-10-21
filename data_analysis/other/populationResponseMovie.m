@@ -4,13 +4,13 @@ close all;
 clear all;
 
 startTime = 0;
-endTime = 30;
+endTime = 200;
 
 dt_track = 0.1;
 delta_t = 0.25; % Should be this value.
 
-folder = 'simulation_data/006_StartFromEL/lambda_net_20/';
-jobNums = 30102;
+folder = 'simulation_data/000_001_Burak_Fiete_PrefDirs/';
+jobNums = 40056
 
 
 nFiles = numel(jobNums);    
@@ -58,7 +58,7 @@ for f_it = 1:nFiles
         it = it+1;
     end
 
-    outFile = ['output/006_StartFromEL/job' num2str(jobNums(f_it)) '_movie.avi'];
+    outFile = ['output/000_001_Burak_Fiete_PrefDirs/' num2str(jobNums(f_it)) '_movie.avi'];
     movie2avi(M, outFile, 'FPS', 10);
     
     clear spikeHist;
