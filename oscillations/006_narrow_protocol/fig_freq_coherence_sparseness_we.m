@@ -9,7 +9,7 @@ path('../include', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local';
-outputNum = '009';
+outputNum = '010';
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
@@ -81,12 +81,25 @@ for sp_it = 1:Nsp
     end
 end
 
+figure('Position', [800 1050 900 1050]);
 [WE SP] = meshgrid(we_vec, sp_vec);
 subplot(2,1,1);
 surf(SP, WE, freq_mean);
+ylabel('Syn. strength (mA)');
+xlabel('Sparseness');
+view(-64, 46);
+
 subplot(2,1,2);
 surf(SP, WE, freq_std);
 
 ylabel('Syn. strength (mA)');
 xlabel('Sparseness');
+view(-64, 46);
+
+
+set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
+print('-depsc2', sprintf('%s/%s_freq_N%.3d.eps', ...
+        outputDir, outputNum, Ne_it));    
+
+
 
