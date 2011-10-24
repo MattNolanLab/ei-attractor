@@ -15,7 +15,7 @@ global_opt.Ni = 200;
 N = global_opt.Ne + global_opt.Ni;
 
 global_opt.sparseness_vec = [0.01 0.05 0.1:0.1:0.8];
-global_opt.we_vec = [50 100 150 200:200:4000] *1e-3 / N;
+global_opt.we_vec = [1 2 3 5:5:200] * 1e-9 / N;
 
 
 Nspar = numel(global_opt.sparseness_vec);
@@ -36,8 +36,9 @@ parfor it = 1:Nspar*Nwe
         opt.El_e = -68.5e-3;
         opt.Vt_e = -50.0e-3;
         opt.Vr_e = -60.0e-3;
-        opt.Ie_0 = 40e-3;
-        opt.Ie_max = 40e-3;
+        opt.Rm_e = 44e6; % MOhm
+        opt.Ie_0 = 0;  % pA
+        opt.Ie_max = 900e-12; % pA
         opt.we_vec = global_opt.we_vec;
         opt.we = we;
 
@@ -48,9 +49,10 @@ parfor it = 1:Nspar*Nwe
         opt.El_i = -60e-3;
         opt.Vt_i = -50e-3;
         opt.Vr_i = -58e-3;
-        opt.Ii_0 = 9e-3;
-        opt.Ii_max = 9e-3;
-        opt.wi = 800e-3 / N;
+        opt.Rm_i = 44e6; % MOhm
+        opt.Ii_0 = 0; % pA
+        opt.Ii_max = 200e-12; % pA
+        opt.wi = 18.1e-9 / N;
 
         opt.spikeVm = 0;
 
@@ -84,7 +86,7 @@ parfor it = 1:Nspar*Nwe
         opt.Imon_i = [100 120 140];
 
         % simulation time
-        opt.T = 5;
+        opt.T = 15;
 
 
         % 

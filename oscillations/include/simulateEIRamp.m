@@ -14,6 +14,7 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
     El_e = o.El_e;
     Vt_e = o.Vt_e;
     Vr_e = o.Vr_e;
+    Rm_e = o.Rm_e;
     e_sparseness = o.e_sparseness;
     Ie = o.Ie;
     we = o.we;
@@ -25,6 +26,7 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
     El_i = o.El_i;
     Vt_i = o.Vt_i;
     Vr_i = o.Vr_i;
+    Rm_i = o.Rm_i;
     i_sparseness = o.i_sparseness;
     Ii = o.Ii;
     wi = o.wi;
@@ -101,8 +103,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
 
 
         % Check if neurons fired and add to syn. conductances
-        dVe = dt * 1/taum_e * (El_e - Ve - gi + Ie);
-        dVi = dt * 1/taum_i * (El_i - Vi + ge + Ii);
+        dVe = dt * 1/taum_e * (El_e - Ve - Rm_e*gi + Rm_e*Ie);
+        dVi = dt * 1/taum_i * (El_i - Vi + Rm_i*ge + Rm_i*Ii);
 
         dge = dt * -1/taue * ge;
         dgi = dt * -1/taui * gi;

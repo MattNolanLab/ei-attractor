@@ -13,7 +13,7 @@ function [Y F T P P_plot] = plot_g_freq(g_sig, times, which_cell, plot_opt)
     plot(times, g_sig);
     %xlabel('Time (s)');
     set(gca, 'XTick', []);
-    ylabel('Syn. current (mA)');
+    ylabel('Syn. current (pA)');
     title(top_title);
     xlim(plot_opt.x_lim);
 

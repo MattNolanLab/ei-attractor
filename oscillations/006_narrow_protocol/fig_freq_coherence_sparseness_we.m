@@ -41,56 +41,67 @@ win_len = 2000;
 noverlap = win_len /2;
 plot_dB = false;
 
+dt = results(1,1).opt.dt;
+nPeriods = 1;
+t_start = 1;
+t_start_i = fix(t_start/dt) + 1;
 
-freq_mean = zeros(Nsp, Nwe);
-freq_std  = zeros(Nsp, Nwe);
-pow_mean = zeros(Nsp, Nwe);
+
+freq = zeros(Nsp, Nwe);
+coherence  = zeros(Nsp, Nwe);
+%freq_std  = zeros(Nsp, Nwe);
+%pow_mean = zeros(Nsp, Nwe);
 
 par_it = 1;
 for sp_it = 1:Nsp
     for we_it = 1:Nwe
 
         res = results(par_it, trial_it);
-
-        ge_sig = res.Vmon.ge(Ni_it, :)*mA;
-        gi_sig = -res.Vmon.gi(Ne_it, :)*mA;
-
-        % Stellate cell
-        [Y, F, T, P] = spectrogram(gi_sig, win_len, noverlap, F, sampling_rate);
-        % The following code produces the same result as calling
-        % spectrogram with no outputs:
-
-
-        if (plot_dB)
-            P_plot = 10*log10(abs(P));
-            power_label = 'Power (dB)';
-        else
-            P_plot = abs(P);
-            power_label = 'Power';
-        end
-
-        [max_P max_P_i] = max(P_plot);
-        fmax = F(max_P_i);
-
-        freq_mean(sp_it, we_it) = mean(fmax);
-        pow_mean(sp_it, we_it) = mean(max_P);
-        freq_std(sp_it, we_it) = std(fmax);
         
+
+        ge_sig = res.Vmon.ge(Ni_it, t_start_i:end)*mA;
+        gi_sig = -res.Vmon.gi(Ne_it, t_start_i:end)*mA;
+
+%         % Stellate cell
+%         [Y, F, T, P] = spectrogram(gi_sig, win_len, noverlap, F, sampling_rate);
+%         % The following code produces the same result as calling
+%         % spectrogram with no outputs:
+% 
+% 
+%         if (plot_dB)
+%             P_plot = 10*log10(abs(P));
+%             power_label = 'Power (dB)';
+%         else
+%             P_plot = abs(P);
+%             power_label = 'Power';
+%         end
+% 
+%         [max_P max_P_i] = max(P_plot);
+%         fmax = F(max_P_i);
+% 
+%         freq_mean(sp_it, we_it) = mean(fmax);
+%         pow_mean(sp_it, we_it) = mean(max_P);
+%         freq_std(sp_it, we_it) = std(fmax);
+
+        [F coh] = getSigFreqCoherence(gi_sig, dt, nPeriods);
+        
+        freq(sp_it, we_it) = F;
+        coherence(sp_it, we_it) = coh;
         
         par_it = par_it+1;
     end
 end
 
 figure('Position', [800 1050 900 1050]);
-[WE SP] = meshgrid(we_vec, sp_vec);
+[WE SP] = meshgrid(we_vec*1000, sp_vec);
 subplot(2,1,1);
-surf(SP, WE, freq_mean);
+surf(SP, WE, freq);
 ylabel('Syn. strength (mA)');
 xlabel('Sparseness');
 view(-64, 46);
 
 subplot(2,1,2);
-surf(SP, WE, freq_std);
+surf(SP, WE, coherence);
 
 ylabel('Syn. strength (mA)');
 xlabel('Sparseness');
