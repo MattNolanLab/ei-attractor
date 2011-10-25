@@ -37,7 +37,7 @@ parfor it = 1:Nspar*Nwe
         opt.Vt_e = -50.0e-3;
         opt.Vr_e = -60.0e-3;
         opt.Rm_e = 44e6; % MOhm
-        opt.Ie_0 = 0;  % pA
+        opt.Ie_0 = 900e-12;  % pA
         opt.Ie_max = 900e-12; % pA
         opt.we_vec = global_opt.we_vec;
         opt.we = we;
@@ -50,7 +50,7 @@ parfor it = 1:Nspar*Nwe
         opt.Vt_i = -50e-3;
         opt.Vr_i = -58e-3;
         opt.Rm_i = 44e6; % MOhm
-        opt.Ii_0 = 0; % pA
+        opt.Ii_0 = 200e-12; % pA
         opt.Ii_max = 200e-12; % pA
         opt.wi = 18.1e-9 / N;
 
@@ -86,7 +86,7 @@ parfor it = 1:Nspar*Nwe
         opt.Imon_i = [100 120 140];
 
         % simulation time
-        opt.T = 15;
+        opt.T = 5;
 
 
         % 

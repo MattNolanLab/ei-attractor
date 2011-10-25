@@ -3,9 +3,9 @@ function [C] = slidingCorrelation(s1, s2, win_len)
     % vectors
     
     len = min(size(s1, 2), size(s2, 2));
-    C = zeros(1, len-win_len)*nan;
+    C = zeros(1, len)*nan;
     
-    for it = 1:len-win_len
+    parfor it = 1:len-win_len
         tmpc = corrcoef(s1(it:it+win_len), s2(it:it+win_len));
         C(it) = tmpc(1, 2);
     end

@@ -22,13 +22,13 @@ dt = results(1,1).opt.dt;
 
 N_spikes = 25;
 
-t_start = 1;
-t_end   = 2;
+t_start = 6;
+t_end   = 15;
 f_lim = [0 200];
 
 
 for spread = spread_all
-    par_it = 20;
+    par_it = 49;
     while par_it <= nParam
         if abs(results(par_it, 1).opt.input_spread/D - spread) < find_eps
             break;

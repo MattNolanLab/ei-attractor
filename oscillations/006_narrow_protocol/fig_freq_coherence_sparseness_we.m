@@ -28,7 +28,7 @@ Nsp = size(results(1,1).opt.sparseness_vec, 2);
 sp_vec = results(1,1).opt.sparseness_vec;
 we_vec = results(1,1).opt.we_vec;
 
-par_it = 20;
+%par_it = 1;
 trial_it = 1;
 
 Ni_it = 1;

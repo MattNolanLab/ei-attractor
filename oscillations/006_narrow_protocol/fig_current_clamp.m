@@ -25,7 +25,9 @@ Ni = size(results(1,1).spikeCell_i, 2);
 Nwe = size(results(1,1).opt.we_vec, 2);
 Nsp = size(results(1,1).opt.sparseness_vec, 2);
 
-par_it = 1;
+sp = 0.05;
+we = 1.5e-11;
+par_it = getItFromSpWeVecs(sp, we, results, 1e-9)
 trial_it = 1;
 
 Ni_it = 1;
@@ -59,44 +61,21 @@ print('-depsc2', sprintf('%s/%s_gi_ge_currents_time1.eps', ...
         outputDir, outputNum));    
 
 
-% % Time 2
-% figure('Position', [800 800 1000 600]);
-% x_lim = [14 14.2];
-% subplot(2,1,1, 'FontSize', fontSize);
-% plot(res.times, gi_sig);
-% xlabel('Time (s)');
-% ylabel('Syn. current (mA)');
-% title('Stellate cell');
-% xlim(x_lim);
-% 
-% subplot(2, 1, 2, 'FontSize', fontSize);
-% plot(res.times, ge_sig);
-% xlabel('Time (s)');
-% ylabel('Syn. current (mA)');
-% title('Interneuron');
-% xlim(x_lim);
-% 
-% set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
-% print('-depsc2', sprintf('%s/%s_gi_ge_currents_time2.eps', ...
-%         outputDir, outputNum));    
-
-
-
 for Ne_it = 1%:numel(res.opt.Emon_i)
     figure('Position', [800 800 1000 600]);
 
     gi_sig = - res.Vmon.gi(Ne_it, :)*pA;
 
     plot_opt.fontSize = 14;
-    plot_opt.F = 10:1:100;
+    plot_opt.F = 40:1:100;
     plot_opt.sampling_rate = 1e4;
-    plot_opt.win_len = 1000;
+    plot_opt.win_len = 2000;
     
     which_cell = 'stellate';
     
     
     plot_opt.plot_dB = true;
-    plot_opt.x_lim = [0 10];
+    plot_opt.x_lim = [0 15];
     
     [Y F T P P_plot] = plot_g_freq(gi_sig, res.times, which_cell, plot_opt);
 
