@@ -28,7 +28,7 @@ f_lim = [0 200];
 
 
 for spread = spread_all
-    par_it = 49;
+    par_it = 50;
     while par_it <= nParam
         if abs(results(par_it, 1).opt.input_spread/D - spread) < find_eps
             break;

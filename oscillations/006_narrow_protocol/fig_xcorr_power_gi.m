@@ -25,48 +25,65 @@ Nsp = size(results(1,1).opt.sparseness_vec, 2);
 sp_vec = results(1,1).opt.sparseness_vec;
 we_vec = results(1,1).opt.we_vec;
 
-
-F = 10:1:100;
-sampling_rate = 1e4;
-spec_win_len = 2000;
-noverlap = spec_win_len /2;
-plot_dB = true;
-
-dt = results(1,1).opt.dt;
-nPeriods = 1;
-t_start = 1;
-t_start_i = fix(t_start/dt) + 1;
-
-xcorr_win_len_t = 0.5;
-xcorr_win_len = fix(xcorr_win_len_t / dt);
-
-% Simulation trial selection
-sp = 0.05;
-we = 1.5e-11;
-par_it = getItFromSpWeVecs(sp, we, results, 1e-9);
 trial_it = 1;
 
-Ne_it = [1 2];
+figure('Position', [800 800 1000 1000], 'Visible', 'off', 'Renderer', 'painters');
+for par_it = 1:size(results,1)
+        p_o = struct();
+        p_o.F = 10:1:150;
+        p_o.sampling_rate = 1e4;
+        p_o.spec_win_len = 2000;
+        p_o.noverlap = p_o.spec_win_len /2;
+        p_o.plot_dB = true;
+        p_o.fontSize = fontSize;
 
-res = results(par_it, trial_it);
+        dt = results(1,1).opt.dt;
+        nPeriods = 1;
+        t_start = 1;
+        t_start_i = fix(t_start/dt) + 1;
 
-gi_sig1 = res.Vmon.gi(Ne_it(1), :)*pA;
-gi_sig2 = res.Vmon.gi(Ne_it(2), :)*pA;
+        p_o.x_lim = [0 15];
 
-xcorr = slidingCorrelation(gi_sig1, gi_sig2, xcorr_win_len);
+        xcorr_win_len_t = 0.5;
+        p_o.xcorr_win_len = fix(xcorr_win_len_t / dt);
 
+        % Simulation trial selection
+        %sp = 0.01;
+        %we = 4e-11;
 
-figure('Position', [800 800 1000 700]);
-subplot(4, 1, [1 2], 'FontSize', fontSize);
-plot(res.times, [gi_sig1; gi_sig2]);
-ylabel('Syn. current (pA)');
-
-subplot(4, 1, 3, 'FontSize', fontSize);
-plot(res.times,  xcorr);
-ylabel('Correlation coeff.');
-
-subplot(4, 1, 4, 'FontSize', fontSize);
-plotSpectrogramIntoAx(gi_sig1, spec_win_len, noverlap, F, sampling_rate, plot_dB);
-xlim([0 15]);
+        res = results(par_it, trial_it);
+        we = res.opt.we;
+        sp = res.opt.e_sparseness;
+        p_o.title = sprintf('sparseness: %f, we: %f pA',sp, we*pA);
+        %par_it = getItFromSpWeVecs(sp, we, results, 1e-9)
 
 
+        Ne_it = [1 2];
+        Ni_it = [1 2];
+
+
+        % Current onto stellate cells
+        gi_sig1 = res.Vmon.gi(Ne_it(1), :)*pA;
+        gi_sig2 = res.Vmon.gi(Ne_it(2), :)*pA;
+        %times = res.times;
+        
+        %subs = 10;
+        %gi_sig1 = gi_sig1(1:subs:end);
+        %gi_sig2 = gi_sig2(1:subs:end);
+        %times = times(1:subs:end);
+        plot2g_xcorr(gi_sig1, gi_sig2, res.times, p_o);
+
+
+        % % Current onto interneurons
+        % figure('Position', [800 800 1000 1000]);
+        % ge_sig1 = res.Vmon.ge(Ni_it(1), :)*pA;
+        % ge_sig2 = res.Vmon.ge(Ni_it(2), :)*pA;
+        % plot2g_xcorr(ge_sig1, ge_sig2, res.times, p_o);
+
+
+        % firing rate histograms
+        set(gcf,'PaperPositionMode','auto');
+        print('-depsc2', sprintf('%s/%s_xcorr_power_par_it%.3d.eps', ...
+            outputDir, outputNum, par_it));    
+end
+    
