@@ -6,7 +6,7 @@ path('../include', path);
 
 %load e_input_current_output_19-Jul-2011;
 outputDir = 'output_local';
-outputNum = '008';
+outputNum = '012';
 
 nParam  = size(results, 1);
 nTrials = size(results, 2);
@@ -18,19 +18,19 @@ dt = results(1,1).opt.dt;
 
 N_spikes = 25;
 
-t_start = 5;
-t_end   = 7;
+t_start = 0;
+t_end   = 5;
 f_lim = [0 200];
 
 %par_it = 1;
 trial_it = 1;
 
-for par_it = 1%:size(results, 1)
+for par_it = 7%:size(results, 1)
     
     res = results(par_it, trial_it);
     opt = res.opt;
 
-    x_lim = [0 10];
+    x_lim = [0 5];
 
     ti_start = x_lim(1)/opt.dt + 1;
     ti_end = x_lim(2)/opt.dt + 1;
@@ -39,8 +39,8 @@ for par_it = 1%:size(results, 1)
     plot_opt.fontSize = 16;
     plot_opt.x_lim = x_lim;
 
-    parfor it1 = 1:1%size(res.Vmon.e, 1)
-        for it2 = 1:1%size(res.Vmon.i, 1)
+    parfor it1 = 1:size(res.Vmon.e, 1)
+        for it2 = 1:size(res.Vmon.i, 1)
             figure('Position', [0 0 1600 800], 'Visible', 'off');
 
             s1 = res.Vmon.e(it1, ti_start:ti_end);

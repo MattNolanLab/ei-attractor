@@ -25,15 +25,16 @@ function plot2g_xcorr(sig1, sig2, times, p_o)
     [max_P max_P_i] = max(P);
     
     [ax h1 h2] = plotyy(times,  xcorr, T, max_P);
-    set(get(ax(1), 'YLabel'), 'String', 'Correlation coeff.');
+    set(get(ax(1), 'YLabel'), 'String', 'Corr. coeff.');
     set(get(ax(2), 'YLabel'), 'String', 'Power (pA^2)');
-    set(ax(1), 'XTick', [], 'FontSize', p_o.fontSize);
+    %set(ax(1), 'XTick', [], 'FontSize', p_o.fontSize);
     set(get(ax(1), 'XLabel'), 'FontSIze', p_o.fontSize);
     set(get(ax(1), 'YLabel'), 'FontSIze', p_o.fontSize);
     set(ax(2), 'FontSize', p_o.fontSize);
     set(get(ax(2), 'YLabel'), 'FontSIze', p_o.fontSize);
     axes(ax(2)); axis tight;
-    xlim(p_o.x_lim);
+    xlim(ax(1), p_o.x_lim);
+    xlim(ax(2), p_o.x_lim);
 
     
 end

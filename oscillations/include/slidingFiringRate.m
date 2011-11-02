@@ -1,4 +1,4 @@
-function [N, E POS] = slidingFiringRate(spikeRecord, win_len, noverlap, nBins)
+function [N, E POS] = slidingFiringRate(spikeRecord, win_len, noverlap, nBins, maxF)
 
     rec_end = size(spikeRecord, 2);
     
@@ -6,7 +6,7 @@ function [N, E POS] = slidingFiringRate(spikeRecord, win_len, noverlap, nBins)
     N = zeros(numel(pos_N), nBins+1);
     POS = zeros(1, numel(pos_N));
     
-    edges = linspace(0, 100, nBins+1);
+    edges = linspace(0, maxF, nBins+1);
     
     it = 1;
     for pos = pos_N;

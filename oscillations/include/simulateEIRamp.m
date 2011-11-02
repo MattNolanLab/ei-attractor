@@ -7,6 +7,14 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
     % All variables are in basic units, i.e. s, volt, etc.
     Ne = o.Ne;
     Ni = o.Ni;
+    
+    % Euler settings
+    dt = o.dt;
+    % Times
+    T = o.T;
+    times = 0:dt:T;
+
+
 
     % Excitatory cells
     taum_e = o.taum_e;
@@ -18,6 +26,7 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
     e_sparseness = o.e_sparseness;
     Ie = o.Ie;
     we = o.we;
+    refrac_e = o.refrac_e/dt;
 
 
     % Inhibitory cell
@@ -30,15 +39,13 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
     i_sparseness = o.i_sparseness;
     Ii = o.Ii;
     wi = o.wi;
+    refrac_i = o.refrac_i/dt;
+    
+    V_rev_i = o.V_rev_i;
+    V_rev_e = o.V_rev_e;
 
     % Noise normalized per time unit (ms)
     noise_sigma = o.noise_sigma;
-
-    % Euler settings
-    dt = o.dt;
-    % Times
-    T = o.T;
-    times = 0:dt:T;
 
 
     % Build excitatory neurons state
@@ -59,8 +66,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
     Imon_i = o.Imon_i;
     Vmon_e = zeros(numel(Emon_i), numel(times));
     Vmon_i = zeros(numel(Imon_i), numel(times));
-    Vmon_ge = zeros(numel(Imon_i), numel(times));
-    Vmon_gi = zeros(numel(Emon_i), numel(times));
+    Vmon_Isyn_e = zeros(numel(Imon_i), numel(times));
+    Vmon_Isyn_i = zeros(numel(Emon_i), numel(times));
     Vmon_t = times;
     
     % Setup connections Mij: j --> i
@@ -76,6 +83,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
 
     fired_e = zeros(Ne, 1);
     fired_i = zeros(Ni, 1);
+    refrac_e_cnt = zeros(Ne, 1);
+    refrac_i_cnt = zeros(Ni, 1);
     f_i = 1;
     t_spike = [];
 
@@ -86,25 +95,34 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
 
         Ve(fired_e) = Vr_e;
         Vi(fired_i) = Vr_i;
+        
+        refrac_e_cnt(fired_e) = refrac_e(fired_e);
+        refrac_i_cnt(fired_i) = refrac_i(fired_i);
 
         spikeRecord_e(:, t_i) = double(fired_e);
         spikeRecord_i(:, t_i) = double(fired_i);
         
         gi = gi + Mi*fired_i * wi;
         ge = ge + Me*fired_e * we;
+        Isyn_e = gi.*(V_rev_i - Ve);
+        Isyn_i = ge.*(V_rev_e - Vi);
 
         
         Vmon_e(:, t_i) = Ve(Emon_i);
         Vmon_i(:, t_i) = Vi(Imon_i);
         Vmon_e(fired_e(Emon_i), t_i) = o.spikeVm;
         Vmon_i(fired_i(Imon_i), t_i) = o.spikeVm;
-        Vmon_ge(:, t_i) = ge(Imon_i);
-        Vmon_gi(:, t_i) = gi(Emon_i);
+        Vmon_Isyn_e(:, t_i) = Isyn_e(Emon_i);
+        Vmon_Isyn_i(:, t_i) = Isyn_i(Imon_i);
 
 
         % Check if neurons fired and add to syn. conductances
-        dVe = dt * 1/taum_e * (El_e - Ve - Rm_e*gi + Rm_e*Ie);
-        dVi = dt * 1/taum_i * (El_i - Vi + Rm_i*ge + Rm_i*Ii);
+        dVe = dt * (El_e - Ve + Rm_e*Isyn_e + Rm_e*Ie) / taum_e;
+        dVi = dt * (El_i - Vi + Rm_i*Isyn_i + Rm_i*Ii) / taum_i;
+        
+        % Do not update states of cells which are in refractory period
+        dVe(refrac_e_cnt > 0) = 0;
+        dVi(refrac_i_cnt > 0) = 0;
 
         dge = dt * -1/taue * ge;
         dgi = dt * -1/taui * gi;
@@ -116,6 +134,10 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
         
         Ie = Ie + o.dIe*dt;
         Ii = Ii + o.dIi*dt;
+        
+        % Decrease refractory counters
+        refrac_e_cnt = refrac_e_cnt - 1;
+        refrac_i_cnt = refrac_i_cnt - 1;
 
         t_i = t_i + 1;
     end
@@ -123,8 +145,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
 
     Vmon.e = Vmon_e;
     Vmon.i = Vmon_i;
-    Vmon.ge = Vmon_ge;
-    Vmon.gi = Vmon_gi;
+    Vmon.Isyn_e = Vmon_Isyn_e;
+    Vmon.Isyn_i = Vmon_Isyn_i;
     Vmon.t = Vmon_t;
 
 end

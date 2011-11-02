@@ -19,7 +19,7 @@ function [Y F T P P_plot] = ...
     axis xy; axis tight; %view(0,90);
     %zlim([min_P max_P]);
     xlabel('Time (s)');
-    ylabel('Frequency (Hz)');
+    ylabel('Freq. (Hz)');
     zlabel(power_label);
     colormap jet;
     view(0, 90)
