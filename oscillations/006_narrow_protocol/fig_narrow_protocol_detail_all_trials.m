@@ -20,7 +20,7 @@ dt = results(1,1).opt.dt;
 N_spikes = 25;
 
 t_start = 0;
-t_end   = 20;
+t_end   = 10;
 f_lim = [0 200];
 
 

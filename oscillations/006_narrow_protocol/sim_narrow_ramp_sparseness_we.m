@@ -15,7 +15,7 @@ global_opt.Ni = 200;
 N = global_opt.Ne + global_opt.Ni;
 
 global_opt.sparseness_vec = [0.1];
-global_opt.we_vec = [1680 2160 2640 3120 3600 4080] * 1e-12;
+global_opt.we_vec = [2000 2500 3000 3500 4000] * 1e-12;
 
 
 Nspar = numel(global_opt.sparseness_vec);
@@ -41,9 +41,10 @@ parfor it = 1:Nspar*Nwe
         opt.Ie_max = 900e-12; % pA
         opt.we_vec = global_opt.we_vec;
         opt.we = we;
-        opt.refrac_e_mean = 20e-3;
-        opt.refrac_e_std = 0.5e-3;
+        opt.refrac_e_mean = 60e-3;
+        opt.refrac_e_std = 5e-3;
         opt.refrac_e = opt.refrac_e_mean + opt.refrac_e_std*randn(global_opt.Ne, 1);
+        opt.refrac_e_g_inc = 1/opt.Rm_e/2;
 
 
         % Inhibitory cell
@@ -55,10 +56,11 @@ parfor it = 1:Nspar*Nwe
         opt.Rm_i = 44e6; % MOhm
         opt.Ii_0 = 0e-12; % pA
         opt.Ii_max = 200e-12; % pA
-        opt.wi = 100e-12; % nS
-        opt.refrac_i_mean = 4e-3; %msec
-        opt.refrac_i_std  = 0.1e-3;
+        opt.wi = 200e-12; % pS
+        opt.refrac_i_mean = 10e-3; %msec
+        opt.refrac_i_std  = 1e-3;
         opt.refrac_i = opt.refrac_i_mean + opt.refrac_i_std*randn(global_opt.Ni, 1);
+        opt.refrac_i_g_inc = 1/opt.Rm_i;
 
         opt.spikeVm = 40e-3;
         
@@ -90,7 +92,7 @@ parfor it = 1:Nspar*Nwe
 
 
         % Firing rate sliding window length
-        opt.rateWindowLen = 0.002; %ms
+        opt.rateWindowLen = 0.005; %ms
         rateWindowLen = opt.rateWindowLen;
 
         % Vm monitor, neuron index
@@ -98,7 +100,7 @@ parfor it = 1:Nspar*Nwe
         opt.Imon_i = [100 120 140 160];
 
         % simulation time
-        opt.T = 20;
+        opt.T = 10;
 
 
         % 

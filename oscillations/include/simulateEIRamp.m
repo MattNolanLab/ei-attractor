@@ -26,7 +26,7 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
     e_sparseness = o.e_sparseness;
     Ie = o.Ie;
     we = o.we;
-    refrac_e = o.refrac_e/dt;
+    tau_adapt_e = o.refrac_e;
 
 
     % Inhibitory cell
@@ -39,7 +39,7 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
     i_sparseness = o.i_sparseness;
     Ii = o.Ii;
     wi = o.wi;
-    refrac_i = o.refrac_i/dt;
+    tau_adapt_i = o.refrac_i;
     
     V_rev_i = o.V_rev_i;
     V_rev_e = o.V_rev_e;
@@ -60,6 +60,10 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
 
     ge = zeros(Ni, 1);
     gi = zeros(Ne, 1);
+    
+    % Adaptation constants
+    g_adapt_e = zeros(Ne, 1);
+    g_adapt_i = zeros(Ni, 1);
 
     spikeMon_e = {};
     spikeMon_i = {};
@@ -98,8 +102,10 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
         Ve(fired_e) = Vr_e;
         Vi(fired_i) = Vr_i;
         
-        refrac_e_cnt(fired_e) = refrac_e(fired_e);
-        refrac_i_cnt(fired_i) = refrac_i(fired_i);
+        %refrac_e_cnt(fired_e) = refrac_e(fired_e);
+        %refrac_i_cnt(fired_i) = refrac_i(fired_i);
+        g_adapt_e(fired_e) = g_adapt_e(fired_e) + o.refrac_e_g_inc;
+        g_adapt_i(fired_i) = g_adapt_i(fired_i) + o.refrac_i_g_inc;
 
         spikeRecord_e(:, t_i) = double(fired_e);
         spikeRecord_i(:, t_i) = double(fired_i);
@@ -119,12 +125,12 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
 
 
         % Check if neurons fired and add to syn. conductances
-        dVe = dt * (El_e - Ve + Rm_e*Isyn_e + Rm_e*Ie) / taum_e;
-        dVi = dt * (El_i - Vi + Rm_i*Isyn_i + Rm_i*Ii) / taum_i;
+        dVe = dt * ((El_e - Ve).*(1 + Rm_e*g_adapt_e) + Rm_e*Isyn_e + Rm_e*Ie) / taum_e;
+        dVi = dt * ((El_i - Vi).*(1 + Rm_i*g_adapt_i) + Rm_i*Isyn_i + Rm_i*Ii) / taum_i;
         
         % Do not update states of cells which are in refractory period
-        dVe(refrac_e_cnt > 0) = 0;
-        dVi(refrac_i_cnt > 0) = 0;
+        %dVe(refrac_e_cnt > 0) = 0;
+        %dVi(refrac_i_cnt > 0) = 0;
 
         dge = dt * -1/taue * ge;
         dgi = dt * -1/taui * gi;
@@ -134,12 +140,15 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
         ge = ge + dge;
         gi = gi + dgi;
         
+        g_adapt_e = g_adapt_e + dt * -1./tau_adapt_e .* g_adapt_e;
+        g_adapt_i = g_adapt_i + dt * -1./tau_adapt_i .* g_adapt_i;
+        
         Ie = Ie + o.dIe*dt;
         Ii = Ii + o.dIi*dt;
         
         % Decrease refractory counters
-        refrac_e_cnt = refrac_e_cnt - 1;
-        refrac_i_cnt = refrac_i_cnt - 1;
+        %refrac_e_cnt = refrac_e_cnt - 1;
+        %refrac_i_cnt = refrac_i_cnt - 1;
 
         t_i = t_i + 1;
     end

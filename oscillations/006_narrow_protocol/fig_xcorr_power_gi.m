@@ -27,7 +27,7 @@ sp_vec = results(1,1).opt.sparseness_vec;
 we_vec = results(1,1).opt.we_vec;
 
 sp = 0.1;
-we = 4080e-12;
+we = 3000e-12;
 
 
 for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
@@ -37,7 +37,7 @@ for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
         p_o.sampling_rate = 1e4;
         p_o.spec_win_len = 2000;
         p_o.noverlap = p_o.spec_win_len /2;
-        p_o.plot_dB = false;
+        p_o.plot_dB = true;
         p_o.fontSize = fontSize;
 
         dt = results(1,1).opt.dt;
@@ -45,7 +45,7 @@ for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
         t_start = 1;
         t_start_i = fix(t_start/dt) + 1;
 
-        p_o.x_lim = [0 20];
+        p_o.x_lim = [0 10];
 
         xcorr_win_len_t = 0.5;
         p_o.xcorr_win_len = fix(xcorr_win_len_t / dt);
@@ -67,8 +67,8 @@ for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
 
         % Current onto stellate cells
         figure('Position', [800 800 1000 1000], 'Renderer', 'painters');
-        Isyn_e1 = res.Vmon.Isyn_e(Ne_it(1), :)*pA;
-        Isyn_e2 = res.Vmon.Isyn_e(Ne_it(2), :)*pA;
+        Isyn_e1 = -res.Vmon.Isyn_e(Ne_it(1), :)*pA;
+        Isyn_e2 = -res.Vmon.Isyn_e(Ne_it(2), :)*pA;
         
         plot2g_xcorr(Isyn_e1, Isyn_e2, res.times, p_o);
 
@@ -76,15 +76,19 @@ for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
 
         % firing rate histograms
         set(gcf,'PaperPositionMode','auto');
-        print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_xcorr_power.eps', ...
+        print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_xcorr_power_ste.eps', ...
             outputDir, outputNum, par_it, trial_it));    
         
         % Current onto interneurons
         figure('Position', [800 800 1000 1000], 'Renderer', 'painters');
-        Isyn_i1 = res.Vmon.Isyn_i(Ni_it(1), :)*pA;
-        Isyn_i2 = res.Vmon.Isyn_i(Ni_it(2), :)*pA;
+        Isyn_i1 = -res.Vmon.Isyn_i(Ni_it(1), :)*pA;
+        Isyn_i2 = -res.Vmon.Isyn_i(Ni_it(2), :)*pA;
         p_o.title = sprintf('Syn. input to interneurons');
         plot2g_xcorr(Isyn_i1, Isyn_i2, res.times, p_o);
+
+        set(gcf,'PaperPositionMode','auto');
+        print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_xcorr_power_int.eps', ...
+            outputDir, outputNum, par_it, trial_it));    
 
 
         
@@ -92,7 +96,7 @@ for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
         % Compare two different samples when power is low and high
         % Time 1 - low gamma
         figure('Position', [800 800 1000 600]);
-        x_lim = [10 10.2];
+        x_lim = [7 7.2];
         subplot(2,1,1, 'FontSize', fontSize);
         plot(res.times, Isyn_e1);
         xlabel('Time (s)');
@@ -113,7 +117,7 @@ for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
             
         % Time 2 - high gamma
         figure('Position', [800 800 1000 600]);
-        x_lim = [14 14.2];
+        x_lim = [9 9.2];
         subplot(2,1,1, 'FontSize', fontSize);
         plot(res.times, Isyn_e1);
         xlabel('Time (s)');

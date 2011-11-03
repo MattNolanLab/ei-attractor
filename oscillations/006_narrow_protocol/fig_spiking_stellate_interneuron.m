@@ -25,12 +25,12 @@ f_lim = [0 200];
 %par_it = 1;
 trial_it = 1;
 
-for par_it = 6%:size(results, 1)
+for par_it = 3%:size(results, 1)
     
     res = results(par_it, trial_it);
     opt = res.opt;
 
-    x_lim = [0 20];
+    x_lim = [9 10];
 
     ti_start = x_lim(1)/opt.dt + 1;
     ti_end = x_lim(2)/opt.dt + 1;
