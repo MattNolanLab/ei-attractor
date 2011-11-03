@@ -32,7 +32,7 @@ function plot2g_xcorr(sig1, sig2, times, p_o)
     set(get(ax(1), 'YLabel'), 'FontSIze', p_o.fontSize);
     set(ax(2), 'FontSize', p_o.fontSize);
     set(get(ax(2), 'YLabel'), 'FontSIze', p_o.fontSize);
-    axes(ax(2)); axis tight;
+    %axes(ax(2)); axis tight;
     xlim(ax(1), p_o.x_lim);
     xlim(ax(2), p_o.x_lim);
 

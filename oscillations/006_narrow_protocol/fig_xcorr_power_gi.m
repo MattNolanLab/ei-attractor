@@ -14,6 +14,7 @@ nParam  = size(results, 1);
 nTrials = size(results, 2);
 
 pA = 1e12;
+pS = 1e12;
 fontSize = 14;
 
 Ne = size(results(1,1).spikeCell_e, 2);
@@ -25,11 +26,10 @@ Nsp = size(results(1,1).opt.sparseness_vec, 2);
 sp_vec = results(1,1).opt.sparseness_vec;
 we_vec = results(1,1).opt.we_vec;
 
-sp = 0.2;
-we = 700e-12;
+sp = 0.1;
+we = 4080e-12;
 
 
-figure('Position', [800 800 1000 1000], 'Visible', 'off', 'Renderer', 'painters');
 for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
     for trial_it = 1%:nTrials
         p_o = struct();
@@ -37,7 +37,7 @@ for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
         p_o.sampling_rate = 1e4;
         p_o.spec_win_len = 2000;
         p_o.noverlap = p_o.spec_win_len /2;
-        p_o.plot_dB = true;
+        p_o.plot_dB = false;
         p_o.fontSize = fontSize;
 
         dt = results(1,1).opt.dt;
@@ -57,7 +57,7 @@ for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
         res = results(par_it, trial_it);
         we = res.opt.we;
         sp = res.opt.e_sparseness;
-        p_o.title = sprintf('Syn. input to stellate cell; sparseness: %f, we: %f pA, trial: %.3d',sp, we*pA, trial_it);
+        p_o.title = sprintf('Syn. input to stellate cell; sparseness: %f, we: %f pS, trial: %.3d',sp, we*pS, trial_it);
         %par_it = getItFromSpWeVecs(sp, we, results, 1e-9)
 
 
@@ -66,6 +66,7 @@ for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
 
 
         % Current onto stellate cells
+        figure('Position', [800 800 1000 1000], 'Renderer', 'painters');
         Isyn_e1 = res.Vmon.Isyn_e(Ne_it(1), :)*pA;
         Isyn_e2 = res.Vmon.Isyn_e(Ne_it(2), :)*pA;
         
@@ -79,7 +80,7 @@ for par_it = getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
             outputDir, outputNum, par_it, trial_it));    
         
         % Current onto interneurons
-        figure('Position', [800 800 1000 1000]);
+        figure('Position', [800 800 1000 1000], 'Renderer', 'painters');
         Isyn_i1 = res.Vmon.Isyn_i(Ni_it(1), :)*pA;
         Isyn_i2 = res.Vmon.Isyn_i(Ni_it(2), :)*pA;
         p_o.title = sprintf('Syn. input to interneurons');

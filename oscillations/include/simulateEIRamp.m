@@ -43,6 +43,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
     
     V_rev_i = o.V_rev_i;
     V_rev_e = o.V_rev_e;
+    
+    Vclamp = o.Vclamp;
 
     % Noise normalized per time unit (ms)
     noise_sigma = o.noise_sigma;
@@ -112,8 +114,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
         Vmon_i(:, t_i) = Vi(Imon_i);
         Vmon_e(fired_e(Emon_i), t_i) = o.spikeVm;
         Vmon_i(fired_i(Imon_i), t_i) = o.spikeVm;
-        Vmon_Isyn_e(:, t_i) = Isyn_e(Emon_i);
-        Vmon_Isyn_i(:, t_i) = Isyn_i(Imon_i);
+        Vmon_Isyn_e(:, t_i) = gi(Emon_i)*(V_rev_i - Vclamp);
+        Vmon_Isyn_i(:, t_i) = ge(Imon_i)*(V_rev_e - Vclamp);
 
 
         % Check if neurons fired and add to syn. conductances

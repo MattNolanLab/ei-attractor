@@ -14,8 +14,8 @@ global_opt.Ne = 800;
 global_opt.Ni = 200;
 N = global_opt.Ne + global_opt.Ni;
 
-global_opt.sparseness_vec = [0.2];
-global_opt.we_vec = [300 350 400 500 600 700] * 1e-12;
+global_opt.sparseness_vec = [0.1];
+global_opt.we_vec = [1680 2160 2640 3120 3600 4080] * 1e-12;
 
 
 Nspar = numel(global_opt.sparseness_vec);
@@ -32,22 +32,22 @@ parfor it = 1:Nspar*Nwe
 
         % Excitatory cells
         opt.taum_e = 9.3e-3;
-        opt.taue = 3e-3;
+        opt.taue = 2e-3;
         opt.El_e = -68.5e-3;
         opt.Vt_e = -50.0e-3;
         opt.Vr_e = opt.El_e;
         opt.Rm_e = 44e6; % MOhm
         opt.Ie_0 = 0e-12;  % pA
-        opt.Ie_max = 600e-12; % pA
+        opt.Ie_max = 900e-12; % pA
         opt.we_vec = global_opt.we_vec;
         opt.we = we;
-        opt.refrac_e_mean = 10e-3;
+        opt.refrac_e_mean = 20e-3;
         opt.refrac_e_std = 0.5e-3;
         opt.refrac_e = opt.refrac_e_mean + opt.refrac_e_std*randn(global_opt.Ne, 1);
 
 
         % Inhibitory cell
-        opt.taum_i = 4e-3;
+        opt.taum_i = 9e-3;
         opt.taui = 7e-3;
         opt.El_i = -60e-3;
         opt.Vt_i = -50e-3;
@@ -55,7 +55,7 @@ parfor it = 1:Nspar*Nwe
         opt.Rm_i = 44e6; % MOhm
         opt.Ii_0 = 0e-12; % pA
         opt.Ii_max = 200e-12; % pA
-        opt.wi = 60e-12; % nS
+        opt.wi = 100e-12; % nS
         opt.refrac_i_mean = 4e-3; %msec
         opt.refrac_i_std  = 0.1e-3;
         opt.refrac_i = opt.refrac_i_mean + opt.refrac_i_std*randn(global_opt.Ni, 1);
@@ -69,6 +69,8 @@ parfor it = 1:Nspar*Nwe
         opt.sparseness_vec = global_opt.sparseness_vec;
         opt.e_sparseness = sparseness;
         opt.i_sparseness = 0.8;
+        
+        opt.Vclamp = -50e-3;
 
 
         % Current distribution settings
@@ -96,7 +98,7 @@ parfor it = 1:Nspar*Nwe
         opt.Imon_i = [100 120 140 160];
 
         % simulation time
-        opt.T = 15;
+        opt.T = 20;
 
 
         % 
