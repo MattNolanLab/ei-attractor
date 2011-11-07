@@ -80,6 +80,18 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
     % Assuming constant and uniform excitatory/inhibitory weights
     Me = net_data.Me;
     Mi = net_data.Mi;
+    
+    % Draw synaptic weights from exponential distributions with mean given
+    % by we/wi
+    
+    % Excitatory connections
+    for we_it = 1:Ni
+        Me(we_it, :) = Me(we_it, :) .* sampleExponential(o.we, Ne);
+    end
+%     % Inhibitory_weights
+%     for wi_it = 1:Ne
+%         Mi(wi_it, :) = Mi(wi_it, :) .* sampleExponential(o.wi, Ni);
+%     end
 
     spikeRecord_e = sparse(Ne, size(times, 2));
     spikeRecord_i = sparse(Ni, size(times, 2));
@@ -110,8 +122,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
         spikeRecord_e(:, t_i) = double(fired_e);
         spikeRecord_i(:, t_i) = double(fired_i);
         
-        gi = gi + Mi*fired_i * wi;
-        ge = ge + Me*fired_e * we;
+        gi = gi + Mi*fired_i*wi;  % No weight distribution for now here
+        ge = ge + Me*fired_e;
         Isyn_e = gi.*(V_rev_i - Ve);
         Isyn_i = ge.*(V_rev_e - Vi);
 

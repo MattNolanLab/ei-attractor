@@ -30,38 +30,44 @@ for par_it = 3%:size(results, 1)
     res = results(par_it, trial_it);
     opt = res.opt;
 
-    x_lim = [9 10];
+    x_lim = [9 9.25];
 
     ti_start = x_lim(1)/opt.dt + 1;
     ti_end = x_lim(2)/opt.dt + 1;
     win_len = 0.5 / dt; %s
 
-    plot_opt.fontSize = 16;
+    plot_opt.fontSize = 14;
     plot_opt.x_lim = x_lim;
 
     parfor it1 = 1:size(res.Vmon.e, 1)
         for it2 = 1:size(res.Vmon.i, 1)
-            figure('Position', [0 0 1600 800], 'Visible', 'off');
+            figure('Position', [0 0 400 300], 'Visible', 'off');
 
             s1 = res.Vmon.e(it1, ti_start:ti_end);
             s2 = res.Vmon.i(it2, ti_start:ti_end);
 
             subplot(2, 1, 1, 'FontSize', plot_opt.fontSize);
             plot(res.Vmon.t(ti_start:ti_end), s1*1000, 'r');
-            ylabel('Vm (mV)');
+            %ylabel('Vm (mV)');
             box off;
-            %axis tight;
+            axis tight;
+            %axis off;
+            box off;
             xlim(plot_opt.x_lim);
-            legend('Stellate cells', 'Location', 'NorthWest');
+            set(gca, 'YTick', []);
+            %legend('Stellate cells', 'Location', 'NorthWest');
 
             subplot(2, 1, 2, 'FontSize', plot_opt.fontSize);
             plot(res.Vmon.t(ti_start:ti_end), s2*1000, 'b');
             xlabel('Time (s)');
-            ylabel('Vm (mV)');
+            %ylabel('Vm (mV)');
             box off;
+            axis tight;
+            %axis off;
             %axis tight;
+            set(gca, 'YTick', []);
             xlim(plot_opt.x_lim);
-            legend('Interneurons', 'Location', 'NorthWest');
+            %legend('Interneurons', 'Location', 'NorthWest');
 
 
             set(gcf,'PaperPositionMode','auto');    

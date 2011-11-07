@@ -35,7 +35,7 @@ parfor par_it = 1:nParam
         x_lim = [t_start t_end];
         opt = res.opt;
 
-        figure('Position', [0 0 1680 1050], 'Visible', 'off');
+        figure('Position', [0 0 800 600], 'Visible', 'off');
         fig_populationDetail(res, x_lim, T_i, fontSize, N_spikes);
         
 
