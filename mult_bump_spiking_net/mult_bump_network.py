@@ -36,12 +36,11 @@ def getPreferredDirectionRandom(pos_x, pos_y):
 
 def createNetwork(options, clock, W = None):
 
-    C=200*pF
-    refractory = 20*ms;
+    refractory = 1*ms;
     
     # Synapse parameters
     Ee=0*mvolt
-    Ei=-80*mvolt
+    Ei=-75*mvolt
 
     sheet_size = options.sheet_size
     l = options.l
@@ -50,13 +49,17 @@ def createNetwork(options, clock, W = None):
 
     taum = options.taum*msecond
     taui = options.taui*msecond
-    threshold = options.threshold*mvolt
+    tau_ad = options.tau_ad*msecond  # Adaptation time constant
     noise_sigma = options.noise_sigma*mvolt
 
-    gL=C/taum
+    gL=1/(options.Rm*Mohm)
+    C = taum * gL
     EL=options.EL*mV
-    VT=-55*mV
+    VT=options.threshold*mV # Spike initiation threshold
+    spike_detect_th = 40*mV    # Spike detection threshold
     DeltaT=3*mV
+
+    g_ad_inc = gL/2  # Adaptation increase
 
     beta = 3.0 / options.lambda_net**2
     gamma = 1.05 * beta
@@ -65,15 +68,16 @@ def createNetwork(options, clock, W = None):
     # Using exponential integrate and fire model
     eqs = '''
         dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
-        Im = gL*(EL-vm)+gL*DeltaT*exp((vm-VT)/DeltaT) + gi*(Ei - vm) + B  : amp
+        Im = gL*(EL-vm)*(1+g_ad/gL)+gL*DeltaT*exp((vm-VT)/DeltaT) + gi*(Ei - vm) + B  : amp
         dgi/dt = -gi/taui : siemens
+        dg_ad/dt = -g_ad/tau_ad : siemens
         B : amp
         '''
 
     sheetGroup = NeuronGroup(
             options.sheet_size**2,
             model=eqs,
-            threshold=threshold,
+            threshold=spike_detect_th,
             reset=EL,
             refractory=refractory,
             clock=clock)
@@ -112,13 +116,18 @@ def createNetwork(options, clock, W = None):
         inhibConn.connect(sheetGroup, sheetGroup, W)
 
 
+    # Setup adaptation connections: neuron on itself
+    adaptConn = IdentityConnection(sheetGroup, sheetGroup,  'g_ad',
+            weight=g_ad_inc)
+
+
     # Initialize membrane potential randomly
     if (noise_sigma == 0):
         sheetGroup.vm = EL + (VT-EL) * rand(len(sheetGroup))
     else:
         sheetGroup.vm = EL + zeros(len(sheetGroup))
 
-    return [sheetGroup, inhibConn]
+    return [sheetGroup, inhibConn, adaptConn]
 
 
 def printConn(sheet_size, conn, write_data, print_only_conn):

@@ -42,22 +42,26 @@ def getOptParser():
             help="Simulation time step (ms)")
     optParser.add_option("-n", "--job-num", type="int", default=-1, dest="job_num",
             help="Use argument of this option to specify the output file name number, instead of using time")
-    optParser.add_option("--taum", type="float", default=10, dest="taum",
+    optParser.add_option("--taum", type="float", default=9.3, dest="taum",
             help="Neuron membrane time constant (ms)")
     optParser.add_option("--taui", type="float", default=10, dest="taui",
             help="Inhibitory synaptic time constant (ms)")
-    optParser.add_option("--EL", type="float", default=-70, dest="EL",
+    optParser.add_option("--EL", type="float", default=-68.5, dest="EL",
             help="Resting membrane potential of neurons (mV)")
-    optParser.add_option("--threshold", type="float", default=-20, dest="threshold",
+    optParser.add_option("--threshold", type="float", default=-55, dest="threshold",
             help="Integrate and fire spiking threshold (mV)")
+    optParser.add_option("--Rm", type=float, default=44, dest="Rm",
+            help="Membrane resistance (MOhm)")
+    optParser.add_option("--tau_ad", type="float", default=40, dest="tau_ad",
+            help="Integrate and fire adaptation time constant (msec)")
     optParser.add_option("--output-dir", type="string", default="results/", dest="output_dir", help="Output directory path.")
 
     return optParser
 
 
 # Save the results of the simulation in a .mat file
-def saveResultsToMat(options, ratData, spikeMonitor, SNMonitor,
-        SNgMonitor):
+def saveResultsToMat(options, ratData, spikeMonitor, SNList, SNMonitor,
+        SNgMonitor, SNg_adMonitor):
     # SNMonitor - monitor of single neurons, defined by list
     # SNList - list of neuron numbers monitored (SN response)
     # spikeMonitor - monitor of spikes of all neurons
@@ -93,6 +97,11 @@ def saveResultsToMat(options, ratData, spikeMonitor, SNMonitor,
     if SNgMonitor != None:
         outData['SNgMonitor_times'] = SNgMonitor.times_
         outData['SNgMonitor_values'] =SNgMonitor.values_ 
+        outData['SNList'] = SNList
+
+    if SNg_adMonitor != None:
+        outData['SNg_adMonitor_times']  = SNg_adMonitor.times_
+        outData['SNg_adMonitor_values'] = SNg_adMonitor.values_
         outData['SNList'] = SNList
 
     # Merge the rat position and timestamp data into the output so it is self
