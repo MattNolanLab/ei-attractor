@@ -44,14 +44,14 @@ parfor par_it = 1:nParam
             outputDir, outputNum, par_it, trial_it));
         
         
-%         % Cv of excitatory and inhibitory neurons
-%         min_stat = 50;
-%         nBins = 20;
-%         figure('Position', [900 400 1000 400], 'Visible', 'off');
-%         fig_Cv_stat(res, min_stat, nBins, fontSize);
-%         set(gcf,'PaperPositionMode','auto');
-%         print('-depsc2', sprintf('%s/%s_e_input_spread_Cv_spread_%3.3f_trial_%.3d.eps', ...
-%             outputDir, outputNum, opt.input_spread/D, trial_it));    
+        % Cv of excitatory and inhibitory neurons
+        min_stat = 50;
+        nBins = 20;
+        figure('Position', [900 400 1000 400], 'Visible', 'off');
+        fig_Cv_stat(res, min_stat, nBins, fontSize);
+        set(gcf,'PaperPositionMode','auto');
+        print('-depsc2', sprintf('%s/%s_population_Cv_par_it_%.3d_trial_%.3d.eps', ...
+            outputDir, outputNum, par_it, trial_it));    
 
     end
 end

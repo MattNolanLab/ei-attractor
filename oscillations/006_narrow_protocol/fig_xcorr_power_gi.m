@@ -32,14 +32,14 @@ sp = 0.1;
 we = 600e-12;
 
 
-for par_it = 1%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
+for par_it = 6%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
     for trial_it = 1%:nTrials
         p_o = struct();
         p_o.F = 10:1:150;
         p_o.sampling_rate = 1/dt;
         p_o.spec_win_len = fix(200e-3/dt);
         p_o.noverlap = 0.75*p_o.spec_win_len;
-        p_o.plot_dB = false;
+        p_o.plot_dB = true;
         p_o.fontSize = fontSize;
 
         dt = results(1,1).opt.dt;
@@ -87,7 +87,7 @@ for par_it = 1%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
         
 
         % Current onto stellate cells
-        figure('Position', [600 800 1000 800], 'Renderer', 'painters');
+        figure('Position', [600 800 1000 500], 'Renderer', 'painters');
         
         plot2g_xcorr(Isyn_e1, Isyn_e2, res.times, p_o);
 
@@ -113,7 +113,7 @@ for par_it = 1%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
         % Compare two different samples when power is low and high
         % Time 1 - low gamma
         figure('Position', [800 800 800 400]);
-        x_lim = [6.5 6.7];
+        x_lim = [7 7.2];
         subplot(10,1,1:9, 'FontSize', fontSize);
         plot(res.times, Isyn_e1, 'r', res.times, Isyn_i1, 'b');
         xlabel('Time (s)');
@@ -129,7 +129,7 @@ for par_it = 1%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
             
         % Time 2 - high gamma
         figure('Position', [800 800 800 400]);
-        x_lim = [9 9.2];
+        x_lim = [9.8 10];
         subplot(10,1,1:9, 'FontSize', fontSize);
         plot(res.times, Isyn_e1, 'r', res.times, Isyn_i1, 'b');
         xlabel('Time (s)');
@@ -145,7 +145,7 @@ for par_it = 1%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
             
         % Print currents onto stellate cells
         figure('Position', [800 800 800 400]);
-        x_lim = [9 9.2];
+        x_lim = [9.8 10];
         subplot(10,1,1:9, 'FontSize', fontSize);
         plot(res.times, Isyn_e1, 'r', res.times, Isyn_e2, 'k');
         xlabel('Time (s)');
@@ -170,9 +170,9 @@ for par_it = 1%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
         noverlap = win_len/4;
         [h_N, h_E h_POS] = slidingFiringRate(res.spikeRecord_e, win_len, ...
             noverlap, avg_firing_nbins, maxF_slidingRate);
-        pcolor((h_POS-1)*dt, h_E, h_N');
+        pcolor((h_POS-1)*dt, h_E(2:end), h_N(:, 2:end)');
 
-        title('Sliding histogram of firing rates: Excitatory neurons');
+        title('Excitatory neurons');
         ylabel('Firing rate (Hz)');
         xlabel('Time (s)');
         c_h = colorbar;
@@ -193,9 +193,9 @@ for par_it = 1%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
         noverlap = win_len/4;
         [h_N, h_E h_POS] = slidingFiringRate(res.spikeRecord_i, win_len, ...
             noverlap, avg_firing_nbins, maxF_slidingRate);
-        pcolor((h_POS-1)*dt, h_E, h_N');
+        pcolor((h_POS-1)*dt, h_E(2:end), h_N(:, 2:end)');
 
-        title('Sliding histogram of firing rates: Interneurons');
+        title('Interneurons');
         ylabel('Firing rate (Hz)');
         xlabel('Time (s)');
         c_h = colorbar;
