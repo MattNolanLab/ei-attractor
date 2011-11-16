@@ -10,14 +10,14 @@ path('../include/', path);
 
 %results = [];
 
-global_opt.Ne = 800;
-global_opt.Ni = global_opt.Ne/4;
+global_opt.Ne = 900;
+global_opt.Ni = fix(global_opt.Ne/10);
 N = global_opt.Ne + global_opt.Ni;
 
 %global_opt.sparseness_vec = [0.1];
 %global_opt.we_vec = [400 600 800 1000] * 1e-12;
 %global_opt.wi_vec = [1200:50:1650] *1e-12;
-global_opt.wi_vec = [100:25:350] *1e-12;
+global_opt.wi_vec = [200:50:750] *1e-12;
 %global_opt.taue_vec = [1:0.2:2] * 1e-3;
 
 
@@ -44,11 +44,11 @@ parfor it = 1:Nwi
         opt.Vt_e = -50.0e-3;
         opt.Vr_e = opt.El_e;
         opt.Rm_e = 44e6; % MOhm
-        opt.Ie_0 = 0e-12;  % pA
+        opt.Ie_0 = 900e-12;  % pA
         opt.Ie_max = 900e-12; % pA
         %opt.we_vec = global_opt.we_vec;
-        opt.we = 750e-12;
-        opt.we_std = 1200e-12;
+        opt.we = 700e-12;
+        opt.we_std = 1100e-12;
         opt.refrac_e_mean = 40e-3;
         opt.refrac_e_std = 5e-3;
         opt.refrac_e = opt.refrac_e_mean + opt.refrac_e_std*randn(global_opt.Ne, 1);
@@ -63,7 +63,7 @@ parfor it = 1:Nwi
         opt.Vt_i = -50e-3;
         opt.Vr_i = opt.El_i;
         opt.Rm_i = 44e6; % MOhm
-        opt.Ii_0 = 0e-12; % pA
+        opt.Ii_0 = 200e-12; % pA
         opt.Ii_max = 200e-12; % pA
         opt.wi = wi; % pS
         opt.refrac_i_mean = 7.5e-3; %msec
@@ -78,7 +78,7 @@ parfor it = 1:Nwi
         opt.V_rev_i = -75e-3;
 
         %opt.sparseness_vec = global_opt.sparseness_vec;
-        opt.e_sparseness = 0.4;
+        opt.e_sparseness = 0.1;
         opt.i_sparseness = 0.8;
         
         opt.Vclamp = -50e-3;
@@ -109,7 +109,7 @@ parfor it = 1:Nwi
         opt.Imon_i = [5 10 15 20];
 
         % simulation time
-        opt.T = 11;
+        opt.T = 5;
 
 
         % 

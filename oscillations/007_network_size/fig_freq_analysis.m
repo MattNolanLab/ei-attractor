@@ -34,20 +34,22 @@ we = 600e-12;
 
 for par_it = 8%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
     for trial_it = 1%:nTrials
+        close all;
         p_o = struct();
         p_o.F = 0:1:200;
         p_o.sampling_rate = 1/dt;
         p_o.spec_win_len = fix(200e-3/dt);
         p_o.noverlap = 0.75*p_o.spec_win_len;
-        p_o.plot_dB = false;
+        p_o.plot_dB = true;
         p_o.fontSize = fontSize;
+        p_o.figVisible = 'on';
 
         dt = results(1,1).opt.dt;
         nPeriods = 1;
         t_start = 1;
         t_start_i = fix(t_start/dt) + 1;
 
-        p_o.x_lim = [0 5];
+        p_o.x_lim = [0 2.5];
 
         xcorr_win_len_t = 0.5;
         p_o.xcorr_win_len = fix(xcorr_win_len_t / dt);
@@ -73,7 +75,7 @@ for par_it = 8%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
 
 
         % Plot all the currents in time
-        figure('Position', [600 800 1000 500]);
+        figure('Position', [600 800 1000 500], 'Visible', p_o.figVisible);
         subplot(10,1,1:9, 'FontSize', fontSize);
         plot(res.times, Isyn_e1, 'r', res.times, Isyn_i1, 'b');
         xlabel('Time (s)');
@@ -98,72 +100,71 @@ for par_it = 8%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
             outputDir, outputNum, par_it, trial_it));    
 
         
-%         % Current onto interneurons
-%         figure('Position', [800 800 1000 1000], 'Renderer', 'painters');
-%         p_o.title = sprintf('Syn. input to interneurons');
-%         plot2g_xcorr(Isyn_i1, Isyn_i2, res.times, p_o);
-% 
-%         set(gcf,'PaperPositionMode','auto');
-%         print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_xcorr_power_int.eps', ...
-%             outputDir, outputNum, par_it, trial_it));    
-% 
+        % Current onto interneurons
+        figure('Position', [600 800 1000 500], 'Renderer', 'painters');
+        p_o.title = sprintf('Syn. input to interneurons');
+        plot2g_xcorr(Isyn_i1, Isyn_i2 - mean(Isyn_i2), res.times, p_o);
+
+        set(gcf,'PaperPositionMode','auto');
+        print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_xcorr_power_int.eps', ...
+            outputDir, outputNum, par_it, trial_it));    
+
 
         
-        
-        % Compare two different samples when power is low and high
-        % Time 1 - low gamma
-        figure('Position', [800 800 800 400]);
-        x_lim = [7 7.2];
-        subplot(10,1,1:9, 'FontSize', fontSize);
-        plot(res.times, Isyn_e1, 'r', res.times, Isyn_i1, 'b');
-        xlabel('Time (s)');
-        ylabel('Syn. current (pA)');
-        %axis tight;
-        xlim(x_lim);
-        box off;
-
-        set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
-        print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_gi_ge_currents_low_gamma.eps', ...
-                outputDir, outputNum, par_it, trial_it));  
-            
-            
-        % Time 2 - high gamma
-        figure('Position', [800 800 800 400]);
-        x_lim = [9.8 10];
-        subplot(10,1,1:9, 'FontSize', fontSize);
-        plot(res.times, Isyn_e1, 'r', res.times, Isyn_i1, 'b');
-        xlabel('Time (s)');
-        ylabel('Syn. current (pA)');
-        %axis tight;
-        xlim(x_lim);
-        box off;
-
-        set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
-        print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_gi_ge_currents_high_gamma.eps', ...
-                outputDir, outputNum, par_it, trial_it));    
-
-            
-        % Print currents onto stellate cells
-        figure('Position', [800 800 800 400]);
-        x_lim = [9.8 10];
-        subplot(10,1,1:9, 'FontSize', fontSize);
-        plot(res.times, Isyn_e1, 'r', res.times, Isyn_e2, 'k');
-        xlabel('Time (s)');
-        ylabel('Syn. current (pA)');
-        %axis tight;
-        xlim(x_lim);
-        box off;
-
-        set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
-        print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_gi_gi_currents_high_gamma.eps', ...
-                outputDir, outputNum, par_it, trial_it));    
+%         % Compare two different samples when power is low and high
+%         % Time 1 - low gamma
+%         figure('Position', [800 800 800 400]);
+%         x_lim = [7 7.2];
+%         subplot(10,1,1:9, 'FontSize', fontSize);
+%         plot(res.times, Isyn_e1, 'r', res.times, Isyn_i1, 'b');
+%         xlabel('Time (s)');
+%         ylabel('Syn. current (pA)');
+%         %axis tight;
+%         xlim(x_lim);
+%         box off;
+% 
+%         set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
+%         print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_gi_ge_currents_low_gamma.eps', ...
+%                 outputDir, outputNum, par_it, trial_it));  
+%             
+%             
+%         % Time 2 - high gamma
+%         figure('Position', [800 800 800 400]);
+%         x_lim = [9.8 10];
+%         subplot(10,1,1:9, 'FontSize', fontSize);
+%         plot(res.times, Isyn_e1, 'r', res.times, Isyn_i1, 'b');
+%         xlabel('Time (s)');
+%         ylabel('Syn. current (pA)');
+%         %axis tight;
+%         xlim(x_lim);
+%         box off;
+% 
+%         set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
+%         print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_gi_ge_currents_high_gamma.eps', ...
+%                 outputDir, outputNum, par_it, trial_it));    
+% 
+%             
+%         % Print currents onto stellate cells
+%         figure('Position', [800 800 800 400]);
+%         x_lim = [9.8 10];
+%         subplot(10,1,1:9, 'FontSize', fontSize);
+%         plot(res.times, Isyn_e1, 'r', res.times, Isyn_e2, 'k');
+%         xlabel('Time (s)');
+%         ylabel('Syn. current (pA)');
+%         %axis tight;
+%         xlim(x_lim);
+%         box off;
+% 
+%         set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
+%         print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_gi_gi_currents_high_gamma.eps', ...
+%                 outputDir, outputNum, par_it, trial_it));    
 
             
             
         % Plot a histogram of average firing of excitatory cells
         maxF_slidingRate = 80;
 
-        figure('Position', [800 800 1000 400]);
+        figure('Position', [800 800 1000 400], 'Visible', p_o.figVisible);
         subplot(10,1,2:9, 'FontSize', fontSize');
         avg_firing_nbins = 40;
         win_len = 1/dt;
@@ -186,7 +187,7 @@ for par_it = 8%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
 
             
         % Plot a histogram of average firing of inhibitory cells
-        figure('Position', [800 800 1000 400]);
+        figure('Position', [800 800 1000 400], 'Visible', p_o.figVisible);
         subplot(10,1,2:9, 'FontSize', fontSize');
         avg_firing_nbins = 40;
         win_len = 1/dt;
@@ -209,20 +210,20 @@ for par_it = 8%getItFromSpWeVecs(sp, we, results, 1e-9)%1:nParam
             
 
             
-        % Plot excitation profile
-        figure('Position', [800 800 1000 400]);
-        subplot(10,1,1:9, 'FontSize', fontSize);
-
-        t = 0:0.01:p_o.x_lim(2);
-        plot(t, [res.opt.Ie_max/res.opt.T.*t; res.opt.Ii_max/res.opt.T.*t]*pA, 'LineWidth', 2);
-        xlabel('Time (s)');
-        ylabel('Current (pA)');
-        legend('Excitatory neuron', 'Interneuron', 'Location', 'NorthWest');
-        title('External current injected to cells');
-
-        set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
-        print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_ramp_current_fig.eps', ...
-                outputDir, outputNum, par_it, trial_it));    
+%         % Plot excitation profile
+%         figure('Position', [800 800 1000 400]);
+%         subplot(10,1,1:9, 'FontSize', fontSize);
+% 
+%         t = 0:0.01:p_o.x_lim(2);
+%         plot(t, [res.opt.Ie_max/res.opt.T.*t; res.opt.Ii_max/res.opt.T.*t]*pA, 'LineWidth', 2);
+%         xlabel('Time (s)');
+%         ylabel('Current (pA)');
+%         legend('Excitatory neuron', 'Interneuron', 'Location', 'NorthWest');
+%         title('External current injected to cells');
+% 
+%         set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
+%         print('-depsc2', sprintf('%s/%s_par_it%.3d_trial_%.3d_ramp_current_fig.eps', ...
+%                 outputDir, outputNum, par_it, trial_it));    
 
     end
 end

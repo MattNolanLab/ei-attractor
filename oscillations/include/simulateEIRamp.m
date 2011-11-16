@@ -93,7 +93,7 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIRamp(o, net_dat
         e_MU = log(o.we^2 / sqrt(e_V+o.we^2));
         e_SIGMA = sqrt(log(e_V/o.we^2 + 1));
 
-        Me(we_it, :) = Me(we_it, :) .* lognrnd(e_MU, e_SIGMA, 1, Ne);
+        Me(we_it, :) = Me(we_it, :) .* lognrnd_local(e_MU, e_SIGMA, 1, Ne);
     end
 %     % Inhibitory_weights
 %     for wi_it = 1:Ne
