@@ -12,10 +12,10 @@ outputNum = '002';
 
 fontSize = 16;
 
-sim_flag = false;
+sim_flag = true;
 
 
-nTrials = 2;
+nTrials = 4;
 Ni_it = 1;
 Ne_it = 1;
 pA = 1e12;
@@ -161,7 +161,7 @@ if sim_flag
 
     end
     
-    save('-v7.3', sprintf('001_narrow_const_net_size_weights_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
+    save('-v7.3', sprintf('%s_narrow_const_net_size_weights_%s.mat', outputNum, datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
