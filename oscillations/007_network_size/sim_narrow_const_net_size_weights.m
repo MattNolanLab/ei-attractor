@@ -8,7 +8,7 @@ close all;
 path('../include/', path);
 
 outputDir = 'output_local';
-outputNum = '001';
+outputNum = '002';
 
 fontSize = 16;
 
@@ -49,7 +49,7 @@ if sim_flag
             opt.Ni = fix(0.1 * opt.N);
 
             % All variables are in basic units, i.e. s, volt, etc.
-            opt.e_sparseness = 0.1;
+            opt.e_sparseness = 0.4;
             opt.i_sparseness = 0.8;
 
 
