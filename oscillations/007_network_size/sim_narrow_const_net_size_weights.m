@@ -2,7 +2,7 @@
 % of network size
 %
 % This variant scales conductances as a function of network size
-clear all;
+%clear all;
 close all;
 
 path('../include/', path);
@@ -12,27 +12,29 @@ outputNum = '001';
 
 fontSize = 16;
 
-sim_flag = true;
+sim_flag = false;
 
 
 nTrials = 2;
 Ni_it = 1;
+Ne_it = 1;
 pA = 1e12;
 
 
-N_vec = [100:50:1000];
-NN = numel(N_vec);
-
-%global_opt.we_std_vec = [600:10:1300] * 1e-12;
-%Nwe_std = numel(global_opt.we_std_vec);
-
-alpha_E_max = 5.40e-8;
-alpha_I_max = 3.96e-8;
-
-al_coeff_vec = [0.5:0.05:1.5];
-Nalpha = numel(al_coeff_vec);
 
 if sim_flag
+    N_vec = [100:50:1000];
+    NN = numel(N_vec);
+
+    %global_opt.we_std_vec = [600:10:1300] * 1e-12;
+    %Nwe_std = numel(global_opt.we_std_vec);
+
+    alpha_E_max = 5.40e-8;
+    alpha_I_max = 3.96e-8;
+
+    al_coeff_vec = [0.5:0.05:1.5];
+    Nalpha = numel(al_coeff_vec);
+
     % N...outer, alpha...inner cycle
     parfor it = 1:NN*Nalpha
         display(sprintf('parameter %d out of %d', it, NN*Nalpha));
@@ -158,12 +160,20 @@ if sim_flag
             results(it, :) = tmpresults;
 
     end
+    
+    save('-v7.3', sprintf('001_narrow_const_net_size_weights_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+coherence_th = 0.2;
 
-F = reshape(results_F(:, 1), Nalpha, NN)';
-coh = reshape(results_coh(:, 1), Nalpha, NN)';
+trial_it = 1;
+F = reshape(results_F(:, trial_it), Nalpha, NN)';
+coh = reshape(results_coh(:, trial_it), Nalpha, NN)';
+
+F(coh < coherence_th) = nan;
+coh(coh < coherence_th) = nan;
 
 figure('Position', [800 1050 900 1050]);
 [N_grid al_grid] = meshgrid(al_coeff_vec, N_vec);
@@ -186,6 +196,35 @@ set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
 print('-depsc2', sprintf('%s/%s_freq_coh_net_size_syn_strength.eps', ...
         outputDir, outputNum));    
 
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Print samples of synaptic conductances for each trial
+p_o.figVisible = false;
+p_o.x_lim = [0 2.5];
+p_o.figVisible = 'off';
+
+parfor it = 1:NN*Nalpha
+    N = N_vec(fix((it-1)/Nalpha) + 1);
+    alpha_coeff = al_coeff_vec(mod(it-1, Nalpha) + 1);
+    
+    res = results(it, trial_it);
+    
+    Isyn_e1 = -res.Vmon.Isyn_e(Ne_it(1), :)*pA;
+    Isyn_i1 = -res.Vmon.Isyn_i(Ni_it(1), :)*pA;
 
 
-save('-v7.3', sprintf('001_narrow_const_net_size_weights_%s.mat', datestr(now, 'yyyy-mm-dd_HH-MM-SS')));
+    % Plot all the currents in time
+    figure('Position', [600 800 1000 500], 'Visible', p_o.figVisible);
+    subplot(10,1,1:9, 'FontSize', fontSize);
+    plot(res.times, Isyn_e1, 'r', res.times, Isyn_i1, 'b');
+    xlabel('Time (s)');
+    ylabel('Current (pA)');
+    box off;
+    xlim(p_o.x_lim);
+    title(sprintf('%d neurons; total syn. coupling: %.3f', N, alpha_coeff));
+
+    set(gcf,'PaperPositionMode','auto');
+    print('-depsc2', sprintf('%s/%s_N%.4d_al%.3f_trial_%.3d_currents_whole_ste_int.eps', ...
+        outputDir, outputNum, N, alpha_coeff, trial_it));    
+end
+    
