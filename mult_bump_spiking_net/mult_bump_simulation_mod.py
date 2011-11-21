@@ -56,6 +56,11 @@ def getOptParser():
             help="Integrate and fire adaptation time constant (msec)")
     optParser.add_option("--output-dir", type="string", default="results/", dest="output_dir", help="Output directory path.")
 
+    optParser.add_option("--Ilinresp", type="float", default=0, dest="Ilinresp",
+            help="Amount of current to inject in addition to 'input' in network response simulations (nA)")
+    optParser.add_option("--initT", type="float", default=0, dest="initT",
+            help="Initialisation time, during which no movement of rat is forced (seconds)")
+
     return optParser
 
 

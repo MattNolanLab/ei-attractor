@@ -108,7 +108,8 @@ def createNetwork(options, clock, W = None):
                         i_y = i_y + sheet_size
         
                 abs_x_sq = (i_x - j_x -l*prefDir[0])**2 + (i_y - j_y - l*prefDir[1])**2
-                w = a*math.e**(-gamma*(abs_x_sq)) - math.e**(-beta*(abs_x_sq));
+                #w = a*math.e**(-gamma*(abs_x_sq)) - math.e**(-beta*(abs_x_sq));
+                w = math.cos(math.sqrt(abs_x_sq)/sheet_size*2*math.pi) - 1
                 inh_matrix[j, i] = connMult*abs(w)*1e-9
     else:
         inhibConn = Connection(sheetGroup, sheetGroup, 'gi', structure='dense')
