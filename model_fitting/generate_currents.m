@@ -19,7 +19,7 @@ DC_bias = [0 0.02 0.03 0.06];
 currentFactor = [250 350 450 550 650 750] * 1e-12;
 
 dt = 0.05e-3;
-T = 0.5;
+T = 40;
 silence_period = 3;
 
 X = [];
@@ -39,10 +39,9 @@ for curr_f = 1:numel(currentFactor)
             X = [silence X silence];
             t = [0:numel(X)-1] * dt;
 
-            out = [t' X'];
-
+            
             save(sprintf('OrnsteinUhlenbeck_%dpA_%d.mat', ...
-                currentFactor*pA, it), 'out');
+                fix(currentFactor(curr_f)*pA), it), 'X', 't');
 
             it = it+1;
         end
