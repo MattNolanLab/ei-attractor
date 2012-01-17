@@ -23,9 +23,13 @@ dt_track = 0.1;
 delta_t = 0.5; % Should be this value.
 
 
-params.preprocess = true;
-params.folder = 'data/012_new_model_drift_test/l0/';
-params.jobNums = 1000:1099;
+driftsParams;  % include parameters
+%params = Burak_Fiete_PrefDirs_000_001;
+%params = SpacingDrifts_009.lambda_net_18;
+params = bump_initialized_002;
+
+folder = params.folder; 
+jobNums = params.jobNums;
 
 
 % Preprocess tracking data if necessary
@@ -44,27 +48,19 @@ end
 fontSize = 16;
 figure('Position', [883 528 800 600]);
 subplot(1, 1, 1, 'FontSize', fontSize);
-for it = 1:size(blobTracks_r, 2)
-    hold on;
-    plot(max_min_c(absMax_ci(it), it), max_min_r(absMax_ri(it), it), '.', 'MarkerFaceColor', 'k', 'MarkerSize', 5);
-end
-xlabel('X drift (neurons)');
-ylabel('Y drift (neurons)');
-%title(['Maximum drifts in X and Y directions, ' ...
-%    'bump NO initialisation, lambda\_net = 18']);
-title('Maximum drifts in X and Y directions, Burak&Fiete preferred directions');
-axis equal;
+box on;
+    
+[absMax_r, absMax_c] = plotMaximumDrifts(gca, params, blobTracks_r, blobTracks_c);
 
 set(gcf,'PaperPositionMode','auto');
-print('-depsc2', ...
-   'output/012_new_model_drift_test/drifts_l0.eps');
+print('-depsc2', params.output);
 
 
 % ------------------------------------------------------------------------
 % Plot high drifts in both directions
 % ------------------------------------------------------------------------
-highDriftThreshold_c = 5;
-highDriftThreshold_r = 10;
+highDriftThreshold_c = 4;
+highDriftThreshold_r = 1.5;
 
 high_id_c = find(absMax_c > highDriftThreshold_c);
 high_id_r = find(absMax_r > highDriftThreshold_r);
@@ -88,6 +84,28 @@ end
 xlabel('Time (s)');
 ylabel('Y Drift (neurons)');
 title(['Detailed drifts of populations that reach absmax > ' num2str(highDriftThreshold_r)]);
+for it = 1:numel(high_id_r)
+    leg_c{it} = ['job ' num2str(high_id_r(it) - 1)];
+end
+legend(leg_c, 'Location', 'SouthEast');
+
+
+% ------------------------------------------------------------------------
+% Plot high drift magnitude (sqrt(c^2 + r^2))
+% ------------------------------------------------------------------------
+highDriftMagnitudeTh = 2;
+
+driftMag = sqrt(blobTracks_c.^2 + blobTracks_r.^2);
+
+high_id = find(absMax_c > highDriftThreshold_c & absMax_r > highDriftThreshold_r);
+
+figure('Position', [0 0 800, 500]);
+subplot(1, 1, 1);
+if (numel(high_id_c) >0)
+    plot(startTime:dt_track:endTime-dt_track, driftMag(:, high_id_c));
+end
+ylabel('Drift magnitude (neurons)');
+title(['Detailed drifts of populations that reach absmax > ' num2str(highDriftMagnitudeTh)]);
 for it = 1:numel(high_id_c)
     leg_c{it} = ['job ' num2str(high_id_c(it) - 1)];
 end

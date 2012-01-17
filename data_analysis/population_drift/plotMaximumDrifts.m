@@ -14,9 +14,8 @@ function [absMax_r, absMax_c] = plotMaximumDrifts(ax, params, blobTracks_r, blob
     
     [absMax_rr absMax_rri] = max(absMax_c);
     
-    
+    hold all;    
     for it = 1:size(blobTracks_r, 2)
-        hold on;
         plot(ax, max_min_c(absMax_ci(it), it), max_min_r(absMax_ri(it), it), 'o', ...
              'MarkerFaceColor', params.MarkerFaceColor, 'MarkerEdgeColor', ...
              params.MarkerFaceColor, 'MarkerSize', 3);
@@ -28,4 +27,5 @@ function [absMax_r, absMax_c] = plotMaximumDrifts(ax, params, blobTracks_r, blob
     axis equal;
     xlim(params.xlim);
     ylim(params.ylim);
+    
 end

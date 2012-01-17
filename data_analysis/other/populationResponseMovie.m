@@ -1,22 +1,22 @@
 % Create population response movie
 path('../include', path);
-close all;
+%close all;
 clear all;
 
-startTime = 0;
-endTime = 8;
+startTime = 5;
+endTime = 30;
 
 dt_track = 0.1;
 delta_t = 0.5; % Should be this value.
 
-folder = '../../../simulations/000_test_model/results/';
-jobNums = 1000;
+folder = '../../../simulations/007_mult_bump_path_integ/results/';
+jobNums = 1002;
 
 
 nFiles = numel(jobNums);    
 for f_it = 1:nFiles
     
-    close all;
+    %close all;
     clear M;
 
     jobNums(f_it)

@@ -14,11 +14,14 @@ function plotSpikes_xy(neuronSpikes, ratData_pos_x, ratData_pos_y, dt_rat, neuro
     neuronPos_i = floor(neuronSpikes/dt_rat) + 1;  % indices into the position vector
     neuronPos_x = ratData_pos_x(neuronPos_i);
     neuronPos_y = ratData_pos_y(neuronPos_i);
+    m_i = max(neuronPos_i);
 
     %fig = figure;
-    plot(ratData_pos_x, ratData_pos_y);
-    hold all;
-    plot(neuronPos_x, neuronPos_y, '.r', 'MarkerSize', 6);
+    plot(ratData_pos_x(1:m_i), ratData_pos_y(1:m_i));
+    hold on;
+    plot(neuronPos_x, neuronPos_y, '.r', 'MarkerSize', 5);
+    plot([30 80], [-100 -100], 'LineWidth', 7, 'Color', 'k');
     hold off;
-    axis square tight;
+    axis off;
+    axis equal tight;
 end

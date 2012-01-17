@@ -10,10 +10,11 @@ clear all;
     % been done and results saved to tracking*.mat file
     %loadFlag = true;
     
-    jobId = 40100;
-    folder = 'simulation_data/000_003_Burak_Fiete_Path_Integ/';
+    jobId = 2385;
+    chpntId = 1;
+    folder = '../../../central_data_store/simulation_data/007_mult_bump_path_integ/';
     d = dir([folder 'job' num2str(jobId) '*.mat']);
-    fileName = [folder d(end).name]
+    fileName = [folder d(chpntId).name]
     
     saveFig = true;
     
@@ -45,47 +46,71 @@ clear all;
     %---------------------------------------------
     % Plot single neuron rate and spike responses
     %---------------------------------------------
-    neuronNum = sheet_size^2 / 2 + sheet_size/2;
-    neuronSpikes = eval(['spikeMonitor_times_n' int2str(neuronNum)]);
+    neuronNum = 1;
+    neuronSpikes = spikeCell{neuronNum};
     h = 5.0;  % cm
     arenaDiam = 180;   % cm
     
-    fontSize = 18;
+    fontSize = 25;
 
-    figure('Position', [300 200 1300 600]);
-    subplot(1, 2, 1, 'FontSize', fontSize);
+    figure('Position', [100 200 1000 300]);
+    subplot(1, 3, 1, 'FontSize', fontSize);
     plotSpikes_xy(neuronSpikes, pos_x, pos_y, dt_rat, neuronNum);
-    %xlabel('Rat position [cm]');
-    %ylabel('Rat position [cm]');
     xlim([-arenaDiam/2 arenaDiam/2]);
     ylim([-arenaDiam/2 arenaDiam/2]);
-%    set(gca(), 'XTick', [-arenaDiam/2 arenaDiam/2]);
-%    set(gca(), 'YTick', [-arenaDiam/2 arenaDiam/2]);
-    %set(gca(), 'XTick', []);
-    %set(gca(), 'YTick', []);
-    title 'A';
+    %title 'A';
+    axis equal tight;
 
     
-    subplot(1, 2, 2, 'FontSize', fontSize);
-    plotSNResponse(neuronSpikes, pos_x, pos_y, arenaDiam, h, dt_rat, neuronNum);
+    subplot(1, 3, 2, 'FontSize', fontSize);
+    [firingHist xedges yedges] = plotSNResponse(neuronSpikes, pos_x, pos_y, arenaDiam, h, dt_rat, neuronNum);
     xlim([-arenaDiam/2 arenaDiam/2]);
     ylim([-arenaDiam/2 arenaDiam/2]);
-%    set(gca(), 'XTick', [-arenaDiam/2 arenaDiam/2]);
-%    set(gca(), 'YTick', [-arenaDiam/2 arenaDiam/2]);
-    %set(gca(), 'XTick', []);
-    %set(gca(), 'YTick', []);
-    title 'B';
-
+    axis off;
+    axis equal tight;
      
-    if saveFig
-        popPlotFile =  [folder 'data_analysis/' fileBase '_tracking.eps'];
+
+    %figure('Position', [100 200 1500 600]);    
+    subplot(1, 3, 3, 'FontSize', fontSize);
+    edges = linspace(-arenaDiam, arenaDiam, 2*arenaDiam/h + 1);
+    
+    firingRate = firingHist;
+    firingRate(isnan(firingRate)) = 0;
+    autocorr = xcorr2(firingRate - mean(reshape(firingRate, 1, numel(firingRate))));
+    [X Y] = meshgrid(edges);
+    autocorr(sqrt(X.^2 + Y.^2) > arenaDiam) = nan;
+    pcolor(edges, edges, autocorr);
+    shading interp;
+    hold on;
+    plot([30 80], [-200 -200], 'LineWidth', 7, 'Color', 'k');
+    hold off;
+    axis off;
+    axis equal tight;
+    
+    
+    
+%    if saveFig
         set(gcf(), 'PaperPositionMode', 'auto', 'Renderer', 'painters');
-        print('-depsc', popPlotFile);
+        print('-depsc', sprintf('%s/job%.4d_single_neuron_response.eps', ...
+            folder, jobId));
+        print('-dpng', sprintf('%s/job%.4d_single_neuron_response.png', ...
+            folder, jobId));
         
-        for n_it = [0:neuronNum - 1 neuronNum+1:sheet_size^2-1]
-            clear(['spikeMonitor_times_n' num2str(n_it)]);
-        end
-        clear spikeHist
-        
-        save('-v7.3', [folder 'data_analysis/tracking_' d(end).name]);
-    end
+%    end
+
+    
+    figure('Position', [800 200 500 500]);
+    subplot(10, 1, 1:9, 'FontSize', fontSize);
+    [G crossCorr angles] = cellGridness(firingHist, xedges);
+    plot(angles, crossCorr, 'LineWidth', 2);
+    xlabel('Rotation angle (deg)');
+    ylabel('Correlation');
+    axis square tight;
+    pos = get(gca, 'Position');
+    pos(1) = pos(1) + 0.05*pos(3);
+    set(gca, 'Position', pos);
+
+
+    set(gcf(), 'PaperPositionMode', 'auto', 'Renderer', 'painters');
+    print('-depsc', sprintf('%s/job%.4d_single_neuron_autocorr_corr.eps', ...
+        folder, jobId));

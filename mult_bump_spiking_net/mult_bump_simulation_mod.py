@@ -55,6 +55,8 @@ def getOptParser():
     optParser.add_option("--tau_ad", type="float", default=40, dest="tau_ad",
             help="Integrate and fire adaptation time constant (msec)")
     optParser.add_option("--output-dir", type="string", default="results/", dest="output_dir", help="Output directory path.")
+    optParser.add_option("--chkpntTime", type="float", default=0, dest="chkpntTime",
+            help="Amount of time to dump out a checkpoint data (save output), (seconds)")
 
     optParser.add_option("--Ilinresp", type="float", default=0, dest="Ilinresp",
             help="Amount of current to inject in addition to 'input' in network response simulations (nA)")
@@ -65,8 +67,8 @@ def getOptParser():
 
 
 # Save the results of the simulation in a .mat file
-def saveResultsToMat(options, ratData, spikeMonitor, SNList, SNMonitor,
-        SNgMonitor, SNg_adMonitor):
+def saveResultsToMat(options, ratData, spikeMonitor, SNMonitor,
+        SNgMonitor, SNList, spikeMonList):
     # SNMonitor - monitor of single neurons, defined by list
     # SNList - list of neuron numbers monitored (SN response)
     # spikeMonitor - monitor of spikes of all neurons
@@ -87,7 +89,7 @@ def saveResultsToMat(options, ratData, spikeMonitor, SNList, SNMonitor,
     else:
         outData = ratData
 
-    spikeCell = empty((options.sheet_size**2), dtype=object);
+    spikeCell = empty(len(spikeMonList), dtype=object);
 
     if spikeMonitor != None:
         for k,v in spikeMonitor.spiketimes.iteritems():
