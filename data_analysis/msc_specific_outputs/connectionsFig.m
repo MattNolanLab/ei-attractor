@@ -28,6 +28,7 @@ shading flat;
 title 'B';
 set(gca(), 'XTick', [1 sheet_size]);
 set(gca(), 'YTick', [1 sheet_size]);
+colorbar;
 
 % Plot input connection weights of a neuron
 subplot(2, 4, 4, 'FontSize', fontSize);
@@ -66,7 +67,7 @@ set(gca(), 'YTick', [1 sheet_size]);
 % print weighing function for different a parameters
 % ------------------------------------------------------------------------
 connMult = 20;
-lambda = 13;
+lambda = 60;
 beta = 3/lambda^2; gamma = 1.05*beta;
 
 abs_x = -40:0.01:40;

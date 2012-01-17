@@ -10,8 +10,8 @@ function [blobTracks_r, blobTracks_c] = preprocessPopulationDrift(params, startT
     nFiles = numel(jobNums);
     
     spikeHist_arr = [];
-    blobTracks_r = zeros(numel(startTime:dt_track:endTime)-1, numel(jobNums));
-    blobTracks_c = blobTracks_r;
+    %blobTracks_r = zeros(numel(startTime:dt_track:endTime)-1, numel(jobNums));
+    %blobTracks_c = blobTracks_r;
 
     parfor f_it = 1:nFiles
         jobNums(f_it)

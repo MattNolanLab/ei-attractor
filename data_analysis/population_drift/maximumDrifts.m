@@ -20,42 +20,13 @@ startTime = 10;
 endTime = 200;
 
 dt_track = 0.1;
-delta_t = 0.25; % Should be this value.
+delta_t = 0.5; % Should be this value.
 
 
-folder = 'data/000_002_NoPrefDirs_RandomInit/';
-jobNums = 21900:21999;
+params.preprocess = true;
+params.folder = 'data/012_new_model_drift_test/l0/';
+params.jobNums = 1000:1099;
 
-
-folder = params.folder; 
-jobNums = params.jobNums;
-
-    parfor f_it = 1:nFiles
-        jobNums(f_it)
-        d = dir([folder 'job' num2str(jobNums(f_it)) '*.mat'])
-        if (numel(d) == 0)
-            warning(['Could not open job no.' num2str(jobNums(f_it))]);
-            continue;
-        end
-        % Load file which contains the tracking data and extract the spike
-        % histogram and blob positions
-        d(end).name
-        %clear spikeCell
-        dataLoad = load([folder d(end).name], 'spikeCell');       
-        spikeCell = dataLoad.spikeCell;
-        %opts = parseOptions(dataLoad.options);
-        disp 'Creating spike histogram';
-        spikeHist = createSpikeHistCell(1:numel(spikeCell), spikeCell, ...
-            dt_track, 0, endTime);
-        
-        disp 'Tracking blobs'
-        [blobTracks_r(:, f_it) blobTracks_c(:, f_it)] = ...
-            trackPopulationDrift(startTime, endTime, spikeHist, ...
-            dt_track, delta_t);        
-    end
-    
-    
-    clear spikeHist spikeCell
 
 % Preprocess tracking data if necessary
 if (params.preprocess == true)
@@ -86,7 +57,7 @@ axis equal;
 
 set(gcf,'PaperPositionMode','auto');
 print('-depsc2', ...
-   'output/000_002_NoPrefDirs_RandomInit/noPrefDirs_RandomInit-maximumDrifts.eps');
+   'output/012_new_model_drift_test/drifts_l0.eps');
 
 
 % ------------------------------------------------------------------------

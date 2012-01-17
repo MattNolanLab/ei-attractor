@@ -4,13 +4,13 @@ close all;
 clear all;
 
 startTime = 0;
-endTime = 5;
+endTime = 8;
 
 dt_track = 0.1;
-delta_t = 0.25; % Should be this value.
+delta_t = 0.5; % Should be this value.
 
-folder = 'simulation_data/010_taui_drifts/';
-jobNums = 91000:91039;
+folder = '../../../simulations/000_test_model/results/';
+jobNums = 1000;
 
 
 nFiles = numel(jobNums);    

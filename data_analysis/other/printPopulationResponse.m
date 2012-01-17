@@ -1,7 +1,8 @@
 % Print coloured 2d histogram of the population response
 % function printPopulationResponse(sheet_size, startTime, endTime)
 
-%close all;
+    close all;
+    path('../include', path);
 
     opt = parseOptions(options);
     sheet_size = opt.sheet_size;
@@ -9,7 +10,7 @@
     %sheet_size = double(sheet_size);
     dt_rat = 0.02; % sec
     delta_t = 1; % sec
-    startTime = 10;
+    startTime = 4;
     endTime = startTime; % sec
     
     firingPop = zeros(sheet_size, sheet_size);
@@ -34,6 +35,9 @@
     colorbar;
     shading flat;
     colormap(jet);
+    
+    figure();
+    rasterPlot(spikeCell, 1:sheet_size^2, true);
     
     %SNList_nID = 38;
     %drawPin(double(SNList(SNList_nID)), sheet_size, [1 1 0]);

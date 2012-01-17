@@ -1,7 +1,7 @@
 function [blobPos_r, blobPos_c] = trackPopulationDrift(startTime, endTime, spikeHist, dt_track, delta_t)
 
     sheet_size = sqrt(size(spikeHist, 1));
-    minEdgeDist =  10;
+    minEdgeDist =  3;
 
     blobPos_r = [0];
     blobPos_c = [0];
