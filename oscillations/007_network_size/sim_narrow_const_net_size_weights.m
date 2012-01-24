@@ -12,7 +12,7 @@ outputNum = '002';
 
 fontSize = 16;
 
-sim_flag = true;
+sim_flag = false;
 
 
 nTrials = 4;
