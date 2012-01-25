@@ -199,29 +199,75 @@ print('-depsc2', sprintf('%s/%s_freq_coh_net_size_syn_strength.eps', ...
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Print samples of synaptic conductances for each trial
-p_o.figVisible = false;
-p_o.x_lim = [0 2.5];
+p_o.x_lim = [1.5 2.5];
 p_o.figVisible = 'off';
+p_o.f_x_lim = [0 400];
+p_o.C_x_lim = [0 200];
 
-parfor it = 1:NN*Nalpha
+for it = 1%:NN*Nalpha
     N = N_vec(fix((it-1)/Nalpha) + 1);
     alpha_coeff = al_coeff_vec(mod(it-1, Nalpha) + 1);
     
     res = results(it, trial_it);
+    dt = res.opt.dt;
     
-    Isyn_e1 = -res.Vmon.Isyn_e(Ne_it(1), :)*pA;
-    Isyn_i1 = -res.Vmon.Isyn_i(Ni_it(1), :)*pA;
+    t_start_i = fix(p_o.x_lim(1)/dt) + 1;
+    t_end_i = fix(p_o.x_lim(2)/dt) + 1;
+
+    
+    Isyn_e1 = -res.Vmon.Isyn_e(Ne_it(1), t_start_i:t_end_i)*pA;
+    Isyn_i1 = -res.Vmon.Isyn_i(Ni_it(1), t_start_i:t_end_i)*pA;
+    times = res.times(t_start_i:t_end_i);
 
 
     % Plot all the currents in time
-    figure('Position', [600 800 1000 500], 'Visible', p_o.figVisible);
-    subplot(10,1,1:9, 'FontSize', fontSize);
-    plot(res.times, Isyn_e1, 'r', res.times, Isyn_i1, 'b');
+    figure('Position', [600 800 1000 800], 'Visible', p_o.figVisible);
+    subplot(3,2,1:2, 'FontSize', fontSize);
+    plot(times, Isyn_e1, 'r', times, Isyn_i1, 'b');
     xlabel('Time (s)');
     ylabel('Current (pA)');
     box off;
     xlim(p_o.x_lim);
-    title(sprintf('%d neurons; total syn. coupling: %.3f', N, alpha_coeff));
+    title(sprintf('%d neurons; total syn. coupling: %.3f; A', N, alpha_coeff));
+    
+    % Power spectrum of inhibitory currents
+    subplot(3, 2, 3, 'FontSize', fontSize);
+    [e_Y e_f e_NFFT] = fourierTrans(Isyn_e1 - mean(Isyn_e1), dt);
+    e_Y_pow = (2*abs(e_Y(1:e_NFFT/2+1))).^2;
+    plot(e_f, e_Y_pow, 'r');
+    xlabel('Frequency (Hz)');
+    ylabel('Power (pA^2)');
+    xlim(p_o.f_x_lim);
+    title('B');
+
+    % Power spectrum of excitatory currents
+    subplot(3, 2, 4, 'FontSize', fontSize);
+    [i_Y i_f i_NFFT] = fourierTrans(Isyn_i1 - mean(Isyn_i1), dt);
+    i_Y_pow = (2*abs(i_Y(1:i_NFFT/2+1))).^2;
+    plot(i_f, i_Y_pow, 'b');
+    xlabel('Frequency (Hz)');
+    ylabel('Power (pA^2)');
+    xlim(p_o.f_x_lim);
+    title('C');
+    
+    % Autocorrelation of inhibitory currents
+    subplot(3, 2, 5, 'FontSize', fontSize);
+    e_C = autoCorr(Isyn_e1);
+    plot((0:dt:times(end)-times(1))*1000, e_C, 'r');
+    xlabel('Time (ms)');
+    ylabel('Correlation');
+    xlim(p_o.C_x_lim);
+    title('D');
+    
+    % Autocorrelation of inhibitory currents
+    subplot(3, 2, 6, 'FontSize', fontSize);
+    i_C = autoCorr(Isyn_i1);
+    plot((0:dt:times(end)-times(1))*1000, i_C, 'b');
+    xlabel('Time (ms)');
+    ylabel('Correlation');
+    xlim(p_o.C_x_lim);
+    title('E');
+    
 
     set(gcf,'PaperPositionMode','auto');
     print('-depsc2', sprintf('%s/%s_N%.4d_al%.3f_trial_%.3d_currents_whole_ste_int.eps', ...
