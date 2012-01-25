@@ -142,8 +142,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIHomo(o, net_dat
         gi1 = gi1 + gi_sum;
         gi2 = gi2 + gi_sum;
         ge = ge + Me*fired_e;
-        ge_ext = ge_ext + Me_ext*fired_e_ext;
-        gi_ext = gi_ext + Mi_ext*fired_i_ext;
+        ge_ext = ge_ext + Me_ext*fired_e_ext*o.we_ext_e;
+        gi_ext = gi_ext + Mi_ext*fired_i_ext*o.we_ext_i;
         
         
         Isyn_e = (gi1 - gi2).*(V_rev_i - Ve);
@@ -159,8 +159,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIHomo(o, net_dat
         Vmon_i(fired_i(Imon_i), t_i) = o.spikeVm;
         Vmon_Isyn_e(:, t_i) = (gi1(Emon_i) - gi2(Emon_i))*(V_rev_i - Vclamp);
         Vmon_Isyn_i(:, t_i) = ge(Imon_i)*(V_rev_e - Vclamp);
-        Vmon_Iext_e(:, t_i) = Iext_e;
-        Vmon_Iext_i(:, t_i) = Iext_i;
+        Vmon_Iext_e(:, t_i) = Iext_e(Emon_i);
+        Vmon_Iext_i(:, t_i) = Iext_i(Imon_i);
 
 
         dVe = dt * ((El_e - Ve).*(1 + Rm_e*g_adapt_e) + Rm_e*Isyn_e + Rm_e*Iext_e) / o.taum_e;
