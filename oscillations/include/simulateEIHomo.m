@@ -77,10 +77,10 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIHomo(o, net_dat
     Me = net_data.Me;
     Mi = net_data.Mi;
     % External connections onto excitatory neurons
-    Me_ext = rand(Ne, o.Ne_ext);
+    Me_ext = rand(Ne, o.N_ext);
     Me_ext = double(Me_ext <= o.e_ext_density);
     % External connections onto inhibitory neurons
-    Mi_ext = rand(Ni, o.Ni_ext);
+    Mi_ext = rand(Ni, o.N_ext);
     Mi_ext = double(Mi_ext <= o.i_ext_density);
     
     
@@ -124,8 +124,7 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIHomo(o, net_dat
         fired_e = Ve > Vt_e;
         fired_i = Vi > Vt_i;
         
-        fired_e_ext = rand(o.Ne_ext, 1) <= o.r_e_ext*dt;
-        fired_i_ext = rand(o.Ni_ext, 1) <= o.r_i_ext*dt;
+        fired_ext = rand(o.N_ext, 1) <= o.r_ext*dt;
 
         Ve(fired_e) = Vr_e;
         Vi(fired_i) = Vr_i;
@@ -142,8 +141,8 @@ function [spikeRecord_e, spikeRecord_i, Vmon, times] = simulateEIHomo(o, net_dat
         gi1 = gi1 + gi_sum;
         gi2 = gi2 + gi_sum;
         ge = ge + Me*fired_e;
-        ge_ext = ge_ext + Me_ext*fired_e_ext*o.we_ext_e;
-        gi_ext = gi_ext + Mi_ext*fired_i_ext*o.we_ext_i;
+        ge_ext = ge_ext + Me_ext*fired_ext*o.we_ext_e;
+        gi_ext = gi_ext + Mi_ext*fired_ext*o.we_ext_i;
         
         
         Isyn_e = (gi1 - gi2).*(V_rev_i - Ve);
