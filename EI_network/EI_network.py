@@ -16,9 +16,8 @@ import random
 
 
 
-def createNetwork(o, clk):
-
-    
+class EI_Network:
+    def __init__(o, clk):
     # Setup neuron equations
     # Using exponential integrate and fire model
     # Excitatory population
@@ -40,7 +39,7 @@ def createNetwork(o, clk):
     Vrev_GABA = o.Vrev_GABA*mV
 
 
-    eqs_e = Equation('''
+    self.eqs_e = Equation('''
         dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
         Im = gL*(EL-vm)*(1+g_ad/gL)+gL*deltaT*exp((vm-Vt)/DeltaT) + (gi1 - gi2)*(Esyn - vm) + Iext  : amp
         dgi1/dt = -gi1/syn_tau1 : siemens
@@ -71,7 +70,7 @@ def createNetwork(o, clk):
     tau_AMPA = o.tau_AMPA*msecond
     tau_ad_i = o.ad_taui_mean*msecond
     
-    eqs_i = Equation('''
+    self.eqs_i = Equation('''
         dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
         Im = gL*(EL-vm)*(1+g_ad/gL)+gL*deltaT*exp((vm-Vt)/DeltaT) + ge*(Esyn - vm) + Iext  : amp
         dge/dt = -ge/syn_tau : siemens
@@ -98,7 +97,7 @@ def createNetwork(o, clk):
 
 
     # Setup neuron groups and connections
-    E_pop = NeuronGroup(
+    self.E_pop = NeuronGroup(
             N = o.Ne
             model=eqs_e,
             threshold=spike_detect_th,
@@ -106,7 +105,7 @@ def createNetwork(o, clk):
             refractory=refrac_abs,
             clock=clock)
 
-    I_pop = NeuronGroup(
+    self.I_pop = NeuronGroup(
             N = o.Ni,
             model=eqs_i,
             threshold=spike_detect_th,
@@ -114,37 +113,42 @@ def createNetwork(o, clk):
             refractory=refrac_abs,
             clock=clock)
 
-    AMPA_conn = Connection(E_pop, I_pop, 'ge')
-    AMPA_conn.connect_random(E_pop, I_pop, o.AMPA_density,
+    self.AMPA_conn = Connection(E_pop, I_pop, 'ge')
+    self.AMPA_conn.connect_random(E_pop, I_pop, o.AMPA_density,
             weight=lambda:np.random.lognormal(g_AMPA_mu, g_AMPA_sigma)*nS)
 
-    GABA_conn1 = Connection(I_pop, E_pop, 'gi1')
-    GABA_conn1.connect_random(I_pop, E_pop, o.GABA_density,
+    self.GABA_conn1 = Connection(I_pop, E_pop, 'gi1')
+    self.GABA_conn1.connect_random(I_pop, E_pop, o.GABA_density,
             weight=o.g_GABA_mean*nS))
-    GABA_conn2 = Connection(I_pop, E_pop, 'gi2')
-    GABA_conn2.connect(I_pop, E_pop, GABA_conn1.W)
+    self.GABA_conn2 = Connection(I_pop, E_pop, 'gi2')
+    self.GABA_conn2.connect(I_pop, E_pop, GABA_conn1.W)
 
 
 
     # Setup adaptation connections: neuron on itself
-    adaptConn_e = IdentityConnection(E_pop, E_pop,  'g_ad',
+    self.adaptConn_e = IdentityConnection(E_pop, E_pop,  'g_ad',
             weight=o.ad_e_g_inc*siemens)
-    adaptConn_i = IdentityConnection(I_pop, I_pop, 'g_ad',
+    self.adaptConn_i = IdentityConnection(I_pop, I_pop, 'g_ad',
             weight=o.ad_i_g_inc*siemens)
 
 
 
     # Initialize membrane potential randomly
     if (noise_sigma == 0):
-        E_pop.vm = EL_e + (Vt_e-EL_e) * rand(len(E_pop))
-        I_pop.vm = EL_i + (Vt_i-EL_i) * rand(len(I_pop))
+        self.E_pop.vm = EL_e + (Vt_e-EL_e) * rand(len(self.E_pop))
+        self.I_pop.vm = EL_i + (Vt_i-EL_i) * rand(len(self.I_pop))
     else:
-        E_pop.vm = EL_e + zeros(len(E_pop))
-        I_pop.vm = EL_i + zeros(len(I_pop))
+        self.E_pop.vm = EL_e + zeros(len(self.E_pop))
+        self.I_pop.vm = EL_i + zeros(len(self.I_pop))
 
 
-   # Create network (withough any monitors
-   net = Network(E_pop, I_pop, AMPA_conn, GABA_conn1, GABA_conn2, adaptConn_e,
-           adaptConn_i)
+    # Create network (withough any monitors
+    self.net = Network(
+            self.E_pop,
+            self.I_pop,
+            self.AMPA_conn,
+            self.GABA_conn1,
+            self.GABA_conn2,
+            self.adaptConn_e,
+            self.adaptConn_i)
 
-    return net
