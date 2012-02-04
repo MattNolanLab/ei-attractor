@@ -29,7 +29,7 @@ def getOptParser():
     optParser.add_option("--AMPA_density", type="float", default=0.4,
             dest="AMPA_density", help="Density of E-->I connections")
     optParser.add_option("--GABA_density", type="float", default=0.8,
-            dest="i_density", help="Density of I-->E connections")
+            dest="GABA_density", help="Density of I-->E connections")
 
     optParser.add_option("--taum_e", type="float", default=9.3, dest="taum_e",
             help="Mean of excitatory neuron membrane time constant (ms)")
@@ -39,17 +39,17 @@ def getOptParser():
             help="Mean of the excitatory integrate and fire spiking threshold (mV)")
     optParser.add_option("--Vr_e", type="float", default=-50, dest="Vr_e",
             help="Mean of the excitatory integrate and fire reset potential (mV)")
-    optParser.add_option("--Rm_e", type=float, default=44, dest="Rm_e",
+    optParser.add_option("--Rm_e", type="float", default=44, dest="Rm_e",
             help="Mean of excitatory membrane resistance (MOhm)")
-    optParser.add_option("--ad_tau_e_mean", type=float, default=40,
+    optParser.add_option("--ad_tau_e_mean", type="float", default=40,
             dest="ad_tau_e_mean", help="Mean of excitatory adaptation time constant (msec)")
-    optParser.add_option("--ad_tau_e_std", type=float, default=5,
+    optParser.add_option("--ad_tau_e_std", type="float", default=5,
             dest="ad_tau_e_std", help="Std. deviation of excitatory adaptation time constant (msec)")
-    optParser.add_option("--ad_e_g_inc", type=float, default=1.136e-8,
+    optParser.add_option("--ad_e_g_inc", type="float", default=1.136e-8,
             dest="ad_e_g_inc", help="After-spike excitatory increase of leak conductance (Siemens)")
-    optParser.add_option("--deltaT_e", type=float, default=3,
-            dest="deltaT_e", help="Sharpness of exponential I&F neuron spike
-            initiation (excitatory, mV)")
+    optParser.add_option("--deltaT_e", type="float", default=3,
+            dest="deltaT_e", help="Sharpness of exponential I&F neuron spike"
+            "initiation (excitatory, mV)")
 
     optParser.add_option("--taum_i", type="float", default=10, dest="taum_i",
             help="Mean of inhibitory neuron membrane time constant (ms)")
@@ -59,18 +59,18 @@ def getOptParser():
             help="Mean of the excitatory integrate and fire spiking threshold (mV)")
     optParser.add_option("--Vr_i", type="float", default=-50, dest="Vr_i",
             help="Mean of the inhibitory integrate and fire reset potential (mV)")
-    optParser.add_option("--Rm_i", type=float, default=44, dest="Rm_i",
+    optParser.add_option("--Rm_i", type="float", default=44, dest="Rm_i",
             help="Mean of inhibitory membrane resistance (MOhm)")
-    optParser.add_option("--ad_tau_i_mean", type=float, default=7.5,
+    optParser.add_option("--ad_tau_i_mean", type="float", default=7.5,
             dest="ad_tau_i_mean", help="Mean of inhibitory adaptation time constant (msec)")
-    optParser.add_option("--ad_tau_i_std", type=float, default=0.5,
+    optParser.add_option("--ad_tau_i_std", type="float", default=0.5,
             dest="ad_tau_i_std", help="Std. deviation of inhibitory adaptation time constant (msec)")
-    optParser.add_option("--ad_i_g_inc", type=float, default=1.136e-8,
-            dest="ad_i_g_inc", help="After-spike inhibitory increase of leak
-            conductance (S)")
-    optParser.add_option("--deltaT_i", type=float, default=3,
-            dest="deltaT_i", help="Sharpness of exponential I&F neuron spike
-            initiation (inhibitory, mV)")
+    optParser.add_option("--ad_i_g_inc", type="float", default=1.136e-8,
+            dest="ad_i_g_inc", help="After-spike inhibitory increase of leak"
+            "conductance (S)")
+    optParser.add_option("--deltaT_i", type="float", default=3,
+            dest="deltaT_i", help="Sharpness of exponential I&F neuron spike"
+            "initiation (inhibitory, mV)")
 
     optParser.add_option("--tau_AMPA", type="float", default=1e-3,
             dest="tau_AMPA", help="Mean of AMPA synaptic conductance time constant (ms)")
@@ -93,25 +93,26 @@ def getOptParser():
     optParser.add_option("--noise_sigma", type="float", default=0.02,
             dest="noise_sigma", help="Std. dev of neural noise (mV)")
     optParser.add_option("--sigma_init_cond", type="float", default=10,
-            dest="sigma_init_cond", help="Std. dev distribution of initial
-            membrane voltages (mV)")
+            dest="sigma_init_cond", help="Std. dev distribution of initial"
+            "membrane voltages (mV)")
 
     optParser.add_option("--refrac_abs", type="float", default=1,
             dest="refrac_abs", help="Absolute refractory period (msec)")
 
     optParser.add_option("-t", "--time", type="float", default=5.0, dest="time",
             help="Total simulation time [seconds]")
-    optParser.add_option("--sim_dt", type=float, default=0.1, dest="sim_dt",
+    optParser.add_option("--sim_dt", type="float", default=0.1, dest="sim_dt",
             help="Simulation time step (ms)")
-    optParse.add_options("--spike_detect_th", type=float, default=40,
-            dest="spike_detect_th", help="Spike detection threshold during
-            numerical simulation (mV)")
+    optParser.add_option("--spike_detect_th", type="float", default=40,
+            dest="spike_detect_th", help="Spike detection threshold during"
+            "numerical simulation (mV)")
 
 
-    optParser.add_option("--output-dir", type="string", default="results/", dest="output_dir", help="Output directory path.")
-    optParser.add_option("-u", '--update-interval', type="float", default=5.0,
+    optParser.add_option("--output_dir", type="string", default="results/",
+            dest="output_dir", help="Output directory path.")
+    optParser.add_option("-u", '--update_interval', type="float", default=5.0,
             dest="update_interval", help="Duration between simulation status printouts")
-    optParser.add_option("-n", "--job-num", type="int", default=-1, dest="job_num",
+    optParser.add_option("-n", "--job_num", type="int", default=-1, dest="job_num",
             help="Use argument of this option to specify the output file name number, instead of using time")
 
     return optParser
