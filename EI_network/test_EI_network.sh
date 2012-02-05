@@ -14,6 +14,9 @@ Ni=100
 AMPA_density="0.1"
 GABA_density="0.8"
 
+Iext_e="900e-12"
+Iext_i="200e-12"
+
 taum_e="9.3"
 EL_e="-68.5"
 Vt_e="-50"
@@ -27,7 +30,7 @@ deltaT_e="3"
 taum_i="10"
 EL_i="-60"
 Vt_i="-50"
-Vr_i="$Vt_i"
+Vr_i="$EL_i"
 Rm_i="44"
 ad_tau_i_mean="7.5"
 ad_tau_i_std="0"  # Unused in the simulation for now
@@ -41,13 +44,16 @@ tau_GABA_rise="1"
 tau_GABA_fall="5"
 g_GABA_mean="0.5625"
 
+Vrev_AMPA=0
+Vrev_GABA=-75
+
 noise_sigma=0.02
 sigma_init_cond=10
 
 refrac_abs=1
 
-time=1
-sim_dt=0.05
+time=0.5
+sim_dt="0.1"
 spike_detect_th=40
 
 output_dir="output"
@@ -61,6 +67,8 @@ python test_EI_network.py \
 --Ni $Ni \
 --AMPA_density $AMPA_density \
 --GABA_density $GABA_density \
+--Iext_e $Iext_e \
+--Iext_i $Iext_i \
 --taum_e $taum_e \
 --EL_e $EL_e \
 --Vt_e $Vt_e \
@@ -85,6 +93,8 @@ python test_EI_network.py \
 --tau_GABA_rise $tau_GABA_rise \
 --tau_GABA_fall $tau_GABA_fall \
 --g_GABA_mean $g_GABA_mean \
+--Vrev_AMPA $Vrev_AMPA \
+--Vrev_GABA $Vrev_GABA \
 --noise_sigma $noise_sigma \
 --sigma_init_cond $sigma_init_cond \
 --refrac_abs $refrac_abs \

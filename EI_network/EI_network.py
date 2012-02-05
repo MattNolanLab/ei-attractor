@@ -44,7 +44,8 @@ class EI_Network:
 
         self.eqs_e = Equations('''
             dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
-            Im = gL*(EL-vm)*(1+g_ad/gL)+gL*deltaT*exp((vm-Vt)/deltaT) + (gi1 - gi2)*(Esyn - vm) + Iext  : amp
+            Im = gL*(EL-vm)*(1+g_ad/gL)+gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
+            Isyn = (gi1 - gi2)*(Esyn - vm) : amp
             dgi1/dt = -gi1/syn_tau1 : siemens
             dgi2/dt = -gi2/syn_tau2 : siemens
             dg_ad/dt = -g_ad/tau_ad : siemens
@@ -77,7 +78,8 @@ class EI_Network:
         
         self.eqs_i = Equations('''
             dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
-            Im = gL*(EL-vm)*(1+g_ad/gL)+gL*deltaT*exp((vm-Vt)/deltaT) + ge*(Esyn - vm) + Iext  : amp
+            Im = gL*(EL-vm)*(1+g_ad/gL)+gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
+            Isyn = ge*(Esyn - vm) : amp
             dge/dt = -ge/syn_tau : siemens
             dg_ad/dt = -g_ad/tau_ad : siemens
             Iext : amp
@@ -141,12 +143,8 @@ class EI_Network:
 
 
         # Initialize membrane potential randomly
-        if (noise_sigma == 0):
-            self.E_pop.vm = EL_e + (Vt_e-EL_e) * rand(len(self.E_pop))
-            self.I_pop.vm = EL_i + (Vt_i-EL_i) * rand(len(self.I_pop))
-        else:
-            self.E_pop.vm = EL_e + zeros(len(self.E_pop))
-            self.I_pop.vm = EL_i + zeros(len(self.I_pop))
+        self.E_pop.vm = EL_e + (Vt_e-EL_e) * rand(len(self.E_pop))
+        self.I_pop.vm = EL_i + (Vt_i-EL_i) * rand(len(self.I_pop))
 
 
         # Create network (withough any monitors
@@ -159,3 +157,11 @@ class EI_Network:
                 self.adaptConn_e,
                 self.adaptConn_i)
 
+        self.setBackgroundInput(o.Iext_e*amp, o.Iext_i*amp)
+
+        self.o = o
+
+
+    def setBackgroundInput(self, Iext_e, Iext_i):
+        self.E_pop.Iext = linspace(Iext_e, Iext_e, len(self.E_pop))
+        self.I_pop.Iext = linspace(Iext_i, Iext_i, len(self.I_pop))

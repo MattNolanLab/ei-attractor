@@ -27,8 +27,7 @@ print options
 # Clock definitions
 sim_dt = options.sim_dt*ms
 simulationClock = Clock(dt=sim_dt)
-SNClock = Clock(dt=10*ms)
-printStatusClock = Clock(dt=options.update_interval*second)
+#SNClock = Clock(dt=10*ms)
 
 
 
@@ -39,7 +38,7 @@ printStatusClock = Clock(dt=options.update_interval*second)
 print "Starting network and connections initialization..."
 start_time=time.time()
 
-net = EI_Network(options, simulationClock)
+ei_net = EI_Network(options, simulationClock)
 
 
 duration=time.time()-start_time
@@ -47,21 +46,35 @@ print "Network setup time:",duration,"seconds"
 #                            End Network setup
 ################################################################################
 
+spikeMon_e = SpikeMonitor(ei_net.E_pop)
+spikeMon_i = SpikeMonitor(ei_net.I_pop)
+stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = [1, 2, 3])
+stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = [1, 2, 3])
+stateMon_Isyn_e = StateMonitor(ei_net.E_pop, 'Isyn', record = [1, 2, 3])
+stateMon_Isyn_i = StateMonitor(ei_net.I_pop, 'Isyn', record = [1, 2, 3])
 
-## Velocity inputs - for now zero velocity
-#input = options.input
-#sheetGroup.B = linspace(input*namp, input*namp, sheet_size**2)
-#
-#spikeMonitor = SpikeMonitor(sheetGroup)
-#
-##printConn(sheet_size, inhibConn, options.write_data, options.print_only_conn)
-#
-#print "Simulation running..."
-#start_time=time.time()
-#net = Network(sheetGroup, inhibConn, printStatus, spikeMonitor)
-#
-#net.run(options.time*second)
-#duration=time.time()-start_time
-#print "Simulation time:",duration,"seconds"
-#
+ei_net.net.add(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i, stateMon_Isyn_e,
+        stateMon_Isyn_i)
+
+print "Simulation running..."
+start_time=time.time()
+
+ei_net.net.run(options.time*second)
+duration=time.time()-start_time
+print "Simulation time:",duration,"seconds"
+
+figure()
+raster_plot(spikeMon_e, spikeMon_i)
+
+figure()
+stateMon_e.plot()
+figure()
+stateMon_Isyn_e.plot()
+figure()
+stateMon_i.plot()
+figure()
+stateMon_Isyn_i.plot()
+
+show()
+
 #saveResultsToMat(options, None, spikeMonitor, None, None)
