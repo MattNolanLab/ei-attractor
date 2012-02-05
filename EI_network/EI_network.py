@@ -14,32 +14,37 @@ import time
 import math
 import random
 
+def AMPA_p(i, j, mu, sigma):
+    return np.exp(-(abs(i-j) - mu)**2/2.0/sigma**2)
+
+def GABA_p(i, j, sigma):
+    return np.exp(-(abs(i-j))**2/2.0/sigma**2)
 
 
 class EI_Network:
     def __init__(self, o, clk):
 
-        noise_sigma=o.noise_sigma*mvolt
+        noise_sigma=o.noise_sigma*volt
 
         # Setup neuron equations
         # Using exponential integrate and fire model
         # Excitatory population
-        Rm_e = o.Rm_e*Mohm
-        taum_e = o.taum_e*msecond
+        Rm_e = o.Rm_e*ohm
+        taum_e = o.taum_e*second
         Ce = taum_e/Rm_e
-        EL_e = o.EL_e*mV
-        deltaT_e = o.deltaT_e*mvolt
-        Vt_e = o.Vt_e*mV
-        Vr_e = o.Vr_e*mV
-        tau_GABA_rise = o.tau_GABA_rise*msecond
-        tau_GABA_fall = o.tau_GABA_fall*msecond
+        EL_e = o.EL_e*volt
+        deltaT_e = o.deltaT_e*volt
+        Vt_e = o.Vt_e*volt
+        Vr_e = o.Vr_e*volt
+        tau_GABA_rise = o.tau_GABA_rise*second
+        tau_GABA_fall = o.tau_GABA_fall*second
         tau1_GABA = tau_GABA_fall
         tau2_GABA = tau_GABA_rise*tau_GABA_fall / (tau_GABA_rise + tau_GABA_fall);
         B_GABA = 1/((tau2_GABA/tau1_GABA)**(tau_GABA_rise/tau1_GABA) - 
                 (tau2_GABA/tau1_GABA)**(tau_GABA_rise/tau2_GABA))
-        tau_ad_e = o.ad_tau_e_mean*msecond
+        tau_ad_e = o.ad_tau_e_mean*second
         
-        Vrev_GABA = o.Vrev_GABA*mV
+        Vrev_GABA = o.Vrev_GABA*volt
 
 
         self.eqs_e = Equations('''
@@ -65,20 +70,20 @@ class EI_Network:
 
 
         # Inhibitory population
-        Rm_i = o.Rm_i*Mohm
-        taum_i = o.taum_i*msecond
+        Rm_i = o.Rm_i*ohm
+        taum_i = o.taum_i*second
         Ci = taum_i/Rm_i
-        EL_i = o.EL_i*mV
-        deltaT_i = o.deltaT_i*mV
-        Vt_i = o.Vt_i*mV
-        Vr_i = o.Vr_i*mV
-        Vrev_AMPA = o.Vrev_AMPA*mV
-        tau_AMPA = o.tau_AMPA*msecond
-        tau_ad_i = o.ad_tau_i_mean*msecond
+        EL_i = o.EL_i*volt
+        deltaT_i = o.deltaT_i*volt
+        Vt_i = o.Vt_i*volt
+        Vr_i = o.Vr_i*volt
+        Vrev_AMPA = o.Vrev_AMPA*volt
+        tau_AMPA = o.tau_AMPA*second
+        tau_ad_i = o.ad_tau_i_mean*second
         
         self.eqs_i = Equations('''
             dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
-            Im = gL*(EL-vm)*(1+g_ad/gL)+gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
+            Im = gL*(EL-vm)*(1+g_ad/gL) + gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
             Isyn = ge*(Esyn - vm) : amp
             dge/dt = -ge/syn_tau : siemens
             dg_ad/dt = -g_ad/tau_ad : siemens
@@ -87,7 +92,7 @@ class EI_Network:
             C=Ci,
             gL=1/Rm_i,
             noise_sigma=noise_sigma,
-            taum=taum_e,
+            taum=taum_i,
             EL=EL_i,
             deltaT=deltaT_i,
             Vt=Vt_i,
@@ -97,11 +102,13 @@ class EI_Network:
 
 
         # Other constants
-        refrac_abs = o.refrac_abs*msecond
-        spike_detect_th = o.spike_detect_th*mV
+        refrac_abs = o.refrac_abs*second
+        spike_detect_th = o.spike_detect_th*volt
 
-        g_AMPA_sigma = np.sqrt(np.log(1 + o.g_AMPA_std**2/o.g_AMPA_mean**2))
-        g_AMPA_mu = np.log(o.g_AMPA_mean) - 1/2*g_AMPA_sigma**2
+        #g_AMPA_sigma = np.sqrt(np.log(1 + o.g_AMPA_std**2/o.g_AMPA_mean**2))
+        #g_AMPA_mu = np.log(o.g_AMPA_mean) - 1/2*g_AMPA_sigma**2
+        g_AMPA_mean = o.g_AMPA_mean * siemens
+        g_GABA_mean = o.g_GABA_mean * siemens
 
 
 
@@ -123,12 +130,23 @@ class EI_Network:
                 clock=clk)
 
         self.AMPA_conn = Connection(self.E_pop, self.I_pop, 'ge')
-        self.AMPA_conn.connect_random(self.E_pop, self.I_pop, o.AMPA_density,
-                weight=lambda:np.random.lognormal(g_AMPA_mu, g_AMPA_sigma)*nS)
+        for i in xrange(o.Ne):
+            e_norm = np.double(i)/o.Ne
+            i_norm = np.double(np.arange(o.Ni))/o.Ni
+
+            self.AMPA_conn.W.rows[i] = list((rand(o.Ni) < o.AMPA_density*AMPA_p(e_norm, i_norm,
+                0.25, 0.5/6)).nonzero()[0])
+            self.AMPA_conn.W.data[i] = [g_AMPA_mean] * len(self.AMPA_conn.W.rows[i])
 
         self.GABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
-        self.GABA_conn1.connect_random(self.I_pop, self.E_pop, o.GABA_density,
-                weight=o.g_GABA_mean*nS)
+        for i in xrange(o.Ni):
+            i_norm = np.double(i)/o.Ni
+            e_norm = np.double(np.arange(o.Ne))/o.Ne
+
+            self.GABA_conn1.W.rows[i] = list((rand(o.Ne) < o.GABA_density*GABA_p(i_norm, e_norm,
+                0.5/10)).nonzero()[0])
+            self.GABA_conn1.W.data[i] = [B_GABA*g_GABA_mean] * len(self.GABA_conn1.W.rows[i])
+
         self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
         self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W)
 

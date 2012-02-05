@@ -25,7 +25,7 @@ print "Options:"
 print options
 
 # Clock definitions
-sim_dt = options.sim_dt*ms
+sim_dt = options.sim_dt*second
 simulationClock = Clock(dt=sim_dt)
 #SNClock = Clock(dt=10*ms)
 
@@ -48,10 +48,10 @@ print "Network setup time:",duration,"seconds"
 
 spikeMon_e = SpikeMonitor(ei_net.E_pop)
 spikeMon_i = SpikeMonitor(ei_net.I_pop)
-stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = [1, 2, 3])
-stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = [1, 2, 3])
-stateMon_Isyn_e = StateMonitor(ei_net.E_pop, 'Isyn', record = [1, 2, 3])
-stateMon_Isyn_i = StateMonitor(ei_net.I_pop, 'Isyn', record = [1, 2, 3])
+stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = [500])
+stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = [500])
+stateMon_Isyn_e = StateMonitor(ei_net.E_pop, 'Isyn', record = [500])
+stateMon_Isyn_i = StateMonitor(ei_net.I_pop, 'Isyn', record = [500])
 
 ei_net.net.add(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i, stateMon_Isyn_e,
         stateMon_Isyn_i)

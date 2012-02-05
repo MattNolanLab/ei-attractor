@@ -37,80 +37,80 @@ def getOptParser():
             help="External background current into the inhibitory population (A)")
 
     optParser.add_option("--taum_e", type="float", dest="taum_e",
-            help="Mean of excitatory neuron membrane time constant (ms)")
+            help="Mean of excitatory neuron membrane time constant (s)")
     optParser.add_option("--EL_e", type="float", dest="EL_e",
-            help="Mean resting membrane potential of excitatory neurons (mV)")
+            help="Mean resting membrane potential of excitatory neurons (V)")
     optParser.add_option("--Vt_e", type="float", dest="Vt_e",
-            help="Mean of the excitatory integrate and fire spiking threshold (mV)")
+            help="Mean of the excitatory integrate and fire spiking threshold (V)")
     optParser.add_option("--Vr_e", type="float", dest="Vr_e",
-            help="Mean of the excitatory integrate and fire reset potential (mV)")
+            help="Mean of the excitatory integrate and fire reset potential (V)")
     optParser.add_option("--Rm_e", type="float", dest="Rm_e",
-            help="Mean of excitatory membrane resistance (MOhm)")
+            help="Mean of excitatory membrane resistance (Ohm)")
     optParser.add_option("--ad_tau_e_mean", type="float",
-            dest="ad_tau_e_mean", help="Mean of excitatory adaptation time constant (msec)")
+            dest="ad_tau_e_mean", help="Mean of excitatory adaptation time constant (sec)")
     optParser.add_option("--ad_tau_e_std", type="float",
-            dest="ad_tau_e_std", help="Std. deviation of excitatory adaptation time constant (msec)")
+            dest="ad_tau_e_std", help="Std. deviation of excitatory adaptation time constant (sec)")
     optParser.add_option("--ad_e_g_inc", type="float",
             dest="ad_e_g_inc", help="After-spike excitatory increase of leak conductance (Siemens)")
     optParser.add_option("--deltaT_e", type="float",
             dest="deltaT_e", help="Sharpness of exponential I&F neuron spike"
-            "initiation (excitatory, mV)")
+            "initiation (excitatory, V)")
 
     optParser.add_option("--taum_i", type="float", dest="taum_i",
-            help="Mean of inhibitory neuron membrane time constant (ms)")
+            help="Mean of inhibitory neuron membrane time constant (s)")
     optParser.add_option("--EL_i", type="float", dest="EL_i",
-            help="Mean resting membrane potential of inhibitory neurons (mV)")
+            help="Mean resting membrane potential of inhibitory neurons (V)")
     optParser.add_option("--Vt_i", type="float", dest="Vt_i",
-            help="Mean of the excitatory integrate and fire spiking threshold (mV)")
+            help="Mean of the excitatory integrate and fire spiking threshold (V)")
     optParser.add_option("--Vr_i", type="float", dest="Vr_i",
-            help="Mean of the inhibitory integrate and fire reset potential (mV)")
+            help="Mean of the inhibitory integrate and fire reset potential (V)")
     optParser.add_option("--Rm_i", type="float", dest="Rm_i",
-            help="Mean of inhibitory membrane resistance (MOhm)")
+            help="Mean of inhibitory membrane resistance (Ohm)")
     optParser.add_option("--ad_tau_i_mean", type="float",
-            dest="ad_tau_i_mean", help="Mean of inhibitory adaptation time constant (msec)")
+            dest="ad_tau_i_mean", help="Mean of inhibitory adaptation time constant (sec)")
     optParser.add_option("--ad_tau_i_std", type="float",
-            dest="ad_tau_i_std", help="Std. deviation of inhibitory adaptation time constant (msec)")
+            dest="ad_tau_i_std", help="Std. deviation of inhibitory adaptation time constant (sec)")
     optParser.add_option("--ad_i_g_inc", type="float",
             dest="ad_i_g_inc", help="After-spike inhibitory increase of leak"
             "conductance (S)")
     optParser.add_option("--deltaT_i", type="float",
             dest="deltaT_i", help="Sharpness of exponential I&F neuron spike"
-            "initiation (inhibitory, mV)")
+            "initiation (inhibitory, V)")
 
     optParser.add_option("--tau_AMPA", type="float",
-            dest="tau_AMPA", help="Mean of AMPA synaptic conductance time constant (ms)")
+            dest="tau_AMPA", help="Mean of AMPA synaptic conductance time constant (s)")
     optParser.add_option("--g_AMPA_mean", type="float", dest="g_AMPA_mean",
-            help="Mean of AMPA connection synaptic conductance (nS)")
+            help="Mean of AMPA connection synaptic conductance (S)")
     optParser.add_option("--g_AMPA_std", type="float", dest="g_AMPA_std",
-            help="Std. deviation of AMPA connections synaptic conductance (nS)")
+            help="Std. deviation of AMPA connections synaptic conductance (S)")
     optParser.add_option("--tau_GABA_rise", type="float",
-            dest="tau_GABA_rise", help="Mean of GABA rising time constant (ms)")
+            dest="tau_GABA_rise", help="Mean of GABA rising time constant (s)")
     optParser.add_option("--tau_GABA_fall", type="float",
-            dest="tau_GABA_fall", help="Mean of GABA fall time constant (ms)")
+            dest="tau_GABA_fall", help="Mean of GABA fall time constant (s)")
     optParser.add_option("--g_GABA_mean", type="float", dest="g_GABA_mean",
-            help="Mean of GABA connections synaptic conductance (nS)")
+            help="Mean of GABA connections synaptic conductance (S)")
 
     optParser.add_option("--Vrev_AMPA", type="float", dest="Vrev_AMPA",
-            help="AMPA reversal potential (mV)")
+            help="AMPA reversal potential (V)")
     optParser.add_option("--Vrev_GABA", type="float",
-            dest="Vrev_GABA", help="GABA reversal potential (mV)")
+            dest="Vrev_GABA", help="GABA reversal potential (V)")
 
     optParser.add_option("--noise_sigma", type="float",
-            dest="noise_sigma", help="Std. dev of neural noise (mV)")
+            dest="noise_sigma", help="Std. dev of neural noise (V)")
     optParser.add_option("--sigma_init_cond", type="float",
             dest="sigma_init_cond", help="Std. dev distribution of initial"
-            "membrane voltages (mV)")
+            "membrane voltages (V)")
 
     optParser.add_option("--refrac_abs", type="float",
-            dest="refrac_abs", help="Absolute refractory period (msec)")
+            dest="refrac_abs", help="Absolute refractory period (sec)")
 
     optParser.add_option("-t", "--time", type="float", dest="time",
             help="Total simulation time [seconds]")
     optParser.add_option("--sim_dt", type="float", dest="sim_dt",
-            help="Simulation time step (ms)")
+            help="Simulation time step (s)")
     optParser.add_option("--spike_detect_th", type="float",
             dest="spike_detect_th", help="Spike detection threshold during"
-            "numerical simulation (mV)")
+            "numerical simulation (V)")
 
 
     optParser.add_option("--output_dir", type="string",

@@ -9,52 +9,52 @@ export PYTHONPATH="$BASE"
 echo $PYTHONPATH
 
 Ne=1000
-Ni=100
+Ni=1000
 
-AMPA_density="0.1"
-GABA_density="0.8"
+AMPA_density="0.75"
+GABA_density="0.75"
 
-Iext_e="900e-12"
-Iext_i="200e-12"
+Iext_e="700e-12"
+Iext_i="25e-12"
 
-taum_e="9.3"
-EL_e="-68.5"
-Vt_e="-50"
+taum_e="9.3e-3"
+EL_e="-68.5e-3"
+Vt_e="-50e-3"
 Vr_e=$EL_e
-Rm_e="44"
-ad_tau_e_mean="40"
-ad_tau_e_std="0"
+Rm_e="44e6"
+ad_tau_e_mean="40e-3"
+ad_tau_e_std="0e-3"
 ad_e_g_inc="1.136e-8"
-deltaT_e="3"
+deltaT_e="1.5e-3"
 
-taum_i="10"
-EL_i="-60"
-Vt_i="-50"
+taum_i="10e-3"
+EL_i="-60e-3"
+Vt_i="-55e-3"
 Vr_i="$EL_i"
-Rm_i="44"
-ad_tau_i_mean="7.5"
-ad_tau_i_std="0"  # Unused in the simulation for now
+Rm_i="44e6"
+ad_tau_i_mean="7.5e-3"
+ad_tau_i_std="0e-3"  # Unused in the simulation for now
 ad_i_g_inc="2.27e-8"
-deltaT_i="3"
+deltaT_i="1.5e-3"
 
-tau_AMPA="1"
-g_AMPA_mean="0.135"
-g_AMPA_std="0.6"
-tau_GABA_rise="1"
-tau_GABA_fall="5"
-g_GABA_mean="0.5625"
+tau_AMPA="1e-3"
+g_AMPA_mean="100e-12"
+g_AMPA_std="0.3e-9"
+tau_GABA_rise="1e-3"
+tau_GABA_fall="5e-3"
+g_GABA_mean="1.0e-9"
 
-Vrev_AMPA=0
-Vrev_GABA=-75
+Vrev_AMPA="0e-3"
+Vrev_GABA="-75e-3"
 
-noise_sigma=0.02
-sigma_init_cond=10
+noise_sigma="2.0e-3"
+sigma_init_cond="10e-3"
 
-refrac_abs=1
+refrac_abs="0.1e-3"
 
-time=0.5
-sim_dt="0.1"
-spike_detect_th=40
+time=1
+sim_dt="0.1e-3"
+spike_detect_th="20e-3"
 
 output_dir="output"
 update_interval=5
@@ -62,7 +62,7 @@ job_num=1
 
 
 
-python test_EI_network.py \
+python -i test_EI_network.py \
 --Ne $Ne \
 --Ni $Ni \
 --AMPA_density $AMPA_density \
