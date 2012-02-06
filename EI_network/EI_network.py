@@ -105,9 +105,9 @@ class EI_Network:
         refrac_abs = o.refrac_abs*second
         spike_detect_th = o.spike_detect_th*volt
 
-        #g_AMPA_sigma = np.sqrt(np.log(1 + o.g_AMPA_std**2/o.g_AMPA_mean**2))
-        #g_AMPA_mu = np.log(o.g_AMPA_mean) - 1/2*g_AMPA_sigma**2
-        g_AMPA_mean = o.g_AMPA_mean * siemens
+        g_AMPA_sigma = np.sqrt(np.log(1 + o.g_AMPA_std**2/o.g_AMPA_mean**2))
+        g_AMPA_mu = np.log(o.g_AMPA_mean) - 1/2*g_AMPA_sigma**2
+        #g_AMPA_mean = o.g_AMPA_mean * siemens
         g_GABA_mean = o.g_GABA_mean * siemens
 
 
@@ -135,8 +135,9 @@ class EI_Network:
             i_norm = np.double(np.arange(o.Ni))/o.Ni
 
             self.AMPA_conn.W.rows[i] = list((rand(o.Ni) < o.AMPA_density*AMPA_p(e_norm, i_norm,
-                0.25, 0.5/6)).nonzero()[0])
-            self.AMPA_conn.W.data[i] = [g_AMPA_mean] * len(self.AMPA_conn.W.rows[i])
+                0.5, 1.0/6)).nonzero()[0])
+            self.AMPA_conn.W.data[i] = np.random.lognormal(g_AMPA_mu,
+                    g_AMPA_sigma, len(self.AMPA_conn.W.rows[i]))*siemens
 
         self.GABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
         for i in xrange(o.Ni):
@@ -144,7 +145,7 @@ class EI_Network:
             e_norm = np.double(np.arange(o.Ne))/o.Ne
 
             self.GABA_conn1.W.rows[i] = list((rand(o.Ne) < o.GABA_density*GABA_p(i_norm, e_norm,
-                0.5/10)).nonzero()[0])
+                0.5/6)).nonzero()[0])
             self.GABA_conn1.W.data[i] = [B_GABA*g_GABA_mean] * len(self.GABA_conn1.W.rows[i])
 
         self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')

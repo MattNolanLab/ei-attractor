@@ -46,15 +46,19 @@ print "Network setup time:",duration,"seconds"
 #                            End Network setup
 ################################################################################
 
+state_record = 500
+
 spikeMon_e = SpikeMonitor(ei_net.E_pop)
 spikeMon_i = SpikeMonitor(ei_net.I_pop)
-stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = [500])
-stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = [500])
-stateMon_Isyn_e = StateMonitor(ei_net.E_pop, 'Isyn', record = [500])
-stateMon_Isyn_i = StateMonitor(ei_net.I_pop, 'Isyn', record = [500])
+stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = state_record)
+stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = state_record)
+stateMon_Isyn_e = StateMonitor(ei_net.E_pop, 'Isyn', record = state_record)
+stateMon_Isyn_i = StateMonitor(ei_net.I_pop, 'Isyn', record = state_record)
+stateMon_g_ad_e = StateMonitor(ei_net.E_pop, 'g_ad', record = state_record)
+stateMon_g_ad_i = StateMonitor(ei_net.I_pop, 'g_ad', record = state_record)
 
 ei_net.net.add(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i, stateMon_Isyn_e,
-        stateMon_Isyn_i)
+        stateMon_Isyn_i, stateMon_g_ad_e, stateMon_g_ad_i)
 
 print "Simulation running..."
 start_time=time.time()
@@ -70,10 +74,14 @@ figure()
 stateMon_e.plot()
 figure()
 stateMon_Isyn_e.plot()
+#figure()
+#stateMon_g_ad_e.plot()
 figure()
 stateMon_i.plot()
 figure()
 stateMon_Isyn_i.plot()
+#figure()
+#stateMon_g_ad_i.plot()
 
 show()
 
