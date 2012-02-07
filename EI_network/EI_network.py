@@ -14,11 +14,11 @@ import time
 import math
 import random
 
-def AMPA_p(i, j, mu, sigma):
-    return np.exp(-(abs(i-j) - mu)**2/2.0/sigma**2)
-
-def GABA_p(i, j, sigma):
-    return np.exp(-(abs(i-j))**2/2.0/sigma**2)
+#def AMPA_p(i, j, mu, sigma):
+#    return np.exp(-(abs(i-j) - mu)**2/2.0/sigma**2)
+#
+#def GABA_p(i, j, sigma):
+#    return np.exp(-(abs(i-j))**2/2.0/sigma**2)
 
 
 class EI_Network:
@@ -129,24 +129,32 @@ class EI_Network:
                 refractory=refrac_abs,
                 clock=clk)
 
+        # Generate connection-probability profile functions for GABA and AMPA connections
+        self.pAMPA_mu = 0.5 * o.Ni
+        self.pAMPA_sigma = 0.5/3 * o.Ni
+        self.pGABA_sigma = 0.25/6 * o.Ne
+
+        self.generate_pAMPA_template(o.Ni, self.pAMPA_mu, self.pAMPA_sigma)
+        self.generate_pGABA_template(o.Ne, self.pGABA_sigma)
+
         self.AMPA_conn = Connection(self.E_pop, self.I_pop, 'ge')
         for i in xrange(o.Ne):
-            e_norm = np.double(i)/o.Ne
-            i_norm = np.double(np.arange(o.Ni))/o.Ni
+            e_norm = int(round(np.double(i)/o.Ne*o.Ni))
 
-            self.AMPA_conn.W.rows[i] = list((rand(o.Ni) < o.AMPA_density*AMPA_p(e_norm, i_norm,
-                0.5, 1.0/6)).nonzero()[0])
+            self.AMPA_conn.W.rows[i] = list((rand(o.Ni) <
+                o.AMPA_density*self.pAMPA_templ).nonzero()[0])
             self.AMPA_conn.W.data[i] = np.random.lognormal(g_AMPA_mu,
                     g_AMPA_sigma, len(self.AMPA_conn.W.rows[i]))*siemens
+            self.pAMPA_templ = np.roll(self.pAMPA_templ, 1)
 
         self.GABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
         for i in xrange(o.Ni):
-            i_norm = np.double(i)/o.Ni
-            e_norm = np.double(np.arange(o.Ne))/o.Ne
+            i_norm = int(round(np.double(i)/o.Ni*o.Ne))
 
-            self.GABA_conn1.W.rows[i] = list((rand(o.Ne) < o.GABA_density*GABA_p(i_norm, e_norm,
-                0.5/6)).nonzero()[0])
+            self.GABA_conn1.W.rows[i] = list((rand(o.Ne) <
+                o.GABA_density*self.pGABA_templ).nonzero()[0])
             self.GABA_conn1.W.data[i] = [B_GABA*g_GABA_mean] * len(self.GABA_conn1.W.rows[i])
+            self.pGABA_templ = np.roll(self.pGABA_templ, 1)
 
         self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
         self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W)
@@ -184,3 +192,21 @@ class EI_Network:
     def setBackgroundInput(self, Iext_e, Iext_i):
         self.E_pop.Iext = linspace(Iext_e, Iext_e, len(self.E_pop))
         self.I_pop.Iext = linspace(Iext_i, Iext_i, len(self.I_pop))
+
+    def generate_pAMPA_template(self, N, mu, sigma):
+        '''Generate AMPA probability profile function on an interval [0, N-1]. For
+        now it will be a Gaussian profile, with mean mu and std. dev. sigma. The
+        boundaries are wrapped-around (N==0). This is distance-dependent
+        profile, which take wrap around boundaries into account.'''
+        self.pAMPA_templ = np.exp(-(np.arange(N/2+1) - mu)**2/2.0/sigma**2)
+        self.pAMPA_templ = np.concatenate((self.pAMPA_templ,
+            self.pAMPA_templ[1:N/2][::-1]))
+        
+    def generate_pGABA_template(self, N, sigma):
+        '''Generate GABA probability profile function on an interval [0, N-1].
+        It is similar to generate_pAMPA_template but the mean is 0'''
+        self.pGABA_templ = np.exp(-(np.arange(N/2+1))**2/2.0/sigma**2)
+        self.pGABA_templ = np.concatenate((self.pGABA_templ,
+            self.pGABA_templ[1:N/2][::-1]))
+
+

@@ -8,21 +8,21 @@
 export PYTHONPATH="$BASE"
 echo $PYTHONPATH
 
-Ne=1000
-Ni=1000
+Ne=500
+Ni=500
 
 AMPA_density="0.8"
 GABA_density="0.8"
 
-Iext_e="600e-12"
-Iext_i="200e-12"
+Iext_e="475e-12"
+Iext_i="100e-12"
 
 taum_e="9.3e-3"
 EL_e="-68.5e-3"
 Vt_e="-50e-3"
 Vr_e=$EL_e
 Rm_e="44e6"
-ad_tau_e_mean="20e-3"
+ad_tau_e_mean="1e-3"
 ad_tau_e_std="0e-3"
 ad_e_g_inc="1.136e-8"
 deltaT_e="1.5e-3"
@@ -38,11 +38,11 @@ ad_i_g_inc="2.27e-8"
 deltaT_i="1.5e-3"
 
 tau_AMPA="2e-3"
-g_AMPA_mean="240e-12"
-g_AMPA_std="50e-12"
+g_AMPA_mean="700e-12"
+g_AMPA_std="0.0001e-12"
 tau_GABA_rise="1e-3"
 tau_GABA_fall="9e-3"
-g_GABA_mean="120e-12"
+g_GABA_mean="400e-12"
 
 Vrev_AMPA="0e-3"
 Vrev_GABA="-75e-3"
@@ -52,7 +52,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=10
+time=20
 sim_dt="0.1e-3"
 spike_detect_th="20e-3"
 
