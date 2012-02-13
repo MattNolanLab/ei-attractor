@@ -8,8 +8,8 @@
 export PYTHONPATH="$BASE"
 echo $PYTHONPATH
 
-Ne=500
-Ni=500
+Ne=1000
+Ni=1000
 
 AMPA_density="0.8"
 GABA_density="0.8"
@@ -39,7 +39,7 @@ deltaT_i="1.5e-3"
 
 tau_AMPA="2e-3"
 g_AMPA_mean="700e-12"
-g_AMPA_std="0.0001e-12"
+g_AMPA_std="50e-12"
 tau_GABA_rise="1e-3"
 tau_GABA_fall="9e-3"
 g_GABA_mean="400e-12"
@@ -47,12 +47,12 @@ g_GABA_mean="400e-12"
 Vrev_AMPA="0e-3"
 Vrev_GABA="-75e-3"
 
-noise_sigma="2.0e-3"
+noise_sigma="0.5e-3"
 sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=20
+time=2
 sim_dt="0.1e-3"
 spike_detect_th="20e-3"
 

@@ -130,8 +130,8 @@ class EI_Network:
                 clock=clk)
 
         # Generate connection-probability profile functions for GABA and AMPA connections
-        self.pAMPA_mu = 0.5 * o.Ni
-        self.pAMPA_sigma = 0.5/3 * o.Ni
+        self.pAMPA_mu = 0.25 * o.Ni
+        self.pAMPA_sigma = 0.5/12 * o.Ni
         self.pGABA_sigma = 0.25/6 * o.Ne
 
         self.generate_pAMPA_template(o.Ni, self.pAMPA_mu, self.pAMPA_sigma)
