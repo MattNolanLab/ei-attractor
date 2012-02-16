@@ -79,15 +79,15 @@ def getOptParser():
 
     optParser.add_option("--tau_AMPA", type="float",
             dest="tau_AMPA", help="Mean of AMPA synaptic conductance time constant (s)")
-    optParser.add_option("--g_AMPA_mean", type="float", dest="g_AMPA_mean",
-            help="Mean of AMPA connection synaptic conductance (S)")
+    optParser.add_option("--g_AMPA_total", type="float",
+            help="Mean of total AMPA connection synaptic conductance (S)")
     optParser.add_option("--g_AMPA_std", type="float", dest="g_AMPA_std",
             help="Std. deviation of AMPA connections synaptic conductance (S)")
     optParser.add_option("--tau_GABA_rise", type="float",
             dest="tau_GABA_rise", help="Mean of GABA rising time constant (s)")
     optParser.add_option("--tau_GABA_fall", type="float",
             dest="tau_GABA_fall", help="Mean of GABA fall time constant (s)")
-    optParser.add_option("--g_GABA_mean", type="float", dest="g_GABA_mean",
+    optParser.add_option("--g_GABA_total", type="float",
             help="Mean of GABA connections synaptic conductance (S)")
 
     optParser.add_option("--Vrev_AMPA", type="float", dest="Vrev_AMPA",

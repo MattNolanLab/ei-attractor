@@ -8,8 +8,8 @@
 export PYTHONPATH="$BASE"
 echo $PYTHONPATH
 
-Ne=1000
-Ni=1000
+Ne=250
+Ni=60
 
 AMPA_density="0.8"
 GABA_density="0.8"
@@ -38,11 +38,11 @@ ad_i_g_inc="2.27e-8"
 deltaT_i="1.5e-3"
 
 tau_AMPA="2e-3"
-g_AMPA_mean="700e-12"
+g_AMPA_total="700e-9"
 g_AMPA_std="50e-12"
 tau_GABA_rise="1e-3"
 tau_GABA_fall="9e-3"
-g_GABA_mean="400e-12"
+g_GABA_total="400e-9"
 
 Vrev_AMPA="0e-3"
 Vrev_GABA="-75e-3"
@@ -52,11 +52,11 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=2
+time=5
 sim_dt="0.1e-3"
 spike_detect_th="20e-3"
 
-output_dir="output"
+output_dir="output_local"
 update_interval=5
 job_num=1
 
@@ -88,11 +88,11 @@ python -i test_EI_network.py \
 --ad_i_g_inc $ad_i_g_inc \
 --deltaT_i $deltaT_i \
 --tau_AMPA $tau_AMPA \
---g_AMPA_mean $g_AMPA_mean \
+--g_AMPA_total $g_AMPA_total \
 --g_AMPA_std $g_AMPA_std \
 --tau_GABA_rise $tau_GABA_rise \
 --tau_GABA_fall $tau_GABA_fall \
---g_GABA_mean $g_GABA_mean \
+--g_GABA_total $g_GABA_total \
 --Vrev_AMPA $Vrev_AMPA \
 --Vrev_GABA $Vrev_GABA \
 --noise_sigma $noise_sigma \

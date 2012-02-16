@@ -46,7 +46,7 @@ print "Network setup time:",duration,"seconds"
 
 stim_start = int(0.4*ei_net.o.Ne)
 stim_range = int(0.2*ei_net.o.Ne)
-stim_current = 1200*pA
+stim_current = 0*pA
 
 @network_operation(stimClock)
 def stimulateSubPopulation():
@@ -57,7 +57,7 @@ def stimulateSubPopulation():
         ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
 
 
-state_record = [0, 250]
+state_record = [0]
 
 spikeMon_e = SpikeMonitor(ei_net.E_pop)
 spikeMon_i = SpikeMonitor(ei_net.I_pop)
@@ -79,23 +79,41 @@ ei_net.net.run(options.time*second)
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
 
-figure()
-stateMon_e.plot()
-figure()
-stateMon_Isyn_e.plot()
+figSize = (12,8)
+
+#figure(figsize=figSize)
+#stateMon_e.plot()
+#figure()
+#stateMon_Isyn_e.plot()
 #figure()
 #stateMon_g_ad_e.plot()
-figure()
-stateMon_i.plot()
-figure()
-stateMon_Isyn_i.plot()
+#figure()
+#stateMon_i.plot()
+#figure()
+#stateMon_Isyn_i.plot()
 #figure()
 #stateMon_g_ad_i.plot()
 
-figure()
-raster_plot(spikeMon_e, spikeMon_i)
+f = figure(figsize=figSize)
+subplot2grid((5,1), (0, 0), rowspan=4)
+raster_plot(spikeMon_e)
+title('Network size: ' + str(ei_net.o.Ne) + '(E), ' + str(ei_net.o.Ni) + '(I)')
+ylabel('Neuron no. (E)')
+xlim((0, ei_net.o.time*1000))
+xlabel('')
+subplot2grid((5,1), (4, 0), rowspan=1)
+raster_plot(spikeMon_i)
+ylabel('Neuron no. (I)')
+xlim((0, ei_net.o.time*1000))
 
+timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+dirName = options.output_dir
 
-show()
+output_fname = dirName
+if options.job_num != -1:
+    output_fname = output_fname + '/job' + str(options.job_num)
+output_fname += '_Ne_' + str(ei_net.o.Ne)
+output_fname +=  '_' + timeSnapshot + '_raster_plot.pdf'
 
-#saveResultsToMat(options, None, spikeMonitor, None, None)
+f.savefig(output_fname)
+
