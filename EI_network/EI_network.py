@@ -14,11 +14,6 @@ import time
 import math
 import random
 
-#def AMPA_p(i, j, mu, sigma):
-#    return np.exp(-(abs(i-j) - mu)**2/2.0/sigma**2)
-#
-#def GABA_p(i, j, sigma):
-#    return np.exp(-(abs(i-j))**2/2.0/sigma**2)
 
 
 class EI_Network:
@@ -105,12 +100,6 @@ class EI_Network:
         refrac_abs = o.refrac_abs*second
         spike_detect_th = o.spike_detect_th*volt
 
-        g_AMPA_mean = o.g_AMPA_total/o.Ne
-        g_AMPA_sigma = np.sqrt(np.log(1 + o.g_AMPA_std**2/g_AMPA_mean**2))
-        g_AMPA_mu = np.log(g_AMPA_mean) - 1/2*g_AMPA_sigma**2
-        #g_AMPA_mean = o.g_AMPA_mean * siemens
-        g_GABA_mean = o.g_GABA_total / o.Ni * siemens
-
 
 
         # Setup neuron groups and connections
@@ -130,37 +119,6 @@ class EI_Network:
                 refractory=refrac_abs,
                 clock=clk)
 
-        # Generate connection-probability profile functions for GABA and AMPA connections
-        self.pAMPA_mu = 0.4 * o.Ni
-        self.pAMPA_sigma = 0.5/6 * o.Ni
-        self.pGABA_sigma = 0.25/6 * o.Ne
-
-        self.generate_pAMPA_template(o.Ni, self.pAMPA_mu, self.pAMPA_sigma)
-        self.generate_pGABA_template(o.Ne, self.pGABA_sigma)
-
-        self.AMPA_conn = Connection(self.E_pop, self.I_pop, 'ge')
-        for i in xrange(o.Ne):
-            e_norm = int(round(np.double(i)/o.Ne*o.Ni))
-
-            tmp_templ = np.roll(self.pAMPA_templ, e_norm)
-            self.AMPA_conn.W.rows[i] = list((rand(o.Ni) <
-                o.AMPA_density*tmp_templ).nonzero()[0])
-            self.AMPA_conn.W.data[i] = np.random.lognormal(g_AMPA_mu,
-                    g_AMPA_sigma, len(self.AMPA_conn.W.rows[i]))*siemens
-
-        self.GABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
-        for i in xrange(o.Ni):
-            i_norm = int(round(np.double(i)/o.Ni*o.Ne))
-            
-
-            tmp_templ = np.roll(self.pGABA_templ, i_norm)
-            self.GABA_conn1.W.rows[i] = list((rand(o.Ne) <
-                o.GABA_density*tmp_templ).nonzero()[0])
-            self.GABA_conn1.W.data[i] = [B_GABA*g_GABA_mean] * len(self.GABA_conn1.W.rows[i])
-
-        self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
-        self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W)
-
 
 
         # Setup adaptation connections: neuron on itself
@@ -168,7 +126,6 @@ class EI_Network:
                 weight=o.ad_e_g_inc*siemens)
         self.adaptConn_i = IdentityConnection(self.I_pop, self.I_pop, 'g_ad',
                 weight=o.ad_i_g_inc*siemens)
-
 
 
         # Initialize membrane potential randomly
@@ -180,9 +137,6 @@ class EI_Network:
         self.net = Network(
                 self.E_pop,
                 self.I_pop,
-                self.AMPA_conn,
-                self.GABA_conn1,
-                self.GABA_conn2,
                 self.adaptConn_e,
                 self.adaptConn_i)
 
@@ -211,4 +165,52 @@ class EI_Network:
         self.pGABA_templ = np.concatenate((self.pGABA_templ,
             self.pGABA_templ[1:N-len(self.pGABA_templ)+1][::-1]))
 
+
+    def buildMexicanHat1d(self, pAMPA_mu, pAMPA_sigma, pGABA_sigma)
+        '''Create excitatory and inhibitory connections, Mexican hat ring model.
+            pAMPA_mu    Mean of the AMPA Gaussian profile of connection
+                        probability
+            pAMPA_sigma Std. dev. of the AMPA Gaussian profile of connection
+                        probability
+            pGABA_sigma Std. dev. of the GABA Gaussian profile of connection
+                        probability (Mean of GABA connections is local)
+        '''
+
+        g_AMPA_mean = self.o.g_AMPA_total/o.Ne
+        g_AMPA_sigma = np.sqrt(np.log(1 + self.o.g_AMPA_std**2/g_AMPA_mean**2))
+        g_AMPA_mu = np.log(g_AMPA_mean) - 1/2*g_AMPA_sigma**2
+        g_GABA_mean = self.o.g_GABA_total / self.o.Ni * siemens
+
+        # Generate connection-probability profile functions for GABA and AMPA connections
+        self.pAMPA_mu = pAMPA_mu * self.o.Ni
+        self.pAMPA_sigma = pAMPA_sigma * self.o.Ni
+        self.pGABA_sigma = pGABA_sigma * self.o.Ne
+
+        self.generate_pAMPA_template(self.o.Ni, self.pAMPA_mu, self.pAMPA_sigma)
+        self.generate_pGABA_template(self.o.Ne, self.pGABA_sigma)
+
+        self.AMPA_conn = Connection(self.E_pop, self.I_pop, 'ge')
+        for i in xrange(self.o.Ne):
+            e_norm = int(round(np.double(i)/self.o.Ne*self.o.Ni))
+
+            tmp_templ = np.roll(self.pAMPA_templ, e_norm)
+            self.AMPA_conn.W.rows[i] = list((rand(self.o.Ni) <
+                self.o.AMPA_density*tmp_templ).nonzero()[0])
+            self.AMPA_conn.W.data[i] = np.random.lognormal(g_AMPA_mu,
+                    g_AMPA_sigma, len(self.AMPA_conn.W.rows[i]))*siemens
+
+        self.GABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
+        for i in xrange(self.o.Ni):
+            i_norm = int(round(np.double(i)/self.o.Ni*self.o.Ne))
+            
+
+            tmp_templ = np.roll(self.pGABA_templ, i_norm)
+            self.GABA_conn1.W.rows[i] = list((rand(self.o.Ne) <
+                self.o.GABA_density*tmp_templ).nonzero()[0])
+            self.GABA_conn1.W.data[i] = [B_GABA*g_GABA_mean] * len(self.GABA_conn1.W.rows[i])
+
+        self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
+        self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W)
+
+        self.net.add(self.AMPA_conn, self.GABA_conn1, self.GABA_conn2)
 
