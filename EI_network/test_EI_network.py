@@ -36,7 +36,14 @@ stimClock = Clock(50*msecond)
 print "Starting network and connections initialization..."
 start_time=time.time()
 
+options.ndim = 2
 ei_net = EI_Network(options, simulationClock)
+
+# Mexican hat properties and AMPA/GABA connections
+pAMPA_mu = 0.4
+pAMPA_sigma = 0.5/6
+pGABA_sigma = 0.5/6
+ei_net.connMexicanHat(pAMPA_mu, pAMPA_sigma, pGABA_sigma)
 
 
 duration=time.time()-start_time
@@ -57,16 +64,17 @@ def stimulateSubPopulation():
         ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
 
 
-state_record = [0]
+state_record_e = [5050]
+state_record_i = [1250]
 
 spikeMon_e = SpikeMonitor(ei_net.E_pop)
 spikeMon_i = SpikeMonitor(ei_net.I_pop)
-stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = state_record, clock=simulationClock)
-stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = state_record, clock=simulationClock)
-stateMon_Isyn_e = StateMonitor(ei_net.E_pop, 'Isyn', record = state_record, clock=simulationClock)
-stateMon_Isyn_i = StateMonitor(ei_net.I_pop, 'Isyn', record = state_record, clock=simulationClock)
-stateMon_g_ad_e = StateMonitor(ei_net.E_pop, 'g_ad', record = state_record, clock=simulationClock)
-stateMon_g_ad_i = StateMonitor(ei_net.I_pop, 'g_ad', record = state_record, clock=simulationClock)
+stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = state_record_e, clock=simulationClock)
+stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = state_record_i, clock=simulationClock)
+stateMon_Isyn_e = StateMonitor(ei_net.E_pop, 'Isyn', record = state_record_e, clock=simulationClock)
+stateMon_Isyn_i = StateMonitor(ei_net.I_pop, 'Isyn', record = state_record_i, clock=simulationClock)
+stateMon_g_ad_e = StateMonitor(ei_net.E_pop, 'g_ad', record = state_record_e, clock=simulationClock)
+stateMon_g_ad_i = StateMonitor(ei_net.I_pop, 'g_ad', record = state_record_i, clock=simulationClock)
 
 ei_net.net.add(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i, stateMon_Isyn_e,
         stateMon_Isyn_i, stateMon_g_ad_e, stateMon_g_ad_i)
@@ -81,18 +89,18 @@ print "Simulation time:",duration,"seconds"
 
 figSize = (12,8)
 
-#figure(figsize=figSize)
-#stateMon_e.plot()
-#figure()
-#stateMon_Isyn_e.plot()
-#figure()
-#stateMon_g_ad_e.plot()
-#figure()
-#stateMon_i.plot()
-#figure()
-#stateMon_Isyn_i.plot()
-#figure()
-#stateMon_g_ad_i.plot()
+figure(figsize=figSize)
+stateMon_e.plot()
+figure()
+stateMon_Isyn_e.plot()
+figure()
+stateMon_g_ad_e.plot()
+figure()
+stateMon_i.plot()
+figure()
+stateMon_Isyn_i.plot()
+figure()
+stateMon_g_ad_i.plot()
 
 f = figure(figsize=figSize)
 subplot2grid((5,1), (0, 0), rowspan=4)
@@ -115,5 +123,6 @@ if options.job_num != -1:
 output_fname += '_Ne_' + str(ei_net.o.Ne)
 output_fname +=  '_' + timeSnapshot + '_raster_plot.pdf'
 
-f.savefig(output_fname)
+#f.savefig(output_fname)
+show()
 
