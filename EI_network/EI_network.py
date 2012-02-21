@@ -135,11 +135,11 @@ class EI_Network:
 
 
 
-        # Setup adaptation connections: neuron on itself
-        self.adaptConn_e = IdentityConnection(self.E_pop, self.E_pop,  'g_ad',
-                weight=o.ad_e_g_inc*siemens)
-        self.adaptConn_i = IdentityConnection(self.I_pop, self.I_pop, 'g_ad',
-                weight=o.ad_i_g_inc*siemens)
+        ## Setup adaptation connections: neuron on itself
+        #self.adaptConn_e = IdentityConnection(self.E_pop, self.E_pop,  'g_ad',
+        #        weight=o.ad_e_g_inc*siemens)
+        #self.adaptConn_i = IdentityConnection(self.I_pop, self.I_pop, 'g_ad',
+        #        weight=o.ad_i_g_inc*siemens)
 
 
         # Initialize membrane potential randomly
@@ -150,9 +150,9 @@ class EI_Network:
         # Create network (withough any monitors
         self.net = Network(
                 self.E_pop,
-                self.I_pop,
-                self.adaptConn_e,
-                self.adaptConn_i)
+                self.I_pop)
+                #self.adaptConn_e,
+                #self.adaptConn_i)
 
         self.setBackgroundInput(o.Iext_e*amp, o.Iext_i*amp)
 
@@ -293,15 +293,3 @@ class EI_Network:
         self.net.add(self.AMPA_conn, self.GABA_conn1, self.GABA_conn2)
         self.ndim = ndim
 
-    def connMexicanHat2D(self, pAMPA_mu, pAMPA_sigma, pGABA_sigma):
-        '''Create excitatory and inhibitory connections, Mexican hat model on a
-        torus.
-            pAMPA_mu    Mean of the AMPA Gaussian profile of connection
-                        probability
-            pAMPA_sigma Std. dev. of the AMPA Gaussian profile of connection
-                        probability
-            pGABA_sigma Std. dev. of the GABA Gaussian profile of connection
-                        probability (Mean of GABA connections is local)
-        '''
-
-        

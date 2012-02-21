@@ -40,8 +40,8 @@ options.ndim = 2
 ei_net = EI_Network(options, simulationClock)
 
 # Mexican hat properties and AMPA/GABA connections
-pAMPA_mu = 0.4
-pAMPA_sigma = 0.5/6
+pAMPA_mu = 0.5
+pAMPA_sigma = 0.25/6
 pGABA_sigma = 0.5/6
 ei_net.connMexicanHat(pAMPA_mu, pAMPA_sigma, pGABA_sigma)
 
@@ -53,19 +53,22 @@ print "Network setup time:",duration,"seconds"
 
 stim_start = int(0.4*ei_net.o.Ne)
 stim_range = int(0.2*ei_net.o.Ne)
-stim_current = 0*pA
+stim_current = 1200*pA
 
 @network_operation(stimClock)
 def stimulateSubPopulation():
-    if simulationClock.t > 500*msecond and simulationClock.t < 550*msecond:
-        ei_net.E_pop.Iext[stim_start:stim_start+stim_range] = linspace(stim_current, stim_current, stim_range)
+    if simulationClock.t > 500*msecond and simulationClock.t < 650*msecond:
+        tmp = ei_net.E_pop.Iext.reshape((options.Ne, options.Ne))
+        tmp[stim_start:stim_start+stim_range, stim_start:stim_start+stim_range] =\
+            linspace(stim_current, stim_current, stim_range**2).reshape((stim_range, stim_range))
+        ei_net.E_pop.Iext = tmp.ravel()
         print "Stimulation..."
     else:
         ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
 
 
-state_record_e = [5050]
-state_record_i = [1250]
+state_record_e = [465]
+state_record_i = True
 
 spikeMon_e = SpikeMonitor(ei_net.E_pop)
 spikeMon_i = SpikeMonitor(ei_net.I_pop)
@@ -90,26 +93,44 @@ print "Simulation time:",duration,"seconds"
 figSize = (12,8)
 
 figure(figsize=figSize)
-stateMon_e.plot()
+subplot(211)
+plot(stateMon_e.times, stateMon_e.values[0]*1e3)
+xlabel('Time (s)')
+ylabel('$V_m$ (mV)')
+title('E membrane voltage')
+
+subplot(212)
+plot(stateMon_Isyn_e.times, stateMon_Isyn_e.values[0]*1e12)
+xlabel('Time (s)')
+ylabel('Current (pA)')
+#figure()
+#plot(stateMon_g_ad_e.times, stateMon_g_ad_e.values[0]*1e9)
+#xlabel('Time (ms)')
+#ylabel('Conductance (nS)')
+
 figure()
-stateMon_Isyn_e.plot()
-figure()
-stateMon_g_ad_e.plot()
-figure()
-stateMon_i.plot()
-figure()
-stateMon_Isyn_i.plot()
-figure()
-stateMon_g_ad_i.plot()
+subplot(211)
+plot(stateMon_i.times, stateMon_i.values[0]*1e3)
+xlabel('Time (s)')
+ylabel('$V_m$ (mV)')
+title('I membrane voltage')
+subplot(212)
+plot(stateMon_Isyn_i.times, stateMon_Isyn_i.values[0]*1e12)
+xlabel('Time (s)')
+ylabel('Current (pA)')
+#figure()
+#plot(stateMon_g_ad_i.times, stateMon_g_ad_i.values[0]*1e9)
+#xlabel('Time (ms)')
+#ylabel('Conductance (nS)')
 
 f = figure(figsize=figSize)
-subplot2grid((5,1), (0, 0), rowspan=4)
+subplot2grid((5,1), (0, 0), rowspan=3)
 raster_plot(spikeMon_e)
 title('Network size: ' + str(ei_net.o.Ne) + '(E), ' + str(ei_net.o.Ni) + '(I)')
 ylabel('Neuron no. (E)')
 xlim((0, ei_net.o.time*1000))
 xlabel('')
-subplot2grid((5,1), (4, 0), rowspan=1)
+subplot2grid((5,1), (3, 0), rowspan=2)
 raster_plot(spikeMon_i)
 ylabel('Neuron no. (I)')
 xlim((0, ei_net.o.time*1000))
