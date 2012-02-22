@@ -18,6 +18,7 @@ import numpy as np
 
 from EI_network import *
 from EI_network_sim_mod import *
+from custombrian import *
 
 
 (options, args) = getOptParser().parse_args()
@@ -28,6 +29,7 @@ print options
 sim_dt = options.sim_dt*second
 simulationClock = Clock(dt=sim_dt)
 stimClock = Clock(50*msecond)
+rateClock = Clock(500*msecond)
 
 
 ################################################################################
@@ -70,8 +72,8 @@ def stimulateSubPopulation():
 state_record_e = [465]
 state_record_i = True
 
-spikeMon_e = SpikeMonitor(ei_net.E_pop)
-spikeMon_i = SpikeMonitor(ei_net.I_pop)
+spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
+spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
 stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = state_record_e, clock=simulationClock)
 stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = state_record_i, clock=simulationClock)
 stateMon_Isyn_e = StateMonitor(ei_net.E_pop, 'Isyn', record = state_record_e, clock=simulationClock)
@@ -134,6 +136,17 @@ subplot2grid((5,1), (3, 0), rowspan=2)
 raster_plot(spikeMon_i)
 ylabel('Neuron no. (I)')
 xlim((0, ei_net.o.time*1000))
+
+#f = figure(figsize=figSize)
+#title('Network size: ' + str(ei_net.o.Ne) + '(E), ' + str(ei_net.o.Ni) + '(I)')
+#subplot2grid((5,1), (0, 0), rowspan=3)
+#pcolor(rateMon_e.firingRates)
+#colorbar()
+#ylabel('Neuron no. (E)')
+#xlabel('')
+#subplot2grid((5,1), (3, 0), rowspan=2)
+#ylabel('Neuron no. (I)')
+
 
 timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 dirName = options.output_dir
