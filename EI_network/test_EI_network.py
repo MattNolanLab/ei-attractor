@@ -15,10 +15,13 @@ import time
 import math
 import sys
 import numpy as np
+import logging as lg
 
 from EI_network import *
 from EI_network_sim_mod import *
 from custombrian import *
+
+lg.basicConfig(level=lg.DEBUG)
 
 
 (options, args) = getOptParser().parse_args()
@@ -70,7 +73,7 @@ def stimulateSubPopulation():
 
 
 state_record_e = [465]
-state_record_i = True
+state_record_i = [465]
 
 spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
 spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
@@ -125,6 +128,7 @@ ylabel('Current (pA)')
 #xlabel('Time (ms)')
 #ylabel('Conductance (nS)')
 
+print('Starting E raster')
 f = figure(figsize=figSize)
 subplot2grid((5,1), (0, 0), rowspan=3)
 raster_plot(spikeMon_e)
@@ -132,6 +136,7 @@ title('Network size: ' + str(ei_net.o.Ne) + '(E), ' + str(ei_net.o.Ni) + '(I)')
 ylabel('Neuron no. (E)')
 xlim((0, ei_net.o.time*1000))
 xlabel('')
+print('Starting I raster')
 subplot2grid((5,1), (3, 0), rowspan=2)
 raster_plot(spikeMon_i)
 ylabel('Neuron no. (I)')

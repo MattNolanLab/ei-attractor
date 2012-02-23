@@ -1,6 +1,8 @@
 from brian.monitor import SpikeMonitor
 
 import numpy as np
+import operator as op
+import logging as lg
 
 
 class ExtendedSpikeMonitor(SpikeMonitor):
@@ -42,6 +44,9 @@ class ExtendedSpikeMonitor(SpikeMonitor):
             self._spikes = []
             for i in xrange(len(self.source)):
                 self._spikes += zip([i]*len(self.source), self.aspikes[i])
+            lg.debug('Spike sort start...')
+            self._spikes.sort(key=op.itemgetter(1))
+            lg.debug('Spike sort end.')
         return self._spikes
 
     def _setSpikes(self, val):
