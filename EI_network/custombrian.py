@@ -5,7 +5,41 @@ import operator as op
 import logging as lg
 
 
+class NeuronSpikes:
+    def __init__(self, aspikes):
+        self.aspikes = aspikes
+
+    def getFiringRate(self, tstart, tend, dt, winLen):
+        '''
+        Compute sliding window firing rate for the neuron
+        dt      resolution of firing rate
+        winLen  Length of the sliding window
+
+        The spikes are computed from tstart to tend, so that the resulting array
+        length is int((tend-tstart)/dt)+1 long.
+        dt does not have to be relevant to simulation dt at all
+        '''
+        szRate = int((tend-tstart)/dt)+1
+        r = np.ndarray((len(self.aspikes), szRate))
+        times = np.ndarray(szRate)
+        for n_i in xrange(len(self.aspikes)):
+            tmp = np.array(self.aspikes[n_i])
+            t = tstart
+            for t_i in xrange(szRate):
+                t = t_i*dt
+                r[n_i][t_i] = np.sum(np.logical_and(tmp > t-winLen/2, tmp <
+                    t+winLen/2))
+                times[t_i] = t
+
+        return (r/winLen, times)
+
+
+
 class ExtendedSpikeMonitor(SpikeMonitor):
+    '''
+    SpikeMonitor class that stores spikes implicitly as an array of lists,
+    instead of a list of pairs (n, t) as does the original SpikeMonitor class
+    '''
     def __init__(self, source, record=True, delay=0, function=None):
         SpikeMonitor.__init__(self, source, record, delay, function)
 
@@ -51,6 +85,9 @@ class ExtendedSpikeMonitor(SpikeMonitor):
 
     def _setSpikes(self, val):
         self._spikes = val
+
+    def getFiringRate(self, tstart, tend, dt, winLen):
+        return NeuronSpikes(self.aspikes).getFiringRate(tstart, tend, dt, winLen)
 
     spiketimes = property(fget=getspiketimes)
     spikes = property(fget=getSpikes, fset=_setSpikes)

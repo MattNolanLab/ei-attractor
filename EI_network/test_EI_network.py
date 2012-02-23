@@ -142,15 +142,27 @@ raster_plot(spikeMon_i)
 ylabel('Neuron no. (I)')
 xlim((0, ei_net.o.time*1000))
 
-#f = figure(figsize=figSize)
-#title('Network size: ' + str(ei_net.o.Ne) + '(E), ' + str(ei_net.o.Ni) + '(I)')
-#subplot2grid((5,1), (0, 0), rowspan=3)
-#pcolor(rateMon_e.firingRates)
-#colorbar()
-#ylabel('Neuron no. (E)')
-#xlabel('')
-#subplot2grid((5,1), (3, 0), rowspan=2)
-#ylabel('Neuron no. (I)')
+
+F_tstart = 0
+F_tend = options.time
+F_dt = 0.2
+F_winLen = 1.
+f = figure(figsize=figSize)
+title('Network size: ' + str(ei_net.o.Ne) + '(E), ' + str(ei_net.o.Ni) + '(I)')
+subplot2grid((5,1), (0, 0), rowspan=3)
+Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
+X, Y = meshgrid(Fe_t, np.arange(len(Fe)))
+pcolor(X, Y, Fe)
+colorbar()
+ylabel('Neuron no. (E)')
+xlabel('')
+subplot2grid((5,1), (3, 0), rowspan=2)
+Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
+X, Y = meshgrid(Fi_t, np.arange(len(Fi)))
+pcolor(X, Y, Fi)
+colorbar()
+ylabel('Neuron no. (I)')
+xlabel('Time (s)')
 
 
 timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
