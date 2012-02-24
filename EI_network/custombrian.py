@@ -5,34 +5,6 @@ import operator as op
 import logging as lg
 
 
-class NeuronSpikes:
-    def __init__(self, aspikes):
-        self.aspikes = aspikes
-
-    def getFiringRate(self, tstart, tend, dt, winLen):
-        '''
-        Compute sliding window firing rate for the neuron
-        dt      resolution of firing rate
-        winLen  Length of the sliding window
-
-        The spikes are computed from tstart to tend, so that the resulting array
-        length is int((tend-tstart)/dt)+1 long.
-        dt does not have to be relevant to simulation dt at all
-        '''
-        szRate = int((tend-tstart)/dt)+1
-        r = np.ndarray((len(self.aspikes), szRate))
-        times = np.ndarray(szRate)
-        for n_i in xrange(len(self.aspikes)):
-            tmp = np.array(self.aspikes[n_i])
-            t = tstart
-            for t_i in xrange(szRate):
-                t = t_i*dt
-                r[n_i][t_i] = np.sum(np.logical_and(tmp > t-winLen/2, tmp <
-                    t+winLen/2))
-                times[t_i] = t
-
-        return (r/winLen, times)
-
 
 
 class ExtendedSpikeMonitor(SpikeMonitor):
@@ -87,7 +59,44 @@ class ExtendedSpikeMonitor(SpikeMonitor):
         self._spikes = val
 
     def getFiringRate(self, tstart, tend, dt, winLen):
-        return NeuronSpikes(self.aspikes).getFiringRate(tstart, tend, dt, winLen)
+        '''
+        Compute sliding window firing rate for the neuron
+        dt      resolution of firing rate
+        winLen  Length of the sliding window
+
+        The spikes are computed from tstart to tend, so that the resulting array
+        length is int((tend-tstart)/dt)+1 long.
+        dt does not have to be relevant to simulation dt at all
+        '''
+        lg.debug('Start firing rate processing')
+        szRate = int((tend-tstart)/dt)+1
+        r = np.ndarray((len(self.aspikes), szRate))
+        times = np.ndarray(szRate)
+        for n_i in xrange(len(self.aspikes)):
+            tmp = np.array(self.aspikes[n_i])
+            t = tstart
+            for t_i in xrange(szRate):
+                t = t_i*dt
+                r[n_i][t_i] = np.sum(np.logical_and(tmp > t-winLen/2, tmp <
+                    t+winLen/2))
+                times[t_i] = t
+
+        lg.debug('End firing rate processing')
+        return (r/winLen, times)
+
+    def torusPopulationVector(self, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=1.0):
+        (F, tsteps) = self.getFiringRate(tstart, tend, dt, winLen)
+        
+        P = np.ndarray((len(tsteps), 2), dtype=complex)
+        X, Y = np.meshgrid(np.arange(sheetSize), np.arange(sheetSize))
+        X = np.exp(1j*(X - sheetSize/2)/sheetSize*2*np.pi).ravel()
+        Y = np.exp(1j*(Y - sheetSize/2)/sheetSize*2*np.pi).ravel()
+        for t_it in xrange(len(tsteps)):
+            P[t_it, 0] = np.dot(F[:, t_it], X)
+            P[t_it, 1] = np.dot(F[:, t_it], Y)
+
+        return (np.angle(P)/2/np.pi*sheetSize, tsteps)
+        
 
     spiketimes = property(fget=getspiketimes)
     spikes = property(fget=getSpikes, fset=_setSpikes)

@@ -123,24 +123,19 @@ subplot(212)
 plot(stateMon_Isyn_i.times, stateMon_Isyn_i.values[0]*1e12)
 xlabel('Time (s)')
 ylabel('Current (pA)')
-#figure()
-#plot(stateMon_g_ad_i.times, stateMon_g_ad_i.values[0]*1e9)
-#xlabel('Time (ms)')
-#ylabel('Conductance (nS)')
 
-print('Starting E raster')
-f = figure(figsize=figSize)
-subplot2grid((5,1), (0, 0), rowspan=3)
-raster_plot(spikeMon_e)
-title('Network size: ' + str(ei_net.o.Ne) + '(E), ' + str(ei_net.o.Ni) + '(I)')
-ylabel('Neuron no. (E)')
-xlim((0, ei_net.o.time*1000))
-xlabel('')
-print('Starting I raster')
-subplot2grid((5,1), (3, 0), rowspan=2)
-raster_plot(spikeMon_i)
-ylabel('Neuron no. (I)')
-xlim((0, ei_net.o.time*1000))
+
+#f = figure(figsize=figSize)
+#subplot2grid((5,1), (0, 0), rowspan=3)
+#raster_plot(spikeMon_e)
+#title('Network size: ' + str(ei_net.o.Ne) + '(E), ' + str(ei_net.o.Ni) + '(I)')
+#ylabel('Neuron no. (E)')
+#xlim((0, ei_net.o.time*1000))
+#xlabel('')
+#subplot2grid((5,1), (3, 0), rowspan=2)
+#raster_plot(spikeMon_i)
+#ylabel('Neuron no. (I)')
+#xlim((0, ei_net.o.time*1000))
 
 
 F_tstart = 0
@@ -163,6 +158,15 @@ pcolor(X, Y, Fi)
 colorbar()
 ylabel('Neuron no. (I)')
 xlabel('Time (s)')
+
+
+# Print a plot of bump position
+(pos, times) = spikeMon_e.torusPopulationVector(ei_net.o.Ne, F_tstart, F_tend, F_dt,
+        F_winLen)
+figure(figsize=figSize)
+plot(times, pos)
+xlabel('Time (s)')
+ylabel('Bump position (neurons)')
 
 
 timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
