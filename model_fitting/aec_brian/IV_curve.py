@@ -24,9 +24,9 @@ def pickVPreSpike(Vm, t_after, V_th=0):
     return time_ids[t_mask]
 ###############################################################################
 
-
-inFile = "../data/C_neutralisation/2012_02_16/cell4 008 Copy Export.mat"
-#inFile = "../data/IV_kernel_est/cell2/Data 004 Copy Export.mat"
+dir = "../data/C_neutralisation/2012_02_16/"
+file = "cell4 008 Copy Export"
+inFile = dir + file + '.mat'
 
 mV = 1e3
 pA = 1e12
@@ -43,7 +43,7 @@ dt = times[1] - times[0]    # Assuming constant time step
 # Full kernel estimation procedure
 tstart = 0
 I_T = 20
-ksize = 10e-3/dt
+ksize = int(10e-3/dt)
 Vk = V[tstart/dt:I_T/dt]
 Ik = I[tstart/dt:I_T/dt]
 K_full, V_mean = full_kernel(Vk, Ik, ksize, full_output=True)
@@ -100,11 +100,15 @@ plot(times[time_id], Vm_pre*mV)
 xlabel('Time (s)')
 ylabel('$V_m$ (mV)')
 
-figure(figsize=figSize)
+f = figure(figsize=figSize)
 plot(Vm_pre*mV, Im_pre*pA, '.')
-xlabel('$V_m$ (mV)')
-ylabel('$I_m$ (pA)')
+xlabel('Membrane voltage (mV)')
+ylabel('Membrane current (pA)')
+xlim([-80, -40])
+ylim([-1000, 2000])
+title('Stellate cell I-V relationship')
 
+f.savefig(dir + file + '_IV_curve.png')
 
 
 
