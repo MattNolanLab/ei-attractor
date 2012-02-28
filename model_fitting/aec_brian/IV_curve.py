@@ -3,6 +3,8 @@ from matplotlib.pyplot import *
 
 from scipy.io import loadmat
 from numpy import diff
+from numpy.random import random
+from scipy.optimize import fmin
 
 # This is a script which uses Brette et al. Active Electrode Compensation module
 # implemented in brian (done offline)
@@ -22,6 +24,32 @@ def pickVPreSpike(Vm, t_after, V_th=0):
             time_ids > t_spike+t_after))
 
     return time_ids[t_mask]
+
+def voltage_bins(V, binStart, binEnd, nbins):
+    '''
+    Picks indices of V that are within bin ranges.
+    Samples outside binStart and binEnd are discarded
+    '''
+    if binStart > binEnd:
+        raise Exception("binStart must be less than binEnd")
+    binCenters = np.linspace(binStart, binEnd, nbins+1)
+    binWidth = (binEnd - binStart)/nbins
+    Ibin = []
+    for c in binCenters:
+        Ibin.append((np.logical_and(V > c-binWidth/2, V <=
+            c+binWidth/2)).nonzero()[0]) 
+
+    return (binCenters, Ibin)
+
+
+def findCapacitance(Iin, dVdt, C0):
+    '''
+    Estimate membrane capacitance, by using input current and dV/dt at a
+    specific voltage value (set by the user, ideally somewhere near resting Vm)
+    '''
+    return fmin(lambda Ce: np.var(Iin/Ce - dVdt), C0, xtol=0.00001)[0]
+
+
 ###############################################################################
 
 dir = "../data/C_neutralisation/2012_02_16/"
@@ -30,6 +58,7 @@ inFile = dir + file + '.mat'
 
 mV = 1e3
 pA = 1e12
+pF = 1e12
 ms = 1e3
 figSize = (12, 8)
 
@@ -82,7 +111,8 @@ xlabel('Time (s)')
 
 # IV curve
 IV_tstart = 20/dt
-C = 220e-12 # TODO: C estimation
+C0 = 200e-12 # Initial capacitance estimation
+#Cmax = 300e-12
 t_after = int(200e-3/dt)
 time_id = pickVPreSpike(Vcorr, t_after)
 time_id = time_id[0:len(time_id)-1]
@@ -91,6 +121,17 @@ time_id = time_id[time_id > IV_tstart]
 dV_pre = np.diff(Vcorr)[time_id]
 Vm_pre = Vcorr[time_id]
 Iin_pre = I[time_id]
+
+# Sort voltage indices as a function of voltage (binned)
+binStart = -80e-3
+binEnd = -40e-3
+nbins = 200
+binCenters, binIds = voltage_bins(Vm_pre, binStart, binEnd, nbins)
+
+Cest_bin_id = 50
+C = findCapacitance(Iin_pre[binIds[Cest_bin_id]], dV_pre[binIds[Cest_bin_id]]/dt,
+        C0)
+print("Estimated capacitance: " + str(C*pF) + " pF.")
 Im_pre = C*dV_pre/dt - Iin_pre
 
 figure(figsize=figSize)
@@ -107,6 +148,19 @@ ylabel('Membrane current (pA)')
 xlim([-80, -40])
 ylim([-1000, 2000])
 title('Stellate cell I-V relationship')
+grid()
+hold(True)
+
+Imean = np.zeros(len(binCenters))
+Istd  = np.zeros(len(binCenters))
+for i in xrange(len(binCenters)):
+    Imean[i] = np.mean(Im_pre[binIds[i]])
+    Istd[i]  = np.std(Im_pre[binIds[i]])
+errorbar(binCenters*mV, Imean*pA, Istd*pA, None, 'ro')
+hold(False)
+
+figure(figsize=figSize)
+h = hist(Im_pre[binIds[50]]*pA, 100)
 
 f.savefig(dir + file + '_IV_curve.png')
 
