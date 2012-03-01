@@ -1,5 +1,5 @@
 from brian.library.electrophysiology import *
-from numpy import diff
+import numpy as np
 from scipy.optimize import fmin
 
 
@@ -13,13 +13,13 @@ class Kernels(object):
         self.Km = Km
 
 
-def compensate_voltage(Iin, Vrec, Vm_ker, Iin_ker, ksize=15e-3, tail_start=3e-3):
+def compensate_voltage(Iin, Vrec, Iin_ker, Vm_ker, ksize=15e-3, tail_start=3e-3):
     '''
     Estimate membrane and electrode kernel and substract the electrode kernel
     filtered voltage from Vm.
     '''
-    K_full, Vmean = full_kernel(Vm_ker, Im_ker, ksize, full_output=True)
-    Ke, Km = electrode_kernel(K_full, tail_start, full_output=True)
+    Kfull, Vmean = full_kernel(Vm_ker, Iin_ker, ksize, full_output=True)
+    Ke, Km = electrode_kernel(Kfull, tail_start, full_output=True)
     Vcomp = AEC_compensate(Vrec, Iin, Ke)
     return Vcomp, Kernels(Kfull, Ke, Km), Vmean
 
@@ -45,21 +45,21 @@ class DynamicIVCurve(object):
         self.nbins = nbins
         self.dt = dt
 
-        self.binCenters, self.binIds = voltage_bins(Vm, binStartV, binEndV, nbins)
+        self.binCenters, self.binIds = self.voltage_bins(Vm, binStartV, binEndV, nbins)
         
         self.Cest_bin_id = 27
         self.C0 = 300*pF
-        self.Cest = findCapacitance(Iin[self.binIds[self.Cest_bin_id]],
+        self.Cest = self.findCapacitance(Iin[self.binIds[self.Cest_bin_id]],
                 dV[self.binIds[self.Cest_bin_id]]/dt, self.C0)
         print("Estimated capacitance: " + str(self.Cest/pF) + " pF.")
         self.Im = self.Cest*dV/dt - Iin
 
-        self.Imean = np.zeros(len(binCenters))
-        self.Istd  = np.zeros(len(binCenters))
-        self.IN    = np.zeros(len(binCenters))
-        for i in xrange(len(binCenters)):
-            self.Imean[i] = np.mean(Im[self.binIds[i]])
-            self.Istd[i]  = np.std(Im[self.binIds[i]])
+        self.Imean = np.zeros(len(self.binCenters))
+        self.Istd  = np.zeros(len(self.binCenters))
+        self.IN    = np.zeros(len(self.binCenters))
+        for i in xrange(len(self.binCenters)):
+            self.Imean[i] = np.mean(self.Im[self.binIds[i]])
+            self.Istd[i]  = np.std(self.Im[self.binIds[i]])
             self.IN[i]    = len(self.binIds[i])
 
 
@@ -100,19 +100,21 @@ class DynamicIVCurveAfter(DynamicIVCurve):
 
         self.Iin_all = Iin
         self.Vm_all  = Vm
-        self.times = times
+        self.times_all = times
         self.tafter = tafter
         self.Vth = Vth
         self.dt = times[1] - times[0]
 
-        time_id = self.pickVPreSpike(Vm, tafter)
+        time_id = self.pickVPreSpike(Vm, tafter, Vth)
         time_id = time_id[0:len(time_id)-1]  # If last spike is the last in the array
 
-        DynamicIVCurve.__init__(Iin[time_id], Vm[time_id], np.diff(Vm)[time_id],
-                dt, binStartV, binEndV, nbins)
+        DynamicIVCurve.__init__(self, Iin[time_id], Vm[time_id], np.diff(Vm)[time_id],
+                self.dt, binStartV, binEndV, nbins)
+        self.time_id = time_id
+        self.times = self.times_all[time_id]
 
 
-    def pickVPreSpike(self, Vm, t_after, V_th=0):
+    def pickVPreSpike(self, Vm, t_after, V_th):
         '''
         Pick only voltage traces that are more than t_after time units after the
         last spike. By setting V_th, one can fine_tune spike threshold.
@@ -133,6 +135,31 @@ class DynamicIVCurveAfterRegion(DynamicIVCurve):
     '''
     def __init__(self, Iin, Vm, times, binStartV, binEndV, nbins, region,
             Vth=0):
-        pass
-    
+        self.Iin_all = Iin
+        self.Vm_all = Vm
+        self.times_all = times
+        self.Vth = Vth
+        self.dt = times[1] - times[0]
+        self.region = region
+        if region[0] >= region[1]:
+            raise Exception('region[0] < region[1] !')
+
+        self.time_id = self.pickVAfterSPikeRegion(Vm, region, Vth)
+        self.time_id = self.time_id[0:len(self.time_id)-1]
+
+        DynamicIVCurve.__init__(self, Iin[self.time_id], Vm[self.time_id],
+                np.diff(Vm)[self.time_id], dt, binStartV, binEndV, nbins)
+
+    def pickVAfterSpikeRegion(self, Vm, region, Vth):
+        '''Pick only a regions of length region[1] - region[0] after the peak of
+        each spike in the trace'''
+        spike_times = spike_peaks(Vm, V_th)
+        time_ids = np.arange(len(Vm))
+        t_mask = np.ndarray(len(Vm), dtype=bool)
+        t_mask[:] = False
+        for t_spike in spike_times:
+            t_mask = np.logical_or(t_mask, np.logical_and(time_ids >=
+                t_spike+region[0], time_ids < t_spike+region[1]))
+
+        return time_ids[t_mask]
 
