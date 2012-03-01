@@ -37,67 +37,19 @@ Ik = I[tstart/dt:I_T/dt]
 Vcomp, kers, Vmean = compensate_voltage(I, V, Ik, Vk, ksize, tail_start)
 
 
-figure(figsize=figSize)
-subplot(311)
-plot(times[0:ksize]/ms, kers.Kfull/MOhm)
-ylabel('Kernel(M$\Omega$)')
-subplot(312)
-plot(times[0:tail_start]/ms, kers.Ke/MOhm)
-ylabel('Electrode kernel (M$\Omega$)')
-subplot(313)
-plot(times[0:ksize]/ms, kers.Km/MOhm)
-ylabel('Membrane kernel ($\Omega$)')
-xlabel('Time (ms)')
-savefig(dir + file + '_kernels.pdf')
-
-
-comp_xlim = [20, 30]
-figure(figsize=figSize)
-subplot(311)
-plot(times, V*mV)
-ylabel('Uncomp. $V_m$ (mV)')
-xlim(comp_xlim)
-subplot(312)
-plot(times, I*pA)
-ylabel('Injected current $I_{in}$ (pA)')
-xlim(comp_xlim)
-subplot(313)
-plot(times, Vcomp*mV)
-ylabel('Compensated $V_m$')
-xlabel('Time (s)')
-xlim(comp_xlim)
-savefig(dir + file + '_compensation.pdf')
-
-
-# Compensation detail
-comp_detail_x0 = 30
-comp_detail_x1 = 30.5
-figure()
-subplot(211)
-plot(times, V*mV)
-ylabel('Uncomp. $V_m$ (mV)')
-xlim([comp_detail_x0, comp_detail_x1])
-subplot(212)
-plot(times, Vcomp*mV)
-ylabel('Compensated $V_m$')
-xlabel('Time (s)')
-xlim([comp_detail_x0, comp_detail_x1])
-savefig(dir + file + '_compensation_detail.pdf')
-
-
-
 # IV curve
 IV_tstart = 20/dt
 t_after = int(200e-3/dt)
 binStart = -80e-3
-binEnd = -40e-3
+binEnd = -43e-3
 nbins = 100
 
-ivc = DynamicIVCurveAfter(I[IV_tstart:], Vcomp[IV_tstart:], times[IV_tstart:],
+ivc_after = DynamicIVCurveAfter(I[IV_tstart:], Vcomp[IV_tstart:], times[IV_tstart:],
         binStart, binEnd, nbins, t_after)
-#region = (5, 100)
+region = (5e-3, 10e-3)
 #ivc = DynamicIVCurveAfterRegion(I[IV_tstart:], Vcomp[IV_tstart:], times[IV_tstart:],
-        binStart, binEnd, nbins, region)
+#        binStart, binEnd, nbins, region, ivc_after.Cest)
+ivc = ivc_after
 
 figure(figsize=figSize)
 plot(ivc.times_all, ivc.Vm_all*mV)
@@ -109,26 +61,26 @@ ylabel('$V_m$ (mV)')
 f = figure(figsize=figSize)
 plot(ivc.Vm*mV, ivc.Im*pA, '.', zorder=0)
 xlabel('Membrane voltage (mV)')
-ylabel('Membrane current (pA)')
+ylabel('Transmembrane current (pA)')
 xlim([-80, -40])
-ylim([-1000, 2000])
+ylim([-3000, 1000])
 title('Stellate cell I-V relationship')
 grid()
 hold(True)
+#plot(ivc.binCenters*mV, ivc.Imean*pA, 'r', zorder=1)
+#plot(ivc.binCenters*mV, ivc.Imean*pA, 'ro', zorder=2)
 errorbar(ivc.binCenters*mV, ivc.Imean*pA, ivc.Istd/np.sqrt(ivc.IN)*pA, None, 'ro', zorder=1)
 hold(False)
 
 f.savefig(dir + file + '_IV_curve.png')
 
-
-distrib_it = 27
+expFit = ivc.fitExponentialIaF()
 figure(figsize=figSize)
-h = hist(ivc.Im[ivc.binIds[distrib_it]]*pA, 100, normed=True)
-title('Current distribution at $V_m$ = ' + str(ivc.binCenters[distrib_it]*mV) + ' mV.')
-xlabel('Membrane current (pA)')
-ylabel('Frequency')
+plot(ivc.cur.V*mV, -ivc.cur.I/ivc.cur.C, 'o')
+hold(True)
+plot(ivc.cur.V*mV, expFit.getCurve(ivc.cur.V))
+grid(True)
 
-savefig(dir + file + '_current_distrib.pdf')
 
 
 show()

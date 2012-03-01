@@ -1,6 +1,6 @@
 from brian.library.electrophysiology import *
 import numpy as np
-from scipy.optimize import fmin
+from scipy.optimize import fmin, leastsq
 
 
 pF = 1e-12
@@ -36,7 +36,34 @@ class DynamicIVCurve(object):
     This class doesn't do any assumptions about what time indices it should use.
     '''
 
-    def __init__(self, Iin, Vm, dV, dt, binStartV, binEndV, nbins):
+    class Curve:
+        def __init__(self, V, I, Istd, IN, C):
+            self.V = V
+            self.I = I
+            self.Istd = Istd
+            self.IN = IN
+            self.C = C
+
+    class ExpIaFParams:
+        def __init__(self, C, taum, Em, dT, VT):
+            self.C = C
+            self.taum = taum
+            self.Em = Em
+            self.dT = dT
+            self.VT = VT
+
+        def getCurve(self, V):
+            return 1/self.taum*(self.Em - V + self.dT*np.exp((V - self.VT)/self.dT))
+
+        def __repr__(self):
+            ret  = "C:    " + str(self.C*1e12) + " pF, "
+            ret += "taum: " + str(self.taum*1e3) + " ms, "
+            ret += "Em:   " + str(self.Em*1e3) + " mV, "
+            ret += "dT:   " + str(self.dT*1e3) + " mV, "
+            ret += "VT:   " + str(self.VT*1e3) + " mV, "
+            return ret
+
+    def __init__(self, Iin, Vm, dV, dt, binStartV, binEndV, nbins, C=None):
         self.Iin = Iin
         self.Vm = Vm
         self.dV = dV
@@ -44,15 +71,19 @@ class DynamicIVCurve(object):
         self.binEndV = binEndV
         self.nbins = nbins
         self.dt = dt
+        self._expFit = None
 
         self.binCenters, self.binIds = self.voltage_bins(Vm, binStartV, binEndV, nbins)
         
         self.Cest_bin_id = 27
-        self.C0 = 300*pF
-        self.Cest = self.findCapacitance(Iin[self.binIds[self.Cest_bin_id]],
-                dV[self.binIds[self.Cest_bin_id]]/dt, self.C0)
-        print("Estimated capacitance: " + str(self.Cest/pF) + " pF.")
-        self.Im = self.Cest*dV/dt - Iin
+        if C is None:
+            self.C0 = 300*pF
+            self.Cest = self.findCapacitance(Iin[self.binIds[self.Cest_bin_id]],
+                    dV[self.binIds[self.Cest_bin_id]]/dt, self.C0)
+            print("Estimated capacitance: " + str(self.Cest/pF) + " pF.")
+        else:
+            self.Cest = C
+        self.Im = Iin - self.Cest*dV/dt
 
         self.Imean = np.zeros(len(self.binCenters))
         self.Istd  = np.zeros(len(self.binCenters))
@@ -61,6 +92,9 @@ class DynamicIVCurve(object):
             self.Imean[i] = np.mean(self.Im[self.binIds[i]])
             self.Istd[i]  = np.std(self.Im[self.binIds[i]])
             self.IN[i]    = len(self.binIds[i])
+
+        self.cur = DynamicIVCurve.Curve(self.binCenters, self.Imean, self.Istd, self.IN,
+                self.Cest)
 
 
     def voltage_bins(self, V, binStart, binEnd, nbins):
@@ -87,6 +121,25 @@ class DynamicIVCurve(object):
         '''
         return fmin(lambda Ce: np.var(Iin/Ce - dVdt), C0, xtol=0.00001)[0]
 
+    def fitExponentialIaF(self):
+        '''Fit an exponential integrate and fire model to the data'''
+        if self._expFit is None:
+            taum0 = 10e-3
+            Em0 = -80e-3
+            dT0 = 2e-3
+            VT0 = -55e-3
+            x0 = np.array([taum0, Em0, dT0, VT0])
+            FV = -self.cur.I/self.cur.C
+
+            fun = lambda x: 1/x[0]*(x[1] - self.cur.V + x[2]*np.exp((self.cur.V -
+                x[3])/x[2])) - FV
+            xest, ierr  = leastsq(fun, x0, full_output=0)
+            self._expFit = DynamicIVCurve.ExpIaFParams(C=self.cur.C, taum=xest[0], Em=xest[1], dT=xest[2], VT=xest[3])
+            return self._expFit
+        else:
+            return self._expFit
+
+
 
 class DynamicIVCurveAfter(DynamicIVCurve):
     '''
@@ -96,7 +149,8 @@ class DynamicIVCurveAfter(DynamicIVCurve):
     Input currents and voltages must be contiguous regions.
     It is assumed that sampling rate is constant (times[i+1] - times[i] = dt)
     '''
-    def __init__(self, Iin, Vm, times, binStartV, binEndV, nbins, tafter, Vth=0):
+    def __init__(self, Iin, Vm, times, binStartV, binEndV, nbins, tafter,
+            C=None, Vth=0):
 
         self.Iin_all = Iin
         self.Vm_all  = Vm
@@ -109,7 +163,7 @@ class DynamicIVCurveAfter(DynamicIVCurve):
         time_id = time_id[0:len(time_id)-1]  # If last spike is the last in the array
 
         DynamicIVCurve.__init__(self, Iin[time_id], Vm[time_id], np.diff(Vm)[time_id],
-                self.dt, binStartV, binEndV, nbins)
+                self.dt, binStartV, binEndV, nbins, C)
         self.time_id = time_id
         self.times = self.times_all[time_id]
 
@@ -134,32 +188,36 @@ class DynamicIVCurveAfterRegion(DynamicIVCurve):
     Compute the dynamic IV curve from bounded regions after the spike.
     '''
     def __init__(self, Iin, Vm, times, binStartV, binEndV, nbins, region,
-            Vth=0):
+            C=None, Vth=0):
         self.Iin_all = Iin
         self.Vm_all = Vm
         self.times_all = times
         self.Vth = Vth
         self.dt = times[1] - times[0]
         self.region = region
+        self._region = (int(region[0]/self.dt), int(region[1]/self.dt))
         if region[0] >= region[1]:
             raise Exception('region[0] < region[1] !')
 
-        self.time_id = self.pickVAfterSPikeRegion(Vm, region, Vth)
+        self.time_id = self.pickVAfterSpikeRegion(Vm, self._region, Vth)
         self.time_id = self.time_id[0:len(self.time_id)-1]
 
         DynamicIVCurve.__init__(self, Iin[self.time_id], Vm[self.time_id],
-                np.diff(Vm)[self.time_id], dt, binStartV, binEndV, nbins)
+                np.diff(Vm)[self.time_id], self.dt, binStartV, binEndV, nbins, C)
+        self.times = self.times_all[self.time_id]
 
     def pickVAfterSpikeRegion(self, Vm, region, Vth):
         '''Pick only a regions of length region[1] - region[0] after the peak of
         each spike in the trace'''
-        spike_times = spike_peaks(Vm, V_th)
+        spike_times = spike_peaks(Vm, Vth)
         time_ids = np.arange(len(Vm))
         t_mask = np.ndarray(len(Vm), dtype=bool)
         t_mask[:] = False
         for t_spike in spike_times:
             t_mask = np.logical_or(t_mask, np.logical_and(time_ids >=
                 t_spike+region[0], time_ids < t_spike+region[1]))
+            t_mask = np.logical_and(t_mask, np.logical_or(time_ids <= t_spike,
+                time_ids >= t_spike+region[0]))
 
         return time_ids[t_mask]
 
