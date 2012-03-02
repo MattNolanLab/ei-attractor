@@ -12,7 +12,7 @@ pA = 1e-12
 pF = 1e-12
 ms = 1e-3
 MOhm = 1e6
-figSize = (8, 6)
+figSize = (10, 12)
 
 dirName = "../data/C_neutralisation/C_values/"
 files = [
@@ -49,24 +49,65 @@ for file_it in fileIds:
     
     Vcomp, kers, Vmean = compensate_voltage(I, V, Ik, Vk, ksize, tail_start)
 
-    hold(True)
     figure(1, figsize=figSize)
+    subplot(211)
+    hold(True)
     plot(times[0:tail_start]/ms, kers.Ke/MOhm)
     xlabel('Time (ms)')
     ylabel('Electrode kernel (MOhm)')
 
     vm_tstart = 30/dt
     vm_tend = 30.5/dt
-    figure(2, figsize=figSize)
+    subplot(212)
     plot(times[vm_tstart:vm_tend], Vcomp[vm_tstart:vm_tend])
     
     leg.append(files[file_it][1])
+
+    # Separate kernel plot
+    figure(figsize=(8, 6))
+    plot(times[0:tail_start]/ms, kers.Ke/MOhm)
+    xlabel('Time (ms)')
+    ylabel('Electrode kernel (MOhm)')
+    savefig(dirName + fileName + '_Ke.pdf')
+
+
+    # IV curve
+    IV_tstart = 20/dt
+    t_after = int(200e-3/dt)
+    binStart = -80e-3
+    binEnd = -43.5e-3
+    nbins = 50
+
+    ivc = DynamicIVCurveAfter(I[IV_tstart:], Vcomp[IV_tstart:], times[IV_tstart:],
+            binStart, binEnd, nbins, t_after)
+    region = (5e-3, 10e-3)
     
+    f = figure(figsize=figSize)
+    plot(ivc.Vm/mV, ivc.Im/pA, '.', zorder=0)
+    xlabel('Membrane voltage (mV)')
+    ylabel('Transmembrane current (pA)')
+    xlim([-80, -40])
+    ylim([-3000, 1000])
+    title('Stellate cell I-V relationship')
+    grid()
+    hold(True)
+    errorbar(ivc.binCenters/mV, ivc.Imean/pA, ivc.Istd/np.sqrt(ivc.IN)/pA, None, 'ro', zorder=1)
+    hold(False)
     
+    f.savefig(dirName + fileName + '_IV_curve.png')
+    
+    expFit = ivc.fitExponentialIaF()
+    figure(figsize=figSize)
+    plot(ivc.cur.V/mV, -ivc.cur.I/ivc.cur.C, 'o')
+    hold(True)
+    plot(ivc.cur.V/mV, expFit.getCurve(ivc.cur.V))
+    grid(True)
+
+    savefig(dirName + fileName + '_IV_curve_fit.pdf')
+    
+#legend(leg)
 figure(1)
-legend(leg)
-figure(2)
-legend(leg)
-show()
+savefig(dirName + fileName + '_c_values_kernels.pdf')
+#show()
     
     
