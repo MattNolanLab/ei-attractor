@@ -1,0 +1,7 @@
+This simulation sets a single bump 2D attractor model and varies two parameters
+
+  * Input driving current
+  * Coupling between neurons (strength of inhibitory and excitatory synapses)
+
+Here we are mainly looking at the stability of the bump over a specified period
+of time (its variance).

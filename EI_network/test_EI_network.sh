@@ -8,8 +8,8 @@
 export PYTHONPATH="$BASE"
 echo $PYTHONPATH
 
-Ne=30
-Ni=30
+Ne=100
+Ni=100
 
 AMPA_density="1.0"
 GABA_density="1.0"
@@ -56,8 +56,10 @@ time=30
 sim_dt="0.5e-3"
 spike_detect_th="20e-3"
 
+ntrials=1
+
 output_dir="output_local"
-update_interval=5
+update_interval=30
 job_num=1
 
 
@@ -103,6 +105,7 @@ python -i test_EI_network.py \
 --spike_detect_th $spike_detect_th \
 --output_dir $output_dir \
 --update_interval $update_interval \
---job_num $job_num
+--job_num $job_num \
+--ntrials $ntrials \
 
 

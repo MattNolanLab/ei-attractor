@@ -79,13 +79,8 @@ state_record_i = [465]
 
 spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
 spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
-stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = state_record_e, clock=simulationClock)
-stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = state_record_i, clock=simulationClock)
-stateMon_Isyn_e = StateMonitor(ei_net.E_pop, 'Isyn', record = state_record_e, clock=simulationClock)
-stateMon_Isyn_i = StateMonitor(ei_net.I_pop, 'Isyn', record = state_record_i, clock=simulationClock)
 
-ei_net.net.add(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i, stateMon_Isyn_e,
-        stateMon_Isyn_i)
+ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stimulateSubPopulation)
 
 
@@ -111,25 +106,8 @@ for trial_it in range(ei_net.o.ntrials):
     F_tend = options.time
     F_dt = 0.2
     F_winLen = 1.
-    f = figure(figsize=figSize)
-    title('Network size: ' + str(ei_net.o.Ne) + '(E), ' + str(ei_net.o.Ni) + '(I)')
-    subplot2grid((5,1), (0, 0), rowspan=3)
     Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
-    X, Y = meshgrid(Fe_t, np.arange(len(Fe)))
-    pcolor(X, Y, Fe)
-    colorbar()
-    ylabel('Neuron no. (E)')
-    xlabel('')
-    subplot2grid((5,1), (3, 0), rowspan=2)
     Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
-    X, Y = meshgrid(Fi_t, np.arange(len(Fi)))
-    pcolor(X, Y, Fi)
-    colorbar()
-    ylabel('Neuron no. (I)')
-    xlabel('Time (s)')
-    
-    savefig(output_fname + '_firing_rates.png')
-    
     
     # Print a plot of bump position
     (pos, times) = spikeMon_e.torusPopulationVector(ei_net.o.Ne, F_tstart, F_tend, F_dt,
@@ -157,7 +135,6 @@ for trial_it in range(ei_net.o.ntrials):
     outData['Fe_t'] = Fe_t
     outData['Fi'] = Fi
     outData['Fi_t'] = Fi_t
-
 
 
     savemat(output_fname + '_output.mat', outData, do_compression=True)

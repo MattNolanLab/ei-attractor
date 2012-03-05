@@ -25,6 +25,8 @@ def getOptParser():
             help="Number of excitatory neurons")
     optParser.add_option("--Ni", type="int", dest="Ni",
             help="Number of inhibitory neurons")
+    optParser.add_option("--ntrials", type=int, default=1,
+            help="Number of trials for the parameter set")
 
     optParser.add_option("--AMPA_density", type="float", 
             dest="AMPA_density", help="Density of E-->I connections")
@@ -115,44 +117,52 @@ def getOptParser():
 
     optParser.add_option("--output_dir", type="string",
             dest="output_dir", help="Output directory path.")
+    optParser.add_option("--fileNamePrefix", type="string", default='',
+            help="Prefix to include for each output file")
     optParser.add_option("-u", '--update_interval', type="float",
-            dest="update_interval", help="Duration between simulation status printouts")
+            dest="update_interval", help="Duration between simulation status printouts (s)")
     optParser.add_option("-n", "--job_num", type="int", dest="job_num",
             help="Use argument of this option to specify the output file name number, instead of using time")
 
     return optParser
 
+def setOptionDictionary(parser, options):
+    d = {}
+    attribs =  [x.dest for x in parser._get_all_options()[1:]]
 
-## Save the results of the simulation in a .mat file
-#def saveResultsToMat(options, ratData, spikeMonitor, SNMonitor,
-#        SNgMonitor, SNList, spikeMonList):
-#    # SNMonitor - monitor of single neurons, defined by list
-#    # SNList - list of neuron numbers monitored (SN response)
-#    # spikeMonitor - monitor of spikes of all neurons
-#    # rateMonitor - rate monitor of several neurons (TODO)
-#
-#    # Directory and filenames
-#    timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-#    dirName = options.output_dir
-#    
-#    output_fname = dirName
-#    if options.job_num != -1:
-#        output_fname = output_fname + 'job' + str(options.job_num)
-#    output_fname +=  '_' + timeSnapshot + '_output.mat'
-#
-#    # Start saving everything
-#    if ratData == None:
-#        outData = {}
-#    else:
-#        outData = ratData
-#
-#    spikeCell = empty(len(spikeMonList), dtype=object);
-#
-#    if spikeMonitor != None:
-#        for k,v in spikeMonitor.spiketimes.iteritems():
-#            spikeCell[k] = v
-#        outData['spikeCell'] = spikeCell
-#
+    for attr_name in attribs:
+        a = getattr(options, attr_name)
+        if a is not None:
+            d[attr_name] = a
+
+    options._einet_optdict = d
+    return options
+
+
+# Save the results of the simulation in a .mat file
+def saveResultsToMat(options, output_fname=None, spikeMon_e=None,
+        spikeMon_i=None,  ratData=None, do_compression=True):
+
+    # Directory and filenames
+    
+    if output_fname is None:
+        timeSnapshot = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        output_fname = options.output_dir
+        if options.job_num != -1:
+            output_fname = output_fname + '/job' + str(options.job_num)
+        output_fname +=  '_' + timeSnapshot + '_output.mat'
+
+    # Start saving everything
+    if ratData == None:
+        outData = {}
+    else:
+        outData = ratData
+
+    if spikeMon_e is not None:
+        outData['spikeCell_e'] = spikeMon_e.aspikes
+    if spikeMon_i is not None:
+        outData['spikeCell_i'] = spikeMon_i.aspikes
+
 #    if SNMonitor != None:
 #        outData['SNMonitor_values'] = SNMonitor.values_
 #        outData['SNMonitor_times'] =  SNMonitor.times_
@@ -167,16 +177,8 @@ def getOptParser():
 #        outData['SNg_adMonitor_times']  = SNg_adMonitor.times_
 #        outData['SNg_adMonitor_values'] = SNg_adMonitor.values_
 #        outData['SNList'] = SNList
-#
-#    # Merge the rat position and timestamp data into the output so it is self
-#    # contained
-#    #for k,v in ratData.iteritems():
-#    #    outData['ratData_' + k] = v
-#
-#    # Save options as string - couldn't find any other way how to convert it to
-#    # variables
-#    outData['options'] = str(options)
-#    outData['sheet_size'] = options.sheet_size
-#
-#    savemat(output_fname, outData, do_compression=True)
-#
+
+    outData['options'] = options._einet_optdict
+
+    savemat(output_fname, outData, do_compression=do_compression)
+

@@ -30,6 +30,15 @@ class EI_Network:
 
         self._createBasicNet(o, clk)
 
+    def initStates(self):
+        # Initialize membrane potential randomly
+        self.E_pop.vm = self.EL_e + (self.Vt_e-self.EL_e) * rand(len(self.E_pop))
+        self.I_pop.vm = self.EL_i + (self.Vt_i-self.EL_i) * rand(len(self.I_pop))
+        self.setBackgroundInput(self.o.Iext_e*amp, self.o.Iext_i*amp)
+
+    def reinit(self):
+        self.net.reinit(states=True)
+        self.initStates()
 
     def _createBasicNet(self, o, clk):
 
@@ -41,9 +50,9 @@ class EI_Network:
         Rm_e = o.Rm_e*ohm
         taum_e = o.taum_e*second
         Ce = taum_e/Rm_e
-        EL_e = o.EL_e*volt
+        self.EL_e = o.EL_e*volt
         deltaT_e = o.deltaT_e*volt
-        Vt_e = o.Vt_e*volt
+        self.Vt_e = o.Vt_e*volt
         Vr_e = o.Vr_e*volt
         tau_GABA_rise = o.tau_GABA_rise*second
         tau_GABA_fall = o.tau_GABA_fall*second
@@ -69,9 +78,9 @@ class EI_Network:
             gL=1/Rm_e,
             noise_sigma=noise_sigma,
             taum=taum_e,
-            EL=EL_e,
+            EL=self.EL_e,
             deltaT=deltaT_e,
-            Vt=Vt_e,
+            Vt=self.Vt_e,
             Esyn=Vrev_GABA,
             syn_tau1=tau1_GABA,
             syn_tau2=tau2_GABA,
@@ -82,9 +91,9 @@ class EI_Network:
         Rm_i = o.Rm_i*ohm
         taum_i = o.taum_i*second
         Ci = taum_i/Rm_i
-        EL_i = o.EL_i*volt
+        self.EL_i = o.EL_i*volt
         deltaT_i = o.deltaT_i*volt
-        Vt_i = o.Vt_i*volt
+        self.Vt_i = o.Vt_i*volt
         Vr_i = o.Vr_i*volt
         Vrev_AMPA = o.Vrev_AMPA*volt
         tau_AMPA = o.tau_AMPA*second
@@ -102,9 +111,9 @@ class EI_Network:
             gL=1/Rm_i,
             noise_sigma=noise_sigma,
             taum=taum_i,
-            EL=EL_i,
+            EL=self.EL_i,
             deltaT=deltaT_i,
-            Vt=Vt_i,
+            Vt=self.Vt_i,
             Esyn=Vrev_AMPA,
             syn_tau=tau_AMPA,
             tau_ad=tau_ad_i)
@@ -142,10 +151,6 @@ class EI_Network:
         #        weight=o.ad_i_g_inc*siemens)
 
 
-        # Initialize membrane potential randomly
-        self.E_pop.vm = EL_e + (Vt_e-EL_e) * rand(len(self.E_pop))
-        self.I_pop.vm = EL_i + (Vt_i-EL_i) * rand(len(self.I_pop))
-
 
         # Create network (withough any monitors
         self.net = Network(
@@ -154,9 +159,8 @@ class EI_Network:
                 #self.adaptConn_e,
                 #self.adaptConn_i)
 
-        self.setBackgroundInput(o.Iext_e*amp, o.Iext_i*amp)
-
         self.o = o
+        self.initStates()
 
 
     def setBackgroundInput(self, Iext_e, Iext_i):
