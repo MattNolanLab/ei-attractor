@@ -12,7 +12,7 @@ export PYTHONPATH="$BASE"
 echo $PYTHONPATH
 EDDIE=0  # if eddie, submit on a cluster using qsub
 
-QSUB_PARAMS="-N mult_bump_spiking_net -P inf_ndtc -cwd -l h_rt=00:15:00 -pe memory-2G 2"
+QSUB_PARAMS="-N mult_bump_spiking_net -P inf_ndtc -cwd -l h_rt=00:50:00"
 
 
 Ne=30
@@ -20,8 +20,8 @@ Ni=30
 
 #Iext_coeff="0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6"
 #coupling_coeff="0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5"
-Iext_coeff="1.0"
-coupling_coeff="1.0"
+Iext_coeff="1.6"
+coupling_coeff="1.5"
 
 AMPA_density="1.0"
 GABA_density="1.0"
@@ -64,11 +64,11 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=3
+time=30
 sim_dt="0.5e-3"
 spike_detect_th="20e-3"
 
-ntrials=10
+ntrials=20
 
 output_dir="output"
 update_interval=30
