@@ -7,21 +7,19 @@
 ########################################
 
 BASE=../../
-#export PYTHONPATH="/disk/scratch/s0966762/lib/python2.6/site-packages:$BASE"
-export PYTHONPATH="$BASE"
-echo $PYTHONPATH
-EDDIE=0  # if eddie, submit on a cluster using qsub
+export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
+EDDIE=1  # if eddie, submit on a cluster using qsub
 
-QSUB_PARAMS="-N mult_bump_spiking_net -P inf_ndtc -cwd -l h_rt=00:50:00"
+QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=00:50:00"
 
 
 Ne=30
 Ni=30
 
-#Iext_coeff="0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6"
-#coupling_coeff="0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5"
-Iext_coeff="1.6"
-coupling_coeff="1.5"
+Iext_coeff="0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6"
+coupling_coeff="0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5"
+#Iext_coeff="1.0"
+#coupling_coeff="1.0"
 
 AMPA_density="1.0"
 GABA_density="1.0"

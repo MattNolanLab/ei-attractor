@@ -17,8 +17,8 @@
 module load python/2.6.3
 
 
-BASE=../../src/mult_bump_spiking_net/
-export PYTHONPATH="/exports/work/informatics/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
+BASE=../../
+export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
 
 
 # Run the program
