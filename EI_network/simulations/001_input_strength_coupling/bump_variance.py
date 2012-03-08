@@ -32,8 +32,8 @@ for job_it in range(jobN):
     jobNum = job_it + jobRange[0]
 
     Iext_e[job_it] = res.o_vec[job_it, 0]['Iext_e'][0][0][0][0]
-    g_total[job_it] = res.o_vec[job_it, 0]['g_AMPA_total'][0][0][0][0] +
-        res.o_vec[job_it, 0]['g_GABA_total'][0][0][0][0]
+    g_total[job_it] = res.o_vec[job_it, 0]['g_AMPA_total'][0][0][0][0] + \
+            res.o_vec[job_it, 0]['g_GABA_total'][0][0][0][0]
     for trial_it in range(trialN):
         if res.pos_x_vec[job_it, trial_it] is None:
             continue

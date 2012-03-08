@@ -10,7 +10,7 @@ BASE=../../
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
 EDDIE=1  # if eddie, submit on a cluster using qsub
 
-QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=00:50:00"
+QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=01:10:00"
 
 
 Ne=30
@@ -72,7 +72,7 @@ output_dir="output"
 update_interval=30
 
 
-job_num=1
+job_num=500
 
 for Iext_c in $Iext_coeff; do
     for coupling_c in $coupling_coeff; do

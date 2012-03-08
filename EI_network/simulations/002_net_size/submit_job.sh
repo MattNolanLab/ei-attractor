@@ -12,9 +12,9 @@ EDDIE=1  # if eddie, submit on a cluster using qsub
 
 QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=05:00:00 -pe memory-2G 2"
 
-N_it="0   1  2  3  4  5   6"
-P_Ne=(40 50 60 70 80 90 100)
-P_Ni=(40 50 60 70 80 90 100)
+N_it="0"
+P_Ne=(30)
+P_Ni=(30)
 
 #Iext_coeff="0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6"
 #coupling_coeff="0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5"
@@ -72,7 +72,7 @@ output_dir="output"
 update_interval=30
 
 
-job_num=0
+job_num=7
 
 for Iext_c in $Iext_coeff; do
     for coupling_c in $coupling_coeff; do
