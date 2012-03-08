@@ -8,11 +8,11 @@
 
 BASE=../../
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
-EDDIE=0  # if eddie, submit on a cluster using qsub
+EDDIE=1  # if eddie, submit on a cluster using qsub
 
-QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=05:00:00 -pe memory-2G 2"
+QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
 
-net_generations=1
+net_generations=50
 
 Ne=40
 Ni=40
@@ -65,7 +65,7 @@ time=30
 sim_dt="0.5e-3"
 spike_detect_th="20e-3"
 
-ntrials=10
+ntrials=25
 
 output_dir="output"
 update_interval=30
