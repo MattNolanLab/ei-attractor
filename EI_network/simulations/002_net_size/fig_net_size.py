@@ -3,57 +3,38 @@ from matplotlib.pyplot import *
 
 import numpy as np
 
+from data_analysis import bumpVariancePos
+
 # Generate bump stability figures based on simulated stationary attractor
 # network
 
-def circularVariance(x, range):
-    ''' Returns circular moments of a vector of circular variable x, defined in
-    the 'range' (this will be mapped to a circle)'''
-    c = np.exp(1j*2*np.pi*x/range)
-    avg = np.mean(c)
-    theta_avg = np.angle(avg)
-    theta_var = 1 - np.abs(avg)
-    return (theta_avg, theta_var)
-    
 
 jobRange = [0, 6]
 trialRange = [0, 9]
+jobN = jobRange[1] - jobRange[0] + 1
+trialN = trialRange[1] - trialRange[0] + 1
+
+t_start = 3
 
 dirName = "output/"
 fileNamePrefix = ''
 fileNameTemp = "{0}/{1}job{2:04}_trial{3:04}"
 
-jobN = jobRange[1] - jobRange[0]+1
-pos_var = []
-pos_N = []
-pos_var_mean = np.ndarray((jobN, 2))
-pos_var_std = np.ndarray((jobN, 2))
-
 hist_nbins= 50
+
+res = bumpVariancePos(dirName, fileNamePrefix, jobRange, trialRange, t_start)
 
 for job_it in range(jobN):
     jobNum = job_it + jobRange[0]
-    pos_var.append([])
-    for trialNum in range(trialRange[0], trialRange[1]+1):
-        try:
-            fileName = fileNameTemp.format(dirName, fileNamePrefix, jobNum,
-                trialNum)
-            print "Processing file: " + fileName + "_output.mat"
-            data = loadmat(fileName + "_output.mat")
-        except:
-            print "Warning: could not open: " + fileName
+    for trial_it in range(trialN):
+        if res.pos_x_vec[job_it, trial_it] is None:
             continue
-
-        o = data['options']
-        #spikes = data['spikeCell_e']
-        pos_x = data['bumpPos'][:, 0]
-        pos_y = data['bumpPos'][:, 1]
-        
-        Ne = o['Ne'][0][0][0][0] # Ugly but these bastards cannot export to
-                                 # matlab
-        mean_x, var_x = circularVariance(pos_x, Ne)
-        mean_y, var_y = circularVariance(pos_y, Ne)
-        pos_var[job_it].append([var_x, var_y])
+        trialNum = trialRange[0] + trial_it
+        fileName = fileNameTemp.format(dirName, fileNamePrefix, jobNum,
+                                    trialNum)
+        pos_x = res.pos_x_vec[job_it, trial_it]
+        pos_y = res.pos_y_vec[job_it, trial_it]
+        Ne = res.o_vec[job_it, trial_it]['Ne'][0][0][0][0]
 
         figure
         subplot(121)
@@ -66,14 +47,11 @@ for job_it in range(jobN):
         savefig(fileName + '_bump_position_hist.pdf')
         close(gcf())
 
-    pos_var_mean[job_it, :] = np.mean(pos_var[job_it], 0)
-    pos_var_std[job_it, :] = np.std(pos_var[job_it], 0)
-    pos_N.append(Ne)
 
 figure()
 hold(True)
-errorbar(np.array(pos_N)**2, pos_var_mean[:, 0], pos_var_std[:, 0], fmt='o-')
-errorbar(np.array(pos_N)**2, pos_var_mean[:, 1], pos_var_std[:, 1], fmt='o-')
+errorbar(np.array(res.pos_N)**2, res.pos_var_mean[:, 0], res.pos_var_std[:, 0], fmt='o-')
+errorbar(np.array(res.pos_N)**2, res.pos_var_mean[:, 1], res.pos_var_std[:, 1], fmt='o-')
 legend(('X', 'Y'))
 xlabel('Network size E and I')
 ylabel('Average bump variance (normalised)')
@@ -82,18 +60,18 @@ hold(False)
 
 figure()
 subplot(211)
-errorbar(np.array(pos_N)**2, pos_var_mean[:, 0], pos_var_std[:, 0], fmt='o-')
+errorbar(np.array(res.pos_N)**2, res.pos_var_mean[:, 0], res.pos_var_std[:, 0], fmt='o-')
 ylabel('Average bump variance X (normalised)')
 subplot(212)
-errorbar(np.array(pos_N)**2, pos_var_mean[:, 1], pos_var_std[:, 1], fmt='o-')
+errorbar(np.array(res.pos_N)**2, res.pos_var_mean[:, 1], res.pos_var_std[:, 1], fmt='o-')
 xlabel('Network size E and I')
 ylabel('Average bump variance Y (normalised)')
 savefig(dirName + '/bump_position_variance_errbars_sep.pdf')
 
 figure()
 hold(True)
-plot(np.array(pos_N)**2, pos_var_mean[:, 0], 'o-')
-plot(np.array(pos_N)**2, pos_var_mean[:, 1], 'o-')
+plot(np.array(res.pos_N)**2, res.pos_var_mean[:, 0], 'o-')
+plot(np.array(res.pos_N)**2, res.pos_var_mean[:, 1], 'o-')
 legend(('X', 'Y'))
 xlabel('Network size E and I')
 ylabel('Average bump variance (normalised)')

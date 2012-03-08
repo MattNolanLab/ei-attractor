@@ -16,10 +16,10 @@ QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=00:50:00"
 Ne=30
 Ni=30
 
-Iext_coeff="0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6"
-coupling_coeff="0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5"
-#Iext_coeff="1.0"
-#coupling_coeff="1.0"
+#Iext_coeff="0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6"
+#coupling_coeff="0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5"
+Iext_coeff="1.0"
+coupling_coeff="1.0"
 
 AMPA_density="1.0"
 GABA_density="1.0"
@@ -66,7 +66,7 @@ time=30
 sim_dt="0.5e-3"
 spike_detect_th="20e-3"
 
-ntrials=20
+ntrials=1
 
 output_dir="output"
 update_interval=30
