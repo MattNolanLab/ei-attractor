@@ -66,7 +66,7 @@ time=30
 sim_dt="0.5e-3"
 spike_detect_th="20e-3"
 
-ntrials=10
+ntrials=1
 
 output_dir="output"
 update_interval=30
