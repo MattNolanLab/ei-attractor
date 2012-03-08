@@ -42,6 +42,7 @@ figSize = (12,8)
 ################################################################################
 print "Starting network and connections initialization..."
 start_time=time.time()
+total_start_t = time.time()
 
 options.ndim = 2
 ei_net = EI_Network(options, simulationClock)
@@ -82,6 +83,20 @@ spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
 
 ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stimulateSubPopulation)
+
+
+# Export connectivity matrices
+print "Exporting connections..."
+connOut = {}
+connOut['AMPA_conn'] = ei_net.AMPA_conn.W
+connOut['GABA_conn'] = ei_net.GABA_conn1.W
+connOut['options'] = options._einet_optdict
+
+conn_fname = "{0}/{1}job{2:04}_connections.mat".format(options.output_dir,
+        options.fileNamePrefix, options.job_num)
+savemat(conn_fname, connOut, do_compression=False)
+print "Finished exporting connections"
+
 
 
 ################################################################################
@@ -146,3 +161,7 @@ for trial_it in range(ei_net.o.ntrials):
     ei_net.reinit()
 #                            End main cycle
 ################################################################################
+
+total_time = time.time()-total_start_t
+print "Overall time: ", total_time, " seconds"
+
