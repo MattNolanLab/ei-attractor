@@ -143,21 +143,21 @@ class EI_Network:
                 clock=clk)
 
 
-
-        ## Setup adaptation connections: neuron on itself
-        #self.adaptConn_e = IdentityConnection(self.E_pop, self.E_pop,  'g_ad',
-        #        weight=o.ad_e_g_inc*siemens)
-        #self.adaptConn_i = IdentityConnection(self.I_pop, self.I_pop, 'g_ad',
-        #        weight=o.ad_i_g_inc*siemens)
-
-
-
-        # Create network (withough any monitors
         self.net = Network(
                 self.E_pop,
                 self.I_pop)
-                #self.adaptConn_e,
-                #self.adaptConn_i)
+
+        # Setup adaptation connections: neuron on itself
+        if o.ad_e_g_inc != 0.0:
+            self.adaptConn_e = IdentityConnection(self.E_pop, self.E_pop,  'g_ad',
+                    weight=o.ad_e_g_inc*siemens)
+            self.net.add(self.adaptConn_e)
+        if o.ad_i_g_inc != 0.0:
+            self.adaptConn_i = IdentityConnection(self.I_pop, self.I_pop, 'g_ad',
+                    weight=o.ad_i_g_inc*siemens)
+            self.net.add(self.adaptConn_i)
+
+
 
         self.o = o
         self.initStates()

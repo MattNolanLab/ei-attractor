@@ -157,6 +157,7 @@ for trial_it in range(ei_net.o.ntrials):
     outData['Fe_t'] = Fe_t
     outData['Fi'] = Fi
     outData['Fi_t'] = Fi_t
+    outData['F_dt'] = F_dt
 
 
 
