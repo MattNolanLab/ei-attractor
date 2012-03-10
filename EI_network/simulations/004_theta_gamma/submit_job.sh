@@ -10,9 +10,9 @@ BASE=../../
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
 EDDIE=0  # if eddie, submit on a cluster using qsub
 
-QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
+QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:30:00"
 
-net_generations=1
+net_generations=10
 
 Ne=400
 Ni=100
@@ -20,8 +20,11 @@ Ni=100
 AMPA_density="0.4"
 GABA_density="0.4"
 
-Iext_e="900e-12"
-Iext_i="250e-12"
+Iext_coeff="0.8 0.9 1.0 1.05 1.1 1.15 1.2 1.25 1.3 1.35 1.4"
+AMPA_coeff="0.8 0.9 1.0 1.05 1.1 1.15 1.2 1.25 1.4 1.35 1.4"
+
+Iext_e_1="900*10^-12"
+Iext_i_1="250*10^-12"
 
 taum_e="9.3e-3"
 taum_e_spread="3.1e-3"
@@ -48,7 +51,7 @@ ad_i_g_inc="2.273e-8"
 deltaT_i="0.4e-3"
 
 tau_AMPA="1e-3"
-g_AMPA_total="3.5e-8"
+g_AMPA_total_1="3.5*10^-8"
 g_AMPA_std="600e-12"
 tau_GABA_rise="1e-3"
 tau_GABA_fall="5e-3"
@@ -63,20 +66,26 @@ sigma_init_cond="10e-3"
 refrac_abs="0.1e-3"
 
 time=5
-sim_dt="0.1e-3"
+sim_dt="0.05e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
 
-ntrials=1
+ntrials=2
 
 output_dir="output"
 update_interval=10
 job_num=1000
 
 
-net_it=0
+for Iext_c in $Iext_coeff; do
+    for AMPA_c in $AMPA_coeff; do
 #####################
-    echo "net_it = $net_it"
+    Iext_e=`echo "$Iext_e_1 * $Iext_c" | bc -l`
+    Iext_i=`echo "$Iext_i_1 * $Iext_c" | bc -l`
+
+    g_AMPA_total=`echo "$g_AMPA_total_1 * $AMPA_c" | bc -l`
+
+    echo $Iext_e, $Iext_i, $g_AMPA_total
 
     if [ $EDDIE -eq 1 ]
     then
@@ -186,5 +195,6 @@ net_it=0
     echo
 
     let job_num=$job_num+1
-    let net_it=$net_it+1
 #####################
+    done
+done

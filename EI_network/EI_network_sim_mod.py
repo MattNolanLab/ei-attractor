@@ -40,8 +40,12 @@ def getOptParser():
 
     optParser.add_option("--taum_e", type="float", dest="taum_e",
             help="Mean of excitatory neuron membrane time constant (s)")
+    optParser.add_option("--taum_e_spread", type="float",
+            help="Spread of --taum_e (see --taum_i_spread option) (s)")
     optParser.add_option("--EL_e", type="float", dest="EL_e",
             help="Mean resting membrane potential of excitatory neurons (V)")
+    optParser.add_option("--EL_e_spread", type="float",
+            help="EL_e spread (see --taum_e_spread options for details) (V)")
     optParser.add_option("--Vt_e", type="float", dest="Vt_e",
             help="Mean of the excitatory integrate and fire spiking threshold (V)")
     optParser.add_option("--Vr_e", type="float", dest="Vr_e",
@@ -60,8 +64,13 @@ def getOptParser():
 
     optParser.add_option("--taum_i", type="float", dest="taum_i",
             help="Mean of inhibitory neuron membrane time constant (s)")
+    optParser.add_option("--taum_i_spread", type="float",
+            help="Spread of --taum_i: drawn from uniform distrib. "
+            "<taum_i-spread/2, taum_i+spread/2> (s)")
     optParser.add_option("--EL_i", type="float", dest="EL_i",
             help="Mean resting membrane potential of inhibitory neurons (V)")
+    optParser.add_option("--EL_i_spread", type="float",
+            help="ELs will be uniformly generated from <EL-spread, EL+spread> (V)")
     optParser.add_option("--Vt_i", type="float", dest="Vt_i",
             help="Mean of the excitatory integrate and fire spiking threshold (V)")
     optParser.add_option("--Vr_i", type="float", dest="Vr_i",
@@ -114,6 +123,8 @@ def getOptParser():
             dest="spike_detect_th", help="Spike detection threshold during"
             "numerical simulation (V)")
 
+    optParser.add_option('--Vclamp', type=float,
+            help="Clamp potential (for simulated voltage clamp, V)")
 
     optParser.add_option("--output_dir", type="string",
             dest="output_dir", help="Output directory path.")

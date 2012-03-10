@@ -9,16 +9,16 @@ from optparse import OptionParser
 from datetime import datetime
 
 import numpy as np
+from numpy.random import rand
 
 import time
 import math
-import random
 
 
 
 class EI_Network:
     def __init__(self, o, clk):
-        if o.ndim == 1:
+        if o.ndim == 1 or o.ndim == -1:
             self.net_Ne = o.Ne
             self.net_Ni = o.Ni
         elif o.ndim == 2:
@@ -35,6 +35,18 @@ class EI_Network:
         self.E_pop.vm = self.EL_e + (self.Vt_e-self.EL_e) * rand(len(self.E_pop))
         self.I_pop.vm = self.EL_i + (self.Vt_i-self.EL_i) * rand(len(self.I_pop))
         self.setBackgroundInput(self.o.Iext_e*amp, self.o.Iext_i*amp)
+        self.E_pop.tau_ad = (self.o.ad_tau_e_mean +
+                self.o.ad_tau_e_std*np.random.randn(len(self.E_pop.tau_ad)))*second
+        self.E_pop.EL = (self.o.EL_e - self.o.EL_e_spread/2. +
+                self.o.EL_e_spread*rand(len(self.E_pop))) * volt
+        self.E_pop.taum = (self.o.taum_e - self.o.taum_e_spread/2. +
+                self.o.taum_e_spread*rand(len(self.E_pop))) * second
+        self.I_pop.tau_ad = (self.o.ad_tau_i_mean +
+                self.o.ad_tau_i_std*np.random.randn(len(self.I_pop.tau_ad)))*second
+        self.I_pop.EL = (self.o.EL_i - self.o.EL_i_spread/2.0 +
+                self.o.EL_i_spread*rand(len(self.I_pop))) * second
+        self.I_pop.taum = (self.o.taum_i - self.o.taum_i_spread/2. +
+                self.o.taum_i_spread*rand(len(self.I_pop))) * second
 
     def reinit(self):
         self.net.reinit(states=True)
@@ -60,31 +72,33 @@ class EI_Network:
         tau2_GABA = tau_GABA_rise*tau_GABA_fall / (tau_GABA_rise + tau_GABA_fall);
         self.B_GABA = 1/((tau2_GABA/tau1_GABA)**(tau_GABA_rise/tau1_GABA) - 
                 (tau2_GABA/tau1_GABA)**(tau_GABA_rise/tau2_GABA))
-        tau_ad_e = o.ad_tau_e_mean*second
         
         Vrev_GABA = o.Vrev_GABA*volt
 
 
         self.eqs_e = Equations('''
-            dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
+            dvm/dt = 1/C*Im + (noise_sigma*xi/taum_mean**.5): volt
             Im = gL*(EL-vm)*(1+g_ad/gL)+gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
             Isyn = (gi1 - gi2)*(Esyn - vm) : amp
+            Iclamp = (gi1 - gi2)*(Esyn - Vclamp) : amp
             dgi1/dt = -gi1/syn_tau1 : siemens
             dgi2/dt = -gi2/syn_tau2 : siemens
             dg_ad/dt = -g_ad/tau_ad : siemens
+            tau_ad : second
             Iext : amp
+            EL : volt
+            taum : second
             ''',
             C=Ce,
             gL=1/Rm_e,
             noise_sigma=noise_sigma,
-            taum=taum_e,
-            EL=self.EL_e,
             deltaT=deltaT_e,
             Vt=self.Vt_e,
             Esyn=Vrev_GABA,
+            Vclamp = o.Vclamp*volt,
             syn_tau1=tau1_GABA,
             syn_tau2=tau2_GABA,
-            tau_ad=tau_ad_e)
+            taum_mean=o.taum_e*second)
 
 
         # Inhibitory population
@@ -100,23 +114,26 @@ class EI_Network:
         tau_ad_i = o.ad_tau_i_mean*second
         
         self.eqs_i = Equations('''
-            dvm/dt = 1/C*Im + (noise_sigma*xi/taum**.5): volt
+            dvm/dt = 1/C*Im + (noise_sigma*xi/taum_mean**.5): volt
             Im = gL*(EL-vm)*(1+g_ad/gL) + gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
             Isyn = ge*(Esyn - vm) : amp
+            Iclamp = ge*(Esyn - Vclamp) : amp
             dge/dt = -ge/syn_tau : siemens
             dg_ad/dt = -g_ad/tau_ad : siemens
+            tau_ad : second
             Iext : amp
+            EL : volt
+            taum : second
             ''',
             C=Ci,
             gL=1/Rm_i,
             noise_sigma=noise_sigma,
-            taum=taum_i,
-            EL=self.EL_i,
             deltaT=deltaT_i,
             Vt=self.Vt_i,
             Esyn=Vrev_AMPA,
+            Vclamp=o.Vclamp*volt,
             syn_tau=tau_AMPA,
-            tau_ad=tau_ad_i)
+            taum_mean=o.taum_i*second)
 
 
         # Other constants
@@ -297,3 +314,28 @@ class EI_Network:
         self.net.add(self.AMPA_conn, self.GABA_conn1, self.GABA_conn2)
         self.ndim = ndim
 
+
+    def connRandom(self, AMPA_density, GABA_density):
+        '''
+        Connect each pair of neurons with a random probability given by:
+          
+          E --> I given by AMPA_density <0, 1>
+          I --> E given by GABA_density <0, 1>
+        '''
+
+        g_AMPA_mean = self.o.g_AMPA_total / self.net_Ne / AMPA_density
+        g_AMPA_sigma = np.sqrt(np.log(1 + self.o.g_AMPA_std**2/g_AMPA_mean**2))
+        g_AMPA_mu = np.log(g_AMPA_mean) - 1/2*g_AMPA_sigma**2
+        g_GABA_mean = self.o.g_GABA_total / self.net_Ni / GABA_density * siemens
+
+        self.AMPA_conn = Connection(self.E_pop, self.I_pop, 'ge')
+        self.GABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
+        self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
+
+        self.AMPA_conn.connect_random(self.E_pop, self.I_pop, AMPA_density, 
+                weight=lambda: np.random.lognormal(g_AMPA_mu, g_AMPA_sigma)*siemens)
+        self.GABA_conn1.connect_random(self.I_pop, self.E_pop, GABA_density,
+                weight=self.B_GABA*g_GABA_mean)
+        self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W) 
+  
+        self.net.add(self.AMPA_conn, self.GABA_conn1, self.GABA_conn2) 

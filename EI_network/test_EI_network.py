@@ -11,6 +11,8 @@ from scipy.io import savemat
 from optparse import OptionParser
 from datetime import datetime
 
+from scipy.signal import *
+
 import time
 import math
 import sys
@@ -24,7 +26,20 @@ from custombrian import *
 lg.basicConfig(level=lg.DEBUG)
 
 
+def butterHighPass(sig, dt, f_pass):
+    nyq_f = 1./dt/2
+    norm_f_pass = f_pass/nyq_f
+
+    # Low pass filter
+    b, a = butter(3, norm_f_pass, btype='high')
+    return filtfilt(b, a, sig)
+
+
 parser = getOptParser()
+
+parser.add_option("--theta_freq", type="float",
+        help="Theta frequency stimulation (Hz)")
+
 (options, args) = parser.parse_args()
 options = setOptionDictionary(parser, options)
 
@@ -32,6 +47,8 @@ options = setOptionDictionary(parser, options)
 sim_dt = options.sim_dt*second
 simulationClock = Clock(dt=sim_dt)
 stimClock = Clock(50*msecond)
+
+theta_omega = 2*np.pi*options.theta_freq/second
 
 # Other
 figSize = (12,8)
@@ -43,14 +60,10 @@ figSize = (12,8)
 print "Starting network and connections initialization..."
 start_time=time.time()
 
-options.ndim = 2
+options.ndim = -1
 ei_net = EI_Network(options, simulationClock)
 
-# Mexican hat properties and AMPA/GABA connections
-pAMPA_mu = 0.5
-pAMPA_sigma = 0.25/6
-pGABA_sigma = 0.5/6
-ei_net.connMexicanHat(pAMPA_mu, pAMPA_sigma, pGABA_sigma)
+ei_net.connRandom(options.AMPA_density, options.GABA_density)
 
 
 duration=time.time()-start_time
@@ -58,41 +71,49 @@ print "Network setup time:",duration,"seconds"
 #                            End Network setup
 ################################################################################
 
-stim_start = int(0.4*ei_net.o.Ne)
-stim_range = int(0.2*ei_net.o.Ne)
-stim_current = 1200*pA
-
-@network_operation(stimClock)
-def stimulateSubPopulation():
-    if simulationClock.t > 500*msecond and simulationClock.t < 650*msecond:
-        tmp = ei_net.E_pop.Iext.reshape((options.Ne, options.Ne))
-        tmp[stim_start:stim_start+stim_range, stim_start:stim_start+stim_range] =\
-            linspace(stim_current, stim_current, stim_range**2).reshape((stim_range, stim_range))
-        ei_net.E_pop.Iext = tmp.ravel()
-        print "Stimulation..."
-    else:
-        ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
+@network_operation(simulationClock)
+def thetaStimulation():
+    ph = theta_omega*simulationClock.t
+    ei_net.E_pop.Iext = options.Iext_e/2*np.sin(ph + np.pi/2) + options.Iext_e/2
+    ei_net.I_pop.Iext = options.Iext_i/2*np.sin(ph + np.pi/2) + options.Iext_i/2
+    #pass
 
 
-state_record_e = [465]
-state_record_i = [465]
+state_record_e = [10, 20]
+state_record_i = [10, 20]
+
+Iext_e_rec = [10]
+Iext_i_rec = [10]
 
 spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
 spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
 stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = state_record_e, clock=simulationClock)
 stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = state_record_i, clock=simulationClock)
-stateMon_Isyn_e = StateMonitor(ei_net.E_pop, 'Isyn', record = state_record_e, clock=simulationClock)
-stateMon_Isyn_i = StateMonitor(ei_net.I_pop, 'Isyn', record = state_record_i, clock=simulationClock)
+stateMon_Iclamp_e = StateMonitor(ei_net.E_pop, 'Iclamp', record = state_record_e, clock=simulationClock)
+stateMon_Iclamp_i = StateMonitor(ei_net.I_pop, 'Iclamp', record = state_record_i, clock=simulationClock)
+stateMon_Iext_e = StateMonitor(ei_net.E_pop, 'Iext', record=Iext_e_rec,
+        clock=simulationClock)
+stateMon_Iext_i = StateMonitor(ei_net.I_pop, 'Iext', record=Iext_i_rec,
+        clock=simulationClock)
+stateMon_g_ad_e = StateMonitor(ei_net.E_pop, 'g_ad', record=state_record_e,
+        clock=simulationClock)
+stateMon_g_ad_i = StateMonitor(ei_net.I_pop, 'g_ad', record=state_record_i,
+        clock=simulationClock)
 
-ei_net.net.add(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i, stateMon_Isyn_e,
-        stateMon_Isyn_i)
-ei_net.net.add(stimulateSubPopulation)
+ei_net.net.add(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i, stateMon_Iclamp_e,
+        stateMon_Iclamp_i)
+ei_net.net.add(stateMon_Iext_e)
+ei_net.net.add(stateMon_Iext_i)
+ei_net.net.add(stateMon_g_ad_e)
+ei_net.net.add(stateMon_g_ad_i)
+
+ei_net.net.add(thetaStimulation)
 
 
 ################################################################################
 #                              Main cycle
 ################################################################################
-for trial_it in range(ei_net.o.ntrials):
+for trial_it in [1]: #range(ei_net.o.ntrials):
     print "Starting trial no. " + str(trial_it) + "..."
     print "Simulation running..."
     start_time=time.time()
@@ -106,67 +127,85 @@ for trial_it in range(ei_net.o.ntrials):
     output_fname = "{0}/{1}job{2:04}_trial{3:04}".format(options.output_dir,
             options.fileNamePrefix, options.job_num, trial_it)
     
-    
-    F_tstart = 0
-    F_tend = options.time
-    F_dt = 0.2
-    F_winLen = 1.
-    f = figure(figsize=figSize)
-    title('Network size: ' + str(ei_net.o.Ne) + '(E), ' + str(ei_net.o.Ni) + '(I)')
-    subplot2grid((5,1), (0, 0), rowspan=3)
-    Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
-    X, Y = meshgrid(Fe_t, np.arange(len(Fe)))
-    pcolor(X, Y, Fe)
-    colorbar()
-    ylabel('Neuron no. (E)')
-    xlabel('')
-    subplot2grid((5,1), (3, 0), rowspan=2)
-    Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
-    X, Y = meshgrid(Fi_t, np.arange(len(Fi)))
-    pcolor(X, Y, Fi)
-    colorbar()
-    ylabel('Neuron no. (I)')
+
+
+    figure()
+    ax = subplot(211)
+    plot(stateMon_e.times, stateMon_e.values.T/mV)
+    ylabel('E membrane potential (mV)')
+    subplot(212, sharex=ax)
+    plot(stateMon_i.times, stateMon_i.values.T/mV)
     xlabel('Time (s)')
+    ylabel('I membrane potential (mV)')
+    xlim([1.5, 2.5])
     
-    savefig(output_fname + '_firing_rates.png')
-    
-    
-    # Print a plot of bump position
-    (pos, times) = spikeMon_e.torusPopulationVector(ei_net.o.Ne, F_tstart, F_tend, F_dt,
-            F_winLen)
-    figure(figsize=figSize)
-    plot(times, pos)
+
+    figure()
+    ax = subplot(211)
+    plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0].T/pA)
+    ylabel('E synaptic current (pA)')
+    subplot(212, sharex=ax)
+    plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[0].T/pA)
     xlabel('Time (s)')
-    ylabel('Bump position (neurons)')
+    ylabel('I synaptic current (pA)')
+    xlim([1.5, 2.5])
     
-    savefig(output_fname + '_bump_position.pdf')
+
+    # Band pass filter these signals
+
+    figure()
+    hold(True)
+    ax = subplot(211)
+    plot(stateMon_Iclamp_e.times, butterHighPass(stateMon_Iclamp_e.values[0].T/pA +
+            stateMon_Iext_e.values[0].T/pA, options.sim_dt, 40))
+    plot(stateMon_Iclamp_e.times, stateMon_Iext_e.values[0]/pA)
+    ylabel('E current (pA)')
+    subplot(212, sharex=ax)
+    plot(stateMon_Iclamp_i.times, butterHighPass(stateMon_Iclamp_i.values[0].T/pA +
+            stateMon_Iext_i.values[0].T/pA, options.sim_dt, 40))
+    plot(stateMon_Iclamp_i.times, stateMon_Iext_i.values[0]/pA)
+    xlabel('Time (s)')
+    ylabel('I current (pA)')
+    xlim([1.5, 2.5])
     
+    # Firing rate
+    Favg_e = spikeMon_e.getNSpikes()/options.time
+    mean_e = np.mean(Favg_e)
+    #Favg_i = spikeMon_i.getNSpikes()/options.time
+    figure()
+    h = hist(Favg_e, 20)
+    xlabel('E f. rate (Hz)')
+    ylabel('Count')
+    #text((h[1][-1] + h[1][0])/2, np.max(h[0])*1.2, 'Average: ' + str(mean_e) + ' Hz')
+    title('Average: ' + str(mean_e) + ' Hz')
+
     
-    outData = {}
-    outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-    if spikeMon_e is not None:
-        outData['spikeCell_e'] = spikeMon_e.aspikes
-    if spikeMon_i is not None:
-        outData['spikeCell_i'] = spikeMon_i.aspikes
-    outData['options'] = options._einet_optdict
+#    outData = {}
+#    outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+#    if spikeMon_e is not None:
+#        outData['spikeCell_e'] = spikeMon_e.aspikes
+#    if spikeMon_i is not None:
+#        outData['spikeCell_i'] = spikeMon_i.aspikes
+#    outData['options'] = options._einet_optdict
+#
+#    outData['bumpPos'] = pos
+#    outData['bumpPos_times'] = times
+#
+#    outData['Fe'] = Fe
+#    outData['Fe_t'] = Fe_t
+#    outData['Fi'] = Fi
+#    outData['Fi_t'] = Fi_t
+#    outData['F_dt'] = F_dt
+#
+#
+#
+#    savemat(output_fname + '_output.mat', outData, do_compression=True)
 
-    outData['bumpPos'] = pos
-    outData['bumpPos_times'] = times
-
-    outData['Fe'] = Fe
-    outData['Fe_t'] = Fe_t
-    outData['Fi'] = Fi
-    outData['Fi_t'] = Fi_t
-    outData['F_dt'] = F_dt
-
-
-
-    savemat(output_fname + '_output.mat', outData, do_compression=True)
-
+    show()
 
     print "End of trial no. " + str(trial_it) + "..."
     print 
 
-    ei_net.reinit()
+    #ei_net.reinit()
 #                            End main cycle
 ################################################################################

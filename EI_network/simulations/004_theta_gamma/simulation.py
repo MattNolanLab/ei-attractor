@@ -75,6 +75,7 @@ parser.add_option("--net_generations", type="int",
 
 (options, args) = parser.parse_args()
 options = setOptionDictionary(parser, options)
+print options
 
 # Clock definitions
 sim_dt = options.sim_dt*second
@@ -107,9 +108,14 @@ total_start_t = time.time()
 
 
 outputDir = createJobDir(options)
+output_fname_prefix = '{0}/{1}'.format(outputDir,
+        options.fileNamePrefix)
+output_fname_job = output_fname_prefix + 'job{0:04}'.format(options.job_num)
 
 
 for net_it in xrange(options.net_generations):
+    output_fname_gen = output_fname_job + '_gen{0:02}'.format(net_it)
+
     print 'Network generation no. ' + str(net_it)
     ################################################################################
     #                              Network setup
@@ -121,6 +127,16 @@ for net_it in xrange(options.net_generations):
     ei_net = EI_Network(options, simulationClock)
     
     ei_net.connRandom(options.AMPA_density, options.GABA_density)
+    
+    # After network generation, save connections
+    print "Saving connections..."
+    connItems = [
+            ['AMPA_conn_W', ei_net.AMPA_conn.W],
+            ['GABA_conn1_W', ei_net.GABA_conn1.W],
+            ['options', options._einet_optdict]]
+    matFormatSaver(output_fname_gen + "_connections.mat", connItems,
+            do_compression=True)
+    print "Done"
     
     
     duration=time.time()-start_time
@@ -184,10 +200,9 @@ for net_it in xrange(options.net_generations):
             print "Simulation time:",duration,"seconds"
             
             
-            output_fname = "{0}/{1}job{2:04}_gen{3:02}_trial{4:04}_stim{5}".format(outputDir,
-                    options.fileNamePrefix, options.job_num, net_it, trial_it, stim_freq)
-            
-    
+            output_fname_trial = output_fname_gen + '_trial{0:04}'.format(trial_it)
+            output_fname = output_fname_trial + "_stim{0}".format(stim_freq)
+
     
             figure()
             ax = subplot(211)
@@ -262,13 +277,13 @@ for net_it in xrange(options.net_generations):
             for ei_it in [0, 1]:
                 if ei_it == 0:
                     raster_pp = PdfPages(output_fname + '_phase_raster_e.pdf')
-                    pspike_pp = PdfPages(output_fname + '_phase_pspike_e.pdf')
+                    #pspike_pp = PdfPages(output_fname + '_phase_pspike_e.pdf')
                     avg_fname = output_fname + '_phase_pspike_avg_e.pdf'
                     n_range = int(len(ei_net.E_pop)/10)
                     tmp_spikeMon = spikeMon_e
                 else:
                     raster_pp = PdfPages(output_fname + '_phase_raster_i.pdf')
-                    pspike_pp = PdfPages(output_fname + '_phase_pspike_i.pdf')
+                    #pspike_pp = PdfPages(output_fname + '_phase_pspike_i.pdf')
                     avg_fname = output_fname + '_phase_pspike_avg_i.pdf'
                     n_range = int(len(ei_net.I_pop)/10)
                     tmp_spikeMon = spikeMon_i
@@ -316,7 +331,7 @@ for net_it in xrange(options.net_generations):
                     #pspike_pp.savefig()
                     #close()
                 raster_pp.close()
-                pspike_pp.close()
+                #pspike_pp.close()
 
                 # Average histogram + one neuron
                 figure(figsize=small_plot_figsize)
@@ -366,7 +381,7 @@ for net_it in xrange(options.net_generations):
         xlabel('Stim. freq. (Hz)')
         ylabel('F. rate (Hz)')
         ylim([0, max(F_std_e_vec+F_mean_e_vec)+10])
-        savefig(output_fname + '_Fmean_freq_bar_e.pdf')
+        savefig(output_fname_trial + '_Fmean_freq_bar_e.pdf')
         close()
     
         figure(figsize=(2.5, 4))
@@ -380,12 +395,14 @@ for net_it in xrange(options.net_generations):
         xlabel('Stim. freq (Hz)')
         ylabel('F. rate (Hz)')
         ylim([0, max(F_std_i_vec+F_mean_i_vec)+10])
-        savefig(output_fname + '_Fmean_freq_bar_i.pdf')
+        savefig(output_fname_trial + '_Fmean_freq_bar_i.pdf')
         close()
     
         print "End of trial no. " + str(trial_it) + "..."
         print 
-    
+
+
+
     #                            End main cycle
     ################################################################################
 

@@ -1,9 +1,11 @@
-from brian.monitor import SpikeMonitor
+from brian.monitor import SpikeMonitor, StateMonitor
+from scipy.io import savemat
 
 import numpy as np
 import operator as op
 import logging as lg
 
+from datetime import datetime
 
 
 
@@ -63,6 +65,12 @@ class ExtendedSpikeMonitor(SpikeMonitor):
         lg.debug('End firing rate processing')
         return (r/winLen, times)
 
+    def getNSpikes(self):
+        total = np.ndarray(len(self.aspikes))
+        for n_it in xrange(len(self.aspikes)):
+            total[n_it] = len(self.aspikes[n_it])
+        return total
+
     def torusPopulationVector(self, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=1.0):
         (F, tsteps) = self.getFiringRate(tstart, tend, dt, winLen)
         
@@ -76,3 +84,23 @@ class ExtendedSpikeMonitor(SpikeMonitor):
 
         return (np.angle(P)/2/np.pi*sheetSize, tsteps)
         
+
+def matFormatSaver(fileName, items, do_compression=False):
+    '''Saves either instances of StateMonitor or Spikemonitor, or objects
+    saveable by scipy.io.savemat. items is a list of pairs (name, obj)'''
+
+    outData = {}
+
+    for name, obj in items:
+        if isinstance(obj, SpikeMonitor):
+            outData[name + '_spikeCell'] = obj.aspikes
+        elif isinstance(obj, StateMonitor):
+            outData[name + '_times'] = obj.times
+            outData[name + '_values'] = obj.values
+        else:
+            outData[name] = obj
+
+    outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+
+    savemat(fileName, outData, do_compression=do_compression)
+
