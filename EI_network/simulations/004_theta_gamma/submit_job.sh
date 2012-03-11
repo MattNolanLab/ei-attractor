@@ -8,9 +8,9 @@
 
 BASE=../../
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
-EDDIE=0  # if eddie, submit on a cluster using qsub
+EDDIE=1  # if eddie, submit on a cluster using qsub
 
-QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:30:00"
+QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=02:30:00"
 
 net_generations=10
 
@@ -89,7 +89,9 @@ for Iext_c in $Iext_coeff; do
 
     if [ $EDDIE -eq 1 ]
     then
-        qsub $QSUB_PARAMS eddie_submit.sh \
+        job_num_str=`printf "job%04d" $job_num`
+        qsub $QSUB_PARAMS -N $job_num_str  -j y -o $output_dir \
+            eddie_submit.sh \
             --net_generations $net_generations \
             --Ne $Ne \
             --Ni $Ni \
