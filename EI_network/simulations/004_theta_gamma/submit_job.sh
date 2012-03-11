@@ -8,7 +8,7 @@
 
 BASE=../../
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
-dry_run=0
+dry_run=1
 EDDIE=1  # if eddie, submit on a cluster using qsub
 
 
@@ -54,7 +54,7 @@ deltaT_i="0.4e-3"
 
 tau_AMPA="1e-3"
 g_AMPA_total_1="3.5*10^-8"
-g_AMPA_std="600e-12"
+g_AMPA_std_1="600*10^-12"
 tau_GABA_rise="1e-3"
 tau_GABA_fall="5e-3"
 g_GABA_total="4.00e-8"
@@ -77,7 +77,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=2100
+job_num=2200
 
 
 for Iext_c in $Iext_coeff; do
@@ -87,6 +87,7 @@ for Iext_c in $Iext_coeff; do
     Iext_i=`echo "$Iext_i_1 * 1." | bc -l`
 
     g_AMPA_total=`echo "$g_AMPA_total_1 * $AMPA_c" | bc -l`
+    g_AMPA_std=`echo "$g_AMPA_std_1 * $AMPA_c" | bc -l`
 
     if [ $dry_run -eq 1 ]
     then
@@ -94,6 +95,7 @@ for Iext_c in $Iext_coeff; do
         echo "    Iext_e       = `printf "%1.3e" $Iext_e`" >> $readme_file
         echo "    Iext_i       = `printf "%1.3e" $Iext_i`" >> $readme_file
         echo "    g_AMPA_total = `printf "%1.3e" $g_AMPA_total`" >> $readme_file
+        echo "    g_AMPA_std   = `printf "%1.3e" $g_AMPA_std`" >> $readme_file
         echo
     else
         if [ $EDDIE -eq 1 ]
