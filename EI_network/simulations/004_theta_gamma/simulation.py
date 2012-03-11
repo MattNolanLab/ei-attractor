@@ -152,7 +152,7 @@ for net_it in xrange(options.net_generations):
         #pass
     
     
-    state_record_e = range(int(len(ei_net.E_pop)/10.))
+    state_record_e = range(int(len(ei_net.E_pop)/20.))
     state_record_i = range(int(len(ei_net.I_pop)/10.))
     
     spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
