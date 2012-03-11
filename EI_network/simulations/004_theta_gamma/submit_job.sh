@@ -8,7 +8,9 @@
 
 BASE=../../
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
+dry_run=1
 EDDIE=1  # if eddie, submit on a cluster using qsub
+
 
 QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=02:30:00"
 
@@ -73,6 +75,7 @@ Vclamp="-50e-3"
 ntrials=2
 
 output_dir="output"
+readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
 job_num=1000
 
@@ -85,13 +88,70 @@ for Iext_c in $Iext_coeff; do
 
     g_AMPA_total=`echo "$g_AMPA_total_1 * $AMPA_c" | bc -l`
 
-    echo $Iext_e, $Iext_i, $g_AMPA_total
-
-    if [ $EDDIE -eq 1 ]
+    if [ $dry_run -eq 1 ]
     then
-        job_num_str=`printf "job%04d" $job_num`
-        qsub $QSUB_PARAMS -N $job_num_str  -j y -o $output_dir \
-            eddie_submit.sh \
+        echo "job`printf "%04d" $job_num`" >> $readme_file
+        echo "    Iext_e       = `printf "%1.3e" $Iext_e`" >> $readme_file
+        echo "    Iext_i       = `printf "%1.3e" $Iext_i`" >> $readme_file
+        echo "    g_AMPA_total = `printf "%1.3e" $g_AMPA_total`" >> $readme_file
+        echo
+    else
+        if [ $EDDIE -eq 1 ]
+        then
+            job_num_str=`printf "job%04d" $job_num`
+            qsub $QSUB_PARAMS -N $job_num_str  -j y -o $output_dir \
+                eddie_submit.sh \
+                --net_generations $net_generations \
+                --Ne $Ne \
+                --Ni $Ni \
+                --AMPA_density $AMPA_density \
+                --GABA_density $GABA_density \
+                --Iext_e $Iext_e \
+                --Iext_i $Iext_i \
+                --taum_e $taum_e \
+                --taum_e_spread $taum_e_spread \
+                --EL_e $EL_e \
+                --EL_e_spread $EL_e_spread \
+                --Vt_e $Vt_e \
+                --Vr_e $Vr_e \
+                --Rm_e $Rm_e \
+                --ad_tau_e_mean $ad_tau_e_mean \
+                --ad_tau_e_std $ad_tau_e_std \
+                --ad_e_g_inc $ad_e_g_inc \
+                --deltaT_e $deltaT_e \
+                --taum_i $taum_i \
+                --taum_i_spread $taum_i_spread \
+                --EL_i $EL_i \
+                --EL_i_spread $EL_i_spread \
+                --Vt_i $Vt_i \
+                --Vr_i $Vr_i \
+                --Rm_i $Rm_i \
+                --ad_tau_i_mean $ad_tau_i_mean \
+                --ad_tau_i_std $ad_tau_i_std \
+                --ad_i_g_inc $ad_i_g_inc \
+                --deltaT_i $deltaT_i \
+                --tau_AMPA $tau_AMPA \
+                --g_AMPA_total $g_AMPA_total \
+                --g_AMPA_std $g_AMPA_std \
+                --tau_GABA_rise $tau_GABA_rise \
+                --tau_GABA_fall $tau_GABA_fall \
+                --g_GABA_total $g_GABA_total \
+                --Vrev_AMPA $Vrev_AMPA \
+                --Vrev_GABA $Vrev_GABA \
+                --noise_sigma $noise_sigma \
+                --sigma_init_cond $sigma_init_cond \
+                --refrac_abs $refrac_abs \
+                --time $time \
+                --sim_dt $sim_dt \
+                --spike_detect_th $spike_detect_th \
+                --Vclamp $Vclamp \
+                --output_dir $output_dir \
+                --update_interval $update_interval \
+                --job_num $job_num \
+                --ntrials $ntrials
+        else
+            pwd
+            nice python -i simulation.py \
             --net_generations $net_generations \
             --Ne $Ne \
             --Ni $Ni \
@@ -139,59 +199,9 @@ for Iext_c in $Iext_coeff; do
             --output_dir $output_dir \
             --update_interval $update_interval \
             --job_num $job_num \
-            --ntrials $ntrials
-    else
-        pwd
-        nice python -i simulation.py \
-        --net_generations $net_generations \
-        --Ne $Ne \
-        --Ni $Ni \
-        --AMPA_density $AMPA_density \
-        --GABA_density $GABA_density \
-        --Iext_e $Iext_e \
-        --Iext_i $Iext_i \
-        --taum_e $taum_e \
-        --taum_e_spread $taum_e_spread \
-        --EL_e $EL_e \
-        --EL_e_spread $EL_e_spread \
-        --Vt_e $Vt_e \
-        --Vr_e $Vr_e \
-        --Rm_e $Rm_e \
-        --ad_tau_e_mean $ad_tau_e_mean \
-        --ad_tau_e_std $ad_tau_e_std \
-        --ad_e_g_inc $ad_e_g_inc \
-        --deltaT_e $deltaT_e \
-        --taum_i $taum_i \
-        --taum_i_spread $taum_i_spread \
-        --EL_i $EL_i \
-        --EL_i_spread $EL_i_spread \
-        --Vt_i $Vt_i \
-        --Vr_i $Vr_i \
-        --Rm_i $Rm_i \
-        --ad_tau_i_mean $ad_tau_i_mean \
-        --ad_tau_i_std $ad_tau_i_std \
-        --ad_i_g_inc $ad_i_g_inc \
-        --deltaT_i $deltaT_i \
-        --tau_AMPA $tau_AMPA \
-        --g_AMPA_total $g_AMPA_total \
-        --g_AMPA_std $g_AMPA_std \
-        --tau_GABA_rise $tau_GABA_rise \
-        --tau_GABA_fall $tau_GABA_fall \
-        --g_GABA_total $g_GABA_total \
-        --Vrev_AMPA $Vrev_AMPA \
-        --Vrev_GABA $Vrev_GABA \
-        --noise_sigma $noise_sigma \
-        --sigma_init_cond $sigma_init_cond \
-        --refrac_abs $refrac_abs \
-        --time $time \
-        --sim_dt $sim_dt \
-        --spike_detect_th $spike_detect_th \
-        --Vclamp $Vclamp \
-        --output_dir $output_dir \
-        --update_interval $update_interval \
-        --job_num $job_num \
-        --ntrials $ntrials \
+            --ntrials $ntrials \
 
+        fi
     fi
 
     echo
