@@ -22,8 +22,8 @@ Ni=100
 AMPA_density="0.4"
 GABA_density="0.4"
 
-Iext_coeff="0.9 1.0 1.05 1.1 1.15 1.2 1.25 1.3 1.35 1.4"
-AMPA_coeff="0.7 0.8  0.9 1.0 1.05 1.1 1.15 1.2 1.25 1.4"
+Iext_coeff="1.0 1.1 1.2 1.3 1.4"
+AMPA_coeff="0.2 0.3 0.4 0.5 0.6 0.7 0.8"
 
 Iext_e_1="900*10^-12"
 Iext_i_1="250*10^-12"
@@ -77,7 +77,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=2000
+job_num=2100
 
 
 for Iext_c in $Iext_coeff; do
