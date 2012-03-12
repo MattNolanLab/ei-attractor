@@ -1,98 +1,22 @@
 import brian_no_units
-from os import system
 from brian import *
 
 from matplotlib.backends.backend_pdf import PdfPages
 
-from brian import *
-from brian.library.IF import *
-from brian.library.synapses import *
-
-from scipy import linspace
-from scipy.io import loadmat
 from scipy.io import savemat
 from optparse import OptionParser
-from datetime import datetime
-
-from scipy.signal import *
 
 import time
-import math
-import sys
 import numpy as np
 import logging as lg
 
 from EI_network import *
 from EI_network_sim_mod import *
 from custombrian import *
-
-from Wavelets import Morlet
+from plotting import *
+from tools import *
 
 lg.basicConfig(level=lg.DEBUG)
-
-
-def butterHighPass(sig, dt, f_pass):
-    nyq_f = 1./dt/2
-    norm_f_pass = f_pass/nyq_f
-
-    # Low pass filter
-    b, a = butter(3, norm_f_pass, btype='high')
-    return filtfilt(b, a, sig)
-
-def spikePhaseTrialRaster(spikeTimes, f):
-    '''Here assuming that phase(t=0) = 0'''
-    trials = np.floor(f*spikeTimes)
-    phases = np.mod(2*np.pi*f*spikeTimes, 2*np.pi)
-    times  = np.mod(spikeTimes, 1./f)
-    return (phases, times, trials)
-
-def set_axis_params(ax):
-    ax.tick_params(direction='out', length=6, zorder=0)
-    ax.tick_params(bottom=True, top=False, left=True, right=False)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.margins(0.05, tight=False)
-
-def createJobDir(options):
-    # Create job directory in options.output_dir/jobXXXX
-    outputDir = options.output_dir + '/job{0:04}'.format(options.job_num) +'/'
-    ec = system('mkdir ' + outputDir)
-    if ec != 0:
-        print "Could not create output directory: " + outputDir
-        ec = system('ls ' + outputDir)
-        if ec == 0:
-            print "But it can be listed --> continuing!"
-        else:
-            print "And it cannot be listed. Check your permissions and rerun!"
-            exit(1)
-    return outputDir
-
-def phaseCWT(sig, Tph, dt, maxF, dF=2):
-    '''
-    Calculate Morlet wavelet transform of a signal, but as a function of
-    phase. Unaligned phase at the end will be discarded, and ph(t=0) must be 0,
-    i.e. no phase shifts!
-    '''
-    n_ph = Tph/dt
-    N = len(sig)
-    q_ph = np.ceil(N/n_ph)
-
-    minF = 1./(len(sig)/2 * Morlet.fourierwl * dt)
-    F = linspace(minF, maxF, (maxF-minF)/dF+1)
-    scales = 1/F * 1/Morlet.fourierwl * 1/dt
-
-    w = Morlet(sig, scales, scaling='direct')
-    w_cwt_ph = np.ndarray((w.nscale, n_ph))
-
-    for sc_it in xrange(w.nscale):
-        w_ph = np.reshape(np.abs(w.cwt[sc_it, :][0:q_ph*n_ph])**2, (q_ph, n_ph))
-        w_cwt_ph[sc_it, :] = np.mean(w_ph, 0)
-
-    sig_ph = np.reshape(sig[0:q_ph*n_ph], (q_ph, n_ph))
-    phases = 1. * np.arange(n_ph) / n_ph * 2*np.pi - np.pi
-    return phases, w_cwt_ph, 1./(w.scales*w.fourierwl*dt), sig_ph
-
-
 
 
 parser = getOptParser()
@@ -108,21 +32,12 @@ print options
 # Clock definitions
 sim_dt = options.sim_dt*second
 simulationClock = Clock(dt=sim_dt)
-stimClock = Clock(50*msecond)
 
 stim_omega = nan
 
 # Other
-figSize = (12,8)
 x_lim = [options.time-1, options.time]
 
-small_plot_figsize = (3.75, 2.75)
-small_plot_axsize = [0.3, 0.15, 0.65, 0.80]
-small_plot_fontsize = 16
-small_plot_texsize = 25
-raster_bin_size = 2e-3
-
-rcParams['font.size'] = small_plot_fontsize
 
 ################################################################################
 #                      Stimulation frequency list (Hz)
@@ -180,8 +95,8 @@ for net_it in xrange(options.net_generations):
         #pass
     
     
-    state_record_e = range(int(len(ei_net.E_pop)/20.))
-    state_record_i = range(int(len(ei_net.I_pop)/10.))
+    state_record_e = range(10)
+    state_record_i = range(10)
     
     spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
     spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
@@ -232,49 +147,10 @@ for net_it in xrange(options.net_generations):
             output_fname_trial = output_fname_gen + '_trial{0:04}'.format(trial_it)
             output_fname = output_fname_trial + "_stim{0}".format(stim_freq)
 
-    
-            figure()
-            ax = subplot(211)
-            plot(stateMon_e.times, stateMon_e.values[0:2].T/mV)
-            ylabel('E membrane potential (mV)')
-            subplot(212, sharex=ax)
-            plot(stateMon_i.times, stateMon_i.values[0:2].T/mV)
-            xlabel('Time (s)')
-            ylabel('I membrane potential (mV)')
-            xlim(x_lim)
-            savefig(output_fname + '_Vm.pdf')
-            
-    
-            figure()
-            ax = subplot(211)
-            plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0:2].T/pA + \
-                    stateMon_Iext_e.values[0:2].T/pA)
-            ylabel('E synaptic current (pA)')
-            subplot(212, sharex=ax)
-            plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[0:2].T/pA + \
-                    stateMon_Iext_i.values[0:2].T/pA)
-            xlabel('Time (s)')
-            ylabel('I synaptic current (pA)')
-            xlim(x_lim)
-            savefig(output_fname + '_Isyn.pdf')
-            
-    
-            # High pass filter these signals
-            figure()
-            ax = subplot(211)
-            plot(stateMon_Iclamp_e.times, butterHighPass(stateMon_Iclamp_e.values[0].T/pA, options.sim_dt, 40))
-            #plot(stateMon_Iclamp_e.times, stateMon_Iext_e.values[0]/pA)
-            ylabel('E current (pA)')
-            ylim([-500, 500])
-            subplot(212, sharex=ax)
-            plot(stateMon_Iclamp_i.times, butterHighPass(stateMon_Iclamp_i.values[0].T/pA, options.sim_dt, 40))
-            #plot(stateMon_Iclamp_i.times, stateMon_Iext_i.values[0]/pA)
-            xlabel('Time (s)')
-            ylabel('I current (pA)')
-            xlim(x_lim)
-            ylim([-500, 500])
-            savefig(output_fname + '_Isyn_filt.pdf')
-            
+            # Save current and voltage traces
+            printAndSaveTraces(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i,
+                stateMon_Iclamp_e, stateMon_Iclamp_i, stateMon_Iext_e, stateMon_Iext_i,
+                options, output_fname, x_lim)
     
             # Firing rate
             Favg_e = spikeMon_e.getNSpikes()/options.time
@@ -285,71 +161,64 @@ for net_it in xrange(options.net_generations):
             mean_i = np.mean(Favg_i)
             F_mean_i_vec[stim_freq_it] = mean_i
             F_std_i_vec[stim_freq_it] = np.std(Favg_i)
-            figure()
-            subplot(121)
-            h = hist(Favg_e, 20)
-            xlabel('E f. rate (Hz)')
-            ylabel('Count')
-            title('Average: ' + str(mean_e) + ' Hz')
-            subplot(122)
-            hist(Favg_i, 20)
-            xlabel('I f. rate (Hz)')
-            title('Average: ' + str(mean_i) + ' Hz')
-            savefig(output_fname + '_Fhist.pdf')
-    
+
+            printFiringRatesBar(Favg_e, Favg_i, mean_e, mean_i, output_fname)
+
 
             print "Wavelet analysis..."
             wav_n_range = 10
             wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_e.pdf')
             high_pass_freq = 40.
             maxF = 200
-            for n_it in xrange(wav_n_range):
-                print('Neuron no. ' + str(n_it))
-                cwt_phases, sig_cwt, freq, sig_ph = \
-                    phaseCWT(butterHighPass(stateMon_Iclamp_e.values[n_it].T/pA,
-                    options.sim_dt, high_pass_freq), 1./stim_freq, options.sim_dt, maxF)
-                PH, F = np.meshgrid(cwt_phases, freq)
-                        
-                figure(figsize=small_plot_figsize)
-                ax = axes(small_plot_axsize)
-                set_axis_params(gca())
-                pcolormesh(PH, F, sig_cwt, edgecolors='None', cmap=get_cmap('jet'))
-                ylabel('F (Hz)')
-                xlim([-np.pi, np.pi])
-                ylim([0, maxF])
-                xticks([-np.pi, 0, np.pi], ('$-\pi$', '',  '$\pi$'), fontsize=small_plot_texsize)
-                savefig(output_fname + '_phase_wavelet_e{0}.png'.format(n_it),
-                        dpi=300)
-                close()
+            for ei_it in [0, 1]:
+                if ei_it == 0:
+                    wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_e.pdf')
+                    wavelet_sig_fname = output_fname + '_phase_wavelet_e'
+                    tmp_stateMon = stateMon_Iclamp_e
+                else:
+                    wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_i.pdf')
+                    wavelet_sig_fname = output_fname + '_phase_wavelet_i'
+                    tmp_stateMon = stateMon_Iclamp_i
+                for n_it in xrange(wav_n_range):
+                    print('Neuron no. ' + str(n_it))
+                    cwt_phases, sig_cwt, freq, sig_ph = \
+                        phaseCWT(butterHighPass(tmp_stateMon.values[n_it].T/pA,
+                        options.sim_dt, high_pass_freq), 1./stim_freq, options.sim_dt, maxF)
+                    PH, F = np.meshgrid(cwt_phases, freq)
+                            
 
-                figure(figsize=small_plot_figsize)
-                ax = axes(small_plot_axsize)
-                set_axis_params(gca())
-                mn = np.mean(sig_ph, 0)
-                st = np.std(sig_ph, 0)
-                ax.fill_between(cwt_phases, mn+st, mn-st, facecolor='black', alpha=0.1, zorder=0)
-                plot(cwt_phases, mn, 'k')
-                ylabel('I (pA)')
-                xlim([-np.pi, np.pi])
-                xticks([-np.pi, 0, np.pi], ('$-\pi$', '',  '$\pi$'), fontsize=small_plot_texsize)
-                wavelet_sig_pp.savefig()
-                close()
-            wavelet_sig_pp.close()
+                    # Wavelet plot
+                    f = phaseFigTemplate()
+                    pcolormesh(PH, F, sig_cwt, edgecolors='None', cmap=get_cmap('jet'))
+                    ylabel('F (Hz)')
+                    ylim([0, maxF])
+                    savefig(wavelet_sig_fname + '{0}.png'.format(n_it),
+                            dpi=300)
+                    close()
+
+                    # Average signal plot
+                    f = phaseFigTemplate()
+                    mn = np.mean(sig_ph, 0)
+                    st = np.std(sig_ph, 0)
+                    gca().fill_between(cwt_phases, mn+st, mn-st, facecolor='black', alpha=0.1, zorder=0)
+                    plot(cwt_phases, mn, 'k')
+                    ylabel('I (pA)')
+                    wavelet_sig_pp.savefig()
+                    close()
+                wavelet_sig_pp.close()
             print "Done"
     
             
             for ei_it in [0, 1]:
                 if ei_it == 0:
                     raster_pp = PdfPages(output_fname + '_phase_raster_e.pdf')
-                    #pspike_pp = PdfPages(output_fname + '_phase_pspike_e.pdf')
                     avg_fname = output_fname + '_phase_pspike_avg_e.pdf'
-                    n_range = int(len(ei_net.E_pop)/20)
+                    n_range = 20
                     tmp_spikeMon = spikeMon_e
                 else:
                     raster_pp = PdfPages(output_fname + '_phase_raster_i.pdf')
-                    #pspike_pp = PdfPages(output_fname + '_phase_pspike_i.pdf')
                     avg_fname = output_fname + '_phase_pspike_avg_i.pdf'
-                    n_range = int(len(ei_net.I_pop)/10)
+                    n_range = 10
                     tmp_spikeMon = spikeMon_i
 
                 hist_nbins = 1./stim_freq/raster_bin_size
@@ -362,15 +231,7 @@ for net_it in xrange(options.net_generations):
     
                     # Raster plots (single cell over 'theta' epochs)
                     ntrials = np.ceil(options.time * stim_freq)
-                    figure(figsize=small_plot_figsize)
-                    axes(small_plot_axsize)
-                    plot(phases - np.pi, trials, 'k|', markeredgewidth=3)
-                    set_axis_params(gca())
-                    ylabel('Trial')
-                    xlim([-np.pi, np.pi])
-                    ylim([-1, ntrials+1])
-                    xticks([-np.pi, 0, np.pi], ('$-\pi$', '',  '$\pi$'), fontsize=25)
-                    yticks([0, ntrials])
+                    f = rasterPhasePlot(phases - np.pi, trials)
                     raster_pp.savefig()
                     close()
     
@@ -382,80 +243,32 @@ for net_it in xrange(options.net_generations):
                         hists.append(h[0]/double(len(phases)))
                     hist_ph = h[1][0:len(h[1])-1] - np.pi
                     delaxes(gca())
-                    #axes(small_plot_axsize)
-                    #plot(hist_ph, hists[n_it, :], 'k--', dashes=(5,
-                    #    2.5))
-                    #set_axis_params(gca())
-                    #ylabel('p(spike)')
-                    #xlim([-np.pi, np.pi])
-                    #ylim([-0.01, 0.7])
-                    #yticks([0, 0.7])
-                    #xticks([-np.pi, 0, np.pi], ('$-\pi$', '',  '$\pi$'), fontsize=small_plot_texsize)
-                    #pspike_pp.savefig()
-                    #close()
                 raster_pp.close()
-                #pspike_pp.close()
 
                 # Average histogram + one neuron
-                figure(figsize=small_plot_figsize)
-                ax = axes(small_plot_axsize)
+                f = phaseFigTemplate()
                 h_avg = np.mean(hists, 0)
                 h_std = np.std(hists, 0)
                 plot(hist_ph, h_avg, 'k', linewidth=2., zorder=1)
-                ax.fill_between(hist_ph, h_avg+h_std, h_avg-h_std,
+                gca().fill_between(hist_ph, h_avg+h_std, h_avg-h_std,
                     facecolor='black', alpha=0.1)
                 plot(hist_ph, hists[0], 'k--', dashes=(5, 2.5), zorder=2)
-                set_axis_params(gca())
                 ylabel('p(spike)')
-                xlim([-np.pi, np.pi])
                 ylim([-0.01, 0.7])
                 yticks([0, 0.7])
-                xticks([-np.pi, 0, np.pi], ('$-\pi$', '',  '$\pi$'), fontsize=small_plot_texsize)
                 savefig(avg_fname)
 
     
             
-            print "Saving output data to matlab file..."
-            saveItems = [
-                    ['spikeMon_e', spikeMon_e],
-                    ['spikeMon_i', spikeMon_i],
-                    ['stateMon_e', stateMon_e],
-                    ['stateMon_i', stateMon_i],
-                    ['stateMon_Iclamp_e', stateMon_Iclamp_e],
-                    ['stateMon_Iclamp_i', stateMon_Iclamp_i],
-                    ['stateMon_Iext_e', stateMon_Iext_e],
-                    ['stateMon_Iext_i', stateMon_Iext_i],
-                    ['options', options._einet_optdict]]
-            matFormatSaver(output_fname + '_output.mat', saveItems, do_compression=True)
-    
             ei_net.reinit()
             print "done"
 
+
         # Bar plot of mean firing rates for different stimulation frequencies
-        figure(figsize=(2.5, 4))
-        ax = axes(small_plot_axsize)
-        bar(range(len(stim_freq_list)), F_mean_e_vec, color='k',
-                yerr=F_std_e_vec, ecolor='k', align='center', width=0.8)
-        xticks(range(len(stim_freq_list)), stim_freq_list)
-        gca().tick_params(bottom=True, top=False, left=True, right=False)
-        gca().spines['top'].set_visible(False)
-        gca().spines['right'].set_visible(False)
-        xlabel('Stim. freq. (Hz)')
-        ylabel('F. rate (Hz)')
-        ylim([0, max(F_std_e_vec+F_mean_e_vec)+10])
+        f = firingRateBarPlot(stim_freq_list, F_mean_e_vec, F_std_e_vec)
         savefig(output_fname_trial + '_Fmean_freq_bar_e.pdf')
     
-        figure(figsize=(2.5, 4))
-        ax = axes(small_plot_axsize)
-        bar(range(len(stim_freq_list)), F_mean_i_vec, color='k',
-                yerr=F_std_i_vec, ecolor='k', align='center', width=0.8)
-        xticks(range(len(stim_freq_list)), stim_freq_list)
-        gca().tick_params(bottom=True, top=False, left=True, right=False)
-        gca().spines['top'].set_visible(False)
-        gca().spines['right'].set_visible(False)
-        xlabel('Stim. freq (Hz)')
-        ylabel('F. rate (Hz)')
-        ylim([0, max(F_std_i_vec+F_mean_i_vec)+10])
+        f = firingRateBarPlot(stim_freq_list, F_mean_i_vec, F_std_i_vec)
         savefig(output_fname_trial + '_Fmean_freq_bar_i.pdf')
     
         print "End of trial no. " + str(trial_it) + "..."
