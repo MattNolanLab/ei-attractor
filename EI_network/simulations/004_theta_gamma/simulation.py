@@ -26,6 +26,8 @@ from EI_network import *
 from EI_network_sim_mod import *
 from custombrian import *
 
+from Wavelets import Morlet
+
 lg.basicConfig(level=lg.DEBUG)
 
 
@@ -65,6 +67,32 @@ def createJobDir(options):
             exit(1)
     return outputDir
 
+def phaseCWT(sig, Tph, dt, maxF, dF=2):
+    '''
+    Calculate Morlet wavelet transform of a signal, but as a function of
+    phase. Unaligned phase at the end will be discarded, and ph(t=0) must be 0,
+    i.e. no phase shifts!
+    '''
+    n_ph = Tph/dt
+    N = len(sig)
+    q_ph = np.ceil(N/n_ph)
+
+    minF = 1./(len(sig)/2 * Morlet.fourierwl * dt)
+    F = linspace(minF, maxF, (maxF-minF)/dF+1)
+    scales = 1/F * 1/Morlet.fourierwl * 1/dt
+
+    w = Morlet(sig, scales, scaling='direct')
+    w_cwt_ph = np.ndarray((w.nscale, n_ph))
+
+    for sc_it in xrange(w.nscale):
+        w_ph = np.reshape(np.abs(w.cwt[sc_it, :][0:q_ph*n_ph])**2, (q_ph, n_ph))
+        w_cwt_ph[sc_it, :] = np.mean(w_ph, 0)
+
+    sig_ph = np.reshape(sig[0:q_ph*n_ph], (q_ph, n_ph))
+    phases = 1. * np.arange(n_ph) / n_ph * 2*np.pi - np.pi
+    return phases, w_cwt_ph, 1./(w.scales*w.fourierwl*dt), sig_ph
+
+
 
 
 parser = getOptParser()
@@ -88,8 +116,8 @@ stim_omega = nan
 figSize = (12,8)
 x_lim = [options.time-1, options.time]
 
-small_plot_figsize = (3.5, 2.75)
-small_plot_axsize = [0.25, 0.15, 0.70, 0.80]
+small_plot_figsize = (3.75, 2.75)
+small_plot_axsize = [0.3, 0.15, 0.65, 0.80]
 small_plot_fontsize = 16
 small_plot_texsize = 25
 raster_bin_size = 2e-3
@@ -99,7 +127,7 @@ rcParams['font.size'] = small_plot_fontsize
 ################################################################################
 #                      Stimulation frequency list (Hz)
 
-stim_freq_list = numpy.array([2, 8, 16])
+stim_freq_list = numpy.array([8])
 
 ################################################################################
 
@@ -179,6 +207,7 @@ for net_it in xrange(options.net_generations):
     ################################################################################
     for trial_it in range(ei_net.o.ntrials):
         print "Starting trial no. " + str(trial_it) + "..."
+        close('all')
 
         F_mean_e_vec = np.ndarray(len(stim_freq_list))
         F_mean_i_vec = np.ndarray(len(stim_freq_list))
@@ -214,40 +243,37 @@ for net_it in xrange(options.net_generations):
             ylabel('I membrane potential (mV)')
             xlim(x_lim)
             savefig(output_fname + '_Vm.pdf')
-            close()
             
     
             figure()
             ax = subplot(211)
-            plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0:2].T/pA)
+            plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0:2].T/pA + \
+                    stateMon_Iext_e.values[0:2].T/pA)
             ylabel('E synaptic current (pA)')
             subplot(212, sharex=ax)
-            plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[0:2].T/pA)
+            plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[0:2].T/pA + \
+                    stateMon_Iext_i.values[0:2].T/pA)
             xlabel('Time (s)')
             ylabel('I synaptic current (pA)')
             xlim(x_lim)
             savefig(output_fname + '_Isyn.pdf')
-            close()
             
     
-            # Band pass filter these signals
+            # High pass filter these signals
             figure()
             ax = subplot(211)
-            plot(stateMon_Iclamp_e.times, butterHighPass(stateMon_Iclamp_e.values[0].T/pA +
-                    stateMon_Iext_e.values[0].T/pA, options.sim_dt, 40))
+            plot(stateMon_Iclamp_e.times, butterHighPass(stateMon_Iclamp_e.values[0].T/pA, options.sim_dt, 40))
             #plot(stateMon_Iclamp_e.times, stateMon_Iext_e.values[0]/pA)
             ylabel('E current (pA)')
             ylim([-500, 500])
             subplot(212, sharex=ax)
-            plot(stateMon_Iclamp_i.times, butterHighPass(stateMon_Iclamp_i.values[0].T/pA +
-                    stateMon_Iext_i.values[0].T/pA, options.sim_dt, 40))
+            plot(stateMon_Iclamp_i.times, butterHighPass(stateMon_Iclamp_i.values[0].T/pA, options.sim_dt, 40))
             #plot(stateMon_Iclamp_i.times, stateMon_Iext_i.values[0]/pA)
             xlabel('Time (s)')
             ylabel('I current (pA)')
             xlim(x_lim)
             ylim([-500, 500])
             savefig(output_fname + '_Isyn_filt.pdf')
-            close()
             
     
             # Firing rate
@@ -270,8 +296,46 @@ for net_it in xrange(options.net_generations):
             xlabel('I f. rate (Hz)')
             title('Average: ' + str(mean_i) + ' Hz')
             savefig(output_fname + '_Fhist.pdf')
-            close()
     
+
+            print "Wavelet analysis..."
+            wav_n_range = 10
+            wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_e.pdf')
+            high_pass_freq = 40.
+            maxF = 200
+            for n_it in xrange(wav_n_range):
+                print('Neuron no. ' + str(n_it))
+                cwt_phases, sig_cwt, freq, sig_ph = \
+                    phaseCWT(butterHighPass(stateMon_Iclamp_e.values[n_it].T/pA,
+                    options.sim_dt, high_pass_freq), 1./stim_freq, options.sim_dt, maxF)
+                PH, F = np.meshgrid(cwt_phases, freq)
+                        
+                figure(figsize=small_plot_figsize)
+                ax = axes(small_plot_axsize)
+                set_axis_params(gca())
+                pcolormesh(PH, F, sig_cwt, edgecolors='None', cmap=get_cmap('jet'))
+                ylabel('F (Hz)')
+                xlim([-np.pi, np.pi])
+                ylim([0, maxF])
+                xticks([-np.pi, 0, np.pi], ('$-\pi$', '',  '$\pi$'), fontsize=small_plot_texsize)
+                savefig(output_fname + '_phase_wavelet_e{0}.png'.format(n_it),
+                        dpi=300)
+                close()
+
+                figure(figsize=small_plot_figsize)
+                ax = axes(small_plot_axsize)
+                set_axis_params(gca())
+                mn = np.mean(sig_ph, 0)
+                st = np.std(sig_ph, 0)
+                ax.fill_between(cwt_phases, mn+st, mn-st, facecolor='black', alpha=0.1, zorder=0)
+                plot(cwt_phases, mn, 'k')
+                ylabel('I (pA)')
+                xlim([-np.pi, np.pi])
+                xticks([-np.pi, 0, np.pi], ('$-\pi$', '',  '$\pi$'), fontsize=small_plot_texsize)
+                wavelet_sig_pp.savefig()
+                close()
+            wavelet_sig_pp.close()
+            print "Done"
     
             
             for ei_it in [0, 1]:
@@ -279,7 +343,7 @@ for net_it in xrange(options.net_generations):
                     raster_pp = PdfPages(output_fname + '_phase_raster_e.pdf')
                     #pspike_pp = PdfPages(output_fname + '_phase_pspike_e.pdf')
                     avg_fname = output_fname + '_phase_pspike_avg_e.pdf'
-                    n_range = int(len(ei_net.E_pop)/10)
+                    n_range = int(len(ei_net.E_pop)/20)
                     tmp_spikeMon = spikeMon_e
                 else:
                     raster_pp = PdfPages(output_fname + '_phase_raster_i.pdf')
@@ -289,8 +353,7 @@ for net_it in xrange(options.net_generations):
                     tmp_spikeMon = spikeMon_i
 
                 hist_nbins = 1./stim_freq/raster_bin_size
-                hists = [] #np.ndarray((n_range, hist_nbins))
-                hist_ph = np.ndarray(hist_nbins)
+                hists = [] #np.ndarray((n_range, hist_nbins)) #    hist_ph = np.ndarray(hist_nbins)
     
                 for n_it in xrange(n_range):
                     print('Saving rasters for neuron no. ' + str(n_it))
@@ -349,7 +412,6 @@ for net_it in xrange(options.net_generations):
                 yticks([0, 0.7])
                 xticks([-np.pi, 0, np.pi], ('$-\pi$', '',  '$\pi$'), fontsize=small_plot_texsize)
                 savefig(avg_fname)
-                close()
 
     
             
@@ -382,7 +444,6 @@ for net_it in xrange(options.net_generations):
         ylabel('F. rate (Hz)')
         ylim([0, max(F_std_e_vec+F_mean_e_vec)+10])
         savefig(output_fname_trial + '_Fmean_freq_bar_e.pdf')
-        close()
     
         figure(figsize=(2.5, 4))
         ax = axes(small_plot_axsize)
@@ -396,7 +457,6 @@ for net_it in xrange(options.net_generations):
         ylabel('F. rate (Hz)')
         ylim([0, max(F_std_i_vec+F_mean_i_vec)+10])
         savefig(output_fname_trial + '_Fmean_freq_bar_i.pdf')
-        close()
     
         print "End of trial no. " + str(trial_it) + "..."
         print 
