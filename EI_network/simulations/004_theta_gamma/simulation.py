@@ -1,4 +1,4 @@
-import brian_no_units
+#import brian_no_units
 from brian import *
 
 from matplotlib.backends.backend_pdf import PdfPages
@@ -24,6 +24,10 @@ parser = getOptParser()
 parser.add_option("--net_generations", type="int",
         help="Number of repetitions of network generation. Each generation has"
             "ntrials*3 runs of the same network")
+parser.add_option("--Iext_e_min", type=float,
+        help="Minimal external current onto E cells (theta stim.) (A)")
+parser.add_option("--Iext_i_min", type=float,
+        help="Minimal external current onto I cells (theta stim.) (I)")
 
 (options, args) = parser.parse_args()
 options = setOptionDictionary(parser, options)
@@ -34,6 +38,10 @@ sim_dt = options.sim_dt*second
 simulationClock = Clock(dt=sim_dt)
 
 stim_omega = nan
+stim_e_A  = (options.Iext_e - options.Iext_e_min)/2*amp
+stim_e_DC = (options.Iext_e + options.Iext_e_min)/2*amp
+stim_i_A  = (options.Iext_i - options.Iext_i_min)/2*amp
+stim_i_DC = (options.Iext_i + options.Iext_i_min)/2*amp
 
 # Other
 x_lim = [options.time-1, options.time]
@@ -90,8 +98,8 @@ for net_it in xrange(options.net_generations):
     @network_operation(simulationClock)
     def thetaStimulation():
         ph = stim_omega*simulationClock.t
-        ei_net.E_pop.Iext = options.Iext_e/2*np.sin(ph - np.pi/2) + options.Iext_e/2
-        ei_net.I_pop.Iext = options.Iext_i/2*np.sin(ph - np.pi/2) + options.Iext_i/2
+        ei_net.E_pop.Iext = stim_e_DC + stim_e_A*np.sin(ph - np.pi/2)
+        ei_net.I_pop.Iext = stim_i_DC + stim_i_A*np.sin(ph - np.pi/2)
         #pass
     
     
@@ -153,22 +161,22 @@ for net_it in xrange(options.net_generations):
             output_fname_trial = output_fname_gen + '_trial{0:04}'.format(trial_it)
             output_fname = output_fname_trial + "_stim{0}".format(stim_freq)
 
-            ## Save current and voltage traces
-            #printAndSaveTraces(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i,
-            #    stateMon_Iclamp_e, stateMon_Iclamp_i, stateMon_Iext_e, stateMon_Iext_i,
-            #    options, output_fname, x_lim)
+            # Save current and voltage traces
+            printAndSaveTraces(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i,
+                stateMon_Iclamp_e, stateMon_Iclamp_i, stateMon_Iext_e, stateMon_Iext_i,
+                options, output_fname, x_lim)
     
-            ## Firing rate
-            #Favg_e = spikeMon_e.getNSpikes()/options.time
-            #mean_e = np.mean(Favg_e)
-            #F_mean_e_vec[stim_freq_it] = mean_e
-            #F_std_e_vec[stim_freq_it] = np.std(Favg_e)
-            #Favg_i = spikeMon_i.getNSpikes()/options.time
-            #mean_i = np.mean(Favg_i)
-            #F_mean_i_vec[stim_freq_it] = mean_i
-            #F_std_i_vec[stim_freq_it] = np.std(Favg_i)
+            # Firing rate
+            Favg_e = spikeMon_e.getNSpikes()/options.time
+            mean_e = np.mean(Favg_e)
+            F_mean_e_vec[stim_freq_it] = mean_e
+            F_std_e_vec[stim_freq_it] = np.std(Favg_e)
+            Favg_i = spikeMon_i.getNSpikes()/options.time
+            mean_i = np.mean(Favg_i)
+            F_mean_i_vec[stim_freq_it] = mean_i
+            F_std_i_vec[stim_freq_it] = np.std(Favg_i)
 
-            #printFiringRatesBar(Favg_e, Favg_i, mean_e, mean_i, output_fname)
+            printFiringRatesBar(Favg_e, Favg_i, mean_e, mean_i, output_fname)
 
             print "Wavelet analysis..."
             wav_n_range = 10
@@ -261,7 +269,7 @@ for net_it in xrange(options.net_generations):
     
                     # Raster plots (single cell over 'theta' epochs)
                     ntrials = np.ceil(options.time * stim_freq)
-                    f = rasterPhasePlot(phases - np.pi, trials)
+                    f = rasterPhasePlot(phases - np.pi, trials, ntrials)
                     raster_pp.savefig()
                     close()
     
@@ -270,7 +278,7 @@ for net_it in xrange(options.net_generations):
                     if (len(phases) != 0):
                         h = hist(phases, hist_nbins, [0, 2*np.pi],
                                 normed=False)
-                        hists.append(h[0]/double(len(phases)))
+                        hists.append(h[0]/double(ntrials))
                     hist_ph = h[1][0:len(h[1])-1] - np.pi
                     delaxes(gca())
                 raster_pp.close()

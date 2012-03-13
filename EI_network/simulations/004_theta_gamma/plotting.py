@@ -28,12 +28,12 @@ def phaseFigTemplate():
     return f
 
 
-def rasterPhasePlot(phases, trials):
+def rasterPhasePlot(phases, trials, ntrials):
     f = phaseFigTemplate()
     plot(phases, trials, 'k|', markeredgewidth=3)
     ylabel('Trial')
-    ylim([-1, len(trials)+1])
-    yticks([0, len(trials)])
+    ylim([-1, ntrials+1])
+    yticks([0, ntrials])
     return f
 
 def firingRateBarPlot(stim_freq_list, F_mean_vec, F_std_vec):
