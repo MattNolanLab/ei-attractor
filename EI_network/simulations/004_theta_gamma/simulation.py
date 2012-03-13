@@ -42,7 +42,7 @@ x_lim = [options.time-1, options.time]
 ################################################################################
 #                      Stimulation frequency list (Hz)
 
-stim_freq_list = numpy.array([2, 8, 16])
+stim_freq_list = numpy.array([8])
 
 ################################################################################
 
@@ -129,6 +129,12 @@ for net_it in xrange(options.net_generations):
         F_std_e_vec = np.ndarray(len(stim_freq_list))
         F_std_i_vec = np.ndarray(len(stim_freq_list))
 
+        # Frequencies and phases of power maxima extracted from wavelets
+        w_Fmax_e_vec = []
+        w_Fmax_i_vec = []
+        w_phmax_e_vec= []
+        w_phmax_i_vec= []
+
         for stim_freq_it in xrange(len(stim_freq_list)):
             stim_freq = stim_freq_list[stim_freq_it]
 
@@ -147,23 +153,22 @@ for net_it in xrange(options.net_generations):
             output_fname_trial = output_fname_gen + '_trial{0:04}'.format(trial_it)
             output_fname = output_fname_trial + "_stim{0}".format(stim_freq)
 
-            # Save current and voltage traces
-            printAndSaveTraces(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i,
-                stateMon_Iclamp_e, stateMon_Iclamp_i, stateMon_Iext_e, stateMon_Iext_i,
-                options, output_fname, x_lim)
+            ## Save current and voltage traces
+            #printAndSaveTraces(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i,
+            #    stateMon_Iclamp_e, stateMon_Iclamp_i, stateMon_Iext_e, stateMon_Iext_i,
+            #    options, output_fname, x_lim)
     
-            # Firing rate
-            Favg_e = spikeMon_e.getNSpikes()/options.time
-            mean_e = np.mean(Favg_e)
-            F_mean_e_vec[stim_freq_it] = mean_e
-            F_std_e_vec[stim_freq_it] = np.std(Favg_e)
-            Favg_i = spikeMon_i.getNSpikes()/options.time
-            mean_i = np.mean(Favg_i)
-            F_mean_i_vec[stim_freq_it] = mean_i
-            F_std_i_vec[stim_freq_it] = np.std(Favg_i)
+            ## Firing rate
+            #Favg_e = spikeMon_e.getNSpikes()/options.time
+            #mean_e = np.mean(Favg_e)
+            #F_mean_e_vec[stim_freq_it] = mean_e
+            #F_std_e_vec[stim_freq_it] = np.std(Favg_e)
+            #Favg_i = spikeMon_i.getNSpikes()/options.time
+            #mean_i = np.mean(Favg_i)
+            #F_mean_i_vec[stim_freq_it] = mean_i
+            #F_std_i_vec[stim_freq_it] = np.std(Favg_i)
 
-            printFiringRatesBar(Favg_e, Favg_i, mean_e, mean_i, output_fname)
-
+            #printFiringRatesBar(Favg_e, Favg_i, mean_e, mean_i, output_fname)
 
             print "Wavelet analysis..."
             wav_n_range = 10
@@ -172,23 +177,38 @@ for net_it in xrange(options.net_generations):
             maxF = 200
             for ei_it in [0, 1]:
                 if ei_it == 0:
+                    print '  E neurons...'
                     wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_e.pdf')
                     wavelet_sig_fname = output_fname + '_phase_wavelet_e'
+                    max_fname = output_fname + '_Fmax_scatter_e.pdf'
                     tmp_stateMon = stateMon_Iclamp_e
+                    w_Fmax_vec = w_Fmax_e_vec
+                    w_phmax_vec = w_phmax_e_vec
                 else:
+                    print '  I neurons...'
                     wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_i.pdf')
                     wavelet_sig_fname = output_fname + '_phase_wavelet_i'
+                    max_fname = output_fname + '_Fmax_scatter_i.pdf'
                     tmp_stateMon = stateMon_Iclamp_i
+                    w_Fmax_vec = w_Fmax_i_vec
+                    w_phmax_vec = w_phmax_i_vec
+
+                w_Fmax = np.ndarray(wav_n_range)
+                w_phmax= np.ndarray(wav_n_range)
                 for n_it in xrange(wav_n_range):
-                    print('Neuron no. ' + str(n_it))
+                    print('    Neuron no. ' + str(n_it))
                     cwt_phases, sig_cwt, freq, sig_ph = \
                         phaseCWT(butterHighPass(tmp_stateMon.values[n_it].T/pA,
                         options.sim_dt, high_pass_freq), 1./stim_freq, options.sim_dt, maxF)
-                    PH, F = np.meshgrid(cwt_phases, freq)
+
+                    w_max = sig_cwt.argmax()
+                    w_Fmax[n_it] = freq[w_max//len(sig_cwt[0])]
+                    w_phmax[n_it]= cwt_phases[np.mod(w_max, len(sig_cwt[0]))]
                             
 
                     # Wavelet plot
                     f = phaseFigTemplate()
+                    PH, F = np.meshgrid(cwt_phases, freq)
                     pcolormesh(PH, F, sig_cwt, edgecolors='None', cmap=get_cmap('jet'))
                     ylabel('F (Hz)')
                     ylim([0, maxF])
@@ -206,6 +226,16 @@ for net_it in xrange(options.net_generations):
                     wavelet_sig_pp.savefig()
                     close()
                 wavelet_sig_pp.close()
+
+                # Insert this to avg and std vectors and make a plot
+                w_Fmax_vec.append(w_Fmax)
+                w_phmax_vec.append(w_phmax)
+                f = phaseFigTemplate()
+                plot(w_phmax, w_Fmax, 'ko', markersize=10, alpha=0.25)
+                errorbar(np.mean(w_phmax), np.mean(w_Fmax), np.std(w_Fmax),
+                        np.std(w_phmax), 'ko', markersize=10)
+                ylim([50, 120])
+                savefig(max_fname)
             print "Done"
     
             
@@ -270,6 +300,8 @@ for net_it in xrange(options.net_generations):
     
         f = firingRateBarPlot(stim_freq_list, F_mean_i_vec, F_std_i_vec)
         savefig(output_fname_trial + '_Fmean_freq_bar_i.pdf')
+
+        # Bar plot of mean maximal power for different stimulation frequencies
     
         print "End of trial no. " + str(trial_it) + "..."
         print 
