@@ -8,7 +8,7 @@
 
 BASE=../../
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
-dry_run=0
+dry_run=1
 EDDIE=0  # if eddie, submit on a cluster using qsub
 
 
@@ -22,8 +22,10 @@ Ni=100
 AMPA_density="0.4"
 GABA_density="0.4"
 
-Iext_coeff="1.0" #"1.0 1.1 1.2 1.3 1.4"
-AMPA_coeff="0.4" #"0.2 0.3 0.4 0.5 0.6 0.7 0.8"
+Iext_coeff="1.1" #"1.0 1.1 1.2 1.3 1.4"
+AMPA_coeff="0.8" #"0.2 0.3 0.4 0.5 0.6 0.7 0.8"
+adapt_inc_coeff="1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9"
+adapt_coeff="0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5"
 
 Iext_e_1="900*10^-12"
 Iext_i_1="250*10^-12"
@@ -35,9 +37,9 @@ EL_e_spread="2.0e-3"
 Vt_e="-50e-3"
 Vr_e=$EL_e
 Rm_e="44e6"
-ad_tau_e_mean="40e-3"
-ad_tau_e_std="5e-3"
-ad_e_g_inc="1.136e-8"
+ad_tau_e_mean_1="40*10^-3"
+ad_tau_e_std_1="5*10^-3"
+ad_e_g_inc_1="1.136*10^-8"
 deltaT_e="0.4e-3"
 
 taum_i="5e-3"
@@ -82,12 +84,18 @@ job_num=0
 
 for Iext_c in $Iext_coeff; do
     for AMPA_c in $AMPA_coeff; do
+        for adapt_inc_c in $adapt_inc_coeff; do
+            for adapt_c in $adapt_coeff; do
 #####################
     Iext_e=`echo "$Iext_e_1 * $Iext_c" | bc -l`
     Iext_i=`echo "$Iext_i_1 * 1." | bc -l`
 
     g_AMPA_total=`echo "$g_AMPA_total_1 * $AMPA_c" | bc -l`
     g_AMPA_std=`echo "$g_AMPA_std_1 * $AMPA_c" | bc -l`
+
+    ad_tau_e_mean=`echo "$ad_tau_e_mean_1 * $adapt_c" | bc -l`
+    ad_tau_e_std=`echo "$ad_tau_e_std_1 * $adapt_c" | bc -l`
+    ad_e_g_inc=`echo "$ad_e_g_inc_1 * $adapt_inc_c" | bc -l`
 
     if [ $dry_run -eq 1 ]
     then
@@ -96,6 +104,9 @@ for Iext_c in $Iext_coeff; do
         echo "    Iext_i       = `printf "%1.3e" $Iext_i`" >> $readme_file
         echo "    g_AMPA_total = `printf "%1.3e" $g_AMPA_total`" >> $readme_file
         echo "    g_AMPA_std   = `printf "%1.3e" $g_AMPA_std`" >> $readme_file
+        echo "    ad_tau_e_mean= `printf "%1.3e" $ad_tau_e_mean`" >> $readme_file
+        echo "    ad_tau_e_std = `printf "%1.3e" $ad_tau_e_std`" >> $readme_file
+        echo "    ad_e_g_inc   = `printf "%1.3e" $ad_e_g_inc`" >> $readme_file
         echo
     else
         if [ $EDDIE -eq 1 ]
@@ -210,5 +221,7 @@ for Iext_c in $Iext_coeff; do
 
     let job_num=$job_num+1
 #####################
+            done
+        done
     done
 done
