@@ -8,13 +8,13 @@
 
 BASE=../../
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
-dry_run=1
-EDDIE=0  # if eddie, submit on a cluster using qsub
+dry_run=0
+EDDIE=1  # if eddie, submit on a cluster using qsub
 
 
 QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=01:30:00"
 
-net_generations=1
+net_generations=4
 
 Ne=400
 Ni=100
@@ -69,8 +69,8 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=1.25
-sim_dt="0.1e-3"
+time=5
+sim_dt="0.05e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
 

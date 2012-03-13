@@ -42,7 +42,7 @@ x_lim = [options.time-1, options.time]
 ################################################################################
 #                      Stimulation frequency list (Hz)
 
-stim_freq_list = numpy.array([8])
+stim_freq_list = numpy.array([2, 8, 16])
 
 ################################################################################
 
