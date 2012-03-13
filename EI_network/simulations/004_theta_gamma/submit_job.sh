@@ -9,12 +9,12 @@
 BASE=../../
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
 dry_run=0
-EDDIE=0  # if eddie, submit on a cluster using qsub
+EDDIE=1  # if eddie, submit on a cluster using qsub
 
 
 QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=01:30:00"
 
-net_generations=1
+net_generations=4
 
 Ne=400
 Ni=100
@@ -22,7 +22,7 @@ Ni=100
 AMPA_density="0.4"
 GABA_density="0.4"
 
-Iext_coeff="1.1" #"1.0 1.1 1.2 1.3 1.4"
+Iext_coeff="0.5 0.6 0.7 0.8 0.9 1.0 1.1"
 AMPA_coeff="0.8" #"0.2 0.3 0.4 0.5 0.6 0.7 0.8"
 adapt_inc_coeff="1.0" #"1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9"
 adapt_coeff="1.0" #"0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5"
@@ -82,7 +82,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=0
+job_num=2700
 
 
 for Iext_c in $Iext_coeff; do
