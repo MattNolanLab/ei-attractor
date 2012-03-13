@@ -17,10 +17,10 @@ QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=01:30:00"
 net_generations=4
 
 Ne=400
-Ni=100
+Ni=50
 
-P_AMPA_density="0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4 0.45 0.50"
-P_GABA_density="0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4 0.45 0.50 0.6 0.7 0.8 0.9 1.0"
+P_AMPA_density="0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4"
+P_GABA_density="0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4"
 
 Iext_coeff="0.9" #"0.5 0.6 0.7 0.8 0.9 1.0 1.1"
 AMPA_coeff="0.8" #"0.2 0.3 0.4 0.5 0.6 0.7 0.8"
@@ -82,7 +82,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=3000
+job_num=3200
 
 
 for Iext_c in $Iext_coeff; do
