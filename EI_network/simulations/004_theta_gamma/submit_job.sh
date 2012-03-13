@@ -79,7 +79,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=0
+job_num=2300
 
 
 for Iext_c in $Iext_coeff; do
