@@ -17,24 +17,26 @@ QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=01:30:00"
 net_generations=2
 
 Ne=400
-Ni=100
+Ni=40
 
 P_AMPA_density="0.4" #"0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4"
 P_GABA_density="0.4" #"0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4"
 
-Iext_coeff="0.9" #"0.5 0.6 0.7 0.8 0.9 1.0 1.1"
+Iext_e_coeff="0.9" #"0.5 0.6 0.7 0.8 0.9 1.0 1.1"
+Iext_i_coeff="0.4 0.5 0.6 0.7 0.8 0.9"
 AMPA_coeff="0.8" #"0.2 0.3 0.4 0.5 0.6 0.7 0.8"
+GABA_coeff="1.0 1.1 1.2 1.3 1.4"
 adapt_inc_coeff="1.0" #"1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9"
 adapt_coeff="1.0" #"0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5"
 
-heterog_e_coeff="0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1"
+heterog_e_coeff="0.5" #"0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1"
 heterog_i_coeff="0.5" #"0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1"
 
 Iext_e_1="900*10^-12"
 Iext_i_1="250*10^-12"
 
 Iext_e_min="400e-12"
-Iext_i_min="150e-12"
+Iext_i_min="100e-12"
 
 taum_e="9.3e-3"
 taum_e_spread_1="3.1*10^-3"
@@ -65,7 +67,7 @@ g_AMPA_total_1="3.5*10^-8"
 g_AMPA_std_1="600*10^-12"
 tau_GABA_rise="1e-3"
 tau_GABA_fall="5e-3"
-g_GABA_total="4.00e-8"
+g_GABA_total_1="4.00*10^-8"
 
 Vrev_AMPA="0e-3"
 Vrev_GABA="-75e-3"
@@ -85,23 +87,26 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=3600
+job_num=3700
 
 
-for Iext_c in $Iext_coeff; do
-    for AMPA_c in $AMPA_coeff; do
-        for adapt_inc_c in $adapt_inc_coeff; do
-            for adapt_c in $adapt_coeff; do
-                for AMPA_density in $P_AMPA_density; do
-                    for GABA_density in $P_GABA_density; do
-                        for heterog_e_c in $heterog_e_coeff; do
-                            for heterog_i_c in $heterog_i_coeff; do
+for Iext_e_c in $Iext_e_coeff; do
+    for Iext_i_c in $Iext_i_coeff; do
+        for AMPA_c in $AMPA_coeff; do
+            for GABA_c in $GABA_coeff; do
+                for adapt_inc_c in $adapt_inc_coeff; do
+                    for adapt_c in $adapt_coeff; do
+                        for AMPA_density in $P_AMPA_density; do
+                            for GABA_density in $P_GABA_density; do
+                                for heterog_e_c in $heterog_e_coeff; do
+                                    for heterog_i_c in $heterog_i_coeff; do
 #####################
-    Iext_e=`echo "$Iext_e_1 * $Iext_c" | bc -l`
-    Iext_i=`echo "$Iext_i_1 * 1." | bc -l`
+    Iext_e=`echo "$Iext_e_1 * $Iext_e_c" | bc -l`
+    Iext_i=`echo "$Iext_i_1 * $Iext_i_c" | bc -l`
 
     g_AMPA_total=`echo "$g_AMPA_total_1 * $AMPA_c" | bc -l`
     g_AMPA_std=`echo "$g_AMPA_std_1 * $AMPA_c" | bc -l`
+    g_GABA_total=`echo "$g_GABA_total_1 * $GABA_c" | bc -l`
 
     ad_tau_e_mean=`echo "$ad_tau_e_mean_1 * $adapt_c" | bc -l`
     ad_tau_e_std=`echo "$ad_tau_e_std_1 * $adapt_c" | bc -l`
@@ -121,6 +126,7 @@ for Iext_c in $Iext_coeff; do
         echo "    Iext_i       = `printf "%1.3e" $Iext_i`" >> $readme_file
         echo "    g_AMPA_total = `printf "%1.3e" $g_AMPA_total`" >> $readme_file
         echo "    g_AMPA_std   = `printf "%1.3e" $g_AMPA_std`" >> $readme_file
+        echo "    g_GABA_total = `printf "%1.3e" $g_GABA_total`" >> $readme_file
         echo "    ad_tau_e_mean= `printf "%1.3e" $ad_tau_e_mean`" >> $readme_file
         echo "    ad_tau_e_std = `printf "%1.3e" $ad_tau_e_std`" >> $readme_file
         echo "    ad_e_g_inc   = `printf "%1.3e" $ad_e_g_inc`" >> $readme_file
@@ -242,6 +248,8 @@ for Iext_c in $Iext_coeff; do
 
     let job_num=$job_num+1
 #####################
+                                    done
+                                done
                             done
                         done
                     done
