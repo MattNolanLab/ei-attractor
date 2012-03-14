@@ -14,7 +14,7 @@ EDDIE=1  # if eddie, submit on a cluster using qsub
 
 QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=01:30:00"
 
-net_generations=2
+net_generations=4
 
 Ne=400
 Ni=40
@@ -22,7 +22,7 @@ Ni=40
 P_AMPA_density="0.4" #"0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4"
 P_GABA_density="0.4" #"0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4"
 
-Iext_e_coeff="0.5 0.6 0.7 0.8 0.9" #"0.5 0.6 0.7 0.8 0.9 1.0 1.1"
+Iext_e_coeff="0.50 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.90" #"0.5 0.6 0.7 0.8 0.9 1.0 1.1"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
 AMPA_coeff="0.8" #"0.2 0.3 0.4 0.5 0.6 0.7 0.8"
 GABA_coeff="1.2" #"1.0 1.1 1.2 1.3 1.4"
@@ -35,7 +35,7 @@ heterog_i_coeff="0.5" #"0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1"
 Iext_e_1="900*10^-12"
 Iext_i_1="250*10^-12"
 
-Iext_e_min="400e-12"
+Iext_e_min="250e-12"
 Iext_i_min="100e-12"
 
 taum_e="9.3e-3"
@@ -87,7 +87,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=3800
+job_num=3830
 
 
 for Iext_e_c in $Iext_e_coeff; do
