@@ -29,8 +29,8 @@ GABA_coeff="1.2" #"1.0 1.1 1.2 1.3 1.4"
 adapt_inc_coeff="1.0" #"1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9"
 adapt_coeff="1.0" #"0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5"
 
-heterog_e_coeff="0.5 0.6 0.7 0.8 0.9 1.0 1.1"
-heterog_i_coeff="0.5" #"0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1"
+heterog_e_coeff="1.0"
+heterog_i_coeff="0.5 0.6 0.7 0.8 0.9 1.0"
 
 Iext_e_1="900*10^-12"
 Iext_i_1="250*10^-12"
@@ -87,7 +87,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=3840
+job_num=3850
 
 
 for Iext_e_c in $Iext_e_coeff; do
