@@ -17,10 +17,10 @@ QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=01:30:00"
 net_generations=4
 
 Ne=400
-Ni=50
+Ni=100
 
-P_AMPA_density="0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4"
-P_GABA_density="0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4"
+P_AMPA_density="0.4" #"0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4"
+P_GABA_density="0.4" #"0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.4"
 
 Iext_coeff="0.9" #"0.5 0.6 0.7 0.8 0.9 1.0 1.1"
 AMPA_coeff="0.8" #"0.2 0.3 0.4 0.5 0.6 0.7 0.8"
@@ -46,9 +46,9 @@ ad_e_g_inc_1="1.136*10^-8"
 deltaT_e="0.4e-3"
 
 taum_i="5e-3"
-taum_i_spread="4e-3"
+taum_i_spread_1="4*10^-3"
 EL_i="-60e-3"
-EL_i_spread="20e-3"
+EL_i_spread_1="20*10^-3"
 Vt_i="-45e-3"
 Vr_i="$EL_i"
 Rm_i="44e6"
@@ -56,6 +56,7 @@ ad_tau_i_mean="7.5e-3"
 ad_tau_i_std="0.5e-3"  # Unused in the simulation for now
 ad_i_g_inc="2.273e-8"
 deltaT_i="0.4e-3"
+heterog_i_coeff="0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1"
 
 tau_AMPA="1e-3"
 g_AMPA_total_1="3.5*10^-8"
@@ -82,7 +83,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=3200
+job_num=3500
 
 
 for Iext_c in $Iext_coeff; do
@@ -91,6 +92,7 @@ for Iext_c in $Iext_coeff; do
             for adapt_c in $adapt_coeff; do
                 for AMPA_density in $P_AMPA_density; do
                     for GABA_density in $P_GABA_density; do
+                        for heterog_i_c in $heterog_i_coeff; do
 #####################
     Iext_e=`echo "$Iext_e_1 * $Iext_c" | bc -l`
     Iext_i=`echo "$Iext_i_1 * 1." | bc -l`
@@ -101,6 +103,10 @@ for Iext_c in $Iext_coeff; do
     ad_tau_e_mean=`echo "$ad_tau_e_mean_1 * $adapt_c" | bc -l`
     ad_tau_e_std=`echo "$ad_tau_e_std_1 * $adapt_c" | bc -l`
     ad_e_g_inc=`echo "$ad_e_g_inc_1 * $adapt_inc_c" | bc -l`
+
+    taum_i_spread=`echo "$taum_i_spread_1 * $heterog_i_c" | bc -l`
+    EL_i_spread=`echo "$EL_i_spread_1 * $heterog_i_c" | bc -l`
+    
 
     if [ $dry_run -eq 1 ]
     then
@@ -230,6 +236,7 @@ for Iext_c in $Iext_coeff; do
 
     let job_num=$job_num+1
 #####################
+                        done
                     done
                 done
             done
