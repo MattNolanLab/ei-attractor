@@ -32,7 +32,8 @@ adapt_coeff="1.0" #"0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 
 heterog_e_coeff="1.0"
 heterog_i_coeff="1.0"
 
-tau_GABA_rise_coeff="0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0"
+tau_GABA_rise_coeff="0.4"
+tau_GABA_fall_coeff="0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0"
 
 Iext_e_1="900*10^-12"
 Iext_i_1="250*10^-12"
@@ -68,7 +69,7 @@ tau_AMPA="1e-3"
 g_AMPA_total_1="3.5*10^-8"
 g_AMPA_std_1="600*10^-12"
 tau_GABA_rise_1="1*10^-3"
-tau_GABA_fall="5e-3"
+tau_GABA_fall_1="5*10^-3"
 g_GABA_total_1="4.00*10^-8"
 
 Vrev_AMPA="0e-3"
@@ -89,7 +90,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=3900
+job_num=3910
 
 
 for Iext_e_c in $Iext_e_coeff; do
@@ -103,6 +104,7 @@ for Iext_e_c in $Iext_e_coeff; do
                                 for heterog_e_c in $heterog_e_coeff; do
                                     for heterog_i_c in $heterog_i_coeff; do
                                         for tau_GABA_rise_c in $tau_GABA_rise_coeff; do
+                                            for tau_GABA_fall_c in $tau_GABA_fall_coeff; do
 #####################
     Iext_e=`echo "$Iext_e_1 * $Iext_e_c" | bc -l`
     Iext_i=`echo "$Iext_i_1 * $Iext_i_c" | bc -l`
@@ -122,6 +124,7 @@ for Iext_e_c in $Iext_e_coeff; do
     EL_i_spread=`echo "$EL_i_spread_1 * $heterog_i_c" | bc -l`
     
     tau_GABA_rise=`echo "$tau_GABA_rise_1 * $tau_GABA_rise_c" | bc -l`
+    tau_GABA_fall=`echo "$tau_GABA_fall_1 * $tau_GABA_fall_c" | bc -l`
 
     if [ $dry_run -eq 1 ]
     then
@@ -252,6 +255,7 @@ for Iext_e_c in $Iext_e_coeff; do
 
     let job_num=$job_num+1
 #####################
+                                            done
                                         done
                                     done
                                 done
