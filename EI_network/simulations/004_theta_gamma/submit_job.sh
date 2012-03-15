@@ -29,11 +29,11 @@ GABA_coeff="1.7" #"1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7"
 adapt_inc_coeff="1.0" #"1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9"
 adapt_coeff="1.0" #"0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5"
 
-heterog_e_coeff="1.0"
+heterog_e_coeff="0.5"
 heterog_i_coeff="1.0"
 
 tau_GABA_rise_coeff="0.4"
-tau_GABA_fall_coeff="0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0"
+tau_GABA_fall_coeff="0.5"
 
 Iext_e_1="900*10^-12"
 Iext_i_1="250*10^-12"
@@ -46,12 +46,15 @@ taum_e_spread_1="3.1*10^-3"
 EL_e="-68.5e-3"
 EL_e_spread_1="2.0*10^-3"
 Vt_e="-50e-3"
-Vr_e=$EL_e
+Vr_e="-60e-3"
 Rm_e="44e6"
 ad_tau_e_mean_1="40*10^-3"
-ad_tau_e_std_1="5*10^-3"
-ad_e_g_inc_1="1.136*10^-8"
+ad_tau_e_std_1="0"
+ad_e_g_inc_1="0"
 deltaT_e="0.4e-3"
+Eahp_e="-80e-3"
+g_ahp_e="44e-9"
+tau_ahp_e="20e-3"
 
 taum_i="5e-3"
 taum_i_spread_1="4*10^-3"
@@ -90,7 +93,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=3910
+job_num=0
 
 
 for Iext_e_c in $Iext_e_coeff; do
@@ -164,6 +167,9 @@ for Iext_e_c in $Iext_e_coeff; do
                 --ad_tau_e_std $ad_tau_e_std \
                 --ad_e_g_inc $ad_e_g_inc \
                 --deltaT_e $deltaT_e \
+                --Eahp_e $Eahp_e \
+                --g_ahp_e $g_ahp_e \
+                --tau_ahp_e $tau_ahp_e \
                 --taum_i $taum_i \
                 --taum_i_spread $taum_i_spread \
                 --EL_i $EL_i \
@@ -217,6 +223,9 @@ for Iext_e_c in $Iext_e_coeff; do
             --ad_tau_e_std $ad_tau_e_std \
             --ad_e_g_inc $ad_e_g_inc \
             --deltaT_e $deltaT_e \
+            --Eahp_e $Eahp_e \
+            --g_ahp_e $g_ahp_e \
+            --tau_ahp_e $tau_ahp_e \
             --taum_i $taum_i \
             --taum_i_spread $taum_i_spread \
             --EL_i $EL_i \

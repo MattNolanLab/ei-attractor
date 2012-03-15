@@ -61,6 +61,12 @@ def getOptParser():
     optParser.add_option("--deltaT_e", type="float",
             dest="deltaT_e", help="Sharpness of exponential I&F neuron spike"
             "initiation (excitatory, V)")
+    optParser.add_option("--Eahp_e", type="float",
+            help="Excitatory AHP reversal potential (Volt)")
+    optParser.add_option("--g_ahp_e", type="float",
+            help="Maximal AHP excitatory conductance (Siemens)")
+    optParser.add_option("--tau_ahp_e", type="float",
+            help="Excitatory AHP time decay constant (seconds)")
 
     optParser.add_option("--taum_i", type="float", dest="taum_i",
             help="Mean of inhibitory neuron membrane time constant (s)")

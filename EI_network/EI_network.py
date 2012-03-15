@@ -66,6 +66,7 @@ class EI_Network:
         deltaT_e = o.deltaT_e*volt
         self.Vt_e = o.Vt_e*volt
         Vr_e = o.Vr_e*volt
+        g_ahp_e = o.g_ahp_e * siemens
         tau_GABA_rise = o.tau_GABA_rise*second
         tau_GABA_fall = o.tau_GABA_fall*second
         tau1_GABA = tau_GABA_fall
@@ -78,12 +79,13 @@ class EI_Network:
 
         self.eqs_e = Equations('''
             dvm/dt = 1/C*Im + (noise_sigma*xi/taum_mean**.5): volt
-            Im = gL*(EL-vm)*(1+g_ad/gL)+gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
+            Im = gL*(EL-vm)*(1+g_ad/gL) + g_ahp*(Eahp - vm) + gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
             Isyn = (gi1 - gi2)*(Esyn - vm) : amp
             Iclamp = (gi1 - gi2)*(Esyn - Vclamp) : amp
             dgi1/dt = -gi1/syn_tau1 : siemens
             dgi2/dt = -gi2/syn_tau2 : siemens
             dg_ad/dt = -g_ad/tau_ad : siemens
+            dg_ahp/dt = -g_ahp/tau_ahp : siemens
             tau_ad : second
             Iext : amp
             EL : volt
@@ -98,7 +100,9 @@ class EI_Network:
             Vclamp = o.Vclamp*volt,
             syn_tau1=tau1_GABA,
             syn_tau2=tau2_GABA,
-            taum_mean=o.taum_e*second)
+            taum_mean=o.taum_e*second,
+            tau_ahp=o.tau_ahp_e*second,
+            Eahp=o.Eahp_e * volt)
 
 
         # Inhibitory population
@@ -147,7 +151,7 @@ class EI_Network:
                 N = self.net_Ne,
                 model=self.eqs_e,
                 threshold=spike_detect_th,
-                reset=Vr_e,
+                reset="vm=Vr_e; g_ahp=g_ahp_e",
                 refractory=refrac_abs,
                 clock=clk)
 

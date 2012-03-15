@@ -50,7 +50,7 @@ x_lim = [options.time-1, options.time]
 ################################################################################
 #                      Stimulation frequency list (Hz)
 
-stim_freq_list = numpy.array([2, 8, 16])
+stim_freq_list = numpy.array([8])
 
 ################################################################################
 
@@ -165,7 +165,7 @@ for net_it in xrange(options.net_generations):
             printAndSaveTraces(spikeMon_e, spikeMon_i, stateMon_e, stateMon_i,
                 stateMon_Iclamp_e, stateMon_Iclamp_i, stateMon_Iext_e, stateMon_Iext_i,
                 options, output_fname, x_lim)
-    
+
             # Firing rate
             Favg_e = spikeMon_e.getNSpikes()/options.time
             mean_e = np.mean(Favg_e)
@@ -179,7 +179,7 @@ for net_it in xrange(options.net_generations):
             printFiringRatesBar(Favg_e, Favg_i, mean_e, mean_i, output_fname)
 
             print "Wavelet analysis..."
-            wav_n_range = 10
+            wav_n_range = 5
             wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_e.pdf')
             high_pass_freq = 40.
             maxF = 200
