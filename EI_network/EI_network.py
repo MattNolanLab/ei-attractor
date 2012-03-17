@@ -344,7 +344,7 @@ class EI_Network:
                 ", not" + str(ndim) + ".")
 
 
-        self.NMDA_conn.connect(self.E_pop, self.I_pop, self.AMPA_conn.W/50.)
+        self.NMDA_conn.connect(self.E_pop, self.I_pop, self.AMPA_conn.W*0.)
         self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W)
 
         self.net.add(self.AMPA_conn, self.NMDA_conn, self.GABA_conn1, self.GABA_conn2)

@@ -21,7 +21,7 @@ P_pAMPA_sigma="0.7"
 
 N_it="0   1  2  3  4  5  6  7  8"
 P_Ne=(32 33 35 40 45 50 55 60 65)
-P_Ni=(16 17 18 20 23 25 58 30 33)
+P_Ni=(32 33 35 40 45 50 55 60 65)
 
 Iext_e_coeff="0.5" # 0.7 0.8 0.9 1.0 1.1 1.2 1.3"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
@@ -91,7 +91,7 @@ ntrials=10
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=200
+job_num=300
 
 
 net_it=0
