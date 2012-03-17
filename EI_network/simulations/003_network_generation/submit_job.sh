@@ -14,15 +14,18 @@ dry_run=0
 
 QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
 
-net_generations=1
+net_generations=8
 
-Ne=32
-Ni=32
+P_Ivel="0" #"5 10 15 20 25 30 35 40 45 50"
+P_pAMPA_sigma="0.7"
 
-Iext_e_coeff="0.6" # 0.7 0.8 0.9 1.0 1.1 1.2 1.3"
+Ne=33
+Ni=33
+
+Iext_e_coeff="0.5" # 0.7 0.8 0.9 1.0 1.1 1.2 1.3"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
-AMPA_coeff="8" #"0.2 0.3 0.4 0.5 0.6 0.7 0.8"
-GABA_coeff="20"
+AMPA_coeff="20" #"20 22 24 26 28 30 32 34"
+GABA_coeff="4"
 adapt_inc_coeff="1.0" #"1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9"
 adapt_coeff="1.0" #"0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5"
 
@@ -50,7 +53,7 @@ Eahp_e="-80e-3"
 g_ahp_e="5e-9"
 tau_ahp_e="20e-3"
 
-taum_i="5e-3"
+taum_i="10e-3"
 taum_i_spread_1="4*10^-3"
 EL_i="-60e-3"
 EL_i_spread_1="20*10^-3"
@@ -77,7 +80,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=100
+time=30
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
@@ -90,12 +93,17 @@ update_interval=10
 job_num=1000
 
 
+net_it=0
+
+while [ $net_it -lt $net_generations ]; do
 for Iext_e_c in $Iext_e_coeff; do
     for Iext_i_c in $Iext_i_coeff; do
         for AMPA_c in $AMPA_coeff; do
             for GABA_c in $GABA_coeff; do
                 for adapt_inc_c in $adapt_inc_coeff; do
                     for adapt_c in $adapt_coeff; do
+                        for Ivel in $P_Ivel; do
+                            for pAMPA_sigma in $P_pAMPA_sigma; do
                                 for heterog_e_c in $heterog_e_coeff; do
                                     for heterog_i_c in $heterog_i_coeff; do
                                         for tau_GABA_rise_c in $tau_GABA_rise_coeff; do
@@ -139,6 +147,8 @@ for Iext_e_c in $Iext_e_coeff; do
             job_num_str=`printf "job%04d" $job_num`
             qsub $QSUB_PARAMS -N $job_num_str  -j y -o $output_dir \
                 eddie_submit.sh \
+                --Ivel $Ivel \
+                --pAMPA_sigma $pAMPA_sigma \
                 --Ne $Ne \
                 --Ni $Ni \
                 --Iext_e $Iext_e \
@@ -189,7 +199,9 @@ for Iext_e_c in $Iext_e_coeff; do
                 --ntrials $ntrials
         else
             pwd
-            nice python2.6 -i simulation.py \
+            nice python2.6  simulation.py \
+            --Ivel $Ivel \
+            --pAMPA_sigma $pAMPA_sigma \
             --Ne $Ne \
             --Ni $Ni \
             --Iext_e $Iext_e \
@@ -237,7 +249,7 @@ for Iext_e_c in $Iext_e_coeff; do
             --output_dir $output_dir \
             --update_interval $update_interval \
             --job_num $job_num \
-            --ntrials $ntrials
+            --ntrials $ntrials&
 
         fi
     fi
@@ -245,14 +257,19 @@ for Iext_e_c in $Iext_e_coeff; do
     echo
 
     let job_num=$job_num+1
+    let net_it=$net_it+1
+    sleep 0.5
 #####################
+                                                done
                                             done
                                         done
                                     done
                                 done
                             done
+                        done
                     done
                 done
             done
         done
+    done
 done

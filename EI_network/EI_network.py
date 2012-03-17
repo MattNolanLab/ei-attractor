@@ -14,6 +14,21 @@ from numpy.random import rand
 import time
 import math
 
+# Get a preferred direction for a neuron
+def getPreferredDirection(pos_x, pos_y):
+# pos_x/y - position of neuron in 2d sheet
+    pos4_x = pos_x % 2
+    pos2_y = pos_y % 2
+    if pos4_x == 0:
+        if pos2_y == 0:
+            return [-1, 0] # Left
+        else:
+            return [0, -1] # Down
+    else:
+        if pos2_y == 0:
+            return [0, 1] # up
+        else:
+            return [1, 0] # Right
 
 
 class EI_Network:
@@ -284,6 +299,8 @@ class EI_Network:
             self._generate_pAMPA_template2D(self.o.Ni, self.pAMPA_mu, self.pAMPA_sigma)
             self._generate_pGABA_template2D(self.o.Ne, self.pGABA_sigma)
 
+            self.prefDirs = np.ndarray((self.net_Ne, 2))
+
             # Do the same rolling as in the case of ndim==1, but in two
             # dimensions
             conn_th = 1e-3
@@ -292,10 +309,16 @@ class EI_Network:
                 tmp_r_templ = np.roll(self.pAMPA_templ, r_e_norm, 0)
                 #E_W = np.asarray(self.AMPA_conn.W)
                 for c in xrange(self.o.Ne):
+                    it = r*self.o.Ne + c
                     c_e_norm = int(round(np.double(c)/self.o.Ne*self.o.Ni))
 
-                    tmp_templ = np.roll(tmp_r_templ, c_e_norm, 1).ravel('C')
-                    it = r*self.o.Ne + c
+                    tmp_templ = np.roll(tmp_r_templ, c_e_norm, 1)
+
+                    pd = getPreferredDirection(r, c)
+                    self.prefDirs[it, :] = pd
+                    tmp_templ = np.roll(tmp_templ, pd[0], 0)
+                    tmp_templ = np.roll(tmp_templ, pd[1], 1).ravel('C')
+
                     self.AMPA_conn.W.rows[it] = (tmp_templ >
                             conn_th).nonzero()[0]
                     self.AMPA_conn.W.data[it] = g_AMPA_mean*tmp_templ[self.AMPA_conn.W.rows[it]]*siemens
@@ -319,7 +342,7 @@ class EI_Network:
                 ", not" + str(ndim) + ".")
 
 
-        self.NMDA_conn.connect(self.E_pop, self.I_pop, self.AMPA_conn.W/200.)
+        self.NMDA_conn.connect(self.E_pop, self.I_pop, self.AMPA_conn.W/50.)
         self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W)
 
         self.net.add(self.AMPA_conn, self.NMDA_conn, self.GABA_conn1, self.GABA_conn2)
