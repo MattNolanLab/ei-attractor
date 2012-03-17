@@ -25,6 +25,10 @@ lg.basicConfig(level=lg.DEBUG)
 
 
 parser = getOptParser()
+
+parser.add_option("--Ivel", type="float", help="Velocity input (pA)")
+parser.add_option("--pAMPA_sigma", type="float", help="AMPA profile spread (normalised)")
+
 (options, args) = parser.parse_args()
 options = setOptionDictionary(parser, options)
 
@@ -42,15 +46,18 @@ figSize = (12,8)
 ################################################################################
 print "Starting network and connections initialization..."
 start_time=time.time()
+total_start_t = time.time()
 
 options.ndim = 2
 ei_net = EI_Network(options, simulationClock)
 
 # Mexican hat properties and AMPA/GABA connections
 pAMPA_mu = 0.5
-pAMPA_sigma = 0.25/6
-pGABA_sigma = 0.5/6
+pAMPA_sigma = options.pAMPA_sigma/6
+pGABA_sigma = 0.6/6
 ei_net.connMexicanHat(pAMPA_mu, pAMPA_sigma, pGABA_sigma)
+
+print('pAMPA_sigma = ' + str(options.pAMPA_sigma) + '/6')
 
 
 duration=time.time()-start_time
@@ -58,24 +65,31 @@ print "Network setup time:",duration,"seconds"
 #                            End Network setup
 ################################################################################
 
-stim_start = int(0.4*ei_net.o.Ne)
+stim_start = int(0.45*ei_net.o.Ne)
 stim_range = int(0.2*ei_net.o.Ne)
-stim_current = 1200*pA
+stim_current = 900*pA
+#stim_current = options.Iext_e
 
 @network_operation(stimClock)
 def stimulateSubPopulation():
-    if simulationClock.t > 500*msecond and simulationClock.t < 650*msecond:
+    if simulationClock.t >= 0*msecond and simulationClock.t < 100*msecond:
+        #ei_net.E_pop.Iext = 0
         tmp = ei_net.E_pop.Iext.reshape((options.Ne, options.Ne))
         tmp[stim_start:stim_start+stim_range, stim_start:stim_start+stim_range] =\
             linspace(stim_current, stim_current, stim_range**2).reshape((stim_range, stim_range))
         ei_net.E_pop.Iext = tmp.ravel()
         print "Stimulation..."
+    elif simulationClock.t >= 1*second and simulationClock.t < options.time*second:
+        v = np.array([[-1, -1]]).T
+        Ivel = np.dot(ei_net.prefDirs, v) * options.Ivel*pA
+        ei_net.E_pop.Iext = ei_net.o.Iext_e + Ivel.T
     else:
         ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
+    #pass
 
 
-state_record_e = [465]
-state_record_i = [465]
+state_record_e = [15, 527]
+state_record_i = [7, 135]
 
 spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
 spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
@@ -146,3 +160,6 @@ for trial_it in range(ei_net.o.ntrials):
     ei_net.reinit()
 #                            End main cycle
 ################################################################################
+
+total_time = time.time()-total_start_t
+print "Overall time: ", total_time, " seconds"
