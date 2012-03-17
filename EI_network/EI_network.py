@@ -269,8 +269,10 @@ class EI_Network:
         self.pAMPA_sigma = pAMPA_sigma * self.o.Ni
         self.pGABA_sigma = pGABA_sigma * self.o.Ne
 
-        self.AMPA_conn = Connection(self.E_pop, self.I_pop, 'ge')
-        self.NMDA_conn = Connection(self.E_pop, self.I_pop, 'gNMDA')
+        self.AMPA_conn = Connection(self.E_pop, self.I_pop, 'ge',
+            structure='dense')
+        self.NMDA_conn = Connection(self.E_pop, self.I_pop, 'gNMDA',
+            structure='dense')
         self.GABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
         self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
 
@@ -307,7 +309,7 @@ class EI_Network:
             for r in xrange(self.o.Ne):
                 r_e_norm = int(round(np.double(r)/self.o.Ne*self.o.Ni))
                 tmp_r_templ = np.roll(self.pAMPA_templ, r_e_norm, 0)
-                #E_W = np.asarray(self.AMPA_conn.W)
+                E_W = np.asarray(self.AMPA_conn.W)
                 for c in xrange(self.o.Ne):
                     it = r*self.o.Ne + c
                     c_e_norm = int(round(np.double(c)/self.o.Ne*self.o.Ni))
@@ -319,10 +321,10 @@ class EI_Network:
                     tmp_templ = np.roll(tmp_templ, pd[0], 0)
                     tmp_templ = np.roll(tmp_templ, pd[1], 1).ravel('C')
 
-                    self.AMPA_conn.W.rows[it] = (tmp_templ >
-                            conn_th).nonzero()[0]
-                    self.AMPA_conn.W.data[it] = g_AMPA_mean*tmp_templ[self.AMPA_conn.W.rows[it]]*siemens
-                    #E_W[it, :] = g_AMPA_mean*tmp_templ*siemens
+                    #self.AMPA_conn.W.rows[it] = (tmp_templ >
+                    #        conn_th).nonzero()[0]
+                    #self.AMPA_conn.W.data[it] = g_AMPA_mean*tmp_templ[self.AMPA_conn.W.rows[it]]*siemens
+                    E_W[it, :] = g_AMPA_mean*tmp_templ*siemens
 
             for r in xrange(self.o.Ni):
                 r_i_norm = int(round(np.double(r)/self.o.Ni*self.o.Ne))
