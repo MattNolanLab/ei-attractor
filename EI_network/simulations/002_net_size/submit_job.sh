@@ -9,10 +9,10 @@
 BASE=../../
 PYTHON_JUP="/disk/scratch/s0966762/lib/python2.6/site-packages"
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE:$PYTHON_JUP"
-EDDIE=0  # if eddie, submit on a cluster using qsub
+EDDIE=1  # if eddie, submit on a cluster using qsub
 dry_run=0
 
-QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=04:00:00 -pe memory-2G 3"
+QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=04:00:00 -pe memory-2G 2"
 
 net_generations=1
 
@@ -21,7 +21,7 @@ P_pAMPA_sigma="0.7"
 
 N_it="0   1  2  3  4  5  6  7  8"
 P_Ne=(32 33 35 40 45 50 55 60 65)
-P_Ni=(32 33 35 40 45 50 55 60 65)
+P_Ni=(16 17 18 20 23 25 58 30 33)
 
 Iext_e_coeff="0.5" # 0.7 0.8 0.9 1.0 1.1 1.2 1.3"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
@@ -81,17 +81,17 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=5
+time=30
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
 
-ntrials=2
+ntrials=10
 
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=100
+job_num=200
 
 
 net_it=0
