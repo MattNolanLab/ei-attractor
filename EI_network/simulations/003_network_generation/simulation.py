@@ -1,4 +1,4 @@
-#import brian_no_units
+import brian_no_units
 from brian import *
 
 from brian import *
@@ -59,13 +59,15 @@ print "Network setup time:",duration,"seconds"
 #                            End Network setup
 ################################################################################
 
-stim_start = int(0.4*ei_net.o.Ne)
+stim_start = int(0.45*ei_net.o.Ne)
 stim_range = int(0.2*ei_net.o.Ne)
-stim_current = 1200*pA
+stim_current = 900*pA
+#stim_current = options.Iext_e
 
 @network_operation(stimClock)
 def stimulateSubPopulation():
     if simulationClock.t > 500*msecond and simulationClock.t < 650*msecond:
+        #ei_net.E_pop.Iext = 0
         tmp = ei_net.E_pop.Iext.reshape((options.Ne, options.Ne))
         tmp[stim_start:stim_start+stim_range, stim_start:stim_start+stim_range] =\
             linspace(stim_current, stim_current, stim_range**2).reshape((stim_range, stim_range))
@@ -73,31 +75,39 @@ def stimulateSubPopulation():
         print "Stimulation..."
     else:
         ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
+    #pass
 
 
-state_record_e = [465]
-state_record_i = [465]
+state_record_e = [15, 527]
+state_record_i = [15, 527]
 
 spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
 spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
 
+stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = state_record_e, clock=simulationClock)
+stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = state_record_i, clock=simulationClock)
+stateMon_Iclamp_e = StateMonitor(ei_net.E_pop, 'Iclamp', record = state_record_e, clock=simulationClock)
+stateMon_Iclamp_i = StateMonitor(ei_net.I_pop, 'Iclamp', record = state_record_i, clock=simulationClock)
+
 ei_net.net.add(spikeMon_e, spikeMon_i)
+ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
 ei_net.net.add(stimulateSubPopulation)
 
 
-# Export connectivity matrices
-print "Exporting connections..."
-connOut = {}
-connOut['AMPA_conn'] = ei_net.AMPA_conn.W
-connOut['GABA_conn'] = ei_net.GABA_conn1.W
-connOut['options'] = options._einet_optdict
+## Export connectivity matrices
+#print "Exporting connections..."
+#connOut = {}
+#connOut['AMPA_conn'] = ei_net.AMPA_conn.W
+#connOut['GABA_conn'] = ei_net.GABA_conn1.W
+#connOut['options'] = options._einet_optdict
+#
+#conn_fname = "{0}/{1}job{2:04}_connections.mat".format(options.output_dir,
+#        options.fileNamePrefix, options.job_num)
+#savemat(conn_fname, connOut, do_compression=False)
+#print "Finished exporting connections"
 
-conn_fname = "{0}/{1}job{2:04}_connections.mat".format(options.output_dir,
-        options.fileNamePrefix, options.job_num)
-savemat(conn_fname, connOut, do_compression=False)
-print "Finished exporting connections"
 
-
+x_lim = [0, options.time]
 
 ################################################################################
 #                              Main cycle
@@ -123,6 +133,80 @@ for trial_it in range(ei_net.o.ntrials):
     F_winLen = 1.
     Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
     Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
+
+    # plot firing rates
+    figure(figsize=figSize)
+    subplot(211)
+    T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
+    pcolormesh(T, FR, Fe)
+    ylabel('E Neuron no.')
+    colorbar()
+    subplot(212)
+    T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
+    pcolormesh(T, FR, Fi)
+    xlabel('Time (s)')
+    ylabel('I Neuron no.')
+    colorbar()
+    savefig(output_fname + '_firing_rate_e.png')
+
+    figure()
+    ax = subplot(211)
+    plot(stateMon_e.times, stateMon_e.values[0:2].T/mV)
+    ylabel('E membrane potential (mV)')
+    subplot(212, sharex=ax)
+    plot(stateMon_i.times, stateMon_i.values[0:2].T/mV)
+    xlabel('Time (s)')
+    ylabel('I membrane potential (mV)')
+    xlim(x_lim)
+    savefig(output_fname + '_Vm.pdf')
+    
+    
+    figure()
+    ax = subplot(211)
+    plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0:2].T/pA)
+    ylabel('E synaptic current (pA)')
+    subplot(212, sharex=ax)
+    plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[0:2].T/pA)
+    xlabel('Time (s)')
+    ylabel('I synaptic current (pA)')
+    xlim(x_lim)
+    savefig(output_fname + '_Isyn.pdf')
+    
+    
+    figure()
+    pcolormesh(np.reshape(ei_net.AMPA_conn.W.todense()[528, :], (options.Ni,
+        options.Ni)));
+    xlabel('I neuron no.')
+    ylabel('I neuron no.')
+    colorbar()
+    savefig(output_fname + '_E2I_conn.png')
+
+    figure()
+    pcolormesh(np.reshape(ei_net.GABA_conn1.W.todense()[528, :], (options.Ne,
+        options.Ne)));
+    xlabel('E neuron no.')
+    ylabel('E neuron no.')
+    colorbar()
+    savefig(output_fname + '_I2E_conn.png')
+
+    figure()
+    Ne = options.Ne
+    pcolormesh(np.reshape(np.dot(ei_net.AMPA_conn.W.todense(),
+        ei_net.GABA_conn1.W.todense())[528, :], (Ne, Ne)));
+    xlabel('E neuron no.')
+    ylabel('E neuron no.')
+    colorbar()
+    savefig(output_fname + '_E2E_conn.png')
+
+
+    figure()
+    pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (options.Ne, options.Ne)))
+    xlabel('E neuron no.')
+    ylabel('E neuron no.')
+    colorbar()
+    savefig(output_fname + '_firing_snapshot_e.png')
+
+
     
     # Print a plot of bump position
     (pos, times) = spikeMon_e.torusPopulationVector(ei_net.o.Ne, F_tstart, F_tend, F_dt,
@@ -135,30 +219,30 @@ for trial_it in range(ei_net.o.ntrials):
     savefig(output_fname + '_bump_position.pdf')
     
     
-    outData = {}
-    outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-    if spikeMon_e is not None:
-        outData['spikeCell_e'] = spikeMon_e.aspikes
-    if spikeMon_i is not None:
-        outData['spikeCell_i'] = spikeMon_i.aspikes
-    outData['options'] = options._einet_optdict
+    #outData = {}
+    #outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+    #if spikeMon_e is not None:
+    #    outData['spikeCell_e'] = spikeMon_e.aspikes
+    #if spikeMon_i is not None:
+    #    outData['spikeCell_i'] = spikeMon_i.aspikes
+    #outData['options'] = options._einet_optdict
 
-    outData['bumpPos'] = pos
-    outData['bumpPos_times'] = times
+    #outData['bumpPos'] = pos
+    #outData['bumpPos_times'] = times
 
-    outData['Fe'] = Fe
-    outData['Fe_t'] = Fe_t
-    outData['Fi'] = Fi
-    outData['Fi_t'] = Fi_t
+    #outData['Fe'] = Fe
+    #outData['Fe_t'] = Fe_t
+    #outData['Fi'] = Fi
+    #outData['Fi_t'] = Fi_t
 
 
-    savemat(output_fname + '_output.mat', outData, do_compression=True)
+    #savemat(output_fname + '_output.mat', outData, do_compression=True)
 
 
     print "End of trial no. " + str(trial_it) + "..."
     print 
 
-    ei_net.reinit()
+    #ei_net.reinit()
 #                            End main cycle
 ################################################################################
 

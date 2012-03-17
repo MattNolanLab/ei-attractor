@@ -120,7 +120,7 @@ class EI_Network:
         self.eqs_i = Equations('''
             dvm/dt = 1/C*Im + (noise_sigma*xi/taum_mean**.5): volt
             Im = gL*(EL-vm)*(1+g_ad/gL) + gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
-            Isyn = ge*(Esyn - vm) : amp
+            Isyn = ge*(Esyn - vm) + gNMDA*(Esyn - vm): amp
             Iclamp = ge*(Esyn - Vclamp) : amp
             dge/dt = -ge/syn_tau : siemens
             dg_ad/dt = -g_ad/tau_ad : siemens
@@ -128,6 +128,7 @@ class EI_Network:
             Iext : amp
             EL : volt
             taum : second
+            dgNMDA/dt = -gNMDA/(100*msecond) : siemens
             ''',
             C=Ci,
             gL=1/Rm_i,
@@ -241,9 +242,11 @@ class EI_Network:
             ndim        Number of dimensions (1 or 2)
         '''
 
-        g_AMPA_mean = self.o.g_AMPA_total/self.net_Ne
-        g_AMPA_sigma = np.sqrt(np.log(1 + self.o.g_AMPA_std**2/g_AMPA_mean**2))
-        g_AMPA_mu = np.log(g_AMPA_mean) - 1/2*g_AMPA_sigma**2
+        AMPA_density = np.pi*(6*pAMPA_mu*pAMPA_sigma - 9*pAMPA_sigma**2)
+        g_AMPA_mean = self.o.g_AMPA_total/self.net_Ne/AMPA_density
+        #g_AMPA_sigma = np.sqrt(np.log(1 + self.o.g_AMPA_std**2/g_AMPA_mean**2))
+        #g_AMPA_mu = np.log(g_AMPA_mean) - 1/2*g_AMPA_sigma**2
+        GABA_density = 9*np.pi*pGABA_sigma**2
         g_GABA_mean = self.o.g_GABA_total / self.net_Ni * siemens
 
         # Generate connection-probability profile functions for GABA and AMPA connections
@@ -252,6 +255,7 @@ class EI_Network:
         self.pGABA_sigma = pGABA_sigma * self.o.Ne
 
         self.AMPA_conn = Connection(self.E_pop, self.I_pop, 'ge')
+        self.NMDA_conn = Connection(self.E_pop, self.I_pop, 'gNMDA')
         self.GABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
         self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
 
@@ -282,18 +286,20 @@ class EI_Network:
 
             # Do the same rolling as in the case of ndim==1, but in two
             # dimensions
+            conn_th = 1e-3
             for r in xrange(self.o.Ne):
                 r_e_norm = int(round(np.double(r)/self.o.Ne*self.o.Ni))
                 tmp_r_templ = np.roll(self.pAMPA_templ, r_e_norm, 0)
+                #E_W = np.asarray(self.AMPA_conn.W)
                 for c in xrange(self.o.Ne):
                     c_e_norm = int(round(np.double(c)/self.o.Ne*self.o.Ni))
 
                     tmp_templ = np.roll(tmp_r_templ, c_e_norm, 1).ravel('C')
                     it = r*self.o.Ne + c
-                    self.AMPA_conn.W.rows[it] = list((rand(self.o.Ni**2) <
-                        self.o.AMPA_density*tmp_templ).nonzero()[0])
-                    self.AMPA_conn.W.data[it] = np.random.lognormal(g_AMPA_mu,
-                            g_AMPA_sigma, len(self.AMPA_conn.W.rows[it]))*siemens
+                    self.AMPA_conn.W.rows[it] = (tmp_templ >
+                            conn_th).nonzero()[0]
+                    self.AMPA_conn.W.data[it] = g_AMPA_mean*tmp_templ[self.AMPA_conn.W.rows[it]]*siemens
+                    #E_W[it, :] = g_AMPA_mean*tmp_templ*siemens
 
             for r in xrange(self.o.Ni):
                 r_i_norm = int(round(np.double(r)/self.o.Ni*self.o.Ne))
@@ -304,18 +310,19 @@ class EI_Network:
                     tmp_templ = np.roll(tmp_r_templ, c_e_norm,
                             axis=1).ravel('C')
                     it = r*self.o.Ni + c
-                    self.GABA_conn1.W.rows[it] = list((rand(self.o.Ne**2) <
-                        self.o.GABA_density*tmp_templ).nonzero()[0])
-                    self.GABA_conn1.W.data[it] = [self.B_GABA*g_GABA_mean] * len(self.GABA_conn1.W.rows[it])
+                    self.GABA_conn1.W.rows[it] = (tmp_templ >
+                            conn_th).nonzero()[0]
+                    self.GABA_conn1.W.data[it] = self.B_GABA*g_GABA_mean*tmp_templ[self.GABA_conn1.W.rows[it]]
 
         else:
             raise Exception("Number of Mexican hat dimensions must be 0 or 1" +
                 ", not" + str(ndim) + ".")
 
 
+        self.NMDA_conn.connect(self.E_pop, self.I_pop, self.AMPA_conn.W/200.)
         self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W)
 
-        self.net.add(self.AMPA_conn, self.GABA_conn1, self.GABA_conn2)
+        self.net.add(self.AMPA_conn, self.NMDA_conn, self.GABA_conn1, self.GABA_conn2)
         self.ndim = ndim
 
 
