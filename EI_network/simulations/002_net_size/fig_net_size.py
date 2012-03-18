@@ -9,7 +9,7 @@ from data_analysis import bumpVariancePos
 # network
 
 
-jobRange = [100, 108]
+jobRange = [300, 308]
 trialRange = [0, 9]
 jobN = jobRange[1] - jobRange[0] + 1
 trialN = trialRange[1] - trialRange[0] + 1
@@ -36,17 +36,17 @@ for job_it in range(jobN):
         pos_y = res.pos_y_vec[job_it, trial_it]
         Ne = res.o_vec[job_it, trial_it]['Ne'][0][0][0][0]
 
-        print('Histogram for ' + fileName)
-        figure()
-        subplot(121)
-        hist(pos_x/Ne, hist_nbins, range=[-0.5, 0.5], normed=False)
-        xlabel('Position x (normalised)')
-        ylabel('Frequency')
-        subplot(122)
-        hist(pos_y/Ne, hist_nbins, range=[-0.5, 0.5], normed=False)
-        xlabel('Position y (normalised)')
-        savefig(fileName + '_bump_position_hist.pdf')
-        close(gcf())
+        #print('Histogram for ' + fileName)
+        #figure()
+        #subplot(121)
+        #hist(pos_x/Ne, hist_nbins, range=[-0.5, 0.5], normed=False)
+        #xlabel('Position x (normalised)')
+        #ylabel('Frequency')
+        #subplot(122)
+        #hist(pos_y/Ne, hist_nbins, range=[-0.5, 0.5], normed=False)
+        #xlabel('Position y (normalised)')
+        #savefig(fileName + '_bump_position_hist.pdf')
+        #close(gcf())
 
 
 figure()

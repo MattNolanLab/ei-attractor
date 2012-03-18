@@ -52,10 +52,9 @@ options.ndim = 2
 ei_net = EI_Network(options, simulationClock)
 
 # Mexican hat properties and AMPA/GABA connections
-pAMPA_mu = 0.5
-pAMPA_sigma = options.pAMPA_sigma/6
+pAMPA_size= 1.5
 pGABA_sigma = 0.6/6
-ei_net.connMexicanHat(pAMPA_mu, pAMPA_sigma, pGABA_sigma)
+ei_net.connMexicanHat(pAMPA_size, pGABA_sigma)
 
 print('pAMPA_sigma = ' + str(options.pAMPA_sigma) + '/6')
 
@@ -72,20 +71,20 @@ stim_current = 900*pA
 
 @network_operation(stimClock)
 def stimulateSubPopulation():
-    if simulationClock.t >= 0*msecond and simulationClock.t < 100*msecond:
-        #ei_net.E_pop.Iext = 0
-        tmp = ei_net.E_pop.Iext.reshape((options.Ne, options.Ne))
-        tmp[stim_start:stim_start+stim_range, stim_start:stim_start+stim_range] =\
-            linspace(stim_current, stim_current, stim_range**2).reshape((stim_range, stim_range))
-        ei_net.E_pop.Iext = tmp.ravel()
-        print "Stimulation..."
-    elif simulationClock.t >= 1*second and simulationClock.t < options.time*second:
-        v = np.array([[-1, -1]]).T
-        Ivel = np.dot(ei_net.prefDirs, v) * options.Ivel*pA
-        ei_net.E_pop.Iext = ei_net.o.Iext_e + Ivel.T
-    else:
-        ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
-    #pass
+    #if simulationClock.t >= 0*msecond and simulationClock.t < 100*msecond:
+    #    #ei_net.E_pop.Iext = 0
+    #    tmp = ei_net.E_pop.Iext.reshape((options.Ne, options.Ne))
+    #    tmp[stim_start:stim_start+stim_range, stim_start:stim_start+stim_range] =\
+    #        linspace(stim_current, stim_current, stim_range**2).reshape((stim_range, stim_range))
+    #    ei_net.E_pop.Iext = tmp.ravel()
+    #    print "Stimulation..."
+    #elif simulationClock.t >= 1*second and simulationClock.t < options.time*second:
+    #    v = np.array([[-1, -1]]).T
+    #    Ivel = np.dot(ei_net.prefDirs, v) * options.Ivel*pA
+    #    ei_net.E_pop.Iext = ei_net.o.Iext_e + Ivel.T
+    #else:
+    #    ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
+    pass
 
 
 state_record_e = [15, 527]
@@ -185,7 +184,7 @@ for trial_it in range(ei_net.o.ntrials):
     
     Ne = options.Ne
     figure()
-    pcolormesh(np.reshape(ei_net.AMPA_conn.W.todense()[Ne**2/2+Ne/2-1, :], (options.Ni,
+    pcolormesh(np.reshape(ei_net.AMPA_conn.W.todense()[0, :], (options.Ni,
         options.Ni)));
     xlabel('I neuron no.')
     ylabel('I neuron no.')
@@ -194,7 +193,7 @@ for trial_it in range(ei_net.o.ntrials):
 
     Ni = options.Ni
     figure()
-    pcolormesh(np.reshape(ei_net.GABA_conn1.W.todense()[Ni**2/2+Ni/2-1, :], (options.Ne,
+    pcolormesh(np.reshape(ei_net.GABA_conn1.W.todense()[0, :], (options.Ne,
         options.Ne)));
     xlabel('E neuron no.')
     ylabel('E neuron no.')
@@ -204,7 +203,7 @@ for trial_it in range(ei_net.o.ntrials):
     figure()
     Ne = options.Ne
     pcolormesh(np.reshape(np.dot(ei_net.AMPA_conn.W.todense(),
-        ei_net.GABA_conn1.W.todense())[Ne**2/2 + Ne/2 -1, :], (Ne, Ne)));
+        ei_net.GABA_conn1.W.todense())[0, :], (Ne, Ne)));
     xlabel('E neuron no.')
     ylabel('E neuron no.')
     colorbar()

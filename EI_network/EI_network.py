@@ -136,7 +136,7 @@ class EI_Network:
             dvm/dt = 1/C*Im + (noise_sigma*xi/taum_mean**.5): volt
             Im = gL*(EL-vm)*(1+g_ad/gL) + gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
             Isyn = ge*(Esyn - vm) + gNMDA*(Esyn - vm): amp
-            Iclamp = ge*(Esyn - Vclamp) : amp
+            Iclamp = ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp): amp
             dge/dt = -ge/syn_tau : siemens
             dg_ad/dt = -g_ad/tau_ad : siemens
             tau_ad : second
@@ -213,60 +213,50 @@ class EI_Network:
         self.pAMPA_templ = np.concatenate((self.pAMPA_templ,
             self.pAMPA_templ[1:N-len(self.pAMPA_templ)+1][::-1]))
 
-    def _generate_pAMPA_template2D(self, N, mu, sigma):
-        mg = np.mgrid[0:N/2+1, 0:N/2+1]
-        self.pAMPA_templ = np.exp(-(np.sqrt(mg[0]**2 + mg[1]**2) - mu)**2/2.0/sigma**2)
+    def _generate_pAMPA_template2D(self, a, others, l_net, prefDir):
+        '''
+        !!!
+        a ... vector of 2D position of current neuron, the shape must be (1,2)
+        b ... matrix of 2D positions of N other neurons, the shape must be (N, 2)
+        l_net ... size of the field (see Burak and Fiete, PLoS Comp. B.)
+        prefDir ... preferred Direction of a neuron (this will shift the
+                    Gaussian profile in the direction of prefDir
+        '''
+        gamma = 3.15/l_net**2
+        beta = 3./l_net**2
+        # B is a normalisation constant so max of the profile function is 1
+        B = -((gamma/beta)**(gamma/(beta-gamma)) -
+                (gamma/beta)**(beta/(beta-gamma)))**-1
 
-        # Stack horizontally and vertically
-        ncols = len(self.pAMPA_templ[0])
-        self.pAMPA_templ = np.hstack((self.pAMPA_templ, self.pAMPA_templ[:,
-            1:N-ncols+1][:, ::-1]))
-        nrows = len(self.pAMPA_templ)
-        self.pAMPA_templ = np.vstack((self.pAMPA_templ,
-            self.pAMPA_templ[1:N-nrows+1, :][::-1, :]))
+        d = a - others - prefDir
+        d = np.abs(1./2./np.pi *
+                np.angle(np.exp(1j*2.*np.pi*d)))
+        d2 = d[:, 0]**2 + d[:, 1]**2
+        return -B*(np.exp(-gamma*d2) - np.exp(-beta*d2))
 
-    def _generate_pGABA_template1D(self, N, sigma):
+    def _generate_pGABA_template2D(self, a, others, sigma):
         '''Generate GABA probability profile function on an interval [0, N-1].
         It is similar to generate_pAMPA_template but the mean is 0'''
-        self.pGABA_templ = np.exp(-(np.arange(N/2+1))**2/2.0/sigma**2)
-        self.pGABA_templ = np.concatenate((self.pGABA_templ,
-            self.pGABA_templ[1:N-len(self.pGABA_templ)+1][::-1]))
+
+        d = a - others
+        d = np.abs(1./2./np.pi *
+                np.angle(np.exp(1j*2.*np.pi*d)))
+        d2 = d[:, 0]**2 + d[:, 1]**2
+        return np.exp(-d2/2./sigma**2)
 
 
-    def _generate_pGABA_template2D(self, N, sigma):
-        mg = np.mgrid[0:N/2+1, 0:N/2+1]
-        self.pGABA_templ = np.exp(-(mg[0]**2 + mg[1]**2)/2.0/sigma**2)
-
-        # Stack horizontally and vertically
-        ncols = len(self.pGABA_templ[0])
-        self.pGABA_templ = np.hstack((self.pGABA_templ, self.pGABA_templ[:,
-            1:N-ncols+1][:, ::-1]))
-        nrows = len(self.pGABA_templ)
-        self.pGABA_templ = np.vstack((self.pGABA_templ,
-            self.pGABA_templ[1:N-nrows+1, :][::-1, :]))
-
-        
-    def connMexicanHat(self, pAMPA_mu, pAMPA_sigma, pGABA_sigma):
+    def connMexicanHat(self, pAMPA_size, pGABA_sigma):
         '''Create excitatory and inhibitory connections, Mexican hat ring model.
-            pAMPA_mu    Mean of the AMPA Gaussian profile of connection
-                        probability
-            pAMPA_sigma Std. dev. of the AMPA Gaussian profile of connection
-                        probability
             pGABA_sigma Std. dev. of the GABA Gaussian profile of connection
                         probability (Mean of GABA connections is local)
             ndim        Number of dimensions (1 or 2)
         '''
 
-        AMPA_density = np.pi*(6*pAMPA_mu*pAMPA_sigma - 9*pAMPA_sigma**2)
-        g_AMPA_mean = self.o.g_AMPA_total/self.net_Ne/AMPA_density
-        #g_AMPA_sigma = np.sqrt(np.log(1 + self.o.g_AMPA_std**2/g_AMPA_mean**2))
-        #g_AMPA_mu = np.log(g_AMPA_mean) - 1/2*g_AMPA_sigma**2
+        g_AMPA_mean = self.o.g_AMPA_total/self.net_Ne
         GABA_density = 9*np.pi*pGABA_sigma**2
         g_GABA_mean = self.o.g_GABA_total / self.net_Ni * siemens
 
         # Generate connection-probability profile functions for GABA and AMPA connections
-        self.pAMPA_mu = pAMPA_mu * self.o.Ni
-        self.pAMPA_sigma = pAMPA_sigma * self.o.Ni
         self.pGABA_sigma = pGABA_sigma * self.o.Ne
 
         self.AMPA_conn = Connection(self.E_pop, self.I_pop, 'ge',
@@ -276,75 +266,53 @@ class EI_Network:
         self.GABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
         self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
 
-        if (self.o.ndim ==1):
-            self._generate_pAMPA_template1D(self.o.Ni, self.pAMPA_mu, self.pAMPA_sigma)
-            self._generate_pGABA_template1D(self.o.Ne, self.pGABA_sigma)
-            for i in xrange(self.o.Ne):
-                e_norm = int(round(np.double(i)/self.o.Ne*self.o.Ni))
-
-                tmp_templ = np.roll(self.pAMPA_templ, e_norm)
-                self.AMPA_conn.W.rows[i] = list((rand(self.o.Ni) <
-                    self.o.AMPA_density*tmp_templ).nonzero()[0])
-                self.AMPA_conn.W.data[i] = np.random.lognormal(g_AMPA_mu,
-                        g_AMPA_sigma, len(self.AMPA_conn.W.rows[i]))*siemens
-
-            for i in xrange(self.o.Ni):
-                i_norm = int(round(np.double(i)/self.o.Ni*self.o.Ne))
-                
-
-                tmp_templ = np.roll(self.pGABA_templ, i_norm)
-                self.GABA_conn1.W.rows[i] = list((rand(self.o.Ne) <
-                    self.o.GABA_density*tmp_templ).nonzero()[0])
-                self.GABA_conn1.W.data[i] = [self.B_GABA*g_GABA_mean] * len(self.GABA_conn1.W.rows[i])
-
-        elif (self.o.ndim == 2):
-            self._generate_pAMPA_template2D(self.o.Ni, self.pAMPA_mu, self.pAMPA_sigma)
-            self._generate_pGABA_template2D(self.o.Ne, self.pGABA_sigma)
-
+        if (self.o.ndim == 2):
             self.prefDirs = np.ndarray((self.net_Ne, 2))
+            X, Y = np.meshgrid(np.arange(self.o.Ni), np.arange(self.o.Ni))
+            others_e = 1. * np.vstack((X.ravel(), Y.ravel())).T / self.o.Ni
 
-            # Do the same rolling as in the case of ndim==1, but in two
-            # dimensions
-            conn_th = 1e-3
-            for r in xrange(self.o.Ne):
-                r_e_norm = int(round(np.double(r)/self.o.Ne*self.o.Ni))
-                tmp_r_templ = np.roll(self.pAMPA_templ, r_e_norm, 0)
-                E_W = np.asarray(self.AMPA_conn.W)
-                for c in xrange(self.o.Ne):
-                    it = r*self.o.Ne + c
-                    c_e_norm = int(round(np.double(c)/self.o.Ne*self.o.Ni))
+            E_W = np.asarray(self.AMPA_conn.W)
+            for y in xrange(self.o.Ne):
+                y_e_norm = float(y) / self.o.Ne
 
-                    tmp_templ = np.roll(tmp_r_templ, c_e_norm, 1)
+                for x in xrange(self.o.Ne):
+                    it = y*self.o.Ne + x
 
-                    pd = getPreferredDirection(r, c)
+                    x_e_norm = float(x) / self.o.Ne
+
+                    
+                    a = np.array([[x_e_norm, y_e_norm]])
+                    #pd = getPreferredDirection(r, c)
+                    pd = np.array([[0, 0]])
                     self.prefDirs[it, :] = pd
-                    tmp_templ = np.roll(tmp_templ, pd[0], 0)
-                    tmp_templ = np.roll(tmp_templ, pd[1], 1).ravel('C')
+                    tmp_templ = self._generate_pAMPA_template2D(a, others_e,
+                            pAMPA_size, np.array([[pd[0, 0], pd[0, 1]]]))
 
-                    #self.AMPA_conn.W.rows[it] = (tmp_templ >
-                    #        conn_th).nonzero()[0]
-                    #self.AMPA_conn.W.data[it] = g_AMPA_mean*tmp_templ[self.AMPA_conn.W.rows[it]]*siemens
                     E_W[it, :] = g_AMPA_mean*tmp_templ*siemens
 
-            for r in xrange(self.o.Ni):
-                r_i_norm = int(round(np.double(r)/self.o.Ni*self.o.Ne))
-                tmp_r_templ = np.roll(self.pGABA_templ, r_i_norm, axis=0)
-                for c in xrange(self.o.Ni):
-                    c_e_norm = int(round(np.double(c)/self.o.Ni*self.o.Ne))
+            conn_th = 1e-3
+            X, Y = np.meshgrid(np.arange(self.o.Ne), np.arange(self.o.Ne))
+            others_i = 1. * np.vstack((X.ravel(), Y.ravel())).T / self.o.Ne
+            for y in xrange(self.o.Ni):
+                y_i_norm = float(y) / self.o.Ni
+                for x in xrange(self.o.Ni):
+                    x_i_norm = float(x) / self.o.Ni
+                    it = y*self.o.Ni + x
 
-                    tmp_templ = np.roll(tmp_r_templ, c_e_norm,
-                            axis=1).ravel('C')
-                    it = r*self.o.Ni + c
+                    a = np.array([[x_i_norm, y_i_norm]])
+                    tmp_templ = self._generate_pGABA_template2D(a, others_i,
+                            pGABA_sigma)
+
                     self.GABA_conn1.W.rows[it] = (tmp_templ >
                             conn_th).nonzero()[0]
                     self.GABA_conn1.W.data[it] = self.B_GABA*g_GABA_mean*tmp_templ[self.GABA_conn1.W.rows[it]]
 
         else:
-            raise Exception("Number of Mexican hat dimensions must be 0 or 1" +
+            raise Exception("Number of Mexican hat dimensions must be 2" +
                 ", not" + str(ndim) + ".")
 
 
-        self.NMDA_conn.connect(self.E_pop, self.I_pop, self.AMPA_conn.W*0.)
+        self.NMDA_conn.connect(self.E_pop, self.I_pop, self.AMPA_conn.W/50.)
         self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W)
 
         self.net.add(self.AMPA_conn, self.NMDA_conn, self.GABA_conn1, self.GABA_conn2)
