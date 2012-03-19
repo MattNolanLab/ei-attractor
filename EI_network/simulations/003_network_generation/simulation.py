@@ -21,6 +21,8 @@ from EI_network import *
 from EI_network_sim_mod import *
 from custombrian import *
 
+from tools import *
+
 lg.basicConfig(level=lg.DEBUG)
 
 
@@ -123,7 +125,7 @@ ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
 ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 ei_net.net.add(stimulateSubPopulation)
-#ei_net.net.add(thetaStimulation)
+ei_net.net.add(thetaStimulation)
 
 
 ## Export connectivity matrices

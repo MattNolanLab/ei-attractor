@@ -16,7 +16,7 @@ QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
 
 net_generations=1
 
-P_Ivel="50"
+P_Ivel="0"
 P_pAMPA_sigma="0.7"
 
 Ne=64
@@ -24,8 +24,8 @@ Ni=32
 
 Iext_e_coeff="0.6"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
-AMPA_coeff="15"
-GABA_coeff="9"
+AMPA_coeff="9"
+GABA_coeff="15"
 adapt_inc_coeff="1.0" #"1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9"
 adapt_coeff="1.0" #"0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5"
 
@@ -83,7 +83,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=20
+time=2.5
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
@@ -93,7 +93,7 @@ ntrials=1
 output_dir="output_local"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=0
+job_num=100
 
 
 net_it=0
