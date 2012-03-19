@@ -228,7 +228,7 @@ class EI_Network:
         B = -((gamma/beta)**(gamma/(beta-gamma)) -
                 (gamma/beta)**(beta/(beta-gamma)))**-1
 
-        d = a - others - prefDir
+        d = a - others - np.array(prefDir)/self.o.Ni
         d = np.abs(1./2./np.pi *
                 np.angle(np.exp(1j*2.*np.pi*d)))
         d2 = d[:, 0]**2 + d[:, 1]**2

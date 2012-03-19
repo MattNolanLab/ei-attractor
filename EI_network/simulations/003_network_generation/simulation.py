@@ -56,8 +56,8 @@ options.ndim = 2
 ei_net = EI_Network(options, simulationClock)
 
 # Mexican hat properties and AMPA/GABA connections
-pAMPA_size= 0.75
-pGABA_sigma = 0.75/6
+pAMPA_size= 1.0
+pGABA_sigma = 0.5/6
 ei_net.connMexicanHat(pAMPA_size, pGABA_sigma)
 
 print('pAMPA_sigma = ' + str(options.pAMPA_sigma) + '/6')
@@ -90,19 +90,23 @@ def stimulateSubPopulation():
             linspace(stim_current, stim_current, stim_range**2).reshape((stim_range, stim_range))
         ei_net.E_pop.Iext = tmp.ravel()
         print "Stimulation..."
-    elif simulationClock.t >= 0.5*second and simulationClock.t < options.time*second:
+    #elif simulationClock.t >= 0.5*second and simulationClock.t < options.time*second:
     #    v = np.array([[-1, -1]]).T
     #    Ivel = np.dot(ei_net.prefDirs, v) * options.Ivel*pA
     #    ei_net.E_pop.Iext = ei_net.o.Iext_e + Ivel.T
-        ph = stim_omega*simulationClock.t
-        ei_net.E_pop.Iext = stim_e_DC + stim_e_A*np.sin(ph - np.pi/2)
-        ei_net.I_pop.Iext = stim_i_DC + stim_i_A*np.sin(ph - np.pi/2)
     else:
         ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
     pass
 
+@network_operation(simulationClock)
+def thetaStimulation():
+    if simulationClock.t >= 0.5*second and simulationClock.t < options.time*second:
+        ph = stim_omega*simulationClock.t
+        ei_net.E_pop.Iext = stim_e_DC + stim_e_A*np.sin(ph - np.pi/2)
+        ei_net.I_pop.Iext = stim_i_DC + stim_i_A*np.sin(ph - np.pi/2)
 
-state_record_e = [15, 527]
+
+state_record_e = [31, 2015]
 state_record_i = [15, 527]
 
 spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
@@ -112,10 +116,14 @@ stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = state_record_e, clock=sim
 stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = state_record_i, clock=simulationClock)
 stateMon_Iclamp_e = StateMonitor(ei_net.E_pop, 'Iclamp', record = state_record_e, clock=simulationClock)
 stateMon_Iclamp_i = StateMonitor(ei_net.I_pop, 'Iclamp', record = state_record_i, clock=simulationClock)
+stateMon_Iext_e = StateMonitor(ei_net.E_pop, 'Iext', record = state_record_e, clock=simulationClock)
+stateMon_Iext_i = StateMonitor(ei_net.I_pop, 'Iext', record = state_record_i, clock=simulationClock)
 
 ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
+ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 ei_net.net.add(stimulateSubPopulation)
+#ei_net.net.add(thetaStimulation)
 
 
 ## Export connectivity matrices
@@ -131,7 +139,7 @@ ei_net.net.add(stimulateSubPopulation)
 #print "Finished exporting connections"
 
 
-x_lim = [0, options.time]
+x_lim = [options.time-1, options.time]
 
 ################################################################################
 #                              Main cycle
@@ -196,33 +204,45 @@ for trial_it in range(ei_net.o.ntrials):
     xlim(x_lim)
     savefig(output_fname + '_Isyn.pdf')
     
+    figure()
+    ax = subplot(211)
+    plot(stateMon_Iext_e.times, stateMon_Iext_e.values[0].T/pA)
+    ylabel('E external current (pA)')
+    subplot(212, sharex=ax)
+    plot(stateMon_Iext_i.times, stateMon_Iext_i.values[0].T/pA)
+    xlabel('Time (s)')
+    ylabel('I external current (pA)')
+    xlim(x_lim)
+    savefig(output_fname + '_Iext.pdf')
     
-    Ne = options.Ne
-    figure()
-    pcolormesh(np.reshape(ei_net.AMPA_conn.W.todense()[15, :], (options.Ni,
-        options.Ni)));
-    xlabel('I neuron no.')
-    ylabel('I neuron no.')
-    colorbar()
-    savefig(output_fname + '_E2I_conn.png')
+    
+    
+    #Ne = options.Ne
+    #figure()
+    #pcolormesh(np.reshape(ei_net.AMPA_conn.W.todense()[15, :], (options.Ni,
+    #    options.Ni)));
+    #xlabel('I neuron no.')
+    #ylabel('I neuron no.')
+    #colorbar()
+    #savefig(output_fname + '_E2I_conn.png')
 
-    Ni = options.Ni
-    figure()
-    pcolormesh(np.reshape(ei_net.GABA_conn1.W.todense()[15, :], (options.Ne,
-        options.Ne)));
-    xlabel('E neuron no.')
-    ylabel('E neuron no.')
-    colorbar()
-    savefig(output_fname + '_I2E_conn.png')
+    #Ni = options.Ni
+    #figure()
+    #pcolormesh(np.reshape(ei_net.GABA_conn1.W.todense()[15, :], (options.Ne,
+    #    options.Ne)));
+    #xlabel('E neuron no.')
+    #ylabel('E neuron no.')
+    #colorbar()
+    #savefig(output_fname + '_I2E_conn.png')
 
-    figure()
-    Ne = options.Ne
-    pcolormesh(np.reshape(np.dot(ei_net.AMPA_conn.W.todense(),
-        ei_net.GABA_conn1.W.todense())[15, :], (Ne, Ne)));
-    xlabel('E neuron no.')
-    ylabel('E neuron no.')
-    colorbar()
-    savefig(output_fname + '_E2E_conn.png')
+    #figure()
+    #Ne = options.Ne
+    #pcolormesh(np.reshape(np.dot(ei_net.AMPA_conn.W.todense(),
+    #    ei_net.GABA_conn1.W.todense())[15, :], (Ne, Ne)));
+    #xlabel('E neuron no.')
+    #ylabel('E neuron no.')
+    #colorbar()
+    #savefig(output_fname + '_E2E_conn.png')
 
 
     figure()

@@ -16,7 +16,7 @@ QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
 
 net_generations=1
 
-P_Ivel="0"
+P_Ivel="50"
 P_pAMPA_sigma="0.7"
 
 Ne=64
@@ -37,7 +37,7 @@ tau_GABA_fall_coeff="1.0"
 
 Iext_e_1="900*10^-12"
 Iext_i_1="250*10^-12"
-Iext_e_min="300e-12"
+Iext_e_min="400e-12"
 Iext_i_min="100e-12"
 
 
@@ -83,7 +83,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=1
+time=20
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
