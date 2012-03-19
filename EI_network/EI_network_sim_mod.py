@@ -52,12 +52,6 @@ def getOptParser():
             help="Mean of the excitatory integrate and fire reset potential (V)")
     optParser.add_option("--Rm_e", type="float", dest="Rm_e",
             help="Mean of excitatory membrane resistance (Ohm)")
-    optParser.add_option("--ad_tau_e_mean", type="float",
-            dest="ad_tau_e_mean", help="Mean of excitatory adaptation time constant (sec)")
-    optParser.add_option("--ad_tau_e_std", type="float",
-            dest="ad_tau_e_std", help="Std. deviation of excitatory adaptation time constant (sec)")
-    optParser.add_option("--ad_e_g_inc", type="float",
-            dest="ad_e_g_inc", help="After-spike excitatory increase of leak conductance (Siemens)")
     optParser.add_option("--deltaT_e", type="float",
             dest="deltaT_e", help="Sharpness of exponential I&F neuron spike"
             "initiation (excitatory, V)")

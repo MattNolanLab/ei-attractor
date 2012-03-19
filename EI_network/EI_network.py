@@ -50,8 +50,6 @@ class EI_Network:
         self.E_pop.vm = self.EL_e + (self.Vt_e-self.EL_e) * rand(len(self.E_pop))
         self.I_pop.vm = self.EL_i + (self.Vt_i-self.EL_i) * rand(len(self.I_pop))
         self.setBackgroundInput(self.o.Iext_e*amp, self.o.Iext_i*amp)
-        self.E_pop.tau_ad = (self.o.ad_tau_e_mean +
-                self.o.ad_tau_e_std*np.random.randn(len(self.E_pop.tau_ad)))*second
         self.E_pop.EL = (self.o.EL_e - self.o.EL_e_spread/2. +
                 self.o.EL_e_spread*rand(len(self.E_pop))) * volt
         self.E_pop.taum = (self.o.taum_e - self.o.taum_e_spread/2. +
@@ -94,14 +92,12 @@ class EI_Network:
 
         self.eqs_e = Equations('''
             dvm/dt = 1/C*Im + (noise_sigma*xi/taum_mean**.5): volt
-            Im = gL*(EL-vm)*(1+g_ad/gL) + g_ahp*(Eahp - vm) + gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
+            Im = gL*(EL-vm) + g_ahp*(Eahp - vm) + gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
             Isyn = (gi1 - gi2)*(Esyn - vm) : amp
             Iclamp = (gi1 - gi2)*(Esyn - Vclamp) : amp
             dgi1/dt = -gi1/syn_tau1 : siemens
             dgi2/dt = -gi2/syn_tau2 : siemens
-            dg_ad/dt = -g_ad/tau_ad : siemens
             dg_ahp/dt = -g_ahp/tau_ahp : siemens
-            tau_ad : second
             Iext : amp
             EL : volt
             taum : second
@@ -185,10 +181,6 @@ class EI_Network:
                 self.I_pop)
 
         # Setup adaptation connections: neuron on itself
-        if o.ad_e_g_inc != 0.0:
-            self.adaptConn_e = IdentityConnection(self.E_pop, self.E_pop,  'g_ad',
-                    weight=o.ad_e_g_inc*siemens)
-            self.net.add(self.adaptConn_e)
         if o.ad_i_g_inc != 0.0:
             self.adaptConn_i = IdentityConnection(self.I_pop, self.I_pop, 'g_ad',
                     weight=o.ad_i_g_inc*siemens)
@@ -238,9 +230,6 @@ class EI_Network:
         #return np.exp(-(d - .5)**2/2/sigma**2)
 
     def _generate_pGABA_template2D(self, a, others, sigma):
-        '''Generate GABA probability profile function on an interval [0, N-1].
-        It is similar to generate_pAMPA_template but the mean is 0'''
-
         d = a - others
         d = np.abs(1./2./np.pi *
                 np.angle(np.exp(1j*2.*np.pi*d)))

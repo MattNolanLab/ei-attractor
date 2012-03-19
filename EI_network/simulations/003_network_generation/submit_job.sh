@@ -48,9 +48,6 @@ EL_e_spread_1="2.0*10^-3"
 Vt_e="-50e-3"
 Vr_e="-68.5e-3"
 Rm_e="44e6"
-ad_tau_e_mean_1="40*10^-3"
-ad_tau_e_std_1="0"
-ad_e_g_inc_1="0"
 deltaT_e="0.4e-3"
 Eahp_e="-80e-3"
 g_ahp_e="5e-9"
@@ -93,7 +90,7 @@ ntrials=1
 output_dir="output_local"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=100
+job_num=0
 
 
 net_it=0
@@ -119,10 +116,6 @@ for Iext_e_c in $Iext_e_coeff; do
     g_AMPA_std=`echo "$g_AMPA_std_1 * $AMPA_c" | bc -l`
     g_GABA_total=`echo "$g_GABA_total_1 * $GABA_c" | bc -l`
 
-    ad_tau_e_mean=`echo "$ad_tau_e_mean_1 * $adapt_c" | bc -l`
-    ad_tau_e_std=`echo "$ad_tau_e_std_1 * $adapt_c" | bc -l`
-    ad_e_g_inc=`echo "$ad_e_g_inc_1 * $adapt_inc_c" | bc -l`
-
     taum_e_spread=`echo "$taum_e_spread_1 * $heterog_e_c" | bc -l`
     EL_e_spread=`echo "$EL_e_spread_1 * $heterog_e_c" | bc -l`
 
@@ -140,9 +133,6 @@ for Iext_e_c in $Iext_e_coeff; do
         echo "    g_AMPA_total = `printf "%1.3e" $g_AMPA_total`" >> $readme_file
         echo "    g_AMPA_std   = `printf "%1.3e" $g_AMPA_std`" >> $readme_file
         echo "    g_GABA_total = `printf "%1.3e" $g_GABA_total`" >> $readme_file
-        echo "    ad_tau_e_mean= `printf "%1.3e" $ad_tau_e_mean`" >> $readme_file
-        echo "    ad_tau_e_std = `printf "%1.3e" $ad_tau_e_std`" >> $readme_file
-        echo "    ad_e_g_inc   = `printf "%1.3e" $ad_e_g_inc`" >> $readme_file
         echo
     else
         if [ $EDDIE -eq 1 ]
@@ -165,9 +155,6 @@ for Iext_e_c in $Iext_e_coeff; do
                 --Vt_e $Vt_e \
                 --Vr_e $Vr_e \
                 --Rm_e $Rm_e \
-                --ad_tau_e_mean $ad_tau_e_mean \
-                --ad_tau_e_std $ad_tau_e_std \
-                --ad_e_g_inc $ad_e_g_inc \
                 --deltaT_e $deltaT_e \
                 --Eahp_e $Eahp_e \
                 --g_ahp_e $g_ahp_e \
@@ -220,9 +207,6 @@ for Iext_e_c in $Iext_e_coeff; do
             --Vt_e $Vt_e \
             --Vr_e $Vr_e \
             --Rm_e $Rm_e \
-            --ad_tau_e_mean $ad_tau_e_mean \
-            --ad_tau_e_std $ad_tau_e_std \
-            --ad_e_g_inc $ad_e_g_inc \
             --deltaT_e $deltaT_e \
             --Eahp_e $Eahp_e \
             --g_ahp_e $g_ahp_e \
