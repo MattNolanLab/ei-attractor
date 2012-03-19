@@ -16,16 +16,16 @@ QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
 
 net_generations=1
 
-P_Ivel="0" #"5 10 15 20 25 30 35 40 45 50"
+P_Ivel="0"
 P_pAMPA_sigma="0.7"
 
-Ne=32
+Ne=64
 Ni=32
 
-Iext_e_coeff="0.5" # 0.7 0.8 0.9 1.0 1.1 1.2 1.3"
+Iext_e_coeff="0.6"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
-AMPA_coeff="20" #"20 22 24 26 28 30 32 34"
-GABA_coeff="4"
+AMPA_coeff="15"
+GABA_coeff="9"
 adapt_inc_coeff="1.0" #"1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9"
 adapt_coeff="1.0" #"0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5"
 
@@ -33,10 +33,13 @@ heterog_e_coeff="0.1"
 heterog_i_coeff="0.0"
 
 tau_GABA_rise_coeff="0.1"
-tau_GABA_fall_coeff="2.0"
+tau_GABA_fall_coeff="1.0"
 
 Iext_e_1="900*10^-12"
 Iext_i_1="250*10^-12"
+Iext_e_min="300e-12"
+Iext_i_min="100e-12"
+
 
 taum_e="9.3e-3"
 taum_e_spread_1="3.1*10^-3"
@@ -80,7 +83,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=2.5
+time=1
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
@@ -90,7 +93,7 @@ ntrials=1
 output_dir="output_local"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=1000
+job_num=0
 
 
 net_it=0
@@ -153,6 +156,8 @@ for Iext_e_c in $Iext_e_coeff; do
                 --Ni $Ni \
                 --Iext_e $Iext_e \
                 --Iext_i $Iext_i \
+                --Iext_e_min $Iext_e_min \
+                --Iext_i_min $Iext_i_min \
                 --taum_e $taum_e \
                 --taum_e_spread $taum_e_spread \
                 --EL_e $EL_e \
@@ -199,13 +204,15 @@ for Iext_e_c in $Iext_e_coeff; do
                 --ntrials $ntrials
         else
             pwd
-            nice python2.6  -i simulation.py \
+            nice python2.6 simulation.py \
             --Ivel $Ivel \
             --pAMPA_sigma $pAMPA_sigma \
             --Ne $Ne \
             --Ni $Ni \
             --Iext_e $Iext_e \
             --Iext_i $Iext_i \
+            --Iext_e_min $Iext_e_min \
+            --Iext_i_min $Iext_i_min \
             --taum_e $taum_e \
             --taum_e_spread $taum_e_spread \
             --EL_e $EL_e \
@@ -249,7 +256,7 @@ for Iext_e_c in $Iext_e_coeff; do
             --output_dir $output_dir \
             --update_interval $update_interval \
             --job_num $job_num \
-            --ntrials $ntrials
+            --ntrials $ntrials&
 
         fi
     fi

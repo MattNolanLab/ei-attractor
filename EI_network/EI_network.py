@@ -233,6 +233,9 @@ class EI_Network:
                 np.angle(np.exp(1j*2.*np.pi*d)))
         d2 = d[:, 0]**2 + d[:, 1]**2
         return -B*(np.exp(-gamma*d2) - np.exp(-beta*d2))
+        #d = np.sqrt(d2)
+        #sigma = 0.75/6
+        #return np.exp(-(d - .5)**2/2/sigma**2)
 
     def _generate_pGABA_template2D(self, a, others, sigma):
         '''Generate GABA probability profile function on an interval [0, N-1].
@@ -282,11 +285,11 @@ class EI_Network:
 
                     
                     a = np.array([[x_e_norm, y_e_norm]])
-                    #pd = getPreferredDirection(r, c)
-                    pd = np.array([[0, 0]])
+                    pd = getPreferredDirection(x, y)
+                    #pd = np.array([[0, 0]])
                     self.prefDirs[it, :] = pd
                     tmp_templ = self._generate_pAMPA_template2D(a, others_e,
-                            pAMPA_size, np.array([[pd[0, 0], pd[0, 1]]]))
+                            pAMPA_size, np.array([[pd[0], pd[1]]]))
 
                     E_W[it, :] = g_AMPA_mean*tmp_templ*siemens
 
@@ -312,7 +315,7 @@ class EI_Network:
                 ", not" + str(ndim) + ".")
 
 
-        self.NMDA_conn.connect(self.E_pop, self.I_pop, self.AMPA_conn.W/50.)
+        self.NMDA_conn.connect(self.E_pop, self.I_pop, self.AMPA_conn.W/10.)
         self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W)
 
         self.net.add(self.AMPA_conn, self.NMDA_conn, self.GABA_conn1, self.GABA_conn2)

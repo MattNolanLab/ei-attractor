@@ -71,7 +71,7 @@ job_num=1
 
 
 
-python -i test_EI_network.py \
+python2.6 -i test_EI_network.py \
 --Ne $Ne \
 --Ni $Ni \
 --AMPA_density $AMPA_density \
