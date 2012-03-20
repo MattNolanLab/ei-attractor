@@ -227,7 +227,7 @@ for trial_it in range(ei_net.o.ntrials):
     figure()
     ax = subplot(211)
     plot(stateMon_Iclamp_e.times, butterHighPass(stateMon_Iclamp_e.values[0].T/pA, options.sim_dt, 40))
-    plot(stateMon_Iext_e.times, stateMon_Iext_e.values[0]/pA - stim_e_DC/pA)
+    plot(stateMon_Iext_e.times, -(stateMon_Iext_e.values[0]/pA - stim_e_DC/pA))
     ylabel('E current (pA)')
     ylim([-500, 500])
     subplot(212, sharex=ax)
