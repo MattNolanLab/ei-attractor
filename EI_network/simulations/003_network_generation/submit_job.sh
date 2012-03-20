@@ -22,18 +22,22 @@ P_pAMPA_sigma="0.7"
 Ne=64
 Ni=32
 
-Iext_e_coeff="0.6"
+Iext_e_coeff="0.675"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
-AMPA_coeff="9"
-GABA_coeff="15"
+AMPA_coeff="27.5"
+GABA_coeff="30"
+extraGABA_coeff="0" #"0.25"
 adapt_inc_coeff="1.0" #"1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9"
 adapt_coeff="1.0" #"0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5"
 
 heterog_e_coeff="0.1"
-heterog_i_coeff="0.0"
+heterog_i_coeff="0.0 0.1 0.2 0.3"
 
 tau_GABA_rise_coeff="0.1"
 tau_GABA_fall_coeff="1.0"
+
+# Percent NMDA of AMPA synapse
+P_NMDA_amount="2"
 
 Iext_e_1="900*10^-12"
 Iext_i_1="250*10^-12"
@@ -53,7 +57,7 @@ Eahp_e="-80e-3"
 g_ahp_e="5e-9"
 tau_ahp_e="20e-3"
 
-taum_i="10e-3"
+taum_i="5e-3"
 taum_i_spread_1="4*10^-3"
 EL_i="-60e-3"
 EL_i_spread_1="20*10^-3"
@@ -65,12 +69,16 @@ ad_tau_i_std="0.5e-3"  # Unused in the simulation for now
 ad_i_g_inc="2.273e-8"
 deltaT_i="0.4e-3"
 
-tau_AMPA="2e-3"
+tau_AMPA="1e-3"
 g_AMPA_total_1="3.5*10^-8"
 g_AMPA_std_1="600*10^-12"
 tau_GABA_rise_1="1*10^-3"
 tau_GABA_fall_1="5*10^-3"
 g_GABA_total_1="4.00*10^-8"
+
+# Uniform GABA I-->E only
+g_extraGABA_total_1="4.00*10^-8"
+extraGABA_density="0.4"
 
 Vrev_AMPA="0e-3"
 Vrev_GABA="-75e-3"
@@ -108,6 +116,8 @@ for Iext_e_c in $Iext_e_coeff; do
                                     for heterog_i_c in $heterog_i_coeff; do
                                         for tau_GABA_rise_c in $tau_GABA_rise_coeff; do
                                             for tau_GABA_fall_c in $tau_GABA_fall_coeff; do
+                                                for extraGABA_c in $extraGABA_coeff; do
+                                                    for NMDA_amount in $P_NMDA_amount; do
 #####################
     Iext_e=`echo "$Iext_e_1 * $Iext_e_c" | bc -l`
     Iext_i=`echo "$Iext_i_1 * $Iext_i_c" | bc -l`
@@ -115,6 +125,7 @@ for Iext_e_c in $Iext_e_coeff; do
     g_AMPA_total=`echo "$g_AMPA_total_1 * $AMPA_c" | bc -l`
     g_AMPA_std=`echo "$g_AMPA_std_1 * $AMPA_c" | bc -l`
     g_GABA_total=`echo "$g_GABA_total_1 * $GABA_c" | bc -l`
+    g_extraGABA_total=`echo "$g_extraGABA_total_1 * $extraGABA_c" | bc -l`
 
     taum_e_spread=`echo "$taum_e_spread_1 * $heterog_e_c" | bc -l`
     EL_e_spread=`echo "$EL_e_spread_1 * $heterog_e_c" | bc -l`
@@ -173,9 +184,12 @@ for Iext_e_c in $Iext_e_coeff; do
                 --tau_AMPA $tau_AMPA \
                 --g_AMPA_total $g_AMPA_total \
                 --g_AMPA_std $g_AMPA_std \
+                --NMDA_amount $NMDA_amount \
                 --tau_GABA_rise $tau_GABA_rise \
                 --tau_GABA_fall $tau_GABA_fall \
                 --g_GABA_total $g_GABA_total \
+                --g_extraGABA_total $g_extraGABA_total \
+                --extraGABA_density $extraGABA_density \
                 --Vrev_AMPA $Vrev_AMPA \
                 --Vrev_GABA $Vrev_GABA \
                 --noise_sigma $noise_sigma \
@@ -226,8 +240,11 @@ for Iext_e_c in $Iext_e_coeff; do
             --g_AMPA_total $g_AMPA_total \
             --g_AMPA_std $g_AMPA_std \
             --tau_GABA_rise $tau_GABA_rise \
+            --NMDA_amount $NMDA_amount \
             --tau_GABA_fall $tau_GABA_fall \
             --g_GABA_total $g_GABA_total \
+            --g_extraGABA_total $g_extraGABA_total \
+            --extraGABA_density $extraGABA_density \
             --Vrev_AMPA $Vrev_AMPA \
             --Vrev_GABA $Vrev_GABA \
             --noise_sigma $noise_sigma \
@@ -251,6 +268,8 @@ for Iext_e_c in $Iext_e_coeff; do
     let net_it=$net_it+1
     sleep 0.5
 #####################
+                                                        done
+                                                    done
                                                 done
                                             done
                                         done

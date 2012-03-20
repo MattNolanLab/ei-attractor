@@ -34,6 +34,10 @@ parser.add_option("--Iext_e_min", type=float,
         help="Minimal external current onto E cells (theta stim.) (A)")
 parser.add_option("--Iext_i_min", type=float,
         help="Minimal external current onto I cells (theta stim.) (I)")
+parser.add_option("--g_extraGABA_total", type=float,
+        help="Uniform inhibition (E-->I only) total conductance (S)")
+parser.add_option("--extraGABA_density", type=float,
+        help="Uniform inhibition (E-->I only) connection density")
 
 (options, args) = parser.parse_args()
 options = setOptionDictionary(parser, options)
@@ -61,6 +65,7 @@ ei_net = EI_Network(options, simulationClock)
 pAMPA_size= 1.0
 pGABA_sigma = 0.5/6
 ei_net.connMexicanHat(pAMPA_size, pGABA_sigma)
+ei_net.randomInhibition(options.g_extraGABA_total, options.extraGABA_density)
 
 print('pAMPA_sigma = ' + str(options.pAMPA_sigma) + '/6')
 
@@ -142,6 +147,7 @@ ei_net.net.add(thetaStimulation)
 
 
 x_lim = [options.time-1, options.time]
+#x_lim = [0, options.time]
 
 ################################################################################
 #                              Main cycle
@@ -208,43 +214,59 @@ for trial_it in range(ei_net.o.ntrials):
     
     figure()
     ax = subplot(211)
-    plot(stateMon_Iext_e.times, stateMon_Iext_e.values[0].T/pA)
+    plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[0].T/pA)
     ylabel('E external current (pA)')
     subplot(212, sharex=ax)
-    plot(stateMon_Iext_i.times, stateMon_Iext_i.values[0].T/pA)
+    plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[0].T/pA)
     xlabel('Time (s)')
     ylabel('I external current (pA)')
     xlim(x_lim)
     savefig(output_fname + '_Iext.pdf')
     
+    # High pass filter these signals
+    figure()
+    ax = subplot(211)
+    plot(stateMon_Iclamp_e.times, butterHighPass(stateMon_Iclamp_e.values[0].T/pA, options.sim_dt, 40))
+    plot(stateMon_Iext_e.times, stateMon_Iext_e.values[0]/pA - stim_e_DC/pA)
+    ylabel('E current (pA)')
+    ylim([-500, 500])
+    subplot(212, sharex=ax)
+    plot(stateMon_Iclamp_i.times, butterHighPass(stateMon_Iclamp_i.values[0].T/pA, options.sim_dt, 40))
+    #plot(stateMon_Iclamp_i.times, stateMon_Iext_i.values[0]/pA)
+    xlabel('Time (s)')
+    ylabel('I current (pA)')
+    xlim(x_lim)
+    ylim([-500, 500])
+    savefig(output_fname + '_Isyn_filt.pdf')
     
     
-    #Ne = options.Ne
-    #figure()
-    #pcolormesh(np.reshape(ei_net.AMPA_conn.W.todense()[15, :], (options.Ni,
-    #    options.Ni)));
-    #xlabel('I neuron no.')
-    #ylabel('I neuron no.')
-    #colorbar()
-    #savefig(output_fname + '_E2I_conn.png')
+    
+    Ne = options.Ne
+    figure()
+    pcolormesh(np.reshape(ei_net.AMPA_conn.W.todense()[15, :], (options.Ni,
+        options.Ni)));
+    xlabel('I neuron no.')
+    ylabel('I neuron no.')
+    colorbar()
+    savefig(output_fname + '_E2I_conn.png')
 
-    #Ni = options.Ni
-    #figure()
-    #pcolormesh(np.reshape(ei_net.GABA_conn1.W.todense()[15, :], (options.Ne,
-    #    options.Ne)));
-    #xlabel('E neuron no.')
-    #ylabel('E neuron no.')
-    #colorbar()
-    #savefig(output_fname + '_I2E_conn.png')
+    Ni = options.Ni
+    figure()
+    pcolormesh(np.reshape(ei_net.GABA_conn1.W.todense()[15, :], (options.Ne,
+        options.Ne)));
+    xlabel('E neuron no.')
+    ylabel('E neuron no.')
+    colorbar()
+    savefig(output_fname + '_I2E_conn.png')
 
-    #figure()
-    #Ne = options.Ne
-    #pcolormesh(np.reshape(np.dot(ei_net.AMPA_conn.W.todense(),
-    #    ei_net.GABA_conn1.W.todense())[15, :], (Ne, Ne)));
-    #xlabel('E neuron no.')
-    #ylabel('E neuron no.')
-    #colorbar()
-    #savefig(output_fname + '_E2E_conn.png')
+    figure()
+    Ne = options.Ne
+    pcolormesh(np.reshape(np.dot(ei_net.AMPA_conn.W.todense(),
+        ei_net.GABA_conn1.W.todense())[15, :], (Ne, Ne)));
+    xlabel('E neuron no.')
+    ylabel('E neuron no.')
+    colorbar()
+    savefig(output_fname + '_E2E_conn.png')
 
 
     figure()
