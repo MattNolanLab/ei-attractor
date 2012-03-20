@@ -94,7 +94,7 @@ class EI_Network:
             dvm/dt = 1/C*Im + (noise_sigma*xi/taum_mean**.5): volt
             Im = gL*(EL-vm) + g_ahp*(Eahp - vm) + gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
             Isyn = (gi1 - gi2)*(Esyn - vm) : amp
-            Iclamp = (gi1 - gi2)*(Esyn - Vclamp) : amp
+            Iclamp = -(gi1 - gi2)*(Esyn - Vclamp) : amp
             dgi1/dt = -gi1/syn_tau1 : siemens
             dgi2/dt = -gi2/syn_tau2 : siemens
             dg_ahp/dt = -g_ahp/tau_ahp : siemens
@@ -132,7 +132,7 @@ class EI_Network:
             dvm/dt = 1/C*Im + (noise_sigma*xi/taum_mean**.5): volt
             Im = gL*(EL-vm)*(1+g_ad/gL) + gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
             Isyn = ge*(Esyn - vm) + gNMDA*(Esyn - vm): amp
-            Iclamp = ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp): amp
+            Iclamp = -(ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp)): amp
             dge/dt = -ge/syn_tau : siemens
             dg_ad/dt = -g_ad/tau_ad : siemens
             tau_ad : second
@@ -304,7 +304,8 @@ class EI_Network:
                 ", not" + str(ndim) + ".")
 
 
-        self.NMDA_conn.connect(self.E_pop, self.I_pop, self.AMPA_conn.W/10.)
+        self.NMDA_conn.connect(self.E_pop, self.I_pop,
+                self.AMPA_conn.W * .01 * self.o.NMDA_amount)
         self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W)
 
         self.net.add(self.AMPA_conn, self.NMDA_conn, self.GABA_conn1, self.GABA_conn2)
@@ -335,3 +336,17 @@ class EI_Network:
         self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W) 
   
         self.net.add(self.AMPA_conn, self.GABA_conn1, self.GABA_conn2) 
+
+    def randomInhibition(self, total_strength, density):
+        '''Random inhibitory connections from I to E only'''
+
+        g_GABA_mean = total_strength / self.net_Ni / density * siemens
+
+        self.extraGABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
+        self.extraGABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
+
+        self.extraGABA_conn1.connect_random(self.I_pop, self.E_pop, density,
+                weight=self.B_GABA*g_GABA_mean)
+        self.extraGABA_conn2.connect(self.I_pop, self.E_pop, self.extraGABA_conn1.W) 
+
+        self.net.add(self.extraGABA_conn1, self.extraGABA_conn2)

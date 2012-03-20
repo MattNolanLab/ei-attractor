@@ -94,6 +94,8 @@ def getOptParser():
             help="Mean of total AMPA connection synaptic conductance (S)")
     optParser.add_option("--g_AMPA_std", type="float", dest="g_AMPA_std",
             help="Std. deviation of AMPA connections synaptic conductance (S)")
+    optParser.add_option("--NMDA_amount", type="float",
+            help="Percentage of NMDA conductance the excitatory synapse contains (%)")
     optParser.add_option("--tau_GABA_rise", type="float",
             dest="tau_GABA_rise", help="Mean of GABA rising time constant (s)")
     optParser.add_option("--tau_GABA_fall", type="float",

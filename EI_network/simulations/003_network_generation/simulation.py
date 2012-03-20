@@ -97,10 +97,10 @@ def stimulateSubPopulation():
             linspace(stim_current, stim_current, stim_range**2).reshape((stim_range, stim_range))
         ei_net.E_pop.Iext = tmp.ravel()
         print "Stimulation..."
-    #elif simulationClock.t >= 0.5*second and simulationClock.t < options.time*second:
-    #    v = np.array([[-1, -1]]).T
-    #    Ivel = np.dot(ei_net.prefDirs, v) * options.Ivel*pA
-    #    ei_net.E_pop.Iext = ei_net.o.Iext_e + Ivel.T
+    elif simulationClock.t >= 0.5*second and simulationClock.t < options.time*second:
+        v = np.array([[-1, -1]]).T
+        Ivel = np.dot(ei_net.prefDirs, v) * options.Ivel*pA
+        ei_net.E_pop.Iext = ei_net.o.Iext_e + Ivel.T
     else:
         ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
     pass
@@ -130,7 +130,7 @@ ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
 ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 ei_net.net.add(stimulateSubPopulation)
-ei_net.net.add(thetaStimulation)
+#ei_net.net.add(thetaStimulation)
 
 
 ## Export connectivity matrices
