@@ -274,8 +274,8 @@ class EI_Network:
 
                     
                     a = np.array([[x_e_norm, y_e_norm]])
-                    pd = getPreferredDirection(x, y)
-                    #pd = np.array([[0, 0]])
+                    #pd = getPreferredDirection(x, y)
+                    pd = np.array([0, 0])
                     self.prefDirs[it, :] = pd
                     tmp_templ = self._generate_pAMPA_template2D(a, others_e,
                             pAMPA_size, np.array([[pd[0], pd[1]]]))

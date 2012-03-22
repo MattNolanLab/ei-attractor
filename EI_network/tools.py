@@ -13,8 +13,9 @@ def butterHighPass(sig, dt, f_pass):
     b, a = butter(3, norm_f_pass, btype='high')
     return filtfilt(b, a, sig)
 
-def spikePhaseTrialRaster(spikeTimes, f):
+def spikePhaseTrialRaster(spikeTimes, f, start_t=0):
     '''Here assuming that phase(t=0) = 0'''
+    spikeTimes -= start_t
     trials = np.floor(f*spikeTimes)
     phases = np.mod(2*np.pi*f*spikeTimes, 2*np.pi)
     times  = np.mod(spikeTimes, 1./f)
@@ -45,7 +46,7 @@ def phaseCWT(sig, Tph, dt, maxF, dF=2):
     q_ph = np.floor(N/n_ph)
 
     minF = 1./(len(sig)/2 * Morlet.fourierwl * dt)
-    F = linspace(minF, maxF, (maxF-minF)/dF+1)
+    F = np.linspace(minF, maxF, (maxF-minF)/dF+1)
     scales = 1/F * 1/Morlet.fourierwl * 1/dt
 
     w = Morlet(sig, scales, scaling='direct')

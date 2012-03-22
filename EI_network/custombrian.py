@@ -55,9 +55,8 @@ class ExtendedSpikeMonitor(SpikeMonitor):
         times = np.ndarray(szRate)
         for n_i in xrange(len(self.aspikes)):
             tmp = np.array(self.aspikes[n_i])
-            t = tstart
             for t_i in xrange(szRate):
-                t = t_i*dt
+                t = tstart + t_i*dt
                 r[n_i][t_i] = np.sum(np.logical_and(tmp > t-winLen/2, tmp <
                     t+winLen/2))
                 times[t_i] = t
