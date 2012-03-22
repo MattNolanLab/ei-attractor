@@ -14,7 +14,7 @@ dry_run=0
 
 QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
 
-net_generations=1
+net_generations=10
 
 P_Ivel="0"
 P_pAMPA_sigma="0.7"
@@ -22,10 +22,10 @@ P_pAMPA_sigma="0.7"
 Ne=64
 Ni=32
 
-Iext_e_coeff="0.575"
+Iext_e_coeff="0.75" #"0.675"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
-AMPA_coeff="30 32 34 36" #"27.5"
-GABA_coeff="26"
+AMPA_coeff="27.5"
+GABA_coeff="54"
 extraGABA_coeff="0.7"
 adapt_inc_coeff="1.0" #"1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9"
 adapt_coeff="1.0" #"0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5"
@@ -88,7 +88,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=2.5
+time=6
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"

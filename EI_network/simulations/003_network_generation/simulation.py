@@ -333,143 +333,143 @@ for trial_it in range(ei_net.o.ntrials):
     
     savefig(output_fname + '_bump_position.pdf')
 
-    #print "Wavelet analysis..."
-    #wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_e.pdf')
-    #high_pass_freq = 40.
-    #maxF = 200
-    #for ei_it in [0, 1]:
-    #    if ei_it == 0:
-    #        print '  E neurons...'
-    #        wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_e.pdf')
-    #        wavelet_sig_fname = output_fname + '_phase_wavelet_e'
-    #        sig_epochs_fname = output_fname + '_sig_epochs_e'
-    #        max_fname = output_fname + '_Fmax_scatter_e.pdf'
-    #        tmp_stateMon = theta_stateMon_Iclamp_e
-    #        #w_Fmax_vec = w_Fmax_e_vec
-    #        #w_phmax_vec = w_phmax_e_vec
-    #        range_n_it = theta_state_record_e
-    #    else:
-    #        print '  I neurons...'
-    #        wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_i.pdf')
-    #        wavelet_sig_fname = output_fname + '_phase_wavelet_i'
-    #        sig_epochs_fname = output_fname + '_sig_epochs_i'
-    #        max_fname = output_fname + '_Fmax_scatter_i.pdf'
-    #        tmp_stateMon = theta_stateMon_Iclamp_i
-    #        #w_Fmax_vec = w_Fmax_i_vec
-    #        #w_phmax_vec = w_phmax_i_vec
-    #        range_n_it = theta_state_record_i
-    #
-    #    w_Fmax = np.ndarray(range_n_it)
-    #    w_phmax= np.ndarray(range_n_it)
-    #    for n_it in range(len(range_n_it)):
-    #        neuron_no = range_n_it[n_it]
-    #        print('    Neuron no. ' + str(n_it))
-    #        cwt_phases, sig_cwt, freq, sig_ph = \
-    #            phaseCWT(butterHighPass(tmp_stateMon[neuron_no].T/pA,
-    #            options.sim_dt, high_pass_freq), 1./stim_freq, options.sim_dt, maxF)
-    #
-    #        w_max = sig_cwt.argmax()
-    #        w_Fmax[n_it] = freq[w_max//len(sig_cwt[0])]
-    #        w_phmax[n_it]= cwt_phases[np.mod(w_max, len(sig_cwt[0]))]
-    #                
-    #
-    #        # Wavelet plot
-    #        f = phaseFigTemplate()
-    #        PH, F = np.meshgrid(cwt_phases, freq)
-    #        pcolormesh(PH, F, sig_cwt, edgecolors='None', cmap=get_cmap('jet'))
-    #        ylabel('F (Hz)')
-    #        ylim([0, maxF])
-    #        savefig(wavelet_sig_fname + '{0}.png'.format(n_it),
-    #                dpi=300)
-    #        close()
+    print "Wavelet analysis..."
+    wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_e.pdf')
+    high_pass_freq = 40.
+    maxF = 200
+    for ei_it in [0, 1]:
+        if ei_it == 0:
+            print '  E neurons...'
+            wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_e.pdf')
+            wavelet_sig_fname = output_fname + '_phase_wavelet_e'
+            sig_epochs_fname = output_fname + '_sig_epochs_e'
+            max_fname = output_fname + '_Fmax_scatter_e.pdf'
+            tmp_stateMon = theta_stateMon_Iclamp_e
+            #w_Fmax_vec = w_Fmax_e_vec
+            #w_phmax_vec = w_phmax_e_vec
+            range_n_it = theta_state_record_e
+        else:
+            print '  I neurons...'
+            wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_i.pdf')
+            wavelet_sig_fname = output_fname + '_phase_wavelet_i'
+            sig_epochs_fname = output_fname + '_sig_epochs_i'
+            max_fname = output_fname + '_Fmax_scatter_i.pdf'
+            tmp_stateMon = theta_stateMon_Iclamp_i
+            #w_Fmax_vec = w_Fmax_i_vec
+            #w_phmax_vec = w_phmax_i_vec
+            range_n_it = theta_state_record_i
+    
+        w_Fmax = np.ndarray(range_n_it)
+        w_phmax= np.ndarray(range_n_it)
+        for n_it in range(len(range_n_it)):
+            neuron_no = range_n_it[n_it]
+            print('    Neuron no. ' + str(n_it))
+            cwt_phases, sig_cwt, freq, sig_ph = \
+                phaseCWT(butterHighPass(tmp_stateMon[neuron_no].T/pA,
+                options.sim_dt, high_pass_freq), 1./stim_freq, options.sim_dt, maxF)
+    
+            w_max = sig_cwt.argmax()
+            w_Fmax[n_it] = freq[w_max//len(sig_cwt[0])]
+            w_phmax[n_it]= cwt_phases[np.mod(w_max, len(sig_cwt[0]))]
+                    
+    
+            # Wavelet plot
+            f = phaseFigTemplate()
+            PH, F = np.meshgrid(cwt_phases, freq)
+            pcolormesh(PH, F, sig_cwt, edgecolors='None', cmap=get_cmap('jet'))
+            ylabel('F (Hz)')
+            ylim([0, maxF])
+            savefig(wavelet_sig_fname + '{0}.png'.format(n_it),
+                    dpi=300)
+            close()
 
-    #        # pcolor of signals over theta epochs
-    #        figure(figsize=(12, 6))
-    #        PH, T = np.meshgrid(cwt_phases, np.arange(1, len(sig_ph)+1))
-    #        pcolormesh(PH, T, sig_ph, edgecolor='None')
-    #        xlabel('Theta phase')
-    #        ylabel('Theta epoch')
-    #        xlim([-np.pi, np.pi])
-    #        ylim([1, len(sig_ph)])
-    #        xticks([-np.pi, 0, np.pi], ('$-\pi$', '',  '$\pi$'), fontsize=25)
-    #        yticks([1, len(sig_ph)])
-    #        savefig(sig_epochs_fname + '{0}.png'.format(n_it),
-    #                dpi=300)
-    #
-    #        # Average signal plot
-    #        f = phaseFigTemplate()
-    #        mn = np.mean(sig_ph, 0)
-    #        st = np.std(sig_ph, 0)
-    #        gca().fill_between(cwt_phases, mn+st, mn-st, facecolor='black', alpha=0.1, zorder=0)
-    #        plot(cwt_phases, mn, 'k')
-    #        ylabel('I (pA)')
-    #        wavelet_sig_pp.savefig()
-    #        close()
-    #    wavelet_sig_pp.close()
-    #
-    #    ## Insert this to avg and std vectors and make a plot
-    #    #w_Fmax_vec.append(w_Fmax)
-    #    #w_phmax_vec.append(w_phmax)
-    #    #f = phaseFigTemplate()
-    #    #plot(w_phmax, w_Fmax, 'ko', markersize=10, alpha=0.25)
-    #    #errorbar(np.mean(w_phmax), np.mean(w_Fmax), np.std(w_Fmax),
-    #    #        np.std(w_phmax), 'ko', markersize=10)
-    #    #ylim([50, 120])
-    #    #savefig(max_fname)
-    #print "Done"
+            # pcolor of signals over theta epochs
+            figure(figsize=(12, 6))
+            PH, T = np.meshgrid(cwt_phases, np.arange(1, len(sig_ph)+1))
+            pcolormesh(PH, T, sig_ph, edgecolor='None')
+            xlabel('Theta phase')
+            ylabel('Theta epoch')
+            xlim([-np.pi, np.pi])
+            ylim([1, len(sig_ph)])
+            xticks([-np.pi, 0, np.pi], ('$-\pi$', '',  '$\pi$'), fontsize=25)
+            yticks([1, len(sig_ph)])
+            savefig(sig_epochs_fname + '{0}.png'.format(n_it),
+                    dpi=300)
+    
+            # Average signal plot
+            f = phaseFigTemplate()
+            mn = np.mean(sig_ph, 0)
+            st = np.std(sig_ph, 0)
+            gca().fill_between(cwt_phases, mn+st, mn-st, facecolor='black', alpha=0.1, zorder=0)
+            plot(cwt_phases, mn, 'k')
+            ylabel('I (pA)')
+            wavelet_sig_pp.savefig()
+            close()
+        wavelet_sig_pp.close()
+    
+        ## Insert this to avg and std vectors and make a plot
+        #w_Fmax_vec.append(w_Fmax)
+        #w_phmax_vec.append(w_phmax)
+        #f = phaseFigTemplate()
+        #plot(w_phmax, w_Fmax, 'ko', markersize=10, alpha=0.25)
+        #errorbar(np.mean(w_phmax), np.mean(w_Fmax), np.std(w_Fmax),
+        #        np.std(w_phmax), 'ko', markersize=10)
+        #ylim([50, 120])
+        #savefig(max_fname)
+    print "Done"
 
 
-    ## Raster plots
-    #for ei_it in [0, 1]:
-    #    if ei_it == 0:
-    #        raster_pp = PdfPages(output_fname + '_phase_raster_e.pdf')
-    #        avg_fname = output_fname + '_phase_pspike_avg_e.pdf'
-    #        n_range = 20
-    #        tmp_spikeMon = theta_spikeMon_e
-    #        middle_it = options.Ne**2 / 2 + options.Ne/2
-    #    else:
-    #        raster_pp = PdfPages(output_fname + '_phase_raster_i.pdf')
-    #        avg_fname = output_fname + '_phase_pspike_avg_i.pdf'
-    #        n_range = 10
-    #        tmp_spikeMon = theta_spikeMon_i
-    #        middle_it = options.Ni**2 / 2 + options.Ni/2
+    # Raster plots
+    for ei_it in [0, 1]:
+        if ei_it == 0:
+            raster_pp = PdfPages(output_fname + '_phase_raster_e.pdf')
+            avg_fname = output_fname + '_phase_pspike_avg_e.pdf'
+            n_range = 20
+            tmp_spikeMon = theta_spikeMon_e
+            middle_it = options.Ne**2 / 2 + options.Ne/2
+        else:
+            raster_pp = PdfPages(output_fname + '_phase_raster_i.pdf')
+            avg_fname = output_fname + '_phase_pspike_avg_i.pdf'
+            n_range = 10
+            tmp_spikeMon = theta_spikeMon_i
+            middle_it = options.Ni**2 / 2 + options.Ni/2
 
-    #    hist_nbins = 1./stim_freq/raster_bin_size
-    #    hists = [] #np.ndarray((n_range, hist_nbins)) #    hist_ph = np.ndarray(hist_nbins)
-    #   
-    #    for n_it in xrange(middle_it - n_range/2, middle_it + n_range/2 + 1):
-    #        print('Saving rasters for neuron no. ' + str(n_it))
-    #        phases, times, trials = spikePhaseTrialRaster(tmp_spikeMon[n_it],
-    #                stim_freq, theta_start_t)
-    #    
-    #        # Raster plots (single cell over 'theta' epochs)
-    #        ntrials = np.ceil((options.time - theta_start_t) * stim_freq)
-    #        f = rasterPhasePlot(phases - np.pi, trials, ntrials)
-    #        raster_pp.savefig()
-    #        close()
-    #    
-    #        ## Histograms
-    #        #figure(figsize=small_plot_figsize)
-    #        if (len(phases) != 0):
-    #            h = hist(phases, hist_nbins, [0, 2*np.pi],
-    #                    normed=False)
-    #            hists.append(h[0]/double(ntrials))
-    #            hist_ph = h[1][0:len(h[1])-1] - np.pi
-    #        delaxes(gca())
-    #    raster_pp.close()
+        hist_nbins = 1./stim_freq/raster_bin_size
+        hists = [] #np.ndarray((n_range, hist_nbins)) #    hist_ph = np.ndarray(hist_nbins)
+       
+        for n_it in xrange(middle_it - n_range/2, middle_it + n_range/2 + 1):
+            print('Saving rasters for neuron no. ' + str(n_it))
+            phases, times, trials = spikePhaseTrialRaster(tmp_spikeMon[n_it],
+                    stim_freq, theta_start_t)
+        
+            # Raster plots (single cell over 'theta' epochs)
+            ntrials = np.ceil((options.time - theta_start_t) * stim_freq)
+            f = rasterPhasePlot(phases - np.pi, trials, ntrials)
+            raster_pp.savefig()
+            close()
+        
+            ## Histograms
+            #figure(figsize=small_plot_figsize)
+            if (len(phases) != 0):
+                h = hist(phases, hist_nbins, [0, 2*np.pi],
+                        normed=False)
+                hists.append(h[0]/double(ntrials))
+                hist_ph = h[1][0:len(h[1])-1] - np.pi
+            delaxes(gca())
+        raster_pp.close()
 
-    #    # Average histogram + one neuron
-    #    f = phaseFigTemplate()
-    #    h_avg = np.mean(hists, 0)
-    #    h_std = np.std(hists, 0)
-    #    plot(hist_ph, h_avg, 'k', linewidth=2., zorder=1)
-    #    gca().fill_between(hist_ph, h_avg+h_std, h_avg-h_std,
-    #        facecolor='black', alpha=0.1)
-    #    plot(hist_ph, hists[0], 'k--', dashes=(5, 2.5), zorder=2)
-    #    ylabel('p(spike)')
-    #    ylim([-0.01, 0.7])
-    #    yticks([0, 0.7])
-    #    savefig(avg_fname)
+        # Average histogram + one neuron
+        f = phaseFigTemplate()
+        h_avg = np.mean(hists, 0)
+        h_std = np.std(hists, 0)
+        plot(hist_ph, h_avg, 'k', linewidth=2., zorder=1)
+        gca().fill_between(hist_ph, h_avg+h_std, h_avg-h_std,
+            facecolor='black', alpha=0.1)
+        plot(hist_ph, hists[0], 'k--', dashes=(5, 2.5), zorder=2)
+        ylabel('p(spike)')
+        ylim([-0.01, 0.7])
+        yticks([0, 0.7])
+        savefig(avg_fname)
     
     
     outData = {}
