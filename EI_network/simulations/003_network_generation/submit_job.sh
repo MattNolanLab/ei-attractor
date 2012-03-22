@@ -88,7 +88,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=6
+time=21
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"

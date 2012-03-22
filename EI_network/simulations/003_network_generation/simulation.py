@@ -181,8 +181,8 @@ ei_net.net.add(theta_spikeMon_e, theta_spikeMon_i, theta_stateMon_Iclamp_e,
 #print "Finished exporting connections"
 
 
-#x_lim = [options.time-1, options.time]
-x_lim = [0, options.time]
+x_lim = [options.time-1, options.time]
+#x_lim = [0, options.time]
 
 ################################################################################
 #                              Main cycle
