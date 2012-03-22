@@ -14,7 +14,7 @@ N = size(theta_stateMon_Iclamp_e_values, 1)
 trace = theta_stateMon_Iclamp_e_values(2, :); % the data
 
 
-stim_dur = 5; % stimulus duration
+stim_dur = .5; % stimulus duration
 stimstart = 0; % time of stimulus onset in recording
 
 pa = 1e12; % scaling factor to convert amps to picoamps
@@ -171,7 +171,8 @@ d_bump_all = sqrt(diff(bumpPos(:, 1))/bumpPos_dt.^2 + diff(bumpPos(:, 2))/bumpPo
 
 plot(d_bump_all, [0:numel(bumpPos_times)-2]*bumpPos_dt)
 ylim([0 stim_dur])
-xlabel('Bump distance from center of the sheet (neurons)')
+%xlabel('Bump distance from center of the sheet (neurons)')
+xlabel('Bump velocity (neur./s)')
 ylabel('Time (s)')
 
 set(gcf,'PaperPositionMode','auto');

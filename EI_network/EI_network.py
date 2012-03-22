@@ -224,10 +224,10 @@ class EI_Network:
         d = np.abs(1./2./np.pi *
                 np.angle(np.exp(1j*2.*np.pi*d)))
         d2 = d[:, 0]**2 + d[:, 1]**2
-        return -B*(np.exp(-gamma*d2) - np.exp(-beta*d2))
-        #d = np.sqrt(d2)
-        #sigma = 0.75/6
-        #return np.exp(-(d - .5)**2/2/sigma**2)
+        #return -B*(np.exp(-gamma*d2) - np.exp(-beta*d2))
+        d = np.sqrt(d2)
+        sigma = 0.75/6
+        return np.exp(-(d - .5)**2/2/sigma**2)
 
     def _generate_pGABA_template2D(self, a, others, sigma):
         d = a - others
