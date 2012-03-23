@@ -220,7 +220,7 @@ class EI_Network:
         B = -((gamma/beta)**(gamma/(beta-gamma)) -
                 (gamma/beta)**(beta/(beta-gamma)))**-1
 
-        d = a - others - np.array(prefDir)/self.o.Ni
+        d = a - others #- np.array(prefDir)/self.o.Ni
         d = np.abs(1./2./np.pi *
                 np.angle(np.exp(1j*2.*np.pi*d)))
         d2 = d[:, 0]**2 + d[:, 1]**2
@@ -229,8 +229,8 @@ class EI_Network:
         sigma = 0.75/6
         return np.exp(-(d - .5)**2/2/sigma**2)
 
-    def _generate_pGABA_template2D(self, a, others, sigma):
-        d = a - others
+    def _generate_pGABA_template2D(self, a, others, sigma, prefDir, prefDirC):
+        d = a - others - prefDirC*np.array(prefDir)/self.o.Ne
         d = np.abs(1./2./np.pi *
                 np.angle(np.exp(1j*2.*np.pi*d)))
         d2 = d[:, 0]**2 + d[:, 1]**2
@@ -259,7 +259,7 @@ class EI_Network:
         self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
 
         if (self.o.ndim == 2):
-            self.prefDirs = np.ndarray((self.net_Ne, 2))
+            #self.prefDirs = np.ndarray((self.net_Ne, 2))
             X, Y = np.meshgrid(np.arange(self.o.Ni), np.arange(self.o.Ni))
             others_e = 1. * np.vstack((X.ravel(), Y.ravel())).T / self.o.Ni
 
@@ -276,13 +276,14 @@ class EI_Network:
                     a = np.array([[x_e_norm, y_e_norm]])
                     #pd = getPreferredDirection(x, y)
                     pd = np.array([0, 0])
-                    self.prefDirs[it, :] = pd
+                    #self.prefDirs[it, :] = pd
                     tmp_templ = self._generate_pAMPA_template2D(a, others_e,
                             pAMPA_size, np.array([[pd[0], pd[1]]]))
 
                     E_W[it, :] = g_AMPA_mean*tmp_templ*siemens
 
             conn_th = 1e-3
+            self.prefDirs_i = np.ndarray((self.net_Ni, 2))
             X, Y = np.meshgrid(np.arange(self.o.Ne), np.arange(self.o.Ne))
             others_i = 1. * np.vstack((X.ravel(), Y.ravel())).T / self.o.Ne
             for y in xrange(self.o.Ni):
@@ -292,8 +293,11 @@ class EI_Network:
                     it = y*self.o.Ni + x
 
                     a = np.array([[x_i_norm, y_i_norm]])
+                    pd = getPreferredDirection(x, y)
+                    #pd = np.array([0, 0])
+                    self.prefDirs_i[it, :] = pd
                     tmp_templ = self._generate_pGABA_template2D(a, others_i,
-                            pGABA_sigma)
+                            pGABA_sigma, [[pd[0], pd[1]]], self.o.prefDirC)
 
                     self.GABA_conn1.W.rows[it] = (tmp_templ >
                             conn_th).nonzero()[0]
