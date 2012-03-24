@@ -22,7 +22,7 @@ P_pAMPA_sigma="0.7"
 Ne=64
 Ni=32
 
-P_prefDirC="5.5" #"5.5 5.75 6 6.25"
+P_prefDirC="0 1 2 3 4 5 5.5" #"5.5"
 
 Iext_e_coeff="0.75" #"0.675"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
@@ -90,7 +90,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=5
+time=6
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
@@ -209,7 +209,7 @@ for Iext_e_c in $Iext_e_coeff; do
                 --ntrials $ntrials
         else
             pwd
-            nice python2.6 -i simulation.py \
+            nice python2.6 simulation.py \
             --Ivel $Ivel \
             --pAMPA_sigma $pAMPA_sigma \
             --Ne $Ne \
@@ -262,7 +262,7 @@ for Iext_e_c in $Iext_e_coeff; do
             --update_interval $update_interval \
             --job_num $job_num \
             --prefDirC $prefDirC \
-            --ntrials $ntrials
+            --ntrials $ntrials&
 
         fi
     fi

@@ -61,4 +61,19 @@ def phaseCWT(sig, Tph, dt, maxF, dF=2):
     phases = 1. * np.arange(n_ph) / n_ph * 2*np.pi - np.pi
     return phases, w_cwt_ph, 1./(w.scales*w.fourierwl*dt), sig_ph
 
+def createIgorSpikeRaster(spikes, yvals=None):
+    '''
+    spikes  row-wise 2d array of spike times
+    '''
+    if yvals is None:
+        yvals = range(len(spikes)) + 1
 
+    raster_x = np.ndarray((0))
+    raster_y = np.ndarray((0))
+    for it in range(len(spikes)):
+        raster_x = np.hstack((raster_x, spikes[it]))
+        raster_y = np.hstack((raster_y, np.zeros((len(spikes[it]))) + yvals[it]))
+
+    return (raster_x, raster_y)
+
+    
