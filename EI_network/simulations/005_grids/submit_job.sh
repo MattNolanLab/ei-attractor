@@ -14,9 +14,10 @@ dry_run=0
 
 QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
 
-net_generations=4
+net_generations=1
 
-P_Ivel="0" #"0 10 25 50 75 100"
+#P_Ivel="0" #"0 10 25 50 75 100"
+P_Ivel_max="40e-12 50e-12 75e-12 100e-12 150e-12 200e-12"
 P_pAMPA_sigma="0.7"
 
 Ne=64
@@ -91,17 +92,17 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=50
+time=5
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
 
 ntrials=1
 
-output_dir="igor_export"
+output_dir="output_local"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=1000
+job_num=0
 
 
 net_it=0
@@ -113,7 +114,7 @@ for Iext_e_c in $Iext_e_coeff; do
             for GABA_c in $GABA_coeff; do
                 for adapt_inc_c in $adapt_inc_coeff; do
                     for adapt_c in $adapt_coeff; do
-                        for Ivel in $P_Ivel; do
+                        for Ivel_max in $P_Ivel_max; do
                             for pAMPA_sigma in $P_pAMPA_sigma; do
                                 for heterog_e_c in $heterog_e_coeff; do
                                     for heterog_i_c in $heterog_i_coeff; do
@@ -157,7 +158,7 @@ for Iext_e_c in $Iext_e_coeff; do
             job_num_str=`printf "job%04d" $job_num`
             qsub $QSUB_PARAMS -N $job_num_str  -j y -o $output_dir \
                 eddie_submit.sh \
-                --Ivel $Ivel \
+                --Ivel_max $Ivel_max \
                 --pAMPA_sigma $pAMPA_sigma \
                 --Ne $Ne \
                 --Ni $Ni \
@@ -213,7 +214,7 @@ for Iext_e_c in $Iext_e_coeff; do
         else
             pwd
             nice python2.6 simulation.py \
-            --Ivel $Ivel \
+            --Ivel_max $Ivel_max \
             --pAMPA_sigma $pAMPA_sigma \
             --Ne $Ne \
             --Ni $Ni \

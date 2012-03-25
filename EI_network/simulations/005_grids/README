@@ -1,0 +1,8 @@
+Here we are looking at the stability of the bump. Since in these kind of
+simulations we are generating networks with random connection probability rules,
+some networks might be generated so that they are very sensitive to any
+fluctuations.
+
+Here we generate many variants of the connectivity for networks with exactly the
+same parameters (size, spread of Mexican hat, etc.) and compare the resulting
+variance of bump position.
