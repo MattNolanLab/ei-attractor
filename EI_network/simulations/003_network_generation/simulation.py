@@ -94,7 +94,7 @@ theta_start_mon_t = 1.0*second
 
 stim_start = int(0.45*ei_net.o.Ne)
 stim_range = int(0.2*ei_net.o.Ne)
-stim_current = 1200*pA
+stim_current = 900*pA
 #stim_current = options.Iext_e
 
 @network_operation(stimClock)

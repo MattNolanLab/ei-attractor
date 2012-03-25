@@ -22,10 +22,11 @@ P_pAMPA_sigma="0.7"
 Ne=64
 Ni=32
 
-P_prefDirC="0 1 2 3 4 5 5.5" #"5.5"
+P_prefDirC="5.5" #"5.5"
 
-Iext_e_coeff="0.75" #"0.675"
+Iext_e_coeff="0.75"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
+Iext_e_min_coeff="0.8"
 AMPA_coeff="27.5"
 GABA_coeff="54"
 extraGABA_coeff="0.7"
@@ -43,8 +44,8 @@ P_NMDA_amount="2"
 
 Iext_e_1="900*10^-12"
 Iext_i_1="250*10^-12"
-Iext_e_min="375e-12"
-Iext_i_min="100e-12"
+Iext_e_min_1="375*10^-12"
+Iext_i_min="200e-12"
 
 
 taum_e="9.3e-3"
@@ -100,7 +101,7 @@ ntrials=1
 output_dir="igor_export"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=1000
+job_num=1100
 
 
 net_it=0
@@ -121,9 +122,11 @@ for Iext_e_c in $Iext_e_coeff; do
                                                 for extraGABA_c in $extraGABA_coeff; do
                                                     for NMDA_amount in $P_NMDA_amount; do
                                                         for prefDirC in $P_prefDirC; do
+                                                            for Iext_e_min_c in $Iext_e_min_coeff; do
 #####################
     Iext_e=`echo "$Iext_e_1 * $Iext_e_c" | bc -l`
     Iext_i=`echo "$Iext_i_1 * $Iext_i_c" | bc -l`
+    Iext_e_min=`echo "$Iext_e_min_1 * $Iext_e_min_c" | bc -l`
 
     g_AMPA_total=`echo "$g_AMPA_total_1 * $AMPA_c" | bc -l`
     g_AMPA_std=`echo "$g_AMPA_std_1 * $AMPA_c" | bc -l`
@@ -273,6 +276,7 @@ for Iext_e_c in $Iext_e_coeff; do
     let net_it=$net_it+1
     sleep 0.5
 #####################
+                                                                done
                                                             done
                                                         done
                                                     done
