@@ -205,7 +205,7 @@ class EI_Network:
         self.pAMPA_templ = np.concatenate((self.pAMPA_templ,
             self.pAMPA_templ[1:N-len(self.pAMPA_templ)+1][::-1]))
 
-    def _generate_pAMPA_template2D(self, a, others, l_net, prefDir):
+    def _generate_pAMPA_template2D(self, a, others, pAMPA_mu, pAMPA_sigma, prefDir):
         '''
         !!!
         a ... vector of 2D position of current neuron, the shape must be (1,2)
@@ -214,11 +214,11 @@ class EI_Network:
         prefDir ... preferred Direction of a neuron (this will shift the
                     Gaussian profile in the direction of prefDir
         '''
-        gamma = 3.15/l_net**2
-        beta = 3./l_net**2
-        # B is a normalisation constant so max of the profile function is 1
-        B = -((gamma/beta)**(gamma/(beta-gamma)) -
-                (gamma/beta)**(beta/(beta-gamma)))**-1
+        #gamma = 3.15/l_net**2
+        #beta = 3./l_net**2
+        ## B is a normalisation constant so max of the profile function is 1
+        #B = -((gamma/beta)**(gamma/(beta-gamma)) -
+        #        (gamma/beta)**(beta/(beta-gamma)))**-1
 
         d = a - others #- np.array(prefDir)/self.o.Ni
         d = np.abs(1./2./np.pi *
@@ -226,8 +226,7 @@ class EI_Network:
         d2 = d[:, 0]**2 + d[:, 1]**2
         #return -B*(np.exp(-gamma*d2) - np.exp(-beta*d2))
         d = np.sqrt(d2)
-        sigma = 0.75/6
-        return np.exp(-(d - .5)**2/2/sigma**2)
+        return np.exp(-(d - pAMPA_mu)**2/2/pAMPA_sigma**2)
 
     def _generate_pGABA_template2D(self, a, others, sigma, prefDir, prefDirC):
         d = a - others - prefDirC*np.array(prefDir)/self.o.Ne
@@ -237,7 +236,7 @@ class EI_Network:
         return np.exp(-d2/2./sigma**2)
 
 
-    def connMexicanHat(self, pAMPA_size, pGABA_sigma):
+    def connMexicanHat(self, pAMPA_mu, pAMPA_sigma, pGABA_sigma):
         '''Create excitatory and inhibitory connections, Mexican hat ring model.
             pGABA_sigma Std. dev. of the GABA Gaussian profile of connection
                         probability (Mean of GABA connections is local)
@@ -278,7 +277,7 @@ class EI_Network:
                     pd = np.array([0, 0])
                     #self.prefDirs[it, :] = pd
                     tmp_templ = self._generate_pAMPA_template2D(a, others_e,
-                            pAMPA_size, np.array([[pd[0], pd[1]]]))
+                            pAMPA_mu, pAMPA_sigma, np.array([[pd[0], pd[1]]]))
 
                     E_W[it, :] = g_AMPA_mean*tmp_templ*siemens
 
