@@ -67,9 +67,10 @@ options.ndim = 2
 ei_net = EI_Network(options, simulationClock)
 
 # Mexican hat properties and AMPA/GABA connections
-pAMPA_size= 1.0
+pAMPA_mu = 0.5
+pAMPA_sigma = 0.75/6
 pGABA_sigma = 0.5/6
-ei_net.connMexicanHat(pAMPA_size, pGABA_sigma)
+ei_net.connMexicanHat(pAMPA_mu, pAMPA_sigma, pGABA_sigma)
 ei_net.randomInhibition(options.g_extraGABA_total, options.extraGABA_density)
 
 print('pAMPA_sigma = ' + str(options.pAMPA_sigma) + '/6')
@@ -93,7 +94,7 @@ theta_start_mon_t = 1.0*second
 
 stim_start = int(0.45*ei_net.o.Ne)
 stim_range = int(0.2*ei_net.o.Ne)
-stim_current = 900*pA
+stim_current = 1200*pA
 #stim_current = options.Iext_e
 
 @network_operation(stimClock)
@@ -187,7 +188,7 @@ ei_net.net.add(theta_spikeMon_e, theta_spikeMon_i, theta_stateMon_Iclamp_e,
 #print "Finished exporting connections"
 
 
-#x_lim = [options.time-1, options.time]
+#x_lim = [options.time-0.5, options.time]
 x_lim = [0, options.time]
 
 ################################################################################
@@ -223,22 +224,22 @@ for trial_it in range(ei_net.o.ntrials):
     F_dt = 0.02
     F_winLen = 0.5
     Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
-    #Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
+    Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
 
-    ## plot firing rates
-    #figure(figsize=figSize)
-    #subplot(211)
-    #T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
-    #pcolormesh(T, FR, Fe)
-    #ylabel('E Neuron no.')
-    #colorbar()
-    #subplot(212)
-    #T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
-    #pcolormesh(T, FR, Fi)
-    #xlabel('Time (s)')
-    #ylabel('I Neuron no.')
-    #colorbar()
-    #savefig(output_fname + '_firing_rate_e.png')
+    # plot firing rates
+    figure(figsize=figSize)
+    subplot(211)
+    T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
+    pcolormesh(T, FR, Fe)
+    ylabel('E Neuron no.')
+    colorbar()
+    subplot(212)
+    T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
+    pcolormesh(T, FR, Fi)
+    xlabel('Time (s)')
+    ylabel('I Neuron no.')
+    colorbar()
+    savefig(output_fname + '_firing_rate_e.png')
 
     figure()
     ax = subplot(211)
@@ -295,7 +296,6 @@ for trial_it in range(ei_net.o.ntrials):
     savefig(output_fname + '_Isyn_filt.pdf')
     
     
-    
     #Ne = options.Ne
     #figure()
     #pcolormesh(np.reshape(ei_net.AMPA_conn.W.todense()[15, :], (options.Ni,
@@ -324,24 +324,24 @@ for trial_it in range(ei_net.o.ntrials):
     #savefig(output_fname + '_E2E_conn.png')
 
 
-    #figure()
-    #pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (options.Ne, options.Ne)))
-    #xlabel('E neuron no.')
-    #ylabel('E neuron no.')
-    #colorbar()
-    #savefig(output_fname + '_firing_snapshot_e.png')
+    figure()
+    pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (options.Ne, options.Ne)))
+    xlabel('E neuron no.')
+    ylabel('E neuron no.')
+    colorbar()
+    savefig(output_fname + '_firing_snapshot_e.png')
 
 
-    #
-    ## Print a plot of bump position
-    #(pos, bumpPos_times) = theta_spikeMon_e.torusPopulationVector(ei_net.o.Ne,
-    #        theta_start_t, options.time, F_dt, F_winLen)
-    #figure(figsize=figSize)
-    #plot(bumpPos_times, pos)
-    #xlabel('Time (s)')
-    #ylabel('Bump position (neurons)')
-    #
-    #savefig(output_fname + '_bump_position.pdf')
+    
+    # Print a plot of bump position
+    (pos, bumpPos_times) = theta_spikeMon_e.torusPopulationVector(ei_net.o.Ne,
+            theta_start_t, options.time, F_dt, F_winLen)
+    figure(figsize=figSize)
+    plot(bumpPos_times, pos)
+    xlabel('Time (s)')
+    ylabel('Bump position (neurons)')
+    
+    savefig(output_fname + '_bump_position.pdf')
 
     print "Wavelet analysis..."
     wavelet_list_e = []
@@ -546,7 +546,7 @@ for trial_it in range(ei_net.o.ntrials):
     #
     #savemat(output_fname + '_output.mat', outData, do_compression=True)
 
-    saveIgor = True
+    saveIgor = False
     if saveIgor:
         from tables import *
         h5file = openFile(output_fname + 'igor_export.h5', mode = "w", title =
