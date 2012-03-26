@@ -9,10 +9,10 @@
 BASE=../../
 PYTHON_JUP="/disk/scratch/s0966762/lib/python2.6/site-packages"
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE:$PYTHON_JUP"
-EDDIE=0  # if eddie, submit on a cluster using qsub
+EDDIE=1  # if eddie, submit on a cluster using qsub
 dry_run=0
 
-QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
+QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=05:00:00 -pe memory-2G 2"
 
 net_generations=1
 
@@ -101,7 +101,7 @@ ntrials=1
 output_dir="output_local"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=1000
+job_num=200
 
 
 net_it=0

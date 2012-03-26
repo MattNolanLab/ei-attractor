@@ -9,14 +9,13 @@
 BASE=../../
 PYTHON_JUP="/disk/scratch/s0966762/lib/python2.6/site-packages"
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE:$PYTHON_JUP"
-EDDIE=0  # if eddie, submit on a cluster using qsub
+EDDIE=1  # if eddie, submit on a cluster using qsub
 dry_run=0
 
-QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
+QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=03:00:00 -pe memory-2G 2"
 
 net_generations=1
 
-#P_Ivel="0" #"0 10 25 50 75 100"
 P_Ivel_max="40e-12 50e-12 75e-12 100e-12 150e-12"
 P_pAMPA_sigma="0.7"
 
@@ -92,7 +91,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=10
+time=200
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
@@ -102,12 +101,10 @@ ntrials=1
 output_dir="output_local"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=1000
+job_num=2020
 
 
-net_it=0
 
-while [ $net_it -lt $net_generations ]; do
 for Iext_e_c in $Iext_e_coeff; do
     for Iext_i_c in $Iext_i_coeff; do
         for AMPA_c in $AMPA_coeff; do
@@ -124,6 +121,8 @@ for Iext_e_c in $Iext_e_coeff; do
                                                     for NMDA_amount in $P_NMDA_amount; do
                                                         for prefDirC in $P_prefDirC; do
                                                             for Iext_e_min_c in $Iext_e_min_coeff; do
+net_it=0
+while [ $net_it -lt $net_generations ]; do
 #####################
     Iext_e=`echo "$Iext_e_1 * $Iext_e_c" | bc -l`
     Iext_i=`echo "$Iext_i_1 * $Iext_i_c" | bc -l`
@@ -277,7 +276,7 @@ for Iext_e_c in $Iext_e_coeff; do
     let net_it=$net_it+1
     sleep 0.5
 #####################
-                                                                done
+done
                                                             done
                                                         done
                                                     done
