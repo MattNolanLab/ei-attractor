@@ -39,10 +39,19 @@ class EI_Network:
         elif o.ndim == 2:
             self.net_Ne = o.Ne**2
             self.net_Ni = o.Ni**2
-        else:
-            raise Exception("Number of Mexican hat dimensions must be 0 or 1" +
-                ", not" + str(ndim) + ".")
+        elif o.ndim == 'twisted_torus':
+            self.y_dim = np.sqrt(3)/2.0
+            self.Ne_x = o.Ne
+            self.Ne_y = int(np.ceil(o.Ne * self.y_dim)) // 2 * 2
 
+            self.Ni_x = o.Ni
+            self.Ni_y = int(np.ceil(o.Ni * self.y_dim)) // 2 * 2
+
+            self.net_Ne = self.Ne_x * self.Ne_y
+            self.net_Ni = self.Ni_x * self.Ni_y
+        else:
+            raise Exception("Number of Mexican hat dimensions must be 0 or 1 or"
+                    "a 'twisted_torus' string not" + str(ndim) + ".")
         self._createBasicNet(o, clk)
 
     def initStates(self):
@@ -228,13 +237,62 @@ class EI_Network:
         d = np.sqrt(d2)
         return np.exp(-(d - pAMPA_mu)**2/2/pAMPA_sigma**2)
 
+    def _remap_twisted_torus(self, a, others, prefDir):
+        a_x = a[0, 0]
+        a_y = a[0, 1]
+        prefDir_x = prefDir[0, 0]
+        prefDir_y = prefDir[0, 1]
+
+        others_x = others[:, 0] + prefDir_x
+        others_y = others[:, 1] + prefDir_y
+
+        d1 = sqrt((a_x - others_x)**2 + (a_y - others_y)**2)
+        d2 = sqrt((a_x - others_x - 1.)**2 + (a_y - others_y)**2)
+        d3 = sqrt((a_x - others_x + 1.)**2 + (a_y - others_y)**2)
+        d4 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y - self.y_dim)**2)
+        d5 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y - self.y_dim)**2)
+        d6 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y + self.y_dim)**2)
+        d7 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y + self.y_dim)**2)
+        
+        return np.min((d1, d2, d3, d4, d5, d6, d7), 0)
+            
+        # Straight torus here
+        #dx = np.min((
+        #    np.abs(a_x - others_x),
+        #    np.abs(a_x - (others_x + 1.)),
+        #    np.abs(a_x - (others_x - 1.))), 0)
+        #dy = np.min((
+        #    np.abs(a_y - others_y),
+        #    np.abs(a_y - (others_y + self.y_dim)),
+        #    np.abs(a_y - (others_y - self.y_dim))), 0)
+        #return np.sqrt(dx**2 + dy**2)
+
+    def _generate_pAMPA_twisted_torus(self, a, others, pAMPA_mu, pAMPA_sigma,
+            prefDir):
+        '''
+        Here we assume that X coordinates are normalised to <0, 1), and Y
+        coordinates are normalised to <0, sqrt(3)/2)
+        Y coordinates are twisted, i.e. X will have additional position shifts
+        when determining minimum
+        '''
+        y_dim = np.sqrt(3)/2
+        d = self._remap_twisted_torus(a, others, prefDir)
+        return np.exp(-(d - pAMPA_mu)**2/2/pAMPA_sigma**2)
+
+    def _generate_pGABA_twisted_torus(self, a, others, sigma, prefDir,
+        prefDirC):
+
+        d = self._remap_twisted_torus(a, others, float(prefDirC)/self.Ne_x*np.array(prefDir))
+        return np.exp(-d**2/2./sigma**2)
+
+
+
     def _generate_pGABA_template2D(self, a, others, sigma, prefDir, prefDirC):
         d = a - others - prefDirC*np.array(prefDir)/self.o.Ne
         d = np.abs(1./2./np.pi *
                 np.angle(np.exp(1j*2.*np.pi*d)))
         d2 = d[:, 0]**2 + d[:, 1]**2
         return np.exp(-d2/2./sigma**2)
-
 
     def connMexicanHat(self, pAMPA_mu, pAMPA_sigma, pGABA_sigma):
         '''Create excitatory and inhibitory connections, Mexican hat ring model.
@@ -244,7 +302,7 @@ class EI_Network:
         '''
 
         g_AMPA_mean = self.o.g_AMPA_total/self.net_Ne
-        GABA_density = 9*np.pi*pGABA_sigma**2
+        #GABA_density = 9*np.pi*pGABA_sigma**2
         g_GABA_mean = self.o.g_GABA_total / self.net_Ni * siemens
 
         # Generate connection-probability profile functions for GABA and AMPA connections
@@ -296,6 +354,54 @@ class EI_Network:
                     #pd = np.array([0, 0])
                     self.prefDirs_i[it, :] = pd
                     tmp_templ = self._generate_pGABA_template2D(a, others_i,
+                            pGABA_sigma, [[pd[0], pd[1]]], self.o.prefDirC)
+
+                    self.GABA_conn1.W.rows[it] = (tmp_templ >
+                            conn_th).nonzero()[0]
+                    self.GABA_conn1.W.data[it] = self.B_GABA*g_GABA_mean*tmp_templ[self.GABA_conn1.W.rows[it]]
+
+        elif self.o.ndim == 'twisted_torus':
+            X, Y = np.meshgrid(np.arange(self.Ni_x), np.arange(self.Ni_y))
+            X = 1. * X / self.Ni_x
+            Y = 1. * Y / self.Ni_y * self.y_dim
+            others_e = np.vstack((X.ravel(), Y.ravel())).T
+
+            E_W = np.asarray(self.AMPA_conn.W)
+            for y in xrange(self.Ne_y):
+                y_e_norm = float(y) / self.Ne_y * self.y_dim
+
+                for x in xrange(self.Ne_x):
+                    it = y*self.Ne_x + x
+
+                    x_e_norm = float(x) / self.Ne_x
+
+                    
+                    a = np.array([[x_e_norm, y_e_norm]])
+                    #pd = getPreferredDirection(x, y)
+                    pd = np.array([0, 0])
+                    #self.prefDirs[it, :] = pd
+                    tmp_templ = self._generate_pAMPA_twisted_torus(a, others_e,
+                            pAMPA_mu, pAMPA_sigma, np.array([[pd[0], pd[1]]]))
+
+                    E_W[it, :] = g_AMPA_mean*tmp_templ*siemens
+
+            conn_th = 1e-3
+            self.prefDirs_i = np.ndarray((self.net_Ni, 2))
+            X, Y = np.meshgrid(np.arange(self.Ne_x), np.arange(self.Ne_y))
+            X = 1. * X / self.Ne_x
+            Y = 1. * Y / self.Ne_y * self.y_dim
+            others_i = np.vstack((X.ravel(), Y.ravel())).T
+            for y in xrange(self.Ni_y):
+                y_i_norm = float(y) / self.Ni_y * self.y_dim
+                for x in xrange(self.Ni_x):
+                    x_i_norm = float(x) / self.Ni_x
+                    it = y*self.Ni_x + x
+
+                    a = np.array([[x_i_norm, y_i_norm]])
+                    #pd = getPreferredDirection(x, y)
+                    pd = np.array([0, 0])
+                    self.prefDirs_i[it, :] = pd
+                    tmp_templ = self._generate_pGABA_twisted_torus(a, others_i,
                             pGABA_sigma, [[pd[0], pd[1]]], self.o.prefDirC)
 
                     self.GABA_conn1.W.rows[it] = (tmp_templ >

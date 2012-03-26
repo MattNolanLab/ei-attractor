@@ -14,20 +14,20 @@ dry_run=0
 
 QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
 
-net_generations=4
+net_generations=1
 
 P_Ivel="0" #"0 10 25 50 75 100"
 P_pAMPA_sigma="0.7"
 
-Ne=64
-Ni=32
+Ne=68
+Ni=34
 
 P_prefDirC="5.5" #"5.5"
 
 Iext_e_coeff="0.75"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
 Iext_e_min_coeff="0.8"
-AMPA_coeff="27.5"
+AMPA_coeff="40"
 GABA_coeff="54"
 extraGABA_coeff="0.7"
 adapt_inc_coeff="1.0" #"1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 2.8 2.9"
@@ -91,14 +91,14 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=50
+time=0.5
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
 
 ntrials=1
 
-output_dir="igor_export"
+output_dir="output_local"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
 job_num=1000
@@ -212,7 +212,7 @@ for Iext_e_c in $Iext_e_coeff; do
                 --ntrials $ntrials
         else
             pwd
-            nice python2.6 simulation.py \
+            nice python2.6 -i simulation.py \
             --Ivel $Ivel \
             --pAMPA_sigma $pAMPA_sigma \
             --Ne $Ne \
@@ -265,7 +265,7 @@ for Iext_e_c in $Iext_e_coeff; do
             --update_interval $update_interval \
             --job_num $job_num \
             --prefDirC $prefDirC \
-            --ntrials $ntrials&
+            --ntrials $ntrials
 
         fi
     fi
