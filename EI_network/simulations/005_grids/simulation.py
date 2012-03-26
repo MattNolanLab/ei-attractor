@@ -210,28 +210,28 @@ for trial_it in range(ei_net.o.ntrials):
             options.fileNamePrefix, options.job_num, trial_it)
     
     
-    F_tstart = 0
-    F_tend = options.time
-    F_dt = 0.02
-    F_winLen = 0.5
-    Fe, Fe_t = theta_spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
+    #F_tstart = 0
+    #F_tend = options.time
+    #F_dt = 0.02
+    #F_winLen = 0.5
+    #Fe, Fe_t = theta_spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
 
-    # plot firing rates
-    figure(figsize=figSize)
-    T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
-    pcolormesh(T, FR, Fe)
-    ylabel('E Neuron no.')
-    xlabel('Time (s)')
-    colorbar()
-    savefig(output_fname + '_firing_rate_e.png')
+    ## plot firing rates
+    #figure(figsize=figSize)
+    #T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
+    #pcolormesh(T, FR, Fe)
+    #ylabel('E Neuron no.')
+    #xlabel('Time (s)')
+    #colorbar()
+    #savefig(output_fname + '_firing_rate_e.png')
 
-    figure()
-    pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
-    xlabel('E neuron no.')
-    ylabel('E neuron no.')
-    colorbar()
-    axis('equal')
-    savefig(output_fname + '_firing_snapshot_e.png')
+    #figure()
+    #pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
+    #xlabel('E neuron no.')
+    #ylabel('E neuron no.')
+    #colorbar()
+    #axis('equal')
+    #savefig(output_fname + '_firing_snapshot_e.png')
 
     
     ## Print a plot of bump position
