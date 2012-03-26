@@ -268,21 +268,27 @@ class EI_Network:
         #return np.sqrt(dx**2 + dy**2)
 
     def _generate_pAMPA_twisted_torus(self, a, others, pAMPA_mu, pAMPA_sigma,
-            prefDir):
+            prefDir, prefDirC):
         '''
         Here we assume that X coordinates are normalised to <0, 1), and Y
         coordinates are normalised to <0, sqrt(3)/2)
         Y coordinates are twisted, i.e. X will have additional position shifts
         when determining minimum
         '''
-        y_dim = np.sqrt(3)/2
+        prefDir = np.array(prefDir, dtype=float)
+        prefDir[0, 0] = 1. * prefDir[0, 0] * prefDirC / self.Ni_x
+        prefDir[0, 1] = 1. * prefDir[0, 1] * prefDirC / self.Ni_y * self.y_dim
         d = self._remap_twisted_torus(a, others, prefDir)
         return np.exp(-(d - pAMPA_mu)**2/2/pAMPA_sigma**2)
 
     def _generate_pGABA_twisted_torus(self, a, others, sigma, prefDir,
         prefDirC):
 
-        d = self._remap_twisted_torus(a, others, float(prefDirC)/self.Ne_x*np.array(prefDir))
+        #import pdb; pdb.set_trace()
+        prefDir = np.array(prefDir, dtype=float)
+        prefDir[0, 0] = 1. * prefDir[0, 0] * prefDirC / self.Ne_x
+        prefDir[0, 1] = 1. * prefDir[0, 1] * prefDirC / self.Ne_y * self.y_dim
+        d = self._remap_twisted_torus(a, others, prefDir)
         return np.exp(-d**2/2./sigma**2)
 
 
@@ -366,6 +372,7 @@ class EI_Network:
             Y = 1. * Y / self.Ni_y * self.y_dim
             others_e = np.vstack((X.ravel(), Y.ravel())).T
 
+            self.prefDirs_e = np.ndarray((self.net_Ne, 2))
             E_W = np.asarray(self.AMPA_conn.W)
             for y in xrange(self.Ne_y):
                 y_e_norm = float(y) / self.Ne_y * self.y_dim
@@ -377,15 +384,16 @@ class EI_Network:
 
                     
                     a = np.array([[x_e_norm, y_e_norm]])
-                    #pd = getPreferredDirection(x, y)
-                    pd = np.array([0, 0])
-                    #self.prefDirs[it, :] = pd
+                    pd = getPreferredDirection(x, y)
+                    #pd = np.array([0, 0])
+                    self.prefDirs_e[it, :] = pd
                     tmp_templ = self._generate_pAMPA_twisted_torus(a, others_e,
-                            pAMPA_mu, pAMPA_sigma, np.array([[pd[0], pd[1]]]))
+                            pAMPA_mu, pAMPA_sigma, np.array([[pd[0], pd[1]]]),
+                            self.o.prefDirC)
 
                     E_W[it, :] = g_AMPA_mean*tmp_templ*siemens
 
-            conn_th = 1e-3
+            conn_th = 1e-5
             self.prefDirs_i = np.ndarray((self.net_Ni, 2))
             X, Y = np.meshgrid(np.arange(self.Ne_x), np.arange(self.Ne_y))
             X = 1. * X / self.Ne_x

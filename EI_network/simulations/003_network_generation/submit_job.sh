@@ -16,13 +16,13 @@ QSUB_PARAMS="-N EI_network -P inf_ndtc -cwd -l h_rt=02:00:00"
 
 net_generations=1
 
-P_Ivel="0" #"0 10 25 50 75 100"
+P_Ivel="0 10 25 50 75 100 150"
 P_pAMPA_sigma="0.7"
 
 Ne=68
 Ni=34
 
-P_prefDirC="5.5" #"5.5"
+P_prefDirC="4"
 
 Iext_e_coeff="0.75"
 Iext_i_coeff="0.9" #"0.4 0.5 0.6 0.7 0.8 0.9"
@@ -91,7 +91,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=0.5
+time=6
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
@@ -212,7 +212,7 @@ for Iext_e_c in $Iext_e_coeff; do
                 --ntrials $ntrials
         else
             pwd
-            nice python2.6 -i simulation.py \
+            nice python2.6 simulation.py \
             --Ivel $Ivel \
             --pAMPA_sigma $pAMPA_sigma \
             --Ne $Ne \
@@ -265,7 +265,7 @@ for Iext_e_c in $Iext_e_coeff; do
             --update_interval $update_interval \
             --job_num $job_num \
             --prefDirC $prefDirC \
-            --ntrials $ntrials
+            --ntrials $ntrials&
 
         fi
     fi

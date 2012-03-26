@@ -79,12 +79,13 @@ print "Starting network and connections initialization..."
 start_time=time.time()
 total_start_t = time.time()
 
-options.ndim = 2
+options.ndim = 'twisted_torus'
 ei_net = EI_Network(options, simulationClock)
 
 # Mexican hat properties and AMPA/GABA connections
-pAMPA_mu = 0.5
-pAMPA_sigma = 0.75/6
+y_dim = np.sqrt(3)/2.
+pAMPA_mu = y_dim/2.
+pAMPA_sigma = 0.5/6
 pGABA_sigma = 0.5/6
 ei_net.connMexicanHat(pAMPA_mu, pAMPA_sigma, pGABA_sigma)
 ei_net.randomInhibition(options.g_extraGABA_total, options.extraGABA_density)
@@ -108,8 +109,12 @@ theta_start_t = 0.5*second
 theta_start_mon_t = 1.0*second
 
 
-stim_start = int(0.45*ei_net.o.Ne)
-stim_range = int(0.2*ei_net.o.Ne)
+stim_start = 0.45
+stim_start_x = int(stim_start*ei_net.Ne_x)
+stim_start_y = int(stim_start*ei_net.Ne_y)
+stim_range = 0.2
+stim_range_x = int(stim_range*ei_net.Ne_x)
+stim_range_y = int(stim_range*ei_net.Ne_y)
 stim_current = 900*pA
 #stim_current = options.Iext_e
 
@@ -117,18 +122,19 @@ stim_current = 900*pA
 def stimulateSubPopulation():
     if simulationClock.t >= 0*msecond and simulationClock.t < 100*msecond:
         #ei_net.E_pop.Iext = 0
-        tmp = ei_net.E_pop.Iext.reshape((options.Ne, options.Ne))
-        tmp[stim_start:stim_start+stim_range, stim_start:stim_start+stim_range] =\
-            linspace(stim_current, stim_current, stim_range**2).reshape((stim_range, stim_range))
+        tmp = ei_net.E_pop.Iext.reshape((ei_net.Ne_y, ei_net.Ne_x))
+        tmp[stim_start_y:stim_start_y+stim_range_y, stim_start_x:stim_start_x+stim_range_x] = linspace(stim_current, stim_current, stim_range_x*stim_range_y).reshape((stim_range_y,
+                        stim_range_x))
         ei_net.E_pop.Iext = tmp.ravel()
         print "Stimulation..."
-    else:
+    elif simulationClock.t < theta_start_t:
         ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
-    pass
+    else:
+        pass
 
 
 v = np.array([[0, 0]]).T
-Ivel = np.dot(ei_net.prefDirs_i, v)
+Ivel = np.dot(ei_net.prefDirs_e, v)
 Ivel_it = 0
 @network_operation(ratClock)
 def velocityChange():
@@ -136,7 +142,7 @@ def velocityChange():
     global Ivel
     if simulationClock.t >= theta_start_mon_t and simulationClock.t < options.time*second:
         v = np.array([[rat_Ivel_x[Ivel_it], rat_Ivel_y[Ivel_it]]]).T
-        Ivel = np.dot(ei_net.prefDirs_i, v)
+        Ivel = np.dot(ei_net.prefDirs_e, v)
         Ivel_it += 1
 
 @network_operation(simulationClock)
@@ -148,7 +154,7 @@ def thetaStimulation():
 
     # Velocity inputs
     if simulationClock.t >= theta_start_mon_t and simulationClock.t < options.time*second:
-        ei_net.I_pop.Iext += Ivel.ravel()
+        ei_net.E_pop.Iext += Ivel.ravel()
 
 
 state_record_e = [31, 2015]
@@ -209,34 +215,46 @@ for trial_it in range(ei_net.o.ntrials):
     F_winLen = 0.5
     Fe, Fe_t = theta_spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
 
+    # plot firing rates
+    figure(figsize=figSize)
+    T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
+    pcolormesh(T, FR, Fe)
+    ylabel('E Neuron no.')
+    xlabel('Time (s)')
+    colorbar()
+    savefig(output_fname + '_firing_rate_e.png')
+
     figure()
-    pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (options.Ne, options.Ne)))
+    pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
     xlabel('E neuron no.')
     ylabel('E neuron no.')
     colorbar()
+    axis('equal')
     savefig(output_fname + '_firing_snapshot_e.png')
+
     
-    # Print a plot of bump position
-    (pos, bumpPos_times) = theta_spikeMon_e.torusPopulationVector(ei_net.o.Ne,
-            theta_start_t, options.time, F_dt, F_winLen)
-    figure(figsize=figSize)
-    plot(bumpPos_times, pos)
-    xlabel('Time (s)')
-    ylabel('Bump position (neurons)')
-    
-    savefig(output_fname + '_bump_position.pdf')
+    ## Print a plot of bump position
+    #(pos, bumpPos_times) = theta_spikeMon_e.torusPopulationVector(ei_net.o.Ne,
+    #        theta_start_t, options.time, F_dt, F_winLen)
+    #figure(figsize=figSize)
+    #plot(bumpPos_times, pos)
+    #xlabel('Time (s)')
+    #ylabel('Bump position (neurons)')
+    #
+    #savefig(output_fname + '_bump_position.pdf')
 
     
     outData = ratData;
     #outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
-    outData['bumpPos'] = pos
-    outData['bumpPos_times'] = bumpPos_times
+    #outData['bumpPos'] = pos
+    #outData['bumpPos_times'] = bumpPos_times
 
-    outData['Fe'] = Fe
-    outData['Fe_t'] = Fe_t
+    #outData['Fe'] = Fe
+    #outData['Fe_t'] = Fe_t
 
-    outData['theta_spikeCell_e'] = theta_spikeMon_e.aspikes
+    outData['theta_spikeCell_e'] = theta_spikeMon_e.aspikes[0:200]
+    outData['options'] = options._einet_optdict
 
     #outData['theta_stateMon_Iclamp_e_times'] = theta_stateMon_Iclamp_e.times
     #outData['theta_stateMon_Iclamp_e_values'] = theta_stateMon_Iclamp_e.values
