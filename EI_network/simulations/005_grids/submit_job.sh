@@ -98,10 +98,10 @@ Vclamp="-50e-3"
 
 ntrials=1
 
-output_dir="output_local"
+output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=2020
+job_num=3000
 
 
 

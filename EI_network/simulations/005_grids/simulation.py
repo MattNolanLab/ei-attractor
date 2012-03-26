@@ -50,7 +50,8 @@ parser.add_option("--Ivel_max", type=float,
 options = setOptionDictionary(parser, options)
 
 
-vel_fname = '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
+#vel_fname = '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
+vel_fname = '../../../../data/hafting_et_al_2005/rat_data_original.mat'
 ratData = loadmat(vel_fname)
 rat_dt = ratData['dt'][0][0]
 rat_vel_x = np.diff(ratData['pos_x'].ravel())/rat_dt
