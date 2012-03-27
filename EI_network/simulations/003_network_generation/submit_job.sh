@@ -9,18 +9,18 @@
 BASE=../../
 PYTHON_JUP="/disk/scratch/s0966762/lib/python2.6/site-packages"
 export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE:$PYTHON_JUP"
-EDDIE=1  # if eddie, submit on a cluster using qsub
+EDDIE="0"  # if eddie, submit on a cluster using qsub
 dry_run=0
 
 QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=05:00:00 -pe memory-2G 2"
 
 net_generations=1
 
-P_Ivel="0 10 25 50 75 100 150"
+P_Ivel="0 10 25 50 75 100 150 200"
 P_pAMPA_sigma="0.7"
 
-Ne=68
-Ni=34
+Ne=64
+Ni=32
 
 P_prefDirC="4"
 
@@ -101,7 +101,7 @@ ntrials=1
 output_dir="output_local"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=200
+job_num=0
 
 
 net_it=0
@@ -210,7 +210,8 @@ for Iext_e_c in $Iext_e_coeff; do
                 --job_num $job_num \
                 --prefDirC $prefDirC \
                 --ntrials $ntrials
-        else
+        elif [ $EDDIE -eq "0" ]
+        then
             pwd
             nice python2.6 simulation.py \
             --Ivel $Ivel \
