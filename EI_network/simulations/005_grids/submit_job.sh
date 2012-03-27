@@ -12,11 +12,11 @@ export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/
 EDDIE=1  # if eddie, submit on a cluster using qsub
 dry_run=0
 
-QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=03:00:00 -pe memory-2G 2"
+QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=04:00:00 -pe memory-2G 2"
 
-net_generations=4
+net_generations=10
 
-P_Ivel_max="40e-12 50e-12 60e-12"
+P_Ivel_max="40e-12 50e-12 70e-12 80e-12 90e-12 100e-12"
 P_pAMPA_sigma="0.7"
 
 Ne=68
@@ -101,12 +101,10 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=8000
+job_num=9000
 
 
 
-net_it=0
-while [ $net_it -lt $net_generations ]; do
 for Iext_e_c in $Iext_e_coeff; do
     for Iext_i_c in $Iext_i_coeff; do
         for AMPA_c in $AMPA_coeff; do
@@ -123,6 +121,8 @@ for Iext_e_c in $Iext_e_coeff; do
                                                     for NMDA_amount in $P_NMDA_amount; do
                                                         for prefDirC in $P_prefDirC; do
                                                             for Iext_e_min_c in $Iext_e_min_coeff; do
+net_it=0
+while [ $net_it -lt $net_generations ]; do
 #####################
     Iext_e=`echo "$Iext_e_1 * $Iext_e_c" | bc -l`
     Iext_i=`echo "$Iext_i_1 * $Iext_i_c" | bc -l`
@@ -275,6 +275,8 @@ for Iext_e_c in $Iext_e_coeff; do
     let job_num=$job_num+1
     sleep 0.5
 #####################
+    let net_it=$net_it+1
+done
                                                             done
                                                         done
                                                     done
@@ -292,5 +294,3 @@ for Iext_e_c in $Iext_e_coeff; do
     done
 done
 
-    let net_it=$net_it+1
-done

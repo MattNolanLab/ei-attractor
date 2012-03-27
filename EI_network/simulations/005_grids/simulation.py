@@ -50,8 +50,8 @@ parser.add_option("--Ivel_max", type=float,
 options = setOptionDictionary(parser, options)
 
 
-#vel_fname = '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
-vel_fname = '../../../../data/hafting_et_al_2005/rat_data_original.mat'
+vel_fname = '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
+#vel_fname = '../../../../data/hafting_et_al_2005/rat_data_original.mat'
 ratData = loadmat(vel_fname)
 rat_dt = ratData['dt'][0][0]
 rat_vel_x = np.diff(ratData['pos_x'].ravel())/rat_dt
@@ -60,6 +60,11 @@ rat_vel_y = np.diff(ratData['pos_y'].ravel())/rat_dt
 # Map velocities so that maximum is Ivel_max
 rat_Ivel_x = rat_vel_x * options.Ivel_max/np.max(np.abs(rat_vel_x)) * amp
 rat_Ivel_y = rat_vel_y * options.Ivel_max/np.max(np.abs(rat_vel_y)) * amp
+
+print "mean rat_Ivel_x: " + str(np.mean(np.abs(rat_Ivel_x))/pA) + " pA"
+print "mean rat_Ivel_y: " + str(np.mean(np.abs(rat_Ivel_y))/pA) + " pA"
+print "max rat_Ivel_x: " + str(np.max(np.abs(rat_Ivel_x))/pA) + " pA"
+print "max rat_Ivel_y: " + str(np.max(np.abs(rat_Ivel_y))/pA) + " pA"
 
 
 # Clock definitions
