@@ -3,18 +3,19 @@
 path('../include', path);
 
 close all;
-clear all;
+%clear all;
     
 
     % Load file and process? If not - assuming the tracking has already
     % been done and results saved to tracking*.mat file
     %loadFlag = true;
     
-    jobId = 2385;
+    jobId = 9010;
+    trial_it = 0;
     chpntId = 1;
-    folder = '../../../central_data_store/simulation_data/007_mult_bump_path_integ/';
-    d = dir([folder 'job' num2str(jobId) '*.mat']);
-    fileName = [folder d(chpntId).name]
+    folder = '../../../central_data_store/simulation_data/EI_network/005_grids/';
+    fname = sprintf('%s/job%04d_trial%04d_output.mat', folder, jobId, trial_it)
+    
     
     saveFig = true;
     
@@ -28,26 +29,27 @@ clear all;
     endTime = 1200; t_end = endTime - delta_t/2;
     
     
-    saveDir = 'results/fig/';
-    [start_i end_i] = regexp(fileName, 'job\d+_\d\d\d\d-\d\d-\d\dT\d\d-\d\d-\d\d_', 'Start', 'End');
-    fileBase = fileName(start_i:end_i-1);
+%     saveDir = 'results/fig/';
+%     [start_i end_i] = regexp(fileName, 'job\d+_\d\d\d\d-\d\d-\d\dT\d\d-\d\d-\d\d_', 'Start', 'End');
+%     fileBase = fileName(start_i:end_i-1);
     
-    load(fileName);
-    opt = parseOptions(options);
-    optStr = ['_s' num2str(opt.sheet_size) '_alpha' num2str(opt.alpha)];   
-    sheet_size = opt.sheet_size;
-
-    if (oldFormat)
-        pos_x = ratData_pos_x;
-        pos_y = ratData_pos_y;
-    end
+    load(fname);
+%     opt = parseOptions(options);
+%     optStr = ['_s' num2str(opt.sheet_size) '_alpha' num2str(opt.alpha)];   
+%     sheet_size = opt.sheet_size;
+% 
+%     if (oldFormat)
+%         pos_x = ratData_pos_x;
+%         pos_y = ratData_pos_y;
+%     end
 
 
     %---------------------------------------------
     % Plot single neuron rate and spike responses
     %---------------------------------------------
-    neuronNum = 1;
-    neuronSpikes = spikeCell{neuronNum};
+    neuronNum = 8;
+    t_start = 1;
+    neuronSpikes = theta_spikeCell_e{neuronNum} - t_start;
     h = 5.0;  % cm
     arenaDiam = 180;   % cm
     
