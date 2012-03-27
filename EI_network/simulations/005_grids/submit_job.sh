@@ -22,7 +22,7 @@ P_pAMPA_sigma="0.7"
 Ne=68
 Ni=34
 
-gridsPerArena="2.5"
+gridsPerArena="3."
 placeT="10"
 
 P_prefDirC="4"
@@ -101,10 +101,10 @@ Vclamp="-50e-3"
 
 ntrials=1
 
-output_dir="output_local"
+output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=5000
+job_num=5100
 
 
 
@@ -280,7 +280,7 @@ while [ $net_it -lt $net_generations ]; do
     echo
 
     let job_num=$job_num+1
-    sleep 0.5
+    #sleep 0.5
 #####################
     let net_it=$net_it+1
 done
