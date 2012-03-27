@@ -25,6 +25,7 @@ from custombrian import *
 
 from tools import *
 from plotting import *
+from place_input import *
 
 lg.basicConfig(level=lg.DEBUG)
 
@@ -82,6 +83,17 @@ print "Network setup time:",duration,"seconds"
 #                            End Network setup
 ################################################################################
 
+
+
+################################################################################
+#                             Place cell input
+arenaSize = 180
+gridsep = arenaSize/2.5
+gridCenter = [0, 0]
+pc = PlaceCellInput(ei_net.Ne_x, ei_net.Ne_y, arenaSize, gridsep, gridCenter)
+################################################################################
+
+
 stim_freq = 8*Hz
 stim_omega = 2*np.pi*stim_freq
 stim_e_A  = (options.Iext_e - options.Iext_e_min)/2*amp
@@ -99,20 +111,28 @@ stim_start_y = int(stim_start*ei_net.Ne_y)
 stim_range = 0.2
 stim_range_x = int(stim_range*ei_net.Ne_x)
 stim_range_y = int(stim_range*ei_net.Ne_y)
-stim_current = 900*pA
+stim_current = 700*pA
 #stim_current = options.Iext_e
+
+stim2_flag = False
+place_current = 250 * pA
 
 @network_operation(stimClock)
 def stimulateSubPopulation():
-    if simulationClock.t >= 0*msecond and simulationClock.t < 100*msecond:
+    global stim2_flag
+    stim2_flag = False
+    if simulationClock.t >= 0*msecond and simulationClock.t < 20*msecond:
         #ei_net.E_pop.Iext = 0
-        tmp = ei_net.E_pop.Iext.reshape((ei_net.Ne_y, ei_net.Ne_x))
-        tmp[stim_start_y:stim_start_y+stim_range_y, stim_start_x:stim_start_x+stim_range_x] = linspace(stim_current, stim_current, stim_range_x*stim_range_y).reshape((stim_range_y,
-                        stim_range_x))
-        ei_net.E_pop.Iext = tmp.ravel()
+        #tmp = ei_net.E_pop.Iext.reshape((ei_net.Ne_y, ei_net.Ne_x))
+        #tmp[stim_start_y:stim_start_y+stim_range_y, stim_start_x:stim_start_x+stim_range_x] = linspace(stim_current, stim_current, stim_range_x*stim_range_y).reshape((stim_range_y,
+        #                stim_range_x))
+        #ei_net.E_pop.Iext = tmp.ravel()
+        ei_net.E_pop.Iext = pc.getSheetInput(0, 0).ravel() * stim_current
         print "Stimulation..."
-    else:
-        ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
+    elif simulationClock.t >= 1.5*second and simulationClock.t < 1.6*second:
+        stim2_flag = True
+    elif simulationClock.t < theta_start_t:
+        ei_net.E_pop.Iext = [options.Iext_e*amp] * len(ei_net.E_pop)
     pass
 
 
@@ -128,22 +148,25 @@ def thetaStimulation():
 
     # Velocity inputs
     if simulationClock.t >= theta_start_t and simulationClock.t < options.time*second:
-        #ei_net.I_pop.Iext += Ivel.ravel()
         ei_net.E_pop.Iext += np.max((Ivel.ravel(), np.zeros(len(Ivel))), 0)
+
+    if stim2_flag == True:
+        print "2nd Stimulation..."
+        ei_net.E_pop.Iext += pc.getSheetInput(gridsep/4, 0).ravel() * place_current
 
 
 state_record_e = [ei_net.Ne_x/2 -1 , ei_net.Ne_y/2*ei_net.Ne_x + ei_net.Ne_x/2 - 1]
 state_record_i = [ei_net.Ni_x/2 - 1, ei_net.Ni_y/2*ei_net.Ni_x + ei_net.Ni_x/2 - 1]
 
-#spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
-#spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
+spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
+spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
 
-#stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = state_record_e, clock=simulationClock)
-#stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = state_record_i, clock=simulationClock)
-#stateMon_Iclamp_e = StateMonitor(ei_net.E_pop, 'Iclamp', record = state_record_e, clock=simulationClock)
-#stateMon_Iclamp_i = StateMonitor(ei_net.I_pop, 'Iclamp', record = state_record_i, clock=simulationClock)
-#stateMon_Iext_e = StateMonitor(ei_net.E_pop, 'Iext', record = state_record_e, clock=simulationClock)
-#stateMon_Iext_i = StateMonitor(ei_net.I_pop, 'Iext', record = state_record_i, clock=simulationClock)
+stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = state_record_e, clock=simulationClock)
+stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = state_record_i, clock=simulationClock)
+stateMon_Iclamp_e = StateMonitor(ei_net.E_pop, 'Iclamp', record = state_record_e, clock=simulationClock)
+stateMon_Iclamp_i = StateMonitor(ei_net.I_pop, 'Iclamp', record = state_record_i, clock=simulationClock)
+stateMon_Iext_e = StateMonitor(ei_net.E_pop, 'Iext', record = state_record_e, clock=simulationClock)
+stateMon_Iext_i = StateMonitor(ei_net.I_pop, 'Iext', record = state_record_i, clock=simulationClock)
 
 theta_n_it_range = 2
 theta_state_record_e = range(state_record_e[1] - theta_n_it_range/2,
@@ -156,9 +179,9 @@ theta_stateMon_Iclamp_e = StateMonitor(ei_net.E_pop, 'Iclamp', record = theta_st
 theta_stateMon_Iclamp_i = StateMonitor(ei_net.I_pop, 'Iclamp', record = theta_state_record_i, clock=simulationClock)
 
 
-#ei_net.net.add(spikeMon_e, spikeMon_i)
-#ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
-#ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
+ei_net.net.add(spikeMon_e, spikeMon_i)
+ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
+ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 ei_net.net.add(stimulateSubPopulation)
 ei_net.net.add(thetaStimulation)
 
@@ -179,8 +202,8 @@ ei_net.net.add(theta_spikeMon_e, theta_spikeMon_i, theta_stateMon_Iclamp_e,
 #print "Finished exporting connections"
 
 
-x_lim = [options.time-0.5, options.time]
-#x_lim = [0, options.time]
+#x_lim = [options.time-0.5, options.time]
+x_lim = [0, options.time]
 
 ################################################################################
 #                              Main cycle
@@ -214,103 +237,103 @@ for trial_it in range(ei_net.o.ntrials):
     F_tend = options.time
     F_dt = 0.02
     F_winLen = 0.25
-    #Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
-    #Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
+    Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
+    Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
 
-    ## plot firing rates
-    #figure(figsize=figSize)
-    #subplot(211)
-    #T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
-    #pcolormesh(T, FR, Fe)
-    #ylabel('E Neuron no.')
-    #colorbar()
-    #subplot(212)
-    #T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
-    #pcolormesh(T, FR, Fi)
-    #xlabel('Time (s)')
-    #ylabel('I Neuron no.')
-    #colorbar()
-    #savefig(output_fname + '_firing_rate_e.png')
+    # plot firing rates
+    figure(figsize=figSize)
+    subplot(211)
+    T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
+    pcolormesh(T, FR, Fe)
+    ylabel('E Neuron no.')
+    colorbar()
+    subplot(212)
+    T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
+    pcolormesh(T, FR, Fi)
+    xlabel('Time (s)')
+    ylabel('I Neuron no.')
+    colorbar()
+    savefig(output_fname + '_firing_rate_e.png')
 
-    #figure()
-    #ax = subplot(211)
-    #plot(stateMon_e.times, stateMon_e.values[0:2].T/mV)
-    #ylabel('E membrane potential (mV)')
-    #subplot(212, sharex=ax)
-    #plot(stateMon_i.times, stateMon_i.values[0:2].T/mV)
-    #xlabel('Time (s)')
-    #ylabel('I membrane potential (mV)')
-    #xlim(x_lim)
-    #savefig(output_fname + '_Vm.pdf')
-    #
-    #
-    #figure()
-    #ax = subplot(211)
-    #plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0:2].T/pA)
-    #ylabel('E synaptic current (pA)')
-    #subplot(212, sharex=ax)
-    #plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[0:2].T/pA)
-    #xlabel('Time (s)')
-    #ylabel('I synaptic current (pA)')
-    #xlim(x_lim)
-    #savefig(output_fname + '_Isyn.pdf')
-    #
-    #figure()
-    #ax = subplot(211)
-    #plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[0].T/pA)
-    #ylabel('E external current (pA)')
-    #subplot(212, sharex=ax)
-    #plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[0].T/pA)
-    #xlabel('Time (s)')
-    #ylabel('I external current (pA)')
-    #xlim(x_lim)
-    #savefig(output_fname + '_Iext.pdf')
-    #
-    ## High pass filter these signals
-    #figure()
-    #ax = subplot(211)
-    #plot(stateMon_Iclamp_e.times, butterHighPass(stateMon_Iclamp_e.values[1].T/pA, options.sim_dt, 40))
-    #plot(stateMon_Iext_e.times, -(stateMon_Iext_e.values[0]/pA - stim_e_DC/pA))
-    #ylabel('E current (pA)')
-    #ylim([-500, 500])
-    #subplot(212, sharex=ax)
-    #plot(stateMon_Iclamp_i.times, butterHighPass(stateMon_Iclamp_i.values[0].T/pA, options.sim_dt, 40))
-    ##plot(stateMon_Iclamp_i.times, stateMon_Iext_i.values[0]/pA)
-    #xlabel('Time (s)')
-    #ylabel('I current (pA)')
-    #xlim(x_lim)
-    #ylim([-500, 500])
-    #savefig(output_fname + '_Isyn_filt.pdf')
+    figure()
+    ax = subplot(211)
+    plot(stateMon_e.times, stateMon_e.values[0:2].T/mV)
+    ylabel('E membrane potential (mV)')
+    subplot(212, sharex=ax)
+    plot(stateMon_i.times, stateMon_i.values[0:2].T/mV)
+    xlabel('Time (s)')
+    ylabel('I membrane potential (mV)')
+    xlim(x_lim)
+    savefig(output_fname + '_Vm.pdf')
+    
+    
+    figure()
+    ax = subplot(211)
+    plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0:2].T/pA)
+    ylabel('E synaptic current (pA)')
+    subplot(212, sharex=ax)
+    plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[0:2].T/pA)
+    xlabel('Time (s)')
+    ylabel('I synaptic current (pA)')
+    xlim(x_lim)
+    savefig(output_fname + '_Isyn.pdf')
+    
+    figure()
+    ax = subplot(211)
+    plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[1].T/pA)
+    ylabel('E external current (pA)')
+    subplot(212, sharex=ax)
+    plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[0].T/pA)
+    xlabel('Time (s)')
+    ylabel('I external current (pA)')
+    xlim(x_lim)
+    savefig(output_fname + '_Iext.pdf')
+    
+    # High pass filter these signals
+    figure()
+    ax = subplot(211)
+    plot(stateMon_Iclamp_e.times, butterHighPass(stateMon_Iclamp_e.values[1].T/pA, options.sim_dt, 40))
+    plot(stateMon_Iext_e.times, -(stateMon_Iext_e.values[0]/pA - stim_e_DC/pA))
+    ylabel('E current (pA)')
+    ylim([-500, 500])
+    subplot(212, sharex=ax)
+    plot(stateMon_Iclamp_i.times, butterHighPass(stateMon_Iclamp_i.values[0].T/pA, options.sim_dt, 40))
+    #plot(stateMon_Iclamp_i.times, stateMon_Iext_i.values[0]/pA)
+    xlabel('Time (s)')
+    ylabel('I current (pA)')
+    xlim(x_lim)
+    ylim([-500, 500])
+    savefig(output_fname + '_Isyn_filt.pdf')
     
     
     
-    #Ne = options.Ne
-    #figure()
-    #pcolormesh(np.reshape(ei_net.AMPA_conn.W.todense()[57*68 + 33, :], (ei_net.Ni_y,
-    #    ei_net.Ni_x)));
-    #xlabel('I neuron no.')
-    #ylabel('I neuron no.')
-    #colorbar()
-    #axis('equal')
-    #savefig(output_fname + '_E2I_conn.png')
+    Ne = options.Ne
+    figure()
+    pcolormesh(np.reshape(ei_net.AMPA_conn.W.todense()[57*68 + 33, :], (ei_net.Ni_y,
+        ei_net.Ni_x)));
+    xlabel('I neuron no.')
+    ylabel('I neuron no.')
+    colorbar()
+    axis('equal')
+    savefig(output_fname + '_E2I_conn.png')
 
-    #Ni = options.Ni
+    Ni = options.Ni
+    figure()
+    pcolormesh(np.reshape(ei_net.GABA_conn1.W.todense()[0, :], (ei_net.Ne_y,
+        ei_net.Ne_x)));
+    xlabel('E neuron no.')
+    ylabel('E neuron no.')
+    colorbar()
+    axis('equal')
+    savefig(output_fname + '_I2E_conn.png')
+
     #figure()
-    #pcolormesh(np.reshape(ei_net.GABA_conn1.W.todense()[0, :], (ei_net.Ne_y,
-    #    ei_net.Ne_x)));
+    #pcolormesh(np.reshape(np.dot(ei_net.AMPA_conn.W.todense(),
+    #    ei_net.GABA_conn1.W.todense())[15, :], (ei_net.Ne_y, ei_net.Ne_x)));
     #xlabel('E neuron no.')
     #ylabel('E neuron no.')
     #colorbar()
-    #axis('equal')
-    #savefig(output_fname + '_I2E_conn.png')
-
-    ##figure()
-    ##pcolormesh(np.reshape(np.dot(ei_net.AMPA_conn.W.todense(),
-    ##    ei_net.GABA_conn1.W.todense())[15, :], (ei_net.Ne_y, ei_net.Ne_x)));
-    ##xlabel('E neuron no.')
-    ##ylabel('E neuron no.')
-    ##colorbar()
-    ##savefig(output_fname + '_E2E_conn.png')
+    #savefig(output_fname + '_E2E_conn.png')
 
 
     figure()

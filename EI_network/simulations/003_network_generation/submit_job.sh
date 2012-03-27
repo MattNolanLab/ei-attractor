@@ -14,13 +14,13 @@ dry_run=0
 
 QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=05:00:00 -pe memory-2G 2"
 
-net_generations=1
+net_generations=10
 
-P_Ivel="0 10 25 50 75 100 150 200"
+P_Ivel="0" #"0 10 25 50 75 100 150 200"
 P_pAMPA_sigma="0.7"
 
-Ne=64
-Ni=32
+Ne=68
+Ni=34
 
 P_prefDirC="4"
 
@@ -91,7 +91,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=6
+time=2
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"

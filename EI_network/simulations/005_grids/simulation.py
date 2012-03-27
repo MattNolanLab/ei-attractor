@@ -25,6 +25,7 @@ from custombrian import *
 
 from tools import *
 from plotting import *
+from place_input import *
 
 lg.basicConfig(level=lg.DEBUG)
 
@@ -45,6 +46,9 @@ parser.add_option("--prefDirC", type=float,
         help="Preferred directtion multiplier")
 parser.add_option("--Ivel_max", type=float,
         help="Rat velocity current will be between 0 and Ivel_max (pA)")
+parser.add_option("--gridsPerArena", type=float,
+        help="Number of grid fields spanning the diameter of the arena (180cm)")
+parser.add_option("--placeT", type=float, help="Place input timer (seconds)")
 
 (options, args) = parser.parse_args()
 options = setOptionDictionary(parser, options)
@@ -54,6 +58,8 @@ vel_fname = '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
 #vel_fname = '../../../../data/hafting_et_al_2005/rat_data_original.mat'
 ratData = loadmat(vel_fname)
 rat_dt = ratData['dt'][0][0]
+rat_pos_x = ratData['pos_x'].ravel()
+rat_pos_y = ratData['pos_y'].ravel()
 rat_vel_x = np.diff(ratData['pos_x'].ravel())/rat_dt
 rat_vel_y = np.diff(ratData['pos_y'].ravel())/rat_dt
 
@@ -72,6 +78,8 @@ sim_dt = options.sim_dt*second
 simulationClock = Clock(dt=sim_dt)
 stimClock = Clock(50*msecond)
 ratClock = Clock(rat_dt*second)
+placeClockOn = Clock(options.placeT*second)
+placeClockOff = Clock(100*ms)
 
 # Other
 figSize = (12,8)
@@ -102,6 +110,18 @@ print('pAMPA_sigma = ' + str(options.pAMPA_sigma) + '/6')
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
 #                            End Network setup
+################################################################################
+
+################################################################################
+#                             Place cell input
+arenaSize = 180
+gridsep = arenaSize/options.gridsPerArena
+gridCenter = [0, 0]
+place_current = 250 * pA
+pc = PlaceCellInput(ei_net.Ne_x, ei_net.Ne_y, arenaSize, gridsep, gridCenter)
+place_I = pc.getSheetInput(0, 0) * 0.0
+
+place_flag = False
 ################################################################################
 
 stim_freq = 8*Hz
@@ -138,6 +158,23 @@ def stimulateSubPopulation():
     else:
         pass
 
+@network_operation(placeClockOn)
+def switchPlaceInputOn():
+    global place_flag
+    global place_I
+    if simulationClock.t >= theta_start_mon_t:
+        place_flag = True
+        place_I = pc.getSheetInput(rat_pos_x[Ivel_it], rat_pos_y[Ivel_it]).ravel() * place_current
+        print "  Place cell input on; pos_x = " + str(rat_pos_x[Ivel_it]) + "; pos_y = " + str(rat_pos_y[Ivel_it])
+
+@network_operation(placeClockOff, when='start')
+def switchPlaceInputOff():
+    global place_flag
+    global place_I
+    place_flag = False
+    place_I = 0
+    print "  Place cell input off."
+
 
 v = np.array([[0, 0]]).T
 Ivel = np.dot(ei_net.prefDirs_e, v)
@@ -153,12 +190,16 @@ def velocityChange():
 
 @network_operation(simulationClock)
 def thetaStimulation():
+    global place_flag
+    global place_I
     if simulationClock.t >= theta_start_t and simulationClock.t < options.time*second:
         ph = stim_omega*simulationClock.t
         ei_net.E_pop.Iext = stim_e_DC + stim_e_A*np.sin(ph - np.pi/2)
         ei_net.I_pop.Iext = stim_i_DC + stim_i_A*np.sin(ph - np.pi/2)
+        if place_flag == True:
+            ei_net.E_pop.Iext += place_I
 
-    # Velocity inputs
+    #Velocity inputs
     if simulationClock.t >= theta_start_mon_t and simulationClock.t < options.time*second:
         ei_net.E_pop.Iext += Ivel.ravel()
 
@@ -179,6 +220,8 @@ theta_stateMon_Iclamp_i = StateMonitor(ei_net.I_pop, 'Iclamp', record = theta_st
 ei_net.net.add(stimulateSubPopulation)
 ei_net.net.add(thetaStimulation)
 ei_net.net.add(velocityChange)
+ei_net.net.add(switchPlaceInputOn)
+ei_net.net.add(switchPlaceInputOff)
 
 ei_net.net.add(theta_spikeMon_e, theta_stateMon_Iclamp_e,
         theta_stateMon_Iclamp_i)
@@ -204,9 +247,8 @@ for trial_it in range(ei_net.o.ntrials):
     theta_stateMon_Iclamp_e.reinit()
     theta_stateMon_Iclamp_i.reinit()
 
-    print "  Theta stimulation..."
 
-    ndumps = 3
+    ndumps = 1
 
     for dump_it in range(ndumps):
         ei_net.net.run(options.time/ndumps*second, report='stdout',
@@ -234,17 +276,17 @@ for trial_it in range(ei_net.o.ntrials):
         #colorbar()
         #savefig(output_fname + '_firing_rate_e.png')
 
-        #figure()
-        #pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
-        #xlabel('E neuron no.')
-        #ylabel('E neuron no.')
-        #colorbar()
-        #axis('equal')
-        #savefig(output_fname + '_firing_snapshot_e.png')
+        ##figure()
+        ##pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
+        ##xlabel('E neuron no.')
+        ##ylabel('E neuron no.')
+        ##colorbar()
+        ##axis('equal')
+        ##savefig(output_fname + '_firing_snapshot_e.png')
 
-        
+        #
         ## Print a plot of bump position
-        #(pos, bumpPos_times) = theta_spikeMon_e.torusPopulationVector(ei_net.o.Ne,
+        #(pos, bumpPos_times) = theta_spikeMon_e.torusPopulationVector([ei_net.Ne_x, ei_net.Ne_y],
         #        theta_start_t, options.time, F_dt, F_winLen)
         #figure(figsize=figSize)
         #plot(bumpPos_times, pos)
@@ -279,7 +321,7 @@ for trial_it in range(ei_net.o.ntrials):
     print "End of trial no. " + str(trial_it) + "..."
     print 
 
-    #ei_net.reinit()
+    ei_net.reinit()
 #                            End main cycle
 ################################################################################
 
