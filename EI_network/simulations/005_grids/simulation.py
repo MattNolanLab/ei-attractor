@@ -119,7 +119,6 @@ gridsep = arenaSize/options.gridsPerArena
 gridCenter = [0, 0]
 place_current = 250 * pA
 pc = PlaceCellInput(ei_net.Ne_x, ei_net.Ne_y, arenaSize, gridsep, gridCenter)
-place_I = pc.getSheetInput(0, 0) * 0.0
 
 place_flag = False
 ################################################################################
@@ -144,14 +143,12 @@ stim_range_y = int(stim_range*ei_net.Ne_y)
 stim_current = 900*pA
 #stim_current = options.Iext_e
 
+place_I = pc.getSheetInput(rat_pos_x[0], rat_pos_y[0]).ravel() * stim_current
+
 @network_operation(stimClock)
 def stimulateSubPopulation():
     if simulationClock.t >= 0*msecond and simulationClock.t < 100*msecond:
-        #ei_net.E_pop.Iext = 0
-        tmp = ei_net.E_pop.Iext.reshape((ei_net.Ne_y, ei_net.Ne_x))
-        tmp[stim_start_y:stim_start_y+stim_range_y, stim_start_x:stim_start_x+stim_range_x] = linspace(stim_current, stim_current, stim_range_x*stim_range_y).reshape((stim_range_y,
-                        stim_range_x))
-        ei_net.E_pop.Iext = tmp.ravel()
+        ei_net.E_pop.Iext = place_I
         print "Stimulation..."
     elif simulationClock.t < theta_start_t:
         ei_net.E_pop.Iext = [ei_net.E_pop.Iext[0]] * len(ei_net.E_pop)
@@ -248,7 +245,7 @@ for trial_it in range(ei_net.o.ntrials):
     theta_stateMon_Iclamp_i.reinit()
 
 
-    ndumps = 1
+    ndumps = 10
 
     for dump_it in range(ndumps):
         ei_net.net.run(options.time/ndumps*second, report='stdout',
@@ -276,13 +273,13 @@ for trial_it in range(ei_net.o.ntrials):
         #colorbar()
         #savefig(output_fname + '_firing_rate_e.png')
 
-        ##figure()
-        ##pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
-        ##xlabel('E neuron no.')
-        ##ylabel('E neuron no.')
-        ##colorbar()
-        ##axis('equal')
-        ##savefig(output_fname + '_firing_snapshot_e.png')
+        ###figure()
+        ###pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
+        ###xlabel('E neuron no.')
+        ###ylabel('E neuron no.')
+        ###colorbar()
+        ###axis('equal')
+        ###savefig(output_fname + '_firing_snapshot_e.png')
 
         #
         ## Print a plot of bump position
