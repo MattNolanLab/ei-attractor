@@ -22,8 +22,8 @@ P_pAMPA_sigma="0.7"
 Ne=68
 Ni=34
 
-gridsPerArena="3."
-placeT="10"
+gridsPerArena="2.5"
+placeT="5"
 
 P_prefDirC="4"
 
@@ -104,7 +104,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=5100
+job_num=5200
 
 
 
