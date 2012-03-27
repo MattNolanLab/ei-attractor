@@ -12,11 +12,11 @@ export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/
 EDDIE=1  # if eddie, submit on a cluster using qsub
 dry_run=0
 
-QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=04:00:00 -pe memory-2G 2"
+QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=06:00:00 -pe memory-2G 2"
 
 net_generations=10
 
-P_Ivel_max="40e-12 50e-12 70e-12 80e-12 90e-12 100e-12"
+P_Ivel_max="40e-12 50e-12 60e-12"
 P_pAMPA_sigma="0.7"
 
 Ne=68
@@ -91,7 +91,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=300
+time=600
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"
@@ -101,7 +101,7 @@ ntrials=1
 output_dir="output"
 readme_file="$output_dir/README_JOBS_`date "+%Y_%m_%dT%H_%M_%S"`"
 update_interval=10
-job_num=9000
+job_num=9100
 
 
 

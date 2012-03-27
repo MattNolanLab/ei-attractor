@@ -205,69 +205,75 @@ for trial_it in range(ei_net.o.ntrials):
     theta_stateMon_Iclamp_i.reinit()
 
     print "  Theta stimulation..."
-    ei_net.net.run(options.time*second, report='stdout',
-            report_period=options.update_interval*second)
-    duration=time.time()-start_time
-    print "Simulation time:",duration,"seconds"
-    
-    
-    output_fname = "{0}/{1}job{2:04}_trial{3:04}".format(options.output_dir,
-            options.fileNamePrefix, options.job_num, trial_it)
-    
-    
-    #F_tstart = 0
-    #F_tend = options.time
-    #F_dt = 0.02
-    #F_winLen = 0.5
-    #Fe, Fe_t = theta_spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
 
-    ## plot firing rates
-    #figure(figsize=figSize)
-    #T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
-    #pcolormesh(T, FR, Fe)
-    #ylabel('E Neuron no.')
-    #xlabel('Time (s)')
-    #colorbar()
-    #savefig(output_fname + '_firing_rate_e.png')
+    ndumps = 3
 
-    #figure()
-    #pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
-    #xlabel('E neuron no.')
-    #ylabel('E neuron no.')
-    #colorbar()
-    #axis('equal')
-    #savefig(output_fname + '_firing_snapshot_e.png')
+    for dump_it in range(ndumps):
+        ei_net.net.run(options.time/ndumps*second, report='stdout',
+                report_period=options.update_interval*second)
+        duration=time.time()-start_time
+        print "Simulation time:",duration,"seconds"
+        
+        
+        output_fname = "{0}/{1}job{2:04}_trial{3:04}".format(options.output_dir,
+                options.fileNamePrefix, options.job_num, trial_it)
+        
+        
+        #F_tstart = 0
+        #F_tend = options.time
+        #F_dt = 0.02
+        #F_winLen = 0.5
+        #Fe, Fe_t = theta_spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
 
-    
-    ## Print a plot of bump position
-    #(pos, bumpPos_times) = theta_spikeMon_e.torusPopulationVector(ei_net.o.Ne,
-    #        theta_start_t, options.time, F_dt, F_winLen)
-    #figure(figsize=figSize)
-    #plot(bumpPos_times, pos)
-    #xlabel('Time (s)')
-    #ylabel('Bump position (neurons)')
-    #
-    #savefig(output_fname + '_bump_position.pdf')
+        ## plot firing rates
+        #figure(figsize=figSize)
+        #T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
+        #pcolormesh(T, FR, Fe)
+        #ylabel('E Neuron no.')
+        #xlabel('Time (s)')
+        #colorbar()
+        #savefig(output_fname + '_firing_rate_e.png')
 
-    
-    outData = ratData;
-    #outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        #figure()
+        #pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
+        #xlabel('E neuron no.')
+        #ylabel('E neuron no.')
+        #colorbar()
+        #axis('equal')
+        #savefig(output_fname + '_firing_snapshot_e.png')
 
-    #outData['bumpPos'] = pos
-    #outData['bumpPos_times'] = bumpPos_times
+        
+        ## Print a plot of bump position
+        #(pos, bumpPos_times) = theta_spikeMon_e.torusPopulationVector(ei_net.o.Ne,
+        #        theta_start_t, options.time, F_dt, F_winLen)
+        #figure(figsize=figSize)
+        #plot(bumpPos_times, pos)
+        #xlabel('Time (s)')
+        #ylabel('Bump position (neurons)')
+        #
+        #savefig(output_fname + '_bump_position.pdf')
 
-    #outData['Fe'] = Fe
-    #outData['Fe_t'] = Fe_t
+        
+        outData = ratData;
+        #outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
-    outData['theta_spikeCell_e'] = theta_spikeMon_e.aspikes[0:200]
-    outData['options'] = options._einet_optdict
+        #outData['bumpPos'] = pos
+        #outData['bumpPos_times'] = bumpPos_times
 
-    #outData['theta_stateMon_Iclamp_e_times'] = theta_stateMon_Iclamp_e.times
-    #outData['theta_stateMon_Iclamp_e_values'] = theta_stateMon_Iclamp_e.values
-    #outData['theta_stateMon_Iclamp_i_times'] = theta_stateMon_Iclamp_i.times
-    #outData['theta_stateMon_Iclamp_i_values'] = theta_stateMon_Iclamp_i.values
-    
-    savemat(output_fname + '_output.mat', outData, do_compression=False)
+        #outData['Fe'] = Fe
+        #outData['Fe_t'] = Fe_t
+
+        outData['theta_spikeCell_e'] = theta_spikeMon_e.aspikes[0:200]
+        outData['options'] = options._einet_optdict
+
+        #outData['theta_stateMon_Iclamp_e_times'] = theta_stateMon_Iclamp_e.times
+        #outData['theta_stateMon_Iclamp_e_values'] = theta_stateMon_Iclamp_e.values
+        #outData['theta_stateMon_Iclamp_i_times'] = theta_stateMon_Iclamp_i.times
+        #outData['theta_stateMon_Iclamp_i_values'] = theta_stateMon_Iclamp_i.values
+        
+        savemat(output_fname + '_output.mat', outData, do_compression=True)
+
+        print "Dump after " + str(simulationClock.t)
 
 
     print "End of trial no. " + str(trial_it) + "..."
