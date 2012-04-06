@@ -4,10 +4,23 @@ sheet_size = sqrt(numel(spikeCell)); % assuming square sheet - ugly -> FIXME
 
 % Sync measure parameters
 expo_dur = 10*tc; %sec
+dt = 0.001;
+startT = 0;
+endT = 200;
+ISI = 0.1; % average isi
+rad = 15; % Neighborhood radius - in neural units
+
+syncWinT = 2; % sec
 syncWin = syncWinT/dt;
 spikeCntThreshold = syncWinT/avgISI/2;
 
 
+
+% The value of venterListID has been determined from freq. spectra of Vm recordings of the
+% neurons see script figureMembraneVFreq.m
+
+nID = 4141; % job40000 - estimated from raster plot
+%nID = 7170; % job40003
 center_r = fix(nID/sheet_size);
 center_c = mod(nID, sheet_size);
 
@@ -24,6 +37,12 @@ for it = 1:numel(neigh_NID)
 end
 neigh_NID(it_del) = [];
 
+% Check for the neighborhood neurons
+figure(1);
+plot(mod(neigh_NID-1, sheet_size), fix((neigh_NID-1)./sheet_size), '.');
+axis equal;
+display('Displaying the neighborhood plot. Press any key to continue.');
+pause;
 
 % Create the spike response function for the neighborhood neurons and
 % convolve it with the exponential
