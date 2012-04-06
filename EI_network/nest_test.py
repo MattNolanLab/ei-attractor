@@ -18,13 +18,13 @@ nest.ResetKernel()
 startbuild= time.time()
 
 dt      = 0.1    # the resolution in ms
-simtime = 500.0 # Simulation time in ms
-delay   = 1.0    # synaptic delay in ms
+simtime = 10e3 # Simulation time in ms
+delay   = 2.0    # synaptic delay in ms
 
 # Parameters for asynchronous irregular firing
 epsilon = 0.4    # connection probability
 
-order     = 250
+order     = 1000
 NE        = 4*order
 NI        = 1*order
 N_neurons = NE+NI
@@ -52,14 +52,14 @@ I_e_i = 0.
 p_rate = 1000.0
 
 # nS
-J_ex  = 0.75
-J_in  = -0.3
+J_ex  = 0.75/4
+J_in  = -0.3/4
 J_ext_ex  = 4.0
 J_ext_in  = 0.0
 
 
-numThreads = 4
-nest.SetKernelStatus({"resolution": dt, "print_time": True})
+numThreads = 8
+nest.SetKernelStatus({"resolution": dt, "print_time": False})
 nest.SetKernelStatus({"local_num_threads": numThreads})
 
 print "Building network"
