@@ -18,7 +18,7 @@ nest.ResetKernel()
 startbuild= time.time()
 
 dt      = 0.1    # the resolution in ms
-simtime = 10e3 # Simulation time in ms
+simtime = 1e3 # Simulation time in ms
 delay   = 2.0    # synaptic delay in ms
 
 # Parameters for asynchronous irregular firing
@@ -35,17 +35,23 @@ CI    = epsilon*NI   # number of inhibitory synapses per neuron
 C_tot = int(CI+CE)  # total number of synapses per neuron
 
 # Initialize the parameters of the integrate and fire neuron
-tauMem = 10.0
-E_L = -60.0
-CMem = 250.0
-t_ref = 2.0
-V_th = -45.0
-V_reset = E_L
-E_ex = 0.0
-E_in = -75.0
-g_L = CMem / tauMem
-tau_syn_ex = 2.0
-tau_syn_in = 5.0
+tauMem      = 10.0
+E_L         = -60.0
+CMem        = 250.0
+t_ref       = 2.0
+V_peak      = 40.0
+V_reset     = E_L
+E_ex        = 0.0
+E_in        = -75.0
+g_L         = CMem / tauMem
+tau_syn_ex  = 2.0
+tau_syn_in  = 5.0
+
+a           = 0.0
+b           = 0.0
+Delta_T     = 2.0
+tau_w       = 1.0
+V_th        = -45.0
 
 #I_e_e = 500.0
 I_e_i = 0.
@@ -54,7 +60,7 @@ p_rate = 1000.0
 # nS
 J_ex  = 0.75/4
 J_in  = -0.3/4
-J_ext_ex  = 4.0
+J_ext_ex  = 8.0
 J_ext_in  = 0.0
 
 
@@ -64,20 +70,25 @@ nest.SetKernelStatus({"local_num_threads": numThreads})
 
 print "Building network"
 
-neuron_params= {"V_m"       : E_L,
-                "E_L"       : E_L,
-                "C_m"       : CMem,
-                "t_ref"     : t_ref,
-                "V_th"      : V_th,
-                "V_reset"   : V_reset,
-                "E_ex"      : E_ex,
-                "E_in"      : E_in,
-                "g_L"       : g_L,
-                "tau_syn_ex": tau_syn_ex,
-                "tau_syn_in": tau_syn_in}
+neuron_params = {"V_m"       : E_L,
+                 "C_m"       : CMem,
+                 "t_ref"     : t_ref,
+                 "V_peak"    : V_peak,
+                 "V_reset"   : V_reset,
+                 "E_L"       : E_L,
+                 "g_L"       : g_L,
+                 "a"         : a,
+                 "b"         : b,
+                 "Delta_T"   : Delta_T,
+                 "tau_w"     : tau_w,
+                 "V_th"      : V_th,
+                 "E_ex"      : E_ex,
+                 "E_in"      : E_in,
+                 "tau_syn_ex": tau_syn_ex,
+                 "tau_syn_in": tau_syn_in}
 
-nodes_ex=nest.Create("iaf_cond_exp",NE, params = neuron_params)
-nodes_in=nest.Create("iaf_cond_exp",NI, params = neuron_params)
+nodes_ex=nest.Create("aeif_cond_exp",NE, params = neuron_params)
+nodes_in=nest.Create("aeif_cond_exp",NI, params = neuron_params)
 
 nest.SetDefaults("poisson_generator",{"rate": p_rate})
 noise=nest.Create("poisson_generator")
@@ -152,8 +163,8 @@ print "Inhibitory rate   : %.2f Hz" % rate_in
 print "Building time     : %.2f s" % build_time
 print "Simulation time   : %.2f s" % sim_time
     
-nest.raster_plot.from_device(espikes, hist=True)
-nest.raster_plot.from_device(ispikes, hist=True)
+#nest.raster_plot.from_device(espikes, hist=True)
+#nest.raster_plot.from_device(ispikes, hist=True)
 
 # obtain and display data
 events = nest.GetStatus(meter_e)[0]['events']
@@ -161,11 +172,11 @@ t = events['times'];
 
 pl.figure()
 pl.title('Excitatory cell')
-pl.subplot(211)
+ax = pl.subplot(211)
 pl.plot(t, events['V_m'])
 pl.ylabel('Membrane potential [mV]')
 
-pl.subplot(212)
+pl.subplot(212, sharex=ax)
 pl.plot(t, events['g_ex'], t, events['g_in'])
 pl.xlabel('Time [ms]')
 pl.ylabel('Synaptic conductance [nS]')
@@ -187,4 +198,5 @@ pl.xlabel('Time [ms]')
 pl.ylabel('Synaptic conductance [nS]')
 pl.legend(('g_exc', 'g_inh'))
 
-nest.raster_plot.show()
+#nest.raster_plot.show()
+pl.show()
