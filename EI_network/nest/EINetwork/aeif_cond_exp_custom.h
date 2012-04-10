@@ -29,10 +29,6 @@
 #include "universal_data_logger.h"
 #include "recordables_map.h"
 
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_odeiv.h>
-
 /* BeginDocumentation
 Name: aeif_cond_exp_custom - Conductance based exponential integrate-and-fire neuron model according to Brette and Gerstner (2005).
 
@@ -80,11 +76,6 @@ Synaptic parameters
   E_in       double - Inhibitory reversal potential in mV.
   tau_syn_in double - Rise time of the inhibitory synaptic conductance in ms (exp function).
 
-Integration parameters
-  gsl_error_tol  double - This parameter controls the admissible error of the GSL integrator.
-                          Reduce it if NEST complains about numerical instabilities.
-
-Author: Adapted from aeif_cond_alpha by Lyle Muller
 
 Sends: SpikeEvent
 
@@ -98,6 +89,24 @@ SeeAlso: iaf_cond_exp, aeif_cond_alpha
 
 namespace nest
 {
+  namespace names
+  {
+    /**
+     * Add state and parameter names to the nest::names namespace
+     */
+    const Name E_AMPA;
+    const Name E_NMDA;
+    const Name E_GABA_A;
+    const Name tau_AMPA_fall;
+    const Name tau_NMDA_rise;
+    const Name tau_NMDA_fall;
+    const Name tau_GABA_A_rise;
+    const Name tau_GABA_A_fall;
+    const Name tau_AHP;
+
+  }
+
+
   /**
    * Function computing right-hand side of ODE for GSL solver.
    * @note Must be declared here so we can befriend it in class.
@@ -146,16 +155,20 @@ namespace nest
     void set_status(const DictionaryDatum &);
     
   private:
+    /**
+     * Synapse types to connect to
+     * @note Excluded upper and lower bounds are defined as INF_, SUP_.
+     *       Excluding port 0 avoids accidental connections.
+     */
+    enum SynapseTypes { INF_SPIKE_RECEPTOR = 0,
+        AMPA, NMDA, AMPA_NMDA, GABA_A,
+        SUP_SPIKE_RECEPTOR };
     
     void init_node_(const Node &proto);
     void init_state_(const Node &proto);
     void init_buffers_();
     void calibrate();
     void update(const Time &, const long_t, const long_t);
-
-    // END Boilerplate function declarations ----------------------------
-
-    // Friends --------------------------------------------------------
 
     // make dynamics function quasi-member
     friend int aeif_cond_exp_custom_dynamics(double, const double*, double*, void*);
@@ -164,38 +177,36 @@ namespace nest
     friend class RecordablesMap<aeif_cond_exp_custom>;
     friend class UniversalDataLogger<aeif_cond_exp_custom>;
 
-    // Debugging: average number of gsl*evolve substeps
-    //static int evolve_substeps;
-    //static int evolve_N;
 
   private:
     // ---------------------------------------------------------------- 
 
     //! Independent parameters
-    struct Parameters_
+    struct Parameters
     {
-      double_t V_peak_;     //!< Spike detection threshold in mV
-      double_t V_reset_;    //!< Reset Potential in mV
-      double_t t_ref_;      //!< Refractory period in ms
+      double_t V_peak;     //!< Spike detection threshold in mV
+      double_t V_reset;    //!< Reset Potential in mV
+      double_t t_ref;      //!< Refractory period in ms
 
       double_t g_L;         //!< Leak Conductance in nS
       double_t C_m;         //!< Membrane Capacitance in pF
-      double_t E_ex;        //!< Excitatory reversal Potential in mV
-      double_t E_in;        //!< Inhibitory reversal Potential in mV
       double_t E_L;         //!< Leak reversal Potential (aka resting potential) in mV
+      double_t E_AMPA;
+      double_t E_NMDA;
+      double_t E_GABA_A;
       double_t Delta_T;     //!< Slope faktor in ms.
-      double_t tau_w;       //!< adaptation time-constant in ms.
-      double_t a;           //!< Subthreshold adaptation in nS.
-      double_t b;           //!< Spike-triggered adaptation in pA
       double_t V_th;        //!< Spike threshold in mV.
-      double_t t_ref;       //!< Refractory period in ms.
-      double_t tau_syn_ex;  //!< Excitatory synaptic rise time.
-      double_t tau_syn_in;  //!< Excitatory synaptic rise time.
       double_t I_e;         //!< Intrinsic current in pA.
+
+      double_t tau_AMPA_fall;
+      double_t tau_NMDA_rise;
+      double_t tau_NMDA_fall;
+      double_t tau_GABA_A_rise;
+      double_t tau_GABA_A_fall;
   
-      double_t gsl_error_tol;   //!< error bound for GSL integrator
+      double_t tau_AHP;
   
-      Parameters_();  //!< Sets default parameter values
+      Parameters();  //!< Sets default parameter values
 
       void get(DictionaryDatum &) const;  //!< Store current values in dictionary
       void set(const DictionaryDatum &);  //!< Set values from dicitonary
@@ -219,22 +230,23 @@ namespace nest
        */  
       enum StateVecElems
       {
-	V_M   = 0,
-	G_EXC    ,  // 1
-	G_INH    ,  // 2
-	W        ,  // 3
-	STATE_VEC_SIZE
+        V_M   = 0,
+        G_AMPA,
+        G_NMDA,
+        G_GABA_A,
+        STATE_VEC_SIZE
       };
 
-      double_t y_[STATE_VEC_SIZE];  //!< neuron state, must be C-array for GSL solver
-      int_t    r_;           //!< number of refractory steps remaining
 
-      State_(const Parameters_ &);  //!< Default initialization
+      double_t    y_[STATE_VEC_SIZE];  //!< neuron state, must be C-array for GSL solver
+      int_t       r_;                  //!< number of refractory steps remaining
+
+      State_(const Parameters &);      //!< Default initialization
       State_(const State_ &);
       State_& operator = (const State_ &);
 
       void get(DictionaryDatum &) const;
-      void set(const DictionaryDatum &, const Parameters_ &);
+      void set(const DictionaryDatum &, const Parameters &);
     };
 
     // ---------------------------------------------------------------- 
@@ -255,12 +267,6 @@ namespace nest
       RingBuffer spike_inh_;
       RingBuffer currents_;
 
-      /** GSL ODE stuff */
-      gsl_odeiv_step*    s_;    //!< stepping function
-      gsl_odeiv_control* c_;    //!< adaptive stepsize control function
-      gsl_odeiv_evolve*  e_;    //!< evolution function
-      gsl_odeiv_system   sys_;  //!< struct describing system
-      
       // IntergrationStep_ should be reset with the neuron on ResetNetwork,
       // but remain unchanged during calibration. Since it is initialized with
       // step_, and the resolution cannot change after nodes have been created,
@@ -296,7 +302,7 @@ namespace nest
 
     // ---------------------------------------------------------------- 
 
-    Parameters_ P_;
+    Parameters P;
     State_      S_;
     Variables_  V_;
     Buffers_    B_;
@@ -342,7 +348,7 @@ namespace nest
   inline
   void aeif_cond_exp_custom::get_status(DictionaryDatum &d) const
   {
-    P_.get(d);
+    P.get(d);
     S_.get(d);
     Archiving_Node::get_status(d);
 
@@ -352,19 +358,19 @@ namespace nest
   inline
   void aeif_cond_exp_custom::set_status(const DictionaryDatum &d)
   {
-    Parameters_ ptmp = P_;  // temporary copy in case of errors
+    Parameters ptmp = P;  // temporary copy in case of errors
     ptmp.set(d);            // throws if BadProperty
     State_      stmp = S_;  // temporary copy in case of errors
     stmp.set(d, ptmp);      // throws if BadProperty
 
     // We now know that (ptmp, stmp) are consistent. We do not 
-    // write them back to (P_, S_) before we are also sure that 
+    // write them back to (P, S_) before we are also sure that 
     // the properties to be set in the parent class are internally 
     // consistent.
     Archiving_Node::set_status(d);
 
     // if we get here, temporaries contain consistent set of properties
-    P_ = ptmp;
+    P = ptmp;
     S_ = stmp;
   }
   

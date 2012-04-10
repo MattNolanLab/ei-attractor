@@ -43,6 +43,22 @@ nest::RecordablesMap<nest::aeif_cond_exp_custom> nest::aeif_cond_exp_custom::rec
 
 namespace nest
 {
+  namespace names
+  {
+    const Name E_AMPA("E_AMPA");
+    const Name E_NMDA("E_NMDA");
+    const Name E_GABA_A("E_GABA_A");
+    const Name tau_AMPA_fall("tau_AMPA_fall");
+    const Name tau_NMDA_rise("tau_NMDA_rise");
+    const Name tau_NMDA_fall("tau_NMDA_fall");
+    const Name tau_GABA_A_rise("tau_GABA_A_rise");
+    const Name tau_GABA_A_fall("tau_GABA_A_fall");
+    const Name tau_AHP("tau_AHP");
+    const Name g_AMPA("g_AMPA");
+    const Name g_NMDA("g_NMDA");
+    const Name g_GABA_A("g_GABA_A");
+  }
+
   /*
    * template specialization must be placed in namespace
    *
@@ -55,12 +71,12 @@ namespace nest
     // use standard names whereever you can for consistency!
     insert_(names::V_m, 
 	    &aeif_cond_exp_custom::get_y_elem_<aeif_cond_exp_custom::State_::V_M>);
-    insert_(names::g_ex, 
-	    &aeif_cond_exp_custom::get_y_elem_<aeif_cond_exp_custom::State_::G_EXC>);
-    insert_(names::g_in, 
-	    &aeif_cond_exp_custom::get_y_elem_<aeif_cond_exp_custom::State_::G_INH>);
-    insert_(names::w, 
-	    &aeif_cond_exp_custom::get_y_elem_<aeif_cond_exp_custom::State_::W>);
+    insert_(names::g_AMPA, 
+	    &aeif_cond_exp_custom::get_y_elem_<aeif_cond_exp_custom::State_::G_AMPA>);
+    insert_(names::g_NMDA, 
+	    &aeif_cond_exp_custom::get_y_elem_<aeif_cond_exp_custom::State_::G_NMDA>);
+    insert_(names::g_GABA_A, 
+	    &aeif_cond_exp_custom::get_y_elem_<aeif_cond_exp_custom::State_::G_GABA_A>);
   }
 }
 
@@ -84,25 +100,24 @@ int nest::aeif_cond_exp_custom_dynamics (double, const double y[], double f[], v
   // good compiler will optimize the verbosity away ...
 
   // shorthand for state variables
-  const double_t& V     = y[S::V_M  ];
-  const double_t& g_ex  = y[S::G_EXC];
-  const double_t& g_in  = y[S::G_INH];
-  const double_t& w     = y[S::W    ];
+  const double_t& V           = y[S::V_M  ];
+  const double_t& g_AMPA      = y[S::G_AMPA];
+  const double_t g_NMDA       = y[S::G_NMDA];
+  const double_t g_GABA_A     = y[S::G_GABA_A];
+  const double_t I_syn_AMPA   = g_AMPA   * (V - node.P.E_AMPA);
+  const double_t I_syn_NMDA   = g_NMDA   * (V - node.P.E_NMDA);
+  const double_t I_syn_GABA_A = g_GABA_A * (V - node.p.E_GABA_A);
 
-  const double_t I_syn_exc = g_ex * (V - node.P_.E_ex);
-  const double_t I_syn_inh = g_in * (V - node.P_.E_in);
-  const double_t I_spike   = node.P_.Delta_T * std::exp((V - node.P_.V_th) / node.P_.Delta_T);
+  const double_t I_spike   = node.P.Delta_T * std::exp((V - node.P.V_th) / node.P.Delta_T);
 
   // dv/dt
-  f[S::V_M  ] = ( -node.P_.g_L *( (V-node.P_.E_L) - I_spike) 
-		     - I_syn_exc - I_syn_inh - w + node.P_.I_e + node.B_.I_stim_) / node.P_.C_m;
+  f[S::V_M  ] = ( -node.P.g_L * ( (V-node.P.E_L) - I_spike) 
+		     - I_syn_AMPA - I_syn_NMDA - I_syn_GABA_A
+             - node.P.I_e + node.B_.I_stim_) / node.P.C_m;
 
-  f[S::G_EXC] = -g_ex / node.P_.tau_syn_ex; // Synaptic Conductance (nS)
-
-  f[S::G_INH] = -g_in / node.P_.tau_syn_in; // Synaptic Conductance (nS)
-
-  // Adaptation current w.
-  f[S::W    ] = ( node.P_.a * (V - node.P_.E_L) - w ) / node.P_.tau_w;
+  f[S::G_AMPA]   = -g_AMPA   / node.P.tau_AMPA_fall; // Synaptic Conductance (nS)
+  f[S::G_NMDA]   = -g_NMDA   / node.P.tau_NMDA_fall; // Synaptic Conductance (nS)
+  f[S::G_GABA_A] = -g_GABA_A / node.P.tau_GABA_A_fall; // Synaptic Conductance (nS)
 
   return GSL_SUCCESS;
 }
@@ -111,28 +126,29 @@ int nest::aeif_cond_exp_custom_dynamics (double, const double y[], double f[], v
  * Default constructors defining default parameters and state
  * ---------------------------------------------------------------- */
     
-nest::aeif_cond_exp_custom::Parameters_::Parameters_()
-  : V_peak_    (   0.0 ), // mV
-    V_reset_   ( -60.0 ), // mV
-    t_ref_     (   0.0 ), // ms
-    g_L        (  30.0 ), // nS
-    C_m        ( 281.0 ), // pF
-    E_ex       (   0.0 ), // mV
-    E_in       ( -85.0 ), // mV
-    E_L        ( -70.6 ), // mV
-    Delta_T    (   2.0 ), // mV
-    tau_w      ( 144.0 ), // ms
-    a          (   4.0 ), // nS
-    b          (  80.5 ), // pA
-    V_th       ( -50.4 ), // mV
-    tau_syn_ex (   0.2 ), // ms
-    tau_syn_in (   2.0 ), // ms
-    I_e        (   0.0 ), // pA
-    gsl_error_tol( 1e-6)
+nest::aeif_cond_exp_custom::Parameters::Parameters()
+  : V_peak          (   0.0 ), // mV
+    V_reset         ( -60.0 ), // mV
+    t_ref           (   0.0 ), // ms
+    g_L             (  30.0 ), // nS
+    C_m             ( 281.0 ), // pF
+    E_L             ( -70.6 ), // mV
+    E_AMPA          (   0.0 ), // mV
+    E_NMDA          (   0.0 ), // mV
+    E_GABA_A        ( -85.0 ), // mV
+    Delta_T         (   2.0 ), // mV
+    V_th            ( -50.4 ), // mV
+    I_e             (   0.0 ), // pA
+    tau_AMPA_fall   (   2.0 ), // ms
+    tau_NMDA_rise   (   5.0 ), // ms
+    tau_NMDA_fall   (  50.0 ), // ms
+    tau_GABA_A_rise (   1.0 ), // ms
+    tau_GABA_A_fall (   5.0 ), // ms
+    tau_AHP         (  20.0 )  // ms
 {
 }
 
-nest::aeif_cond_exp_custom::State_::State_(const Parameters_ &p)
+nest::aeif_cond_exp_custom::State_::State_(const Parameters &p)
   : r_(0)
 {
   y_[0] = p.E_L;
@@ -161,51 +177,56 @@ nest::aeif_cond_exp_custom::State_& nest::aeif_cond_exp_custom::State_::operator
  * Paramater and state extractions and manipulation functions
  * ---------------------------------------------------------------- */
 
-void nest::aeif_cond_exp_custom::Parameters_::get(DictionaryDatum &d) const
+void nest::aeif_cond_exp_custom::Parameters::get(DictionaryDatum &d) const
 {
-  def<double>(d,names::C_m,        C_m);
-  def<double>(d,names::V_th,       V_th);
-  def<double>(d,names::t_ref,      t_ref_);
-  def<double>(d,names::g_L,        g_L);
-  def<double>(d,names::E_L,        E_L); 
-  def<double>(d,names::V_reset,    V_reset_);
-  def<double>(d,names::E_ex,       E_ex);
-  def<double>(d,names::E_in,       E_in);
-  def<double>(d,names::tau_syn_ex, tau_syn_ex);
-  def<double>(d,names::tau_syn_in, tau_syn_in);
-  def<double>(d,names::a,          a);
-  def<double>(d,names::b,          b);
-  def<double>(d,names::Delta_T,    Delta_T);
-  def<double>(d,names::tau_w,      tau_w);
-  def<double>(d,names::I_e,        I_e);
-  def<double>(d,names::V_peak,     V_peak_);
-  def<double>(d,names::gsl_error_tol, gsl_error_tol);
+  // ! Some of these names are locally defined as they are not part of NEST distribution
+  def<double>(d, names::V_peak,     V_peak_);
+  def<double>(d, names::V_reset,    V_reset_);
+  def<double>(d, names::t_ref,      t_ref);
+
+  def<double>(d, names::g_L,        g_L);
+  def<double>(d, names::C_m,        C_m);
+  def<double>(d, names::E_L,        E_L); 
+  def<double>(d, names::E_AMPA,     E_AMPA); 
+  def<double>(d, names::E_NMDA,     E_NMDA); 
+  def<double>(d, names::E_GABA_A,   E_GABA_A); 
+  def<double>(d, names::Delta_T,    Delta_T);
+  def<double>(d, names::V_th,       V_th);
+  def<double>(d, names::I_e,        I_e);
+
+  def<double>(d, names::tau_AMPA_fall,   tau_AMPA_fall);
+  def<double>(d, names::tau_NMDA_rise,   tau_NMDA_rise);
+  def<double>(d, names::tau_NMDA_fall,   tau_NMDA_fall);
+  def<double>(d, names::tau_GABA_A_rise, tau_GABA_A_rise);
+  def<double>(d, names::tau_GABA_A_fall, tau_GABA_A_fall);
+
+  def<double>(d, names::tau_AHP,         tau_AHP);
 }
 
-void nest::aeif_cond_exp_custom::Parameters_::set(const DictionaryDatum &d)
+void nest::aeif_cond_exp_custom::Parameters::set(const DictionaryDatum &d)
 {
-  updateValue<double>(d,names::V_th,    V_th);
-  updateValue<double>(d,names::V_peak,  V_peak_);
-  updateValue<double>(d,names::t_ref,   t_ref_);
-  updateValue<double>(d,names::E_L,     E_L);
-  updateValue<double>(d,names::V_reset, V_reset_);
-  updateValue<double>(d,names::E_ex,    E_ex);
-  updateValue<double>(d,names::E_in,    E_in);
-    
-  updateValue<double>(d,names::C_m, C_m);
-  updateValue<double>(d,names::g_L, g_L);
-    
-  updateValue<double>(d,names::tau_syn_ex, tau_syn_ex);
-  updateValue<double>(d,names::tau_syn_in, tau_syn_in);
-    
-  updateValue<double>(d,names::a,       a);
-  updateValue<double>(d,names::b,       b);
-  updateValue<double>(d,names::Delta_T, Delta_T);
-  updateValue<double>(d,names::tau_w,   tau_w);
+  updateValue<double>(d, names::V_peak,     V_peak_);
+  updateValue<double>(d, names::V_reset,    V_reset_);
+  updateValue<double>(d, names::t_ref,      t_ref);
 
-  updateValue<double>(d,names::I_e, I_e);
+  updateValue<double>(d, names::g_L,        g_L);
+  updateValue<double>(d, names::C_m,        C_m);
+  updateValue<double>(d, names::E_L,        E_L); 
+  updateValue<double>(d, names::E_AMPA,     E_AMPA); 
+  updateValue<double>(d, names::E_NMDA,     E_NMDA); 
+  updateValue<double>(d, names::E_GABA_A,   E_GABA_A); 
+  updateValue<double>(d, names::Delta_T,    Delta_T);
+  updateValue<double>(d, names::V_th,       V_th);
+  updateValue<double>(d, names::I_e,        I_e);
 
-  updateValue<double>(d,names::gsl_error_tol, gsl_error_tol);
+  updateValue<double>(d, names::tau_AMPA_fall,   tau_AMPA_fall);
+  updateValue<double>(d, names::tau_NMDA_rise,   tau_NMDA_rise);
+  updateValue<double>(d, names::tau_NMDA_fall,   tau_NMDA_fall);
+  updateValue<double>(d, names::tau_GABA_A_rise, tau_GABA_A_rise);
+  updateValue<double>(d, names::tau_GABA_A_fall, tau_GABA_A_fall);
+
+  updateValue<double>(d, names::tau_AHP,         tau_AHP);
+
 
   if ( V_reset_ >= V_peak_ )
     throw BadProperty("Reset potential must be smaller than spike cut-off threshold.");
@@ -216,40 +237,39 @@ void nest::aeif_cond_exp_custom::Parameters_::set(const DictionaryDatum &d)
   if ( C_m <= 0 )
     throw BadProperty("Capacitance must be strictly positive.");
     
-  if ( t_ref_ < 0 )
+  if ( t_ref < 0 )
     throw BadProperty("Refractory time cannot be negative.");
       
-  if ( tau_syn_ex <= 0 || tau_syn_in <= 0 || tau_w <= 0 )
+  if ( tau_AMPA_fall <=0 || tau_NMDA_rise <= 0 || tau_NMDA_fall <= 0
+          tau_GABA_A_rise <= 0 || tau_GABA_A_fall <= 0 ||
+          tau_AHP <= 0)
     throw BadProperty("All time constants must be strictly positive.");
 
-  if ( gsl_error_tol <= 0. )
-    throw BadProperty("The gsl_error_tol must be strictly positive.");
+  // TODO: check all other parameters
 }
 
 void nest::aeif_cond_exp_custom::State_::get(DictionaryDatum &d) const
 {
-  def<double>(d,names::V_m,  y_[V_M]);
-  def<double>(d,names::g_ex, y_[G_EXC]);
-  def<double>(d,names::g_in, y_[G_INH]);
-  def<double>(d,names::w,    y_[W]);
+  def<double>(d,names::V_m,      y_[V_M]);
+  def<double>(d,names::g_AMPA,   y_[G_AMPA]);
+  def<double>(d,names::g_NMDA,   y_[G_NMDA]);
+  def<double>(d,names::g_GABA_A, y_[G_GABA_A]);
 }
 
-void nest::aeif_cond_exp_custom::State_::set(const DictionaryDatum &d, const Parameters_ &)
+void nest::aeif_cond_exp_custom::State_::set(const DictionaryDatum &d, const Parameters &)
 {
-  updateValue<double>(d,names::V_m,  y_[V_M]);
-  updateValue<double>(d,names::g_ex, y_[G_EXC]);
-  updateValue<double>(d,names::g_in, y_[G_INH]);
-  updateValue<double>(d,names::w,    y_[W]);
+  updateValue<double>(d,names::V_m,      y_[V_M]);
+  updateValue<double>(d,names::g_AMPA,   y_[G_AMPA]);
+  updateValue<double>(d,names::g_NMDA,   y_[G_NMDA]);
+  updateValue<double>(d,names::g_GABA_A, y_[G_GABA_A]);
 
-  if ( y_[G_EXC] < 0 || y_[G_INH] < 0 )
+  if ( y_[G_AMPA] < 0 || y_[G_NMDA] < 0 || y_[G_GABA_A] < 0 )
     throw BadProperty("Conductances must not be negative.");
 }
 
 nest::aeif_cond_exp_custom::Buffers_::Buffers_(aeif_cond_exp_custom &n)
   : logger_(n),
-    s_(0),
-    c_(0),
-    e_(0)
+    s_(0)
 {
   // Initialization of the remaining members is deferred to
   // init_buffers_().
@@ -257,9 +277,7 @@ nest::aeif_cond_exp_custom::Buffers_::Buffers_(aeif_cond_exp_custom &n)
 
 nest::aeif_cond_exp_custom::Buffers_::Buffers_(const Buffers_ &, aeif_cond_exp_custom &n)
   : logger_(n),
-    s_(0),
-    c_(0),
-    e_(0)
+    s_(0)
 {
   // Initialization of the remaining members is deferred to
   // init_buffers_().
@@ -271,8 +289,8 @@ nest::aeif_cond_exp_custom::Buffers_::Buffers_(const Buffers_ &, aeif_cond_exp_c
 
 nest::aeif_cond_exp_custom::aeif_cond_exp_custom()
   : Archiving_Node(), 
-    P_(), 
-    S_(P_),
+    P(), 
+    S_(P),
     B_(*this)
 {
   recordablesMap_.create();
@@ -280,7 +298,7 @@ nest::aeif_cond_exp_custom::aeif_cond_exp_custom()
 
 nest::aeif_cond_exp_custom::aeif_cond_exp_custom(const aeif_cond_exp_custom &n)
   : Archiving_Node(n), 
-    P_(n.P_), 
+    P(n.P), 
     S_(n.S_),
     B_(n.B_, *this)
 {
@@ -288,12 +306,6 @@ nest::aeif_cond_exp_custom::aeif_cond_exp_custom(const aeif_cond_exp_custom &n)
 
 nest::aeif_cond_exp_custom::~aeif_cond_exp_custom()
 {
-  // GSL structs only allocated by init_nodes_(), so we need to protect destruction
-  if ( B_.s_ ) gsl_odeiv_step_free(B_.s_);
-  if ( B_.c_ ) gsl_odeiv_control_free(B_.c_);
-  if ( B_.e_ ) gsl_odeiv_evolve_free(B_.e_);
-
-  std::cout << "Average number of substeps: " << double(evolve_substeps)/evolve_N << std::endl;
 }
 
 /* ---------------------------------------------------------------- 
@@ -303,7 +315,7 @@ nest::aeif_cond_exp_custom::~aeif_cond_exp_custom()
 void nest::aeif_cond_exp_custom::init_node_(const Node &proto)
 {
   const aeif_cond_exp_custom &pr = downcast<aeif_cond_exp_custom>(proto);
-  P_ = pr.P_;
+  P = pr.P;
   S_ = pr.S_;
 }
 
@@ -325,29 +337,7 @@ void nest::aeif_cond_exp_custom::init_buffers_()
   B_.step_ = Time::get_resolution().get_ms();
 
   // We must integrate this model with high-precision to obtain decent results
-  B_.IntegrationStep_ = std::min(0.01, B_.step_);
-
-  static const gsl_odeiv_step_type* T1 = gsl_odeiv_step_rkf45;
-  
-  if ( B_.s_ == 0 )
-    B_.s_ = gsl_odeiv_step_alloc (T1, State_::STATE_VEC_SIZE);
-  else 
-    gsl_odeiv_step_reset(B_.s_);
-    
-  if ( B_.c_ == 0 )  
-    B_.c_ = gsl_odeiv_control_yp_new (P_.gsl_error_tol,P_.gsl_error_tol);
-  else
-    gsl_odeiv_control_init(B_.c_, P_.gsl_error_tol, P_.gsl_error_tol, 0.0, 1.0);
-    
-  if ( B_.e_ == 0 )  
-    B_.e_ = gsl_odeiv_evolve_alloc(State_::STATE_VEC_SIZE);
-  else 
-    gsl_odeiv_evolve_reset(B_.e_);
-  
-  B_.sys_.function  = aeif_cond_exp_custom_dynamics; 
-  B_.sys_.jacobian  = NULL;
-  B_.sys_.dimension = State_::STATE_VEC_SIZE;
-  B_.sys_.params    = reinterpret_cast<void*>(this);
+  B_.IntegrationStep_ = B_.step_; //std::min(0.01, B_.step_);
 
   B_.I_stim_ = 0.0;
 }
@@ -355,8 +345,8 @@ void nest::aeif_cond_exp_custom::init_buffers_()
 void nest::aeif_cond_exp_custom::calibrate()
 {
   B_.logger_.init();  // ensures initialization in case mm connected after Simulate
-  V_.RefractoryCounts_ = Time(Time::ms(P_.t_ref_)).get_steps();
-  assert(V_.RefractoryCounts_ >= 0);  // since t_ref_ >= 0, this can only fail in error
+  V_.RefractoryCounts_ = Time(Time::ms(P.t_ref)).get_steps();
+  assert(V_.RefractoryCounts_ >= 0);  // since t_ref >= 0, this can only fail in error
 }
 
 /* ---------------------------------------------------------------- 
@@ -369,6 +359,8 @@ void nest::aeif_cond_exp_custom::update(const Time &origin, const long_t from, c
   assert ( from < to );
   assert ( State_::V_M == 0 );
 
+  //std::cerr << "to - from: " << to - from << std::endl;
+
   for ( long_t lag = from; lag < to; ++lag )
   {
     double t = 0.0;
@@ -376,53 +368,47 @@ void nest::aeif_cond_exp_custom::update(const Time &origin, const long_t from, c
     if ( S_.r_ > 0 )
       --S_.r_;
 
-    // numerical integration with adaptive step size control:
-    // ------------------------------------------------------
-    // gsl_odeiv_evolve_apply performs only a single numerical
-    // integration step, starting from t and bounded by step;
-    // the while-loop ensures integration over the whole simulation
-    // step (0, step] if more than one integration step is needed due
-    // to a small integration step size;
-    // note that (t+IntegrationStep > step) leads to integration over
-    // (t, step] and afterwards setting t to step, but it does not
-    // enforce setting IntegrationStep to step-t
-    int substeps = 0;
-    while ( t < B_.step_ )
+    // numerical integration using Explicit Euler: should be enough for our purpose
+    while (t < B_.step_)
     {
-      const int status = gsl_odeiv_evolve_apply(B_.e_, B_.c_, B_.s_, 
-						&B_.sys_,             // system of ODE
-						&t,                   // from t
-						B_.step_,             // to t <= step
-						&B_.IntegrationStep_, // integration step size
-						S_.y_);               // neuronal state
+      typedef nest::aeif_cond_exp_custom::State_ S;
+      static double_t dydt[S::STATE_VEC_SIZE];
+      const int status = aeif_cond_exp_custom_dynamics(
+              t,
+              S_.y_,
+              dydt,
+              B_.sys_.params);
+
+      // Integrate, forward Euler
+      for (int i = 0; i < S::STATE_VEC_SIZE; i++)
+        S_.y_[i] += B_.IntegrationStep * dydt[i];
 
       if ( status != GSL_SUCCESS )
         throw GSLSolverFailure(get_name(), status);
 
+
       // check for unreasonable values; we allow V_M to explode
       if ( S_.y_[State_::V_M] < -1e3 ||
-	   S_.y_[State_::W  ] <    -1e6 || S_.y_[State_::W] > 1e6    )
-	throw NumericalInstability(get_name());
+        S_.y_[State_::W  ] <    -1e6 || S_.y_[State_::W] > 1e6    )
+        throw NumericalInstability(get_name());
 
       // spikes are handled inside the while-loop
       // due to spike-driven adaptation
       if ( S_.r_ > 0 )
-        S_.y_[State_::V_M] = P_.V_reset_;
-      else if ( S_.y_[State_::V_M] >= P_.V_peak_ )
+        S_.y_[State_::V_M] = P.V_reset_;
+      else if ( S_.y_[State_::V_M] >= P.V_peak_ )
       {
-	S_.y_[State_::V_M]  = P_.V_reset_;
-	S_.y_[State_::W]   += P_.b; // spike-driven adaptation
-	S_.r_               = V_.RefractoryCounts_;
-
-	set_spiketime(Time::step(origin.get_steps() + lag + 1));
-	SpikeEvent se;
-	network()->send(*this, se, lag);
+        S_.y_[State_::V_M]  = P.V_reset_;
+        S_.y_[State_::W]   += P.b; // spike-driven adaptation
+        S_.r_               = V_.RefractoryCounts_;
+        
+        set_spiketime(Time::step(origin.get_steps() + lag + 1));
+        SpikeEvent se;
+        network()->send(*this, se, lag);
       }
 
-      substeps++;
+      t += B_.IntegrationStep_;
     }
-    evolve_substeps += substeps;
-    evolve_N++;
 
     S_.y_[State_::G_EXC] += B_.spike_exc_.get_value(lag);
     S_.y_[State_::G_INH] += B_.spike_inh_.get_value(lag);

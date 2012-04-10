@@ -26,7 +26,8 @@ lib_LTLIBRARIES=      einetwork.la libeinetwork.la
 
 einetwork_la_CXXFLAGS= @AM_CXXFLAGS@
 einetwork_la_SOURCES=  einetwork.cpp      einetwork.h	\
-					   aeif_cond_exp_custom.cpp aeif_cond_exp_custom.h
+					   aeif_cond_exp_custom.cpp aeif_cond_exp_custom.h	\
+					   poisson_generator_1to1.cpp poisson_generator_1to1.h
 einetwork_la_LDFLAGS=  -module
 
 libeinetwork_la_CXXFLAGS= $(einetwork_la_CXXFLAGS) -DLINKED_MODULE

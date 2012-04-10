@@ -30,6 +30,7 @@
 // include headers with your own stuff
 #include "einetwork.h"
 #include "aeif_cond_exp_custom.h"
+#include "poisson_generator_1to1.h"
 
 // -- Interface to dynamic module loader ---------------------------------------
 
@@ -190,6 +191,10 @@ mynest::EINetwork::~EINetwork()
     */
     nest::register_model<nest::aeif_cond_exp_custom>(nest::NestModule::get_network(), 
                                         "aeif_cond_exp_custom");
+
+    nest::register_model<nest::poisson_generator_1to1>(nest::NestModule::get_network(), 
+                                        "poisson_generator_1to1");
+
 
     /* Register a SLI function.
        The first argument is the function name for SLI, the second a pointer to
