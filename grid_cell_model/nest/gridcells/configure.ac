@@ -1,11 +1,11 @@
 AC_PREREQ(2.52)
 
-AC_INIT(einetwork, 1.0, nest_user@nest-initiative.org)
+AC_INIT(gridcells, 1.0, nest_user@nest-initiative.org)
 
 # These variables are exported to include/config.h
-EINETWORK_MAJOR=1
-EINETWORK_MINOR=0
-EINETWORK_PATCHLEVEL=0
+GRIDCELLS_MAJOR=1
+GRIDCELLS_MINOR=0
+GRIDCELLS_PATCHLEVEL=0
 
 # Exporting source and build directories requires full path names.
 # Thus we have to expand.
@@ -22,7 +22,7 @@ PKGBUILDDIR=`pwd`
 # moritz, 06-26-06
 AC_CONFIG_AUX_DIR(.)
 
-AM_INIT_AUTOMAKE(nest, $EINETWORK_VERSION)
+AM_INIT_AUTOMAKE(nest, $GRIDCELLS_VERSION)
 
 # obtain host system type; HEP 2004-12-20
 AC_CANONICAL_HOST
@@ -83,7 +83,7 @@ AC_MSG_RESULT($NEST_CPPFLAGS)
 # here.
 # HEP 2004-12-21
 
-EINETWORK_SAVE_CXXFLAGS=$CXXFLAGS
+GRIDCELLS_SAVE_CXXFLAGS=$CXXFLAGS
 
 # Must first check if we are on AIX
 AC_AIX
@@ -93,8 +93,8 @@ AC_AIX
 AC_PROG_CXX([ $NEST_COMPILER ])
 
 # the following is makeshift, should have the macro set proper
-# EINETWORK_SET_CXXFLAGS
-AM_CXXFLAGS=$EINETWORK_SAVE_CXXFLAGS
+# GRIDCELLS_SET_CXXFLAGS
+AM_CXXFLAGS=$GRIDCELLS_SAVE_CXXFLAGS
 CXXFLAGS=
 
 ## Configure C environment
@@ -156,7 +156,7 @@ AC_SUBST(MAKE_FLAGS)
 AC_SUBST(INCLTDL)
 AC_SUBST(LIBLTDL)
 
-AM_CONFIG_HEADER(einetwork_config.h:einetwork_config.h.in)
+AM_CONFIG_HEADER(GRIDCELLS_config.h:GRIDCELLS_config.h.in)
 AC_CONFIG_FILES(Makefile)
 
 # -----------------------------------------------
@@ -173,7 +173,7 @@ AC_OUTPUT
 
 echo
 echo "-------------------------------------------------------"
-echo "EINetwork Configuration Summary"
+echo "GRIDCELLS Configuration Summary"
 echo "-------------------------------------------------------"
 echo
 echo "C++ compiler        : $CXX"
@@ -188,10 +188,10 @@ eval eval eval  PKGDATADIR_AS_CONFIGURED=$PKGDATADIR
 echo
 echo "-------------------------------------------------------"
 echo
-echo "You can build and install EINetwork now, using"
+echo "You can build and install GRIDCELLS now, using"
 echo "  make"
 echo "  make install"
 echo
-echo "EINetwork will be installed to:"
+echo "GRIDCELLS will be installed to:"
 echo -n "  "; eval eval echo "$libdir"
 echo

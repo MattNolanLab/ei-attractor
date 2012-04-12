@@ -1,5 +1,5 @@
 /*
- *  einetwork.cpp
+ *  gridcells.cpp
  *  This file is part of NEST.
  *
  *  Copyright (C) 2008 by
@@ -28,8 +28,8 @@
 #include "nestmodule.h"
 
 // include headers with your own stuff
-#include "einetwork.h"
-#include "aeif_cond_exp_custom.h"
+#include "gridcells.h"
+#include "iaf_gridcells.h"
 #include "poisson_generator_1to1.h"
 
 // -- Interface to dynamic module loader ---------------------------------------
@@ -44,11 +44,11 @@
  * The dynamicloader can then load modulename and search for symbol "mod" in it.
  */
  
-mynest::EINetwork einetwork_LTX_mod;
+mynest::GridCells gridcells_LTX_mod;
 
 // -- DynModule functions ------------------------------------------------------
 
-mynest::EINetwork::EINetwork()
+mynest::GridCells::GridCells()
   { 
 #ifdef LINKED_MODULE
      // register this module at the dynamic loader
@@ -58,21 +58,21 @@ mynest::EINetwork::EINetwork()
 #endif     
    }
 
-mynest::EINetwork::~EINetwork()
+mynest::GridCells::~GridCells()
    {
    }
 
-   const std::string mynest::EINetwork::name(void) const
+   const std::string mynest::GridCells::name(void) const
    {
      return std::string("EI Network Module"); // Return name of the module
    }
 
-   const std::string mynest::EINetwork::commandstring(void) const
+   const std::string mynest::GridCells::commandstring(void) const
    {
-     /* 1. Tell interpreter that we provide the C++ part of EINetwork with the
+     /* 1. Tell interpreter that we provide the C++ part of GridCells with the
            current revision number. 
         2. Instruct the interpreter to check that mymodule-init.sli exists, 
-           provides at least version 1.0 of the SLI interface to EINetwork, and
+           provides at least version 1.0 of the SLI interface to GridCells, and
            to load it.
       */
      return std::string(
@@ -131,7 +131,7 @@ mynest::EINetwork::~EINetwork()
       SeeAlso:
       Connect, ConvergentConnect, DivergentConnect
    */
-   void mynest::EINetwork::StepPatternConnect_Vi_i_Vi_i_lFunction::execute(SLIInterpreter *i) const
+   void mynest::GridCells::StepPatternConnect_Vi_i_Vi_i_lFunction::execute(SLIInterpreter *i) const
    {
      // Check if we have (at least) five arguments on the stack.
      i->assert_stack_load(5);
@@ -182,15 +182,15 @@ mynest::EINetwork::~EINetwork()
 
   //-------------------------------------------------------------------------------------
 
-  void mynest::EINetwork::init(SLIInterpreter *i, nest::Network*)
+  void mynest::GridCells::init(SLIInterpreter *i, nest::Network*)
   {
     /* Register a neuron or device model.
        Give node type as template argument and the name as second argument.
        The first argument is always a reference to the network.
        Return value is a handle for later unregistration.
     */
-    nest::register_model<nest::aeif_cond_exp_custom>(nest::NestModule::get_network(), 
-                                        "aeif_cond_exp_custom");
+    nest::register_model<nest::iaf_gridcells>(nest::NestModule::get_network(), 
+                                        "iaf_gridcells");
 
     nest::register_model<nest::poisson_generator_1to1>(nest::NestModule::get_network(), 
                                         "poisson_generator_1to1");
@@ -205,6 +205,6 @@ mynest::EINetwork::~EINetwork()
     i->createcommand("StepPatternConnect_Vi_i_Vi_i_l", 
                      &stepPatternConnect_Vi_i_Vi_i_lFunction);
 
-  }  // EINetwork::init()
+  }  // GridCells::init()
 
  

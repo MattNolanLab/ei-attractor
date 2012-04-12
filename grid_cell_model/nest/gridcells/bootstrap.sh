@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "Bootstrapping EINetwork"
+echo "Bootstrapping GridCells module"
 
 if test -d autom4te.cache ; then
 # we must remove this cache, because it

@@ -1,5 +1,5 @@
 /*
- *  einetwork.h
+ *  gridcells.h
  *
  *  This file is part of NEST.
  *
@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef EINETWORK_H
-#define EINETWORK_H
+#ifndef GRIDCELLS_H
+#define GRIDCELLS_H
 
 #include "dynmodule.h"
 #include "slifunction.h"
@@ -32,7 +32,7 @@ namespace mynest {
  * Class defining your model.
  * @note For each model, you must define one such class, with a unique name.
  */
-class EINetwork : public DynModule
+class GridCells : public DynModule
 {
 public:
 
@@ -42,13 +42,13 @@ public:
    * @note The constructor registers the module with the dynamic loader. 
    *       Initialization proper is performed by the init() method.
    */
-  EINetwork();
+  GridCells();
   
   /**
    * @note The destructor does not do much in modules. Proper "downrigging"
    *       is the responsibility of the unregister() method.
    */
-  ~EINetwork();
+  ~GridCells();
 
   /**
    * Initialize module by registering models with the network.

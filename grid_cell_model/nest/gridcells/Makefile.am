@@ -22,16 +22,16 @@
 
 libdir= @libdir@/nest
 
-lib_LTLIBRARIES=      grid_cell_module.la libgrid_cell_module.la
+lib_LTLIBRARIES=      gridcells.la libgridcells.la
 
-grid_cell_module_la_CXXFLAGS= @AM_CXXFLAGS@
-grid_cell_module_la_SOURCES=  grid_cell_module.cpp      grid_cell_module.h	\
-					   aeif_cond_exp_custom.cpp aeif_cond_exp_custom.h	\
+gridcells_la_CXXFLAGS= @AM_CXXFLAGS@
+gridcells_la_SOURCES=  gridcells.cpp      gridcells.h	\
+					   iaf_gridcells.cpp iaf_gridcells.h	\
 					   poisson_generator_1to1.cpp poisson_generator_1to1.h
-grid_cell_module_la_LDFLAGS=  -module
+gridcells_la_LDFLAGS=  -module
 
-libgrid_cell_module_la_CXXFLAGS= $(grid_cell_module_la_CXXFLAGS) -DLINKED_MODULE
-libgrid_cell_module_la_SOURCES=  $(grid_cell_module_la_SOURCES)
+libgridcells_la_CXXFLAGS= $(gridcells_la_CXXFLAGS) -DLINKED_MODULE
+libgridcells_la_SOURCES=  $(gridcells_la_SOURCES)
 
 MAKEFLAGS= @MAKE_FLAGS@
 
@@ -41,7 +41,7 @@ AM_CPPFLAGS= @NEST_CPPFLAGS@ \
 .PHONY: install-slidoc
 
 nobase_pkgdata_DATA=\
-	sli/grid_cell_module.sli
+	sli/gridcells.sli
 
 install-slidoc:
 	NESTRCFILENAME=/dev/null $(DESTDIR)$(NEST_PREFIX)/bin/sli --userargs="@HELPDIRS@" $(NEST_PREFIX)/share/nest/sli/install-help.sli

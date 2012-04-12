@@ -1,5 +1,5 @@
 /*
- *  aeif_cond_exp_custom.cpp
+ *  iaf_gridcells.cpp
  *
  *  This file is part of NEST
  *
@@ -14,7 +14,7 @@
  *
  */
 
-#include "aeif_cond_exp_custom.h"
+#include "iaf_gridcells.h"
 #include "nest_names.h"
 
 #ifdef HAVE_GSL_1_11
@@ -41,7 +41,7 @@
  * Recordables map
  * ---------------------------------------------------------------- */
 
-nest::RecordablesMap<nest::aeif_cond_exp_custom> nest::aeif_cond_exp_custom::recordablesMap_;
+nest::RecordablesMap<nest::iaf_gridcells> nest::iaf_gridcells::recordablesMap_;
 
 namespace nest
 {
@@ -53,32 +53,32 @@ namespace nest
    * for each quantity to be recorded.
    */
   template <>
-  void RecordablesMap<aeif_cond_exp_custom>::create()
+  void RecordablesMap<iaf_gridcells>::create()
   {
     // use standard names whereever you can for consistency!
     insert_(names::V_m, 
-	    &aeif_cond_exp_custom::get_y_elem_<aeif_cond_exp_custom::State_::V_M>);
+	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::V_M>);
     insert_(names::g_AMPA, 
-	    &aeif_cond_exp_custom::get_y_elem_<aeif_cond_exp_custom::State_::G_AMPA>);
+	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::G_AMPA>);
     insert_(names::g_NMDA, 
-	    &aeif_cond_exp_custom::get_y_elem_<aeif_cond_exp_custom::State_::G_NMDA>);
+	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::G_NMDA>);
     insert_(names::g_GABA_A, 
-	    &aeif_cond_exp_custom::get_y_elem_<aeif_cond_exp_custom::State_::G_GABA_A>);
+	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::G_GABA_A>);
   }
 }
 
-//int nest::aeif_cond_exp_custom::evolve_substeps = 0;
-//int nest::aeif_cond_exp_custom::evolve_N = 0;
+//int nest::iaf_gridcells::evolve_substeps = 0;
+//int nest::iaf_gridcells::evolve_N = 0;
 
 extern "C"
-int nest::aeif_cond_exp_custom_dynamics (double, const double y[], double f[], void* pnode)
+int nest::iaf_gridcells_dynamics (double, const double y[], double f[], void* pnode)
 {
   // a shorthand
-  typedef nest::aeif_cond_exp_custom::State_ S;
+  typedef nest::iaf_gridcells::State_ S;
 
   // get access to node so we can almost work as in a member function
   assert(pnode);
-  const nest::aeif_cond_exp_custom& node =  *(reinterpret_cast<nest::aeif_cond_exp_custom*>(pnode));
+  const nest::iaf_gridcells& node =  *(reinterpret_cast<nest::iaf_gridcells*>(pnode));
 
   // y[] here is---and must be---the state vector supplied by the integrator,
   // not the state vector in the node, node.S_.y[]. 
@@ -113,7 +113,7 @@ int nest::aeif_cond_exp_custom_dynamics (double, const double y[], double f[], v
  * Default constructors defining default parameters and state
  * ---------------------------------------------------------------- */
     
-nest::aeif_cond_exp_custom::Parameters::Parameters()
+nest::iaf_gridcells::Parameters::Parameters()
   : V_peak          (   0.0 ), // mV
     V_reset         ( -60.0 ), // mV
     t_ref           (   0.0 ), // ms
@@ -135,7 +135,7 @@ nest::aeif_cond_exp_custom::Parameters::Parameters()
 {
 }
 
-nest::aeif_cond_exp_custom::State_::State_(const Parameters &p)
+nest::iaf_gridcells::State_::State_(const Parameters &p)
   : r_(0)
 {
   y_[0] = p.E_L;
@@ -143,14 +143,14 @@ nest::aeif_cond_exp_custom::State_::State_(const Parameters &p)
     y_[i] = 0;
 }
 
-nest::aeif_cond_exp_custom::State_::State_(const State_ &s)
+nest::iaf_gridcells::State_::State_(const State_ &s)
   : r_(s.r_)
 {
   for ( size_t i = 0; i < STATE_VEC_SIZE; ++i )
     y_[i] = s.y_[i];
 }
 
-nest::aeif_cond_exp_custom::State_& nest::aeif_cond_exp_custom::State_::operator=(const State_ &s)
+nest::iaf_gridcells::State_& nest::iaf_gridcells::State_::operator=(const State_ &s)
 {
   assert(this != &s);  // would be bad logical error in program
   
@@ -164,7 +164,7 @@ nest::aeif_cond_exp_custom::State_& nest::aeif_cond_exp_custom::State_::operator
  * Paramater and state extractions and manipulation functions
  * ---------------------------------------------------------------- */
 
-void nest::aeif_cond_exp_custom::Parameters::get(DictionaryDatum &d) const
+void nest::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
 {
   // ! Some of these names are locally defined as they are not part of NEST distribution
   def<double>(d, names::V_peak,     V_peak);
@@ -190,7 +190,7 @@ void nest::aeif_cond_exp_custom::Parameters::get(DictionaryDatum &d) const
   def<double>(d, names::tau_AHP,         tau_AHP);
 }
 
-void nest::aeif_cond_exp_custom::Parameters::set(const DictionaryDatum &d)
+void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
 {
   updateValue<double>(d, names::V_peak,     V_peak);
   updateValue<double>(d, names::V_reset,    V_reset);
@@ -235,7 +235,7 @@ void nest::aeif_cond_exp_custom::Parameters::set(const DictionaryDatum &d)
   // TODO: check all other parameters
 }
 
-void nest::aeif_cond_exp_custom::State_::get(DictionaryDatum &d) const
+void nest::iaf_gridcells::State_::get(DictionaryDatum &d) const
 {
   def<double>(d,names::V_m,      y_[V_M]);
   def<double>(d,names::g_AMPA,   y_[G_AMPA]);
@@ -243,7 +243,7 @@ void nest::aeif_cond_exp_custom::State_::get(DictionaryDatum &d) const
   def<double>(d,names::g_GABA_A, y_[G_GABA_A]);
 }
 
-void nest::aeif_cond_exp_custom::State_::set(const DictionaryDatum &d, const Parameters &)
+void nest::iaf_gridcells::State_::set(const DictionaryDatum &d, const Parameters &)
 {
   updateValue<double>(d,names::V_m,      y_[V_M]);
   updateValue<double>(d,names::g_AMPA,   y_[G_AMPA]);
@@ -254,7 +254,7 @@ void nest::aeif_cond_exp_custom::State_::set(const DictionaryDatum &d, const Par
     throw BadProperty("Conductances must not be negative.");
 }
 
-nest::aeif_cond_exp_custom::Buffers_::Buffers_(aeif_cond_exp_custom &n)
+nest::iaf_gridcells::Buffers_::Buffers_(iaf_gridcells &n)
   : logger_(n),
     spike_inputs_(std::vector<RingBuffer>(SYNAPSE_TYPES_SIZE))
 {
@@ -262,7 +262,7 @@ nest::aeif_cond_exp_custom::Buffers_::Buffers_(aeif_cond_exp_custom &n)
   // init_buffers_().
 }
 
-nest::aeif_cond_exp_custom::Buffers_::Buffers_(const Buffers_ &, aeif_cond_exp_custom &n)
+nest::iaf_gridcells::Buffers_::Buffers_(const Buffers_ &, iaf_gridcells &n)
   : logger_(n),
     spike_inputs_(std::vector<RingBuffer>(SYNAPSE_TYPES_SIZE))
 {
@@ -274,7 +274,7 @@ nest::aeif_cond_exp_custom::Buffers_::Buffers_(const Buffers_ &, aeif_cond_exp_c
  * Default and copy constructor for node, and destructor
  * ---------------------------------------------------------------- */
 
-nest::aeif_cond_exp_custom::aeif_cond_exp_custom()
+nest::iaf_gridcells::iaf_gridcells()
   : Archiving_Node(), 
     P(), 
     S_(P),
@@ -283,7 +283,7 @@ nest::aeif_cond_exp_custom::aeif_cond_exp_custom()
   recordablesMap_.create();
 }
 
-nest::aeif_cond_exp_custom::aeif_cond_exp_custom(const aeif_cond_exp_custom &n)
+nest::iaf_gridcells::iaf_gridcells(const iaf_gridcells &n)
   : Archiving_Node(n), 
     P(n.P), 
     S_(n.S_),
@@ -291,7 +291,7 @@ nest::aeif_cond_exp_custom::aeif_cond_exp_custom(const aeif_cond_exp_custom &n)
 {
 }
 
-nest::aeif_cond_exp_custom::~aeif_cond_exp_custom()
+nest::iaf_gridcells::~iaf_gridcells()
 {
 }
 
@@ -299,20 +299,20 @@ nest::aeif_cond_exp_custom::~aeif_cond_exp_custom()
  * Node initialization functions
  * ---------------------------------------------------------------- */
 
-void nest::aeif_cond_exp_custom::init_node_(const Node &proto)
+void nest::iaf_gridcells::init_node_(const Node &proto)
 {
-  const aeif_cond_exp_custom &pr = downcast<aeif_cond_exp_custom>(proto);
+  const iaf_gridcells &pr = downcast<iaf_gridcells>(proto);
   P = pr.P;
   S_ = pr.S_;
 }
 
-void nest::aeif_cond_exp_custom::init_state_(const Node &proto)
+void nest::iaf_gridcells::init_state_(const Node &proto)
 {
-  const aeif_cond_exp_custom &pr = downcast<aeif_cond_exp_custom>(proto);
+  const iaf_gridcells &pr = downcast<iaf_gridcells>(proto);
   S_ = pr.S_;
 }
 
-void nest::aeif_cond_exp_custom::init_buffers_()
+void nest::iaf_gridcells::init_buffers_()
 {
   for (int i = 0; i < B_.spike_inputs_.size(); i++)
     B_.spike_inputs_[i].clear();
@@ -329,7 +329,7 @@ void nest::aeif_cond_exp_custom::init_buffers_()
   B_.I_stim_ = 0.0;
 }
 
-void nest::aeif_cond_exp_custom::calibrate()
+void nest::iaf_gridcells::calibrate()
 {
   B_.logger_.init();  // ensures initialization in case mm connected after Simulate
   V_.RefractoryCounts_ = Time(Time::ms(P.t_ref)).get_steps();
@@ -340,9 +340,9 @@ void nest::aeif_cond_exp_custom::calibrate()
  * Update and spike handling functions
  * ---------------------------------------------------------------- */
 
-void nest::aeif_cond_exp_custom::update(const Time &origin, const long_t from, const long_t to)
+void nest::iaf_gridcells::update(const Time &origin, const long_t from, const long_t to)
 {
-  typedef nest::aeif_cond_exp_custom::State_ S;
+  typedef nest::iaf_gridcells::State_ S;
 
   assert ( to >= 0 && (delay) from < Scheduler::get_min_delay() );
   assert ( from < to );
@@ -359,7 +359,7 @@ void nest::aeif_cond_exp_custom::update(const Time &origin, const long_t from, c
     // numerical integration using Explicit Euler: should be enough for our purpose
     while (t < B_.step_)
     {
-      const int status = aeif_cond_exp_custom_dynamics(
+      const int status = iaf_gridcells_dynamics(
               t,
               S_.y_,
               S_.dydt_,
@@ -415,7 +415,7 @@ void nest::aeif_cond_exp_custom::update(const Time &origin, const long_t from, c
   }
 }
   
-void nest::aeif_cond_exp_custom::handle(SpikeEvent &e)
+void nest::iaf_gridcells::handle(SpikeEvent &e)
 {
   assert(e.get_delay() > 0);
   assert(e.get_weight() >= 0);
@@ -426,7 +426,7 @@ void nest::aeif_cond_exp_custom::handle(SpikeEvent &e)
     e.get_weight() * e.get_multiplicity() );
 }
 
-void nest::aeif_cond_exp_custom::handle(CurrentEvent &e)
+void nest::iaf_gridcells::handle(CurrentEvent &e)
 {
   assert ( e.get_delay() > 0 );
 
@@ -438,7 +438,7 @@ void nest::aeif_cond_exp_custom::handle(CurrentEvent &e)
 			 w*c);
 }
 
-void nest::aeif_cond_exp_custom::handle(DataLoggingRequest &e)
+void nest::iaf_gridcells::handle(DataLoggingRequest &e)
 {
   B_.logger_.handle(e);
 }

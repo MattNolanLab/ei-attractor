@@ -3,7 +3,7 @@
  * Run automatically when MyModule is loaded.
  */
 
-M_DEBUG (EINetwork.sli) (Initializing SLI support for EINetwork.) message
+M_DEBUG (gridcells.sli) (Initializing SLI support for EINetwork.) message
 
 /mymodule /SLI ($Revision: 7918 $) provide-component
 /mymodule /C++ (7165) require-component

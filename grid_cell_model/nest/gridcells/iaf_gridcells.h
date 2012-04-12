@@ -1,5 +1,5 @@
 /*
- *  aeif_cond_exp_custom.h
+ *  iaf_gridcells.h
  *
  *  This file is part of NEST
  *
@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef AEIF_COND_EXP_H
-#define AEIF_COND_EXP_H
+#ifndef IAF_GRIDCELLS_H
+#define IAF_GRIDCELLS_H
 
 #include "config.h"
 
@@ -30,10 +30,10 @@
 #include "recordables_map.h"
 
 /* BeginDocumentation
-Name: aeif_cond_exp_custom - Conductance based exponential integrate-and-fire neuron model according to Brette and Gerstner (2005).
+Name: iaf_gridcells - Conductance based exponential integrate-and-fire neuron model according to Brette and Gerstner (2005).
 
 Description:
-aeif_cond_exp_custom is the adaptive exponential integrate and fire neuron according to Brette and Gerstner (2005).
+iaf_gridcells is the adaptive exponential integrate and fire neuron according to Brette and Gerstner (2005).
 
 This implementation uses the embedded 4th order Runge-Kutta-Fehlberg solver with adaptive stepsize to integrate
 the differential equation.
@@ -120,17 +120,17 @@ namespace nest
    * @param void* Pointer to model neuron instance.
    */
   extern "C"
-  int aeif_cond_exp_custom_dynamics (double, const double*, double*, void*);
+  int iaf_gridcells_dynamics (double, const double*, double*, void*);
 
-  class aeif_cond_exp_custom:
+  class iaf_gridcells:
     public Archiving_Node
   {
     
   public:        
     
-    aeif_cond_exp_custom();
-    aeif_cond_exp_custom(const aeif_cond_exp_custom&);
-    ~aeif_cond_exp_custom();
+    iaf_gridcells();
+    iaf_gridcells(const iaf_gridcells&);
+    ~iaf_gridcells();
 
     /**
      * Import sets of overloaded virtual functions.
@@ -175,11 +175,11 @@ namespace nest
     void update(const Time &, const long_t, const long_t);
 
     // make dynamics function quasi-member
-    friend int aeif_cond_exp_custom_dynamics(double, const double*, double*, void*);
+    friend int iaf_gridcells_dynamics(double, const double*, double*, void*);
 
     // The next two classes need to be friends to access the State_ class/member
-    friend class RecordablesMap<aeif_cond_exp_custom>;
-    friend class UniversalDataLogger<aeif_cond_exp_custom>;
+    friend class RecordablesMap<iaf_gridcells>;
+    friend class UniversalDataLogger<iaf_gridcells>;
 
 
   private:
@@ -262,11 +262,11 @@ namespace nest
      */
     struct Buffers_
     {
-      Buffers_(aeif_cond_exp_custom &);                    //!<Sets buffer pointers to 0
-      Buffers_(const Buffers_ &, aeif_cond_exp_custom &);  //!<Sets buffer pointers to 0
+      Buffers_(iaf_gridcells &);                    //!<Sets buffer pointers to 0
+      Buffers_(const Buffers_ &, iaf_gridcells &);  //!<Sets buffer pointers to 0
 
       //! Logger for all analog data
-      UniversalDataLogger<aeif_cond_exp_custom> logger_;
+      UniversalDataLogger<iaf_gridcells> logger_;
 
       /** buffers and sums up incoming spikes/currents */
       std::vector<RingBuffer> spike_inputs_;
@@ -316,11 +316,11 @@ namespace nest
     Buffers_    B_;
 
     //! Mapping of recordables names to access functions
-    static RecordablesMap<aeif_cond_exp_custom> recordablesMap_;
+    static RecordablesMap<iaf_gridcells> recordablesMap_;
   };
 
   inline  
-  port aeif_cond_exp_custom::check_connection(Connection &c, port receptor_type)
+  port iaf_gridcells::check_connection(Connection &c, port receptor_type)
   {
     SpikeEvent e;
     e.set_sender(*this);
@@ -329,7 +329,7 @@ namespace nest
   }
 
   inline
-  port aeif_cond_exp_custom::connect_sender(SpikeEvent &, port receptor_type)
+  port iaf_gridcells::connect_sender(SpikeEvent &, port receptor_type)
   {
     if (receptor_type < 0 || receptor_type >= SYNAPSE_TYPES_SIZE)
       throw UnknownReceptorType(receptor_type, get_name());
@@ -337,7 +337,7 @@ namespace nest
   }
 
   inline
-  port aeif_cond_exp_custom::connect_sender(DataLoggingRequest& dlr, 
+  port iaf_gridcells::connect_sender(DataLoggingRequest& dlr, 
 				     port receptor_type)
   {
     if (receptor_type != 0)
@@ -346,7 +346,7 @@ namespace nest
   }
 
   inline
-  port aeif_cond_exp_custom::connect_sender(CurrentEvent &, port receptor_type)
+  port iaf_gridcells::connect_sender(CurrentEvent &, port receptor_type)
   {
     if (receptor_type != 0)
       throw UnknownReceptorType(receptor_type, get_name());
@@ -354,7 +354,7 @@ namespace nest
   }
  
   inline
-  void aeif_cond_exp_custom::get_status(DictionaryDatum &d) const
+  void iaf_gridcells::get_status(DictionaryDatum &d) const
   {
     P.get(d);
     S_.get(d);
@@ -371,7 +371,7 @@ namespace nest
   }
 
   inline
-  void aeif_cond_exp_custom::set_status(const DictionaryDatum &d)
+  void iaf_gridcells::set_status(const DictionaryDatum &d)
   {
     Parameters ptmp = P;  // temporary copy in case of errors
     ptmp.set(d);            // throws if BadProperty
