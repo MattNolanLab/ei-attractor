@@ -30,6 +30,8 @@
 #include "numerics.h"
 #include <limits>
 
+#include <gsl/gsl_errno.h>
+
 #include <cmath>
 #include <iomanip>
 #include <iostream>
@@ -43,21 +45,6 @@ nest::RecordablesMap<nest::aeif_cond_exp_custom> nest::aeif_cond_exp_custom::rec
 
 namespace nest
 {
-  namespace names
-  {
-    const Name E_AMPA("E_AMPA");
-    const Name E_NMDA("E_NMDA");
-    const Name E_GABA_A("E_GABA_A");
-    const Name tau_AMPA_fall("tau_AMPA_fall");
-    const Name tau_NMDA_rise("tau_NMDA_rise");
-    const Name tau_NMDA_fall("tau_NMDA_fall");
-    const Name tau_GABA_A_rise("tau_GABA_A_rise");
-    const Name tau_GABA_A_fall("tau_GABA_A_fall");
-    const Name tau_AHP("tau_AHP");
-    const Name g_AMPA("g_AMPA");
-    const Name g_NMDA("g_NMDA");
-    const Name g_GABA_A("g_GABA_A");
-  }
 
   /*
    * template specialization must be placed in namespace
@@ -106,14 +93,14 @@ int nest::aeif_cond_exp_custom_dynamics (double, const double y[], double f[], v
   const double_t g_GABA_A     = y[S::G_GABA_A];
   const double_t I_syn_AMPA   = g_AMPA   * (V - node.P.E_AMPA);
   const double_t I_syn_NMDA   = g_NMDA   * (V - node.P.E_NMDA);
-  const double_t I_syn_GABA_A = g_GABA_A * (V - node.p.E_GABA_A);
+  const double_t I_syn_GABA_A = g_GABA_A * (V - node.P.E_GABA_A);
 
   const double_t I_spike   = node.P.Delta_T * std::exp((V - node.P.V_th) / node.P.Delta_T);
 
   // dv/dt
   f[S::V_M  ] = ( -node.P.g_L * ( (V-node.P.E_L) - I_spike) 
 		     - I_syn_AMPA - I_syn_NMDA - I_syn_GABA_A
-             - node.P.I_e + node.B_.I_stim_) / node.P.C_m;
+             + node.P.I_e + node.B_.I_stim_) / node.P.C_m;
 
   f[S::G_AMPA]   = -g_AMPA   / node.P.tau_AMPA_fall; // Synaptic Conductance (nS)
   f[S::G_NMDA]   = -g_NMDA   / node.P.tau_NMDA_fall; // Synaptic Conductance (nS)
@@ -180,8 +167,8 @@ nest::aeif_cond_exp_custom::State_& nest::aeif_cond_exp_custom::State_::operator
 void nest::aeif_cond_exp_custom::Parameters::get(DictionaryDatum &d) const
 {
   // ! Some of these names are locally defined as they are not part of NEST distribution
-  def<double>(d, names::V_peak,     V_peak_);
-  def<double>(d, names::V_reset,    V_reset_);
+  def<double>(d, names::V_peak,     V_peak);
+  def<double>(d, names::V_reset,    V_reset);
   def<double>(d, names::t_ref,      t_ref);
 
   def<double>(d, names::g_L,        g_L);
@@ -205,8 +192,8 @@ void nest::aeif_cond_exp_custom::Parameters::get(DictionaryDatum &d) const
 
 void nest::aeif_cond_exp_custom::Parameters::set(const DictionaryDatum &d)
 {
-  updateValue<double>(d, names::V_peak,     V_peak_);
-  updateValue<double>(d, names::V_reset,    V_reset_);
+  updateValue<double>(d, names::V_peak,     V_peak);
+  updateValue<double>(d, names::V_reset,    V_reset);
   updateValue<double>(d, names::t_ref,      t_ref);
 
   updateValue<double>(d, names::g_L,        g_L);
@@ -228,10 +215,10 @@ void nest::aeif_cond_exp_custom::Parameters::set(const DictionaryDatum &d)
   updateValue<double>(d, names::tau_AHP,         tau_AHP);
 
 
-  if ( V_reset_ >= V_peak_ )
+  if ( V_reset >= V_peak )
     throw BadProperty("Reset potential must be smaller than spike cut-off threshold.");
     
-  if ( V_peak_ <= V_th )
+  if ( V_peak <= V_th )
     throw BadProperty("V_peak must be larger than threshold.");
 
   if ( C_m <= 0 )
@@ -240,7 +227,7 @@ void nest::aeif_cond_exp_custom::Parameters::set(const DictionaryDatum &d)
   if ( t_ref < 0 )
     throw BadProperty("Refractory time cannot be negative.");
       
-  if ( tau_AMPA_fall <=0 || tau_NMDA_rise <= 0 || tau_NMDA_fall <= 0
+  if ( tau_AMPA_fall <=0 || tau_NMDA_rise <= 0 || tau_NMDA_fall <= 0 ||
           tau_GABA_A_rise <= 0 || tau_GABA_A_fall <= 0 ||
           tau_AHP <= 0)
     throw BadProperty("All time constants must be strictly positive.");
@@ -269,7 +256,7 @@ void nest::aeif_cond_exp_custom::State_::set(const DictionaryDatum &d, const Par
 
 nest::aeif_cond_exp_custom::Buffers_::Buffers_(aeif_cond_exp_custom &n)
   : logger_(n),
-    s_(0)
+    spike_inputs_(std::vector<RingBuffer>(SYNAPSE_TYPES_SIZE))
 {
   // Initialization of the remaining members is deferred to
   // init_buffers_().
@@ -277,7 +264,7 @@ nest::aeif_cond_exp_custom::Buffers_::Buffers_(aeif_cond_exp_custom &n)
 
 nest::aeif_cond_exp_custom::Buffers_::Buffers_(const Buffers_ &, aeif_cond_exp_custom &n)
   : logger_(n),
-    s_(0)
+    spike_inputs_(std::vector<RingBuffer>(SYNAPSE_TYPES_SIZE))
 {
   // Initialization of the remaining members is deferred to
   // init_buffers_().
@@ -327,8 +314,9 @@ void nest::aeif_cond_exp_custom::init_state_(const Node &proto)
 
 void nest::aeif_cond_exp_custom::init_buffers_()
 {
-  B_.spike_exc_.clear();          // includes resize
-  B_.spike_inh_.clear();          // includes resize
+  for (int i = 0; i < B_.spike_inputs_.size(); i++)
+    B_.spike_inputs_[i].clear();
+
   B_.currents_.clear();           // includes resize
   Archiving_Node::clear_history();
 
@@ -336,7 +324,6 @@ void nest::aeif_cond_exp_custom::init_buffers_()
 
   B_.step_ = Time::get_resolution().get_ms();
 
-  // We must integrate this model with high-precision to obtain decent results
   B_.IntegrationStep_ = B_.step_; //std::min(0.01, B_.step_);
 
   B_.I_stim_ = 0.0;
@@ -355,11 +342,12 @@ void nest::aeif_cond_exp_custom::calibrate()
 
 void nest::aeif_cond_exp_custom::update(const Time &origin, const long_t from, const long_t to)
 {
+  typedef nest::aeif_cond_exp_custom::State_ S;
+
   assert ( to >= 0 && (delay) from < Scheduler::get_min_delay() );
   assert ( from < to );
   assert ( State_::V_M == 0 );
 
-  //std::cerr << "to - from: " << to - from << std::endl;
 
   for ( long_t lag = from; lag < to; ++lag )
   {
@@ -371,35 +359,36 @@ void nest::aeif_cond_exp_custom::update(const Time &origin, const long_t from, c
     // numerical integration using Explicit Euler: should be enough for our purpose
     while (t < B_.step_)
     {
-      typedef nest::aeif_cond_exp_custom::State_ S;
-      static double_t dydt[S::STATE_VEC_SIZE];
       const int status = aeif_cond_exp_custom_dynamics(
               t,
               S_.y_,
-              dydt,
-              B_.sys_.params);
+              S_.dydt_,
+              reinterpret_cast<void *>(this));
+
+      //assert(S_.y_[S::G_GABA_A] >= 0);
 
       // Integrate, forward Euler
       for (int i = 0; i < S::STATE_VEC_SIZE; i++)
-        S_.y_[i] += B_.IntegrationStep * dydt[i];
+        S_.y_[i] += B_.IntegrationStep_ * S_.dydt_[i];
+
+      if (S_.y_[S::G_GABA_A] < 0)
+          std::cerr << S_.y_[S::G_GABA_A] << std::endl;
 
       if ( status != GSL_SUCCESS )
         throw GSLSolverFailure(get_name(), status);
 
 
       // check for unreasonable values; we allow V_M to explode
-      if ( S_.y_[State_::V_M] < -1e3 ||
-        S_.y_[State_::W  ] <    -1e6 || S_.y_[State_::W] > 1e6    )
+      if (S_.y_[State_::V_M] < -1e3)
         throw NumericalInstability(get_name());
 
       // spikes are handled inside the while-loop
       // due to spike-driven adaptation
       if ( S_.r_ > 0 )
-        S_.y_[State_::V_M] = P.V_reset_;
-      else if ( S_.y_[State_::V_M] >= P.V_peak_ )
+        S_.y_[State_::V_M] = P.V_reset;
+      else if ( S_.y_[State_::V_M] >= P.V_peak )
       {
-        S_.y_[State_::V_M]  = P.V_reset_;
-        S_.y_[State_::W]   += P.b; // spike-driven adaptation
+        S_.y_[State_::V_M]  = P.V_reset;
         S_.r_               = V_.RefractoryCounts_;
         
         set_spiketime(Time::step(origin.get_steps() + lag + 1));
@@ -410,8 +399,13 @@ void nest::aeif_cond_exp_custom::update(const Time &origin, const long_t from, c
       t += B_.IntegrationStep_;
     }
 
-    S_.y_[State_::G_EXC] += B_.spike_exc_.get_value(lag);
-    S_.y_[State_::G_INH] += B_.spike_inh_.get_value(lag);
+    // Process all spikes
+    S_.y_[S::G_AMPA]   += B_.spike_inputs_[AMPA].get_value(lag);
+    S_.y_[S::G_NMDA]   += B_.spike_inputs_[NMDA].get_value(lag);
+
+    double_t gaba_spike = B_.spike_inputs_[GABA_A].get_value(lag);
+    assert(gaba_spike >= 0);
+    S_.y_[S::G_GABA_A] += gaba_spike;
       
     // set new input current
     B_.I_stim_ = B_.currents_.get_value(lag);
@@ -423,14 +417,13 @@ void nest::aeif_cond_exp_custom::update(const Time &origin, const long_t from, c
   
 void nest::aeif_cond_exp_custom::handle(SpikeEvent &e)
 {
-  assert ( e.get_delay() > 0 );
+  assert(e.get_delay() > 0);
+  assert(e.get_weight() >= 0);
+  assert(e.get_rport() < static_cast<int_t>(SYNAPSE_TYPES_SIZE));
 
-  if(e.get_weight() > 0.0)
-    B_.spike_exc_.add_value(e.get_rel_delivery_steps(network()->get_slice_origin()),
-			    e.get_weight() * e.get_multiplicity());
-  else
-    B_.spike_inh_.add_value(e.get_rel_delivery_steps(network()->get_slice_origin()),
-			    -e.get_weight() * e.get_multiplicity());  // keep conductances positive 
+  B_.spike_inputs_[e.get_rport()].
+    add_value(e.get_rel_delivery_steps(network()->get_slice_origin()),
+    e.get_weight() * e.get_multiplicity() );
 }
 
 void nest::aeif_cond_exp_custom::handle(CurrentEvent &e)

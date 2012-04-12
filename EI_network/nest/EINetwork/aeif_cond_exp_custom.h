@@ -94,16 +94,18 @@ namespace nest
     /**
      * Add state and parameter names to the nest::names namespace
      */
-    const Name E_AMPA;
-    const Name E_NMDA;
-    const Name E_GABA_A;
-    const Name tau_AMPA_fall;
-    const Name tau_NMDA_rise;
-    const Name tau_NMDA_fall;
-    const Name tau_GABA_A_rise;
-    const Name tau_GABA_A_fall;
-    const Name tau_AHP;
-
+    const Name E_AMPA("E_AMPA");
+    const Name E_NMDA("E_NMDA");
+    const Name E_GABA_A("E_GABA_A");
+    const Name tau_AMPA_fall("tau_AMPA_fall");
+    const Name tau_NMDA_rise("tau_NMDA_rise");
+    const Name tau_NMDA_fall("tau_NMDA_fall");
+    const Name tau_GABA_A_rise("tau_GABA_A_rise");
+    const Name tau_GABA_A_fall("tau_GABA_A_fall");
+    const Name tau_AHP("tau_AHP");
+    const Name g_AMPA("g_AMPA");
+    const Name g_NMDA("g_NMDA");
+    const Name g_GABA_A("g_GABA_A");
   }
 
 
@@ -160,9 +162,11 @@ namespace nest
      * @note Excluded upper and lower bounds are defined as INF_, SUP_.
      *       Excluding port 0 avoids accidental connections.
      */
-    enum SynapseTypes { INF_SPIKE_RECEPTOR = 0,
-        AMPA, NMDA, AMPA_NMDA, GABA_A,
-        SUP_SPIKE_RECEPTOR };
+    enum SynapseTypes {
+        AMPA = 0,
+        NMDA,
+        GABA_A,
+        SYNAPSE_TYPES_SIZE };
     
     void init_node_(const Node &proto);
     void init_state_(const Node &proto);
@@ -231,6 +235,7 @@ namespace nest
       enum StateVecElems
       {
         V_M   = 0,
+        // All synaptic conductances that receive spikes must be the last in the list
         G_AMPA,
         G_NMDA,
         G_GABA_A,
@@ -238,7 +243,8 @@ namespace nest
       };
 
 
-      double_t    y_[STATE_VEC_SIZE];  //!< neuron state, must be C-array for GSL solver
+      double_t       y_[STATE_VEC_SIZE];  //!< neuron state, must be C-array for GSL solver
+      double_t    dydt_[STATE_VEC_SIZE];  //!<  derivatives
       int_t       r_;                  //!< number of refractory steps remaining
 
       State_(const Parameters &);      //!< Default initialization
@@ -263,8 +269,7 @@ namespace nest
       UniversalDataLogger<aeif_cond_exp_custom> logger_;
 
       /** buffers and sums up incoming spikes/currents */
-      RingBuffer spike_exc_;
-      RingBuffer spike_inh_;
+      std::vector<RingBuffer> spike_inputs_;
       RingBuffer currents_;
 
       // IntergrationStep_ should be reset with the neuron on ResetNetwork,
@@ -298,7 +303,10 @@ namespace nest
     
     //! Read out state vector elements, used by UniversalDataLogger
     template <State_::StateVecElems elem>
-    double_t get_y_elem_() const { return S_.y_[elem]; }
+    double_t get_y_elem_() const {
+        //if (elem == State_::G_GABA_A) assert(S_.y_[elem] >= 0);
+        return S_.y_[elem];
+    }
 
     // ---------------------------------------------------------------- 
 
@@ -323,9 +331,9 @@ namespace nest
   inline
   port aeif_cond_exp_custom::connect_sender(SpikeEvent &, port receptor_type)
   {
-    if (receptor_type != 0)
+    if (receptor_type < 0 || receptor_type >= SYNAPSE_TYPES_SIZE)
       throw UnknownReceptorType(receptor_type, get_name());
-    return 0;
+    return receptor_type;
   }
 
   inline
@@ -352,6 +360,13 @@ namespace nest
     S_.get(d);
     Archiving_Node::get_status(d);
 
+    DictionaryDatum receptor_type = new Dictionary();
+  
+    (*receptor_type)["AMPA"] = AMPA;
+    (*receptor_type)["NMDA"] = NMDA;
+    (*receptor_type)["GABA_A"] = GABA_A;
+  
+    (*d)["receptor_types"] = receptor_type;
     (*d)[names::recordables] = recordablesMap_.get_list();
   }
 
