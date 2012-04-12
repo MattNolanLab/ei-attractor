@@ -4,7 +4,7 @@
 #   This file defines some basic simulation functions, independent of modelling.
 #   
 #
-#       Copyright (C) 2012  Lukas Solanka
+#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
 #       This program is free software: you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
