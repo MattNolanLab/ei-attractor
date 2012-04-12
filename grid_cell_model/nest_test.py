@@ -12,7 +12,7 @@ from numpy import exp
 import time
 
 
-nest.Install('einetwork')
+nest.Install('gridcells')
 nest.ResetKernel()
 
 startbuild= time.time()
@@ -84,7 +84,7 @@ neuron_params = {"V_m"              : E_L,
                  "I_e"              : I_e_e}
 
 
-model_name = "aeif_cond_exp_custom"
+model_name = "iaf_gridcells"
 
 nodes_ex=nest.Create(model_name, NE, params = neuron_params)
 nodes_in=nest.Create(model_name, NI, params = neuron_params)

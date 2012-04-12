@@ -1,7 +1,8 @@
 /*
  *  iaf_gridcells.h
  *
- *  This file is part of NEST
+ *  This file has been created from the NEST aeif_cond_exp native model.
+ *  Modified by Lukas Solanka <l.solanka@sms.ed.ac.uk> to incorporate it in the grid cell simultaions.
  *
  *  Copyright (C) 2010 by
  *  The NEST Initiative
@@ -29,60 +30,63 @@
 #include "universal_data_logger.h"
 #include "recordables_map.h"
 
-/* BeginDocumentation
-Name: iaf_gridcells - Conductance based exponential integrate-and-fire neuron model according to Brette and Gerstner (2005).
+/* 
+iaf_gridcells - Conductance based exponential integrate-and-fire neuron. Forward Euler integration method.
 
 Description:
-iaf_gridcells is the adaptive exponential integrate and fire neuron according to Brette and Gerstner (2005).
-
-This implementation uses the embedded 4th order Runge-Kutta-Fehlberg solver with adaptive stepsize to integrate
-the differential equation.
+iaf_gridcells is a non-adaptive, exponential integrate and fire neuron. Refractory properties can be set by AHP currents. The model can receive AMPA, NMDA, and GABA_A synapses.
 
 The membrane potential is given by the following differential equation:
-C dV/dt= -g_L(V-E_L)+g_L*Delta_T*exp((V-V_T)/Delta_T)-g_e(t)(V-E_e) -g_i(t)(V-E_i)-w +I_e
+C dV/dt= -g_L(V-E_L)+g_L*Delta_T*exp((V-V_T)/Delta_T) - g_XXXX(t)(V-E_XXXX) + I_e
 
-and
+where
 
-tau_w * dw/dt= a(V-E_L) -W
+XXXX is all of:
+  * AMPA
+  * NMDA
+  * GABA_A
+
+AMPA conductances are modeled as a single exponential. NMDA, GABA_A conductances are modeled as a difference of exponentials, peaked at the incoming weight values
 
 Parameters: 
 The following parameters can be set in the status dictionary.
 
 Dynamic state variables:
-  V_m        double - Membrane potential in mV
-  g_ex       double - Excitatory synaptic conductance in nS.
-  g_in       double - Inhibitory synaptic conductance in nS.
-  w          double - Spike-adaptation current in pA.
+  V_m               double - Membrane potential in mV
+  g_AMPA            double - AMPA synaptic conductance in nS.
+  g_NMDA            double - NMDA synaptic conductance in nS.
+  g_GABA_A          double - GABA_A synaptic conductance in nS.
 
 Membrane Parameters:
-  C_m        double - Capacity of the membrane in pF
-  t_ref      double - Duration of refractory period in ms. 
-  V_peak     double - Spike detection threshold in mV.
-  V_reset    double - Reset value for V_m after a spike. In mV.
-  E_L        double - Leak reversal potential in mV. 
-  g_L        double - Leak conductance in nS.
-  I_e        double - Constant external input current in pA.
+  V_peak            double - Spike detection threshold in mV.
+  V_reset           double - Reset value for V_m after a spike. In mV.
+  t_ref             double - Duration of refractory period in ms. 
+  g_L               double - Leak conductance in nS.
+  C_m               double - Capacity of the membrane in pF
+  E_L               double - Leak reversal potential in mV. 
+  E_AHP             double - Reversal potential of afterhyperpolarisation in mV (AHP)
+  tau_AHP           double - decay time of AHP in ms (exp function)
+  I_e               double - Constant external input current in pA.
 
-Spike adaptation parameters:
-  a          double - Subthreshold adaptation in nS.
-  b          double - Spike-triggered adaptation in pA.
-  Delta_T    double - Slope factor in mV
-  tau_w      double - Adaptation time constant in ms
-  V_t        double - Spike initiation threshold in mV (V_th can also be used for compatibility).
+Spike initiation parameters:
+  Delta_T           double - Slope factor in mV
+  V_th              double - Spike initiation threshold in mV
 
 Synaptic parameters
-  E_ex       double - Excitatory reversal potential in mV.
-  tau_syn_ex double - Rise time of excitatory synaptic conductance in ms (exp function).
-  E_in       double - Inhibitory reversal potential in mV.
-  tau_syn_in double - Rise time of the inhibitory synaptic conductance in ms (exp function).
+  E_AMPA            double - AMPA reversal potential in mV
+  E_NMDA            double - NMDA reversal potential in mV
+  E_GABA_A          double - GABA_A reversal potential in mV
+
+  tau_AMPA_fall     double - decay time of AMPA synaptic conductance in ms
+  tau_NMDA_fall     double - decay time of NMDA synaptic conductance in ms
+  tau_NMDA_rise     double - rise time of NMDA synaptic conductance in ms
+  tau_GABA_A_fall   double - decay time of GABA_A synaptic conductance in ms
+  tau_GABA_A_rise   double - rise time of GABA_A synaptic conductance in ms
 
 
 Sends: SpikeEvent
 
 Receives: SpikeEvent, CurrentEvent, DataLoggingRequest
-
-References: Brette R and Gerstner W (2005) Adaptive Exponential Integrate-and-Fire Model as 
-            an Effective Description of Neuronal Activity. J Neurophysiol 94:3637-3642
 
 SeeAlso: iaf_cond_exp, aeif_cond_alpha
 */
@@ -98,7 +102,7 @@ namespace nest
     const Name E_NMDA("E_NMDA");
     const Name E_GABA_A("E_GABA_A");
     const Name tau_AMPA_fall("tau_AMPA_fall");
-    const Name tau_NMDA_rise("tau_NMDA_rise");
+    //const Name tau_NMDA_rise("tau_NMDA_rise");
     const Name tau_NMDA_fall("tau_NMDA_fall");
     const Name tau_GABA_A_rise("tau_GABA_A_rise");
     const Name tau_GABA_A_fall("tau_GABA_A_fall");
