@@ -22,16 +22,16 @@
 
 libdir= @libdir@/nest
 
-lib_LTLIBRARIES=      einetwork.la libeinetwork.la
+lib_LTLIBRARIES=      grid_cell_module.la libgrid_cell_module.la
 
-einetwork_la_CXXFLAGS= @AM_CXXFLAGS@
-einetwork_la_SOURCES=  einetwork.cpp      einetwork.h	\
+grid_cell_module_la_CXXFLAGS= @AM_CXXFLAGS@
+grid_cell_module_la_SOURCES=  grid_cell_module.cpp      grid_cell_module.h	\
 					   aeif_cond_exp_custom.cpp aeif_cond_exp_custom.h	\
 					   poisson_generator_1to1.cpp poisson_generator_1to1.h
-einetwork_la_LDFLAGS=  -module
+grid_cell_module_la_LDFLAGS=  -module
 
-libeinetwork_la_CXXFLAGS= $(einetwork_la_CXXFLAGS) -DLINKED_MODULE
-libeinetwork_la_SOURCES=  $(einetwork_la_SOURCES)
+libgrid_cell_module_la_CXXFLAGS= $(grid_cell_module_la_CXXFLAGS) -DLINKED_MODULE
+libgrid_cell_module_la_SOURCES=  $(grid_cell_module_la_SOURCES)
 
 MAKEFLAGS= @MAKE_FLAGS@
 
@@ -41,7 +41,7 @@ AM_CPPFLAGS= @NEST_CPPFLAGS@ \
 .PHONY: install-slidoc
 
 nobase_pkgdata_DATA=\
-	sli/einetwork.sli
+	sli/grid_cell_module.sli
 
 install-slidoc:
 	NESTRCFILENAME=/dev/null $(DESTDIR)$(NEST_PREFIX)/bin/sli --userargs="@HELPDIRS@" $(NEST_PREFIX)/share/nest/sli/install-help.sli
