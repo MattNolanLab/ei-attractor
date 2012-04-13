@@ -21,6 +21,25 @@
 # This small module exports basic, shared classes and data
 
 
+
+# Get a preferred direction for a neuron
+def getPreferredDirection(pos_x, pos_y):
+# pos_x/y - position of neuron in 2d sheet
+    pos4_x = pos_x % 2
+    pos2_y = pos_y % 2
+    if pos4_x == 0:
+        if pos2_y == 0:
+            return [-1, 0] # Left
+        else:
+            return [0, -1] # Down
+    else:
+        if pos2_y == 0:
+            return [0, 1] # up
+        else:
+            return [1, 0] # Right
+
+
+
 ################################################################################
 #                               Exceptions
 ################################################################################

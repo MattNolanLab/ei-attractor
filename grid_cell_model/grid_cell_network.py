@@ -59,40 +59,10 @@
 
 from common import *
 
-
-from brian import *
-from brian.library.IF import *
-from brian.library.synapses import *
-from brian.membrane_equations import *
-
-from scipy import linspace
-from scipy.io import loadmat
-from optparse import OptionParser
-from datetime import datetime
-
 import numpy as np
-from numpy.random import rand
-
-import time
-import math
-
 import logging as lg
-
-# Get a preferred direction for a neuron
-def getPreferredDirection(pos_x, pos_y):
-# pos_x/y - position of neuron in 2d sheet
-    pos4_x = pos_x % 2
-    pos2_y = pos_y % 2
-    if pos4_x == 0:
-        if pos2_y == 0:
-            return [-1, 0] # Left
-        else:
-            return [0, -1] # Down
-    else:
-        if pos2_y == 0:
-            return [0, 1] # up
-        else:
-            return [1, 0] # Right
+from scipy import linspace
+from np.random import rand
 
 
 class GridCellNetwork(object):
@@ -107,8 +77,21 @@ class GridCellNetwork(object):
     '''
 
     def __init__(self, neuronOpts, simulationOpts):
-        self._neuronOpts = neuronOpts
-        self._simulationOpts = simulationOpts
+        self.no = neuronOpts
+        self.so = simulationOpts
+
+        # Setup neuron numbers for each dimension (X, Y)
+        # We have a single bump and to get hexagonal receptive fields the X:Y
+        # size ratio must be 1:sqrt(3)/2
+        self.y_dim = np.sqrt(3)/2.0
+        self.Ne_x = o.Ne
+        self.Ne_y = int(np.ceil(o.Ne * self.y_dim)) // 2 * 2
+
+        self.Ni_x = o.Ni
+        self.Ni_y = int(np.ceil(o.Ni * self.y_dim)) // 2 * 2
+
+        self.net_Ne = self.Ne_x * self.Ne_y
+        self.net_Ni = self.Ni_x * self.Ni_y
 
     def simulate(self, time):
         raise NotImplementedException("GridCellNetwork.simulate")
@@ -127,6 +110,14 @@ class GridCellNetwork(object):
         the E population from post, with given weights
         '''
         raise NotImplementedException("GridCellNetwork.divergentConnectIE")
+
+    def getOutgoingConnections(self, prePop, postPop, nid):
+        '''
+        Return an array of target neuron ids (local within postPop) and their
+        weights, of a neuron with nid, within prePop
+        '''
+        raise NotImplementedException("GridCellNetwork.getOutgoingConnections")
+
 
 
     def _remap_twisted_torus(self, a, others, prefDir):
@@ -179,273 +170,75 @@ class GridCellNetwork(object):
         '''
         Create a center-surround excitatory and inhibitory connections between
         both populations.
+
+        The connections are remapped to [1.0, sqrt(3)/2], whether the topology
+        is a twisted torus or just a regular torus.
         '''
 
-        g_AMPA_mean = self.o.g_AMPA_total/self.net_Ne
-        #GABA_density = 9*np.pi*pGABA_sigma**2
-        g_GABA_mean = self.o.g_GABA_total / self.net_Ni * siemens
+        g_AMPA_mean = self.o.g_AMPA_total / self.net_Ne
+        g_GABA_mean = self.o.g_GABA_total / self.net_Ni
 
-        # Generate connection-probability profile functions for GABA and AMPA connections
-        self.pGABA_sigma = pGABA_sigma * self.o.Ne
+        # E --> I connections
+        X, Y = np.meshgrid(np.arange(self.Ni_x), np.arange(self.Ni_y))
+        X = 1. * X / self.Ni_x
+        Y = 1. * Y / self.Ni_y * self.y_dim
+        others_e = np.vstack((X.ravel(), Y.ravel())).T
 
-        self.AMPA_conn = Connection(self.E_pop, self.I_pop, 'ge',
-            structure='dense')
-        self.NMDA_conn = Connection(self.E_pop, self.I_pop, 'gNMDA',
-            structure='dense')
-        self.GABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
-        self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
+        self.prefDirs_e = np.ndarray((self.net_Ne, 2))
+        E_W = np.asarray(self.AMPA_conn.W)
+        for y in xrange(self.Ne_y):
+            y_e_norm = float(y) / self.Ne_y * self.y_dim
 
-        elif self.o.ndim == 'twisted_torus':
-            X, Y = np.meshgrid(np.arange(self.Ni_x), np.arange(self.Ni_y))
-            X = 1. * X / self.Ni_x
-            Y = 1. * Y / self.Ni_y * self.y_dim
-            others_e = np.vstack((X.ravel(), Y.ravel())).T
+            for x in xrange(self.Ne_x):
+                it = y*self.Ne_x + x
 
-            self.prefDirs_e = np.ndarray((self.net_Ne, 2))
-            E_W = np.asarray(self.AMPA_conn.W)
-            for y in xrange(self.Ne_y):
-                y_e_norm = float(y) / self.Ne_y * self.y_dim
+                x_e_norm = float(x) / self.Ne_x
 
-                for x in xrange(self.Ne_x):
-                    it = y*self.Ne_x + x
+                a = np.array([[x_e_norm, y_e_norm]])
+                pd = getPreferredDirection(x, y)
+                self.prefDirs_e[it, :] = pd
+                tmp_templ = self._generate_pAMPA_twisted_torus(a, others_e,
+                        pAMPA_mu, pAMPA_sigma, np.array([[pd[0], pd[1]]]),
+                        self.o.prefDirC)
 
-                    x_e_norm = float(x) / self.Ne_x
+                self._divergentConnectEI(it, range(self.net_Ni),
+                        tmp_templ*g_AMPA_mean)
 
-                    
-                    a = np.array([[x_e_norm, y_e_norm]])
-                    pd = getPreferredDirection(x, y)
-                    #pd = np.array([0, 0])
-                    self.prefDirs_e[it, :] = pd
-                    tmp_templ = self._generate_pAMPA_twisted_torus(a, others_e,
-                            pAMPA_mu, pAMPA_sigma, np.array([[pd[0], pd[1]]]),
-                            self.o.prefDirC)
+        # I --> E connections
+        conn_th = 1e-5
+        self.prefDirs_i = np.ndarray((self.net_Ni, 2))
+        X, Y = np.meshgrid(np.arange(self.Ne_x), np.arange(self.Ne_y))
+        X = 1. * X / self.Ne_x
+        Y = 1. * Y / self.Ne_y * self.y_dim
+        others_i = np.vstack((X.ravel(), Y.ravel())).T
+        for y in xrange(self.Ni_y):
+            y_i_norm = float(y) / self.Ni_y * self.y_dim
+            for x in xrange(self.Ni_x):
+                x_i_norm = float(x) / self.Ni_x
+                it = y*self.Ni_x + x
 
-                    E_W[it, :] = g_AMPA_mean*tmp_templ*siemens
+                a = np.array([[x_i_norm, y_i_norm]])
+                pd = np.array([0, 0])
+                self.prefDirs_i[it, :] = pd
+                tmp_templ = self._generate_pGABA_twisted_torus(a, others_i,
+                        pGABA_sigma, [[pd[0], pd[1]]], self.o.prefDirC)
 
-            conn_th = 1e-5
-            self.prefDirs_i = np.ndarray((self.net_Ni, 2))
-            X, Y = np.meshgrid(np.arange(self.Ne_x), np.arange(self.Ne_y))
-            X = 1. * X / self.Ne_x
-            Y = 1. * Y / self.Ne_y * self.y_dim
-            others_i = np.vstack((X.ravel(), Y.ravel())).T
-            for y in xrange(self.Ni_y):
-                y_i_norm = float(y) / self.Ni_y * self.y_dim
-                for x in xrange(self.Ni_x):
-                    x_i_norm = float(x) / self.Ni_x
-                    it = y*self.Ni_x + x
-
-                    a = np.array([[x_i_norm, y_i_norm]])
-                    #pd = getPreferredDirection(x, y)
-                    pd = np.array([0, 0])
-                    self.prefDirs_i[it, :] = pd
-                    tmp_templ = self._generate_pGABA_twisted_torus(a, others_i,
-                            pGABA_sigma, [[pd[0], pd[1]]], self.o.prefDirC)
-
-                    self.GABA_conn1.W.rows[it] = (tmp_templ >
-                            conn_th).nonzero()[0]
-                    self.GABA_conn1.W.data[it] = self.B_GABA*g_GABA_mean*tmp_templ[self.GABA_conn1.W.rows[it]]
-
-        else:
-            raise Exception("Number of Mexican hat dimensions must be 2" +
-                ", not" + str(ndim) + ".")
+                E_nid = (tmp_templ > conn_th).nonzero()[0]
+                self._divergentConnectIE(it, E_nid, self.B_GABA*g_GABA_mean*tmp_templ[E_nid])
 
 
-        self.NMDA_conn.connect(self.E_pop, self.I_pop,
-                self.AMPA_conn.W * .01 * self.o.NMDA_amount)
-        self.GABA_conn2.connect(self.I_pop, self.E_pop, self.GABA_conn1.W)
+    #def randomInhibition(self, total_strength, density):
+    #    '''Random inhibitory connections from I to E only'''
 
-        self.net.add(self.AMPA_conn, self.NMDA_conn, self.GABA_conn1, self.GABA_conn2)
-        self.ndim = ndim
+    #    g_GABA_mean = total_strength / self.net_Ni / density * siemens
 
+    #    self.extraGABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
+    #    self.extraGABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
 
-    def randomInhibition(self, total_strength, density):
-        '''Random inhibitory connections from I to E only'''
+    #    self.extraGABA_conn1.connect_random(self.I_pop, self.E_pop, density,
+    #            weight=self.B_GABA*g_GABA_mean)
+    #    self.extraGABA_conn2.connect(self.I_pop, self.E_pop, self.extraGABA_conn1.W) 
 
-        g_GABA_mean = total_strength / self.net_Ni / density * siemens
-
-        self.extraGABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
-        self.extraGABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
-
-        self.extraGABA_conn1.connect_random(self.I_pop, self.E_pop, density,
-                weight=self.B_GABA*g_GABA_mean)
-        self.extraGABA_conn2.connect(self.I_pop, self.E_pop, self.extraGABA_conn1.W) 
-
-        self.net.add(self.extraGABA_conn1, self.extraGABA_conn2)
-
-
-
-
-class BrianGridCellNetwork(GridCellNetwork):
-
-    def _initStates(self):
-        # Initialize membrane potential randomly
-        self.E_pop.vm = self.EL_e + (self.Vt_e-self.EL_e) * rand(len(self.E_pop))
-        self.I_pop.vm = self.EL_i + (self.Vt_i-self.EL_i) * rand(len(self.I_pop))
-        self.setBackgroundInput(self.o.Iext_e*amp, self.o.Iext_i*amp)
-        self.E_pop.EL = (self.o.EL_e - self.o.EL_e_spread/2. +
-                self.o.EL_e_spread*rand(len(self.E_pop))) * volt
-        self.E_pop.taum = (self.o.taum_e - self.o.taum_e_spread/2. +
-                self.o.taum_e_spread*rand(len(self.E_pop))) * second
-        self.I_pop.tau_ad = (self.o.ad_tau_i_mean +
-                self.o.ad_tau_i_std*np.random.randn(len(self.I_pop.tau_ad)))*second
-        self.I_pop.EL = (self.o.EL_i - self.o.EL_i_spread/2.0 +
-                self.o.EL_i_spread*rand(len(self.I_pop))) * second
-        self.I_pop.taum = (self.o.taum_i - self.o.taum_i_spread/2. +
-                self.o.taum_i_spread*rand(len(self.I_pop))) * second
-
-    def reinit(self):
-        self.net.reinit(states=True)
-        self._initStates()
-
-    def __init__(self, o, clk):
-
-        # Setup neuron numbers for each dimension (X, Y)
-        # We have a single bump and to get hexagonal receptive fields the X:Y
-        # size ratio must be 1:sqrt(3)/2
-        self.y_dim = np.sqrt(3)/2.0
-        self.Ne_x = o.Ne
-        self.Ne_y = int(np.ceil(o.Ne * self.y_dim)) // 2 * 2
-
-        self.Ni_x = o.Ni
-        self.Ni_y = int(np.ceil(o.Ni * self.y_dim)) // 2 * 2
-
-        self.net_Ne = self.Ne_x * self.Ne_y
-        self.net_Ni = self.Ni_x * self.Ni_y
-
-        noise_sigma=o.noise_sigma*volt
-
-        # Setup neuron equations
-        # Using exponential integrate and fire model
-        # Excitatory population
-        Rm_e = o.Rm_e*ohm
-        taum_e = o.taum_e*second
-        Ce = taum_e/Rm_e
-        self.EL_e = o.EL_e*volt
-        deltaT_e = o.deltaT_e*volt
-        self.Vt_e = o.Vt_e*volt
-        Vr_e = o.Vr_e*volt
-        g_ahp_e = o.g_ahp_e * siemens
-        tau_GABA_rise = o.tau_GABA_rise*second
-        tau_GABA_fall = o.tau_GABA_fall*second
-        tau1_GABA = tau_GABA_fall
-        tau2_GABA = tau_GABA_rise*tau_GABA_fall / (tau_GABA_rise + tau_GABA_fall);
-        self.B_GABA = 1/((tau2_GABA/tau1_GABA)**(tau_GABA_rise/tau1_GABA) - 
-                (tau2_GABA/tau1_GABA)**(tau_GABA_rise/tau2_GABA))
-        
-        Vrev_GABA = o.Vrev_GABA*volt
-
-
-        self.eqs_e = Equations('''
-            dvm/dt = 1/C*Im + (noise_sigma*xi/taum_mean**.5): volt
-            Im = gL*(EL-vm) + g_ahp*(Eahp - vm) + gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
-            Isyn = (gi1 - gi2)*(Esyn - vm) : amp
-            Iclamp = -(gi1 - gi2)*(Esyn - Vclamp) : amp
-            dgi1/dt = -gi1/syn_tau1 : siemens
-            dgi2/dt = -gi2/syn_tau2 : siemens
-            dg_ahp/dt = -g_ahp/tau_ahp : siemens
-            Iext : amp
-            EL : volt
-            taum : second
-            ''',
-            C=Ce,
-            gL=1/Rm_e,
-            noise_sigma=noise_sigma,
-            deltaT=deltaT_e,
-            Vt=self.Vt_e,
-            Esyn=Vrev_GABA,
-            Vclamp = o.Vclamp*volt,
-            syn_tau1=tau1_GABA,
-            syn_tau2=tau2_GABA,
-            taum_mean=o.taum_e*second,
-            tau_ahp=o.tau_ahp_e*second,
-            Eahp=o.Eahp_e * volt)
-
-
-        # Inhibitory population
-        Rm_i = o.Rm_i*ohm
-        taum_i = o.taum_i*second
-        Ci = taum_i/Rm_i
-        self.EL_i = o.EL_i*volt
-        deltaT_i = o.deltaT_i*volt
-        self.Vt_i = o.Vt_i*volt
-        Vr_i = o.Vr_i*volt
-        Vrev_AMPA = o.Vrev_AMPA*volt
-        tau_AMPA = o.tau_AMPA*second
-        tau_ad_i = o.ad_tau_i_mean*second
-        
-        self.eqs_i = Equations('''
-            dvm/dt = 1/C*Im + (noise_sigma*xi/taum_mean**.5): volt
-            Im = gL*(EL-vm)*(1+g_ad/gL) + gL*deltaT*exp((vm-Vt)/deltaT) + Isyn + Iext  : amp
-            Isyn = ge*(Esyn - vm) + gNMDA*(Esyn - vm): amp
-            Iclamp = -(ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp)): amp
-            dge/dt = -ge/syn_tau : siemens
-            dg_ad/dt = -g_ad/tau_ad : siemens
-            tau_ad : second
-            Iext : amp
-            EL : volt
-            taum : second
-            dgNMDA/dt = -gNMDA/(100*msecond) : siemens
-            ''',
-            C=Ci,
-            gL=1/Rm_i,
-            noise_sigma=noise_sigma,
-            deltaT=deltaT_i,
-            Vt=self.Vt_i,
-            Esyn=Vrev_AMPA,
-            Vclamp=o.Vclamp*volt,
-            syn_tau=tau_AMPA,
-            taum_mean=o.taum_i*second)
-
-
-        # Other constants
-        refrac_abs = o.refrac_abs*second
-        spike_detect_th = o.spike_detect_th*volt
-
-
-
-        # Setup neuron groups and connections
-        self.E_pop = NeuronGroup(
-                N = self.net_Ne,
-                model=self.eqs_e,
-                threshold=spike_detect_th,
-                reset="vm=Vr_e; g_ahp=g_ahp_e",
-                refractory=refrac_abs,
-                clock=clk)
-
-        self.I_pop = NeuronGroup(
-                N = self.net_Ni,
-                model=self.eqs_i,
-                threshold=spike_detect_th,
-                reset=Vr_i,
-                refractory=refrac_abs,
-                clock=clk)
-
-
-        self.net = Network(
-                self.E_pop,
-                self.I_pop)
-
-        # Setup adaptation connections: neuron on itself
-        if o.ad_i_g_inc != 0.0:
-            self.adaptConn_i = IdentityConnection(self.I_pop, self.I_pop, 'g_ad',
-                    weight=o.ad_i_g_inc*siemens)
-            self.net.add(self.adaptConn_i)
-
-
-
-        self.o = o
-        self._initStates()
-
-
-    def setBackgroundInput(self, Iext_e, Iext_i):
-        self.E_pop.Iext = linspace(Iext_e, Iext_e, len(self.E_pop))
-        self.I_pop.Iext = linspace(Iext_i, Iext_i, len(self.I_pop))
-
-    def _generate_pGABA_template2D(self, a, others, sigma, prefDir, prefDirC):
-        d = a - others - prefDirC*np.array(prefDir)/self.o.Ne
-        d = np.abs(1./2./np.pi *
-                np.angle(np.exp(1j*2.*np.pi*d)))
-        d2 = d[:, 0]**2 + d[:, 1]**2
-        return np.exp(-d2/2./sigma**2)
+    #    self.net.add(self.extraGABA_conn1, self.extraGABA_conn2)
 
 
