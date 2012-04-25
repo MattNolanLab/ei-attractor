@@ -22,6 +22,11 @@
 from default_params import defaultParameters
 from common         import *
 
+import logging as lg
+
+
+lg.basicConfig(level=lg.DEBUG)
+
 
 EDDIE = False  # if eddie, submit on a cluster using qsub
 
@@ -30,12 +35,20 @@ QSUB_PARAMS = "-P inf_ndtc -cwd -l h_rt=06:00:00 -pe memory-2G 2"
 net_generations=5
 
 parameters = defaultParameters
+parameters['print_time'] = None  # Print time
+parameters['numThreads'] = 1
+
+parameters['time'] = 1000        # ms
+
+programName = 'python2.6 simulation.py'
 
 ac = ArgumentCreator(parameters)
 
-iterparams = {
-        'Iext_e'    : [1, 2, 3, 4],
-        'Iext_i'    : [5, 6, 7, 8]}
+#iterparams = {
+#        'Iext_e'    : [1, 2, 3, 4],
+#        'Iext_i'    : [5, 6, 7, 8]}
+#
+#ac.insertDict(iterparams, mult=False)
 
-ac.insertDict(iterparams, mult=False)
-print ac
+submitter = GenericSubmitter(ac, programName, blocking=True)
+submitter.submitAll()

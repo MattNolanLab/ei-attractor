@@ -22,6 +22,7 @@ __all__ = ['NotImplementedException', 'DimensionException', 'ArgumentCreator',
         'ProgramSubmitter', 'GenericSubmitter', 'QsubSubmitter']
 
 import os
+from log import *
 
 
 
@@ -134,7 +135,10 @@ class ArgumentCreator(object):
         '''
         parStr = ''
         for key, val in self._resList[i].iteritems():
-            parStr += ' --' + str(key) + ' ' + str(val)
+            if val is None:
+                parStr += ' --' + str(key)
+            else:
+                parStr += ' --' + str(key) + ' ' + str(val)
         return parStr
 
 
@@ -179,12 +183,14 @@ class GenericSubmitter(ProgramSubmitter):
         else:
             postfix = '&'
 
-        os.system(self._appName + ' ' + args + postfix)
+        cmdStr = self._appName + ' ' + args + postfix
+        log_info('root.GenericSubmitter', 'Submitting command: \n' + cmdStr)
+        os.system(cmdStr)
 
 
 class QsubSubmitter(ProgramSubmitter):
     '''
-    Submit jobs on a machine that support qsub command (cluster)
+    Submit jobs on a machine that supports qsub command (cluster)
     '''
     def __init__(self, argCreator, scriptName, qsub_params):
         ProgramSubmitter.__init__(self, argCreator)
@@ -194,6 +200,4 @@ class QsubSubmitter(ProgramSubmitter):
     def RunProgram(self, args):
         cmd = 'qsub ' + qsub_params + ' '
         os.system(cmd + args)
-
-
 

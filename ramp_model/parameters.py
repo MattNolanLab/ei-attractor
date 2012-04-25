@@ -33,6 +33,7 @@ def getOptParser():
 
     optParser.add_option("--AMPA_density",    type="float",  help="Density of E-->I connections")
     optParser.add_option("--GABA_density",    type="float",  help="Density of I-->E connections")
+    optParser.add_option("--delay",           type="float",  help="Synaptic delay (ms)")
 
     optParser.add_option("--Iext_e",          type="float",  help="External background current into the excitatory population (pA)")
     optParser.add_option("--Iext_i",          type="float",  help="External background current into the inhibitory population (pA)")
@@ -47,7 +48,7 @@ def getOptParser():
     optParser.add_option("--deltaT_e",        type="float",  help="Sharpness of exponential I&F neuron spike initiation (excitatory, mV)")
     optParser.add_option("--E_AHP_e",         type="float",  help="Excitatory AHP reversal potential (mV)")
     optParser.add_option("--g_AHP_e",         type="float",  help="Maximal AHP excitatory conductance (nS)")
-    optParser.add_option("--tau_ahp_e",       type="float",  help="Excitatory AHP time decay constant (ms)")
+    optParser.add_option("--tau_AHP_e",       type="float",  help="Excitatory AHP time decay constant (ms)")
     optParser.add_option("--t_ref_e",         type="float",  help="Excitatory absolute refractory period (msec)")
     optParser.add_option("--V_peak_e",        type="float",  help="Excitatory spike detection threshold (mV)")
 
@@ -82,8 +83,8 @@ def getOptParser():
     optParser.add_option("--sigma_init_cond", type="float",  help="Std. dev of distribution of initial membrane voltages (V)")
 
 
-    optParser.add_option("-t", "--time",      type="float",  help="Total simulation time [seconds]")
-    optParser.add_option("--sim_dt",          type="float",  help="Simulation time step (s)")
+    optParser.add_option("-t", "--time",      type="float",  help="Total simulation time (ms)")
+    optParser.add_option("--sim_dt",          type="float",  help="Simulation time step (ms)")
 
     optParser.add_option('--Vclamp',          type=float,    help="Clamp potential (for simulated voltage clamp, V)")
 

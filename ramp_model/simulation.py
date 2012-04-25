@@ -18,7 +18,6 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# This version uses numpy to draw the random connections.
 
 import pylab as pl
 import numpy as np
@@ -34,6 +33,8 @@ from parameters import getOptParser
 
 # Parse command line parameters
 parser = getOptParser()
+parser.add_option("--print_time",   action  = "store_true",   help="Print time-progress of the simulation")
+parser.add_option("--numThreads",   type    = "int",          help="Number of threads in the simulation")
 (o, args) = parser.parse_args()
 
 # Other parameters
@@ -75,14 +76,15 @@ nest.Connect(meter_i, [o.Ne + 1])
 
 print "Connecting network."
 
-numpy.random.seed(1234)
+np.random.seed(1234)
 net.connRandom()
+net.setConstantCurrent()
 
 endbuild=time.time()
 
 print "Simulating."
 
-nest.Simulate(simtime)
+nest.Simulate(o.time)
 
 endsimulate= time.time()
 
