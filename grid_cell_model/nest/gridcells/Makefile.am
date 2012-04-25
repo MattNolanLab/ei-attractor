@@ -25,9 +25,9 @@ libdir= @libdir@/nest
 lib_LTLIBRARIES=      gridcells.la libgridcells.la
 
 gridcells_la_CXXFLAGS= @AM_CXXFLAGS@
-gridcells_la_SOURCES=  gridcells.cpp      gridcells.h	\
-					   iaf_gridcells.cpp iaf_gridcells.h	\
-					   poisson_generator_1to1.cpp poisson_generator_1to1.h
+gridcells_la_SOURCES=   gridcells.cpp      gridcells.h	\
+						iaf_gridcells.cpp iaf_gridcells.h \
+						ramp_current_generator.cpp ramp_current_generator.h
 gridcells_la_LDFLAGS=  -module
 
 libgridcells_la_CXXFLAGS= $(gridcells_la_CXXFLAGS) -DLINKED_MODULE

@@ -30,7 +30,7 @@
 // include headers with your own stuff
 #include "gridcells.h"
 #include "iaf_gridcells.h"
-#include "poisson_generator_1to1.h"
+#include "ramp_current_generator.h"
 
 // -- Interface to dynamic module loader ---------------------------------------
 
@@ -192,8 +192,8 @@ mynest::GridCells::~GridCells()
     nest::register_model<nest::iaf_gridcells>(nest::NestModule::get_network(), 
                                         "iaf_gridcells");
 
-    nest::register_model<nest::poisson_generator_1to1>(nest::NestModule::get_network(), 
-                                        "poisson_generator_1to1");
+    nest::register_model<nest::ramp_current_generator>(nest::NestModule::get_network(), 
+                                        "ramp_current_generator");
 
 
     /* Register a SLI function.

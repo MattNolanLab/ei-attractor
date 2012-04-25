@@ -102,7 +102,7 @@ namespace nest
     const Name E_NMDA("E_NMDA");
     const Name E_GABA_A("E_GABA_A");
     const Name tau_AMPA_fall("tau_AMPA_fall");
-    //const Name tau_NMDA_rise("tau_NMDA_rise");
+    const Name tau_NMDA_rise("tau_NMDA_rise");
     const Name tau_NMDA_fall("tau_NMDA_fall");
     const Name tau_GABA_A_rise("tau_GABA_A_rise");
     const Name tau_GABA_A_fall("tau_GABA_A_fall");
@@ -396,4 +396,4 @@ namespace nest
 } // namespace
 
 #endif // HAVE_GSL_1_11
-#endif // AEIF_COND_EXP_H
+#endif // IAF_GRIDCELLS_H

@@ -340,11 +340,6 @@ void nest::iaf_gridcells::calibrate()
  * Update and spike handling functions
  * ---------------------------------------------------------------- */
 
-int nest::iaf_gridcells::integrate(const Time &origin, const long_t from, const long_t to)
-{
-}
-
-
 void nest::iaf_gridcells::update(const Time &origin, const long_t from, const long_t to)
 {
   typedef nest::iaf_gridcells::State_ S;
