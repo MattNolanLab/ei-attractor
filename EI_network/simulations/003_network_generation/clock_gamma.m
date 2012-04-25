@@ -14,7 +14,7 @@ N = size(theta_stateMon_Iclamp_e_values, 1)
 trace = theta_stateMon_Iclamp_e_values(2, :); % the data
 
 
-stim_dur = .5; % stimulus duration
+stim_dur = 5; % stimulus duration
 stimstart = 0; % time of stimulus onset in recording
 
 pa = 1e12; % scaling factor to convert amps to picoamps
@@ -31,7 +31,7 @@ trace = sfilt(stimstart*fs+1:(stimstart+stim_dur)*fs)';
 overlay = reshape(trace, fs/thetafreq, []);
 
 % remove first theta cycle to eliminate stimulus onset artifacts
-%overlay(:, 1) = [];
+overlay(:, 1:3) = [];
 overlay_mean = mean(overlay, 2); % average episode
 
 % use variance of first and last quarter of each episode as baseline
@@ -166,13 +166,14 @@ set(gca, 'XTick', [1 size(overlay, 1)])
 set(gca, 'XTickLabel', {'-3.14', '3.14' })
 
 subplot(m, n, 2, 'FontSize', fontSize)
-d_bump_all = sqrt(diff(bumpPos(:, 1))/bumpPos_dt.^2 + diff(bumpPos(:, 2))/bumpPos_dt.^2);
+%d_bump_all = sqrt(diff(bumpPos(:, 1))/bumpPos_dt.^2 + diff(bumpPos(:, 2))/bumpPos_dt.^2);
+d_bump_all = sqrt(bumpPos(:, 1).^2 + bumpPos(:, 2).^2);
 %d_bump_all = bumpPos(:, 1)
 
-plot(d_bump_all, [0:numel(bumpPos_times)-2]*bumpPos_dt)
+plot(d_bump_all, [0:numel(bumpPos_times)-1]*bumpPos_dt)
 ylim([0 stim_dur])
-%xlabel('Bump distance from center of the sheet (neurons)')
-xlabel('Bump velocity (neur./s)')
+xlabel('Bump distance from center of the sheet (neurons)')
+%xlabel('Bump velocity (neur./s)')
 ylabel('Time (s)')
 
 set(gcf,'PaperPositionMode','auto');

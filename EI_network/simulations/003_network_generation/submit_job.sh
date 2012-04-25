@@ -7,14 +7,13 @@
 ########################################
 
 BASE=../../
-PYTHON_JUP="/disk/scratch/s0966762/lib/python2.6/site-packages"
-export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE:$PYTHON_JUP"
+export PYTHONPATH="$BASE:$PYTHONPATH"
 EDDIE="0"  # if eddie, submit on a cluster using qsub
 dry_run=0
 
 QSUB_PARAMS="-P inf_ndtc -cwd -l h_rt=05:00:00 -pe memory-2G 2"
 
-net_generations=10
+net_generations=1
 
 P_Ivel="0" #"0 10 25 50 75 100 150 200"
 P_pAMPA_sigma="0.7"
@@ -91,7 +90,7 @@ sigma_init_cond="10e-3"
 
 refrac_abs="0.1e-3"
 
-time=2
+time=1
 sim_dt="0.1e-3"
 spike_detect_th="40e-3"
 Vclamp="-50e-3"

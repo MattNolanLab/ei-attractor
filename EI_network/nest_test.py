@@ -12,7 +12,7 @@ from numpy import exp
 import time
 
 
-
+nest.Install('einetwork')
 nest.ResetKernel()
 
 startbuild= time.time()
@@ -35,60 +35,60 @@ CI    = epsilon*NI   # number of inhibitory synapses per neuron
 C_tot = int(CI+CE)  # total number of synapses per neuron
 
 # Initialize the parameters of the integrate and fire neuron
-tauMem      = 10.0
-E_L         = -60.0
-CMem        = 250.0
-t_ref       = 2.0
-V_peak      = 40.0
-V_reset     = E_L
-E_ex        = 0.0
-E_in        = -75.0
-g_L         = CMem / tauMem
-tau_syn_ex  = 2.0
-tau_syn_in  = 5.0
+tauMem          = 10.0
+C_m             = 250.0
+g_L             = C_m / tauMem
+E_L             = -60.0
+t_ref           = 2.0
+V_peak          = 40.0
+V_reset         = E_L
+E_AMPA          = 0.0
+E_GABA_A        = -75.0
+tau_AMPA_fall   = 2.0
+tau_GABA_A_fall = 5.0
 
-a           = 0.0
-b           = 0.0
-Delta_T     = 2.0
-tau_w       = 1.0
-V_th        = -45.0
+Delta_T         = 2.0
+tau_w           = 10.0
+V_th            = -45.0
 
-#I_e_e = 500.0
-I_e_i = 0.
+I_e_e = 0.0
+I_e_i = 0.0
 p_rate = 1000.0
 
 # nS
 J_ex  = 0.75/4
-J_in  = -0.3/4
-J_ext_ex  = 8.0
+J_in  = 0.3/4
+J_ext_ex  = 4.0
 J_ext_in  = 0.0
 
 
-numThreads = 8
+numThreads = 1
 nest.SetKernelStatus({"resolution": dt, "print_time": False})
 nest.SetKernelStatus({"local_num_threads": numThreads})
 
 print "Building network"
 
-neuron_params = {"V_m"       : E_L,
-                 "C_m"       : CMem,
-                 "t_ref"     : t_ref,
-                 "V_peak"    : V_peak,
-                 "V_reset"   : V_reset,
-                 "E_L"       : E_L,
-                 "g_L"       : g_L,
-                 "a"         : a,
-                 "b"         : b,
-                 "Delta_T"   : Delta_T,
-                 "tau_w"     : tau_w,
-                 "V_th"      : V_th,
-                 "E_ex"      : E_ex,
-                 "E_in"      : E_in,
-                 "tau_syn_ex": tau_syn_ex,
-                 "tau_syn_in": tau_syn_in}
+neuron_params = {"V_m"              : E_L,
+                 "C_m"              : C_m,
+                 "t_ref"            : t_ref,
+                 "V_peak"           : V_peak,
+                 "V_reset"          : V_reset,
+                 "E_L"              : E_L,
+                 "g_L"              : g_L,
+                 "Delta_T"          : Delta_T,
+                 "V_th"             : V_th,
+                 "E_AMPA"           : E_AMPA,
+                 "E_GABA_A"         : E_GABA_A,
+                 "tau_AMPA_fall"    : tau_AMPA_fall,
+                 "tau_GABA_A_fall"  : tau_GABA_A_fall,
+                 "I_e"              : I_e_e}
 
-nodes_ex=nest.Create("aeif_cond_exp",NE, params = neuron_params)
-nodes_in=nest.Create("aeif_cond_exp",NI, params = neuron_params)
+
+model_name = "aeif_cond_exp_custom"
+
+nodes_ex=nest.Create(model_name, NE, params = neuron_params)
+nodes_in=nest.Create(model_name, NI, params = neuron_params)
+receptors = nest.GetDefaults(model_name)['receptor_types']
 
 nest.SetDefaults("poisson_generator",{"rate": p_rate})
 noise=nest.Create("poisson_generator")
@@ -96,8 +96,8 @@ noise=nest.Create("poisson_generator")
 
 espikes=nest.Create("spike_detector")
 ispikes=nest.Create("spike_detector")
-meter_e = nest.Create('multimeter', params = {'withtime': True, 'interval': 0.1, 'record_from': ['V_m', 'g_ex', 'g_in']})
-meter_i = nest.Create('multimeter', params = {'withtime': True, 'interval': 0.1, 'record_from': ['V_m', 'g_ex', 'g_in']})
+meter_e = nest.Create('multimeter', params = {'withtime': True, 'interval': 0.1, 'record_from': ['V_m', 'g_AMPA', 'g_GABA_A', 'g_NMDA']})
+meter_i = nest.Create('multimeter', params = {'withtime': True, 'interval': 0.1, 'record_from': ['V_m', 'g_AMPA', 'g_GABA_A', 'g_NMDA']})
 
 nest.SetStatus([espikes],[{"label": "brunel-py-ex",
                    "withtime": True,
@@ -109,15 +109,17 @@ nest.SetStatus([ispikes],[{"label": "brunel-py-in",
 
 print "Connecting devices."
 
-nest.CopyModel("static_synapse","excitatory",{"weight":J_ex, "delay":delay})
-nest.CopyModel("static_synapse","inhibitory",{"weight":J_in, "delay":delay})
+nest.CopyModel("static_synapse","ex_AMPA",{"weight":J_ex, "delay":delay,
+    "receptor_type": receptors["AMPA"]})
+nest.CopyModel("static_synapse","inhibitory",{"weight":J_in, "delay":delay,
+    "receptor_type": receptors["GABA_A"]})
 
-nest.DivergentConnect(noise,nodes_ex, weight=J_ext_ex, delay=delay, model="static_synapse")
-nest.DivergentConnect(noise,nodes_in, weight=J_ext_in, delay=delay, model="static_synapse")
+nest.DivergentConnect(noise, nodes_ex, weight=J_ext_ex, delay=delay, model="ex_AMPA")
+#nest.DivergentConnect(noise, nodes_in, weight=J_ext_in, delay=delay, model="ex_AMPA")
 
  
-nest.ConvergentConnect(range(1,N_rec+1),espikes,model="excitatory")
-nest.ConvergentConnect(range(NE+1,NE+1+N_rec),ispikes,model="excitatory")
+nest.ConvergentConnect(range(1,N_rec+1),espikes,model="static_synapse")
+nest.ConvergentConnect(range(NE+1,NE+1+N_rec),ispikes,model="static_synapse")
 
 nest.Connect(meter_e, [1])
 nest.Connect(meter_i, [NE+1])
@@ -131,7 +133,7 @@ print "Connecting network."
 
 numpy.random.seed(1234)
 
-nest.RandomConvergentConnect(nodes_ex, nodes_in, int(CE), model="excitatory")
+nest.RandomConvergentConnect(nodes_ex, nodes_in, int(CE), model="ex_AMPA")
 nest.RandomConvergentConnect(nodes_in, nodes_ex, int(CI), model="inhibitory")
 
 endbuild=time.time()
@@ -147,7 +149,7 @@ rate_ex   = events_ex/simtime*1000.0/N_rec
 events_in = nest.GetStatus(ispikes,"n_events")[0]
 rate_in   = events_in/simtime*1000.0/N_rec
 
-num_synapses = nest.GetDefaults("excitatory")["num_connections"]+\
+num_synapses = nest.GetDefaults("ex_AMPA")["num_connections"]+\
 nest.GetDefaults("inhibitory")["num_connections"]
 
 build_time = endbuild-startbuild
@@ -177,10 +179,10 @@ pl.plot(t, events['V_m'])
 pl.ylabel('Membrane potential [mV]')
 
 pl.subplot(212, sharex=ax)
-pl.plot(t, events['g_ex'], t, events['g_in'])
+pl.plot(t, events['g_AMPA'], t, events['g_GABA_A'], t, events['g_NMDA'])
 pl.xlabel('Time [ms]')
 pl.ylabel('Synaptic conductance [nS]')
-pl.legend(('g_exc', 'g_inh'))
+pl.legend(('g_AMPA', 'g_GABA_A', 'g_NMDA'))
 
 # obtain and display data
 events = nest.GetStatus(meter_i)[0]['events']
@@ -193,10 +195,10 @@ pl.plot(t, events['V_m'])
 pl.ylabel('Membrane potential [mV]')
 
 pl.subplot(212)
-pl.plot(t, events['g_ex'], t, events['g_in'])
+pl.plot(t, events['g_AMPA'], t, events['g_GABA_A'], t, events['g_NMDA'])
 pl.xlabel('Time [ms]')
 pl.ylabel('Synaptic conductance [nS]')
-pl.legend(('g_exc', 'g_inh'))
+pl.legend(('g_AMPA', 'g_GABA_A', 'g_NMDA'))
 
 #nest.raster_plot.show()
 pl.show()

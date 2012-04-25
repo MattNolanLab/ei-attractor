@@ -1,6 +1,6 @@
 import brian_no_units
-from brian import *
 
+import brian
 from brian import *
 from brian.library.IF import *
 from brian.library.synapses import *
@@ -27,7 +27,8 @@ from tools import *
 from plotting import *
 from place_input import *
 
-lg.basicConfig(level=lg.DEBUG)
+#lg.basicConfig(level=lg.DEBUG)
+brian.log_level_debug()
 
 
 parser = getOptParser()

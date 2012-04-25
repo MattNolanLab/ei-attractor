@@ -14,6 +14,10 @@ from numpy.random import rand
 import time
 import math
 
+import logging as lg
+
+lg.basicConfig(level=lg.DEBUG)
+
 # Get a preferred direction for a neuron
 def getPreferredDirection(pos_x, pos_y):
 # pos_x/y - position of neuron in 2d sheet
