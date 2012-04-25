@@ -340,6 +340,11 @@ void nest::iaf_gridcells::calibrate()
  * Update and spike handling functions
  * ---------------------------------------------------------------- */
 
+int nest::iaf_gridcells::integrate(const Time &origin, const long_t from, const long_t to)
+{
+}
+
+
 void nest::iaf_gridcells::update(const Time &origin, const long_t from, const long_t to)
 {
   typedef nest::iaf_gridcells::State_ S;
@@ -382,8 +387,8 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
       if (S_.y_[State_::V_M] < -1e3)
         throw NumericalInstability(get_name());
 
-      // spikes are handled inside the while-loop
-      // due to spike-driven adaptation
+
+      // Spikes
       if ( S_.r_ > 0 )
         S_.y_[State_::V_M] = P.V_reset;
       else if ( S_.y_[State_::V_M] >= P.V_peak )
@@ -402,10 +407,7 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
     // Process all spikes
     S_.y_[S::G_AMPA]   += B_.spike_inputs_[AMPA].get_value(lag);
     S_.y_[S::G_NMDA]   += B_.spike_inputs_[NMDA].get_value(lag);
-
-    double_t gaba_spike = B_.spike_inputs_[GABA_A].get_value(lag);
-    assert(gaba_spike >= 0);
-    S_.y_[S::G_GABA_A] += gaba_spike;
+    S_.y_[S::G_GABA_A] += B_.spike_inputs_[GABA_A].get_value(lag);
       
     // set new input current
     B_.I_stim_ = B_.currents_.get_value(lag);
