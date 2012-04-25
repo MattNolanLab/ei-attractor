@@ -110,6 +110,7 @@ namespace nest
     const Name g_AMPA("g_AMPA");
     const Name g_NMDA("g_NMDA");
     const Name g_GABA_A("g_GABA_A");
+    const Name I_stim("I_stim");
   }
 
 
@@ -239,6 +240,7 @@ namespace nest
       enum StateVecElems
       {
         V_M   = 0,
+        I_STIM,     // External stimulation
         // All synaptic conductances that receive spikes must be the last in the list
         G_AMPA,
         G_NMDA,

@@ -35,10 +35,13 @@ QSUB_PARAMS = "-P inf_ndtc -cwd -l h_rt=06:00:00 -pe memory-2G 2"
 net_generations=5
 
 parameters = defaultParameters
-parameters['print_time'] = None  # Print time
-parameters['numThreads'] = 1
+parameters['print_time']    = None  # This is bool
+parameters['numThreads']    = 1
+parameters['Iext_e_max']    = 600.0 # pA
+parameters['Iext_i_max']    = 300.0 # pA
+parameters['Iext_start']    = 500.0 # ms
 
-parameters['time'] = 1000        # ms
+parameters['time']          = 1000  # ms
 
 programName = 'python2.6 simulation.py'
 

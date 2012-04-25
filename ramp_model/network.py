@@ -68,7 +68,7 @@ class GammaNetwork:
         
 
         
-        log_info('ramp_model.GammaNetwork', 'Building integrate and fire network using nest')
+        log_info('GammaNetwork', 'Building integrate and fire network using nest')
         C_m_e = self.o.taum_e * self.o.gL_e
         C_m_i = self.o.taum_i * self.o.gL_i
         
@@ -113,11 +113,6 @@ class GammaNetwork:
         self.initStates()
 
 
-    def setBackgroundInput(self, Iext_e, Iext_i):
-        self.E_pop.Iext = linspace(Iext_e, Iext_e, len(self.E_pop))
-        self.I_pop.Iext = linspace(Iext_i, Iext_i, len(self.I_pop))
-
-
     def connRandom(self):
         '''
         Connect each pair of neurons with a random probability given by:
@@ -160,12 +155,30 @@ class GammaNetwork:
         '''
         Set up the ramp current in the model. Appropriate parameters from
         neuronOpts will be used here:
-            Iext_e_min
+            Iext_start
             Iext_e_max
-            Iext_i_min
             Iext_i_max
         '''
-        raise NotImplementedException("GammaNetwork.setRampCurrent")
+        nest.SetStatus(self.nodes_ex, {"I_e" : 0.0})
+        nest.SetStatus(self.nodes_in, {"I_e" : 0.0})
+        model_name = 'ramp_current_generator'
+
+        # E ramp current
+        params_e = {
+                'a' :  self.o.Iext_e_max / (self.o.time - self.o.Iext_start),
+                'b' : -self.o.Iext_e_max / (self.o.time - self.o.Iext_start) * self.o.Iext_start,
+                'c' : 1.0}
+        params_i = {
+                'a' :  self.o.Iext_i_max / (self.o.time - self.o.Iext_start),
+                'b' : -self.o.Iext_i_max / (self.o.time - self.o.Iext_start) * self.o.Iext_start,
+                'c' : 1.0}
+        self._nodes_ramp_e = nest.Create(model_name, self.o.Ne, params=params_e)
+        self._nodes_ramp_i = nest.Create(model_name, self.o.Ni, params=params_i)
+
+        nest.Connect(self._nodes_ramp_e, self.nodes_ex, model="static_synapse")
+        nest.Connect(self._nodes_ramp_i, self.nodes_in, model="static_synapse")
+
+        log_warn('GammaNetwork', 'Ramp current inputs need the Gaussian profile')
 
     def setConstantCurrent(self):
         '''
@@ -206,5 +219,70 @@ class GammaNetwork:
             rate_ext_i
         ''' 
         raise NotImplementedException("GammaNetwork.setConstantPoissonConductance")
+
+
+    ############################################################################ 
+    #                              Monitors
+    ############################################################################ 
+    def monitorESpikes(self, nids):
+        '''
+        Monitor excitatory neurons' spikes:
+          nids  - neuron ids (local, within the group)
+        '''
+        self._espikes = nest.Create("spike_detector")
+        self._sp_e_nids = nids
+        nest.SetStatus([self._espikes],[{"label": "spikes_ex",
+                           "withtime": True,
+                           "withgid": True}])
+        nest.ConvergentConnect(list(self.nodes_ex[0] + np.array(nids)), self._espikes, model="static_synapse")
+
+    def monitorISpikes(self, nids):
+        '''
+        Monitor inhibitory neurons' spikes:
+          nids  - neuron ids (local, within the group)
+        '''
+        self._ispikes = nest.Create("spike_detector")
+        self._sp_i_nids = nids
+        nest.SetStatus([self._ispikes],[{"label": "ramp_model_in",
+                   "withtime": True,
+                   "withgid": True}])
+        nest.ConvergentConnect(list(self.nodes_in[0] + np.array(nids)), self._ispikes, model="static_synapse")
+
+
+    def getESpikeMonitor(self):
+        return self._espikes, self._sp_e_nids
+
+
+    def getISpikeMonitor(self):
+        return self._ispikes, self._sp_i_nids
+
+
+    def monitorEState(self, nids, states):
+        '''
+        Monitor state variables of neurons in the E population.
+          nids  - list of ids of neurons within the E population (starting at 0)
+          state - a list of state names to record
+        '''
+        self._state_e_nids  = nids
+        self._states_e      = states
+        self._meter_e       = nest.Create('multimeter',
+                                params = {'withtime': True,
+                                          'interval': 0.1,
+                                          'record_from': states})
+        nest.Connect(self._meter_e, np.array(nids) + self.nodes_ex[0])
+
+    def monitorIState(self, nids, states):
+        '''
+        Monitor state variables of neurons in the I population.
+          nids  - list of ids of neurons within the E population (starting at 0)
+          state - a list of state names to record
+        '''
+        self._state_i_nids  = nids
+        self._states_i      = states
+        self._meter_i       = nest.Create('multimeter',
+                                params = {'withtime': True,
+                                          'interval': 0.1,
+                                          'record_from': states})
+        nest.Connect(self._meter_i, np.array(nids) + self.nodes_in[0])
 
 

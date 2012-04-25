@@ -58,6 +58,8 @@ namespace nest
     // use standard names whereever you can for consistency!
     insert_(names::V_m, 
 	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::V_M>);
+    insert_(names::I_stim, 
+	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::I_STIM>);
     insert_(names::g_AMPA, 
 	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::G_AMPA>);
     insert_(names::g_NMDA, 
@@ -101,7 +103,7 @@ int nest::iaf_gridcells_dynamics (double, const double y[], double f[], void* pn
   f[S::V_M  ] = ( -node.P.g_L * ( (V-node.P.E_L) - I_spike) 
 		     - I_syn_AMPA - I_syn_NMDA - I_syn_GABA_A
              + node.P.I_e + node.B_.I_stim_) / node.P.C_m;
-
+  f[S::I_STIM]   = NAN; // This is only for recording
   f[S::G_AMPA]   = -g_AMPA   / node.P.tau_AMPA_fall; // Synaptic Conductance (nS)
   f[S::G_NMDA]   = -g_NMDA   / node.P.tau_NMDA_fall; // Synaptic Conductance (nS)
   f[S::G_GABA_A] = -g_GABA_A / node.P.tau_GABA_A_fall; // Synaptic Conductance (nS)
@@ -406,6 +408,7 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
       
     // set new input current
     B_.I_stim_ = B_.currents_.get_value(lag);
+    S_.y_[S::I_STIM] = B_.I_stim_;
 
     // log state data
     B_.logger_.record_data(origin.get_steps() + lag);

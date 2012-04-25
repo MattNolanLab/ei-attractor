@@ -19,8 +19,9 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import pylab as pl
-import numpy as np
+import pylab    as pl
+import numpy    as np
+import logging  as lg
 import nest
 import time
 
@@ -30,6 +31,8 @@ from nest       import raster_plot
 from network    import *
 from parameters import getOptParser
 
+lg.basicConfig(level=lg.DEBUG)
+
 
 # Parse command line parameters
 parser = getOptParser()
@@ -38,49 +41,28 @@ parser.add_option("--numThreads",   type    = "int",          help="Number of th
 (o, args) = parser.parse_args()
 
 # Other parameters
-N_rec     = 50 # record from 50 neurons
+N_rec       = 50 # record from 50 neurons
+record_from = ['V_m', 'g_AMPA', 'g_GABA_A', 'g_NMDA', 'I_stim']
 
 
 startbuild= time.time()
-
-net = GammaNetwork(o)
-
-
-espikes = nest.Create("spike_detector")
-ispikes = nest.Create("spike_detector")
-meter_e = nest.Create('multimeter',
-        params = {'withtime': True,
-                  'interval': 0.1,
-                  'record_from': ['V_m', 'g_AMPA', 'g_GABA_A', 'g_NMDA']})
-meter_i = nest.Create('multimeter',
-        params = {'withtime': True,
-                  'interval': 0.1,
-                  'record_from': ['V_m', 'g_AMPA', 'g_GABA_A', 'g_NMDA']})
-
-nest.SetStatus([espikes],[{"label": "ramp_model_ex",
-                   "withtime": True,
-                   "withgid": True}])
-
-nest.SetStatus([ispikes],[{"label": "ramp_model_in",
-                   "withtime": True,
-                   "withgid": True}])
-
-print "Connecting devices."
-
- 
-nest.ConvergentConnect(range(1,N_rec+1),          espikes, model="static_synapse")
-nest.ConvergentConnect(range(o.Ne, o.Ne+1+N_rec), ispikes, model="static_synapse")
-
-nest.Connect(meter_e, [1])
-nest.Connect(meter_i, [o.Ne + 1])
-
-print "Connecting network."
+print "Setting up network."
 
 np.random.seed(1234)
+
+net = GammaNetwork(o)
 net.connRandom()
-net.setConstantCurrent()
+#net.setConstantCurrent()
+net.setRampCurrent()
+
+# Recordings
+net.monitorEState([0], record_from)
+net.monitorIState([0], record_from)
+net.monitorESpikes(range(N_rec))
+net.monitorISpikes(range(N_rec))
 
 endbuild=time.time()
+
 
 print "Simulating."
 
@@ -95,36 +77,34 @@ sim_time   = endsimulate-endbuild
 #nest.raster_plot.from_device(ispikes, hist=True)
 
 # obtain and display data
-events = nest.GetStatus(meter_e)[0]['events']
-t = events['times'];
+meter_e = net._meter_e
+meter_i = net._meter_i
 
-pl.figure()
-pl.title('Excitatory cell')
-ax = pl.subplot(211)
-pl.plot(t, events['V_m'])
-pl.ylabel('Membrane potential [mV]')
+for EI in ['E', 'I']:
+    pl.figure()
+    if EI == 'E':
+        pl.title('Excitatory cell')
+        events = nest.GetStatus(meter_e)[0]['events']
+    else:
+        pl.title('Inhibitory cell')
+        events = nest.GetStatus(meter_i)[0]['events']
 
-pl.subplot(212, sharex=ax)
-pl.plot(t, events['g_AMPA'], t, events['g_GABA_A'], t, events['g_NMDA'])
-pl.xlabel('Time [ms]')
-pl.ylabel('Synaptic conductance [nS]')
-pl.legend(('g_AMPA', 'g_GABA_A', 'g_NMDA'))
+    t = events['times'];
+    ax = pl.subplot(311)
+    pl.plot(t, events['V_m'])
+    pl.ylabel('V_m [mV]')
+    
+    pl.subplot(312, sharex=ax)
+    pl.plot(t, events['g_AMPA'], t, events['g_GABA_A'], t, events['g_NMDA'])
+    pl.xlabel('Time [ms]')
+    pl.ylabel('Syn. conductance [nS]')
+    pl.legend(('g_AMPA', 'g_GABA_A', 'g_NMDA'))
+    
+    pl.subplot(313, sharex=ax)
+    pl.plot(t, events['I_stim'])
+    pl.xlabel('Time [ms]')
+    pl.ylabel('Ext. current (pA)')
 
-# obtain and display data
-events = nest.GetStatus(meter_i)[0]['events']
-t = events['times'];
-
-pl.figure()
-pl.title('Inhibitory cell')
-pl.subplot(211)
-pl.plot(t, events['V_m'])
-pl.ylabel('Membrane potential [mV]')
-
-pl.subplot(212)
-pl.plot(t, events['g_AMPA'], t, events['g_GABA_A'], t, events['g_NMDA'])
-pl.xlabel('Time [ms]')
-pl.ylabel('Synaptic conductance [nS]')
-pl.legend(('g_AMPA', 'g_GABA_A', 'g_NMDA'))
 
 #nest.raster_plot.show()
 pl.show()

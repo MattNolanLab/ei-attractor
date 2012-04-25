@@ -38,6 +38,10 @@ def getOptParser():
     optParser.add_option("--Iext_e",          type="float",  help="External background current into the excitatory population (pA)")
     optParser.add_option("--Iext_i",          type="float",  help="External background current into the inhibitory population (pA)")
 
+    optParser.add_option("--Iext_e_max",      type="float",  help="E external ramp current at the end of the simulation (pA)")
+    optParser.add_option("--Iext_i_max",      type="float",  help="I external ramp current at the end of the simulation (pA)")
+    optParser.add_option("--Iext_start",      type="float",  help="Start time of the external ramp current (ms)")
+
     optParser.add_option("--taum_e",          type="float",  help="Mean of excitatory neuron membrane time constant (ms)")
     optParser.add_option("--taum_e_spread",   type="float",  help="Spread of --taum_e (see --taum_i_spread option) (ms)")
     optParser.add_option("--EL_e",            type="float",  help="Mean resting membrane potential of excitatory neurons (mV)")
@@ -83,7 +87,7 @@ def getOptParser():
     optParser.add_option("--sigma_init_cond", type="float",  help="Std. dev of distribution of initial membrane voltages (V)")
 
 
-    optParser.add_option("-t", "--time",      type="float",  help="Total simulation time (ms)")
+    optParser.add_option("--time",            type="float",  help="Total simulation time (ms)")
     optParser.add_option("--sim_dt",          type="float",  help="Simulation time step (ms)")
 
     optParser.add_option('--Vclamp',          type=float,    help="Clamp potential (for simulated voltage clamp, V)")
