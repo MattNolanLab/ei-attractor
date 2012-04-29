@@ -60,12 +60,20 @@ namespace nest
 	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::V_M>);
     insert_(names::I_stim, 
 	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::I_STIM>);
+    insert_(names::g_AHP, 
+	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::G_AHP>);
     insert_(names::g_AMPA, 
 	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::G_AMPA>);
     insert_(names::g_NMDA, 
 	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::G_NMDA>);
     insert_(names::g_GABA_A, 
 	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::G_GABA_A>);
+    insert_(names::I_clamp_AMPA, 
+	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::I_CLAMP_AMPA>);
+    insert_(names::I_clamp_NMDA, 
+	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::I_CLAMP_NMDA>);
+    insert_(names::I_clamp_GABA_A, 
+	    &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::I_CLAMP_GABA_A>);
   }
 }
 
@@ -73,7 +81,7 @@ namespace nest
 //int nest::iaf_gridcells::evolve_N = 0;
 
 extern "C"
-int nest::iaf_gridcells_dynamics (double, const double y[], double f[], void* pnode)
+int nest::iaf_gridcells_dynamics(double, const double y[], double f[], void* pnode)
 {
   // a shorthand
   typedef nest::iaf_gridcells::State_ S;
@@ -89,10 +97,12 @@ int nest::iaf_gridcells_dynamics (double, const double y[], double f[], void* pn
   // good compiler will optimize the verbosity away ...
 
   // shorthand for state variables
-  const double_t& V           = y[S::V_M  ];
-  const double_t& g_AMPA      = y[S::G_AMPA];
+  const double_t V            = y[S::V_M  ];
+  const double_t g_AHP        = y[S::G_AHP];
+  const double_t g_AMPA       = y[S::G_AMPA];
   const double_t g_NMDA       = y[S::G_NMDA];
   const double_t g_GABA_A     = y[S::G_GABA_A];
+  const double_t I_AHP        = g_AHP    * (V - node.P.E_AHP);
   const double_t I_syn_AMPA   = g_AMPA   * (V - node.P.E_AMPA);
   const double_t I_syn_NMDA   = g_NMDA   * (V - node.P.E_NMDA);
   const double_t I_syn_GABA_A = g_GABA_A * (V - node.P.E_GABA_A);
@@ -100,10 +110,13 @@ int nest::iaf_gridcells_dynamics (double, const double y[], double f[], void* pn
   const double_t I_spike   = node.P.Delta_T * std::exp((V - node.P.V_th) / node.P.Delta_T);
 
   // dv/dt
-  f[S::V_M  ] = ( -node.P.g_L * ( (V-node.P.E_L) - I_spike) 
-		     - I_syn_AMPA - I_syn_NMDA - I_syn_GABA_A
+  f[S::V_M  ] =
+          ( -node.P.g_L * ( (V-node.P.E_L) - I_spike) 
+          - I_AHP
+		      - I_syn_AMPA - I_syn_NMDA - I_syn_GABA_A
              + node.P.I_e + node.B_.I_stim_) / node.P.C_m;
   f[S::I_STIM]   = NAN; // This is only for recording
+  f[S::G_AHP]    = -g_AHP    / node.P.tau_AHP;       // After-hyperpolarisation conductance (nS)
   f[S::G_AMPA]   = -g_AMPA   / node.P.tau_AMPA_fall; // Synaptic Conductance (nS)
   f[S::G_NMDA]   = -g_NMDA   / node.P.tau_NMDA_fall; // Synaptic Conductance (nS)
   f[S::G_GABA_A] = -g_GABA_A / node.P.tau_GABA_A_fall; // Synaptic Conductance (nS)
@@ -133,8 +146,19 @@ nest::iaf_gridcells::Parameters::Parameters()
     tau_NMDA_fall   (  50.0 ), // ms
     tau_GABA_A_rise (   1.0 ), // ms
     tau_GABA_A_fall (   5.0 ), // ms
-    tau_AHP         (  20.0 )  // ms
+    tau_AHP         (  20.0 ), // ms
+    E_AHP           ( -80.0 ), // mV
+    g_AHP_max       (   0.0 ), // nS
+    V_clamp         ( -50.0 )  // mV
 {
+  update_clamp_potentials();
+}
+
+void nest::iaf_gridcells::Parameters::update_clamp_potentials()
+{
+  E_clamp_AMPA    = E_AMPA - V_clamp;
+  E_clamp_NMDA    = E_NMDA - V_clamp;
+  E_clamp_GABA_A  = E_GABA_A - V_clamp;
 }
 
 nest::iaf_gridcells::State_::State_(const Parameters &p)
@@ -190,6 +214,9 @@ void nest::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
   def<double>(d, names::tau_GABA_A_fall, tau_GABA_A_fall);
 
   def<double>(d, names::tau_AHP,         tau_AHP);
+  def<double>(d, names::E_AHP,           E_AHP);
+  def<double>(d, names::g_AHP_max,       g_AHP_max);
+  def<double>(d, names::V_clamp,         V_clamp);
 }
 
 void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
@@ -215,6 +242,12 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
   updateValue<double>(d, names::tau_GABA_A_fall, tau_GABA_A_fall);
 
   updateValue<double>(d, names::tau_AHP,         tau_AHP);
+  updateValue<double>(d, names::E_AHP,           E_AHP);
+  updateValue<double>(d, names::g_AHP_max,       g_AHP_max);
+
+  updateValue<double>(d, names::V_clamp,         V_clamp);
+
+  update_clamp_potentials();
 
 
   if ( V_reset >= V_peak )
@@ -240,9 +273,11 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
 void nest::iaf_gridcells::State_::get(DictionaryDatum &d) const
 {
   def<double>(d,names::V_m,      y_[V_M]);
+  def<double>(d,names::g_AHP,    y_[G_AHP]);
   def<double>(d,names::g_AMPA,   y_[G_AMPA]);
   def<double>(d,names::g_NMDA,   y_[G_NMDA]);
   def<double>(d,names::g_GABA_A, y_[G_GABA_A]);
+  def<double>(d,names::I_stim,   y_[I_STIM]);
 }
 
 void nest::iaf_gridcells::State_::set(const DictionaryDatum &d, const Parameters &)
@@ -251,6 +286,7 @@ void nest::iaf_gridcells::State_::set(const DictionaryDatum &d, const Parameters
   updateValue<double>(d,names::g_AMPA,   y_[G_AMPA]);
   updateValue<double>(d,names::g_NMDA,   y_[G_NMDA]);
   updateValue<double>(d,names::g_GABA_A, y_[G_GABA_A]);
+  updateValue<double>(d,names::I_stim,   y_[I_STIM]);
 
   if ( y_[G_AMPA] < 0 || y_[G_NMDA] < 0 || y_[G_GABA_A] < 0 )
     throw BadProperty("Conductances must not be negative.");
@@ -326,7 +362,7 @@ void nest::iaf_gridcells::init_buffers_()
 
   B_.step_ = Time::get_resolution().get_ms();
 
-  B_.IntegrationStep_ = B_.step_; //std::min(0.01, B_.step_);
+  B_.IntegrationStep_ = std::min(0.05, B_.step_);
 
   B_.I_stim_ = 0.0;
 }
@@ -370,7 +406,7 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
       //assert(S_.y_[S::G_GABA_A] >= 0);
 
       // Integrate, forward Euler
-      for (int i = 0; i < S::STATE_VEC_SIZE; i++)
+      for (int i = 0; i < S::INTEG_SIZE; i++)
         S_.y_[i] += B_.IntegrationStep_ * S_.dydt_[i];
 
       if (S_.y_[S::G_GABA_A] < 0)
@@ -392,6 +428,9 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
       {
         S_.y_[State_::V_M]  = P.V_reset;
         S_.r_               = V_.RefractoryCounts_;
+
+        // AHP reactivation
+        S_.y_[State_::G_AHP] = P.g_AHP_max;
         
         set_spiketime(Time::step(origin.get_steps() + lag + 1));
         SpikeEvent se;
@@ -409,6 +448,11 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
     // set new input current
     B_.I_stim_ = B_.currents_.get_value(lag);
     S_.y_[S::I_STIM] = B_.I_stim_;
+
+    // Set clamp currents
+    S_.y_[S::I_CLAMP_AMPA]    = S_.y_[S::G_AMPA]    * P.E_clamp_AMPA;
+    S_.y_[S::I_CLAMP_NMDA]    = S_.y_[S::G_NMDA]    * P.E_clamp_NMDA;
+    S_.y_[S::I_CLAMP_GABA_A]  = S_.y_[S::G_GABA_A]  * P.E_clamp_GABA_A;
 
     // log state data
     B_.logger_.record_data(origin.get_steps() + lag);

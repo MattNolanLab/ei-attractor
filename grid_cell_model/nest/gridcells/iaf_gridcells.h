@@ -66,6 +66,7 @@ Membrane Parameters:
   E_L               double - Leak reversal potential in mV. 
   E_AHP             double - Reversal potential of afterhyperpolarisation in mV (AHP)
   tau_AHP           double - decay time of AHP in ms (exp function)
+  g_AHP_max         double - Amplitude (exponential) of the AHP conductance
   I_e               double - Constant external input current in pA.
 
 Spike initiation parameters:
@@ -106,11 +107,18 @@ namespace nest
     const Name tau_NMDA_fall("tau_NMDA_fall");
     const Name tau_GABA_A_rise("tau_GABA_A_rise");
     const Name tau_GABA_A_fall("tau_GABA_A_fall");
+    const Name E_AHP("E_AHP");
+    const Name g_AHP_max("g_AHP_max");
     const Name tau_AHP("tau_AHP");
+    const Name g_AHP("g_AHP");
     const Name g_AMPA("g_AMPA");
     const Name g_NMDA("g_NMDA");
     const Name g_GABA_A("g_GABA_A");
     const Name I_stim("I_stim");
+    const Name V_clamp("V_clamp");
+    const Name I_clamp_AMPA("I_clamp_AMPA");
+    const Name I_clamp_NMDA("I_clamp_NMDA");
+    const Name I_clamp_GABA_A("I_clamp_GABA_A");
   }
 
 
@@ -172,7 +180,7 @@ namespace nest
         NMDA,
         GABA_A,
         SYNAPSE_TYPES_SIZE };
-    
+
     void init_node_(const Node &proto);
     void init_state_(const Node &proto);
     void init_buffers_();
@@ -214,11 +222,27 @@ namespace nest
       double_t tau_GABA_A_fall;
   
       double_t tau_AHP;
+      double_t E_AHP;
+      double_t g_AHP_max;
+
+      double_t V_clamp;     // Ideal voltage clamp potential
+
   
       Parameters();  //!< Sets default parameter values
 
       void get(DictionaryDatum &) const;  //!< Store current values in dictionary
       void set(const DictionaryDatum &);  //!< Set values from dicitonary
+
+      /**
+       * Clamp potentials
+       */
+      double_t E_clamp_AMPA;
+      double_t E_clamp_NMDA;
+      double_t E_clamp_GABA_A;
+
+        private:
+      void update_clamp_potentials();
+    
     };
 
   public:
@@ -241,10 +265,15 @@ namespace nest
       {
         V_M   = 0,
         I_STIM,     // External stimulation
+        G_AHP,
         // All synaptic conductances that receive spikes must be the last in the list
         G_AMPA,
         G_NMDA,
         G_GABA_A,
+        INTEG_SIZE, // State vector integration boundary, after this, no integration will be done
+        I_CLAMP_AMPA,
+        I_CLAMP_NMDA,
+        I_CLAMP_GABA_A,
         STATE_VEC_SIZE
       };
 

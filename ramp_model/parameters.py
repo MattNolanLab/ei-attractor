@@ -51,7 +51,7 @@ def getOptParser():
     optParser.add_option("--gL_e",            type="float",  help="Mean of excitatory membrane resistance (nS)")
     optParser.add_option("--deltaT_e",        type="float",  help="Sharpness of exponential I&F neuron spike initiation (excitatory, mV)")
     optParser.add_option("--E_AHP_e",         type="float",  help="Excitatory AHP reversal potential (mV)")
-    optParser.add_option("--g_AHP_e",         type="float",  help="Maximal AHP excitatory conductance (nS)")
+    optParser.add_option("--g_AHP_e_max",     type="float",  help="Maximal AHP excitatory conductance (nS)")
     optParser.add_option("--tau_AHP_e",       type="float",  help="Excitatory AHP time decay constant (ms)")
     optParser.add_option("--t_ref_e",         type="float",  help="Excitatory absolute refractory period (msec)")
     optParser.add_option("--V_peak_e",        type="float",  help="Excitatory spike detection threshold (mV)")
@@ -68,6 +68,9 @@ def getOptParser():
     optParser.add_option("--ad_i_g_inc",      type="float",  help="After-spike inhibitory increase of leak conductance (nS)")
     optParser.add_option("--deltaT_i",        type="float",  help="Sharpness of exponential I&F neuron spike initiation (mV)")
     optParser.add_option("--t_ref_i",         type="float",  help="Inhibitory absolute refractory period (msec)")
+    optParser.add_option("--E_AHP_i",         type="float",  help="Inhibitory AHP reversal potential (mV)")
+    optParser.add_option("--g_AHP_i_max",     type="float",  help="Maximal AHP inhibitory conductance (nS)")
+    optParser.add_option("--tau_AHP_i",       type="float",  help="Inhibitory AHP time decay constant (ms)")
     optParser.add_option("--V_peak_i",        type="float",  help="Inhibitory spike detection threshold (mV)")
 
     optParser.add_option("--tau_AMPA",        type="float",  help="Mean of AMPA synaptic conductance time constant (ms)")
@@ -95,6 +98,9 @@ def getOptParser():
     optParser.add_option("--output_dir",      type="string", help="Output directory path.")
     optParser.add_option("--fileNamePrefix",  type="string", default='', help="Prefix to include for each output file")
     optParser.add_option("--job_num",         type="int",    help="Use argument of this option to specify the output file name number, instead of using time")
+
+    # Other parameters
+    optParser.add_option("--stim_spread",    type="float",  help="Stimulation spread; normalised to 1. This the sigma of a Gaussian function that defines the gain of stimulation to each neuron")
 
     return optParser
 

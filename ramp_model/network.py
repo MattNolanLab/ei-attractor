@@ -30,7 +30,11 @@ from numpy.random   import rand
 from common         import *
 from log            import *
 
-__all__ = ['GammaNetwork']
+__all__ = ['GammaNetwork', 'gaussianSpread']
+
+def gaussianSpread(X, Y, sigma, maxVal):
+    D2 = np.array(X)**2 + np.array(Y)**2
+    return maxVal * np.exp(-D2 / 2 / sigma**2)
 
 class GammaNetwork:
 
@@ -83,6 +87,9 @@ class GammaNetwork:
                            "V_th"             : self.o.Vt_e,
                            "E_AMPA"           : self.o.E_AMPA,
                            "E_GABA_A"         : self.o.E_GABA_A,
+                           "E_AHP"            : self.o.E_AHP_e,
+                           "tau_AHP"          : self.o.tau_AHP_e,
+                           "g_AHP_max"        : self.o.g_AHP_e_max,
                            "tau_AMPA_fall"    : self.o.tau_AMPA,
                            "tau_GABA_A_rise"  : self.o.tau_GABA_A_rise,
                            "tau_GABA_A_fall"  : self.o.tau_GABA_A_fall,
@@ -99,11 +106,15 @@ class GammaNetwork:
                            "V_th"             : self.o.Vt_i,
                            "E_AMPA"           : self.o.E_AMPA,
                            "E_GABA_A"         : self.o.E_GABA_A,
+                           "E_AHP"            : self.o.E_AHP_i,
+                           "tau_AHP"          : self.o.tau_AHP_i,
+                           "g_AHP_max"        : self.o.g_AHP_i_max,
                            "tau_AMPA_fall"    : self.o.tau_AMPA,
                            "tau_GABA_A_rise"  : self.o.tau_GABA_A_rise,
                            "tau_GABA_A_fall"  : self.o.tau_GABA_A_fall,
                            "I_e"              : 0.0}
         
+        print "E_GABA_A: " + str(self.o.E_GABA_A)
         
         self.model_name  = "iaf_gridcells"
         self.nodes_ex    = nest.Create(self.model_name, self.o.Ne, params = neuron_params_e)
@@ -163,7 +174,6 @@ class GammaNetwork:
         nest.SetStatus(self.nodes_in, {"I_e" : 0.0})
         model_name = 'ramp_current_generator'
 
-        # E ramp current
         params_e = {
                 'a' :  self.o.Iext_e_max / (self.o.time - self.o.Iext_start),
                 'b' : -self.o.Iext_e_max / (self.o.time - self.o.Iext_start) * self.o.Iext_start,
@@ -178,7 +188,18 @@ class GammaNetwork:
         nest.Connect(self._nodes_ramp_e, self.nodes_ex, model="static_synapse")
         nest.Connect(self._nodes_ramp_i, self.nodes_in, model="static_synapse")
 
-        log_warn('GammaNetwork', 'Ramp current inputs need the Gaussian profile')
+        # Generate neuron positions on a square sheet
+        # E neurons
+        X_e = rand(self.o.Ne) - 0.5
+        Y_e = rand(self.o.Ne) - 0.5
+        C_e = gaussianSpread(X_e, Y_e, self.o.stim_spread, 1.0)
+        nest.SetStatus(nodes=self._nodes_ramp_e, params='c', val=C_e)
+        # I neurons
+        X_i = rand(self.o.Ni) - 0.5
+        Y_i = rand(self.o.Ni) - 0.5
+        C_i = gaussianSpread(X_i, Y_i, self.o.stim_spread, 1.0)
+        nest.SetStatus(nodes=self._nodes_ramp_i, params='c', val=C_i)
+
 
     def setConstantCurrent(self):
         '''

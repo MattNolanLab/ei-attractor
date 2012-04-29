@@ -42,7 +42,7 @@ parser.add_option("--numThreads",   type    = "int",          help="Number of th
 
 # Other parameters
 N_rec       = 50 # record from 50 neurons
-record_from = ['V_m', 'g_AMPA', 'g_GABA_A', 'g_NMDA', 'I_stim']
+record_from = ['V_m', 'g_AMPA', 'g_GABA_A', 'I_stim', 'g_AHP', 'I_clamp_AMPA', 'I_clamp_GABA_A']
 
 
 startbuild= time.time()
@@ -73,15 +73,15 @@ endsimulate= time.time()
 build_time = endbuild-startbuild
 sim_time   = endsimulate-endbuild
 
-#nest.raster_plot.from_device(espikes, hist=True)
-#nest.raster_plot.from_device(ispikes, hist=True)
+nest.raster_plot.from_device(net._espikes, hist=True)
+nest.raster_plot.from_device(net._ispikes, hist=True)
 
 # obtain and display data
 meter_e = net._meter_e
 meter_i = net._meter_i
 
 for EI in ['E', 'I']:
-    pl.figure()
+    pl.figure(figsize=(12, 12))
     if EI == 'E':
         pl.title('Excitatory cell')
         events = nest.GetStatus(meter_e)[0]['events']
@@ -90,20 +90,29 @@ for EI in ['E', 'I']:
         events = nest.GetStatus(meter_i)[0]['events']
 
     t = events['times'];
-    ax = pl.subplot(311)
+    ax = pl.subplot(511)
     pl.plot(t, events['V_m'])
-    pl.ylabel('V_m [mV]')
+    pl.ylabel('$V_m$ [mV]')
     
-    pl.subplot(312, sharex=ax)
-    pl.plot(t, events['g_AMPA'], t, events['g_GABA_A'], t, events['g_NMDA'])
-    pl.xlabel('Time [ms]')
-    pl.ylabel('Syn. conductance [nS]')
-    pl.legend(('g_AMPA', 'g_GABA_A', 'g_NMDA'))
+    pl.subplot(512, sharex=ax)
+    pl.plot(t, events['g_AMPA'], t, events['g_GABA_A'])
+    pl.ylabel('Syn. cond. [nS]')
+    pl.legend(('g_AMPA', 'g_GABA_A'), loc='best')
+
+    pl.subplot(513, sharex=ax)
+    pl.plot(t, events['I_clamp_AMPA'], t, events['I_clamp_GABA_A'])
+    pl.ylabel('$I_{syn}$ (pA)')
+    pl.legend(('I_clamp_AMPA', 'I_clamp_GABA_A'), loc='best')
+
+    pl.subplot(514, sharex=ax)
+    pl.plot(t, events['g_AHP'])
+    pl.ylabel('$g_{AHP}$ (nS)')
+
     
-    pl.subplot(313, sharex=ax)
+    pl.subplot(515, sharex=ax)
     pl.plot(t, events['I_stim'])
     pl.xlabel('Time [ms]')
-    pl.ylabel('Ext. current (pA)')
+    pl.ylabel('$I_{ext}$ (pA)')
 
 
 #nest.raster_plot.show()

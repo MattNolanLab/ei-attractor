@@ -36,12 +36,12 @@ net_generations=5
 
 parameters = defaultParameters
 parameters['print_time']    = None  # This is bool
-parameters['numThreads']    = 1
-parameters['Iext_e_max']    = 600.0 # pA
+parameters['numThreads']    = 4
+parameters['Iext_e_max']    = 900.0 # pA
 parameters['Iext_i_max']    = 300.0 # pA
-parameters['Iext_start']    = 500.0 # ms
+parameters['Iext_start']    = 100.0 # ms
 
-parameters['time']          = 1000  # ms
+parameters['time']          = 4e3  # ms
 
 programName = 'python2.6 simulation.py'
 

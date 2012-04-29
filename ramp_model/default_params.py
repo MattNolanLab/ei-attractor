@@ -24,13 +24,13 @@ __all__ = ['defaultParameters']
 _defaultOutputDir = "output/"
 
 defaultParameters = {
-        "Ne"                  :   100,
-        "Ni"                  :   100,
+        "Ne"                  :   500,
+        "Ni"                  :   125,
         "Iext_e"              :   500.0,        # pA
         "Iext_i"              :   300.0,        # pA
         "AMPA_density"        :   0.4,
         "GABA_density"        :   0.4,
-        "delay"               :   1.5,          # ms
+        "delay"               :   1.0,          # ms
 
         "taum_e"              :   9.3,          # ms
         "taum_e_spread"       :   3.1,          # ms
@@ -39,10 +39,10 @@ defaultParameters = {
         "Vt_e"                :   -50,          # mV
         "Vr_e"                :   -68.5,        # mV
         "gL_e"                :   22.73,        # nS
-        "deltaT_e"            :   0.4,          # mV
+        "deltaT_e"            :   0.5,          # mV
         "E_AHP_e"             :   -80,          # mV
-        "g_AHP_e"             :   5,            # nS
         "tau_AHP_e"           :   20,           # ms
+        "g_AHP_e_max"         :   30.0,         # nS
         "t_ref_e"             :   0.1,          # ms
         "V_peak_e"            :   40,           # mV
         
@@ -53,15 +53,15 @@ defaultParameters = {
         "Vt_i"                :   -45,          # mV
         "Vr_i"                :   -60,          # mV
         "gL_i"                :   22.73,        # nS
-        "ad_tau_i_mean"       :   7.5,          # ms
-        "ad_tau_i_std"        :   0.5,          # ms # Unused in the simulation for now
-        "ad_i_g_inc"          :   22.73,        # nS
         "t_ref_i"             :   0.1,          # ms
         "deltaT_i"            :   0.4,          # mV
+        "E_AHP_i"             :   -80,          # mV
+        "tau_AHP_i"           :   5,           # ms
+        "g_AHP_i_max"         :   30.0,         # nS
         "V_peak_i"            :   40,           # mV
         
         "tau_AMPA"            :   1,            # ms
-        "g_AMPA_total"        :   35,           # nS
+        "g_AMPA_total"        :   70,           # nS
         "g_AMPA_std"          :   0.6,          # nS
         "tau_GABA_A_rise"     :   1,            # ms
         "tau_GABA_A_fall"     :   5,            # ms
@@ -79,6 +79,8 @@ defaultParameters = {
         "ntrials"             :   1,
         
         "output_dir"          :   _defaultOutputDir,
-        "job_num"             :   0}
+        "job_num"             :   0,
+
+        "stim_spread"         :  1.0}
 
 
