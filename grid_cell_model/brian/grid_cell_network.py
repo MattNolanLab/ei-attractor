@@ -20,13 +20,31 @@
 #
 
 
-from common import *
+import numpy    as np
+import logging  as lg
 
-import numpy as np
-import logging as lg
-from numpy.random import rand, randn
-from brian import *
-from scipy import linspace
+from numpy.random   import rand, randn
+from brian          import *
+from scipy          import linspace
+
+from common         import *
+
+class IextManager(object):
+    '''
+    Simple interface to manage external currents.
+    '''
+    def __init__(self):
+        self._Iext_e = None
+        self._Iext_i = None
+
+    def set_Iext(self, Iext_e, Iext_i):
+        self._Iext_e = np.array(Iext_e)
+        self._Iext_i = np.array(Iext_i)
+
+    def add_Iext(self, Iext_e, Iext_i):
+        self._Iext_e += Iext_e
+        self._Iext_i += Iext_i
+
 
 
 class BrianGridCellNetwork(GridCellNetwork):
@@ -45,8 +63,6 @@ class BrianGridCellNetwork(GridCellNetwork):
 
         self.I_pop.tau_ad   = (self.no.ad_tau_i_mean + self.no.ad_tau_i_std * randn(len(self.I_pop.tau_ad))) * ms
 
-        self._setBackgroundInput(self.no.Iext_e * pA, self.no.Iext_i * pA)
-
     def reinit(self):
         self.net.reinit(states=True)
         self._initStates()
@@ -54,9 +70,7 @@ class BrianGridCellNetwork(GridCellNetwork):
     def __init__(self, neuronOpts, simulationOpts):
         GridCellNetwork.__init__(self, neuronOpts, simulationOpts)
 
-        no = neuronOpts
-        so = simulationOpts
-
+        self._simulationClock = Clock(dt = self.no.sim_dt)
 
         tau1_GABA = no.tau_GABA_fall
         tau2_GABA = no.tau_GABA_rise * no.tau_GABA_fall / (no.tau_GABA_rise + no.tau_GABA_fall);
@@ -72,7 +86,11 @@ class BrianGridCellNetwork(GridCellNetwork):
             dgi1/dt     = -gi1/syn_tau1                                          : siemens
             dgi2/dt     = -gi2/syn_tau2                                          : siemens
             dg_ahp/dt   = -g_ahp/tau_ahp                                         : siemens
-            Iext                                                                 : amp
+            Iext        = Iext_const + Iext_theta + Iext_vel + Iext_start        : amp
+            Iext_const                                                           : amp
+            Iext_theta                                                           : amp
+            Iext_vel                                                             : amp
+            Iext_start                                                           : amp
             EL                                                                   : volt
             taum                                                                 : second
             ''',
@@ -92,18 +110,22 @@ class BrianGridCellNetwork(GridCellNetwork):
 
 
         self.eqs_i = Equations('''
-            dvm/dt      = 1/C*Im + (noise_sigma*xi/taum_mean**.5)        : volt
-            Ispike      = gL*deltaT*exp((vm-Vt)/deltaT)                  : amp
-            Im          = gL*(EL-vm)*(1+g_ad/gL) + Ispike + Isyn + Iext  : amp
-            Isyn        = ge*(Esyn - vm) + gNMDA*(Esyn - vm)             : amp
-            Iclamp      = -(ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp))  : amp
-            dge/dt      = -ge/syn_tau                                    : siemens
-            dg_ad/dt    = -g_ad/tau_ad                                   : siemens
-            dgNMDA/dt   = -gNMDA/(100*msecond)                           : siemens
-            tau_ad                                                       : second
-            Iext                                                         : amp
-            EL                                                           : volt
-            taum                                                         : second
+            dvm/dt      = 1/C*Im + (noise_sigma*xi/taum_mean**.5)           : volt
+            Ispike      = gL*deltaT*exp((vm-Vt)/deltaT)                     : amp
+            Im          = gL*(EL-vm)*(1+g_ad/gL) + Ispike + Isyn + Iext     : amp
+            Isyn        = ge*(Esyn - vm) + gNMDA*(Esyn - vm)                : amp
+            Iclamp      = -(ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp))     : amp
+            dge/dt      = -ge/syn_tau                                       : siemens
+            dg_ad/dt    = -g_ad/tau_ad                                      : siemens
+            dgNMDA/dt   = -gNMDA/(100*msecond)                              : siemens
+            tau_ad                                                          : second
+            Iext        = Iext_const + Iext_theta + Iext_vel + Iext_start   : amp
+            Iext_const                                                      : amp
+            Iext_theta                                                      : amp
+            Iext_vel                                                        : amp
+            Iext_start                                                      : amp
+            EL                                                              : volt
+            taum                                                            : second
             ''',
             C           = no.taum_i * no.gL_i * pF,
             gL          = no.gL_i * nS,
@@ -129,7 +151,7 @@ class BrianGridCellNetwork(GridCellNetwork):
                 threshold=spike_detect_th,
                 reset="vm=Vr_e; g_ahp=g_AHP_e",
                 refractory=refrac_abs,
-                clock=clk)
+                clock=self._simulationClock)
 
         self.I_pop = NeuronGroup(
                 N = self.net_Ni,
@@ -137,7 +159,7 @@ class BrianGridCellNetwork(GridCellNetwork):
                 threshold=spike_detect_th,
                 reset=Vr_i,
                 refractory=refrac_abs,
-                clock=clk)
+                clock=self._simulationClock)
 
         self.net = Network(self.E_pop, self.I_pop)
 
@@ -166,7 +188,55 @@ class BrianGridCellNetwork(GridCellNetwork):
         self._initStates()
 
 
-    def _setBackgroundInput(self, Iext_e, Iext_i):
-        self.E_pop.Iext = linspace(Iext_e, Iext_e, len(self.E_pop))
-        self.I_pop.Iext = linspace(Iext_i, Iext_i, len(self.I_pop))
+    def setConstantCurrent(self):
+        self.E_pop.Iext_const = self.no.Iext_e_const * pA
+        self.I_pop.Iext_const = self.no.Iext_e_const * pA
+
+
+    def setStartCurrent(self)
+        self._startCurrentClock = Clock(dt=50*ms)
+
+        @network_operation(self._startCurrentClock)
+        def startCurrentFun():
+            if self._simulationClock.t >= 0*msecond and self._simulationClock.t < self._no.startCurrent_time*msecond:
+                ei_net.E_pop.Iext_start = place_I #TODO: place_I
+                print "Stimulation..."
+            else:
+                ei_net.E_pop.Iext_start = 0.0
+
+        self.net.add(startCurrentFun)
+
+
+    def setThetaCurrentStimulation(self):
+        '''
+        Create procedures for theta stimulation:
+            theat_start_t   Start time of theta stimulation (ms)
+        '''
+        self._theta_start_t = theta_start_t * msecond
+
+        self.stim_omega = 2*np.pi*stim_freq*Hz
+        self.stim_e_A  = (self.no.Iext_e - self.no.Iext_e_min)/2*pA
+        self.stim_e_DC = (self.no.Iext_e + self.no.Iext_e_min)/2*pA
+        self.stim_i_A  = (self.no.Iext_i - self.no.Iext_i_min)/2*pA
+        self.stim_i_DC = (self.no.Iext_i + self.no.Iext_i_min)/2*pA
+
+        @network_operation(self._simulationClock)
+        def thetaStimulationFun():
+            global place_flag
+            global place_I
+            if self._simulationClock.t >= self._theta_start_t and self._simulationClock.t < self.no.time*msecond:
+                ph = stim_omega*self._simulationClock.t
+                ei_net.E_pop.Iext = stim_e_DC + stim_e_A*np.sin(ph - np.pi/2)
+                ei_net.I_pop.Iext = stim_i_DC + stim_i_A*np.sin(ph - np.pi/2)
+                if place_flag == True:
+                    ei_net.E_pop.Iext += place_I
+        
+            #Velocity inputs
+            if self._simulationClock.t >= theta_start_mon_t and self._simulationClock.t < options.time*second:
+                ei_net.E_pop.Iext += Ivel.ravel()
+
+        self.net.add(thetaStimulationFun)
+
+
+
 

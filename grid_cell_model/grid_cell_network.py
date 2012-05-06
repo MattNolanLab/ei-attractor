@@ -242,3 +242,44 @@ class GridCellNetwork(object):
     #    self.net.add(self.extraGABA_conn1, self.extraGABA_conn2)
 
 
+    ############################################################################ 
+    #                     External sources definitions
+    ############################################################################ 
+    def setConstantCurrent(self):
+        '''
+        Enable the constant current external injection. This method uses the following parameters:
+            Iext_e_const
+            Iext_i_const
+        '''
+        raise NotImplementedException("GridCellNetwork.setConstantCurrent")
+
+
+    def setThetaCurrent(self):
+        '''
+        Enable theta current in the network. This method uses the following parameters:
+            theta_start_t
+            theta_freq
+        '''
+        raise NotImplementedException("GridCellNetwork.setThetaCurrent")
+
+
+    def setStartCurrent(self):
+        '''
+        Set the amplitude and duration of a constant startup current. This is
+        used to kick the bump off in the beginning as it does not have to form
+        spontaneously. Parameters used:
+            startCurrent_time
+            startCurrent_amplitude
+        '''
+        raise NotImplementedException("GridCellNetwork.setStartCurrent")
+
+
+
+
+
+
+
+
+
+
+
