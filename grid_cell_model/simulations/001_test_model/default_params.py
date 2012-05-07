@@ -86,6 +86,8 @@ defaultParameters = {
         "tau_GABA_A_rise"     :   0.1,          # ms
         "tau_GABA_A_fall"     :   5,            # ms
         "g_GABA_total"        :   2160,         # nS
+        "g_uni_GABA_total"    :   28,           # nS
+        "uni_GABA_density"    :   0.4,
     
         "E_AMPA"              :   0,            # mV
         "E_GABA_A"            :   -75,          # mV

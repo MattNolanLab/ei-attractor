@@ -228,6 +228,14 @@ class GridCellNetwork(object):
                 self._divergentConnectIE(it, E_nid, self.B_GABA*g_GABA_mean*tmp_templ[E_nid])
 
 
+    def uniformInhibition(self):
+        '''
+        Create a separate set of uniform (and possibly sparse) I-->E connections.
+        '''
+        raise NotImplementedException("GridCellNetwork.uniformInhibition")
+
+
+
     ############################################################################ 
     #                     External sources definitions
     ############################################################################ 
