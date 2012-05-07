@@ -102,14 +102,14 @@ class GridCellNetwork(object):
         Simply connect a 'pre' neuron in the E population to all neurons in
         the I population from post, with given weights
         '''
-        raise NotImplementedException("GridCellNetwork.divergentConnectEI")
+        raise NotImplementedException("GridCellNetwork._divergentConnectEI")
 
     def _divergentConnectIE(self, pre, post, weights):
         '''
         Simply connect a 'pre' neuron in the I population to all neurons in
         the E population from post, with given weights
         '''
-        raise NotImplementedException("GridCellNetwork.divergentConnectIE")
+        raise NotImplementedException("GridCellNetwork._divergentConnectIE")
 
     def getOutgoingConnections(self, prePop, postPop, nid):
         '''

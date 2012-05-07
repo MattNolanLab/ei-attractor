@@ -177,6 +177,9 @@ class BrianGridCellNetwork(GridCellNetwork):
         self.GABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
         self.GABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
 
+        # Weight matrices which are used in _divergentConnectXY() functions
+        self._E_W = np.asarray(self.AMPA_conn.W)
+
         self._centerSurroundConnection(no.pAMPA_mu, no.pAMPA_sigma, no.pGABA_sigma)
 
         # Now simply copy AMPA --> NMDA and GABA_conn1 --> GABA_conn2
@@ -188,6 +191,20 @@ class BrianGridCellNetwork(GridCellNetwork):
         self._initStates()
 
 
+    def _divergentConnectEI(self, pre, post, weights):
+        E_W[pre, post] = weights * nS
+
+
+    def _divergentConnectIE(self, pre, post, weights):
+        '''The inhibitory matrix is sparse!'''
+        self.GABA_conn1.W.rows[pre] = post
+        self.GABA_conn1.W.data[pre] = weights * nS
+
+
+
+    ############################################################################ 
+    #                     External sources definitions
+    ############################################################################ 
     def setConstantCurrent(self):
         self.E_pop.Iext_const = self.no.Iext_e_const * pA
         self.I_pop.Iext_const = self.no.Iext_e_const * pA
