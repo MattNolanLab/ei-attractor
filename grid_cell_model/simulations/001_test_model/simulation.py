@@ -18,20 +18,16 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import brian_no_units
-
-import brian
-from brian import *
-from brian.library.IF import *
-from brian.library.synapses import *
 
 from matplotlib.backends.backend_pdf import PdfPages
 
-from scipy import linspace
-from scipy.io import loadmat
-from scipy.io import savemat
-from optparse import OptionParser
-from datetime import datetime
+from scipy      import linspace
+from scipy.io   import loadmat
+from scipy.io   import savemat
+from optparse   import OptionParser
+
+from parameters              import *
+from grid_cell_network_brian import *
 
 import time
 import math
@@ -41,14 +37,15 @@ import logging as lg
 
 
 lg.basicConfig(level=lg.DEBUG)
-brian.log_level_debug()
-
 
 parser = getOptParser()
 
-parser.add_option("--Ivel", type="float", help="Velocity input (pA)")
-parser.add_option("--pAMPA_sigma", type="float", help="AMPA profile spread (normalised)")
-parser.add_option("--Iext_e_min", type=float,
+parser.add_option("--Ivel",         type="float", help="Velocity input (pA)")
+parser.add_option("--pAMPA_mu",     type="float", help="AMPA profile center (normalised)")
+parser.add_option("--pAMPA_sigma",  type="float", help="AMPA profile spread (normalised)")
+parser.add_option("--pGABA_sigma",  type="float", help="GABA A profile spread (normalised)")
+parser.add_option("--NMDA_amount",  type="float", help="NMDA portion relative to AMPA (%)")
+parser.add_option("--Iext_e_min",   type=float,
         help="Minimal external current onto E cells (theta stim.) (A)")
 parser.add_option("--Iext_i_min", type=float,
         help="Minimal external current onto I cells (theta stim.) (I)")
@@ -56,8 +53,7 @@ parser.add_option("--g_extraGABA_total", type=float,
         help="Uniform inhibition (E-->I only) total conductance (S)")
 parser.add_option("--extraGABA_density", type=float,
         help="Uniform inhibition (E-->I only) connection density")
-parser.add_option("--prefDirC", type=float,
-        help="Preferred directtion multiplier")
+parser.add_option("--prefDirC", type=float, help="Preferred directtion multiplier")
 
 (options, args) = parser.parse_args()
 options = setOptionDictionary(parser, options)
@@ -74,17 +70,9 @@ start_time=time.time()
 total_start_t = time.time()
 
 options.ndim = 'twisted_torus'
-ei_net = BrianGridCellNetwork(self.options, simulationOpts=None)
-
-## Mexican hat properties and AMPA/GABA connections
-#y_dim = np.sqrt(3)/2.
-#pAMPA_mu = y_dim/2.
-#pAMPA_sigma = 0.5/6
-#pGABA_sigma = 0.5/6
-#ei_net.connMexicanHat(pAMPA_mu, pAMPA_sigma, pGABA_sigma)
-#ei_net.randomInhibition(options.g_extraGABA_total, options.extraGABA_density)
-#
-#print('pAMPA_sigma = ' + str(options.pAMPA_sigma) + '/6')
+ei_net = BrianGridCellNetwork(options, simulationOpts=None)
+ei_net.setConstantCurrent()
+ei_net.setStartCurrent()
 
 
 duration=time.time()-start_time

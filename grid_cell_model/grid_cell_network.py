@@ -56,14 +56,16 @@
 #     simulation with any kind of spiking model (leaky IaF, Hodgkin-Huxley,
 #     etc.)
 #
+import numpy    as np
+import logging  as lg
 
-from common import *
+from scipy          import linspace
+from numpy.random   import rand
+from numpy          import sqrt
 
-import numpy as np
-import logging as lg
-from scipy import linspace
-from np.random import rand
+from common         import *
 
+__all__ = ['GridCellNetwork']
 
 class GridCellNetwork(object):
     '''
@@ -84,11 +86,11 @@ class GridCellNetwork(object):
         # We have a single bump and to get hexagonal receptive fields the X:Y
         # size ratio must be 1:sqrt(3)/2
         self.y_dim = np.sqrt(3)/2.0
-        self.Ne_x = o.Ne
-        self.Ne_y = int(np.ceil(o.Ne * self.y_dim)) // 2 * 2
+        self.Ne_x = self.no.Ne
+        self.Ne_y = int(np.ceil(self.no.Ne * self.y_dim)) // 2 * 2
 
-        self.Ni_x = o.Ni
-        self.Ni_y = int(np.ceil(o.Ni * self.y_dim)) // 2 * 2
+        self.Ni_x = self.no.Ni
+        self.Ni_y = int(np.ceil(self.no.Ni * self.y_dim)) // 2 * 2
 
         self.net_Ne = self.Ne_x * self.Ne_y
         self.net_Ni = self.Ni_x * self.Ni_y
@@ -175,8 +177,8 @@ class GridCellNetwork(object):
         is a twisted torus or just a regular torus.
         '''
 
-        g_AMPA_mean = self.o.g_AMPA_total / self.net_Ne
-        g_GABA_mean = self.o.g_GABA_total / self.net_Ni
+        g_AMPA_mean = self.no.g_AMPA_total / self.net_Ne
+        g_GABA_mean = self.no.g_GABA_total / self.net_Ni
 
         # E --> I connections
         X, Y = np.meshgrid(np.arange(self.Ni_x), np.arange(self.Ni_y))
@@ -185,7 +187,6 @@ class GridCellNetwork(object):
         others_e = np.vstack((X.ravel(), Y.ravel())).T
 
         self.prefDirs_e = np.ndarray((self.net_Ne, 2))
-        E_W = np.asarray(self.AMPA_conn.W)
         for y in xrange(self.Ne_y):
             y_e_norm = float(y) / self.Ne_y * self.y_dim
 
@@ -199,7 +200,7 @@ class GridCellNetwork(object):
                 self.prefDirs_e[it, :] = pd
                 tmp_templ = self._generate_pAMPA_twisted_torus(a, others_e,
                         pAMPA_mu, pAMPA_sigma, np.array([[pd[0], pd[1]]]),
-                        self.o.prefDirC)
+                        self.no.prefDirC)
 
                 self._divergentConnectEI(it, range(self.net_Ni),
                         tmp_templ*g_AMPA_mean)
@@ -221,7 +222,7 @@ class GridCellNetwork(object):
                 pd = np.array([0, 0])
                 self.prefDirs_i[it, :] = pd
                 tmp_templ = self._generate_pGABA_twisted_torus(a, others_i,
-                        pGABA_sigma, [[pd[0], pd[1]]], self.o.prefDirC)
+                        pGABA_sigma, [[pd[0], pd[1]]], self.no.prefDirC)
 
                 E_nid = (tmp_templ > conn_th).nonzero()[0]
                 self._divergentConnectIE(it, E_nid, self.B_GABA*g_GABA_mean*tmp_templ[E_nid])
