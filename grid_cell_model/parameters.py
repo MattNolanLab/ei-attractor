@@ -38,6 +38,11 @@ def getOptParser():
     optParser.add_option("--Iext_e_const",    type="float",  help="Constant part of externals E current (pA)")
     optParser.add_option("--Iext_i_const",    type="float",  help="Constant part of externals I current (pA)")
     optParser.add_option("--Iext_start",      type="float",  help="Additional - bump initialising current at the beginning of the simulation (pA)")
+    optParser.add_option("--Iext_start_dur",  type="float",  help="Start current duration (ms)")
+    optParser.add_option("--Iext_e_theta",    type="float",  help="Theta E external current aplitude (pA)")
+    optParser.add_option("--Iext_i_theta",    type="float",  help="Theta I external current aplitude (pA)")
+    optParser.add_option("--theta_start_t",   type="float",  help="Start time of theta stimulation (ms)")
+    optParser.add_option("--theta_freq",      type="float",  help="Theta oscillation frequency (Hz)")
 
     optParser.add_option("--taum_e",          type="float",  help="Mean of excitatory neuron membrane time constant (ms)")
     optParser.add_option("--taum_e_spread",   type="float",  help="Spread of --taum_e (see --taum_i_spread option) (ms)")

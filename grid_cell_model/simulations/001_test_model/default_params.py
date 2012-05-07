@@ -23,7 +23,7 @@ import numpy as np
 
 __all__ = ['defaultParameters']
 
-_defaultOutputDir = "output/"
+_defaultOutputDir = "output_local/"
 
 y_dim = np.sqrt(3)/2.
 pAMPA_mu = y_dim/2.
@@ -39,30 +39,38 @@ defaultParameters = {
         "pAMPA_sigma"         :   0.5/6,
         "pGABA_sigma"         :   0.5/6,
         "prefDirC"            :   4.0,
+        "arenaSize"           :   180.0,        # cm
+        "gridsPerArena"       :   2.5,
 
         "NMDA_amount"         :   2.0,          # %
 
-        "Iext_e_const"        :   300.0,        # pA
-        "Iext_i_const"        :   200.0,        # pA
-        "Iext_start"          :   600.0,        # pA
+        "Iext_e_const"        :   700.0,        # pA
+        "Iext_i_const"        :   225.0,        # pA
+        "Iext_start"          :   300.0,        # pA
+        "Iext_start_dur"      :   100.0,        # ms
+        "Iext_e_theta"        :   400.0,        # pA
+        "Iext_i_theta"        :   25.0,         # pA
+        "theta_start_t"       :   125,          # ms
+        "theta_freq"          :   8,            # Hz
+
         "taum_e"              :   9.3,          # ms
-        "taum_e_spread"       :   3.1,          # ms
+        "taum_e_spread"       :   0.31,         # ms
         "EL_e"                :   -68.5,        # mV
-        "EL_e_spread"         :   2.0,          # mV
+        "EL_e_spread"         :   0.20,         # mV
         "Vt_e"                :   -50,          # mV
         "Vr_e"                :   -68.5,        # mV
         "gL_e"                :   22.73,        # nS
-        "deltaT_e"            :   0.5,          # mV
+        "deltaT_e"            :   0.4,          # mV
         "E_AHP_e"             :   -80,          # mV
         "tau_AHP_e"           :   20,           # ms
-        "g_AHP_e_max"         :   30.0,         # nS
+        "g_AHP_e_max"         :   5.0,          # nS
         "t_ref_e"             :   0.1,          # ms
         "V_peak_e"            :   40,           # mV
         
         "taum_i"              :   10,           # ms
-        "taum_i_spread"       :   4,            # ms
+        "taum_i_spread"       :   0,            # ms
         "EL_i"                :   -60,          # mV
-        "EL_i_spread"         :   20,           # mV
+        "EL_i_spread"         :   0,            # mV
         "Vt_i"                :   -45,          # mV
         "Vr_i"                :   -60,          # mV
         "gL_i"                :   22.73,        # nS
@@ -74,11 +82,10 @@ defaultParameters = {
         "V_peak_i"            :   40,           # mV
         
         "tau_AMPA"            :   1,            # ms
-        "g_AMPA_total"        :   70,           # nS
-        "g_AMPA_std"          :   0.6,          # nS
-        "tau_GABA_A_rise"     :   1,            # ms
+        "g_AMPA_total"        :   1400,         # nS
+        "tau_GABA_A_rise"     :   0.1,          # ms
         "tau_GABA_A_fall"     :   5,            # ms
-        "g_GABA_total"        :   40,           # nS
+        "g_GABA_total"        :   2160,         # nS
     
         "E_AMPA"              :   0,            # mV
         "E_GABA_A"            :   -75,          # mV

@@ -228,21 +228,6 @@ class GridCellNetwork(object):
                 self._divergentConnectIE(it, E_nid, self.B_GABA*g_GABA_mean*tmp_templ[E_nid])
 
 
-    #def randomInhibition(self, total_strength, density):
-    #    '''Random inhibitory connections from I to E only'''
-
-    #    g_GABA_mean = total_strength / self.net_Ni / density * siemens
-
-    #    self.extraGABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
-    #    self.extraGABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
-
-    #    self.extraGABA_conn1.connect_random(self.I_pop, self.E_pop, density,
-    #            weight=self.B_GABA*g_GABA_mean)
-    #    self.extraGABA_conn2.connect(self.I_pop, self.E_pop, self.extraGABA_conn1.W) 
-
-    #    self.net.add(self.extraGABA_conn1, self.extraGABA_conn2)
-
-
     ############################################################################ 
     #                     External sources definitions
     ############################################################################ 
@@ -273,14 +258,4 @@ class GridCellNetwork(object):
             startCurrent_amplitude
         '''
         raise NotImplementedException("GridCellNetwork.setStartCurrent")
-
-
-
-
-
-
-
-
-
-
 

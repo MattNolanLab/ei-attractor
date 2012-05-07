@@ -28,6 +28,7 @@ from optparse   import OptionParser
 
 from parameters              import *
 from grid_cell_network_brian import *
+from custombrian             import *
 
 import time
 import math
@@ -40,20 +41,18 @@ lg.basicConfig(level=lg.DEBUG)
 
 parser = getOptParser()
 
-parser.add_option("--Ivel",         type="float", help="Velocity input (pA)")
-parser.add_option("--pAMPA_mu",     type="float", help="AMPA profile center (normalised)")
-parser.add_option("--pAMPA_sigma",  type="float", help="AMPA profile spread (normalised)")
-parser.add_option("--pGABA_sigma",  type="float", help="GABA A profile spread (normalised)")
-parser.add_option("--NMDA_amount",  type="float", help="NMDA portion relative to AMPA (%)")
-parser.add_option("--Iext_e_min",   type=float,
-        help="Minimal external current onto E cells (theta stim.) (A)")
-parser.add_option("--Iext_i_min", type=float,
-        help="Minimal external current onto I cells (theta stim.) (I)")
-parser.add_option("--g_extraGABA_total", type=float,
-        help="Uniform inhibition (E-->I only) total conductance (S)")
-parser.add_option("--extraGABA_density", type=float,
-        help="Uniform inhibition (E-->I only) connection density")
-parser.add_option("--prefDirC", type=float, help="Preferred directtion multiplier")
+parser.add_option("--Ivel",              type="float", help="Velocity input (pA)")
+parser.add_option("--pAMPA_mu",          type="float", help="AMPA profile center (normalised)")
+parser.add_option("--pAMPA_sigma",       type="float", help="AMPA profile spread (normalised)")
+parser.add_option("--pGABA_sigma",       type="float", help="GABA A profile spread (normalised)")
+parser.add_option("--NMDA_amount",       type="float", help="NMDA portion relative to AMPA (%)")
+parser.add_option("--Iext_e_min",        type="float", help="Minimal external current onto E cells (theta stim.) (A)")
+parser.add_option("--Iext_i_min",        type="float", help="Minimal external current onto I cells (theta stim.) (I)")
+parser.add_option("--g_extraGABA_total", type="float", help="Uniform inhibition (E-->I only) total conductance (S)")
+parser.add_option("--extraGABA_density", type="float", help="Uniform inhibition (E-->I only) connection density")
+parser.add_option("--prefDirC",          type="float", help="Preferred directtion multiplier")
+parser.add_option("--arenaSize",         type="float", help="Size of the arena where the rat runs (cm)")
+parser.add_option("--gridsPerArena",     type="float", help="Grids per arena size (for place cell input)")
 
 (options, args) = parser.parse_args()
 options = setOptionDictionary(parser, options)
@@ -73,12 +72,15 @@ options.ndim = 'twisted_torus'
 ei_net = BrianGridCellNetwork(options, simulationOpts=None)
 ei_net.setConstantCurrent()
 ei_net.setStartCurrent()
+#ei_net.setThetaCurrentStimulation()
 
 
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
 #                            End Network setup
 ################################################################################
+
+simulationClock = ei_net._getSimulationClock()
 
 
 state_record_e = [ei_net.Ne_x/2 -1 , ei_net.Ne_y/2*ei_net.Ne_x + ei_net.Ne_x/2 - 1]
@@ -94,35 +96,23 @@ stateMon_Iclamp_i = StateMonitor(ei_net.I_pop, 'Iclamp', record = state_record_i
 stateMon_Iext_e = StateMonitor(ei_net.E_pop, 'Iext', record = state_record_e, clock=simulationClock)
 stateMon_Iext_i = StateMonitor(ei_net.I_pop, 'Iext', record = state_record_i, clock=simulationClock)
 
-
 ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
 ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 
 
 #x_lim = [options.time-0.5, options.time]
-x_lim = [0, options.time]
+x_lim = [0, options.time/1e3]
 
 ################################################################################
 #                              Main cycle
 ################################################################################
-for trial_it in range(ei_net.o.ntrials):
+for trial_it in range(options.ntrials):
     print "Starting trial no. " + str(trial_it) + "..."
     print "Simulation running..."
     start_time=time.time()
     
-    print "  Network initialisation..."
-    ei_net.net.run(theta_start_mon_t, report='stdout',
-            report_period=options.update_interval*second)
-
-    theta_spikeMon_e.reinit()
-    theta_spikeMon_i.reinit()
-    theta_stateMon_Iclamp_e.reinit()
-    theta_stateMon_Iclamp_i.reinit()
-
-    print "  Theta stimulation..."
-    ei_net.net.run(options.time*second - theta_start_mon_t, report='stdout',
-            report_period=options.update_interval*second)
+    ei_net.net.run(options.time*msecond, report='stdout')
     duration=time.time()-start_time
     print "Simulation time:",duration,"seconds"
     
@@ -132,7 +122,7 @@ for trial_it in range(ei_net.o.ntrials):
     
     
     F_tstart = 0
-    F_tend = options.time
+    F_tend = options.time*1e-3
     F_dt = 0.02
     F_winLen = 0.25
     Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
@@ -187,21 +177,21 @@ for trial_it in range(ei_net.o.ntrials):
     xlim(x_lim)
     savefig(output_fname + '_Iext.pdf')
     
-    # High pass filter these signals
-    figure()
-    ax = subplot(211)
-    plot(stateMon_Iclamp_e.times, butterHighPass(stateMon_Iclamp_e.values[1].T/pA, options.sim_dt, 40))
-    plot(stateMon_Iext_e.times, -(stateMon_Iext_e.values[0]/pA - stim_e_DC/pA))
-    ylabel('E current (pA)')
-    ylim([-500, 500])
-    subplot(212, sharex=ax)
-    plot(stateMon_Iclamp_i.times, butterHighPass(stateMon_Iclamp_i.values[0].T/pA, options.sim_dt, 40))
-    #plot(stateMon_Iclamp_i.times, stateMon_Iext_i.values[0]/pA)
-    xlabel('Time (s)')
-    ylabel('I current (pA)')
-    xlim(x_lim)
-    ylim([-500, 500])
-    savefig(output_fname + '_Isyn_filt.pdf')
+    ## High pass filter these signals
+    #figure()
+    #ax = subplot(211)
+    #plot(stateMon_Iclamp_e.times, butterHighPass(stateMon_Iclamp_e.values[1].T/pA, options.sim_dt, 40))
+    #plot(stateMon_Iext_e.times, -(stateMon_Iext_e.values[0]/pA - stim_e_DC/pA))
+    #ylabel('E current (pA)')
+    #ylim([-500, 500])
+    #subplot(212, sharex=ax)
+    #plot(stateMon_Iclamp_i.times, butterHighPass(stateMon_Iclamp_i.values[0].T/pA, options.sim_dt, 40))
+    ##plot(stateMon_Iclamp_i.times, stateMon_Iext_i.values[0]/pA)
+    #xlabel('Time (s)')
+    #ylabel('I current (pA)')
+    #xlim(x_lim)
+    #ylim([-500, 500])
+    #savefig(output_fname + '_Isyn_filt.pdf')
     
     
     
@@ -244,16 +234,16 @@ for trial_it in range(ei_net.o.ntrials):
 
 
     
-    # Print a plot of bump position
-    (pos, bumpPos_times) = theta_spikeMon_e.torusPopulationVector([ei_net.Ne_x,
-        ei_net.Ne_y], theta_start_t, options.time, F_dt, F_winLen)
-    figure(figsize=figSize)
-    plot(bumpPos_times, pos)
-    xlabel('Time (s)')
-    ylabel('Bump position (neurons)')
-    ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
-    
-    savefig(output_fname + '_bump_position.pdf')
+    ## Print a plot of bump position
+    #(pos, bumpPos_times) = theta_spikeMon_e.torusPopulationVector([ei_net.Ne_x,
+    #    ei_net.Ne_y], theta_start_t, options.time, F_dt, F_winLen)
+    #figure(figsize=figSize)
+    #plot(bumpPos_times, pos)
+    #xlabel('Time (s)')
+    #ylabel('Bump position (neurons)')
+    #ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
+    #
+    #savefig(output_fname + '_bump_position.pdf')
 
 
 

@@ -29,6 +29,7 @@ from scipy              import linspace
 
 from common             import *
 from grid_cell_network  import *
+from place_input        import *
 
 class IextManager(object):
     '''
@@ -54,8 +55,8 @@ class BrianGridCellNetwork(GridCellNetwork):
 
     def _initStates(self):
         # Initialize membrane potential randomly
-        self.E_pop.vm       = self.no.EL_e + (self.no.Vt_e-self.no.EL_e) * rand(len(self.E_pop)) * mV
-        self.I_pop.vm       = self.no.EL_i + (self.no.Vt_i-self.no.EL_i) * rand(len(self.I_pop)) * mV
+        self.E_pop.vm       = (self.no.EL_e + (self.no.Vt_e-self.no.EL_e) * rand(len(self.E_pop))) * mV
+        self.I_pop.vm       = (self.no.EL_i + (self.no.Vt_i-self.no.EL_i) * rand(len(self.I_pop))) * mV
 
         self.E_pop.EL       = self.uniformDistrib(self.no.EL_e,   self.no.EL_e_spread,   len(self.E_pop)) * mV
         self.E_pop.taum     = self.uniformDistrib(self.no.taum_e, self.no.taum_e_spread, len(self.E_pop)) * ms
@@ -73,8 +74,15 @@ class BrianGridCellNetwork(GridCellNetwork):
 
         self._simulationClock = Clock(dt = self.no.sim_dt * msecond)
 
+        # Place cell input settings
+        self._gridsep = self.no.arenaSize/self.no.gridsPerArena
+        self._gridCenter = [0, 0]
+        self._place_current = 250 * pA
+        self._pc = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize, self._gridsep, self._gridCenter)
+
         tau1_GABA = self.no.tau_GABA_A_fall
-        tau2_GABA = self.no.tau_GABA_A_rise * self.no.tau_GABA_A_fall / (self.no.tau_GABA_A_rise + self.no.tau_GABA_A_fall);
+        tau2_GABA = self.no.tau_GABA_A_rise * self.no.tau_GABA_A_fall / \
+                (self.no.tau_GABA_A_rise + self.no.tau_GABA_A_fall);
         self.B_GABA = 1/((tau2_GABA/tau1_GABA)**(self.no.tau_GABA_A_rise/tau1_GABA) - 
                 (tau2_GABA/tau1_GABA)**(self.no.tau_GABA_A_rise/tau2_GABA))
 
@@ -120,7 +128,7 @@ class BrianGridCellNetwork(GridCellNetwork):
             dg_ad/dt    = -g_ad/tau_ad                                      : siemens
             dgNMDA/dt   = -gNMDA/(100*msecond)                              : siemens
             tau_ad                                                          : second
-            Iext        = Iext_const + Iext_theta + Iext_vel + Iext_start   : amp
+            Iext        = Iext_const + Iext_theta + Iext_vel                : amp
             Iext_const                                                      : amp
             Iext_theta                                                      : amp
             Iext_vel                                                        : amp
@@ -140,7 +148,8 @@ class BrianGridCellNetwork(GridCellNetwork):
 
 
         # Other constants
-        g_AHP_e         = self.no.g_AHP_e_max * nS
+        g_AHP_e = self.no.g_AHP_e_max * nS
+        Vr_e    = self.no.Vr_e * mV    
 
 
         # Setup neuron groups and connections
@@ -206,7 +215,7 @@ class BrianGridCellNetwork(GridCellNetwork):
     ############################################################################ 
     def setConstantCurrent(self):
         self.E_pop.Iext_const = self.no.Iext_e_const * pA
-        self.I_pop.Iext_const = self.no.Iext_e_const * pA
+        self.I_pop.Iext_const = self.no.Iext_i_const * pA
 
 
     def setStartCurrent(self):
@@ -214,11 +223,11 @@ class BrianGridCellNetwork(GridCellNetwork):
 
         @network_operation(self._startCurrentClock)
         def startCurrentFun():
-            if self._simulationClock.t >= 0*msecond and self._simulationClock.t < self._no.startCurrent_time*msecond:
-                ei_net.E_pop.Iext_start = place_I #TODO: place_I
-                print "Stimulation..."
+            if self._simulationClock.t >= 0*msecond and self._simulationClock.t < self.no.Iext_start_dur*msecond:
+                self.E_pop.Iext_start = self._pc.getSheetInput(0.0, 0.0).ravel() * self.no.Iext_start * pA
+                print "Bump initialisation..."
             else:
-                ei_net.E_pop.Iext_start = 0.0
+                self.E_pop.Iext_start = 0.0
 
         self.net.add(startCurrentFun)
 
@@ -228,31 +237,30 @@ class BrianGridCellNetwork(GridCellNetwork):
         Create procedures for theta stimulation:
             theat_start_t   Start time of theta stimulation (ms)
         '''
-        self._theta_start_t = theta_start_t * msecond
-
-        self.stim_omega = 2*np.pi*stim_freq*Hz
-        self.stim_e_A  = (self.no.Iext_e - self.no.Iext_e_min)/2*pA
-        self.stim_e_DC = (self.no.Iext_e + self.no.Iext_e_min)/2*pA
-        self.stim_i_A  = (self.no.Iext_i - self.no.Iext_i_min)/2*pA
-        self.stim_i_DC = (self.no.Iext_i + self.no.Iext_i_min)/2*pA
+        self.stim_omega = 2*np.pi*self.no.theta_freq*Hz
+        self.stim_e_A  = self.no.Iext_e_theta/2 * pA
+        self.stim_i_A  = self.no.Iext_i_theta/2 * pA
 
         @network_operation(self._simulationClock)
         def thetaStimulationFun():
             global place_flag
             global place_I
-            if self._simulationClock.t >= self._theta_start_t and self._simulationClock.t < self.no.time*msecond:
-                ph = stim_omega*self._simulationClock.t
-                ei_net.E_pop.Iext = stim_e_DC + stim_e_A*np.sin(ph - np.pi/2)
-                ei_net.I_pop.Iext = stim_i_DC + stim_i_A*np.sin(ph - np.pi/2)
-                if place_flag == True:
-                    ei_net.E_pop.Iext += place_I
-        
-            #Velocity inputs
-            if self._simulationClock.t >= theta_start_mon_t and self._simulationClock.t < options.time*second:
-                ei_net.E_pop.Iext += Ivel.ravel()
+            if self._simulationClock.t >= self.no.theta_start_t*msecond and \
+                    self._simulationClock.t < self.no.time*msecond:
+                ph = self.stim_omega*self._simulationClock.t
+                self.E_pop.Iext_theta = self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2)
+                self.I_pop.Iext_theta = self.stim_i_A + self.stim_i_A*np.sin(ph - np.pi/2)
+            else:
+                self.E_pop.Iext_theta = 0.0
+                self.I_pop.Iext_theta = 0.0
 
         self.net.add(thetaStimulationFun)
 
 
+    ############################################################################ 
+    #                                   Other
+    ############################################################################ 
+    def _getSimulationClock(self):
+        return self._simulationClock
 
 
