@@ -258,7 +258,10 @@ class BrianGridCellNetwork(GridCellNetwork):
         def thetaStimulationFun():
             global place_flag
             global place_I
-            if self._simulationClock.t >= self.no.theta_start_t*msecond and \
+            if self._simulationClock.t < self.no.theta_start_t*msecond:
+                self.E_pop.Iext_theta = 2 * self.stim_e_A
+                self.I_pop.Iext_theta = 2 * self.stim_i_A
+            elif self._simulationClock.t >= self.no.theta_start_t*msecond and \
                     self._simulationClock.t < self.no.time*msecond:
                 ph = self.stim_omega*self._simulationClock.t
                 self.E_pop.Iext_theta = self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2)

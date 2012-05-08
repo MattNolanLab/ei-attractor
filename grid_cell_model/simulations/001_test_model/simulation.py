@@ -73,7 +73,7 @@ ei_net = BrianGridCellNetwork(options, simulationOpts=None)
 ei_net.uniformInhibition()
 ei_net.setConstantCurrent()
 ei_net.setStartCurrent()
-#ei_net.setThetaCurrentStimulation()
+ei_net.setThetaCurrentStimulation()
 
 
 duration=time.time()-start_time

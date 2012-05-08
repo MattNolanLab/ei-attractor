@@ -44,13 +44,13 @@ defaultParameters = {
 
         "NMDA_amount"         :   2.0,          # %
 
-        "Iext_e_const"        :   700.0,        # pA
-        "Iext_i_const"        :   225.0,        # pA
+        "Iext_e_const"        :   300.0,        # pA
+        "Iext_i_const"        :   200.0,        # pA
         "Iext_start"          :   300.0,        # pA
         "Iext_start_dur"      :   100.0,        # ms
-        "Iext_e_theta"        :   400.0,        # pA
+        "Iext_e_theta"        :   375.0,        # pA
         "Iext_i_theta"        :   25.0,         # pA
-        "theta_start_t"       :   125,          # ms
+        "theta_start_t"       :   0.5e3,        # ms
         "theta_freq"          :   8,            # Hz
 
         "taum_e"              :   9.3,          # ms
@@ -65,7 +65,7 @@ defaultParameters = {
         "tau_AHP_e"           :   20,           # ms
         "g_AHP_e_max"         :   5.0,          # nS
         "t_ref_e"             :   0.1,          # ms
-        "V_peak_e"            :   40,           # mV
+        "V_peak_e"            :   -40,          # mV
         
         "taum_i"              :   10,           # ms
         "taum_i_spread"       :   0,            # ms
@@ -79,7 +79,7 @@ defaultParameters = {
         "ad_tau_i_mean"       :   7.5,          # ms
         "ad_tau_i_std"        :   0.5,          # ms, Unused in the simulation for now
         "ad_i_g_inc"          :   22.73,        # nS
-        "V_peak_i"            :   40,           # mV
+        "V_peak_i"            :  -35,           # mV
         
         "tau_AMPA"            :   1,            # ms
         "g_AMPA_total"        :   1400,         # nS
