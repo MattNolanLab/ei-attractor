@@ -32,6 +32,8 @@ def getOptParser():
     optParser.add_option("--ntrials",           type="int",    help="Number of trials for the parameter set")
     optParser.add_option("--delay",             type="float",  help="Synaptic delay (ms)")
 
+    optParser.add_option("--Ivel",              type="float", help="Velocity input (pA)")
+
     optParser.add_option("--Iext_e",            type="float",  help="External background current into the excitatory population (pA)")
     optParser.add_option("--Iext_i",            type="float",  help="External background current into the inhibitory population (pA)")
 
@@ -43,6 +45,15 @@ def getOptParser():
     optParser.add_option("--Iext_i_theta",      type="float",  help="Theta I external current aplitude (pA)")
     optParser.add_option("--theta_start_t",     type="float",  help="Start time of theta stimulation (ms)")
     optParser.add_option("--theta_freq",        type="float",  help="Theta oscillation frequency (Hz)")
+
+    optParser.add_option("--pAMPA_mu",          type="float", help="AMPA profile center (normalised)")
+    optParser.add_option("--pAMPA_sigma",       type="float", help="AMPA profile spread (normalised)")
+    optParser.add_option("--pGABA_sigma",       type="float", help="GABA A profile spread (normalised)")
+    optParser.add_option("--NMDA_amount",       type="float", help="NMDA portion relative to AMPA (%)")
+
+    optParser.add_option("--prefDirC",          type="float", help="Preferred directtion multiplier")
+    optParser.add_option("--arenaSize",         type="float", help="Size of the arena where the rat runs (cm)")
+    optParser.add_option("--gridsPerArena",     type="float", help="Grids per arena size (for place cell input)")
 
     optParser.add_option("--taum_e",            type="float",  help="Mean of excitatory neuron membrane time constant (ms)")
     optParser.add_option("--taum_e_spread",     type="float",  help="Spread of --taum_e (see --taum_i_spread option) (ms)")

@@ -39,23 +39,9 @@ import logging as lg
 
 lg.basicConfig(level=lg.DEBUG)
 
-parser = getOptParser()
-
-parser.add_option("--Ivel",              type="float", help="Velocity input (pA)")
-parser.add_option("--pAMPA_mu",          type="float", help="AMPA profile center (normalised)")
-parser.add_option("--pAMPA_sigma",       type="float", help="AMPA profile spread (normalised)")
-parser.add_option("--pGABA_sigma",       type="float", help="GABA A profile spread (normalised)")
-parser.add_option("--NMDA_amount",       type="float", help="NMDA portion relative to AMPA (%)")
-parser.add_option("--Iext_e_min",        type="float", help="Minimal external current onto E cells (theta stim.) (A)")
-parser.add_option("--Iext_i_min",        type="float", help="Minimal external current onto I cells (theta stim.) (I)")
-parser.add_option("--g_extraGABA_total", type="float", help="Uniform inhibition (E-->I only) total conductance (S)")
-parser.add_option("--extraGABA_density", type="float", help="Uniform inhibition (E-->I only) connection density")
-parser.add_option("--prefDirC",          type="float", help="Preferred directtion multiplier")
-parser.add_option("--arenaSize",         type="float", help="Size of the arena where the rat runs (cm)")
-parser.add_option("--gridsPerArena",     type="float", help="Grids per arena size (for place cell input)")
-
+parser          = getOptParser()
 (options, args) = parser.parse_args()
-options = setOptionDictionary(parser, options)
+options         = setOptionDictionary(parser, options)
 
 # Other
 figSize = (12,8)
@@ -87,15 +73,15 @@ simulationClock = ei_net._getSimulationClock()
 state_record_e = [ei_net.Ne_x/2 -1 , ei_net.Ne_y/2*ei_net.Ne_x + ei_net.Ne_x/2 - 1]
 state_record_i = [ei_net.Ni_x/2 - 1, ei_net.Ni_y/2*ei_net.Ni_x + ei_net.Ni_x/2 - 1]
 
-spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
-spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
+spikeMon_e          = ExtendedSpikeMonitor(ei_net.E_pop)
+spikeMon_i          = ExtendedSpikeMonitor(ei_net.I_pop)
 
-stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = state_record_e, clock=simulationClock)
-stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = state_record_i, clock=simulationClock)
-stateMon_Iclamp_e = StateMonitor(ei_net.E_pop, 'Iclamp', record = state_record_e, clock=simulationClock)
-stateMon_Iclamp_i = StateMonitor(ei_net.I_pop, 'Iclamp', record = state_record_i, clock=simulationClock)
-stateMon_Iext_e = StateMonitor(ei_net.E_pop, 'Iext', record = state_record_e, clock=simulationClock)
-stateMon_Iext_i = StateMonitor(ei_net.I_pop, 'Iext', record = state_record_i, clock=simulationClock)
+stateMon_e          = StateMonitor(ei_net.E_pop, 'vm', record = state_record_e, clock=simulationClock)
+stateMon_i          = StateMonitor(ei_net.I_pop, 'vm', record = state_record_i, clock=simulationClock)
+stateMon_Iclamp_e   = StateMonitor(ei_net.E_pop, 'Iclamp', record = state_record_e, clock=simulationClock)
+stateMon_Iclamp_i   = StateMonitor(ei_net.I_pop, 'Iclamp', record = state_record_i, clock=simulationClock)
+stateMon_Iext_e     = StateMonitor(ei_net.E_pop, 'Iext', record = state_record_e, clock=simulationClock)
+stateMon_Iext_i     = StateMonitor(ei_net.I_pop, 'Iext', record = state_record_i, clock=simulationClock)
 
 ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
@@ -235,16 +221,16 @@ for trial_it in range(options.ntrials):
 
 
     
-    ## Print a plot of bump position
-    #(pos, bumpPos_times) = theta_spikeMon_e.torusPopulationVector([ei_net.Ne_x,
-    #    ei_net.Ne_y], theta_start_t, options.time, F_dt, F_winLen)
-    #figure(figsize=figSize)
-    #plot(bumpPos_times, pos)
-    #xlabel('Time (s)')
-    #ylabel('Bump position (neurons)')
-    #ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
-    #
-    #savefig(output_fname + '_bump_position.pdf')
+    # Print a plot of bump position
+    (pos, bumpPos_times) = spikeMon_e.torusPopulationVector([ei_net.Ne_x,
+        ei_net.Ne_y], options.theta_start_t*1e-3, options.time*1e-3, F_dt, F_winLen)
+    figure(figsize=figSize)
+    plot(bumpPos_times, pos)
+    xlabel('Time (s)')
+    ylabel('Bump position (neurons)')
+    ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
+    
+    savefig(output_fname + '_bump_position.pdf')
 
 
 

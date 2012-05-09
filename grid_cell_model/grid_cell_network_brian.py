@@ -1,5 +1,5 @@
 #
-#   grid_cell_network.py
+#   grid_cell_network_brian.py
 #
 #   Brian-specific implementation of the grid cell model
 #
@@ -73,6 +73,11 @@ class BrianGridCellNetwork(GridCellNetwork):
         GridCellNetwork.__init__(self, neuronOpts, simulationOpts)
 
         self._simulationClock = Clock(dt = self.no.sim_dt * msecond)
+
+        self._spikeMonitors_e = {}
+        self._spikeMonitors_i = {}
+        self._stateMonitors_e = {}
+        self._stateMonitors_i = {}
 
         # Place cell input settings
         self._gridsep = self.no.arenaSize/self.no.gridsPerArena

@@ -1,5 +1,7 @@
 #
 #   grid_cell_network.py
+#   
+#   Simulator independent grid cell network code
 #
 #     Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #     
@@ -94,6 +96,7 @@ class GridCellNetwork(object):
 
         self.net_Ne = self.Ne_x * self.Ne_y
         self.net_Ni = self.Ni_x * self.Ni_y
+
 
     def simulate(self, time):
         raise NotImplementedException("GridCellNetwork.simulate")
@@ -266,4 +269,5 @@ class GridCellNetwork(object):
             startCurrent_amplitude
         '''
         raise NotImplementedException("GridCellNetwork.setStartCurrent")
+
 
