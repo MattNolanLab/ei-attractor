@@ -92,21 +92,21 @@ class BrianGridCellNetwork(GridCellNetwork):
                 (tau2_GABA/tau1_GABA)**(self.no.tau_GABA_A_rise/tau2_GABA))
 
         self.eqs_e = Equations('''
-            dvm/dt      = 1/C*Im + (noise_sigma*xi/taum_mean**.5)                : volt
-            Ispike      = gL*deltaT*exp((vm-Vt)/deltaT)                          : amp
-            Im          = gL*(EL-vm) + g_ahp*(Eahp - vm) + Ispike + Isyn + Iext  : amp
-            Isyn        = B_GABA*(gi1 - gi2)*(Esyn - vm)                         : amp
-            Iclamp      = -(gi1 - gi2)*(Esyn - Vclamp)                           : amp
-            dgi1/dt     = -gi1/syn_tau1                                          : siemens
-            dgi2/dt     = -gi2/syn_tau2                                          : siemens
-            dg_ahp/dt   = -g_ahp/tau_ahp                                         : siemens
-            Iext        = Iext_const + Iext_theta + Iext_vel + Iext_start        : amp
-            Iext_const                                                           : amp
-            Iext_theta                                                           : amp
-            Iext_vel                                                             : amp
-            Iext_start                                                           : amp
-            EL                                                                   : volt
-            taum                                                                 : second
+            dvm/dt      = 1/C*Im + (noise_sigma*xi/taum_mean**.5)                      : volt
+            Ispike      = gL*deltaT*exp((vm-Vt)/deltaT)                                : amp
+            Im          = gL*(EL-vm) + g_ahp*(Eahp - vm) + Ispike + Isyn + Iext        : amp
+            Isyn        = B_GABA*(gi1 - gi2)*(Esyn - vm)                               : amp
+            Iclamp      = -(gi1 - gi2)*(Esyn - Vclamp)                                 : amp
+            dgi1/dt     = -gi1/syn_tau1                                                : siemens
+            dgi2/dt     = -gi2/syn_tau2                                                : siemens
+            dg_ahp/dt   = -g_ahp/tau_ahp                                               : siemens
+            Iext        = Iext_const + Iext_theta + Iext_vel + Iext_start + Iext_place : amp
+            Iext_const                                                                 : amp
+            Iext_theta                                                                 : amp
+            Iext_vel                                                                   : amp
+            Iext_start                                                                 : amp
+            EL                                                                         : volt
+            taum                                                                       : second
             ''',
             C           = self.no.taum_e * self.no.gL_e * pF,
             gL          = self.no.gL_e * nS,
@@ -266,8 +266,7 @@ class BrianGridCellNetwork(GridCellNetwork):
             if self._simulationClock.t < self.no.theta_start_t*msecond:
                 self.E_pop.Iext_theta = 2 * self.stim_e_A
                 self.I_pop.Iext_theta = 2 * self.stim_i_A
-            elif self._simulationClock.t >= self.no.theta_start_t*msecond and \
-                    self._simulationClock.t < self.no.time*msecond:
+            elif self._simulationClock.t >= self.no.theta_start_t*msecond
                 ph = self.stim_omega*self._simulationClock.t
                 self.E_pop.Iext_theta = self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2)
                 self.I_pop.Iext_theta = self.stim_i_A + self.stim_i_A*np.sin(ph - np.pi/2)
@@ -276,6 +275,69 @@ class BrianGridCellNetwork(GridCellNetwork):
                 self.I_pop.Iext_theta = 0.0
 
         self.net.add(thetaStimulationFun)
+
+
+
+    def _loadRatVelocities(self):
+        ratData         = loadmat(self.no.ratVelFName)
+        self.rat_dt     = ratData['dt'][0][0]
+        self.rat_pos_x  = ratData['pos_x'].ravel()
+        self.rat_pos_y  = ratData['pos_y'].ravel()
+        self.rat_vel_x  = np.diff(ratData['pos_x'].ravel())/rat_dt
+        self.rat_vel_y  = np.diff(ratData['pos_y'].ravel())/rat_dt
+        
+        # Map velocities so that maximum is Ivel_max
+        rat_Ivel_x = self.rat_vel_x * self.no.Ivel_max/np.max(np.abs(self.rat_vel_x)) * pA
+        rat_Ivel_y = self.rat_vel_y * self.no.Ivel_max/np.max(np.abs(self.rat_vel_y)) * pA
+        
+        print "mean rat_Ivel_x: " + str(np.mean(np.abs(self.rat_Ivel_x))/pA) + " pA"
+        print "mean rat_Ivel_y: " + str(np.mean(np.abs(self.rat_Ivel_y))/pA) + " pA"
+        print "max rat_Ivel_x: "  + str(np.max(np.abs(self.rat_Ivel_x))/pA) + " pA"
+        print "max rat_Ivel_y: "  + str(np.max(np.abs(self.rat_Ivel_y))/pA) + " pA"
+
+        self._Ivel_it   = 0
+        self._ratClock = Clock(self.no.rat_dt*msecond)
+
+
+    def setVelocityCurrentInput_e(self):
+        self._loadRatVelocities(self)
+
+        @network_operation(self._ratClock)
+        def velocityChange():
+            if self._simulationClock.t >= self.no.theta_start_t*msecond:
+                v = np.array([[self.rat_Ivel_x[self.Ivel_it], self.rat_Ivel_y[self.Ivel_it]]]).T
+                self.I_pop.Iext_vel = np.dot(self.prefDirs_e, v)
+                self._Ivel_it++
+
+        self.net.add(velocityChange)
+
+    def setVelocityCurrentInput_i(self):
+        raise NotImplementedException()
+
+
+    def setConstantVelocityCurrent_e(self, vel_x, vel_y):
+                v = np.array([[self.rat_Ivel_x[self.Ivel_it], self.rat_Ivel_y[self.Ivel_it]]]).T
+                self.I_pop.Iext_vel = np.dot(self.prefDirs_e, v)
+
+
+    def setPlaceCurrentInput(self):
+        self._placeClockOn  = Clock(self.no.placeT*msecond)
+        self._placeClockOff = Clock(100*ms)
+
+        @network_operation(self._placeClockOn)
+        def switchPlaceInputOn():
+            if simulationClock.t >= self.no.theta_start_t*msecond:
+                self.E_pop.Iext_place = pc.getSheetInput(self.rat_pos_x[self.Ivel_it],
+                        self.rat_pos_y[self.Ivel_it]).ravel() * self.no.Iplace * pA
+                print "  Place cell input on; pos_x = " + \
+                        str(self.rat_pos_x[self.Ivel_it]) + "; pos_y = " + str(self.rat_pos_y[self.Ivel_it])
+        
+        @network_operation(placeClockOff, when='start')
+        def switchPlaceInputOff():
+            self.E_pop.Iext_place = 0.0
+            print "  Place cell input off."
+
+        self.net.add(switchPlaceInputOn, switchPlaceInputOff)
 
 
     ############################################################################ 

@@ -271,3 +271,15 @@ class GridCellNetwork(object):
         raise NotImplementedException("GridCellNetwork.setStartCurrent")
 
 
+    def setVelocityCurrentInput_e(self):
+        '''
+        Setup a velocity input to the excitatory population. Current input.
+        '''
+        raise NotImplementedException("GridCellNetwork.setVelocityCurrentInput")
+
+
+    def setPlaceCurrentInput(self):
+        '''
+        Setup a place cell current input that resets the bump position every user defined period.
+        '''
+        raise NotImplementedException()

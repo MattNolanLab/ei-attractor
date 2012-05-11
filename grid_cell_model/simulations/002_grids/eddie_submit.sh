@@ -1,7 +1,8 @@
+#!/bin/sh
 #
-#   submit_job.py
+#   eddie_submit.sh
 #
-#   Submit job(s) to the cluster/workstation
+#   Submit job to the cluster.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,34 +20,18 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from default_params import defaultParameters
-from common         import *
+# Initialise environment module
 
-import logging as lg
+. /etc/profile.d/modules.sh
+
+# Use python 2.6
+
+module load python/2.6.3
 
 
-lg.basicConfig(level=lg.DEBUG)
+BASE=../../
+export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
-
-QSUB_PARAMS = "-P inf_ndtc -cwd -l h_rt=06:00:00 -pe memory-2G 2"
-
-net_generations=5
-
-parameters = defaultParameters
-
-parameters['time']          = 60e3     # ms
-
-programName = 'python2.6 simulation.py'
-
-ac = ArgumentCreator(parameters)
-
-#iterparams = {
-#        'Iext_e'    : [1, 2, 3, 4],
-#        'Iext_i'    : [5, 6, 7, 8]}
-#
-#ac.insertDict(iterparams, mult=False)
-
-submitter = GenericSubmitter(ac, programName, blocking=True)
-submitter.submitAll()
+# Run the program
+python2.6 simulation.py $* 
