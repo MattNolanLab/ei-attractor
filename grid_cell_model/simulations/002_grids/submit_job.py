@@ -33,8 +33,9 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']          = 10e3     # ms
+parameters['time']          = 1e3     # ms
 startJobNum = 0
+numRepeat = 4
 
 # Workstation parameters
 programName         = 'python2.6 simulation.py'
@@ -55,4 +56,4 @@ if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
-submitter.submitAll(startJobNum)
+submitter.submitAll(startJobNum, numRepeat)
