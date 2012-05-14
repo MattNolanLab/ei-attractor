@@ -110,8 +110,8 @@ for trial_it in range(ei_net.no.ntrials):
         print "Simulation time:",duration,"seconds"
         
         
-        output_fname = "{0}/{1}job{2:04}_trial{3:04}".format(options.output_dir,
-                options.fileNamePrefix, options.job_num, trial_it)
+        output_fname = "{0}/{1}job{2:04}_trial{3:04}_dump{4:03}".format(options.output_dir,
+                options.fileNamePrefix, options.job_num, trial_it, dump_it)
         
         
         outData = ei_net.getRatData()
