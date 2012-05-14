@@ -40,6 +40,8 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 parser          = getOptParser()
+parser.add_option("--ndumps",  type="int",    help="Number of data output dumps during the simulation")
+
 (options, args) = parser.parse_args()
 options         = setOptionDictionary(parser, options)
 
@@ -102,10 +104,8 @@ for trial_it in range(ei_net.no.ntrials):
     print "Simulation running..."
     start_time=time.time()
     
-    ndumps = 10
-
-    for dump_it in range(ndumps):
-        ei_net.net.run(options.time/ndumps*msecond, report='stdout')
+    for dump_it in range(options.ndumps):
+        ei_net.net.run(options.time/options.ndumps*msecond, report='stdout')
         duration=time.time()-start_time
         print "Simulation time:",duration,"seconds"
         

@@ -28,14 +28,15 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']          = 1e3     # ms
-startJobNum = 0
-numRepeat = 4
+parameters['time']          = 600e3     # ms
+parameters['ndumps']        = 10
+startJobNum = 100
+numRepeat = 5
 
 # Workstation parameters
 programName         = 'python2.6 simulation.py'
@@ -43,7 +44,7 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:05:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=06:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
