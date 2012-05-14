@@ -66,6 +66,8 @@ class DimensionException(Exception):
             retstr += "Additional message: " + self.msg
         return retstr
 
+class SubmitException(Exception):
+    pass
 
 ################################################################################
 #                      Argument processing and setup -
@@ -89,6 +91,13 @@ class ArgumentCreator(object):
         '''
         self._do = defaultOpts
         self._resList = [defaultOpts]
+
+        # remove job_num parameter from the list, it should be defined during
+        # job submission
+        try:
+            del self._do["job_num"]
+        except KeyError:
+            pass
 
     def __str__(self):
         ret = ''
@@ -142,7 +151,7 @@ class ArgumentCreator(object):
         '''Return the size of the list of option dictionaries'''
         return len(self._resList)
 
-    def getArgString(self, i):
+    def getArgString(self, i, job_num):
         '''
         Get the argument string which should be passed on to the submitted
         program (simulation).
@@ -153,6 +162,7 @@ class ArgumentCreator(object):
                 parStr += ' --' + str(key)
             else:
                 parStr += ' --' + str(key) + ' ' + str(val)
+        parStr += ' --job_num ' + str(job_num)
         return parStr
 
 
@@ -166,19 +176,20 @@ class ProgramSubmitter(object):
     def __init__(self, argCreator):
         self._ac = argCreator
 
-    def RunProgram(self, args):
+    def RunProgram(self, args, job_num):
         '''Should be overridden; args: argument string'''
         raise NotImplementedException("ProgramSubmitter.getProgramCommand")
 
 
-    def submitAll(self):
+    def submitAll(self, startJobNum):
         for it in range(self._ac.listSize()):
             print "Submitting simulation " + str(it)
-            self.RunProgram(self._ac.getArgString(it))
+            curr_job_num = startJobNum + it
+            self.RunProgram(self._ac.getArgString(it, curr_job_num ), curr_job_num)
 
-    def submitOne(self, it):
+    def submitOne(self, it, job_num):
         print "Submitting simulation " + str(it)
-        self.RunProgram(self._ac.getArgString(it))
+        self.RunProgram(self._ac.getArgString(it, job_num), job_num)
 
 
 class GenericSubmitter(ProgramSubmitter):
@@ -191,7 +202,7 @@ class GenericSubmitter(ProgramSubmitter):
         self._appName = appName
         self._blocking = blocking
 
-    def RunProgram(self, args):
+    def RunProgram(self, args, job_num):
         if self._blocking:
             postfix = ''
         else:
@@ -199,19 +210,28 @@ class GenericSubmitter(ProgramSubmitter):
 
         cmdStr = self._appName + ' ' + args + postfix
         log_info('root.GenericSubmitter', 'Submitting command: \n' + cmdStr)
-        os.system(cmdStr)
+        err = os.system(cmdStr)
+        if err != 0:
+            raise SubmitException()
 
 
 class QsubSubmitter(ProgramSubmitter):
     '''
     Submit jobs on a machine that supports qsub command (cluster)
     '''
-    def __init__(self, argCreator, scriptName, qsub_params):
+    def __init__(self, argCreator, scriptName, qsub_params, qsub_output_dir):
         ProgramSubmitter.__init__(self, argCreator)
-        self._scriptName = scriptName
-        self._qsub_params = qsub_params
+        self._scriptName        = scriptName
+        self._qsub_params       = qsub_params
+        self._qsub_output_dir   = qsub_output_dir
 
-    def RunProgram(self, args):
-        cmd = 'qsub ' + qsub_params + ' '
-        os.system(cmd + args)
+    def RunProgram(self, args, job_num):
+        cmdStr = 'qsub ' + self._qsub_params + ' ' + \
+                "-o " + self._qsub_output_dir + ' ' + \
+                "-N job{0:04} ".format(job_num) + \
+                args
+        log_info('root.QsubSubmitter', 'Submitting command: \n' + cmdStr)
+        err = os.system(cmdStr)
+        if err != 0:
+            raise SubmitException()
 

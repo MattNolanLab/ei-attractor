@@ -30,24 +30,27 @@ lg.basicConfig(level=lg.DEBUG)
 
 EDDIE = False  # if eddie, submit on a cluster using qsub
 
-QSUB_PARAMS = "-P inf_ndtc -cwd -l h_rt=06:00:00 -pe memory-2G 2"
-
-net_generations=5
 
 parameters = defaultParameters
 
-parameters['job_num']       = 0
 parameters['time']          = 10e3     # ms
+startJobNum = 0
 
-programName = 'python2.6 simulation.py'
+programName         = 'python2.6 simulation.py'
+eddie_scriptName    = 'eddie_submit.sh'
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:05:00 -pe memory-2G 2"
+qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#        'Iext_e'    : [1, 2, 3, 4],
-#        'Iext_i'    : [5, 6, 7, 8]}
-#
-#ac.insertDict(iterparams, mult=False)
+iterparams = {
+        'Iext_e'    : [1, 2, 3, 4],
+        'Iext_i'    : [5, 6, 7, 8]}
 
-submitter = GenericSubmitter(ac, programName, blocking=True)
-submitter.submitAll()
+ac.insertDict(iterparams, mult=False)
+
+if EDDIE:
+    submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
+else:
+    submitter = GenericSubmitter(ac, programName, blocking=True)
+submitter.submitAll(startJobNum)
