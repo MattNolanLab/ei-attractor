@@ -73,6 +73,7 @@ class BrianGridCellNetwork(GridCellNetwork):
         GridCellNetwork.__init__(self, neuronOpts, simulationOpts)
 
         self._simulationClock = Clock(dt = self.no.sim_dt * msecond)
+        self._ratClock = Clock(self.no.rat_dt*msecond)
 
         self._spikeMonitors_e = {}
         self._spikeMonitors_i = {}
@@ -105,6 +106,7 @@ class BrianGridCellNetwork(GridCellNetwork):
             Iext_theta                                                                 : amp
             Iext_vel                                                                   : amp
             Iext_start                                                                 : amp
+            Iext_place                                                                 : amp
             EL                                                                         : volt
             taum                                                                       : second
             ''',
@@ -266,7 +268,7 @@ class BrianGridCellNetwork(GridCellNetwork):
             if self._simulationClock.t < self.no.theta_start_t*msecond:
                 self.E_pop.Iext_theta = 2 * self.stim_e_A
                 self.I_pop.Iext_theta = 2 * self.stim_i_A
-            elif self._simulationClock.t >= self.no.theta_start_t*msecond
+            elif self._simulationClock.t >= self.no.theta_start_t*msecond:
                 ph = self.stim_omega*self._simulationClock.t
                 self.E_pop.Iext_theta = self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2)
                 self.I_pop.Iext_theta = self.stim_i_A + self.stim_i_A*np.sin(ph - np.pi/2)
@@ -279,45 +281,55 @@ class BrianGridCellNetwork(GridCellNetwork):
 
 
     def _loadRatVelocities(self):
-        ratData         = loadmat(self.no.ratVelFName)
-        self.rat_dt     = ratData['dt'][0][0]
-        self.rat_pos_x  = ratData['pos_x'].ravel()
-        self.rat_pos_y  = ratData['pos_y'].ravel()
-        self.rat_vel_x  = np.diff(ratData['pos_x'].ravel())/rat_dt
-        self.rat_vel_y  = np.diff(ratData['pos_y'].ravel())/rat_dt
+        self.ratData    = loadmat(self.no.ratVelFName)
+        self.rat_dt     = self.ratData['dt'][0][0]
+        self.rat_pos_x  = self.ratData['pos_x'].ravel()
+        self.rat_pos_y  = self.ratData['pos_y'].ravel()
+        self.rat_vel_x  = np.diff(self.ratData['pos_x'].ravel())/(self.no.rat_dt * ms)
+        self.rat_vel_y  = np.diff(self.ratData['pos_y'].ravel())/(self.no.rat_dt * ms)
         
         # Map velocities so that maximum is Ivel_max
-        rat_Ivel_x = self.rat_vel_x * self.no.Ivel_max/np.max(np.abs(self.rat_vel_x)) * pA
-        rat_Ivel_y = self.rat_vel_y * self.no.Ivel_max/np.max(np.abs(self.rat_vel_y)) * pA
+        self.rat_Ivel_x = self.rat_vel_x * self.no.Ivel_max/np.max(np.abs(self.rat_vel_x)) * pA
+        self.rat_Ivel_y = self.rat_vel_y * self.no.Ivel_max/np.max(np.abs(self.rat_vel_y)) * pA
         
         print "mean rat_Ivel_x: " + str(np.mean(np.abs(self.rat_Ivel_x))/pA) + " pA"
         print "mean rat_Ivel_y: " + str(np.mean(np.abs(self.rat_Ivel_y))/pA) + " pA"
         print "max rat_Ivel_x: "  + str(np.max(np.abs(self.rat_Ivel_x))/pA) + " pA"
         print "max rat_Ivel_y: "  + str(np.max(np.abs(self.rat_Ivel_y))/pA) + " pA"
 
-        self._Ivel_it   = 0
-        self._ratClock = Clock(self.no.rat_dt*msecond)
+        self.Ivel_it   = 0
 
 
     def setVelocityCurrentInput_e(self):
-        self._loadRatVelocities(self)
+        self._loadRatVelocities()
 
         @network_operation(self._ratClock)
         def velocityChange():
             if self._simulationClock.t >= self.no.theta_start_t*msecond:
                 v = np.array([[self.rat_Ivel_x[self.Ivel_it], self.rat_Ivel_y[self.Ivel_it]]]).T
-                self.I_pop.Iext_vel = np.dot(self.prefDirs_e, v)
-                self._Ivel_it++
+                self.E_pop.Iext_vel = np.dot(self.prefDirs_e, v).ravel()
+                self.Ivel_it += 1
+            else:
+                self.E_pop.Iext_vel = 0.0
 
         self.net.add(velocityChange)
+
+
 
     def setVelocityCurrentInput_i(self):
         raise NotImplementedException()
 
 
-    def setConstantVelocityCurrent_e(self, vel_x, vel_y):
-                v = np.array([[self.rat_Ivel_x[self.Ivel_it], self.rat_Ivel_y[self.Ivel_it]]]).T
-                self.I_pop.Iext_vel = np.dot(self.prefDirs_e, v)
+    def setConstantVelocityCurrent_e(self, vel):
+        @network_operation(self._ratClock)
+        def velocityChange():
+            if self._simulationClock.t >= self.no.theta_start_t*msecond:
+                v = np.array([vel]).T
+                self.E_pop.Iext_vel = (np.dot(self.prefDirs_e, v)).ravel() * self.no.Ivel * pA
+            else:
+                self.E_pop.Iext_vel = 0.0
+
+        self.net.add(velocityChange)
 
 
     def setPlaceCurrentInput(self):
@@ -346,4 +358,5 @@ class BrianGridCellNetwork(GridCellNetwork):
     def _getSimulationClock(self):
         return self._simulationClock
 
-
+    def getRatData(self):
+        return self.ratData

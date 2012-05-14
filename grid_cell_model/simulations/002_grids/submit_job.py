@@ -36,7 +36,8 @@ net_generations=5
 
 parameters = defaultParameters
 
-parameters['time']          = 60e3     # ms
+parameters['job_num']       = 0
+parameters['time']          = 10e3     # ms
 
 programName = 'python2.6 simulation.py'
 

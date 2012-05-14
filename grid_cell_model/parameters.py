@@ -32,7 +32,10 @@ def getOptParser():
     optParser.add_option("--ntrials",           type="int",    help="Number of trials for the parameter set")
     optParser.add_option("--delay",             type="float",  help="Synaptic delay (ms)")
 
-    optParser.add_option("--Ivel",              type="float", help="Velocity input (pA)")
+    optParser.add_option("--Ivel",              type="float",  help="Velocity input (In constant velocity currents, pA)")
+    optParser.add_option("--Ivel_max",          type="float",  help="Max. of rat velocity input. The velocities derived from matlab positional file will be normalised to this value (pA)")
+    optParser.add_option("--rat_dt",            type="float",  help="Velocity input time resolution (must be setup according to the velocity file) (ms)")
+    optParser.add_option("--ratVelFName",       type="string", help="Positional input file name (matlab)")
 
     optParser.add_option("--Iext_e",            type="float",  help="External background current into the excitatory population (pA)")
     optParser.add_option("--Iext_i",            type="float",  help="External background current into the inhibitory population (pA)")

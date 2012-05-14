@@ -61,6 +61,9 @@ ei_net.setConstantCurrent()
 ei_net.setStartCurrent()
 ei_net.setThetaCurrentStimulation()
 
+#const_v = [0.0, 1.0]
+#ei_net.setConstantVelocityCurrent_e(const_v)
+ei_net.setVelocityCurrentInput_e()
 
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
@@ -89,155 +92,56 @@ ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 
 
 #x_lim = [options.time-0.5, options.time]
-x_lim = [0, options.time/1e3]
+x_lim = [options.time/1e3 - 1, options.time/1e3]
 
 ################################################################################
 #                              Main cycle
 ################################################################################
-for trial_it in range(options.ntrials):
+for trial_it in range(ei_net.no.ntrials):
     print "Starting trial no. " + str(trial_it) + "..."
     print "Simulation running..."
     start_time=time.time()
     
-    ei_net.net.run(options.time*msecond, report='stdout')
-    duration=time.time()-start_time
-    print "Simulation time:",duration,"seconds"
-    
-    
-    output_fname = "{0}/{1}job{2:04}_trial{3:04}".format(options.output_dir,
-            options.fileNamePrefix, options.job_num, trial_it)
-    
-    
-    F_tstart = 0
-    F_tend = options.time*1e-3
-    F_dt = 0.02
-    F_winLen = 0.25
-    Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
-    Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
+    ndumps = 10
 
-    # plot firing rates
-    figure(figsize=figSize)
-    subplot(211)
-    T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
-    pcolormesh(T, FR, Fe)
-    ylabel('E Neuron no.')
-    colorbar()
-    subplot(212)
-    T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
-    pcolormesh(T, FR, Fi)
-    xlabel('Time (s)')
-    ylabel('I Neuron no.')
-    colorbar()
-    savefig(output_fname + '_firing_rate_e.png')
+    for dump_it in range(ndumps):
+        ei_net.net.run(options.time/ndumps*msecond, report='stdout')
+        duration=time.time()-start_time
+        print "Simulation time:",duration,"seconds"
+        
+        
+        output_fname = "{0}/{1}job{2:04}_trial{3:04}".format(options.output_dir,
+                options.fileNamePrefix, options.job_num, trial_it)
+        
+        
+        outData = ei_net.getRatData()
+        #outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
-    figure()
-    ax = subplot(211)
-    plot(stateMon_e.times, stateMon_e.values[0:2].T/mV)
-    ylabel('E membrane potential (mV)')
-    subplot(212, sharex=ax)
-    plot(stateMon_i.times, stateMon_i.values[0:2].T/mV)
-    xlabel('Time (s)')
-    ylabel('I membrane potential (mV)')
-    xlim(x_lim)
-    savefig(output_fname + '_Vm.pdf')
-    
-    
-    figure()
-    ax = subplot(211)
-    plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0:2].T/pA)
-    ylabel('E synaptic current (pA)')
-    subplot(212, sharex=ax)
-    plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[0:2].T/pA)
-    xlabel('Time (s)')
-    ylabel('I synaptic current (pA)')
-    xlim(x_lim)
-    savefig(output_fname + '_Isyn.pdf')
-    
-    figure()
-    ax = subplot(211)
-    plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[1].T/pA)
-    ylabel('E external current (pA)')
-    subplot(212, sharex=ax)
-    plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[0].T/pA)
-    xlabel('Time (s)')
-    ylabel('I external current (pA)')
-    xlim(x_lim)
-    savefig(output_fname + '_Iext.pdf')
-    
-    ## High pass filter these signals
-    #figure()
-    #ax = subplot(211)
-    #plot(stateMon_Iclamp_e.times, butterHighPass(stateMon_Iclamp_e.values[1].T/pA, options.sim_dt, 40))
-    #plot(stateMon_Iext_e.times, -(stateMon_Iext_e.values[0]/pA - stim_e_DC/pA))
-    #ylabel('E current (pA)')
-    #ylim([-500, 500])
-    #subplot(212, sharex=ax)
-    #plot(stateMon_Iclamp_i.times, butterHighPass(stateMon_Iclamp_i.values[0].T/pA, options.sim_dt, 40))
-    ##plot(stateMon_Iclamp_i.times, stateMon_Iext_i.values[0]/pA)
-    #xlabel('Time (s)')
-    #ylabel('I current (pA)')
-    #xlim(x_lim)
-    #ylim([-500, 500])
-    #savefig(output_fname + '_Isyn_filt.pdf')
-    
-    
-    
-    Ne = options.Ne
-    figure()
-    pcolormesh(np.reshape(ei_net.AMPA_conn.W.todense()[57*68 + 33, :], (ei_net.Ni_y,
-        ei_net.Ni_x)));
-    xlabel('I neuron no.')
-    ylabel('I neuron no.')
-    colorbar()
-    axis('equal')
-    savefig(output_fname + '_E2I_conn.png')
+        #outData['bumpPos'] = pos
+        #outData['bumpPos_times'] = bumpPos_times
 
-    Ni = options.Ni
-    figure()
-    pcolormesh(np.reshape(ei_net.GABA_conn1.W.todense()[0, :], (ei_net.Ne_y,
-        ei_net.Ne_x)));
-    xlabel('E neuron no.')
-    ylabel('E neuron no.')
-    colorbar()
-    axis('equal')
-    savefig(output_fname + '_I2E_conn.png')
+        #outData['Fe'] = Fe
+        #outData['Fe_t'] = Fe_t
 
-    #figure()
-    #pcolormesh(np.reshape(np.dot(ei_net.AMPA_conn.W.todense(),
-    #    ei_net.GABA_conn1.W.todense())[15, :], (ei_net.Ne_y, ei_net.Ne_x)));
-    #xlabel('E neuron no.')
-    #ylabel('E neuron no.')
-    #colorbar()
-    #savefig(output_fname + '_E2E_conn.png')
+        outData['spikeCell_e']              = spikeMon_e.aspikes[0:200]
+        outData['spikeCell_i']              = spikeMon_i.aspikes[0:50]
+        outData['options']                  = options._einet_optdict
+        outData['velocityStart']            = options.theta_start_t
 
+        outData['stateMon_Iclamp_e_times']  = stateMon_Iclamp_e.times
+        outData['stateMon_Iclamp_e_values'] = stateMon_Iclamp_e.values
+        outData['stateMon_Iclamp_i_times']  = stateMon_Iclamp_i.times
+        outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
+        
+        savemat(output_fname + '_output.mat', outData, do_compression=True)
 
-    figure()
-    pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
-    xlabel('E neuron no.')
-    ylabel('E neuron no.')
-    colorbar()
-    axis('equal')
-    savefig(output_fname + '_firing_snapshot_e.png')
-
-
-    
-    # Print a plot of bump position
-    (pos, bumpPos_times) = spikeMon_e.torusPopulationVector([ei_net.Ne_x,
-        ei_net.Ne_y], options.theta_start_t*1e-3, options.time*1e-3, F_dt, F_winLen)
-    figure(figsize=figSize)
-    plot(bumpPos_times, pos)
-    xlabel('Time (s)')
-    ylabel('Bump position (neurons)')
-    ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
-    
-    savefig(output_fname + '_bump_position.pdf')
-
+        print "Dump after " + str(simulationClock.t)
 
 
     print "End of trial no. " + str(trial_it) + "..."
     print 
 
-    #ei_net.reinit()
+    ei_net.reinit()
 #                            End main cycle
 ################################################################################
 
