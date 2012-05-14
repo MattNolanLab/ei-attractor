@@ -229,7 +229,7 @@ class QsubSubmitter(ProgramSubmitter):
         cmdStr = 'qsub ' + self._qsub_params + ' ' + \
                 "-o " + self._qsub_output_dir + ' ' + \
                 "-N job{0:04} ".format(job_num) + \
-                args
+                self._scriptName + ' ' + args
         log_info('root.QsubSubmitter', 'Submitting command: \n' + cmdStr)
         err = os.system(cmdStr)
         if err != 0:
