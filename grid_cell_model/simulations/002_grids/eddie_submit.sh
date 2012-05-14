@@ -30,7 +30,7 @@ module load python/2.6.3
 
 
 BASE=../../
-export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
+export PYTHONPATH="/exports/work/inf_ndtc/s0966762/usr/local/lib/python2.6/site-packages:$BASE"
 
 
 # Run the program
