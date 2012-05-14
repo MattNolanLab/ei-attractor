@@ -33,9 +33,9 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']          = 10e3     # ms
+parameters['time']          = 5e3     # ms
 parameters['ndumps']        = 1
-startJobNum = 0
+startJobNum = 200
 numRepeat = 1
 
 # Workstation parameters
@@ -49,9 +49,9 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#        'Ivel_max'    : [40, 50, 60]}
-#ac.insertDict(iterparams, mult=False)
+iterparams = {
+        'Ivel_max'    : [40, 50, 60, 80, 100]}
+ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

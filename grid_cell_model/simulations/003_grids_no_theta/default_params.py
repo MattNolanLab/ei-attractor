@@ -50,10 +50,11 @@ defaultParameters = {
 
         "NMDA_amount"         :   2.0,          # %
 
-        "Iext_e_const"        :   600.0,        # pA
-        "Iext_i_const"        :   225.0,        # pA
+        "Iext_e_const"        :   425.0,        # pA
+        "Iext_i_const"        :   200.0,        # pA
         "Iext_start"          :   300.0,        # pA
         "Iext_start_dur"      :   100.0,        # ms
+        "theta_start_t"       :   500.0,        # ms
 
         "taum_e"              :   9.3,          # ms
         "taum_e_spread"       :   0.31,         # ms

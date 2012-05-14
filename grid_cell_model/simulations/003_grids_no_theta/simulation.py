@@ -63,7 +63,7 @@ ei_net.setStartCurrent()
 
 #const_v = [0.0, 1.0]
 #ei_net.setConstantVelocityCurrent_e(const_v)
-#ei_net.setVelocityCurrentInput_e()
+ei_net.setVelocityCurrentInput_e()
 
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
