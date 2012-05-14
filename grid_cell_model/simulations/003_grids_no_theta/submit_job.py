@@ -28,15 +28,16 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']          = 5e3     # ms
-parameters['ndumps']        = 1
+parameters['time']          = 600e3     # ms
+parameters['output_dir']    = 'output/'
+parameters['ndumps']        = 10
 startJobNum = 200
-numRepeat = 1
+numRepeat = 20
 
 # Workstation parameters
 programName         = 'python2.6 simulation.py'
