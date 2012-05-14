@@ -181,15 +181,25 @@ class ProgramSubmitter(object):
         raise NotImplementedException("ProgramSubmitter.getProgramCommand")
 
 
-    def submitAll(self, startJobNum):
+    def submitAll(self, startJobNum, repeat=1):
+        '''
+        Submits all the generated jobs. Parameters:
+          startJobNum   Start job number index
+          repeat        Number of repeats for each parameters dictionary
+        '''
+        curr_job_num = startJobNum
         for it in range(self._ac.listSize()):
-            print "Submitting simulation " + str(it)
-            curr_job_num = startJobNum + it
-            self.RunProgram(self._ac.getArgString(it, curr_job_num ), curr_job_num)
+            for rep in range(repeat):
+                print "Submitting simulation " + str(it)
+                self.RunProgram(self._ac.getArgString(it, curr_job_num ), curr_job_num)
+                curr_job_num += 1
 
-    def submitOne(self, it, job_num):
-        print "Submitting simulation " + str(it)
-        self.RunProgram(self._ac.getArgString(it, job_num), job_num)
+    def submitOne(self, it, startJobNum, repeat=1):
+        curr_job_num = startJobNum
+        for rep in range(repeat):
+            print "Submitting simulation " + str(it)
+            self.RunProgram(self._ac.getArgString(it, curr_job_num), curr_job_num)
+            curr_job_num += 1
 
 
 class GenericSubmitter(ProgramSubmitter):
