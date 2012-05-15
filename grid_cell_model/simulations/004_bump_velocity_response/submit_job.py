@@ -28,13 +28,17 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+EDDIE = False  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']          = 10e3     # ms
-parameters['ndumps']        = 1
+parameters['time']              = 2.0e3      # ms
+parameters['ngenerations']      = 10
+parameters['velModulationType'] = 'excitatory'
+
+parameters['Ivel']              = 40        # pA
+
 startJobNum = 0
 numRepeat = 1
 
@@ -50,7 +54,7 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'Ivel'    : [40, 50, 60, 70, 80, 90, 100]}
+        'Ivel'    : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]}
 ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
