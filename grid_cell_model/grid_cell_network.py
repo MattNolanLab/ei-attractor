@@ -160,8 +160,7 @@ class GridCellNetwork(object):
         return np.exp(-(d - pAMPA_mu)**2/2/pAMPA_sigma**2)
 
 
-    def _generate_pGABA_twisted_torus(self, a, others, sigma, prefDir,
-        prefDirC):
+    def _generate_pGABA_twisted_torus(self, a, others, sigma, prefDir, prefDirC):
 
         #import pdb; pdb.set_trace()
         prefDir = np.array(prefDir, dtype=float)
@@ -203,7 +202,7 @@ class GridCellNetwork(object):
                 self.prefDirs_e[it, :] = pd
                 tmp_templ = self._generate_pAMPA_twisted_torus(a, others_e,
                         pAMPA_mu, pAMPA_sigma, np.array([[pd[0], pd[1]]]),
-                        self.no.prefDirC)
+                        self.no.prefDirC_e)
 
                 self._divergentConnectEI(it, range(self.net_Ni),
                         tmp_templ*g_AMPA_mean)
@@ -222,10 +221,10 @@ class GridCellNetwork(object):
                 it = y*self.Ni_x + x
 
                 a = np.array([[x_i_norm, y_i_norm]])
-                pd = np.array([0, 0])
+                pd = getPreferredDirection(x, y)
                 self.prefDirs_i[it, :] = pd
                 tmp_templ = self._generate_pGABA_twisted_torus(a, others_i,
-                        pGABA_sigma, [[pd[0], pd[1]]], self.no.prefDirC)
+                        pGABA_sigma, [[pd[0], pd[1]]], self.no.prefDirC_i)
 
                 E_nid = (tmp_templ > conn_th).nonzero()[0]
                 self._divergentConnectIE(it, E_nid, self.B_GABA*g_GABA_mean*tmp_templ[E_nid])
@@ -285,10 +284,17 @@ class GridCellNetwork(object):
 
     def setConstantVelocityCurrent_e(self, vel):
         '''
-        Setup a constant velocity current, where vel must be a list of numbers:
+        Setup a constant velocity current onto E poputlaion, where vel must be a list of numbers:
             vel = [vel_x, vel_y]
         '''
         raise NotImplementedException("GridCellNetwork.setConstantVelocityCurrent_e")
+
+    def setConstantVelocityCurrent_i(self, vel):
+        '''
+        Setup a constant velocity current onto I population, where vel must be a list of numbers:
+            vel = [vel_x, vel_y]
+        '''
+        raise NotImplementedException("GridCellNetwork.setConstantVelocityCurrent_i")
 
     def setPlaceCurrentInput(self):
         '''

@@ -54,7 +54,8 @@ def getOptParser():
     optParser.add_option("--pGABA_sigma",       type="float", help="GABA A profile spread (normalised)")
     optParser.add_option("--NMDA_amount",       type="float", help="NMDA portion relative to AMPA (%)")
 
-    optParser.add_option("--prefDirC",          type="float", help="Preferred directtion multiplier")
+    optParser.add_option("--prefDirC_e",        type="float", help="Excitatory (E-->I) preferred directtion multiplier")
+    optParser.add_option("--prefDirC_i",        type="float", help="Inhibitory (I-->E) preferred directtion multiplier")
     optParser.add_option("--arenaSize",         type="float", help="Size of the arena where the rat runs (cm)")
     optParser.add_option("--gridsPerArena",     type="float", help="Grids per arena size (for place cell input)")
 

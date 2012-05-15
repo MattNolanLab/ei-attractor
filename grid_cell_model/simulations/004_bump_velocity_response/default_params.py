@@ -40,7 +40,8 @@ defaultParameters = {
         "pAMPA_mu"            :   y_dim/2.0,
         "pAMPA_sigma"         :   0.5/6,
         "pGABA_sigma"         :   0.5/6,
-        "prefDirC"            :   4.0,
+        "prefDirC_e"          :   4.0,
+        "prefDirC_i"          :   0.0,
         "arenaSize"           :   180.0,        # cm
         "gridsPerArena"       :   2.5,
 

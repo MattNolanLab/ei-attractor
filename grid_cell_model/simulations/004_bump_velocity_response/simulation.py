@@ -60,19 +60,21 @@ for gen_it in range(options.ngenerations):
     start_time=time.time()
     total_start_t = time.time()
 
+    ei_net = BrianGridCellNetwork(options, simulationOpts=None)
+    ei_net.uniformInhibition()
+    ei_net.setConstantCurrent()
+    ei_net.setStartCurrent()
+    ei_net.setThetaCurrentStimulation()
+    const_v = [1.0, 0.0]
     if options.velModulationType == "excitatory":
         #Modulation of excitatory neurons (weight shifts are E-->I)
-        ei_net = BrianGridCellNetwork(options, simulationOpts=None)
-        ei_net.uniformInhibition()
-        ei_net.setConstantCurrent()
-        ei_net.setStartCurrent()
-        ei_net.setThetaCurrentStimulation()
+        ei_net.setConstantVelocityCurrent_e(const_v)
+    elif options.velModulationType == "inhibitory":
+        #Modulation of inhibitory neurons (weight shifts are I-->E)
+        ei_net.setConstantVelocityCurrent_i(const_v)
     else:
         raise Exception("Unknown velocity modulation type")
     
-    const_v = [1.0, 0.0]
-    ei_net.setConstantVelocityCurrent_e(const_v)
-    #ei_net.setVelocityCurrentInput_e()
     
     duration=time.time()-start_time
     print "Network setup time:",duration,"seconds"
