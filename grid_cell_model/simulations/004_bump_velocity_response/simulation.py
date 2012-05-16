@@ -139,6 +139,7 @@ for gen_it in range(options.ngenerations):
     outData['bumpPos_times'] = bumpPos_times
     outData['options']       = options._einet_optdict
     outData['velocityStart'] = options.theta_start_t
+    outData['Ivel']          = options.Ivel
     savemat(output_fname + '_output.mat', outData, do_compression=True)
 
 

@@ -181,7 +181,7 @@ class ProgramSubmitter(object):
         raise NotImplementedException("ProgramSubmitter.getProgramCommand")
 
 
-    def submitAll(self, startJobNum, repeat=1):
+    def submitAll(self, startJobNum, repeat=1, dry_run=False):
         '''
         Submits all the generated jobs. Parameters:
           startJobNum   Start job number index
@@ -191,14 +191,14 @@ class ProgramSubmitter(object):
         for it in range(self._ac.listSize()):
             for rep in range(repeat):
                 print "Submitting simulation " + str(it)
-                self.RunProgram(self._ac.getArgString(it, curr_job_num ), curr_job_num)
+                self.RunProgram(self._ac.getArgString(it, curr_job_num ), curr_job_num, dry_run)
                 curr_job_num += 1
 
     def submitOne(self, it, startJobNum, repeat=1):
         curr_job_num = startJobNum
         for rep in range(repeat):
             print "Submitting simulation " + str(it)
-            self.RunProgram(self._ac.getArgString(it, curr_job_num), curr_job_num)
+            self.RunProgram(self._ac.getArgString(it, curr_job_num), curr_job_num, dry_run)
             curr_job_num += 1
 
 
@@ -212,7 +212,7 @@ class GenericSubmitter(ProgramSubmitter):
         self._appName = appName
         self._blocking = blocking
 
-    def RunProgram(self, args, job_num):
+    def RunProgram(self, args, job_num, dry_run):
         if self._blocking:
             postfix = ''
         else:
@@ -220,9 +220,10 @@ class GenericSubmitter(ProgramSubmitter):
 
         cmdStr = self._appName + ' ' + args + postfix
         log_info('root.GenericSubmitter', 'Submitting command: \n' + cmdStr)
-        err = os.system(cmdStr)
-        if err != 0:
-            raise SubmitException()
+        if not dry_run:
+            err = os.system(cmdStr)
+            if err != 0:
+                raise SubmitException()
 
 
 class QsubSubmitter(ProgramSubmitter):
@@ -235,13 +236,14 @@ class QsubSubmitter(ProgramSubmitter):
         self._qsub_params       = qsub_params
         self._qsub_output_dir   = qsub_output_dir
 
-    def RunProgram(self, args, job_num):
+    def RunProgram(self, args, job_num, dry_run):
         cmdStr = 'qsub ' + self._qsub_params + ' ' + \
                 "-o " + self._qsub_output_dir + ' ' + \
                 "-N job{0:04} ".format(job_num) + \
                 self._scriptName + ' ' + args
         log_info('root.QsubSubmitter', 'Submitting command: \n' + cmdStr)
-        err = os.system(cmdStr)
-        if err != 0:
-            raise SubmitException()
+        if not dry_run:
+            err = os.system(cmdStr)
+            if err != 0:
+                raise SubmitException()
 

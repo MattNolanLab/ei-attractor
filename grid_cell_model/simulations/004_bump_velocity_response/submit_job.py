@@ -37,11 +37,11 @@ parameters['time']              = 10.0e3      # ms
 parameters['ngenerations']      = 10
 parameters['velModulationType'] = 'inhibitory'
 parameters['prefDirC_e']        = 0
-parameters['prefDirC_i']        = 4
+parameters['prefDirC_i']        = 10
 
 parameters['Ivel']              = 40        # pA
 
-startJobNum = 200
+startJobNum = 400
 numRepeat = 1
 
 # Workstation parameters
@@ -56,11 +56,11 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'Ivel'    : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]}
-ac.insertDict(iterparams, mult=False)
+        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]}
+ac.insertDict(iterparams, mult=True)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
-submitter.submitAll(startJobNum, numRepeat)
+submitter.submitAll(startJobNum, numRepeat, dry_run=False)
