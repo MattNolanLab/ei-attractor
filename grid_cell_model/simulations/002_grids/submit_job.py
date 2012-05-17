@@ -33,7 +33,7 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']          = 5e3       # ms
+parameters['time']          = 2e3       # ms
 parameters['ndumps']        = 1
 
 parameters['gridsPerArena'] = 4.5       # 40cm grid field/180cm arena

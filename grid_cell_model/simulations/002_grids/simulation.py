@@ -75,12 +75,14 @@ print "Network setup time:",duration,"seconds"
 
 simulationClock = ei_net._getSimulationClock()
 
+nrecSpike_e = 200
+nrecSpike_i = 50
 
 state_record_e = [ei_net.Ne_x/2 -1 , ei_net.Ne_y/2*ei_net.Ne_x + ei_net.Ne_x/2 - 1]
 state_record_i = [ei_net.Ni_x/2 - 1, ei_net.Ni_y/2*ei_net.Ni_x + ei_net.Ni_x/2 - 1]
 
-spikeMon_e          = ExtendedSpikeMonitor(ei_net.E_pop)
-spikeMon_i          = ExtendedSpikeMonitor(ei_net.I_pop)
+spikeMon_e          = ExtendedSpikeMonitor(ei_net.E_pop[0:nrecSpike_e])
+spikeMon_i          = ExtendedSpikeMonitor(ei_net.I_pop[0:nrecSpike_i])
 
 stateMon_e          = RecentStateMonitor(ei_net.E_pop, 'vm',     duration=options.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
 stateMon_i          = RecentStateMonitor(ei_net.I_pop, 'vm',     duration=options.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
@@ -214,7 +216,7 @@ for trial_it in range(ei_net.no.ntrials):
         outData['stateMon_Iclamp_i_times']  = stateMon_Iclamp_i.times
         outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
         
-        savemat(output_fname + '_output.mat', outData, do_compression=True)
+        savemat(output_fname + '_output.mat', outData, do_compression=False)
 
         print "Dump after " + str(simulationClock.t)
 
