@@ -119,6 +119,7 @@ def getOptParser():
 
     optParser.add_option("--output_dir",        type="string", help="Output directory path.")
     optParser.add_option("--fileNamePrefix",    type="string", default='', help="Prefix to include for each output file")
+    optParser.add_option("--stateMonDur",       type="float",  help="State monitors window duration (ms)")
     optParser.add_option("--job_num",           type="int",    help="Use argument of this option to specify the output file name number, instead of using time")
 
     # Other parameters

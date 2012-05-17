@@ -107,6 +107,7 @@ defaultParameters = {
         "ntrials"             :   1,
         
         "output_dir"          :   _defaultOutputDir,
+        "stateMonDur"         :  10e3,          # ms
 
         "stim_spread"         :  1.0}
 

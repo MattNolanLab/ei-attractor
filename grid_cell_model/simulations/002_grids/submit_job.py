@@ -33,14 +33,14 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']          = 10e3       # ms
+parameters['time']          = 5e3       # ms
 parameters['ndumps']        = 1
 
 parameters['gridsPerArena'] = 4.5       # 40cm grid field/180cm arena
 parameters['placeT']        = 10e3      # ms
 parameters['Ivel_mean']     = 20.0      # pA 
 startJobNum = 0
-numRepeat = 10
+numRepeat = 1
 
 # Workstation parameters
 programName         = 'python2.6 simulation.py'
@@ -53,9 +53,9 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-iterparams = {
-        'Ivel_mean'    : [17, 18, 19, 20, 21, 22, 23]}
-ac.insertDict(iterparams, mult=False)
+#iterparams = {
+#        'Ivel_mean'    : [17, 18, 19, 20, 21, 22, 23]}
+#ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
