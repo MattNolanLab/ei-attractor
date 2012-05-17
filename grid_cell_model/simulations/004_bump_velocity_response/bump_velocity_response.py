@@ -27,14 +27,31 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [100, 115],
-        [200, 215]]
+        [200, 215],
+        [300, 315],
+        [320, 335],
+        [340, 355],
+        [360, 375],
+        [380, 395],
+        [400, 415]]
 fitLine = [
-        True,
+        False,
+        False,
+        False,
+        False,
+        False,
+        False,
         False]
 genRange = [0, 9]
 
-leg = ('E vel. modulation', 'E vel. modulation fit', 'I vel. modulation')
+leg = (
+        '4 nrns',
+        '5 nrns',
+        '6 nrns',
+        '7 nrns',
+        '8 nrns',
+        '9 nrns',
+        '10 nrns')
 
 rcParams['font.size'] = 14
 
@@ -71,6 +88,7 @@ hold('on')
 
 for Ivel_types in range(len(jobRange_all)):
     jobRange = jobRange_all[Ivel_types]
+    print "jobRange: " + str(jobRange)
 
     jobN = jobRange[1] - jobRange[0] + 1
     genN = genRange[1] - genRange[0] + 1
@@ -115,7 +133,7 @@ for Ivel_types in range(len(jobRange_all)):
     
     # TODO: export this in simulations
     Ivel = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
-    errorbar(Ivel, gen_avg, gen_stderr, fmt='o')
+    errorbar(Ivel, gen_avg, gen_stderr, fmt='o-')
     xlabel('Velocity current (pA)')
     ylabel('Bump velocity (neurons/s)')
 

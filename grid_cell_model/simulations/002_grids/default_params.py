@@ -36,17 +36,17 @@ defaultParameters = {
         "delay"               :   1.0,          # ms
 
         "rat_dt"              :   20.0,         # ms
-        "Ivel"                :   50.0,         # pA
-        "Ivel_max"            :   50.0,         # pA
-        "ratVelFName"         : '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
-        #"ratVelFName"         : '../../../../data/hafting_et_al_2005/rat_data_original.mat',
+        #"ratVelFName"         : '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
+        "ratVelFName"         : '../../../../data/hafting_et_al_2005/rat_trajectory_original.mat',
 
         "pAMPA_mu"            :   y_dim/2.0,
         "pAMPA_sigma"         :   0.5/6,
         "pGABA_sigma"         :   0.5/6,
-        "prefDirC"            :   4.0,
+        "prefDirC_e"          :   4.0,
+        "prefDirC_i"          :   0.0,
         "arenaSize"           :   180.0,        # cm
-        "gridsPerArena"       :   2.5,
+        "Iplace"              :   250.0,        # pA
+        "placeDur"            :    100,         # ms
 
         "NMDA_amount"         :   2.0,          # %
 

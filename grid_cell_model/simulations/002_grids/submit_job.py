@@ -28,15 +28,19 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+EDDIE = False  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']          = 10e3     # ms
+parameters['time']          = 10e3       # ms
 parameters['ndumps']        = 1
+
+parameters['gridsPerArena'] = 4.5       # 40cm grid field/180cm arena
+parameters['placeT']        = 10e3      # ms
+parameters['Ivel_mean']     = 20.0      # pA 
 startJobNum = 0
-numRepeat = 1
+numRepeat = 10
 
 # Workstation parameters
 programName         = 'python2.6 simulation.py'
@@ -50,7 +54,7 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'Ivel'    : [40, 50, 60, 70, 80, 90, 100]}
+        'Ivel_mean'    : [17, 18, 19, 20, 21, 22, 23]}
 ac.insertDict(iterparams, mult=False)
 
 if EDDIE:

@@ -85,6 +85,9 @@ class BrianGridCellNetwork(GridCellNetwork):
         self._gridCenter = [0, 0]
         self._place_current = 250 * pA
         self._pc = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize, self._gridsep, self._gridCenter)
+        # Has place cell input been set up?
+        self._placeCellInputOn = False
+
 
         tau1_GABA = self.no.tau_GABA_A_fall
         tau2_GABA = self.no.tau_GABA_A_rise * self.no.tau_GABA_A_fall / \
@@ -241,10 +244,19 @@ class BrianGridCellNetwork(GridCellNetwork):
     def setStartCurrent(self):
         self._startCurrentClock = Clock(dt=50*ms)
 
+        # If no one has overwritten the velocity inputs, init the positions from [0.0, 0.0]
+        # Otherwise they will be set by the place cell input methods
+        if not self._placeCellInputOn:
+            self.rat_pos_x = [0.0]
+            self.rat_pos_y = [0.0]
+            self.Ivel_it = 0
+
         @network_operation(self._startCurrentClock)
         def startCurrentFun():
-            if self._simulationClock.t >= 0*msecond and self._simulationClock.t < self.no.Iext_start_dur*msecond:
-                self.E_pop.Iext_start = self._pc.getSheetInput(0.0, 0.0).ravel() * self.no.Iext_start * pA
+            if self._simulationClock.t < self.no.Iext_start_dur*msecond:
+                #self.E_pop.Iext_start = self._pc.getSheetInput(0.0, 0.0).ravel() * self.no.Iext_start * pA
+                self.E_pop.Iext_start = self._pc.getSheetInput(self.rat_pos_x[self.Ivel_it],
+                        self.rat_pos_y[self.Ivel_it]).ravel() * self.no.Iext_start * pA
                 print "Bump initialisation..."
             else:
                 self.E_pop.Iext_start = 0.0
@@ -283,15 +295,20 @@ class BrianGridCellNetwork(GridCellNetwork):
     def _loadRatVelocities(self):
         self.ratData    = loadmat(self.no.ratVelFName)
         self.rat_dt     = self.ratData['dt'][0][0]
+
         self.rat_pos_x  = self.ratData['pos_x'].ravel()
         self.rat_pos_y  = self.ratData['pos_y'].ravel()
-        self.rat_vel_x  = np.diff(self.ratData['pos_x'].ravel())/(self.no.rat_dt * ms)
-        self.rat_vel_y  = np.diff(self.ratData['pos_y'].ravel())/(self.no.rat_dt * ms)
+        self.rat_vel_x  = np.diff(self.rat_pos_x)/(self.no.rat_dt * ms)
+        self.rat_vel_y  = np.diff(self.rat_pos_y)/(self.no.rat_dt * ms)
         
         # Map velocities so that maximum is Ivel_max
-        self.rat_Ivel_x = self.rat_vel_x * self.no.Ivel_max/np.max(np.abs(self.rat_vel_x)) * pA
-        self.rat_Ivel_y = self.rat_vel_y * self.no.Ivel_max/np.max(np.abs(self.rat_vel_y)) * pA
+        self.rat_Ivel_x = self.rat_vel_x * self.no.Ivel_mean/np.mean(np.abs(self.rat_vel_x)) * pA
+        self.rat_Ivel_y = self.rat_vel_y * self.no.Ivel_mean/np.mean(np.abs(self.rat_vel_y)) * pA
         
+        print "mean rat_vel_x:  " + str(np.mean(np.abs(self.rat_vel_x))) + " cm/s"
+        print "mean rat_vel_y:  " + str(np.mean(np.abs(self.rat_vel_y))) + " cm/s"
+        print "max  rat_vel_x:  " + str(np.max(np.abs(self.rat_vel_x))) + " cm/s"
+        print "max  rat_vel_y:  " + str(np.max(np.abs(self.rat_vel_y))) + " cm/s"
         print "mean rat_Ivel_x: " + str(np.mean(np.abs(self.rat_Ivel_x))/pA) + " pA"
         print "mean rat_Ivel_y: " + str(np.mean(np.abs(self.rat_Ivel_y))/pA) + " pA"
         print "max rat_Ivel_x: "  + str(np.max(np.abs(self.rat_Ivel_x))/pA) + " pA"
@@ -346,20 +363,22 @@ class BrianGridCellNetwork(GridCellNetwork):
 
     def setPlaceCurrentInput(self):
         self._placeClockOn  = Clock(self.no.placeT*msecond)
-        self._placeClockOff = Clock(100*ms)
+        self._placeClockOff = Clock(self.no.placeDur*msecond)
+        self._placeCellInputOn = True
+
+        self._loadRatVelocities()
 
         @network_operation(self._placeClockOn)
         def switchPlaceInputOn():
-            if simulationClock.t >= self.no.theta_start_t*msecond:
-                self.E_pop.Iext_place = pc.getSheetInput(self.rat_pos_x[self.Ivel_it],
+            if self._simulationClock.t >= self.no.theta_start_t*msecond:
+                self.E_pop.Iext_place = self._pc.getSheetInput(self.rat_pos_x[self.Ivel_it],
                         self.rat_pos_y[self.Ivel_it]).ravel() * self.no.Iplace * pA
                 print "  Place cell input on; pos_x = " + \
                         str(self.rat_pos_x[self.Ivel_it]) + "; pos_y = " + str(self.rat_pos_y[self.Ivel_it])
         
-        @network_operation(placeClockOff, when='start')
+        @network_operation(self._placeClockOff, when='start')
         def switchPlaceInputOff():
             self.E_pop.Iext_place = 0.0
-            print "  Place cell input off."
 
         self.net.add(switchPlaceInputOn, switchPlaceInputOff)
 
