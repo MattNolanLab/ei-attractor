@@ -35,13 +35,13 @@ parameters = defaultParameters
 
 parameters['time']              = 10.0e3      # ms
 parameters['ngenerations']      = 10
-parameters['velModulationType'] = 'inhibitory'
+parameters['velModulationType'] = 'excitatory'
 parameters['prefDirC_e']        = 0
-parameters['prefDirC_i']        = 10
+parameters['prefDirC_i']        = 0
 
 parameters['Ivel']              = 40        # pA
 
-startJobNum = 400
+startJobNum = 500
 numRepeat = 1
 
 # Workstation parameters
@@ -56,7 +56,7 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]}
+        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190]}
 ac.insertDict(iterparams, mult=True)
 
 if EDDIE:
