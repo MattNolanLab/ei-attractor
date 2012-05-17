@@ -23,7 +23,7 @@ import numpy as np
 
 __all__ = ['defaultParameters']
 
-_defaultOutputDir = "output_local/"
+_defaultOutputDir = "output/"
 
 y_dim = np.sqrt(3)/2.
 pAMPA_mu = y_dim/2.
