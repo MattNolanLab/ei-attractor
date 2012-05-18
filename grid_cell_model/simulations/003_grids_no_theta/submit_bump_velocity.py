@@ -28,18 +28,18 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 2.0e3      # ms
-parameters['ngenerations']      = 1
+parameters['time']              = 10.0e3      # ms
+parameters['ngenerations']      = 10
 parameters['velModulationType'] = 'excitatory'
-parameters['prefDirC_e']        = 4
+parameters['prefDirC_e']        = 0
 parameters['prefDirC_i']        = 0
 
-parameters['Ivel']              = 40        # pA
+#parameters['Ivel']              = 40        # pA
 
 startJobNum = 100
 numRepeat = 1
@@ -49,15 +49,15 @@ programName         = 'python2.6 simulation_bump_velocity.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh'
+eddie_scriptName    = 'eddie_submit.sh simulation_bump_velocity.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190]}
-#ac.insertDict(iterparams, mult=True)
+iterparams = {
+        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190]}
+ac.insertDict(iterparams, mult=True)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
