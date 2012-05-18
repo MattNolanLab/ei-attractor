@@ -81,7 +81,7 @@ class BrianGridCellNetwork(GridCellNetwork):
         self._stateMonitors_i = {}
 
         # Place cell input settings
-        self._gridsep = self.no.arenaSize/self.no.gridsPerArena
+        self._gridsep = self.no.gridSep
         self._gridCenter = [0, 0]
         self._place_current = 250 * pA
         self._pc = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize, self._gridsep, self._gridCenter)
@@ -301,9 +301,12 @@ class BrianGridCellNetwork(GridCellNetwork):
         self.rat_vel_x  = np.diff(self.rat_pos_x)/(self.no.rat_dt * ms)
         self.rat_vel_y  = np.diff(self.rat_pos_y)/(self.no.rat_dt * ms)
         
-        # Map velocities so that maximum is Ivel_max
-        self.rat_Ivel_x = self.rat_vel_x * self.no.Ivel_mean/np.mean(np.abs(self.rat_vel_x)) * pA
-        self.rat_Ivel_y = self.rat_vel_y * self.no.Ivel_mean/np.mean(np.abs(self.rat_vel_y)) * pA
+        # Map velocities to currents: we use the slope of bump speed vs. rat speed and
+        # inter-peak grid field distance to remap
+        # Bump current slope must be estimated
+        velC = self.Ne_x / self.no.gridSep / self.no.bumpCurrentSlope
+        self.rat_Ivel_x = self.rat_vel_x * velC * pA
+        self.rat_Ivel_y = self.rat_vel_y * velC * pA
         
         print "mean rat_vel_x:  " + str(np.mean(np.abs(self.rat_vel_x))) + " cm/s"
         print "mean rat_vel_y:  " + str(np.mean(np.abs(self.rat_vel_y))) + " cm/s"

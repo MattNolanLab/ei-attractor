@@ -27,31 +27,13 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [200, 215],
-        [300, 315],
-        [320, 335],
-        [340, 355],
-        [360, 375],
-        [380, 395],
-        [400, 415]]
+        [100, 115]]
 fitLine = [
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False]
+        True]
 genRange = [0, 9]
 
 leg = (
-        '4 nrns',
-        '5 nrns',
-        '6 nrns',
-        '7 nrns',
-        '8 nrns',
-        '9 nrns',
-        '10 nrns')
+        '4 nrns')
 
 rcParams['font.size'] = 14
 
@@ -64,8 +46,8 @@ def fitCircularSlope(bumpPos, times, normFac):
     '''
     t = np.array(times) - times[0]
     bumpPos_norm = np.unwrap(1.0 * bumpPos / normFac * 2 * np.pi) # normalise to 2*Pi
-    func = lambda X: X[0]*t + X[1] - bumpPos_norm
-    x0 = np.array([0.0, 0.0])  # slope, C
+    func = lambda X: X[0]*t - bumpPos_norm
+    x0 = np.array([0.0])  # slope
     x = leastsq(func, x0)
     return x[0][0] / 2. / np.pi * normFac
     
@@ -76,10 +58,10 @@ def getLineFit(Y):
     '''
     X = np.arange(len(Y))
     
-    func = lambda P: P[0]*X + P[1] - Y
-    P0 = np.array([0.0, 0.0]) # slope, C
+    func = lambda P: P[0]*X  - Y
+    P0 = np.array([0.0]) # slope
     P = leastsq(func, P0)
-    return P[0][0]*X + P[0][1]
+    return P[0][0]*X, P[0][0]
     
 
 figure()
@@ -138,8 +120,10 @@ for Ivel_types in range(len(jobRange_all)):
     ylabel('Bump velocity (neurons/s)')
 
     if fitLine[Ivel_types]:
-        line = getLineFit(gen_avg)
+        line, slope = getLineFit(gen_avg)
+        slope = slope/(Ivel[1] - Ivel[0])
         plot(Ivel, line)
+        title("Line fit slope: " + str(slope) + ' nrns/s/pA')
     
 
 legend(leg, loc='best')

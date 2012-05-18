@@ -26,9 +26,9 @@ from matplotlib.pyplot  import *
 from grid_cell_analysis import *
 
 
-jobRange = [1015, 1015]
+jobRange = [1000, 1034]
 trialNum = 0
-dumpNum = 6
+dumpNum = 9
 
 jobN = jobRange[1] - jobRange[0] + 1
 
@@ -46,8 +46,10 @@ dirName = "output/"
 fileNamePrefix = ''
 fileNameTemp = "{0}/{1}job{2:04}_trial{3:04}_dump{4:03}"
 
+
 for job_it in range(jobN):
     jobNum = job_it + jobRange[0]
+    print 'jobNum: ' + str(jobNum)
 
     fileName = fileNameTemp +  '_output.mat'
     fileName = fileName.format(dirName, fileNamePrefix, jobNum,
@@ -65,7 +67,7 @@ for job_it in range(jobN):
 
     figure()
     plotSpikes2D(spikeTimes_e[neuronNum], pos_x, pos_y, rat_dt)
+    savefig(fileName + '_spikePlot.pdf')
+    close()
 
-
-    show()
 

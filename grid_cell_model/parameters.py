@@ -33,7 +33,7 @@ def getOptParser():
     optParser.add_option("--delay",             type="float",  help="Synaptic delay (ms)")
 
     optParser.add_option("--Ivel",              type="float",  help="Velocity input (In constant velocity currents, pA)")
-    optParser.add_option("--Ivel_mean",         type="float",  help="Mean of rat velocity input. The mean velocities derived from matlab positional file will be normalised to this value (pA)")
+    optParser.add_option("--bumpCurrentSlope",  type="float",  help="Slope of the bump-current linear relationsip (starts at zero, pA/(cm/s)")
     optParser.add_option("--rat_dt",            type="float",  help="Velocity input time resolution (must be setup according to the velocity file) (ms)")
     optParser.add_option("--ratVelFName",       type="string", help="Positional input file name (matlab)")
 
@@ -57,7 +57,7 @@ def getOptParser():
     optParser.add_option("--prefDirC_e",        type="float", help="Excitatory (E-->I) preferred directtion multiplier")
     optParser.add_option("--prefDirC_i",        type="float", help="Inhibitory (I-->E) preferred directtion multiplier")
     optParser.add_option("--arenaSize",         type="float", help="Size of the arena where the rat runs (cm)")
-    optParser.add_option("--gridsPerArena",     type="float", help="Grids per arena size (for place cell input)")
+    optParser.add_option("--gridSep",           type="float", help="Distance between grid field peaks (cm)")
     optParser.add_option("--Iplace",            type="float", help="Place cell current input (pA)")
     optParser.add_option("--placeT",            type="float", help="Place cell input repeat period (ms)")
     optParser.add_option("--placeDur",          type="float", help="Place cell input duration (ms)")
