@@ -33,8 +33,8 @@ EDDIE = True  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 2e3       # ms
-parameters['ndumps']            = 1
+parameters['time']              = 600e3       # ms
+parameters['ndumps']            = 10
 
 parameters['placeT']            = 10e3      # ms
 
