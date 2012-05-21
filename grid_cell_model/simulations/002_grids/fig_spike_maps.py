@@ -26,7 +26,7 @@ from matplotlib.pyplot  import *
 from grid_cell_analysis import *
 
 
-jobRange = [1200, 1249]
+jobRange = [1300, 1334]
 trialNum = 0
 dumpNum = 9
 
@@ -65,9 +65,21 @@ for job_it in range(jobN):
     spikeTimes_e    = data['spikeCell_e'].ravel()
     rat_dt          = data['dt'][0][0]
 
+    spikes = spikeTimes_e[neuronNum]
+
     figure()
-    plotSpikes2D(spikeTimes_e[neuronNum], pos_x, pos_y, rat_dt)
+    plotSpikes2D(spikes, pos_x, pos_y, rat_dt)
     savefig(fileName + '_spikePlot.pdf')
-    close()
+
+    figure()
+    rateMap, xedges, yedges = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt, arenaDiam, h)
+    X, Y = np.meshgrid(xedges, yedges)
+    pcolormesh(X, Y, rateMap)
+    colorbar()
+    axis('equal')
+    axis('off')
+    savefig(fileName + '_rateMap.pdf')
+
+    close('all')
 
 

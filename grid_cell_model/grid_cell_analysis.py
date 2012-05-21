@@ -20,7 +20,8 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import numpy as np
+import numpy    as np
+import numpy.ma as ma
 
 from scipy.integrate    import trapz
 from matplotlib.pyplot  import *
@@ -67,21 +68,25 @@ def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
     xedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
     yedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
 
-    rateMap = np.zeros((len(xedges), len(yedges))) * np.nan
+    rateMap = np.zeros((len(xedges), len(yedges)))
 
     for x_i in xrange(len(xedges)):
         for y_i in xrange(len(yedges)):
-            x = xedges(x_i)
-            y = yedges(y_i)
+            x = xedges[x_i]
+            y = yedges[y_i]
             isNearTrack = np.count_nonzero(np.sqrt((rat_pos_x - x)**2 + (rat_pos_y - y)**2) <= h) > 0
 
             if isNearTrack:
-                normConst = trapz(gaussianFilter(np.sqrt((rat_pos_x - x)**2 + (rat_pos_y - y)**2), sigma=h), dt)
+                normConst = trapz(gaussianFilter(np.sqrt((rat_pos_x - x)**2 + (rat_pos_y - y)**2), sigma=h), dx=dt)
                 neuronPos_x, neuronPos_y, m_i = extractSpikePositions2D(spikeTimes, rat_pos_x, rat_pos_y, dt)
                 spikes = np.sum(gaussianFilter(np.sqrt((neuronPos_x - x)**2 + (neuronPos_y - y)**2), sigma=h))
                 rateMap[x_i, y_i] = spikes/normConst
 
-    return  rateMap, xedges, yedges
+    # Mask values which are outside the arena
+    X, Y = np.meshgrid(xedges, yedges)
+    rateMap = ma.masked_array(rateMap, mask = np.sqrt(X**2 + Y**2) > arenaDiam/2.0)
+
+    return  rateMap.T, xedges, yedges
 
 
 def plotSNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
