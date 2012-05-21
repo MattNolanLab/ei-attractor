@@ -34,4 +34,4 @@ export PYTHONPATH="/exports/work/inf_ndtc/s0966762/usr/local/lib/python2.6/site-
 
 
 # Run the program
-python2.6 simulation.py $* 
+python2.6 $* 
