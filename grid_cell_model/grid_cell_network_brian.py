@@ -340,10 +340,19 @@ class BrianGridCellNetwork(GridCellNetwork):
         raise NotImplementedException()
 
 
-    def setConstantVelocityCurrent_e(self, vel):
+    def setConstantVelocityCurrent_e(self, vel, start_t=None, end_t=None):
+        if start_t == None:
+            self._Iext_const_start_t = self.no.theta_start_t
+        else:
+            self._Iext_const_start_t = start_t
+        if end_t == None:
+            self._Iext_const_end_t = self.no.time
+        else:
+            self._Iext_const_end_t = end_t
+
         @network_operation(self._ratClock)
         def velocityChange():
-            if self._simulationClock.t >= self.no.theta_start_t*msecond:
+            if self._simulationClock.t >= self._Iext_const_start_t*msecond and self._simulationClock.t <= self._Iext_const_end_t*msecond:
                 v = np.array([vel]).T
                 self.E_pop.Iext_vel = (np.dot(self.prefDirs_e, v)).ravel() * self.no.Ivel * pA
             else:
@@ -352,10 +361,19 @@ class BrianGridCellNetwork(GridCellNetwork):
         self.net.add(velocityChange)
 
 
-    def setConstantVelocityCurrent_i(self, vel):
+    def setConstantVelocityCurrent_i(self, vel, start_t=None, end_t=None):
+        if start_t == None:
+            self._Iext_const_start_t = self.no.theta_start_t
+        else:
+            self._Iext_const_start_t = start_t
+        if end_t == None:
+            self._Iext_const_end_t = self.no.time
+        else:
+            self._Iext_const_end_t = end_t
+
         @network_operation(self._ratClock)
         def velocityChange():
-            if self._simulationClock.t >= self.no.theta_start_t*msecond:
+            if self._simulationClock.t >= self._Iext_const_start_t*msecond and self._simulationClock.t <= self._Iext_const_end_t*msecond:
                 v = np.array([vel]).T
                 self.I_pop.Iext_vel = (np.dot(self.prefDirs_i, v)).ravel() * self.no.Ivel * pA
             else:

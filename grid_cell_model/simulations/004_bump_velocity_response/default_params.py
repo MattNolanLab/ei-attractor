@@ -43,7 +43,7 @@ defaultParameters = {
         "prefDirC_e"          :   4.0,
         "prefDirC_i"          :   0.0,
         "arenaSize"           :   180.0,        # cm
-        "gridsPerArena"       :   2.5,
+        "gridSep"             :   70,           # cm
 
         "NMDA_amount"         :   2.0,          # %
 
