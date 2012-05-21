@@ -36,12 +36,12 @@ parameters = defaultParameters
 parameters['time']              = 10.0e3      # ms
 parameters['ngenerations']      = 10
 parameters['velModulationType'] = 'excitatory'
-parameters['prefDirC_e']        = 0
+parameters['prefDirC_e']        = 7
 parameters['prefDirC_i']        = 0
 
 #parameters['Ivel']              = 40        # pA
 
-startJobNum = 100
+startJobNum = 240
 numRepeat = 1
 
 # Workstation parameters

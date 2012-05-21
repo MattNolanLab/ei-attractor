@@ -31,14 +31,8 @@ jobRange_all = [
         [120, 139],
         [140, 159],
         [160, 179],
-        [180, 199],
-        [200, 219],
-        [220, 249],
-        [240, 259]]
+        [180, 199]]
 fitLine = [
-        False,
-        False,
-        False,
         False,
         False,
         False,
@@ -51,10 +45,7 @@ leg = (
         '1 nrns',
         '2 nrns',
         '3 nrns',
-        '4 nrns',
-        '5 nrns',
-        '6 nrns',
-        '7 nrns')
+        '4 nrns')
 
 rcParams['font.size'] = 14
 

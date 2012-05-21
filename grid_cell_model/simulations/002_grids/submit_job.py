@@ -39,8 +39,8 @@ parameters['ndumps']            = 10
 parameters['placeT']            = 10e3      # ms
 
 parameters['bumpCurrentSlope']  = 1.125     # pA/(cm/s), !! this will depend on prefDirC !!
-parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-startJobNum = 1200
+parameters['gridSep']           = 40        # cm, grid field inter-peak distance
+startJobNum = 1300
 numRepeat = 5
 
 # Workstation parameters
@@ -55,7 +55,7 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'bumpCurrentSlope'  : [1.0, 1.025, 1.05, 1.075, 1.1, 1.125, 1.15, 1.175, 1.2, 1.25]}
+        'bumpCurrentSlope'  : [1.075, 1.1, 1.125, 1.15, 1.175, 1.2, 1.25]}
 ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
