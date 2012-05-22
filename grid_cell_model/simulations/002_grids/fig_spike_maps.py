@@ -26,7 +26,7 @@ from matplotlib.pyplot  import *
 from grid_cell_analysis import *
 
 
-jobRange = [1300, 1334]
+jobRange = [1500, 1534]
 trialNum = 0
 dumpNum = 9
 

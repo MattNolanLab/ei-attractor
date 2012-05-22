@@ -36,11 +36,11 @@ parameters = defaultParameters
 parameters['time']              = 600e3       # ms
 parameters['ndumps']            = 10
 
-parameters['placeT']            = 10e3      # ms
+parameters['placeT']            = 2e3      # ms
 
 parameters['bumpCurrentSlope']  = 1.125     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 40        # cm, grid field inter-peak distance
-startJobNum = 1300
+startJobNum = 1500
 numRepeat = 5
 
 # Workstation parameters

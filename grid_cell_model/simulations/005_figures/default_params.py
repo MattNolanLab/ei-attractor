@@ -36,8 +36,8 @@ defaultParameters = {
         "delay"               :   1.0,          # ms
 
         "rat_dt"              :   20.0,         # ms
-        #"ratVelFName"         : '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
-        "ratVelFName"         : '../../../../data/hafting_et_al_2005/rat_trajectory_original.mat',
+        "ratVelFName"         : '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
+        #"ratVelFName"         : '../../../../data/hafting_et_al_2005/rat_trajectory_original.mat',
 
         "pAMPA_mu"            :   y_dim/2.0,
         "pAMPA_sigma"         :   0.5/6,
@@ -107,7 +107,7 @@ defaultParameters = {
         "ntrials"             :   1,
         
         "output_dir"          :   _defaultOutputDir,
-        "stateMonDur"         :  10e3,          # ms
+        "stateMonDur"         :  20e3,          # ms
 
         "stim_spread"         :  1.0}
 
