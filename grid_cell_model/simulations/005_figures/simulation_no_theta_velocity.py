@@ -89,12 +89,12 @@ for gen_it in range(options.ngenerations):
     spikeMon_e          = ExtendedSpikeMonitor(ei_net.E_pop)
     spikeMon_i          = ExtendedSpikeMonitor(ei_net.I_pop)
     
-    stateMon_e          = RecentStateMonitor(ei_net.E_pop, 'vm',     duration=options.stateMonDuration*msecond, record = state_record_e, clock=simulationClock)
-    stateMon_i          = RecentStateMonitor(ei_net.I_pop, 'vm',     duration=options.stateMonDuration*msecond, record = state_record_i, clock=simulationClock)
-    stateMon_Iclamp_e   = RecentStateMonitor(ei_net.E_pop, 'Iclamp', duration=options.stateMonDuration*msecond, record = state_record_e, clock=simulationClock)
-    stateMon_Iclamp_i   = RecentStateMonitor(ei_net.I_pop, 'Iclamp', duration=options.stateMonDuration*msecond, record = state_record_i, clock=simulationClock)
-    stateMon_Iext_e     = RecentStateMonitor(ei_net.E_pop, 'Iext',   duration=options.stateMonDuration*msecond, record = state_record_e, clock=simulationClock)
-    stateMon_Iext_i     = RecentStateMonitor(ei_net.I_pop, 'Iext',   duration=options.stateMonDuration*msecond, record = state_record_i, clock=simulationClock)
+    stateMon_e          = RecentStateMonitor(ei_net.E_pop, 'vm',     duration=options.stateMonDur*msecond, record = state_record_e, clock=simulationClock)
+    stateMon_i          = RecentStateMonitor(ei_net.I_pop, 'vm',     duration=options.stateMonDur*msecond, record = state_record_i, clock=simulationClock)
+    stateMon_Iclamp_e   = RecentStateMonitor(ei_net.E_pop, 'Iclamp', duration=options.stateMonDur*msecond, record = state_record_e, clock=simulationClock)
+    stateMon_Iclamp_i   = RecentStateMonitor(ei_net.I_pop, 'Iclamp', duration=options.stateMonDur*msecond, record = state_record_i, clock=simulationClock)
+    stateMon_Iext_e     = RecentStateMonitor(ei_net.E_pop, 'Iext',   duration=options.stateMonDur*msecond, record = state_record_e, clock=simulationClock)
+    stateMon_Iext_i     = RecentStateMonitor(ei_net.I_pop, 'Iext',   duration=options.stateMonDur*msecond, record = state_record_i, clock=simulationClock)
     
     ei_net.net.add(spikeMon_e, spikeMon_i)
     ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
