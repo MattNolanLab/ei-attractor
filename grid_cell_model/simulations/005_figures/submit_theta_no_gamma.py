@@ -34,8 +34,8 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 5e3       # ms
-parameters['ndumps']            = 1
+parameters['time']              = 1199.9e3       # ms
+parameters['ndumps']            = 20
 
 parameters['placeT']            = 10e3      # ms
 
@@ -44,9 +44,9 @@ parameters['g_AMPA_total']      = 700       # nS
 parameters['tau_GABA_A_fall']   = 20        # ms
 parameters['g_GABA_total']      = 540       # nS
 
-parameters['bumpCurrentSlope']  = 1.447     # pA/(cm/s), !! this will depend on prefDirC !!
+parameters['bumpCurrentSlope']  = 0.759     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-startJobNum = 0
+startJobNum = 600
 numRepeat = 1
 
 # Workstation parameters
@@ -61,9 +61,7 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-#        'bumpCurrentSlope'  : [1.15, 1.175, 1.2]}
-#        'tau_GABA_A_fall'   : [5,      10,    15,  20,   25,  30,   35,   40],        # ms
-#        'g_GABA_total'      : [2160,  1080,  720,  540, 432,  360,  310, 270]}        # nS
+        'bumpCurrentSlope'  : [0.75, 0.759, 0.77]}
 ac.insertDict(iterparams, mult=False)
 
 if EDDIE:

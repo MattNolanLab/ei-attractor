@@ -27,7 +27,7 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [350, 365]]
+        [400, 415]]
 fitLine = [
         True]
 genRange = [0, 9]
@@ -137,5 +137,5 @@ for Ivel_types in range(len(jobRange_all)):
     
 
 legend(leg, loc='best')
-savefig(dirName + '/bump_velocity_modulation.pdf')
+savefig('{0}/job{1:04}_bump_velocity_estimation.pdf'.format(dirName, jobRange[0]))
 
