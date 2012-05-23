@@ -121,7 +121,7 @@ for gen_it in range(options.ngenerations):
 
     # Print a plot of bump position
     F_dt = 0.02
-    F_winLen = 0.25
+    F_winLen = 0.100
     (pos, bumpPos_times) = spikeMon_e.torusPopulationVector([ei_net.Ne_x,
         ei_net.Ne_y], options.theta_start_t*1e-3, options.time*1e-3, F_dt, F_winLen)
     figure(figsize=figSize)

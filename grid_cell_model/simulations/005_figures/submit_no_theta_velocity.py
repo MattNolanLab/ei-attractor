@@ -43,9 +43,9 @@ parameters['Iext_e_const']      = 500       # pA
 parameters['Iext_i_const']      = 200       # pA
 
 
-parameters['Ivel']              = 40        # pA
+#parameters['Ivel']              = 40        # pA
 
-startJobNum = 300
+startJobNum = 350
 numRepeat = 1
 
 # Workstation parameters
