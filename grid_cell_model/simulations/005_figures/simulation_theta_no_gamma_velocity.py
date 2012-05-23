@@ -64,7 +64,6 @@ for gen_it in range(options.ngenerations):
     ei_net.setConstantCurrent()
     ei_net.setStartCurrent()
     ei_net.setThetaCurrentStimulation()
-    ei_net.setPlaceCurrentInput()
     const_v = [-1.0, 0.0]
     if options.velModulationType == "excitatory":
         #Modulation of excitatory neurons (weight shifts are E-->I)
