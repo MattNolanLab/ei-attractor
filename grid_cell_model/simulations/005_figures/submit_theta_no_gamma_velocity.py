@@ -1,8 +1,7 @@
 #
-#   submit_theta_no_gamma.py
+#   submit_theta_no_gamma_velocity.py
 #
-#   Submit job(s) to the cluster/workstation: no gamma oscillations (i.e. no
-#   uniform inhibitory feedback
+#   Submit job(s) to the cluster/workstation: velocity estimation for the non-gamma variant
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -29,42 +28,42 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 5e3       # ms
-parameters['ndumps']            = 1
-
-parameters['placeT']            = 10e3      # ms
+parameters['time']              = 10.0e3      # ms
+parameters['ngenerations']      = 10
+parameters['velModulationType'] = 'excitatory'
+parameters['prefDirC_e']        = 4
+parameters['prefDirC_i']        = 0
 
 parameters['tau_AMPA']          = 2         # ms
 parameters['g_AMPA_total']      = 700       # nS
 parameters['tau_GABA_A_fall']   = 20        # ms
 parameters['g_GABA_total']      = 540       # nS
 
-parameters['bumpCurrentSlope']  = 1.447     # pA/(cm/s), !! this will depend on prefDirC !!
-parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-startJobNum = 0
+
+#parameters['Ivel']              = 40        # pA
+
+startJobNum = 400
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 -i simulation_theta_no_gamma.py'
+programName         = 'python2.6 simulation_theta_no_gamma_velocity.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_theta_no_gamma.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+eddie_scriptName    = 'eddie_submit.sh simulation_theta_no_gamma_velocity.py'
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-#        'bumpCurrentSlope'  : [1.15, 1.175, 1.2]}
-#        'tau_GABA_A_fall'   : [5,      10,    15,  20,   25,  30,   35,   40],        # ms
-#        'g_GABA_total'      : [2160,  1080,  720,  540, 432,  360,  310, 270]}        # nS
-ac.insertDict(iterparams, mult=False)
+        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]}
+ac.insertDict(iterparams, mult=True)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

@@ -101,8 +101,8 @@ ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
 ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 
 
-#x_lim = [options.time-0.5, options.time]
-x_lim = [options.time/1e3 - 1, options.time/1e3]
+#x_lim = [0, options.time/1e3]
+x_lim = [options.time/1e3 - 2, options.time/1e3]
 
 ################################################################################
 #                              Main cycle

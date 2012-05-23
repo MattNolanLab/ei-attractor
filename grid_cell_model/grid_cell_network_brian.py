@@ -31,23 +31,6 @@ from common             import *
 from grid_cell_network  import *
 from place_input        import *
 
-class IextManager(object):
-    '''
-    Simple interface to manage external currents.
-    '''
-    def __init__(self):
-        self._Iext_e = None
-        self._Iext_i = None
-
-    def set_Iext(self, Iext_e, Iext_i):
-        self._Iext_e = np.array(Iext_e)
-        self._Iext_i = np.array(Iext_i)
-
-    def add_Iext(self, Iext_e, Iext_i):
-        self._Iext_e += Iext_e
-        self._Iext_i += Iext_i
-
-
 
 class BrianGridCellNetwork(GridCellNetwork):
     def uniformDistrib(self, mean, spread, N):
