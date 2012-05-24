@@ -29,7 +29,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -47,7 +47,7 @@ parameters['g_GABA_total']      = 540       # nS
 parameters['bumpCurrentSlope']  = 0.759     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
 startJobNum = 600
-numRepeat = 1
+numRepeat = 5
 
 # Workstation parameters
 programName         = 'python2.6 -i simulation_theta_no_gamma.py'

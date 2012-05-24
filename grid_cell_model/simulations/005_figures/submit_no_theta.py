@@ -28,7 +28,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -43,7 +43,7 @@ parameters['placeT']            = 10e3      # ms
 
 parameters['bumpCurrentSlope']  = 1.447     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-startJobNum = 0
+startJobNum = 500
 numRepeat = 5
 
 # Workstation parameters
