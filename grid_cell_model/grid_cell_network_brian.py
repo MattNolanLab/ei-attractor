@@ -320,7 +320,19 @@ class BrianGridCellNetwork(GridCellNetwork):
 
 
     def setVelocityCurrentInput_i(self):
-        raise NotImplementedException()
+        self._loadRatVelocities()
+
+        @network_operation(self._ratClock)
+        def velocityChange():
+            if self._simulationClock.t >= self.no.theta_start_t*msecond:
+                v = np.array([[self.rat_Ivel_x[self.Ivel_it], self.rat_Ivel_y[self.Ivel_it]]]).T
+                self.I_pop.Iext_vel = np.dot(self.prefDirs_i, v).ravel()
+                self.Ivel_it += 1
+            else:
+                self.I_pop.Iext_vel = 0.0
+
+        self.net.add(velocityChange)
+
 
 
     def setConstantVelocityCurrent_e(self, vel, start_t=None, end_t=None):

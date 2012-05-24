@@ -40,6 +40,7 @@ h = 3.0
 
 # Neuron to extract spikes from
 neuronNum = 10
+spikeType = 'inhibitory'
 
 
 dirName = "output/"
@@ -62,14 +63,17 @@ for job_it in range(jobN):
 
     pos_x           = data['pos_x'].ravel()
     pos_y           = data['pos_y'].ravel()
-    spikeTimes_e    = data['spikeCell_e'].ravel()
     rat_dt          = data['dt'][0][0]
+    if spikeType == 'excitatory':
+        spikeTimes  = data['spikeCell_e'].ravel()
+    if spikeType == 'inhibitory':
+        spikeTimes  = data['spikeCell_i'].ravel()
 
-    spikes = spikeTimes_e[neuronNum]
+    spikes = spikeTimes[neuronNum]
 
     figure()
     plotSpikes2D(spikes, pos_x, pos_y, rat_dt)
-    savefig(fileName + '_spikePlot.pdf')
+    savefig(fileName + '_spikePlot_' + spikeType + '.pdf')
 
     figure()
     rateMap, xedges, yedges = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt, arenaDiam, h)
@@ -78,7 +82,7 @@ for job_it in range(jobN):
     colorbar()
     axis('equal')
     axis('off')
-    savefig(fileName + '_rateMap.pdf')
+    savefig(fileName + '_rateMap_' + spikeType + '.pdf')
 
     close('all')
 

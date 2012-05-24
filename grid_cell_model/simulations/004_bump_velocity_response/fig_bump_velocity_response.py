@@ -27,13 +27,13 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [100, 115]]
+        [400, 415]]
 fitLine = [
         True]
 genRange = [0, 9]
 
 leg = (
-        '4 nrns')
+        '10 nrns')
 
 rcParams['font.size'] = 14
 
@@ -120,9 +120,16 @@ for Ivel_types in range(len(jobRange_all)):
     ylabel('Bump velocity (neurons/s)')
 
     if fitLine[Ivel_types]:
-        line, slope = getLineFit(gen_avg)
+        ## Use data points only until the std.error is reasonably small
+        #it = 0
+        #while it < len(Ivel):
+        #    if gen_stderr[it] > stderr_th:
+        #        break
+        #    it += 1
+        it = 6
+        line, slope = getLineFit(gen_avg[0:it])
         slope = slope/(Ivel[1] - Ivel[0])
-        plot(Ivel, line)
+        plot(Ivel[0:it], line)
         title("Line fit slope: " + str(slope) + ' nrns/s/pA')
     
 
