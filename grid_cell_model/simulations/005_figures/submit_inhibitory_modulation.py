@@ -28,15 +28,13 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 5e3  # ms
-parameters['ndumps']            = 1
-
-parameters['output_dir']        = 'output_local/'
+parameters['time']              = 1199.9e3  # ms
+parameters['ndumps']            = 20
 
 parameters['placeT']            = 10e3      # ms
 
@@ -45,8 +43,8 @@ parameters['prefDirC_i']        = 10
 
 parameters['bumpCurrentSlope']  = 0.883     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-startJobNum = 0
-numRepeat = 1
+startJobNum = 700
+numRepeat = 5
 
 # Workstation parameters
 programName         = 'python2.6 simulation_inhibitory_modulation.py'
@@ -59,9 +57,9 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#        'bumpCurrentSlope'  : [0.873, 0.883, 0.983]}
-#ac.insertDict(iterparams, mult=False)
+iterparams = {
+        'bumpCurrentSlope'  : [0.873, 0.883, 0.983]}
+ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
