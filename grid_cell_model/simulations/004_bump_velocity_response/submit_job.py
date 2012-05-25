@@ -37,11 +37,11 @@ parameters['time']              = 10.0e3      # ms
 parameters['ngenerations']      = 10
 parameters['velModulationType'] = 'inhibitory'
 parameters['prefDirC_e']        = 0
-parameters['prefDirC_i']        = 0
+parameters['prefDirC_i']        = 4
 
 #parameters['Ivel']              = 40        # pA
 
-startJobNum = 700
+startJobNum = 780
 numRepeat = 1
 
 # Workstation parameters

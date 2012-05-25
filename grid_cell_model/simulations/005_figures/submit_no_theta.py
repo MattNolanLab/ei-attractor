@@ -40,10 +40,11 @@ parameters['Iext_e_const']      = 500       # pA
 parameters['Iext_i_const']      = 200       # pA
 
 parameters['placeT']            = 10e3      # ms
+parameters['Iplace']            = 275       # pA
 
 parameters['bumpCurrentSlope']  = 1.447     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-startJobNum = 500
+startJobNum = 800
 numRepeat = 5
 
 # Workstation parameters
@@ -58,7 +59,7 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'bumpCurrentSlope'  : [1.35, 1.447, 1.55]}
+        'Iplace'    : [250, 275, 300, 325, 350]}
 ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
