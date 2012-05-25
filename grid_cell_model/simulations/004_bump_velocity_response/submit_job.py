@@ -35,13 +35,13 @@ parameters = defaultParameters
 
 parameters['time']              = 10.0e3      # ms
 parameters['ngenerations']      = 10
-parameters['velModulationType'] = 'excitatory'
-parameters['prefDirC_e']        = 8
+parameters['velModulationType'] = 'inhibitory'
+parameters['prefDirC_e']        = 0
 parameters['prefDirC_i']        = 0
 
-parameters['Ivel']              = 40        # pA
+#parameters['Ivel']              = 40        # pA
 
-startJobNum = 660
+startJobNum = 700
 numRepeat = 1
 
 # Workstation parameters
@@ -49,14 +49,14 @@ programName         = 'python2.6 simulation.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh'
+eddie_scriptName    = 'eddie_submit.sh simulation.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190]}
+        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]}
 ac.insertDict(iterparams, mult=True)
 
 if EDDIE:
