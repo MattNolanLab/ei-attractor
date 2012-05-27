@@ -22,13 +22,14 @@ import numpy as np
 
 from scipy.io           import loadmat
 from matplotlib.pyplot  import *
+from tables             import *
 
 from grid_cell_analysis import *
 
 
 jobRange = [200, 214]
 trialNum = 0
-dumpNum = 19
+dumpNum = 4
 
 jobN = jobRange[1] - jobRange[0] + 1
 
@@ -40,7 +41,7 @@ h = 3.0
 
 # Neuron to extract spikes from
 neuronNum = 10
-spikeType = 'inhibitory'
+spikeType = 'excitatory'
 
 
 dirName = "output/"
@@ -73,7 +74,7 @@ for job_it in range(jobN):
 
     figure()
     plotSpikes2D(spikes, pos_x, pos_y, rat_dt)
-    savefig(fileName + '_spikePlot_' + spikeType + '.pdf')
+    savefig(fileName + '_spikePlot_' + spikeType + '.png')
 
     figure()
     rateMap, xedges, yedges = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt, arenaDiam, h)
@@ -82,8 +83,35 @@ for job_it in range(jobN):
     colorbar()
     axis('equal')
     axis('off')
-    savefig(fileName + '_rateMap_' + spikeType + '.pdf')
+    savefig(fileName + '_rateMap_' + spikeType + '.png')
+
+
+    figure()
+    corr, xedges_corr, yedges_corr = SNAutoCorr(rateMap, arenaDiam, h)
+    X, Y = np.meshgrid(xedges_corr, yedges_corr)
+    pcolormesh(X, Y, corr)
+    axis('equal')
+    axis('off')
+    savefig(fileName + '_rateCorr_' + spikeType + '.png')
 
     close('all')
 
+
+    h5file = openFile(fileName + '_' + spikeType + '_igor.h5', mode = "w", title =
+            "Bump velocity export figures")
+    
+    neuronPos_x, neuronPos_y, max_i = extractSpikePositions2D(spikes, pos_x, pos_y, rat_dt)
+    h5file.createArray(h5file.root, 'rat_pos_x', pos_x[0:max_i+1])
+    h5file.createArray(h5file.root, 'rat_pos_y', pos_y[0:max_i+1])
+    h5file.createArray(h5file.root, 'neuronPos_x', neuronPos_x)
+    h5file.createArray(h5file.root, 'neuronPos_y', neuronPos_y)
+
+    rateMap[rateMap.mask == 1] = np.nan
+    h5file.createArray(h5file.root, 'rateMap', rateMap)
+    corr[corr.mask==1] = np.nan
+    h5file.createArray(h5file.root, 'corrMap', corr)
+
+
+
+    h5file.close()
 
