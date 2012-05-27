@@ -27,9 +27,17 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [400, 415]]
+        [900, 915],
+        [920, 935],
+        [940, 955],
+        [960, 975],
+        [980, 995]]
 fitLine = [
-        True]
+        False,
+        False,
+        False,
+        False,
+        False]
 genRange = [0, 9]
 
 leg = (

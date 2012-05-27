@@ -28,7 +28,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -45,7 +45,7 @@ parameters['Iext_i_const']      = 200       # pA
 
 #parameters['Ivel']              = 40        # pA
 
-startJobNum = 350
+startJobNum = 980
 numRepeat = 1
 
 # Workstation parameters
