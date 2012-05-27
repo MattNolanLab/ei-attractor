@@ -1,7 +1,7 @@
 #
-#   fig_bump_velocity_response.py
+#   fig_i_velocity_igor.py
 #
-#   Estimation of bump velocity reponse to velocity current injection.
+#   Estimation of bump velocity reponse and export to igor: inhibitory neurons.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -49,21 +49,11 @@ fitLine = [
         False,
         False,
         False,
-        False]
+        True]
 genRange = [0, 9]
 
-leg = (
-        '0 n.',
-        '1 n.',
-        '2 n.',
-        '3 n.',
-        '4 n.',
-        '5 n.',
-        '6 n.',
-        '7 n.',
-        '8 n.',
-        '9 n.',
-        '10 n.')
+nrnN = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+Ivel = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190]
 
 rcParams['font.size'] = 14
 
@@ -97,6 +87,13 @@ def getLineFit(Y):
 figure()
 subplot(111)
 hold('on')
+
+
+from tables import *
+h5file = openFile('bum_velocity_i.h5', mode = "w", title =
+        "Bump velocity export figures")
+
+h5file.createArray(h5file.root, 'Ivel', Ivel)
 
 for Ivel_types in range(len(jobRange_all)):
     jobRange = jobRange_all[Ivel_types]
@@ -139,16 +136,10 @@ for Ivel_types in range(len(jobRange_all)):
             normFac = sheetSize
             res[job_it].append(fitCircularSlope(bumpPos, times, normFac))
     
-        gen_avg.append(np.mean(res[job_it]))
+        gen_avg.append(np.abs(np.mean(res[job_it])))
         gen_stderr.append(np.std(res[job_it]) / np.sqrt(len(res[job_it])))
     
     
-    # TODO: export this in simulations
-    Ivel = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
-    errorbar(Ivel, gen_avg, gen_stderr, fmt='o-')
-    xlabel('Velocity current (pA)')
-    ylabel('Bump velocity (neurons/s)')
-
     if fitLine[Ivel_types]:
         ## Use data points only until the std.error is reasonably small
         #it = 0
@@ -156,13 +147,17 @@ for Ivel_types in range(len(jobRange_all)):
         #    if gen_stderr[it] > stderr_th:
         #        break
         #    it += 1
-        it = 6
-        line, slope = getLineFit(gen_avg[0:it])
+        fit_it = 6
+        line, slope = getLineFit(gen_avg[0:fit_it])
         slope = slope/(Ivel[1] - Ivel[0])
-        plot(Ivel[0:it], line)
-        title("Line fit slope: " + str(slope) + ' nrns/s/pA')
+
+
+    h5file.createArray(h5file.root, 'gen_avg_' + str(nrnN[Ivel_types]), gen_avg)
+    h5file.createArray(h5file.root, 'gen_stderr_' + str(nrnN[Ivel_types]), gen_stderr)
     
 
-legend(leg, loc='right')
-savefig(dirName + '/bump_velocity_modulation.pdf')
-
+h5file.createArray(h5file.root, 'Ivel_line', Ivel[0:fit_it])
+h5file.createArray(h5file.root, 'line', line)
+    
+h5file.close()
+    

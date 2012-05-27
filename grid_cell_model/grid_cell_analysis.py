@@ -24,6 +24,7 @@ import numpy    as np
 import numpy.ma as ma
 
 from scipy.integrate    import trapz
+from scipy.signal       import correlate2d
 from matplotlib.pyplot  import *
 
 
@@ -100,5 +101,18 @@ def plotSNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
     figure(fig)
     pcolormesh(X, Y, rateMap)
     colormap('jet')
+
+
+def SNAutoCorr(rateMap, arenaDiam, h):
+    precision = arenaDiam/h
+    xedges = np.linspace(-arenaDiam, arenaDiam, precision*2 + 1)
+    yedges = np.linspace(-arenaDiam, arenaDiam, precision*2 + 1)
+    X, Y = np.meshgrid(xedges, yedges)
+
+    corr = ma.masked_array(correlate2d(rateMap, rateMap), mask = np.sqrt(X**2 + Y**2) > arenaDiam)
+
+    return corr, xedges, yedges
+
+
 
 
