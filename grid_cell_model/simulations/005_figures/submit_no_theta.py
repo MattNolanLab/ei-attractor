@@ -42,9 +42,11 @@ parameters['Iext_i_const']      = 200       # pA
 parameters['placeT']            = 10e3      # ms
 parameters['Iplace']            = 250       # pA
 
-parameters['bumpCurrentSlope']  = 1.447     # pA/(cm/s), !! this will depend on prefDirC !!
+parameters['prefDirC_e']        = 3.0
+parameters['prefDirC_i']        = 0.0
+#parameters['bumpCurrentSlope']  = 0.921     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-startJobNum = 830
+startJobNum = 850
 numRepeat = 10
 
 # Workstation parameters
@@ -53,14 +55,14 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_no_theta.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=14:00:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=16:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#        'Iplace'    : [250, 275, 300, 325, 350]}
-#ac.insertDict(iterparams, mult=False)
+iterparams = {
+        'bumpCurrentSlope'    : [0.821, 0.921, 1.021]}
+ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

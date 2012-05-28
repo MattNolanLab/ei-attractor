@@ -28,18 +28,18 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
 parameters['time']              = 60e3      # ms
-parameters['ngenerations']      = 25
+parameters['ngenerations']      = 1
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
 startJobNum = 1000
-numRepeat = 1
+numRepeat = 25
 
 # Workstation parameters
 programName         = 'nice python2.6 simulation_bump_stability.py'
