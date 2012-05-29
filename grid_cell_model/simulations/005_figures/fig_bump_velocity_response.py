@@ -36,11 +36,15 @@ fitLine = [
         False,
         False,
         False,
-        False,
+        True,
         False]
 genRange = [0, 9]
 
 leg = (
+        '0 nrns',
+        '1 nrns',
+        '2 nrns',
+        '3 nrns',
         '4 nrns')
 
 stderr_th = 5   # neurons
@@ -132,12 +136,13 @@ for Ivel_types in range(len(jobRange_all)):
     print gen_stderr
 
     if fitLine[Ivel_types]:
-        # Use data points only until the std.error is reasonably small
-        it = 0
-        while it < len(Ivel):
-            if gen_stderr[it] > stderr_th:
-                break
-            it += 1
+        ## Use data points only until the std.error is reasonably small
+        #it = 0
+        #while it < len(Ivel):
+        #    if gen_stderr[it] > stderr_th:
+        #        break
+        #    it += 1
+        it = 9
         line, slope = getLineFit(gen_avg[0:it])
         slope = slope/(Ivel[1] - Ivel[0])
         plot(Ivel[0:it], line)
