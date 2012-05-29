@@ -36,12 +36,20 @@ parameters = defaultParameters
 parameters['time']              = 6e3   # ms
 parameters['theta_start_mon_t'] = 1e3   # ms
 
-startJobNum = 0
+#parameters['Iext_e_theta']      =    # pA
+parameters['g_GABA_total']      = 0     # nS
+
+#parameters['Iext_e_const']      = 500       # pA
+#parameters['Iext_i_const']      = 200       # pA
+
+parameters['noise_sigma']       = 2     # mV
+
+startJobNum = 50
 numRepeat = 1
 
 # Workstation parameters
 programName         = 'python2.6 -i simulation_fig_model.py'
-blocking            = True
+blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_fig_model.py'
@@ -49,6 +57,10 @@ qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
+
+iterparams = {
+        'g_AMPA_total'  : [150, 175, 200, 225, 250, 275, 300, 325]}
+ac.insertDict(iterparams, mult=False)
 
 
 if EDDIE:

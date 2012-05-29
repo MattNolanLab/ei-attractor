@@ -29,7 +29,7 @@ from grid_cell_analysis import *
 
 jobRange = [200, 214]
 trialNum = 0
-dumpNum = 4
+dumpNum = 19
 
 jobN = jobRange[1] - jobRange[0] + 1
 
@@ -53,11 +53,11 @@ for job_it in range(jobN):
     jobNum = job_it + jobRange[0]
     print 'jobNum: ' + str(jobNum)
 
-    fileName = fileNameTemp +  '_output.mat'
+    fileName = fileNameTemp
     fileName = fileName.format(dirName, fileNamePrefix, jobNum,
                                 trialNum, dumpNum)
     try:
-        data = loadmat(fileName)
+        data = loadmat(fileName +  '_output.mat')
     except:
         print "warning: could not open: " + fileName
         continue
@@ -65,12 +65,13 @@ for job_it in range(jobN):
     pos_x           = data['pos_x'].ravel()
     pos_y           = data['pos_y'].ravel()
     rat_dt          = data['dt'][0][0]
+    velocityStart   = data['velocityStart'][0][0]
     if spikeType == 'excitatory':
         spikeTimes  = data['spikeCell_e'].ravel()
     if spikeType == 'inhibitory':
         spikeTimes  = data['spikeCell_i'].ravel()
 
-    spikes = spikeTimes[neuronNum]
+    spikes = spikeTimes[neuronNum] - velocityStart*1e-3
 
     figure()
     plotSpikes2D(spikes, pos_x, pos_y, rat_dt)

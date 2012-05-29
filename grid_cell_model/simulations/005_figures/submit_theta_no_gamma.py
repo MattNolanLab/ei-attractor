@@ -29,28 +29,31 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+EDDIE = False  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 1199.9e3       # ms
-parameters['ndumps']            = 20
+parameters['time']              = 5e3       # ms
+parameters['ndumps']            = 1
 
 parameters['placeT']            = 10e3      # ms
 
-parameters['tau_AMPA']          = 2         # ms
-parameters['g_AMPA_total']      = 700       # nS
-parameters['tau_GABA_A_fall']   = 20        # ms
-parameters['g_GABA_total']      = 540       # nS
+parameters['Iext_e_theta']      = 600       # pA
+
+#parameters['tau_AMPA']          = 2         # ms
+#parameters['g_AMPA_total']      = 700       # nS
+#parameters['tau_GABA_A_fall']   = 20        # ms
+#parameters['g_GABA_total']      = 540       # nS
+parameters['noise_sigma']       = 2          # mV
 
 parameters['bumpCurrentSlope']  = 0.759     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-startJobNum = 600
-numRepeat = 5
+startJobNum = 20
+numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 -i simulation_theta_no_gamma.py'
+programName         = 'nice python2.6 simulation_theta_no_gamma.py'
 blocking            = False
 
 # Cluster parameters
@@ -61,7 +64,10 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'bumpCurrentSlope'  : [0.75, 0.759, 0.77]}
+#        'bumpCurrentSlope'  : [0.75, 0.759, 0.77]
+        'noise_sigma' : [2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5]
+}
+        
 ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
