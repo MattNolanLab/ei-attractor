@@ -1,8 +1,7 @@
 #
-#   simulation_basic_grids.py
+#   simulation_fig_model.py
 #
-#   Main simulation run: grid fields with theta input and all the inhibition
-#   (for gamma) and place input.
+#   Main simulation run: model description figures
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -61,7 +60,7 @@ total_start_t = time.time()
 
 options.ndim = 'twisted_torus'
 ei_net = BrianGridCellNetwork(options, simulationOpts=None)
-#ei_net.uniformInhibition()
+ei_net.uniformInhibition()
 ei_net.setConstantCurrent()
 ei_net.setStartCurrent()
 ei_net.setThetaCurrentStimulation()
@@ -132,6 +131,7 @@ for trial_it in range(ei_net.no.ntrials):
     theta_spikeMon_i.reinit()
     theta_stateMon_Iclamp_e.reinit()
     theta_stateMon_Iclamp_i.reinit()
+
 
     print "  Theta stimulation..."
     ei_net.net.run((options.time - options.theta_start_mon_t)*msecond, report='stdout')
@@ -462,6 +462,17 @@ for trial_it in range(ei_net.no.ntrials):
                     np.mean(sig_phase_list_e[n_it][0], 0))
             h5file.createArray(h5file.root, nm_sig_ph_std_e,
                     np.std(sig_phase_list_e[n_it][0], 0))
+
+
+        # Cross correlations of synaptic currents
+        nm_xcorr_t = 'xcorr_ei_t'
+        nm_xcorr   = 'xcorr_ei'
+        xc = np.correlate(theta_stateMon_Iclamp_i[state_record_i[0]]/pA, -theta_stateMon_Iclamp_e[state_record_e[1]]/pA,  mode='full')
+        lxc = len(xc)
+        h5file.createArray(h5file.root, nm_xcorr_t, np.arange(-(lxc-1)/2, (lxc-1)/2)*options.sim_dt)
+        h5file.createArray(h5file.root, nm_xcorr, xc)
+
+
 
         nm_h_mean_e = 'gamma_hists_mean_e'
         nm_h_std_e = 'gamma_hists_std_e'
