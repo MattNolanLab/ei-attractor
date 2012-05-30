@@ -33,22 +33,26 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 6e3   # ms
+parameters['time']              = 10e3   # ms
 parameters['theta_start_mon_t'] = 1e3   # ms
 
-#parameters['Iext_e_theta']      =    # pA
-parameters['g_GABA_total']      = 0     # nS
+parameters['Iext_e_theta']      = 275    # pA
+parameters['g_AMPA_total']      = 2000   # nS
+parameters['g_GABA_total']      = 800   # nS
 
 #parameters['Iext_e_const']      = 500       # pA
 #parameters['Iext_i_const']      = 200       # pA
 
-parameters['noise_sigma']       = 2     # mV
+#parameters['EL_e_spread']       = 1     # mV
+parameters['taum_i_spread']     = 1     # mV
+parameters['EL_i_spread']       = 5     # mV
+#parameters['theta_noise_sigma'] = 140     # pA
 
-startJobNum = 50
+startJobNum = 10
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 -i simulation_fig_model.py'
+programName         = 'nice python2.6 -i simulation_fig_model.py'
 blocking            = False
 
 # Cluster parameters
@@ -59,7 +63,12 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'g_AMPA_total'  : [150, 175, 200, 225, 250, 275, 300, 325]}
+#        'Iext_e_theta' : [200, 225, 250, 275, 300, 325, 350, 375]
+#        'taum_e_spread' : [0.5, 0.75,   1, 1.25, 1.5, 1.75,   2, 2.25],
+#        'EL_e_spread'   : [0.5,    1, 1.5,    2, 2.5,    3, 3.5,    4]
+         'theta_noise_sigma' : [0, 20, 40, 60, 80, 100, 120, 140]
+#        'g_GABA_total'  : [800,1000, 1100, 1200, 1300, 1400, 1500, 1600]
+}
 ac.insertDict(iterparams, mult=False)
 
 

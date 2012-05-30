@@ -198,7 +198,7 @@ for trial_it in range(ei_net.no.ntrials):
     xlabel('Time (s)')
     ylabel('I external current (pA)')
     xlim(x_lim)
-    savefig(output_fname + '_Iext.pdf')
+    savefig(output_fname + '_Iext.png')
     
     figure()
     pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))

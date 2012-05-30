@@ -265,8 +265,8 @@ class BrianGridCellNetwork(GridCellNetwork):
                 self.I_pop.Iext_theta = 2 * self.stim_i_A
             elif self._simulationClock.t >= self.no.theta_start_t*msecond:
                 ph = self.stim_omega*self._simulationClock.t
-                self.E_pop.Iext_theta = self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2)
-                self.I_pop.Iext_theta = self.stim_i_A + self.stim_i_A*np.sin(ph - np.pi/2)
+                self.E_pop.Iext_theta = self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2) + self.no.theta_noise_sigma*np.random.randn(self.net_Ne)*pA
+                self.I_pop.Iext_theta = self.stim_i_A + self.stim_i_A*np.sin(ph - np.pi/2) + self.no.theta_noise_sigma*np.random.randn(self.net_Ni)*pA
             else:
                 self.E_pop.Iext_theta = 0.0
                 self.I_pop.Iext_theta = 0.0

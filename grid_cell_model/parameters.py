@@ -109,6 +109,7 @@ def getOptParser():
     optParser.add_option("--E_GABA_A",          type="float",  help="GABA A reversal potential (V)")
 
     optParser.add_option("--noise_sigma",       type="float",  help="Std. dev of neural noise (V)")
+    optParser.add_option("--theta_noise_sigma", type="float",  help="Std. dev of theta stimulation noise (V)")
     optParser.add_option("--sigma_init_cond",   type="float",  help="Std. dev of distribution of initial membrane voltages (V)")
 
 

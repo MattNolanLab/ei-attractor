@@ -33,25 +33,32 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 10.0e3      # ms
-parameters['ngenerations']      = 10
+parameters['time']              = 5.0e3      # ms
+parameters['ngenerations']      = 1
 parameters['velModulationType'] = 'excitatory'
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
-parameters['tau_AMPA']          = 2         # ms
-parameters['g_AMPA_total']      = 700       # nS
-parameters['tau_GABA_A_fall']   = 20        # ms
-parameters['g_GABA_total']      = 540       # nS
 
+parameters['Iext_e_theta']      = 275    # pA
+parameters['g_AMPA_total']      = 2000   # nS
+parameters['g_GABA_total']      = 800   # nS
+
+#parameters['Iext_e_const']      = 500       # pA
+#parameters['Iext_i_const']      = 200       # pA
+
+#parameters['EL_e_spread']       = 1     # mV
+parameters['taum_i_spread']     = 1     # mV
+parameters['EL_i_spread']       = 5     # mV
+parameters['theta_noise_sigma'] = 0     # pA
 
 #parameters['Ivel']              = 40        # pA
 
-startJobNum = 400
+startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 simulation_theta_no_gamma_velocity.py'
+programName         = 'nice python2.6 simulation_theta_no_gamma_velocity.py'
 blocking            = False
 
 # Cluster parameters
@@ -62,7 +69,9 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]}
+        #'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]}
+        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70]
+}
 ac.insertDict(iterparams, mult=True)
 
 if EDDIE:

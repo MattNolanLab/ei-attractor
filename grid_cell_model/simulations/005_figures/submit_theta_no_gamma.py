@@ -39,17 +39,15 @@ parameters['ndumps']            = 1
 
 parameters['placeT']            = 10e3      # ms
 
-parameters['Iext_e_theta']      = 600       # pA
-
 #parameters['tau_AMPA']          = 2         # ms
 #parameters['g_AMPA_total']      = 700       # nS
 #parameters['tau_GABA_A_fall']   = 20        # ms
 #parameters['g_GABA_total']      = 540       # nS
-parameters['noise_sigma']       = 2          # mV
+#parameters['noise_sigma']       = 2          # mV
 
 parameters['bumpCurrentSlope']  = 0.759     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-startJobNum = 20
+startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
@@ -65,7 +63,8 @@ ac = ArgumentCreator(parameters)
 
 iterparams = {
 #        'bumpCurrentSlope'  : [0.75, 0.759, 0.77]
-        'noise_sigma' : [2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5]
+#        'noise_sigma' : [2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5]
+        'Iext_e_theta' : [200, 225, 250, 275, 300, 325, 350, 375]
 }
         
 ac.insertDict(iterparams, mult=False)
