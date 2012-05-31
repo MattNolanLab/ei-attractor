@@ -212,10 +212,11 @@ for trial_it in range(ei_net.no.ntrials):
         outData['options']                  = options._einet_optdict
         outData['velocityStart']            = options.theta_start_t
 
-        outData['stateMon_Iclamp_e_times']  = stateMon_Iclamp_e.times
+        outData['stateMon_times']           = stateMon_Iclamp_e.times
         outData['stateMon_Iclamp_e_values'] = stateMon_Iclamp_e.values
-        outData['stateMon_Iclamp_i_times']  = stateMon_Iclamp_i.times
         outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
+        outData['stateMon_e_values']        = stateMon_e.values
+        outData['stateMon_i_values']        = stateMon_i.values
         
         savemat(output_fname + '_output.mat', outData, do_compression=False)
 

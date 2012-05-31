@@ -19,6 +19,8 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import numpy as np
+
 from default_params import defaultParameters
 from common         import *
 
@@ -28,20 +30,22 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+EDDIE = False  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 10.0e3      # ms
+parameters['time']              = 10e3      # ms
 parameters['ngenerations']      = 10
-parameters['velModulationType'] = 'inhibitory'
-parameters['prefDirC_e']        = 0
-parameters['prefDirC_i']        = 4
+parameters['velModulationType'] = 'excitatory'
+parameters['prefDirC_e']        = 1
+parameters['prefDirC_i']        = 0
+
+parameters['theta_noise_sigma'] = 0          # pA
 
 #parameters['Ivel']              = 40        # pA
 
-startJobNum = 780
+startJobNum = 1100
 numRepeat = 1
 
 # Workstation parameters
@@ -50,13 +54,13 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=03:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]}
+        'Ivel'       : np.arange(0, 410, 10)}
 ac.insertDict(iterparams, mult=True)
 
 if EDDIE:

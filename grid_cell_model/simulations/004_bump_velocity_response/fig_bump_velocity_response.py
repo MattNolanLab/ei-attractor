@@ -27,29 +27,9 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [700, 715],
-        [720, 735],
-        [740, 755],
-        [760, 775],
-        [780, 795],
-        [300, 315],
-        [320, 335],
-        [340, 355],
-        [360, 375],
-        [380, 395],
         [400, 415]]
 fitLine = [
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False]
+        True]
 genRange = [0, 9]
 
 leg = (
@@ -139,12 +119,12 @@ for Ivel_types in range(len(jobRange_all)):
             normFac = sheetSize
             res[job_it].append(fitCircularSlope(bumpPos, times, normFac))
     
-        gen_avg.append(np.mean(res[job_it]))
+        gen_avg.append(np.abs(np.mean(res[job_it])))
         gen_stderr.append(np.std(res[job_it]) / np.sqrt(len(res[job_it])))
     
     
     # TODO: export this in simulations
-    Ivel = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
+    Ivel = np.arange(0, 160, 10)
     errorbar(Ivel, gen_avg, gen_stderr, fmt='o-')
     xlabel('Velocity current (pA)')
     ylabel('Bump velocity (neurons/s)')

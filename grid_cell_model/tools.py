@@ -33,6 +33,16 @@ def butterHighPass(sig, dt, f_pass):
     b, a = butter(3, norm_f_pass, btype='high')
     return filtfilt(b, a, sig)
 
+
+def butterBandPass(sig, dt, f_start, f_stop):
+    '''Band pass filter a signal, with f_start and f_stop frequencies'''
+    nyq_f = 1./dt/2
+    norm_f_start = f_start/ nyq_f
+    norm_f_stop  = f_stop / nyq_f
+    b, a = butter(3, [norm_f_start, norm_f_stop], btype='band')
+    return filtfilt(b, a, sig)
+
+
 def spikePhaseTrialRaster(spikeTimes, f, start_t=0):
     '''Here assuming that phase(t=0) = 0'''
     spikeTimes -= start_t
@@ -80,6 +90,22 @@ def phaseCWT(sig, Tph, dt, maxF, dF=2):
     sig_ph = np.reshape(sig[0:q_ph*n_ph], (q_ph, n_ph))
     phases = 1. * np.arange(n_ph) / n_ph * 2*np.pi - np.pi
     return phases, w_cwt_ph, 1./(w.scales*w.fourierwl*dt), sig_ph
+
+
+
+def CWT(sig, dt, maxF, dF=2):
+    '''
+    Calculate a Morlet wavelet transfrom of a signal.
+    '''
+    N = len(sig)
+
+    minF = 1./(len(sig)/2 * Morlet.fourierwl * dt)
+    F = np.linspace(minF, maxF, (maxF-minF)/dF+1)
+    scales = 1/F * 1/Morlet.fourierwl * 1/dt
+
+    w = Morlet(sig, scales, scaling='direct')
+    return np.abs(w.cwt)**2, 1./(w.scales*w.fourierwl*dt)
+
 
 def createIgorSpikeRaster(spikes, yvals=None):
     '''
