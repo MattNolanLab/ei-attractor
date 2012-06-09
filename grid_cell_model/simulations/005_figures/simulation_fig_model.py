@@ -208,6 +208,14 @@ for trial_it in range(ei_net.no.ntrials):
     axis('equal')
     savefig(output_fname + '_firing_snapshot_e.png')
 
+    figure()
+    pcolormesh(np.reshape(Fi[:, len(Fi_t)/2], (ei_net.Ni_y, ei_net.Ni_x)))
+    xlabel('I neuron no.')
+    ylabel('I neuron no.')
+    colorbar()
+    axis('equal')
+    savefig(output_fname + '_firing_snapshot_i.png')
+
 
     # Print a plot of bump position
     F_dt = 0.02
@@ -427,8 +435,10 @@ for trial_it in range(ei_net.no.ntrials):
 
         # Bump snapshot
         snapTime = 1.5*second
-        firingSnapshot = np.reshape(Fe[:, snapTime/F_dt], (ei_net.Ne_y, ei_net.Ne_x))
-        h5file.createArray(h5file.root, 'bump_snapshot', firingSnapshot)
+        firingSnapshot_e = np.reshape(Fe[:, snapTime/F_dt], (ei_net.Ne_y, ei_net.Ne_x))
+        firingSnapshot_i = np.reshape(Fi[:, snapTime/F_dt], (ei_net.Ni_y, ei_net.Ni_x))
+        h5file.createArray(h5file.root, 'bump_snapshot_e', firingSnapshot_e)
+        h5file.createArray(h5file.root, 'bump_snapshot_i', firingSnapshot_i)
 
         # Unfiltered input current, rasters and wavelets
         for n_it in range(len(theta_state_record_e)):
