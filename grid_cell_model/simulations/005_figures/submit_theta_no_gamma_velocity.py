@@ -36,7 +36,7 @@ parameters = defaultParameters
 parameters['time']              = 10e3      # ms
 parameters['ngenerations']      = 10
 parameters['velModulationType'] = 'excitatory'
-parameters['prefDirC_e']        = 4
+parameters['prefDirC_e']        = 3
 parameters['prefDirC_i']        = 0
 
 
@@ -54,7 +54,7 @@ parameters['theta_noise_sigma'] = 0     # pA
 
 #parameters['Ivel']              = 40        # pA
 
-startJobNum = 1100
+startJobNum = 1120
 numRepeat = 1
 
 # Workstation parameters

@@ -30,22 +30,22 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
 parameters['time']              = 10e3      # ms
 parameters['ngenerations']      = 10
-parameters['velModulationType'] = 'excitatory'
-parameters['prefDirC_e']        = 1
-parameters['prefDirC_i']        = 0
+parameters['velModulationType'] = 'inhibitory'
+parameters['prefDirC_e']        = 0
+parameters['prefDirC_i']        = 6
 
 parameters['theta_noise_sigma'] = 0          # pA
 
 #parameters['Ivel']              = 40        # pA
 
-startJobNum = 1100
+startJobNum = 1300
 numRepeat = 1
 
 # Workstation parameters

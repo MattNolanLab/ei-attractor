@@ -30,7 +30,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -38,23 +38,24 @@ parameters = defaultParameters
 parameters['time']              = 10e3      # ms
 parameters['ngenerations']      = 10
 parameters['velModulationType'] = 'excitatory'
-parameters['prefDirC_e']        = 3
+parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
 parameters['theta_noise_sigma'] = 0          # pA
+parameters['stateMonDuration']  = 10e3       # ms
 
 #parameters['Ivel']              = 40        # pA
 
-startJobNum = 1300
+startJobNum = 1320
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 simulation.py'
+programName         = 'python2.6 simulation_basic_grids_velocity.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=03:00:00 -pe memory-2G 2"
+eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids_velocity.py'
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
