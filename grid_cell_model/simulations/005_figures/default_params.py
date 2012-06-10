@@ -75,7 +75,7 @@ defaultParameters = {
         "t_ref_e"             :   0.1,          # ms
         "V_peak_e"            :   -40,          # mV
         
-        "taum_i"              :   7,            # ms
+        "taum_i"              :   10,           # ms
         "taum_i_spread"       :   0,            # ms
         "EL_i"                :   -60,          # mV
         "EL_i_spread"         :   0,            # mV

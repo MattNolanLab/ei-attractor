@@ -27,7 +27,7 @@ from tables             import *
 from grid_cell_analysis import *
 
 
-jobRange = [1200, 1203]
+jobRange = [1210, 1217]
 trialNum = 0
 dumpNum = 19
 
@@ -44,7 +44,7 @@ neuronNum = 10
 spikeType = 'excitatory'
 
 
-dirName = "output/"
+dirName = "output_local/"
 fileNamePrefix = ''
 fileNameTemp = "{0}/{1}job{2:04}_trial{3:04}_dump{4:03}"
 

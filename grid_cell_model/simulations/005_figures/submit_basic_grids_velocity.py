@@ -1,7 +1,7 @@
 #
-#   submit_job.py
+#   submit_basic_grids_velocity.py
 #
-#   Submit job(s) to the cluster/workstation
+#   Submit job(s) to the cluster/workstation: velocity estimation theta+gamma
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,6 +19,8 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import numpy as np
+
 from default_params import defaultParameters
 from common         import *
 
@@ -33,35 +35,33 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 1199.9e3  # ms
-parameters['ndumps']            = 20
+parameters['time']              = 10e3      # ms
+parameters['ngenerations']      = 10
+parameters['velModulationType'] = 'excitatory'
+parameters['prefDirC_e']        = 3
+parameters['prefDirC_i']        = 0
 
-parameters['placeT']            = 10e3      # ms
+parameters['theta_noise_sigma'] = 0          # pA
 
-parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
-parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-parameters['theta_noise_sigma'] = 0         # pA
+#parameters['Ivel']              = 40        # pA
 
-parameters['output_dir']        = 'output_local'
-parameters['stateRec_dt']       = 0.25      # ms
-
-startJobNum = 1210
-numRepeat = 4
+startJobNum = 1300
+numRepeat = 1
 
 # Workstation parameters
-programName         = 'nice python2.6 simulation_basic_grids_full_record.py'
+programName         = 'python2.6 simulation.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids_full_record.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+eddie_scriptName    = 'eddie_submit.sh simulation.py'
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=03:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'bumpCurrentSlope'  : [1.15, 1.175]}
-ac.insertDict(iterparams, mult=False)
+        'Ivel'       : np.arange(0, 160, 10)}
+ac.insertDict(iterparams, mult=True)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
