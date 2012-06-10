@@ -27,23 +27,14 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [900, 915],
-        [920, 935],
-        [940, 955],
-        [960, 975],
-        [980, 995]]
+        [1300, 1315],
+        [1320, 1335]]
 fitLine = [
         False,
-        False,
-        False,
-        True,
-        False]
+        True]
 genRange = [0, 9]
 
 leg = (
-        '0 nrns',
-        '1 nrns',
-        '2 nrns',
         '3 nrns',
         '4 nrns')
 
@@ -128,7 +119,7 @@ for Ivel_types in range(len(jobRange_all)):
     
     
     # TODO: export this in simulations
-    Ivel = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
+    Ivel = range(0, 160, 10)
     errorbar(Ivel, gen_avg, gen_stderr, fmt='o-')
     xlabel('Velocity current (pA)')
     ylabel('Bump velocity (neurons/s)')
@@ -142,7 +133,7 @@ for Ivel_types in range(len(jobRange_all)):
         #    if gen_stderr[it] > stderr_th:
         #        break
         #    it += 1
-        it = 9
+        it = 13
         line, slope = getLineFit(gen_avg[0:it])
         slope = slope/(Ivel[1] - Ivel[0])
         plot(Ivel[0:it], line)
