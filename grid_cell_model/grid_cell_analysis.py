@@ -23,9 +23,10 @@
 import numpy    as np
 import numpy.ma as ma
 
-from scipy.integrate    import trapz
-from scipy.signal       import correlate2d
-from matplotlib.pyplot  import *
+from scipy.integrate             import trapz
+from scipy.signal                import correlate2d
+from scipy.ndimage.interpolation import rotate
+from matplotlib.pyplot           import *
 
 
 def gaussianFilter(X, sigma):
@@ -113,6 +114,43 @@ def SNAutoCorr(rateMap, arenaDiam, h):
 
     return corr, xedges, yedges
 
+
+
+def cellGridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
+    '''
+    Compute a cell gridness score by taking the auto correlation of the
+    firing rate map, rotating it, and subtracting maxima of the
+    correlation coefficients of the former and latter, at 30, 90 and 150 (max),
+    and 60 and 120 deg. (minima). This gives the gridness score.
+
+    The center of the auto correlation map (given by corr_cutRmin) is removed
+    from the map
+    '''
+    rateMap_mean = rateMap - np.mean(np.reshape(rateMap, (1, rateMap.size)))
+    autoCorr, autoC_xedges, autoC_yedges = SNAutoCorr(rateMap_mean, arenaDiam, h)
+    
+    # Remove the center point and
+    X, Y = np.meshgrid(autoC_xedges, autoC_yedges)
+    autoCorr[np.sqrt(X**2 + Y**2) < corr_cutRmin] = 0
+    
+    da = 3
+    angles = range(0, 180+da, da)
+    crossCorr = []
+    # Rotate and compute correlation coefficient
+    for angle in angles:
+        autoCorrRot = rotate(autoCorr, angle, reshape=False)
+        C = np.corrcoef(np.reshape(autoCorr, (1, autoCorr.size)),
+            np.reshape(autoCorrRot, (1, autoCorrRot.size)))
+        crossCorr.append(C[0, 1])
+
+    max_angles_i = np.array([30, 90, 150]) / da
+    min_angles_i = np.array([60, 120]) / da
+
+    maxima = np.max(np.array(crossCorr)[max_angles_i])
+    minima = np.min(np.array(crossCorr)[min_angles_i])
+    G = minima - maxima
+
+    return G, np.array(crossCorr), angles
 
 
 
