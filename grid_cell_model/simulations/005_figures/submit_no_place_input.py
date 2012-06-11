@@ -40,6 +40,7 @@ parameters['placeT']            = 10e3      # ms
 
 parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
+
 startJobNum = 200
 numRepeat = 5
 

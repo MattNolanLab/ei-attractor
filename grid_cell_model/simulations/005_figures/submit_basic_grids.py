@@ -28,13 +28,13 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 30e3  # ms
-parameters['ndumps']            = 1
+parameters['time']              = 1199.9e3  # ms
+parameters['ndumps']            = 20
 
 parameters['placeT']            = 10e3      # ms
 
@@ -42,12 +42,13 @@ parameters['stateMonDur']       = parameters['time']
 
 parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
+
 parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['output_dir']        = 'output_local'
 
-startJobNum = 0
-numRepeat = 2
+startJobNum = 140
+numRepeat = 5
 
 # Workstation parameters
 programName         = 'python2.6 simulation_basic_grids.py'
@@ -60,9 +61,9 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#        'bumpCurrentSlope'  : [1.15, 1.175, 1.2]}
-#ac.insertDict(iterparams, mult=False)
+iterparams = {
+        'bumpCurrentSlope'  : [1.15, 1.175, 1.2]}
+ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
