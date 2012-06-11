@@ -40,6 +40,7 @@ parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
 parameters['placeT']            = 10e3      # ms
+parameters['placeDur']          = 250       # ms
 
 parameters['bumpCurrentSlope']  = 1.07      # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
@@ -48,7 +49,7 @@ parameters['theta_noise_sigma'] = 0         # pA
 parameters['output_dir']        = 'output_local'
 parameters['stateRec_dt']       = 0.25      # ms
 
-startJobNum = 1200
+startJobNum = 1400
 numRepeat = 5
 
 # Workstation parameters
@@ -57,7 +58,7 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids_full_record.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=16:00:00 -pe memory-2G 4"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 4"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
