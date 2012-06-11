@@ -21,13 +21,14 @@
 import numpy as np
 
 from scipy.io           import loadmat
+from scipy.io           import savemat
 from matplotlib.pyplot  import *
 from tables             import *
 
 from grid_cell_analysis import *
 
 
-jobRange = [100, 114]
+jobRange = [700, 714]
 trialNum = 0
 dumpNum = 19
 
@@ -49,6 +50,7 @@ dirName = "output/"
 fileNamePrefix = ''
 fileNameTemp = "{0}/{1}job{2:04}_trial{3:04}_dump{4:03}"
 
+gridnessScores = []
 
 for job_it in range(jobN):
     jobNum = job_it + jobRange[0]
@@ -100,6 +102,7 @@ for job_it in range(jobN):
 
     figure()
     G, crossCorr, angles = cellGridnessScore(rateMap, arenaDiam, h, corr_cutRmin)
+    gridnessScores.append(G)
     plot(angles, crossCorr)
     xlabel('Angle (deg.)')
     ylabel('Corr. coefficient')
@@ -122,7 +125,13 @@ for job_it in range(jobN):
     corr[corr.mask==1] = np.nan
     h5file.createArray(h5file.root, 'corrMap', corr)
 
-
-
     h5file.close()
+
+
+# Save gridness scores
+savemat('job{0:04}_gridness_scores_'.format(jobRange[0]) + '_excitatory.mat',
+        {'gridnessScores': gridnessScores})
+
+print "Gridness scores:"
+print gridnessScores
 
