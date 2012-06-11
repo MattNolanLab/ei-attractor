@@ -27,7 +27,7 @@ from tables             import *
 from grid_cell_analysis import *
 
 
-jobRange = [1400, 1419]
+jobRange = [100, 114]
 trialNum = 0
 dumpNum = 19
 
@@ -38,13 +38,14 @@ rcParams['font.size'] = 14
 
 arenaDiam = 180.0     # cm
 h = 3.0
+corr_cutRmin = 60     # cm
 
 # Neuron to extract spikes from
 neuronNum = 10
 spikeType = 'excitatory'
 
 
-dirName = "output_local/"
+dirName = "output/"
 fileNamePrefix = ''
 fileNameTemp = "{0}/{1}job{2:04}_trial{3:04}_dump{4:03}"
 
@@ -95,6 +96,14 @@ for job_it in range(jobN):
     axis('equal')
     axis('off')
     savefig(fileName + '_rateCorr_' + spikeType + '.png')
+
+
+    figure()
+    G, crossCorr, angles = cellGridnessScore(rateMap, arenaDiam, h, corr_cutRmin)
+    plot(angles, crossCorr)
+    xlabel('Angle (deg.)')
+    ylabel('Corr. coefficient')
+    savefig(fileName + '_gridnessCorr_' + spikeType + '.png')
 
     close('all')
 
