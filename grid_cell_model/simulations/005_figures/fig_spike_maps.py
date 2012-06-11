@@ -30,7 +30,7 @@ from grid_cell_analysis import *
 
 jobRange = [700, 714]
 trialNum = 0
-dumpNum = 19
+dumpNum = 4
 
 jobN = jobRange[1] - jobRange[0] + 1
 
@@ -75,7 +75,7 @@ for job_it in range(jobN):
         spikeTimes  = data['spikeCell_i'].ravel()
 
     spikes = spikeTimes[neuronNum] - velocityStart*1e-3
-    np.delete(spikes, spikes < 0)
+    spikes = np.delete(spikes, np.nonzero(spikes < 0)[0])
 
     figure()
     plotSpikes2D(spikes, pos_x, pos_y, rat_dt)

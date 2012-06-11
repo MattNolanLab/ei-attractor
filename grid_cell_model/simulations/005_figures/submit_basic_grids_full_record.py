@@ -28,7 +28,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+EDDIE = False  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -36,21 +36,21 @@ parameters = defaultParameters
 parameters['time']              = 1199.9e3  # ms
 parameters['ndumps']            = 20
 
-parameters['prefDirC_e']        = 4
+parameters['prefDirC_e']        = 3
 parameters['prefDirC_i']        = 0
 
 parameters['placeT']            = 10e3      # ms
-parameters['placeDur']          = 250       # ms
+parameters['placeDur']          = 100       # ms
 
-parameters['bumpCurrentSlope']  = 1.07      # pA/(cm/s), !! this will depend on prefDirC !!
+parameters['bumpCurrentSlope']  = 0.7       # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['output_dir']        = 'output_local'
 parameters['stateRec_dt']       = 0.25      # ms
 
-startJobNum = 1400
-numRepeat = 5
+startJobNum = 1500
+numRepeat = 4
 
 # Workstation parameters
 programName         = 'nice python2.6 simulation_basic_grids_full_record.py'
@@ -64,7 +64,7 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'bumpCurrentSlope'  : [1.0, 1.07, 1.1, 1.15]}
+        'bumpCurrentSlope'  : [0.7, 0.75]}
 ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
