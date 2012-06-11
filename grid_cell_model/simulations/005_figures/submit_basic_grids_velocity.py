@@ -42,11 +42,14 @@ parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
 parameters['theta_noise_sigma'] = 0          # pA
+#parameters['noise_sigma']       = 0          # mV
 parameters['stateMonDuration']  = 10e3       # ms
+
+parameters['uni_GABA_density']  = 1.0
 
 #parameters['Ivel']              = 40        # pA
 
-startJobNum = 1320
+startJobNum = 2040
 numRepeat = 1
 
 # Workstation parameters
