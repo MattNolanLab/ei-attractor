@@ -28,7 +28,7 @@ from tables             import *
 from grid_cell_analysis import *
 
 
-jobRange = [130, 134]
+jobRange = [140, 154]
 trialNum = 0
 dumpNum = 8
 
