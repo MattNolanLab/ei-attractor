@@ -33,7 +33,7 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 6e3  # ms
+parameters['time']              = 4e3  # ms
 parameters['ndumps']            = 1
 
 #parameters['placeT']            = 1e3      # ms
@@ -49,7 +49,7 @@ parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['output_dir']        = 'output'
 
-startJobNum = 2
+startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters

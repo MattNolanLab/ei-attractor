@@ -377,49 +377,28 @@ class BrianGridCellNetwork(GridCellNetwork):
 
 
     def setPlaceCurrentInput(self):
-        self._placeClockOn  = Clock(self.no.placeT*msecond)
-        self._placeClockOff = Clock(self.no.placeDur*msecond)
+        self._placeClock  = Clock(self.no.placeDur*msecond)
         self._placeCellInputOn = True
 
         self._loadRatVelocities()
 
-        @network_operation(self._placeClockOn)
+        @network_operation(self._placeClock)
         def switchPlaceInputOn():
-            if self._simulationClock.t >= self.no.theta_start_t*msecond:
+            t_within = np.mod(self._simulationClock.t,
+                    self.no.placeT*msecond)*second
+            if self._simulationClock.t >= self.no.theta_start_t*msecond and \
+                t_within > 0*ms and t_within <= self.no.placeDur*msecond:
                 self.E_pop.Iext_place = self._pc.getSheetInput(self.rat_pos_x[self.Ivel_it],
                         self.rat_pos_y[self.Ivel_it]).ravel() * self.no.Iplace * pA
                 print "  Place cell input on; pos_x = " + \
                         str(self.rat_pos_x[self.Ivel_it]) + "; pos_y = " + \
                         str(self.rat_pos_y[self.Ivel_it]) + "; t = " + \
                         str(self._simulationClock.t)
+            else:
+                self.E_pop.Iext_place = 0.0
+                #print "  Place cell input off; t = " + str(self._simulationClock.t)
         
-        @network_operation(self._placeClockOff, when='start')
-        def switchPlaceInputOff():
-            self.E_pop.Iext_place = 0.0
-            print "Place cell input off; t = " + str(self._simulationClock.t)
-
-        self.net.add(switchPlaceInputOn, switchPlaceInputOff)
-
-
-
-    def setConstantPlaceCurrentInput(self, rat_x, rat_y):
-        self._placeClockOn  = Clock(self.no.placeT*msecond)
-        self._placeClockOff = Clock(self.no.placeDur*msecond)
-        self._placeCellInputOn = True
-        self._const_rat_x = rat_x
-        self._const_rat_y = rat_y
-
-        @network_operation(self._placeClockOn)
-        def switchPlaceInputOn():
-            if self._simulationClock.t >= self.no.theta_start_t*msecond:
-                self.E_pop.Iext_place = self._pc.getSheetInput(self._const_rat_x, 
-                        self._const_rat_y).ravel() * self.no.Iplace * pA
-        
-        @network_operation(self._placeClockOff, when='start')
-        def switchPlaceInputOff():
-            self.E_pop.Iext_place = 0.0
-
-        self.net.add(switchPlaceInputOn, switchPlaceInputOff)
+        self.net.add(switchPlaceInputOn)
 
 
 
