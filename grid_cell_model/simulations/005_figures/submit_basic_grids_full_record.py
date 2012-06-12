@@ -1,7 +1,7 @@
 #
-#   submit_job.py
+#   submit_basic_grids_full_record.py
 #
-#   Submit job(s) to the cluster/workstation
+#   Submit job(s) to the cluster/workstation: full state monitor recordings
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -39,7 +39,7 @@ parameters['ndumps']            = 10
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
-parameters['placeT']            = 10e3      # ms
+#parameters['placeT']            = 10e3      # ms
 parameters['placeDur']          = 100       # ms
 
 parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on prefDirC !!
@@ -51,8 +51,8 @@ parameters['uni_GABA_density']   = 1.0
 parameters['output_dir']        = 'output_local'
 parameters['stateRec_dt']       = 0.25      # ms
 
-startJobNum = 2100
-numRepeat = 10
+startJobNum = 2200
+numRepeat = 5
 
 # Workstation parameters
 programName         = 'nice python2.6 simulation_basic_grids_full_record.py'
@@ -60,13 +60,15 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids_full_record.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 4"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=14:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'bumpCurrentSlope'  : [0.95, 1.05, 1.15]}
+#        'bumpCurrentSlope'  : [0.95, 1.05, 1.15]
+        'placeT' : [2.5, 5, 7.5, 10]
+}
 ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
