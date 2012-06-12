@@ -25,10 +25,24 @@ from scipy.io import loadmat
 
 
 class PlaceCellInput(object):
+    '''
+    Place cell input class. One can define an arena size (circular) and then
+    probe the template for an input to a population of neurons that should
+    center the attractor bump of activity to a desired location.
 
-    def __init__(self, Ne_x, Ne_y, arenaSize, gridsep, gridCenter):
+    This can be used to reset the bump to a correct position
+    '''
 
-        self.sigma = 7;
+    def __init__(self, Ne_x, Ne_y, arenaSize, gridsep, gridCenter, fieldSigma=7):
+        '''
+        Create a place cell input template.
+        Ne_x/y      size of the neural sheet
+        gridSep     Distance between grid field peaks
+        gridCenter  Offset of the center of grid fields
+        fieldSigma  Sigma of the gaussians used to produce the template
+        '''
+
+        self.sigma = fieldSigma
 
 
         self.Ne_x = Ne_x
@@ -58,6 +72,7 @@ class PlaceCellInput(object):
         self.arena = arena1 + arena2
         self.X= X
         self.Y= Y
+
 
     def getSheetInput(self, pos_x, pos_y):
         '''
