@@ -43,8 +43,8 @@ parameters['prefDirC_i']        = 10
 
 parameters['bumpCurrentSlope']  = 0.883     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-startJobNum = 700
-numRepeat = 5
+startJobNum = 3200
+numRepeat = 10
 
 # Workstation parameters
 programName         = 'python2.6 simulation_inhibitory_modulation.py'
@@ -57,9 +57,9 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-iterparams = {
-        'bumpCurrentSlope'  : [0.873, 0.883, 0.983]}
-ac.insertDict(iterparams, mult=False)
+#iterparams = {
+#        'bumpCurrentSlope'  : [0.873, 0.883, 0.983]}
+#ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
