@@ -90,8 +90,8 @@ if __name__=="__main__":
     Ne_x = 68
     Ne_y = 58
     arenaSize = 180.
-    gridsep = arenaSize/3.
-    gridCenter = [0, gridsep/2]
+    gridsep = 70            # cm
+    gridCenter = [0, 0]
     
     pc = PlaceCellInput(Ne_x, Ne_y, arenaSize, gridsep, gridCenter)
     #pcolormesh(pc.X, pc.Y, pc.arena); axis('equal'); show()
@@ -103,11 +103,56 @@ if __name__=="__main__":
     pos_x = ratData['pos_x'].flatten()
     pos_y = ratData['pos_y'].flatten()
     
+    print "Testing dimensions of input..."
     for it in xrange(len(pos_x)):
         tmp = pc.getSheetInput(pos_x[it], pos_y[it])
         if len(tmp) != Ne_y or len(tmp[0]) != Ne_x:
             raise Exception()
     
-        print len(tmp[0]), len(tmp)
-        print it
+        #print len(tmp[0]), len(tmp)
+        #print it
+    print "OK\n"
     
+
+    print "Testing grid cell heat map"
+    neuronNums = [10, 20, 10*Ne_x+10, 20*Ne_x+10]
+
+    dx = 3      # cm
+    xedges = np.linspace(-arenaSize/2, arenaSize/2, arenaSize/dx + 1)
+    yedges = np.linspace(-arenaSize/2, arenaSize/2, arenaSize/dx + 1)
+    for neuronNum in neuronNums:
+        print "  neuron no. " + str(neuronNum)
+        hist = np.ndarray((len(xedges), len(yedges)), dtype=object)
+        avgHist = np.ndarray((len(xedges), len(yedges)))
+        nInput = []
+        for it in xrange(len(pos_x)):
+            x = pos_x[it]
+            y = pos_y[it]
+
+            x_bin = np.floor(x/dx) + np.floor(len(xedges)/2)
+            y_bin = np.floor(y/dx) + np.floor(len(yedges)/2)
+            if (x_bin < 0 or y_bin < 0):
+                raise Exception()
+
+            if hist[y_bin, x_bin] == None:
+                hist[y_bin, x_bin] = []
+
+            hist[y_bin, x_bin].append(pc.getSheetInput(x, y).ravel()[neuronNum])
+
+
+        for x_it in range(len(xedges)):
+            for y_it in range(len(yedges)):
+                if hist[y_it, x_it] == None:
+                    avgHist[y_it, x_it] = 0
+                else:
+                    avgHist[y_it, x_it] = np.mean(hist[y_it, x_it])
+
+
+        X, Y = np.meshgrid(xedges, yedges)
+        pcolormesh(X, Y, avgHist)
+        xlabel('X position (cm)')
+        ylabel('Y position (cm)')
+        title('Neuron no. ' + str(neuronNum))
+        savefig('grid_field_heat_map_{0:04}.png'.format(neuronNum))
+            
+
