@@ -28,12 +28,12 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 4e3  # ms
+parameters['time']              = 10e3  # ms
 parameters['ndumps']            = 1
 
 #parameters['placeT']            = 1e3      # ms
@@ -49,8 +49,8 @@ parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['output_dir']        = 'output'
 
-startJobNum = 0
-numRepeat = 1
+startJobNum = 9100
+numRepeat = 30
 
 # Workstation parameters
 programName         = 'python2.6 simulation_test_place_cell_input.py'
@@ -58,7 +58,7 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_test_place_cell_input.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:10:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)

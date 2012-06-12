@@ -38,14 +38,16 @@ parameters['ndumps']            = 20
 
 parameters['placeT']            = 10e3      # ms
 
-parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
+parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
 
-startJobNum = 200
-numRepeat = 5
+parameters['output_dir']        = 'output_local'
+
+startJobNum = 3200
+numRepeat = 10
 
 # Workstation parameters
-programName         = 'python2.6 simulation_no_plac_input.py'
+programName         = 'python2.6 simulation_no_place_input.py'
 blocking            = False
 
 # Cluster parameters
@@ -55,9 +57,9 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-iterparams = {
-        'bumpCurrentSlope'  : [1.15, 1.175, 1.2]}
-ac.insertDict(iterparams, mult=False)
+#iterparams = {
+#        'bumpCurrentSlope'  : [1.15, 1.175, 1.2]}
+#ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

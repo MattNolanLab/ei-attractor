@@ -40,13 +40,12 @@ parameters['Iext_e_const']      = 500       # pA
 parameters['Iext_i_const']      = 200       # pA
 
 parameters['placeT']            = 10e3      # ms
-parameters['Iplace']            = 250       # pA
 
-parameters['prefDirC_e']        = 3.0
-parameters['prefDirC_i']        = 0.0
-#parameters['bumpCurrentSlope']  = 0.921     # pA/(cm/s), !! this will depend on prefDirC !!
+parameters['prefDirC_e']        = 4
+parameters['prefDirC_i']        = 0
+parameters['bumpCurrentSlope']  = 1.45     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
-startJobNum = 850
+startJobNum = 3300
 numRepeat = 10
 
 # Workstation parameters
@@ -60,9 +59,9 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-iterparams = {
-        'bumpCurrentSlope'    : [0.821, 0.921, 1.021]}
-ac.insertDict(iterparams, mult=False)
+#iterparams = {
+#        'bumpCurrentSlope'    : [0.821, 0.921, 1.021]}
+#ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

@@ -39,20 +39,20 @@ parameters['ndumps']            = 10
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
-#parameters['placeT']            = 10e3      # ms
+parameters['placeT']            = 10e3      # ms
 parameters['placeDur']          = 100       # ms
 
 parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
-parameters['uni_GABA_density']   = 1.0
+parameters['uni_GABA_density']   = 0.4
 
 parameters['output_dir']        = 'output_local'
 parameters['stateRec_dt']       = 0.25      # ms
 
-startJobNum = 2200
-numRepeat = 5
+startJobNum = 3100
+numRepeat = 10
 
 # Workstation parameters
 programName         = 'nice python2.6 simulation_basic_grids_full_record.py'
@@ -65,11 +65,10 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-iterparams = {
+#iterparams = {
 #        'bumpCurrentSlope'  : [0.95, 1.05, 1.15]
-        'placeT' : [2.5e3, 5e3, 7.5e3, 10e3]
-}
-ac.insertDict(iterparams, mult=False)
+#}
+#ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
