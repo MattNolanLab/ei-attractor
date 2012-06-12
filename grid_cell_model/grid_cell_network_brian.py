@@ -66,7 +66,6 @@ class BrianGridCellNetwork(GridCellNetwork):
         # Place cell input settings
         self._gridsep = self.no.gridSep
         self._gridCenter = [0, 0]
-        self._place_current = 250 * pA
         self._pc = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize, self._gridsep, self._gridCenter)
         # Has place cell input been set up?
         self._placeCellInputOn = False
