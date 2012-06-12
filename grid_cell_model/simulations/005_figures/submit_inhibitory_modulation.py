@@ -43,6 +43,7 @@ parameters['prefDirC_i']        = 10
 
 parameters['bumpCurrentSlope']  = 0.883     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
+parameters['theta_noise_sigma'] = 0         # pA
 startJobNum = 3200
 numRepeat = 10
 

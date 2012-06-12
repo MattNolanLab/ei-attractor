@@ -74,7 +74,7 @@ print "Network setup time:",duration,"seconds"
 
 simulationClock = ei_net._getSimulationClock()
 
-rec_all_spikes = True
+rec_all_spikes = False
 if rec_all_spikes:
     nrecSpike_e = ei_net.Ne_x*ei_net.Ne_y
     nrecSpike_i = ei_net.Ni_x*ei_net.Ni_y
