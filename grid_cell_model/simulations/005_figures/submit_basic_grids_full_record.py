@@ -67,7 +67,7 @@ ac = ArgumentCreator(parameters)
 
 iterparams = {
 #        'bumpCurrentSlope'  : [0.95, 1.05, 1.15]
-        'placeT' : [2.5, 5, 7.5, 10]
+        'placeT' : [2.5e3, 5e3, 7.5e3, 10e3]
 }
 ac.insertDict(iterparams, mult=False)
 
