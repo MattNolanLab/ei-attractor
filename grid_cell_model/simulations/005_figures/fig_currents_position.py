@@ -42,7 +42,8 @@ rcParams['font.size'] = 14
 arenaDiam = 180.0     # cm
 h = 3.0
 Ne = 34
-rateThreshold = 2
+rateThreshold_e = 2    # fields are > this
+rateThreshold_i = 20   # fields are < this
 minFieldArea = 30
 
 # Neuron to extract spikes from
@@ -94,7 +95,7 @@ def getCurrentChargeTheta(sig, times, theta_freq):
     For each theta cycle, find the total charge of synaptic current.
     '''
     dt = times[1] - times[0]
-    sig_sliced, time_centers = sliceArrayToThetaCycles(syn_current, times, theta_freq, removeFirst=5)
+    sig_sliced, time_centers = sliceArrayToThetaCycles(sig, times, theta_freq, removeFirst=5)
     return np.trapz(sig_sliced, dx=dt, axis=1), time_centers
 
 
@@ -139,6 +140,37 @@ def findGridCenters(rateMap, xedges, yedges, thresholdFun, threshold, minFieldAr
     return field_ctr_x, field_ctr_y, segments
 
 
+def timeCentersToPositions(time_centers, pos_x, pos_y, field_ctr_x, field_ctr_y,
+        velocityStart, gridSep):
+    # Recompute time_centers into positions
+    time_centers -= velocityStart # relative to the start of velocity modulation
+    centers_pos_i = np.array(time_centers // rat_dt, dtype=int)
+    centers_pos_x = pos_x[centers_pos_i]
+    centers_pos_y = pos_y[centers_pos_i]
+    dist_min_grids = []
+    for c_it in xrange(len(centers_pos_i)):
+        dist =  np.min(np.sqrt((centers_pos_x[c_it] - field_ctr_x)**2 +
+                (centers_pos_y[c_it] - field_ctr_y)**2))
+        dist_min_grids.append(dist)
+    dist_min_grids = np.array(dist_min_grids)
+    dist_th = np.where(dist_min_grids > gridSep/2)
+    dist_min_grids[dist_th] = gridSep - dist_min_grids[dist_th]
+    return dist_min_grids, centers_pos_x, centers_pos_y
+
+
+def distanceMeanMedian(dDistBins, dist_min_grids, sig_areas):
+    distBins = np.arange(-dDistBins, np.max(dist_min_grids) + dDistBins,
+            dDistBins)
+    sig_areas_dist_binned_i = np.digitize(dist_min_grids, distBins)
+    sig_areas_dist_mean   = np.ndarray(len(distBins), dtype=object)
+    sig_areas_dist_median = np.ndarray(len(distBins), dtype=object)
+    for it in range(len(distBins)):
+        sig_bin = sig_areas[np.where(sig_areas_dist_binned_i == it)]
+        sig_areas_dist_mean[it]   = np.mean(sig_bin)
+        sig_areas_dist_median[it] = np.median(sig_bin)
+    return distBins, sig_areas_dist_mean, sig_areas_dist_median
+
+
 for job_it in range(jobN):
     jobNum = job_it + jobRange[0]
     print 'jobNum: ' + str(jobNum)
@@ -158,84 +190,115 @@ for job_it in range(jobN):
     
 
     Ne_x            = data['options']['Ne'][0][0][0][0]
+    Ni_x            = data['options']['Ni'][0][0][0][0]
     gridSep         = data['options']['gridSep'][0][0][0][0]
-    neuronNum       = Ne_x/2 -1 
+    neuronNum_e     = Ne_x/2 - 1 
+    neuronNum_i     = Ni_x/2 - 1
     pos_x           = data['pos_x'].ravel()
     pos_y           = data['pos_y'].ravel()
     rat_dt          = data['dt'][0][0]
     velocityStart   = data['velocityStart'].ravel()[0] * ms
 
-    spikeTimes      = data['spikeCell_e'][neuronNum][0].ravel()
-    spikes = spikeTimes - velocityStart
-    spikes = np.delete(spikes, np.nonzero(spikes < 0)[0])
+    spikeTimes_e    = data['spikeCell_e'][neuronNum_e][0].ravel()
+    spikes_e        = spikeTimes_e - velocityStart
+    spikes_e        = np.delete(spikes_e, np.nonzero(spikes_e < 0)[0])
+
+    spikeTimes_i    = data['spikeCell_i'][neuronNum_i][0].ravel()
+    spikes_i        = spikeTimes_i - velocityStart
+    spikes_i        = np.delete(spikes_i, np.nonzero(spikes_i < 0)[0])
 
     times           = data['stateMon_times'].ravel()
     rec_dt          = data['options']['stateRec_dt'][0][0][0][0] * ms
 
-    syn_current     = data['stateMon_Iclamp_e_values'][0, :].ravel()/pA
-
-    syn_current_bpass = syn_current
-    #syn_current_bpass = butterBandPass(syn_current, rec_dt, f_start, f_stop)
+    syn_current_e   = data['stateMon_Iclamp_e_values'][0, :].ravel()/pA
+    syn_current_i   = data['stateMon_Iclamp_i_values'][0, :].ravel()/pA
 
 
-    # Segment the rate map
-    rateMap, xedges, yedges  = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt, arenaDiam, h)
-    field_ctr_x, field_ctr_y, segments = findGridCenters(rateMap, xedges,
-            yedges, getRateMapThreshold_e, rateThreshold, minFieldArea)
-    
-    figure()
-    X, Y = np.meshgrid(xedges, yedges)
-    pcolormesh(X, Y, segments)
-    hold('on')
-    plot(field_ctr_x, field_ctr_y, 'or')
-
-    figure()
-    pcolormesh(X, Y, rateMap)
-    plot(field_ctr_x, field_ctr_y, 'or')
+    # Segment the rate map 
+    # E neuron
+    rateMap_e, xedges, yedges  = SNSpatialRate2D(spikes_e, pos_x, pos_y, rat_dt, arenaDiam, h)
+    field_ctr_x_e, field_ctr_y_e, segments_e = findGridCenters(rateMap_e, xedges,
+            yedges, getRateMapThreshold_e, rateThreshold_e, minFieldArea)
+    sig_areas_e, time_centers_e =  getCurrentChargeTheta(syn_current_e, times, theta_freq)
+    dist_min_grids_e, centers_pos_x_e, centers_pos_y_e =  \
+        timeCentersToPositions(time_centers_e, pos_x, pos_y, field_ctr_x_e,
+                    field_ctr_y_e, velocityStart, gridSep)
 
 
-    #sig_max, sig_min, time_centers = findThetaMaxMin(syn_current, times, theta_freq)
-    sig_areas, time_centers =  getCurrentChargeTheta(syn_current, times, theta_freq)
-    # Recompute time_centers into positions
-    time_centers -= velocityStart # relative to the start of velocity modulation
-    centers_pos_i = np.array(time_centers // rat_dt, dtype=int)
-    centers_pos_x = pos_x[centers_pos_i]
-    centers_pos_y = pos_y[centers_pos_i]
-    dist_min_grids = []
-    for c_it in xrange(len(centers_pos_i)):
-        dist =  np.min(np.sqrt((centers_pos_x[c_it] - field_ctr_x)**2 +
-                (centers_pos_y[c_it] - field_ctr_y)**2))
-        dist_min_grids.append(dist)
-    dist_min_grids = np.array(dist_min_grids)
-    dist_th = np.where(dist_min_grids > gridSep/2)
-    dist_min_grids[dist_th] = gridSep - dist_min_grids[dist_th]
+    ## Charge dependent on distance from grid field
+    #figure()
+    #plot(dist_min_grids_e, sig_areas_e, 'o')
+    #xlabel('Distance from grid field centre (cm)')
+    #ylabel('Theta cycle synaptic charge (pC)')
+    ## mean, median
+    #dDistBins = 1
+    #distBins_e, sig_areas_dist_mean_e, sig_areas_dist_median_e = \
+    #        distanceMeanMedian(dDistBins, dist_min_grids_e, sig_areas_e)
 
-    # Charge dependent on distance from grid field
-    figure()
-    plot(dist_min_grids, sig_areas, 'o')
-    xlabel('Distance from grid field centre (cm)')
-    ylabel('Theta cycle synaptic charge (pC)')
-    # mean, median
+    #figure()
+    #subplot(2, 1, 1)
+    #plot(distBins_e, sig_areas_dist_mean_e)
+    #ylabel('Mean charge (pC)')
+    #subplot(2, 1, 2)
+    #plot(distBins_e, sig_areas_dist_median_e)
+    #ylabel('Median charge (pC)')
+    #xlabel('Distance from the centre of grid field (cm)')
+
+
+    # I neurons - distance from E grid field centers
+    sig_areas_i, time_centers_i = getCurrentChargeTheta(syn_current_i, times,
+            theta_freq)
+    # !!! dist. from E centers here !!!
+    dist_min_grids_i, centers_pos_x_i, centers_pos_y_i = \
+            timeCentersToPositions(time_centers_i, pos_x, pos_y, field_ctr_x_e,
+                    field_ctr_y_e, velocityStart, gridSep)
+
     dDistBins = 1
-    distBins = np.arange(-dDistBins, np.max(dist_min_grids) + dDistBins,
-            dDistBins)
-    sig_areas_dist_binned_i = np.digitize(dist_min_grids, distBins)
-    sig_areas_dist_mean   = np.ndarray(len(distBins), dtype=object)
-    sig_areas_dist_median = np.ndarray(len(distBins), dtype=object)
-    for it in range(len(distBins)):
-        sig_bin = sig_areas[np.where(sig_areas_dist_binned_i == it)]
-        sig_areas_dist_mean[it]   = np.mean(sig_bin)
-        sig_areas_dist_median[it] = np.median(sig_bin)
+    distBins_i, sig_areas_dist_mean_i, sig_areas_dist_median_i = \
+            distanceMeanMedian(dDistBins, dist_min_grids_i, sig_areas_i)
 
+    figure()
     subplot(2, 1, 1)
-    plot(distBins, sig_areas_dist_mean)
+    plot(distBins_i, sig_areas_dist_mean_i)
     ylabel('Mean charge (pC)')
     subplot(2, 1, 2)
-    plot(distBins, sig_areas_dist_median)
+    plot(distBins_i, sig_areas_dist_median_i)
     ylabel('Median charge (pC)')
     xlabel('Distance from the centre of grid field (cm)')
 
 
+    # I neuron, distance from I 'grid' field center
+    rateMap_i, xedges, yedges = SNSpatialRate2D(spikes_i, pos_x, pos_y, rat_dt,
+            arenaDiam, h)
+    field_ctr_x_i, field_ctr_y_i, segments_i = findGridCenters(rateMap_i, xedges,
+            yedges, getRateMapThreshold_i, rateThreshold_i, minFieldArea)
+
+    
+
+
+
+
+
+
+
+
+
+    # HDF5 export here
+
+
+
+
+
+
+    #figure()
+    #X, Y = np.meshgrid(xedges, yedges)
+    #pcolormesh(X, Y, segments_i)
+    #hold('on')
+    #plot(field_ctr_x_i, field_ctr_y_i, 'or')
+
+    #figure()
+    #pcolormesh(X, Y, rateMap_i)
+    #plot(field_ctr_x_i, field_ctr_y_i, 'or')
 
 
 
