@@ -34,7 +34,7 @@ EDDIE = True  # if eddie, submit on a cluster using qsub
 parameters = defaultParameters
 
 parameters['time']              = 1199.9e3  # ms
-parameters['ndumps']            = 20
+parameters['ndumps']            = 10
 
 parameters['placeT']            = 10e3      # ms
 
@@ -44,7 +44,7 @@ parameters['prefDirC_i']        = 10
 parameters['bumpCurrentSlope']  = 0.883     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
-startJobNum = 3200
+startJobNum = 3500
 numRepeat = 10
 
 # Workstation parameters
@@ -58,9 +58,10 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#        'bumpCurrentSlope'  : [0.873, 0.883, 0.983]}
-#ac.insertDict(iterparams, mult=False)
+iterparams = {
+    'Iplace'    :   [50, 100, 150, 200, 250]
+}
+ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
