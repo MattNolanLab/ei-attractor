@@ -42,9 +42,9 @@ parameters['prefDirC_e']        = 0
 parameters['prefDirC_i']        = 10
 
 parameters['bumpCurrentSlope']  = 0.883     # pA/(cm/s), !! this will depend on prefDirC !!
-parameters['gridSep']           = 70        # cm, grid field inter-peak distance
+#parameters['gridSep']           = 70        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
-startJobNum = 3580
+startJobNum = 3900
 numRepeat = 10
 
 # Workstation parameters
@@ -53,13 +53,14 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_inhibitory_modulation.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:30:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-    'Iplace'    :   [0]
+#    'Iplace'    :   [0]
+    'gridSep' : [50, 60]
 }
 ac.insertDict(iterparams, mult=False)
 
