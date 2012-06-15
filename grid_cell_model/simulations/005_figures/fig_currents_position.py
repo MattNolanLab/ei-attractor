@@ -23,6 +23,7 @@ import numpy as np
 
 from scipy.io                   import loadmat
 from scipy.ndimage.measurements import label
+from scipy                      import stats
 from matplotlib.pyplot          import *
 from tables                     import *
 
@@ -96,7 +97,7 @@ def getCurrentChargeTheta(sig, times, theta_freq):
     '''
     dt = times[1] - times[0]
     sig_sliced, time_centers = sliceArrayToThetaCycles(sig, times, theta_freq, removeFirst=5)
-    return np.trapz(sig_sliced, dx=dt, axis=1), time_centers
+    return np.trapz(sig_sliced, dx=dt, axis=1), time_centers, sig_sliced
 
 
 def getRateMapThreshold_e(rateMap, threshold):
@@ -217,7 +218,7 @@ for job_it in range(jobN):
     rateMap_e, xedges, yedges  = SNSpatialRate2D(spikes_e, pos_x, pos_y, rat_dt, arenaDiam, h)
     field_ctr_x_e, field_ctr_y_e, segments_e = findGridCenters(rateMap_e, xedges,
             yedges, getRateMapThreshold_e, rateThreshold_e, minFieldArea)
-    sig_areas_e, time_centers_e =  getCurrentChargeTheta(syn_current_e, times, theta_freq)
+    sig_areas_e, time_centers_e, sig_sliced_e =  getCurrentChargeTheta(syn_current_e, times, theta_freq)
     dist_min_grids_e, centers_pos_x_e, centers_pos_y_e =  \
         timeCentersToPositions(time_centers_e, pos_x, pos_y, field_ctr_x_e,
                     field_ctr_y_e, velocityStart, gridSep)
@@ -244,7 +245,7 @@ for job_it in range(jobN):
 
 
     # I neurons - distance from E grid field centers
-    sig_areas_i, time_centers_i = getCurrentChargeTheta(syn_current_i, times,
+    sig_areas_i, time_centers_i, sig_sliced_i = getCurrentChargeTheta(syn_current_i, times,
             theta_freq)
     # !!! dist. from E centers here !!!
     dist_min_grids_i, centers_pos_x_i, centers_pos_y_i = \
@@ -298,6 +299,14 @@ for job_it in range(jobN):
     h5file.close()
 
 
+# Stats
+slope_e, interc_e, r_e, p_e, stderr_e = stats.linregress(dist_min_grids_e,
+        sig_areas_e)
+print "r_e: " + str(r_e), "p_e: " + str(p_e)
+
+slope_i, interc_i, r_i, p_i, stderr_i = stats.linregress(dist_min_grids_i,
+        sig_areas_i)
+print "r_i: " + str(r_i), "p_i: " + str(p_i)
 
 
     #figure()

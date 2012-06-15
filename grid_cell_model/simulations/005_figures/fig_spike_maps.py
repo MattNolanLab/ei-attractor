@@ -28,7 +28,7 @@ from tables             import *
 from grid_cell_analysis import *
 
 
-jobRange = [3600, 3619]
+jobRange = [3580, 3589]
 trialNum = 0
 dumpNum = 8
 
@@ -39,7 +39,7 @@ rcParams['font.size'] = 14
 
 arenaDiam = 180.0     # cm
 h = 3.0
-corr_cutRmin = 30     # cm
+corr_cutRmin = 60     # cm
 
 # Neuron to extract spikes from
 neuronNum = 10
