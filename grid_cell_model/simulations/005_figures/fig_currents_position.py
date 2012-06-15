@@ -30,7 +30,7 @@ from grid_cell_analysis         import *
 from tools                      import *
 
 
-jobRange = [3100, 3100]
+jobRange = [3101, 3101]
 trialNum = 0
 dumpNum = 7
 
@@ -162,13 +162,15 @@ def distanceMeanMedian(dDistBins, dist_min_grids, sig_areas):
     distBins = np.arange(-dDistBins, np.max(dist_min_grids) + dDistBins,
             dDistBins)
     sig_areas_dist_binned_i = np.digitize(dist_min_grids, distBins)
-    sig_areas_dist_mean   = np.ndarray(len(distBins), dtype=object)
-    sig_areas_dist_median = np.ndarray(len(distBins), dtype=object)
+    sig_areas_dist_mean   = np.ndarray(len(distBins))
+    sig_areas_dist_median = np.ndarray(len(distBins))
+    sig_areas_dist_std    = np.ndarray(len(distBins))
     for it in range(len(distBins)):
         sig_bin = sig_areas[np.where(sig_areas_dist_binned_i == it)]
         sig_areas_dist_mean[it]   = np.mean(sig_bin)
         sig_areas_dist_median[it] = np.median(sig_bin)
-    return distBins, sig_areas_dist_mean, sig_areas_dist_median
+        sig_areas_dist_std[it]    = np.std(sig_bin)/np.sqrt(len(sig_bin))
+    return distBins[2:]-dDistBins, sig_areas_dist_mean[2:], sig_areas_dist_median[2:], sig_areas_dist_std[2:]
 
 
 for job_it in range(jobN):
@@ -184,10 +186,6 @@ for job_it in range(jobN):
         continue
 
     print "Data loaded..."
-
-    h5file = openFile(fileName + '_export.h5', mode = "w", title =
-            "Bump stability export figures")
-    
 
     Ne_x            = data['options']['Ne'][0][0][0][0]
     Ni_x            = data['options']['Ni'][0][0][0][0]
@@ -225,24 +223,24 @@ for job_it in range(jobN):
                     field_ctr_y_e, velocityStart, gridSep)
 
 
-    ## Charge dependent on distance from grid field
-    #figure()
-    #plot(dist_min_grids_e, sig_areas_e, 'o')
-    #xlabel('Distance from grid field centre (cm)')
-    #ylabel('Theta cycle synaptic charge (pC)')
-    ## mean, median
-    #dDistBins = 1
-    #distBins_e, sig_areas_dist_mean_e, sig_areas_dist_median_e = \
-    #        distanceMeanMedian(dDistBins, dist_min_grids_e, sig_areas_e)
+    # Charge dependent on distance from grid field
+    figure()
+    plot(dist_min_grids_e, sig_areas_e, 'o')
+    xlabel('Distance from grid field centre (cm)')
+    ylabel('Theta cycle synaptic charge (pC)')
+    # mean, median
+    dDistBins = 2
+    distBins_e, sig_areas_dist_mean_e, sig_areas_dist_median_e, sig_areas_dist_std_e = \
+            distanceMeanMedian(dDistBins, dist_min_grids_e, sig_areas_e)
 
-    #figure()
-    #subplot(2, 1, 1)
-    #plot(distBins_e, sig_areas_dist_mean_e)
-    #ylabel('Mean charge (pC)')
-    #subplot(2, 1, 2)
-    #plot(distBins_e, sig_areas_dist_median_e)
-    #ylabel('Median charge (pC)')
-    #xlabel('Distance from the centre of grid field (cm)')
+    figure()
+    subplot(2, 1, 1)
+    plot(distBins_e, sig_areas_dist_mean_e)
+    ylabel('Mean charge (pC)')
+    subplot(2, 1, 2)
+    plot(distBins_e, sig_areas_dist_median_e)
+    ylabel('Median charge (pC)')
+    xlabel('Distance from the centre of grid field (cm)')
 
 
     # I neurons - distance from E grid field centers
@@ -253,8 +251,8 @@ for job_it in range(jobN):
             timeCentersToPositions(time_centers_i, pos_x, pos_y, field_ctr_x_e,
                     field_ctr_y_e, velocityStart, gridSep)
 
-    dDistBins = 1
-    distBins_i, sig_areas_dist_mean_i, sig_areas_dist_median_i = \
+    dDistBins = 2
+    distBins_i, sig_areas_dist_mean_i, sig_areas_dist_median_i, sig_areas_dist_std_i = \
             distanceMeanMedian(dDistBins, dist_min_grids_i, sig_areas_i)
 
     figure()
@@ -267,25 +265,37 @@ for job_it in range(jobN):
     xlabel('Distance from the centre of grid field (cm)')
 
 
-    # I neuron, distance from I 'grid' field center
-    rateMap_i, xedges, yedges = SNSpatialRate2D(spikes_i, pos_x, pos_y, rat_dt,
-            arenaDiam, h)
-    field_ctr_x_i, field_ctr_y_i, segments_i = findGridCenters(rateMap_i, xedges,
-            yedges, getRateMapThreshold_i, rateThreshold_i, minFieldArea)
-
-    
-
-
-
-
-
-
-
+    ## I neuron, distance from I 'grid' field center
+    #rateMap_i, xedges, yedges = SNSpatialRate2D(spikes_i, pos_x, pos_y, rat_dt,
+    #        arenaDiam, h)
+    #field_ctr_x_i, field_ctr_y_i, segments_i = findGridCenters(rateMap_i, xedges,
+    #        yedges, getRateMapThreshold_i, rateThreshold_i, minFieldArea)
 
 
     # HDF5 export here
 
+    h5file = openFile(fileName + '_currents_position.h5', mode = "w")
 
+    h5file.createArray(h5file.root, 'dist_min_grids_e', dist_min_grids_e)
+    h5file.createArray(h5file.root, 'sig_areas_e', sig_areas_e)
+    h5file.createArray(h5file.root, 'distBins_e', distBins_e)
+    h5file.createArray(h5file.root, 'sig_areas_dist_mean_e',
+            sig_areas_dist_mean_e)
+    h5file.createArray(h5file.root, 'sig_areas_dist_median_e',
+            sig_areas_dist_median_e)
+    h5file.createArray(h5file.root, 'sig_areas_dist_std_e', sig_areas_dist_std_e)
+    
+
+    h5file.createArray(h5file.root, 'dist_min_grids_i', dist_min_grids_i)
+    h5file.createArray(h5file.root, 'sig_areas_i', sig_areas_i)
+    h5file.createArray(h5file.root, 'distBins_i', distBins_i)
+    h5file.createArray(h5file.root, 'sig_areas_dist_mean_i',
+            sig_areas_dist_mean_i)
+    h5file.createArray(h5file.root, 'sig_areas_dist_median_i',
+            sig_areas_dist_median_i)
+    h5file.createArray(h5file.root, 'sig_areas_dist_std_i', sig_areas_dist_std_i)
+    
+    h5file.close()
 
 
 
@@ -361,10 +371,4 @@ for job_it in range(jobN):
 #plot(pos_x, pos_y, color='white')
 
 
-
-#h5file.createArray(h5file.root, 'bumpPos_all', bumpPos_all)
-#h5file.createArray(h5file.root, 'bumpPos_times', times)
-#h5file.createArray(h5file.root, 'bumpPos_var', np.var(bumpPos_all, 0))
-#
-#h5file.close()
 
