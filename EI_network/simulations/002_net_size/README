@@ -1,6 +1,0 @@
-This simulation sets a single bump 2D attractor model and varies the network size in order to investigate the stability of the bump
-
-Here we are mainly looking at the stability of the bump over a specified period
-of time (its variance).
-
-
