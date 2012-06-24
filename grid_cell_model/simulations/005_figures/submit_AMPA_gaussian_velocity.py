@@ -50,7 +50,7 @@ parameters["g_uni_GABA_total"]  = 240       # nS
 
 parameters['theta_noise_sigma'] = 0         # pA
 
-parameters['Ivel']              = 40        # pA
+#parameters['Ivel']              = 40        # pA
 
 startJobNum = 4000
 numRepeat = 1
