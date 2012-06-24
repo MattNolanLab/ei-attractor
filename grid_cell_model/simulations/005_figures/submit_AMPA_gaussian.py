@@ -28,14 +28,14 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 10e3  # ms
+parameters['time']              = 1199.9e3  # ms
 #parameters['time']              = 3e3  # ms
-parameters['ndumps']            = 1
+parameters['ndumps']            = 10
 
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
@@ -55,8 +55,8 @@ parameters['gridSep']           = 70        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
 
-startJobNum =0
-numRepeat = 4
+startJobNum = 4100
+numRepeat = 10
 
 # Workstation parameters
 programName         = 'python2.6 simulation_AMPA_gaussian.py'
