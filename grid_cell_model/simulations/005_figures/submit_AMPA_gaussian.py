@@ -33,7 +33,7 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 6e3  # ms
+parameters['time']              = 10e3  # ms
 #parameters['time']              = 3e3  # ms
 parameters['ndumps']            = 1
 
@@ -50,8 +50,8 @@ parameters["g_uni_GABA_total"]  = 240       # nS
 parameters['placeT']            = 10e3      # ms
 parameters['placeDur']          = 100       # ms
 
-parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on prefDirC !!
-#parameters['gridSep']           = 40        # cm, grid field inter-peak distance
+parameters['bumpCurrentSlope']  = 1.108     # pA/(cm/s), !! this will depend on prefDirC !!
+parameters['gridSep']           = 70        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
 

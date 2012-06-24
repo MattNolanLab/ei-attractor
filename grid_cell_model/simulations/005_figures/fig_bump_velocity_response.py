@@ -27,13 +27,13 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [2040, 2055]]
+        [4000, 4010]]
 fitLine = [
         True]
 genRange = [0, 9]
 
 leg = (
-        '4 nrns')
+        '4 nrns',)
 
 stderr_th = 5   # neurons
 
@@ -116,7 +116,7 @@ for Ivel_types in range(len(jobRange_all)):
     
     
     # TODO: export this in simulations
-    Ivel = range(0, 160, 10)
+    Ivel = range(0, 110, 10)
     errorbar(Ivel, gen_avg, gen_stderr, fmt='o-')
     xlabel('Velocity current (pA)')
     ylabel('Bump velocity (neurons/s)')
