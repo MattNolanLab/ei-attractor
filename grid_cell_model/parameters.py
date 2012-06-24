@@ -49,8 +49,10 @@ def getOptParser():
     optParser.add_option("--theta_start_t",     type="float",  help="Start time of theta stimulation (ms)")
     optParser.add_option("--theta_freq",        type="float",  help="Theta oscillation frequency (Hz)")
 
+    optParser.add_option("--AMPA_gaussian",     type="float", help="If 1, AMPA profile will be gauusian, if 0, ring-like. Can be used to swap connectivity types")
     optParser.add_option("--pAMPA_mu",          type="float", help="AMPA profile center (normalised)")
     optParser.add_option("--pAMPA_sigma",       type="float", help="AMPA profile spread (normalised)")
+    optParser.add_option("--pGABA_mu",          type="float", help="GABA A profile center (normalised)")
     optParser.add_option("--pGABA_sigma",       type="float", help="GABA A profile spread (normalised)")
     optParser.add_option("--NMDA_amount",       type="float", help="NMDA portion relative to AMPA (%)")
 

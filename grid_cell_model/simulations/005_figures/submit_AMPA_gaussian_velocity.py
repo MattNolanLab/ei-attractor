@@ -1,7 +1,7 @@
 #
-#   submit_basic_grids.py
+#   submit_AMPA_gaussian_velocity.py
 #
-#   Submit job(s) to the cluster/workstation
+#   Submit job(s) to the cluster/workstation: velocity estimation theta+gamma
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,6 +19,8 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import numpy as np
+
 from default_params import defaultParameters
 from common         import *
 
@@ -28,45 +30,45 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 3e3  # ms
-#parameters['time']              = 3e3  # ms
-parameters['ndumps']            = 1
-
+parameters['time']              = 10e3      # ms
+parameters['ngenerations']      = 10
+parameters['velModulationType'] = 'excitatory'
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
-parameters['placeT']            = 10e3      # ms
-parameters['placeDur']          = 100       # ms
+parameters["Iext_e_const"]      = 400.0     # pA
 
-parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on prefDirC !!
-#parameters['gridSep']           = 40        # cm, grid field inter-peak distance
+parameters['AMPA_gaussian']     = 1         # bool
+parameters["g_AMPA_total"]      = 4200      # nS
+parameters["g_GABA_total"]      = 1200      # nS
+parameters["g_uni_GABA_total"]  = 240       # nS
+
 parameters['theta_noise_sigma'] = 0         # pA
 
+parameters['Ivel']              = 40        # pA
 
-startJobNum =0
+startJobNum = 4000
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 simulation_basic_grids.py'
+programName         = 'python2.6 simulation_AMPA_gaussian_velocity.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+eddie_scriptName    = 'eddie_submit.sh simulation_AMPA_gaussian_velocity.py'
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-##    'Iplace'    :   [50, 100, 150, 200, 250]
-#    'gridSep' : [50, 60]
-#}
-#ac.insertDict(iterparams, mult=False)
+iterparams = {
+        'Ivel'       : np.arange(0, 160, 10)}
+ac.insertDict(iterparams, mult=True)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

@@ -25,10 +25,7 @@ __all__ = ['defaultParameters']
 
 _defaultOutputDir = "output/"
 
-y_dim = np.sqrt(3)/2.
-pAMPA_mu = y_dim/2.
-pAMPA_sigma = 0.5/6
-pGABA_sigma = 0.5/6
+y_dim       = np.sqrt(3)/2.
 
 defaultParameters = {
         "Ne"                  :   68,
@@ -43,7 +40,9 @@ defaultParameters = {
 
         "pAMPA_mu"            :   y_dim/2.0,
         "pAMPA_sigma"         :   0.5/6,
+        "pGABA_mu"            :   y_dim/2.0,
         "pGABA_sigma"         :   0.5/6,
+        "AMPA_gaussian"       :   0,            # bool
         "prefDirC_e"          :   4.0,
         "prefDirC_i"          :   0.0,
         "arenaSize"           :   180.0,        # cm

@@ -1,7 +1,7 @@
 #
-#   submit_basic_grids.py
+#   submit_AMPA_gaussian.py
 #
-#   Submit job(s) to the cluster/workstation
+#   Submit job(s) to the cluster/workstation: A gaussian excitatory weight profile
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -33,12 +33,19 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 3e3  # ms
+parameters['time']              = 6e3  # ms
 #parameters['time']              = 3e3  # ms
 parameters['ndumps']            = 1
 
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
+
+parameters["Iext_e_const"]      = 400.0     # pA
+
+parameters['AMPA_gaussian']     = 1         # bool
+parameters["g_AMPA_total"]      = 4200      # nS
+parameters["g_GABA_total"]      = 1200      # nS
+parameters["g_uni_GABA_total"]  = 240       # nS
 
 parameters['placeT']            = 10e3      # ms
 parameters['placeDur']          = 100       # ms
@@ -49,22 +56,25 @@ parameters['theta_noise_sigma'] = 0         # pA
 
 
 startJobNum =0
-numRepeat = 1
+numRepeat = 4
 
 # Workstation parameters
-programName         = 'python2.6 simulation_basic_grids.py'
+programName         = 'python2.6 simulation_AMPA_gaussian.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids.py'
+eddie_scriptName    = 'eddie_submit.sh simulation_AMPA_gaussian.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
 #iterparams = {
-##    'Iplace'    :   [50, 100, 150, 200, 250]
+#    'Iplace'    :   [50, 100, 150, 200, 250]
 #    'gridSep' : [50, 60]
+#    'g_AMPA_total'  : [3600, 3800, 400, 4200]
+#    'Iext_e_const'  : [375, 400, 425, 450]
+#    'g_uni_GABA_total'  : [160, 200, 240, 280]
 #}
 #ac.insertDict(iterparams, mult=False)
 

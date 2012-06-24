@@ -180,7 +180,8 @@ class BrianGridCellNetwork(GridCellNetwork):
         # Weight matrices which are used in _divergentConnectXY() functions
         self._E_W = np.asarray(self.AMPA_conn.W)
 
-        self._centerSurroundConnection(self.no.pAMPA_mu, self.no.pAMPA_sigma, self.no.pGABA_sigma)
+        self._centerSurroundConnection(self.no.AMPA_gaussian, self.no.pAMPA_mu,
+                self.no.pAMPA_sigma, self.no.pGABA_mu, self.no.pGABA_sigma)
 
         # Now simply copy AMPA --> NMDA and GABA_conn1 --> GABA_conn2
         self.NMDA_conn.connect(self.E_pop, self.I_pop, self.AMPA_conn.W * .01 * self.no.NMDA_amount)

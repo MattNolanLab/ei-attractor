@@ -145,38 +145,43 @@ class GridCellNetwork(object):
         return np.min((d1, d2, d3, d4, d5, d6, d7), 0)
             
 
-    def _generate_pAMPA_twisted_torus(self, a, others, pAMPA_mu, pAMPA_sigma,
-            prefDir, prefDirC):
+    def _generateRinglikeWeights(self, a, others, mu, sigma, prefDir, prefDirC):
         '''
         Here we assume that X coordinates are normalised to <0, 1), and Y
         coordinates are normalised to <0, sqrt(3)/2)
         Y coordinates are twisted, i.e. X will have additional position shifts
         when determining minimum
         '''
-        prefDir = np.array(prefDir, dtype=float)
-        prefDir[0, 0] = 1. * prefDir[0, 0] * prefDirC / self.Ni_x
-        prefDir[0, 1] = 1. * prefDir[0, 1] * prefDirC / self.Ni_y * self.y_dim
+        prefDir = np.array(prefDir, dtype=float) * prefDirC
         d = self._remap_twisted_torus(a, others, prefDir)
-        return np.exp(-(d - pAMPA_mu)**2/2/pAMPA_sigma**2)
+        return np.exp(-(d - mu)**2/2/sigma**2)
 
 
-    def _generate_pGABA_twisted_torus(self, a, others, sigma, prefDir, prefDirC):
+    def _generateGaussianWeights(self, a, others, sigma, prefDir, prefDirC):
 
         #import pdb; pdb.set_trace()
-        prefDir = np.array(prefDir, dtype=float)
-        prefDir[0, 0] = 1. * prefDir[0, 0] * prefDirC / self.Ne_x
-        prefDir[0, 1] = 1. * prefDir[0, 1] * prefDirC / self.Ne_y * self.y_dim
+        prefDir = np.array(prefDir, dtype=float) * prefDirC
         d = self._remap_twisted_torus(a, others, prefDir)
         return np.exp(-d**2/2./sigma**2)
 
 
-    def _centerSurroundConnection(self, pAMPA_mu, pAMPA_sigma, pGABA_sigma):
+    def _centerSurroundConnection(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma, pGABA_mu, pGABA_sigma):
         '''
         Create a center-surround excitatory and inhibitory connections between
         both populations.
 
         The connections are remapped to [1.0, sqrt(3)/2], whether the topology
         is a twisted torus or just a regular torus.
+
+        AMPA_gaussian switches between two cases:
+            true    Each exciatory neuron has a 2D excitatory gaussian profile,
+                    while each inhibitory neuron has a ring-like profile
+                    pAMPA_mu, pAMPA_sigma, pGABA_sigma are used,
+                    pGABA_mu is discarded
+            false   Each excitatory neuron has a ring-like profile, while
+                    each inhibitory neuron has a gaussian profile.
+                    pAMPA_sigma, pGABA_mu, pGABA_sigma are used,
+                    pAMPA_mu is discarded
         '''
 
         g_AMPA_mean = self.no.g_AMPA_total / self.net_Ne
@@ -198,11 +203,20 @@ class GridCellNetwork(object):
                 x_e_norm = float(x) / self.Ne_x
 
                 a = np.array([[x_e_norm, y_e_norm]])
-                pd = getPreferredDirection(x, y)
-                self.prefDirs_e[it, :] = pd
-                tmp_templ = self._generate_pAMPA_twisted_torus(a, others_e,
-                        pAMPA_mu, pAMPA_sigma, np.array([[pd[0], pd[1]]]),
-                        self.no.prefDirC_e)
+                pd_e = getPreferredDirection(x, y)
+                self.prefDirs_e[it, :] = pd_e
+
+                pd_norm_e = np.ndarray((1, 2)) # normalise preferred dirs before sending them
+                pd_norm_e[0, 0] = 1. * pd_e[0] / self.Ni_x
+                pd_norm_e[0, 1] = 1. * pd_e[1] / self.Ni_y * self.y_dim
+                if AMPA_gaussian == 1:
+                    tmp_templ = self._generateGaussianWeights(a, others_e,
+                            pAMPA_sigma, pd_norm_e, self.no.prefDirC_e)
+                elif AMPA_gaussian == 0:
+                    tmp_templ = self._generateRinglikeWeights(a, others_e,
+                            pAMPA_mu, pAMPA_sigma, pd_norm_e, self.no.prefDirC_e)
+                else:
+                    raise Exception('AMPA_gaussian parameters must be 0 or 1')
 
                 self._divergentConnectEI(it, range(self.net_Ni),
                         tmp_templ*g_AMPA_mean)
@@ -221,10 +235,20 @@ class GridCellNetwork(object):
                 it = y*self.Ni_x + x
 
                 a = np.array([[x_i_norm, y_i_norm]])
-                pd = getPreferredDirection(x, y)
-                self.prefDirs_i[it, :] = pd
-                tmp_templ = self._generate_pGABA_twisted_torus(a, others_i,
-                        pGABA_sigma, [[pd[0], pd[1]]], self.no.prefDirC_i)
+                pd_i = getPreferredDirection(x, y)
+                self.prefDirs_i[it, :] = pd_i
+
+                pd_norm_i = np.ndarray((1, 2)) # normalise preferred dirs before sending them
+                pd_norm_i[0, 0] = 1. * pd_i[0] / self.Ne_x
+                pd_norm_i[0, 1] = 1. * pd_i[1] / self.Ne_y * self.y_dim
+                if AMPA_gaussian == 1:
+                    tmp_templ = self._generateRinglikeWeights(a, others_i,
+                            pGABA_mu, pGABA_sigma, pd_norm_i, self.no.prefDirC_i)
+                elif AMPA_gaussian == 0:
+                    tmp_templ = self._generateGaussianWeights(a, others_i,
+                            pGABA_sigma, pd_norm_i, self.no.prefDirC_i)
+                else:
+                    raise Exception('AMPA_gaussian parameters must be 0 or 1')
 
                 E_nid = (tmp_templ > conn_th).nonzero()[0]
                 self._divergentConnectIE(it, E_nid, self.B_GABA*g_GABA_mean*tmp_templ[E_nid])

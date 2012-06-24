@@ -1,8 +1,7 @@
 #
-#   simulation_basic_grids.py
+#   simulation_AMPA_gaussian.py
 #
-#   Main simulation run: grid fields with theta input and all the inhibition
-#   (for gamma) and place input.
+#   Main simulation run: AMPA (and NMDA) has a Gaussian output weight profile
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -63,11 +62,11 @@ ei_net.uniformInhibition()
 ei_net.setConstantCurrent()
 ei_net.setStartCurrent()
 ei_net.setThetaCurrentStimulation()
-ei_net.setPlaceCurrentInput()
+#ei_net.setPlaceCurrentInput()
 
 #const_v = [0.0, 1.0]
 #ei_net.setConstantVelocityCurrent_e(const_v)
-ei_net.setVelocityCurrentInput_e()
+#ei_net.setVelocityCurrentInput_e()
 
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
@@ -163,9 +162,10 @@ for trial_it in range(ei_net.no.ntrials):
         ax = subplot(211)
         plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
         ylabel('E synaptic current (pA)')
+        ylim([0, 3000])
         subplot(212, sharex=ax)
         plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
-        ylim([-1000, 0])
+        ylim([-1500, 0])
         xlabel('Time (s)')
         ylabel('I synaptic current (pA)')
         xlim(x_lim)

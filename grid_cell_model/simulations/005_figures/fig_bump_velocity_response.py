@@ -27,15 +27,12 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [1300, 1315],
-        [1320, 1335]]
+        [2040, 2055]]
 fitLine = [
-        True,
-        False]
+        True]
 genRange = [0, 9]
 
 leg = (
-        '3 nrns',
         '4 nrns')
 
 stderr_th = 5   # neurons
