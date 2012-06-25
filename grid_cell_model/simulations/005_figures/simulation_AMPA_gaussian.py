@@ -41,6 +41,7 @@ lg.basicConfig(level=lg.DEBUG)
 
 parser          = getOptParser()
 parser.add_option("--ndumps",  type="int",    help="Number of data output dumps during the simulation")
+parser.add_option("--stateRec_dt",  type="float",  help="State recording dt")
 
 (options, args) = parser.parse_args()
 options         = setOptionDictionary(parser, options)
@@ -74,6 +75,7 @@ print "Network setup time:",duration,"seconds"
 ################################################################################
 
 simulationClock = ei_net._getSimulationClock()
+stateRecClock   = Clock(dt=options.stateRec_dt*msecond)
 
 rec_all_spikes = False
 if rec_all_spikes:
@@ -90,12 +92,12 @@ state_record_i = [ei_net.Ni_x/2 - 1, ei_net.Ni_y/2*ei_net.Ni_x + ei_net.Ni_x/2 -
 spikeMon_e          = ExtendedSpikeMonitor(ei_net.E_pop[0:nrecSpike_e])
 spikeMon_i          = ExtendedSpikeMonitor(ei_net.I_pop[0:nrecSpike_i])
 
-stateMon_e          = RecentStateMonitor(ei_net.E_pop, 'vm',     duration=options.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
-stateMon_i          = RecentStateMonitor(ei_net.I_pop, 'vm',     duration=options.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
-stateMon_Iclamp_e   = RecentStateMonitor(ei_net.E_pop, 'Iclamp', duration=options.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
-stateMon_Iclamp_i   = RecentStateMonitor(ei_net.I_pop, 'Iclamp', duration=options.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
-stateMon_Iext_e     = RecentStateMonitor(ei_net.E_pop, 'Iext',   duration=options.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
-stateMon_Iext_i     = RecentStateMonitor(ei_net.I_pop, 'Iext',   duration=options.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
+stateMon_e          = RecentStateMonitor(ei_net.E_pop, 'vm',     duration=options.stateMonDur*ms,   record = state_record_e, clock=stateRecClock)
+stateMon_i          = RecentStateMonitor(ei_net.I_pop, 'vm',     duration=options.stateMonDur*ms,   record = state_record_i, clock=stateRecClock)
+stateMon_Iclamp_e   = RecentStateMonitor(ei_net.E_pop, 'Iclamp', duration=options.stateMonDur*ms,   record = state_record_e, clock=stateRecClock)
+stateMon_Iclamp_i   = RecentStateMonitor(ei_net.I_pop, 'Iclamp', duration=options.stateMonDur*ms,   record = state_record_i, clock=stateRecClock)
+stateMon_Iext_e     = RecentStateMonitor(ei_net.E_pop, 'Iext',   duration=options.stateMonDur*ms,   record = state_record_e, clock=stateRecClock)
+stateMon_Iext_i     = RecentStateMonitor(ei_net.I_pop, 'Iext',   duration=options.stateMonDur*ms,   record = state_record_i, clock=stateRecClock)
 
 ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
