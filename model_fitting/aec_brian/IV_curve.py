@@ -5,6 +5,37 @@ from scipy.optimize import fmin, leastsq
 
 pF = 1e-12
 
+def voltage_bins(V, binStart, binEnd, nbins):
+    '''
+    Picks indices of V that are within bin ranges.
+    Samples outside binStart and binEnd are discarded
+    '''
+    if binStart > binEnd:
+        raise Exception("binStart must be less than binEnd")
+    binCenters = np.linspace(binStart, binEnd, nbins+1)
+    binWidth = (binEnd - binStart)/nbins
+    Ibin = []
+    for c in binCenters:
+        Ibin.append((np.logical_and(V > c-binWidth/2, V <=
+            c+binWidth/2)).nonzero()[0]) 
+
+    return (binCenters, Ibin)
+    
+
+def findIcurveZeroCrossings(V, I):
+    '''
+    Take scatter data of V and I and find where they have left and right zero
+    crossings
+    '''
+    binStart = -80e-3
+    binEnd   = -35e-3
+    nbins    = 25
+    binCenters, bin_it = voltage_bins(V, binStart, binEnd, nbins)
+    # Find first and second zero crossings. If the curve is reasonably nice,
+    # we will find only two of them
+
+    
+
 class Kernels(object):
     ''' Structure to hold kernels'''
     def __init__(self, Kfull=None, Ke=None, Km=None):
@@ -38,13 +69,23 @@ class DynamicIVCurve(object):
 
     class Curve:
         def __init__(self, V, I, Istd, IN, C):
-            self.V = V
-            self.I = I
-            self.Istd = Istd
-            self.IN = IN
-            self.C = C
+            '''
+            V       V binned
+            I       I binned
+            Istd    Std. deviation of Ibins
+            IN      Number of points in each Ibins
+            C       Estimated membrane capacitance
+            '''
+            self.V      = V
+            self.I      = I
+            self.Istd   = Istd
+            self.IN     = IN
+            self.C      = C
 
     class ExpIaFParams:
+        '''
+        Parameters of an exp. IaF model fit
+        '''
         def __init__(self, C, taum, Em, dT, VT):
             self.C = C
             self.taum = taum
@@ -56,12 +97,14 @@ class DynamicIVCurve(object):
             return 1/self.taum*(self.Em - V + self.dT*np.exp((V - self.VT)/self.dT))
 
         def __repr__(self):
-            ret  = "C:    " + str(self.C*1e12) + " pF, "
-            ret += "taum: " + str(self.taum*1e3) + " ms, "
-            ret += "Em:   " + str(self.Em*1e3) + " mV, "
-            ret += "dT:   " + str(self.dT*1e3) + " mV, "
-            ret += "VT:   " + str(self.VT*1e3) + " mV, "
+            ret  = "C:    " + str(self.C*1e12) + " pF\n"
+            ret += "taum: " + str(self.taum*1e3) + " ms\n"
+            ret += "Em:   " + str(self.Em*1e3) + " mV\n"
+            ret += "dT:   " + str(self.dT*1e3) + " mV\n"
+            ret += "VT:   " + str(self.VT*1e3) + " mV\n"
             return ret
+
+    def binCurrent(self, Vm, Im, 
 
     def __init__(self, Iin, Vm, dV, dt, binStartV, binEndV, nbins, C=None):
         self.Iin = Iin
@@ -73,9 +116,11 @@ class DynamicIVCurve(object):
         self.dt = dt
         self._expFit = None
 
-        self.binCenters, self.binIds = self.voltage_bins(Vm, binStartV, binEndV, nbins)
+        # Estimate voltage bin range
+
+        self.binCenters, self.binIds = voltage_bins(Vm, binStartV, binEndV, nbins)
         
-        self.Cest_bin_id = 27
+        self.Cest_bin_id = 10
         if C is None:
             self.C0 = 300*pF
             self.Cest = self.findCapacitance(Iin[self.binIds[self.Cest_bin_id]],
@@ -93,33 +138,15 @@ class DynamicIVCurve(object):
             self.Istd[i]  = np.std(self.Im[self.binIds[i]])
             self.IN[i]    = len(self.binIds[i])
 
-        self.cur = DynamicIVCurve.Curve(self.binCenters, self.Imean, self.Istd, self.IN,
-                self.Cest)
+        self.cur = DynamicIVCurve.Curve(self.binCenters, self.Imean, self.Istd, self.IN, self.Cest)
 
 
-    def voltage_bins(self, V, binStart, binEnd, nbins):
-        '''
-        Picks indices of V that are within bin ranges.
-        Samples outside binStart and binEnd are discarded
-        '''
-        if binStart > binEnd:
-            raise Exception("binStart must be less than binEnd")
-        binCenters = np.linspace(binStart, binEnd, nbins+1)
-        binWidth = (binEnd - binStart)/nbins
-        Ibin = []
-        for c in binCenters:
-            Ibin.append((np.logical_and(V > c-binWidth/2, V <=
-                c+binWidth/2)).nonzero()[0]) 
-    
-        return (binCenters, Ibin)
-    
-    
     def findCapacitance(self, Iin, dVdt, C0):
         '''
         Estimate membrane capacitance, by using input current and dV/dt at a
         specific voltage value (set by the user, ideally somewhere near resting Vm)
         '''
-        return fmin(lambda Ce: np.var(Iin/Ce - dVdt), C0, xtol=0.00001)[0]
+        return fmin(lambda Ce: np.var(Iin/Ce - dVdt), C0)[0]
 
     def fitExponentialIaF(self):
         '''Fit an exponential integrate and fire model to the data'''
@@ -129,10 +156,14 @@ class DynamicIVCurve(object):
             dT0 = 2e-3
             VT0 = -55e-3
             x0 = np.array([taum0, Em0, dT0, VT0])
-            FV = -self.cur.I/self.cur.C
+            FV = -self.Im/self.cur.C
 
-            fun = lambda x: 1/x[0]*(x[1] - self.cur.V + x[2]*np.exp((self.cur.V -
-                x[3])/x[2])) - FV
+            Vrange_it   = np.logical_and(self.Vm >= self.binCenters[0], self.Vm <= self.binCenters[-1])
+            Vrange      = self.Vm[Vrange_it]
+            FV_range    = FV[Vrange_it]
+
+            fun = lambda x: 1/x[0]*(x[1] - Vrange + x[2]*np.exp((Vrange -
+                x[3])/x[2])) - FV_range
             xest, ierr  = leastsq(fun, x0, full_output=0)
             self._expFit = DynamicIVCurve.ExpIaFParams(C=self.cur.C, taum=xest[0], Em=xest[1], dT=xest[2], VT=xest[3])
             return self._expFit
