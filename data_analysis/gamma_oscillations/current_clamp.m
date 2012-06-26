@@ -16,13 +16,14 @@ sig_st = c003_Membrane_Voltage_2;
 sig_in = c002_Membrane_Voltage_1;
 
 
-figure('Position', [800 0 1000 600]);
+figure('Position', [800 0 800 480]);
 subplot(3,1,1, 'FontSize', fontSize);
 plot(times, sig_st*mV, 'r');
 %hold on;
 %xlabel('Time (s)');
 ylabel('V_m (mV)');
 xlim(x_lim);
+box off;
 
 % [spike_t spike_id] = spikeDetect(sig_st, times, spike_th);
 % plot(times(spike_id), sig_st(spike_id)*mV, 'ok');
@@ -32,6 +33,7 @@ subplot(3, 1, 2, 'FontSize', fontSize);
 plot(times, sig_in*mV, 'b');
 ylabel('V_m (mV)');
 xlim(x_lim);
+box off;
 
 
 subplot(3, 1, 3, 'FontSize', fontSize);
@@ -50,6 +52,7 @@ plot(POS*dt, R(:, 1), 'r', POS*dt, R(:, 2), 'b', 'LineWidth', 1);
 xlabel('Time (s)');
 ylabel('Firing rate (Hz)');
 xlim(x_lim);
+box off;
 
 set(gcf,'PaperPositionMode','auto');
 print('-depsc2', sprintf('%s/stellate_interneuron_firing_rate.eps', ...
