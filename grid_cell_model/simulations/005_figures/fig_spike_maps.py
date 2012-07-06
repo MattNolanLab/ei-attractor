@@ -28,9 +28,9 @@ from tables             import *
 from grid_cell_analysis import *
 
 
-jobRange = [3580, 3589]
+jobRange = [3200, 3209]
 trialNum = 0
-dumpNum = 8
+dumpNum = 18
 
 jobN = jobRange[1] - jobRange[0] + 1
 
@@ -39,7 +39,6 @@ rcParams['font.size'] = 14
 
 arenaDiam = 180.0     # cm
 h = 3.0
-corr_cutRmin = 60     # cm
 
 # Neuron to extract spikes from
 neuronNum = 10
@@ -73,6 +72,9 @@ for job_it in range(jobN):
         spikeTimes  = data['spikeCell_e'].ravel()
     if spikeType == 'inhibitory':
         spikeTimes  = data['spikeCell_i'].ravel()
+
+    gridSep         = data['options']['gridSep'][0][0][0][0]
+    corr_cutRmin    = gridSep / 2
 
     spikes = spikeTimes[neuronNum] - velocityStart*1e-3
     spikes = np.delete(spikes, np.nonzero(spikes < 0)[0])

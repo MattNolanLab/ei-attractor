@@ -33,20 +33,21 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 6e3   # ms
+parameters['time']              = 2e3   # ms
 parameters['theta_start_mon_t'] = 1e3   # ms
 
-#parameters['Iext_e_theta']      = 275    # pA
-#parameters['g_AMPA_total']      = 2000   # nS
-#parameters['g_GABA_total']      = 800   # nS
-#
-#parameters['Iext_e_const']      = 500       # pA
-#parameters['Iext_i_const']      = 200       # pA
+parameters['prefDirC_e']        = 0
+parameters['prefDirC_i']        = 0
 
-#parameters['EL_e_spread']       = 1     # mV
-#parameters['taum_i_spread']     = 1     # mV
-#parameters['EL_i_spread']       = 5     # mV
-parameters['theta_noise_sigma']  = 0     # pA
+parameters["Iext_e_const"]      = 400.0     # pA
+
+parameters['AMPA_gaussian']     = 1         # bool
+parameters["g_AMPA_total"]      = 4200      # nS
+parameters["g_GABA_total"]      = 1200      # nS
+parameters["g_uni_GABA_total"]  = 240       # nS
+
+parameters['theta_noise_sigma'] = 0         # pA
+
 
 startJobNum = 0
 numRepeat = 1

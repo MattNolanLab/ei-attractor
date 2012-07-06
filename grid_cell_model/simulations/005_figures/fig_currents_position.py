@@ -31,9 +31,9 @@ from grid_cell_analysis         import *
 from tools                      import *
 
 
-jobRange = [3101, 3101]
+jobRange = [4200, 4200]
 trialNum = 0
-dumpNum = 7
+dumpNum = 4
 
 jobN = jobRange[1] - jobRange[0] + 1
 
@@ -209,8 +209,19 @@ for job_it in range(jobN):
     times           = data['stateMon_times'].ravel()
     rec_dt          = data['options']['stateRec_dt'][0][0][0][0] * ms
 
-    syn_current_e   = data['stateMon_Iclamp_e_values'][0, :].ravel()/pA
-    syn_current_i   = data['stateMon_Iclamp_i_values'][0, :].ravel()/pA
+    syn_current_e_0   = data['stateMon_Iclamp_e_values'][0, :].ravel()/pA
+    syn_current_e_1   = data['stateMon_Iclamp_e_values'][:, 0].ravel()/pA
+    if len(syn_current_e_0) > len(syn_current_e_1):
+        syn_current_e = syn_current_e_0
+    else:
+        syn_current_e = syn_current_e_1
+
+    syn_current_i_0   = data['stateMon_Iclamp_i_values'][0, :].ravel()/pA
+    syn_current_i_1   = data['stateMon_Iclamp_i_values'][:, 0].ravel()/pA
+    if len(syn_current_i_0) > len(syn_current_i_1):
+        syn_current_i = syn_current_i_0
+    else:
+        syn_current_i = syn_current_i_1
 
 
     # Segment the rate map 
@@ -222,6 +233,16 @@ for job_it in range(jobN):
     dist_min_grids_e, centers_pos_x_e, centers_pos_y_e =  \
         timeCentersToPositions(time_centers_e, pos_x, pos_y, field_ctr_x_e,
                     field_ctr_y_e, velocityStart, gridSep)
+
+    figure()
+    X, Y = np.meshgrid(xedges, yedges)
+    pcolormesh(X, Y, segments_e)
+    hold('on')
+    plot(field_ctr_x_e, field_ctr_y_e, 'or')
+
+    figure()
+    pcolormesh(X, Y, rateMap_e)
+    plot(field_ctr_x_e, field_ctr_y_e, 'or')
 
 
     # Charge dependent on distance from grid field
@@ -308,16 +329,6 @@ slope_i, interc_i, r_i, p_i, stderr_i = stats.linregress(dist_min_grids_i,
         sig_areas_i)
 print "r_i: " + str(r_i), "p_i: " + str(p_i)
 
-
-    #figure()
-    #X, Y = np.meshgrid(xedges, yedges)
-    #pcolormesh(X, Y, segments_i)
-    #hold('on')
-    #plot(field_ctr_x_i, field_ctr_y_i, 'or')
-
-    #figure()
-    #pcolormesh(X, Y, rateMap_i)
-    #plot(field_ctr_x_i, field_ctr_y_i, 'or')
 
 
 
