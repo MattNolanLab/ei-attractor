@@ -20,6 +20,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import h5py
+import numpy as np
 
 __all__ = ['OutputDump']
 
@@ -42,26 +43,40 @@ class OutputDump(object):
 
         self.f = h5py.File(self.filename + '.h5', 'w')
 
-    def filename(self):
+    def hdf_filename(self):
         '''Output file name'''
         return self.f.filename
 
 
-    def saveDictionary(self, d, dict_name):
+    def saveDictionary(self, dict_name, d):
         '''
         Serialize a dictionary into the output file under a group name 'dict_name'.
         Each item in the dicionary must be an array type or string
         '''
         dict_grp = self.f.create_group(dict_name)
         for key, val in d.iteritems():
-            if val is not None:
+            try:
                 tmp = np.array(val)
                 dict_grp.create_dataset(str(key), tmp.shape, tmp.dtype)
                 dict_grp[str(key)][...] = tmp
+            except Exception as e:
+                print "Could not save a dictionary item '" + str(key) + "' to HDF"
+                #print "Exception message" + str(e)
 
     def saveArray(self, name, arr):
         '''Save an array to the output file, under name "name"'''
         self.f.create_dataset(name, data=arr)
+
+
+    def saveSpikes(self, grp_name, obj_arr):
+        '''
+        Save spike times for each neuron from an object array, into a separate
+        group grp_name. Each neuron will be labeled by its index conveted into
+        a string identifier
+        '''
+        spike_grp = self.f.create_group(grp_name)
+        for n_it in xrange(len(obj_arr)):
+            spike_grp.create_dataset(str(n_it), data=np.array(obj_arr[n_it]))
 
 
     def close(self, cleanPreviousDump=False):
@@ -77,4 +92,25 @@ class OutputDump(object):
         except:
             print "Couldn't remove previous dump file: " + rmFileName
 
+
+# Test this module
+if __name__ == "__main__":
+    output_dir = "."
+    filenamePrefix = ''
+    job_num = 1111
+    trial_it = 10
+    dump_it = 23
+    dict = {"Iext": 123, 'Ivel': 10e-3, 'none': None}
+    array1 = np.arange(1000)
+    array2 = np.arange(100) * 0.01
+
+    od = OutputDump(output_dir, filenamePrefix, job_num, trial_it, dump_it)
+    output_fname = od.filename
+
+    od.saveDictionary('options', dict)
+    od.saveArray('array1', array1)
+    od.saveArray('array2', array2)
+
+
+    od.close()
 

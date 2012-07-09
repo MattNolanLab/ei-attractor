@@ -33,40 +33,43 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 3e3  # ms
+parameters['time']              = 1199.9e3  # ms
 #parameters['time']              = 3e3  # ms
-parameters['ndumps']            = 1
+parameters['ndumps']            = 10
 
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
-parameters['placeT']            = 10e3      # ms
-parameters['placeDur']          = 100       # ms
+#parameters['placeT']            = 10e3      # ms
+parameters['placeDur']          = 125       # ms
 
 parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on prefDirC !!
 #parameters['gridSep']           = 40        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
+
+parameters['output_dir']        = 'output_local'
 
 
 startJobNum =0
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 simulation_basic_grids.py'
+programName         = 'python2.6 simulation_placeT.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+eddie_scriptName    = 'eddie_submit.sh simulation_placeT.py'
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=14:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-##    'Iplace'    :   [50, 100, 150, 200, 250]
-#    'gridSep' : [50, 60]
-#}
-#ac.insertDict(iterparams, mult=False)
+iterparams = {
+#    'Iplace'    :   [50, 100, 150, 200, 250]
+    'gridSep' : [50, 60]
+    'placeT'    :  [125, 250, 375, 500, 625,750, 875, 1e3, 2e3, 3e3, 4e3, 5e3, 6e3, 7e3, 8e3, 9e3, 10e3, 12e3, 14e3, 16e3, 18e3, 20e3, 30e3, 40e3, 50e3, 60e3, 120e3, 180e3, 240e3, 300e3]
+}
+ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

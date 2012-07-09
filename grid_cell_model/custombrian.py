@@ -85,7 +85,8 @@ class ExtendedSpikeMonitor(SpikeMonitor):
             P[t_it, 1] = np.dot(F[:, t_it], Y)
 
         return (np.angle(P)/2/np.pi*sheetSize, tsteps)
-        
+
+
 
 def matFormatSaver(fileName, items, do_compression=False):
     '''Saves either instances of StateMonitor or Spikemonitor, or objects
