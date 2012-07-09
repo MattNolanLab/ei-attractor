@@ -28,7 +28,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -44,14 +44,14 @@ parameters['prefDirC_i']        = 0
 parameters['placeDur']          = 125       # ms
 
 parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on prefDirC !!
-#parameters['gridSep']           = 40        # cm, grid field inter-peak distance
+parameters['gridSep']           = 60        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
-parameters['output_dir']        = 'output_local'
+parameters['output_dir']        = 'output'
 
 
-startJobNum =0
-numRepeat = 1
+startJobNum =100
+numRepeat = 5
 
 # Workstation parameters
 programName         = 'python2.6 simulation_placeT.py'
@@ -66,7 +66,7 @@ ac = ArgumentCreator(parameters)
 
 iterparams = {
 #    'Iplace'    :   [50, 100, 150, 200, 250]
-    'gridSep' : [50, 60]
+#    'gridSep' : [50, 60]
     'placeT'    :  [125, 250, 375, 500, 625,750, 875, 1e3, 2e3, 3e3, 4e3, 5e3, 6e3, 7e3, 8e3, 9e3, 10e3, 12e3, 14e3, 16e3, 18e3, 20e3, 30e3, 40e3, 50e3, 60e3, 120e3, 180e3, 240e3, 300e3]
 }
 ac.insertDict(iterparams, mult=False)

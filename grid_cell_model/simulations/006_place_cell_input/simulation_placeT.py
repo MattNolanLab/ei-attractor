@@ -30,7 +30,6 @@ from optparse   import OptionParser
 from parameters              import *
 from grid_cell_network_brian import *
 from custombrian             import *
-from hdf5_saver              import *
 
 import time
 import math
@@ -121,9 +120,8 @@ for trial_it in range(ei_net.no.ntrials):
         print "Simulation time:",duration,"seconds"
         
         
-        outputData = OutputDump(options.output_dir, options.fileNamePrefix,
-                options.job_num, trial_it, dump_it)
-        output_fname = outputData.filename
+        output_fname = "{0}/{1}job{2:04}_trial{3:04}_dump{4:03}".format(options.output_dir,
+                options.fileNamePrefix, options.job_num, trial_it, dump_it)
 
 
         #F_tstart = 0
