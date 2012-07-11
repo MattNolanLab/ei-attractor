@@ -63,6 +63,9 @@ def getOptParser():
     optParser.add_option("--Iplace",            type="float", help="Place cell current input (pA)")
     optParser.add_option("--placeT",            type="float", help="Place cell input repeat period (ms)")
     optParser.add_option("--placeDur",          type="float", help="Place cell input duration (ms)")
+    optParser.add_option("--thetaPlaceFreq",    type="float", help="Frequency of theta modulation of the place cell current input (Hz)")
+    optParser.add_option("--thetaPlacePhase",   type="float", help="Phase shift of the theta modulation of the place cell current (rad)")
+    optParser.add_option("--placeSigma",        type="float", help="Place cell input sigma (of the gaussian) (cm)")
 
     optParser.add_option("--taum_e",            type="float",  help="Mean of excitatory neuron membrane time constant (ms)")
     optParser.add_option("--taum_e_spread",     type="float",  help="Spread of --taum_e (see --taum_i_spread option) (ms)")

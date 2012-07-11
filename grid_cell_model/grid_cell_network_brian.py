@@ -55,6 +55,8 @@ class BrianGridCellNetwork(GridCellNetwork):
     def __init__(self, neuronOpts, simulationOpts):
         GridCellNetwork.__init__(self, neuronOpts, simulationOpts)
 
+        self._ratVelocitiesLoaded = False
+
         self._simulationClock = Clock(dt = self.no.sim_dt * msecond)
         self._ratClock = Clock(self.no.rat_dt*msecond)
 
@@ -66,7 +68,8 @@ class BrianGridCellNetwork(GridCellNetwork):
         # Place cell input settings
         self._gridsep = self.no.gridSep
         self._gridCenter = [0, 0]
-        self._pc = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize, self._gridsep, self._gridCenter)
+        self._pc = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize,
+                self._gridsep, self._gridCenter, self.no.placeSigma)
         # Has place cell input been set up?
         self._placeCellInputOn = False
 
@@ -276,6 +279,9 @@ class BrianGridCellNetwork(GridCellNetwork):
 
 
     def _loadRatVelocities(self):
+        if self._ratVelocitiesLoaded:
+            return
+
         self.ratData    = loadmat(self.no.ratVelFName)
         self.rat_dt     = self.ratData['dt'][0][0]
 
@@ -301,6 +307,8 @@ class BrianGridCellNetwork(GridCellNetwork):
         print "max rat_Ivel_y: "  + str(np.max(np.abs(self.rat_Ivel_y))/pA) + " pA"
 
         self.Ivel_it   = 0
+
+        self._ratVelocitiesLoaded = True
 
 
     def setVelocityCurrentInput_e(self):
@@ -400,6 +408,49 @@ class BrianGridCellNetwork(GridCellNetwork):
                 #print "  Place cell input off; t = " + str(self._simulationClock.t)
         
         self.net.add(switchPlaceInputOn)
+
+
+    def setPlaceThetaCurrentInput(self, const=False):
+        '''
+        Place cell input which is more over modulated by theta. The gaussian
+        envelope is also multiplied by the theta modulator
+        We define the frequency and phase of the theta place cell input
+        thetaPlaceFreq
+        thetaPlacePhase
+        
+        If const == True, the input points to (0, 0) and doesn't change over time
+        '''
+        self._placeCellInputOn = True
+        self._loadRatVelocities()
+
+        self._thetaPlaceInOmega = 2*np.pi*self.no.thetaPlaceFreq*Hz
+
+        if const == False:
+            @network_operation(self._simulationClock)
+            def placeThetaCurrentStimulationVar():
+                if self._simulationClock.t >= self.no.theta_start_t*msecond:
+                    theta_envelope = .5 + .5 * np.sin(self._thetaPlaceInOmega * self._simulationClock.t -
+                            np.pi/2. - self.no.thetaPlacePhase)
+                    self.E_pop.Iext_place = self._pc.getSheetInput(self.rat_pos_x[self.Ivel_it],
+                            self.rat_pos_y[self.Ivel_it]).ravel() * self.no.Iplace * \
+                            theta_envelope * pA
+                else:
+                    self.E_pop.Iext_place = 0.0
+            
+            self.net.add(placeThetaCurrentStimulationVar)
+        else:
+            @network_operation(self._simulationClock)
+            def placeThetaCurrentStimulationConst():
+                if self._simulationClock.t >= self.no.theta_start_t*msecond:
+                    theta_envelope = .5 + .5 * np.sin(self._thetaPlaceInOmega * self._simulationClock.t -
+                            np.pi/2. - self.no.thetaPlacePhase)
+                    self.E_pop.Iext_place = self._pc.getSheetInput(0, 0).ravel() * self.no.Iplace * \
+                            theta_envelope * pA
+                else:
+                    self.E_pop.Iext_place = 0.0
+            
+            self.net.add(placeThetaCurrentStimulationConst)
+
 
 
 

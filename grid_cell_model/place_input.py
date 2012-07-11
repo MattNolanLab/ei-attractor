@@ -35,11 +35,13 @@ class PlaceCellInput(object):
 
     def __init__(self, Ne_x, Ne_y, arenaSize, gridsep, gridCenter, fieldSigma=7):
         '''
-        Create a place cell input template.
+        Create a place cell input template. Here we work with a twisted torus
+        topology with dimensions X x Y = 1 x sqrt(3)/2.
         Ne_x/y      size of the neural sheet
-        gridSep     Distance between grid field peaks
-        gridCenter  Offset of the center of grid fields
-        fieldSigma  Sigma of the gaussians used to produce the template
+        arenaSize   Arena diameter (cm)
+        gridSep     Distance between grid field peaks (cm)
+        gridCenter  Offset of the center of grid fields (cm)
+        fieldSigma  Sigma of the gaussians used to produce the template (cm)
         '''
 
         self.sigma = fieldSigma
@@ -51,7 +53,7 @@ class PlaceCellInput(object):
 
         self.gridsep_x = gridsep
         self.gridCenter = gridCenter
-        self.gridsep_y = self.gridsep_x * np.sqrt(3);
+        self.gridsep_y = self.gridsep_x * np.sqrt(3) # Assuming twisted torus
         self.dx = self.gridsep_x/Ne_x;
 
         #import pdb; pdb.set_trace()
