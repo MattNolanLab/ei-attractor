@@ -227,15 +227,21 @@ class BrianGridCellNetwork(GridCellNetwork):
         self.I_pop.Iext_const = self.no.Iext_i_const * pA
 
 
-    def setStartCurrent(self):
+    def setStartCurrent(self, force_pos=None):
         self._startCurrentClock = Clock(dt=50*ms)
 
+        if force_pos is not None:
+            self.rat_pos_x = [force_pos[0]]
+            self.rat_pos_y = [force_pos[1]]
+            self.Ivel_it = 0
         # If no one has overwritten the velocity inputs, init the positions from [0.0, 0.0]
         # Otherwise they will be set by the place cell input methods
-        if not self._placeCellInputOn:
+        elif not self._placeCellInputOn:
             self.rat_pos_x = [0.0]
             self.rat_pos_y = [0.0]
             self.Ivel_it = 0
+        else:
+            pass
 
         @network_operation(self._startCurrentClock)
         def startCurrentFun():
@@ -421,11 +427,10 @@ class BrianGridCellNetwork(GridCellNetwork):
         If const == True, the input points to (0, 0) and doesn't change over time
         '''
         self._placeCellInputOn = True
-        self._loadRatVelocities()
-
         self._thetaPlaceInOmega = 2*np.pi*self.no.thetaPlaceFreq*Hz
 
         if const == False:
+            self._loadRatVelocities()
             @network_operation(self._simulationClock)
             def placeThetaCurrentStimulationVar():
                 if self._simulationClock.t >= self.no.theta_start_t*msecond:

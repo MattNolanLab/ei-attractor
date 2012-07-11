@@ -47,19 +47,19 @@ parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on 
 parameters['gridSep']           = 60        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
-parameters['output_dir']        = 'output_local'
+parameters['output_dir']        = 'output'
 
 
 startJobNum =0
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 simulation_placeTheta.py'
+programName         = 'nice python2.6 simulation_placeThetaDrift.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_placeTheta.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=14:00:00 -pe memory-2G 2"
+eddie_scriptName    = 'eddie_submit.sh simulation_placeThetaDrift.py'
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:40:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
