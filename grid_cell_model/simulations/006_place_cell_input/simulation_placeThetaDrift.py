@@ -97,12 +97,12 @@ stateMon_Iclamp_i   = RecentStateMonitor(ei_net.I_pop, 'Iclamp',     duration=op
 stateMon_Iext_e     = RecentStateMonitor(ei_net.E_pop, 'Iext',       duration=options.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
 stateMon_Iext_i     = RecentStateMonitor(ei_net.I_pop, 'Iext',       duration=options.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
 #stateMon_Iplace_e   = RecentStateMonitor(ei_net.E_pop, 'Iext_place', duration=options.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
-stateMon_Iplace_e   = RecentStateMonitor(ei_net.E_pop, 'Iext_place', duration=options.stateMonDur*ms,   record = range(0, ei_net.net_Ne, 40), clock=simulationClock)
+#stateMon_Iplace_e   = RecentStateMonitor(ei_net.E_pop, 'Iext_place', duration=options.stateMonDur*ms,   record = range(0, ei_net.net_Ne, 40), clock=simulationClock)
 
 ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
 ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
-ei_net.net.add(stateMon_Iplace_e)
+#ei_net.net.add(stateMon_Iplace_e)
 
 
 #x_lim = [options.time-0.5, options.time]
@@ -131,73 +131,73 @@ for trial_it in range(ei_net.no.ntrials):
         F_dt = 0.02
         F_winLen = 0.25
         Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
-        Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
+        #Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
 
 
-        # plot firing rates
-        figure(figsize=figSize)
-        subplot(211)
-        T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
-        pcolormesh(T, FR, Fe)
-        ylabel('E Neuron no.')
-        colorbar()
-        subplot(212)
-        T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
-        pcolormesh(T, FR, Fi)
-        xlabel('Time (s)')
-        ylabel('I Neuron no.')
-        colorbar()
-        savefig(output_fname + '_firing_rate_e.png')
+        ## plot firing rates
+        #figure(figsize=figSize)
+        #subplot(211)
+        #T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
+        #pcolormesh(T, FR, Fe)
+        #ylabel('E Neuron no.')
+        #colorbar()
+        #subplot(212)
+        #T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
+        #pcolormesh(T, FR, Fi)
+        #xlabel('Time (s)')
+        #ylabel('I Neuron no.')
+        #colorbar()
+        #savefig(output_fname + '_firing_rate_e.png')
 
-        figure()
-        ax = subplot(211)
-        plot(stateMon_e.times, stateMon_e.values[:, 0:2]/mV)
-        ylabel('E membrane potential (mV)')
-        subplot(212, sharex=ax)
-        plot(stateMon_i.times, stateMon_i.values[:, 0:2]/mV)
-        xlabel('Time (s)')
-        ylabel('I membrane potential (mV)')
-        xlim(x_lim)
-        savefig(output_fname + '_Vm.pdf')
-        
-        
-        figure()
-        ax = subplot(211)
-        plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
-        ylabel('E synaptic current (pA)')
-        subplot(212, sharex=ax)
-        plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
-        ylim([-1000, 0])
-        xlabel('Time (s)')
-        ylabel('I synaptic current (pA)')
-        xlim(x_lim)
-        savefig(output_fname + '_Isyn.pdf')
-        
-        figure()
-        ax = subplot(211)
-        plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[:, 1]/pA)
-        ylabel('E external current (pA)')
-        subplot(212, sharex=ax)
-        plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[:, 0]/pA)
-        xlabel('Time (s)')
-        ylabel('I external current (pA)')
-        xlim(x_lim)
-        savefig(output_fname + '_Iext.pdf')
+        #figure()
+        #ax = subplot(211)
+        #plot(stateMon_e.times, stateMon_e.values[:, 0:2]/mV)
+        #ylabel('E membrane potential (mV)')
+        #subplot(212, sharex=ax)
+        #plot(stateMon_i.times, stateMon_i.values[:, 0:2]/mV)
+        #xlabel('Time (s)')
+        #ylabel('I membrane potential (mV)')
+        #xlim(x_lim)
+        #savefig(output_fname + '_Vm.pdf')
+        #
+        #
+        #figure()
+        #ax = subplot(211)
+        #plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
+        #ylabel('E synaptic current (pA)')
+        #subplot(212, sharex=ax)
+        #plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
+        #ylim([-1000, 0])
+        #xlabel('Time (s)')
+        #ylabel('I synaptic current (pA)')
+        #xlim(x_lim)
+        #savefig(output_fname + '_Isyn.pdf')
+        #
+        #figure()
+        #ax = subplot(211)
+        #plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[:, 1]/pA)
+        #ylabel('E external current (pA)')
+        #subplot(212, sharex=ax)
+        #plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[:, 0]/pA)
+        #xlabel('Time (s)')
+        #ylabel('I external current (pA)')
+        #xlim(x_lim)
+        #savefig(output_fname + '_Iext.pdf')
     
-        figure()
-        plot(stateMon_Iplace_e.times, -stateMon_Iplace_e.values[:, :]/pA)
-        ylabel('E place cell current (pA)')
-        xlabel('Time (s)')
-        xlim(x_lim)
-        savefig(output_fname + '_Iplace_e.pdf')
+        ##figure()
+        ##plot(stateMon_Iplace_e.times, -stateMon_Iplace_e.values[:, :]/pA)
+        ##ylabel('E place cell current (pA)')
+        ##xlabel('Time (s)')
+        ##xlim(x_lim)
+        ##savefig(output_fname + '_Iplace_e.pdf')
     
-        figure()
-        pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
-        xlabel('E neuron no.')
-        ylabel('E neuron no.')
-        colorbar()
-        axis('equal')
-        savefig(output_fname + '_firing_snapshot_e.png')
+        #figure()
+        #pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
+        #xlabel('E neuron no.')
+        #ylabel('E neuron no.')
+        #colorbar()
+        #axis('equal')
+        #savefig(output_fname + '_firing_snapshot_e.png')
 
 
         # Print a plot of bump position
@@ -215,11 +215,11 @@ for trial_it in range(ei_net.no.ntrials):
 
         
         
-        outData = ei_net.getRatData()
+        outData = {}
         #outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
-        #outData['bumpPos'] = pos
-        #outData['bumpPos_times'] = bumpPos_times
+        outData['bumpPos'] = pos
+        outData['bumpPos_times'] = bumpPos_times
 
         #outData['Fe'] = Fe
         #outData['Fe_t'] = Fe_t
@@ -227,13 +227,13 @@ for trial_it in range(ei_net.no.ntrials):
         outData['spikeCell_e']              = spikeMon_e.aspikes[0:200]
         outData['spikeCell_i']              = spikeMon_i.aspikes[0:50]
         outData['options']                  = options._einet_optdict
-        outData['velocityStart']            = options.theta_start_t
+        #outData['velocityStart']            = options.theta_start_t
 
-        outData['stateMon_times']           = stateMon_Iclamp_e.times
-        outData['stateMon_Iclamp_e_values'] = stateMon_Iclamp_e.values
-        outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
-        outData['stateMon_e_values']        = stateMon_e.values
-        outData['stateMon_i_values']        = stateMon_i.values
+        #outData['stateMon_times']           = stateMon_Iclamp_e.times
+        #outData['stateMon_Iclamp_e_values'] = stateMon_Iclamp_e.values
+        #outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
+        #outData['stateMon_e_values']        = stateMon_e.values
+        #outData['stateMon_i_values']        = stateMon_i.values
         
         savemat(output_fname + '_output.mat', outData, do_compression=False)
 

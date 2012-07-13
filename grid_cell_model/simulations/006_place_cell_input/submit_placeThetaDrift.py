@@ -28,20 +28,19 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-#parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 2e3  # ms
+parameters['time']              = 30e3  # ms
+#parameters['time']              = 1e3  # ms
 parameters['ndumps']            = 1
-
-parameters['prefDirC_e']        = 4
-parameters['prefDirC_i']        = 0
 
 parameters['thetaPlaceFreq']    = 8 # Hz
 parameters['thetaPlacePhase']   = 0 # rad
+
+#parameters['Iplace']            = 40 # pA
 
 parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 60        # cm, grid field inter-peak distance
@@ -50,8 +49,8 @@ parameters['theta_noise_sigma'] = 0         # pA
 parameters['output_dir']        = 'output'
 
 
-startJobNum =0
-numRepeat = 1
+startJobNum =1000
+numRepeat = 20
 
 # Workstation parameters
 programName         = 'nice python2.6 simulation_placeThetaDrift.py'
@@ -59,14 +58,14 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_placeThetaDrift.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:40:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:50:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-    'Iplace'    :   range(0, 250, 20)
-#    'gridSep' : [50, 60]
+    'Iplace'    :   range(0, 260, 10)
+    #'gridSep' : [50, 60]
 }
 ac.insertDict(iterparams, mult=False)
 
