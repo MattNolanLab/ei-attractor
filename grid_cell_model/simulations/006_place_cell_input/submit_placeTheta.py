@@ -28,19 +28,19 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-#parameters['time']              = 30e3  # ms
-parameters['time']              = 20e3  # ms
-parameters['ndumps']            = 1
+parameters['time']              = 1199.9e3  # ms
+#parameters['time']              = 2e3  # ms
+parameters['ndumps']            = 10
 
 parameters['thetaPlaceFreq']    = 8 # Hz
 parameters['thetaPlacePhase']   = 0 # rad
 
-parameters['Iplace']            = 10 # pA
+#parameters['Iplace']            = 10 # pA
 
 parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 60        # cm, grid field inter-peak distance
@@ -48,8 +48,8 @@ parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['output_dir']        = 'output'
 
-startJobNum =0
-numRepeat = 1
+startJobNum = 2000
+numRepeat = 10
 
 # Workstation parameters
 programName         = 'python2.6 simulation_placeTheta.py'
@@ -62,11 +62,11 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#    'Iplace'    :   range(0, 250, 20)
-##    'gridSep' : [50, 60]
-#}
-#ac.insertDict(iterparams, mult=False)
+iterparams = {
+    'Iplace'    :   range(0, 50, 10)
+#    'gridSep' : [50, 60]
+}
+ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
