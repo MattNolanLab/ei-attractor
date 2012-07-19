@@ -18,6 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import numpy as np
 
 from default_params import defaultParameters
 from common         import *
@@ -38,9 +39,9 @@ parameters['time']              = 1199.9e3  # ms
 parameters['ndumps']            = 10
 
 parameters['thetaPlaceFreq']    = 8 # Hz
-parameters['thetaPlacePhase']   = 0 # rad
+#parameters['thetaPlacePhase']   = 0 # rad
 
-#parameters['Iplace']            = 10 # pA
+parameters['Iplace']            = 10 # pA
 
 parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 60        # cm, grid field inter-peak distance
@@ -48,7 +49,7 @@ parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['output_dir']        = 'output'
 
-startJobNum = 2000
+startJobNum = 2100
 numRepeat = 10
 
 # Workstation parameters
@@ -63,7 +64,8 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-    'Iplace'    :   range(0, 50, 10)
+    "thetaPlacePhase" : np.arange(0, np.pi+np.pi/10, np.pi/10)
+#    'Iplace'    :   range(0, 50, 10)
 #    'gridSep' : [50, 60]
 }
 ac.insertDict(iterparams, mult=False)
