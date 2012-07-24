@@ -46,6 +46,8 @@ parameters['stateMonDuration']  = 10e3       # ms
 
 parameters['E_GABA_A']          = -60
 
+#parameters['Ivel']              = 40         # pA
+
 startJobNum = 5000
 numRepeat = 1
 
