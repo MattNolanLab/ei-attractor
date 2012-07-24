@@ -48,6 +48,7 @@ defaultParameters = {
         "arenaSize"           :   180.0,        # cm
         "Iplace"              :   250.0,        # pA
         "placeDur"            :    100,         # ms
+        "placeSigma"          :      7,         # cm (CHECK)
 
         "NMDA_amount"         :   2.0,          # %
 

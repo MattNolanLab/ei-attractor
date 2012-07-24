@@ -28,6 +28,8 @@ from scipy.signal                import correlate2d
 from scipy.ndimage.interpolation import rotate
 from matplotlib.pyplot           import *
 
+__all__ = ['gaussianFilter', 'extractSpikePositions2D', 'plotSpikes2D', 'SNSpatialRate2D']
+
 
 def gaussianFilter(X, sigma):
     '''Simple Gaussian function'''
