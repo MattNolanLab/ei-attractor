@@ -47,7 +47,8 @@ parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on 
 #parameters['gridSep']           = 40        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
-#parameters['E_GABA_A']          = -55
+parameters['E_GABA_A']          = -60
+#parameters['g_GABA_total']      = 2160      # nS
 
 
 startJobNum =0
@@ -65,7 +66,8 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-    'E_GABA_A'  :   [-70, -65, -60, -55]
+    'g_GABA_total'  :  np.arange(1.0, 2.125, 0.125)*defaultParameters['g_GABA_total']
+#    'E_GABA_A'  :   [-70, -65, -60, -55]
 #    'Iplace'    :   [50, 100, 150, 200, 250]
 #    'gridSep' : [50, 60]
 }
