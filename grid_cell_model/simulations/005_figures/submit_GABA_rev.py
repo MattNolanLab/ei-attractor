@@ -33,7 +33,7 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 3e3  # ms
+parameters['time']              = 10e3  # ms
 #parameters['time']              = 3e3  # ms
 parameters['ndumps']            = 1
 
@@ -48,11 +48,11 @@ parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on 
 parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['E_GABA_A']          = -60
-#parameters['g_GABA_total']      = 2160      # nS
+parameters['g_GABA_total']      = 3240      # nS
 
 
-startJobNum =0
-numRepeat = 1
+startJobNum =50
+numRepeat = 4
 
 # Workstation parameters
 programName         = 'python2.6 simulation_GABA_rev.py'
@@ -65,13 +65,13 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-iterparams = {
-    'g_GABA_total'  :  np.arange(1.0, 2.125, 0.125)*defaultParameters['g_GABA_total']
+#iterparams = {
+#    'g_GABA_total'  :  np.arange(1.0, 2.125, 0.125)*defaultParameters['g_GABA_total']
 #    'E_GABA_A'  :   [-70, -65, -60, -55]
 #    'Iplace'    :   [50, 100, 150, 200, 250]
 #    'gridSep' : [50, 60]
-}
-ac.insertDict(iterparams, mult=False)
+#}
+#ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
