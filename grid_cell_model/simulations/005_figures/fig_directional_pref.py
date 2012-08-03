@@ -28,9 +28,9 @@ from tables             import *
 from grid_cell_analysis import *
 
 
-jobNum = 200
+jobNum = 3100
 trialNum = 0
-dumpNum = 19
+dumpNum = 7
 
 
 rcParams['font.size'] = 14
@@ -45,6 +45,10 @@ spikeType = 'excitatory'
 winLen = 0.5 # s
 tend = 1200 #s
 binWidth = 6.0/360.0 * 2*np.pi
+
+directionalN_start = 68   # Total number of resulting directional vectors plotted
+directionalN_end   = 87
+directionalRange = range(0, 20) + range(68, 88)
 
 
 dirName = "output/"
@@ -139,8 +143,27 @@ tight_layout()
 
 savefig(fileName + '_dir_tuning.pdf')
 
+
+figure()
+subplot(1, 1, 1, polar=True)
 # Now do all the things for some of the neurons in the population (e.g. first 20)
 # and only plot the resultant average directional vector
+for n_it in directionalRange:
+    print("Vector no. " + str(n_it))
+    spikes = spikeTimes[n_it] - velocityStart*1e-3
+    spikes = np.delete(spikes, np.nonzero(spikes < 0)[0])
+    
+    rate, rate_t = SNFiringRate(spikes, tend, rat_dt, winLen)
+    angles, angle_t, avg_spd = motionDirection(pos_x, pos_y, rat_dt, tend, winLen)
 
+    rates_mean, bin_angles, rates_count = binRates(rate, angles, binWidth, rat_dt)
+    md_angle, md_r = meanDirectionVector(bin_angles, rates_mean)
+
+    annotate("", xytext=(0.0,0.0), xy=(md_angle, md_r), arrowprops=dict(facecolor='black',
+        width=1, headwidth=6, frac=0.2))
+
+    ylim([0, 0.5])
+
+savefig(fileName + '_dir_tuning_cells.pdf')
 
 show()
