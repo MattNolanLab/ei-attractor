@@ -45,11 +45,11 @@ parameters['theta_noise_sigma'] = 0          # pA
 parameters['stateMonDuration']  = 10e3       # ms
 
 parameters['E_GABA_A']          = -60
-parameters['g_GABA_total']      = 3240      # nS
+parameters['g_GABA_total']      = 4320      # nS
 
 #parameters['Ivel']              = 40         # pA
 
-startJobNum = 5100
+startJobNum = 5200
 numRepeat = 1
 
 # Workstation parameters
