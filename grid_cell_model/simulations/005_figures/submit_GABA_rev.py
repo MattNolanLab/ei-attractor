@@ -48,7 +48,7 @@ parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on 
 parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['E_GABA_A']          = -60
-parameters['g_GABA_total']      = 3240      # nS
+#parameters['g_GABA_total']      = 3240      # nS
 
 
 startJobNum =50
@@ -65,13 +65,13 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#    'g_GABA_total'  :  np.arange(1.0, 2.125, 0.125)*defaultParameters['g_GABA_total']
+iterparams = {
+    'g_GABA_total'  :  np.arange(1.0, 2.125, 0.125)*defaultParameters['g_GABA_total']
 #    'E_GABA_A'  :   [-70, -65, -60, -55]
 #    'Iplace'    :   [50, 100, 150, 200, 250]
 #    'gridSep' : [50, 60]
-#}
-#ac.insertDict(iterparams, mult=False)
+}
+ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
