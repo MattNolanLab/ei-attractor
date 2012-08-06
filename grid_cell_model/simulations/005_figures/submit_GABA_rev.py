@@ -18,6 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import numpy as np
 
 from default_params import defaultParameters
 from common         import *
@@ -28,14 +29,14 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 10e3  # ms
+parameters['time']              = 1199.9e3  # ms
 #parameters['time']              = 3e3  # ms
-parameters['ndumps']            = 1
+parameters['ndumps']            = 10
 
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
@@ -43,16 +44,16 @@ parameters['prefDirC_i']        = 0
 parameters['placeT']            = 10e3      # ms
 parameters['placeDur']          = 100       # ms
 
-parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on prefDirC !!
-#parameters['gridSep']           = 40        # cm, grid field inter-peak distance
+parameters['bumpCurrentSlope']  = 0.96      # pA/(cm/s), !! this will depend on prefDirC !!
+parameters['gridSep']           = 60        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['E_GABA_A']          = -60
-#parameters['g_GABA_total']      = 3240      # nS
+parameters['g_GABA_total']      = 4320      # nS
 
 
-startJobNum =50
-numRepeat = 4
+startJobNum =5300
+numRepeat = 10
 
 # Workstation parameters
 programName         = 'python2.6 simulation_GABA_rev.py'
@@ -60,18 +61,18 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_GABA_rev.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=14:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-iterparams = {
-    'g_GABA_total'  :  np.arange(1.0, 2.125, 0.125)*defaultParameters['g_GABA_total']
+#iterparams = {
+#    'g_GABA_total'  :  np.arange(1.0, 2.125, 0.125)*defaultParameters['g_GABA_total']
 #    'E_GABA_A'  :   [-70, -65, -60, -55]
 #    'Iplace'    :   [50, 100, 150, 200, 250]
 #    'gridSep' : [50, 60]
-}
-ac.insertDict(iterparams, mult=False)
+#}
+#ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
