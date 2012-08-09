@@ -39,7 +39,14 @@ class BrianGridCellNetwork(GridCellNetwork):
     def _initStates(self):
         # Initialize membrane potential randomly
         self.E_pop.vm       = (self.no.EL_e + (self.no.Vt_e-self.no.EL_e) * rand(len(self.E_pop))) * mV
+        self.E_pop.gi1      = 0.0
+        self.E_pop.gi2      = 0.0
+        self.E_pop.g_ahp    = 0.0
+
         self.I_pop.vm       = (self.no.EL_i + (self.no.Vt_i-self.no.EL_i) * rand(len(self.I_pop))) * mV
+        self.I_pop.ge       = 0.0
+        self.I_pop.g_ad     = 0.0
+        self.I_pop.gNMDA    = 0.0
 
 
     def _initCellularProperties(self):
@@ -50,23 +57,25 @@ class BrianGridCellNetwork(GridCellNetwork):
 
         self.I_pop.tau_ad   = (self.no.ad_tau_i_mean + self.no.ad_tau_i_std * randn(len(self.I_pop.tau_ad))) * ms
 
+    def _initClocks(self):
+        for clk in self._clocks:
+            clk.reinit()
 
     def reinit(self):
-        self.net.reinit(states=True)
+        self.net.reinit(states=False)
         self._initStates()
+        self._initClocks()
 
     def __init__(self, neuronOpts, simulationOpts):
         GridCellNetwork.__init__(self, neuronOpts, simulationOpts)
 
         self._ratVelocitiesLoaded = False
 
+        self._clocks = []
         self._simulationClock = Clock(dt = self.no.sim_dt * msecond)
         self._ratClock = Clock(self.no.rat_dt*msecond)
-
-        self._spikeMonitors_e = {}
-        self._spikeMonitors_i = {}
-        self._stateMonitors_e = {}
-        self._stateMonitors_i = {}
+        self._clocks.append(self._simulationClock)
+        self._clocks.append(self._ratClock)
 
         # Place cell input settings
         self._gridsep = self.no.gridSep
@@ -248,6 +257,7 @@ class BrianGridCellNetwork(GridCellNetwork):
 
     def setStartCurrent(self, force_pos=None):
         self._startCurrentClock = Clock(dt=50*ms)
+        self._clocks.append(self._startCurrentClock)
 
         if force_pos is not None:
             self.rat_pos_x = [force_pos[0]]
@@ -439,6 +449,7 @@ class BrianGridCellNetwork(GridCellNetwork):
 
     def setPlaceCurrentInput(self):
         self._placeClock  = Clock(self.no.placeDur*msecond)
+        self._clocks.append(self._placeClock)
         self._placeCellInputOn = True
 
         self._loadRatVelocities()

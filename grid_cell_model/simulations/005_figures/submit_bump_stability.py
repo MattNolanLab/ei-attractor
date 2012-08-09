@@ -28,20 +28,21 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 20e3      # ms
-parameters['ngenerations']      = 2
+parameters['time']              = 30e3      # ms
+parameters['ngenerations']      = 1
+parameters['ntrials']           = 20
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
 parameters['theta_noise_sigma'] = 0         # pA
 
-startJobNum = 0
-numRepeat = 2
+startJobNum = 7000
+numRepeat = 20
 
 # Workstation parameters
 programName         = 'nice python2.6 simulation_bump_stability.py'
@@ -49,7 +50,7 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_bump_stability.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=07:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
