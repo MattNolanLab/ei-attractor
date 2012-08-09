@@ -1,7 +1,7 @@
 #
-#   submit_bump_stability.py
+#   submit_pharma.py
 #
-#   Submit job(s) to the cluster/workstation: bump stability
+#   Submit job(s) to the cluster/workstation.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -33,30 +33,35 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 20e3      # ms
-parameters['ngenerations']      = 2
+parameters['time']              = 3e3  # ms
+#parameters['time']              = 3e3  # ms
+parameters['ndumps']            = 1
+
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
 parameters['theta_noise_sigma'] = 0         # pA
 
-startJobNum = 0
-numRepeat = 2
+
+startJobNum =0
+numRepeat = 1
 
 # Workstation parameters
-programName         = 'nice python2.6 simulation_bump_stability.py'
+programName         = 'python2.6 simulation_pharma.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_bump_stability.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe memory-2G 2"
+eddie_scriptName    = 'eddie_submit.sh simulation_pharma.py'
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
 #iterparams = {
-#        'Ivel'       : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]}
-#ac.insertDict(iterparams, mult=True)
+##    'Iplace'    :   [50, 100, 150, 200, 250]
+#    'gridSep' : [50, 60]
+#}
+#ac.insertDict(iterparams, mult=False)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

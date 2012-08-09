@@ -98,44 +98,51 @@ for gen_it in range(options.ngenerations):
     ################################################################################
     #                              Main cycle
     ################################################################################
-    print "Simulation running..."
-    start_time=time.time()
-    
-    ei_net.net.run(options.time*msecond, report='stdout')
-    duration=time.time()-start_time
-    print "Simulation time:",duration,"seconds"
-    
-    
-    output_fname = "{0}/{1}job{2:04}_gen{3:04}".format(options.output_dir,
-            options.fileNamePrefix, options.job_num, gen_it)
-    
+    for trial_it in range(ei_net.no.ntrials):
+        print "Starting trial no. " + str(trial_it) + "..."
+        print "Simulation running..."
+        start_time=time.time()
+        
+        ei_net.net.run(options.time*msecond, report='stdout')
+        duration=time.time()-start_time
+        print "Simulation time:",duration,"seconds"
+        
+        
+        output_fname = "{0}/{1}job{2:04}_gen{3:04}_trial{3:04}".format(options.output_dir,
+                options.fileNamePrefix, options.job_num, gen_it, trial_it)
+        
 
-    # Print a plot of bump position
-    F_dt = 0.02
-    F_winLen = 0.25
-    (pos, bumpPos_times) = spikeMon_e.torusPopulationVector([ei_net.Ne_x,
-        ei_net.Ne_y], options.theta_start_t*1e-3, options.time*1e-3, F_dt, F_winLen)
-    figure(figsize=figSize)
-    plot(bumpPos_times, pos)
-    xlabel('Time (s)')
-    ylabel('Bump position (neurons)')
-    ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
-    
-    savefig(output_fname + '_bump_position.pdf')
+        # Print a plot of bump position
+        F_dt = 0.02
+        F_winLen = 0.25
+        (pos, bumpPos_times) = spikeMon_e.torusPopulationVector([ei_net.Ne_x,
+            ei_net.Ne_y], options.theta_start_t*1e-3, options.time*1e-3, F_dt, F_winLen)
+        figure(figsize=figSize)
+        plot(bumpPos_times, pos)
+        xlabel('Time (s)')
+        ylabel('Bump position (neurons)')
+        ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
+        
+        savefig(output_fname + '_bump_position.pdf')
 
-    
-    outData = {}
-    outData['bumpPos']       = pos
-    outData['bumpPos_times'] = bumpPos_times
-    outData['options']       = options._einet_optdict
-    outData['velocityStart'] = options.theta_start_t
-    savemat(output_fname + '_output.mat', outData, do_compression=True)
+        
+        outData = {}
+        outData['bumpPos']       = pos
+        outData['bumpPos_times'] = bumpPos_times
+        outData['options']       = options._einet_optdict
+        outData['velocityStart'] = options.theta_start_t
+        savemat(output_fname + '_output.mat', outData, do_compression=True)
+
+        print "End of trial no. " + str(trial_it) + "..."
+        print 
+
+        ei_net.reinit()
+    #                            End main cycle
+    ################################################################################
 
 
     print "End of generation no. " + str(gen_it) + "..."
     print 
-#                            End main cycle
-################################################################################
 
 total_time = time.time()-total_start_t
 print "Overall time: ", total_time, " seconds"

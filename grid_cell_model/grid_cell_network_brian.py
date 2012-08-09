@@ -41,12 +41,15 @@ class BrianGridCellNetwork(GridCellNetwork):
         self.E_pop.vm       = (self.no.EL_e + (self.no.Vt_e-self.no.EL_e) * rand(len(self.E_pop))) * mV
         self.I_pop.vm       = (self.no.EL_i + (self.no.Vt_i-self.no.EL_i) * rand(len(self.I_pop))) * mV
 
+
+    def _initCellularProperties(self):
         self.E_pop.EL       = self.uniformDistrib(self.no.EL_e,   self.no.EL_e_spread,   len(self.E_pop)) * mV
         self.E_pop.taum     = self.uniformDistrib(self.no.taum_e, self.no.taum_e_spread, len(self.E_pop)) * ms
         self.I_pop.EL       = self.uniformDistrib(self.no.EL_i,   self.no.EL_i_spread,   len(self.I_pop)) * mV
         self.I_pop.taum     = self.uniformDistrib(self.no.taum_i, self.no.taum_i_spread, len(self.I_pop)) * ms
 
         self.I_pop.tau_ad   = (self.no.ad_tau_i_mean + self.no.ad_tau_i_std * randn(len(self.I_pop.tau_ad))) * ms
+
 
     def reinit(self):
         self.net.reinit(states=True)
@@ -193,6 +196,7 @@ class BrianGridCellNetwork(GridCellNetwork):
         self.net.add(self.AMPA_conn, self.NMDA_conn, self.GABA_conn1, self.GABA_conn2)
 
         self._initStates()
+        self._initCellularProperties()
 
 
     def uniformInhibition(self):
@@ -223,8 +227,23 @@ class BrianGridCellNetwork(GridCellNetwork):
     #                     External sources definitions
     ############################################################################ 
     def setConstantCurrent(self):
+        '''
+        Constant uniform excitatory drive. All the populations will receive this
+        current throughout the simulation, given by:
+          Iext_e_const  E population
+          Iext_i_const  I population
+        '''
         self.E_pop.Iext_const = self.no.Iext_e_const * pA
         self.I_pop.Iext_const = self.no.Iext_i_const * pA
+
+
+    def setConstantGaussianCurrent(self):
+        '''
+        The constant current will be modulated by a Gaussian with spread sigma,
+        in normalised units (normalised against the X size of the twisted torus).
+        The Gaussian current is implemented by providing an extra multiplier into
+        the external current sources of the model (where appropriate)
+        '''
 
 
     def setStartCurrent(self, force_pos=None):
@@ -281,6 +300,33 @@ class BrianGridCellNetwork(GridCellNetwork):
                 self.I_pop.Iext_theta = 0.0
 
         self.net.add(thetaStimulationFun)
+
+    #def setGaussianThetaCurrent(self):
+    #    '''
+    #    Theta current external stimulation, but multiplicatively modulated
+    #    by a Gaussian function
+    #    '''
+    #    self.stim_omega = 2*np.pi*self.no.theta_freq*Hz
+    #    self.stim_e_A  = self.no.Iext_e_theta/2 * pA
+    #    self.stim_i_A  = self.no.Iext_i_theta/2 * pA
+    #    self.gaussianMultiplicator_e = 
+
+    #    @network_operation(self._simulationClock)
+    #    def thetaStimulationFun():
+    #        global place_flag
+    #        global place_I
+    #        if self._simulationClock.t < self.no.theta_start_t*msecond:
+    #            self.E_pop.Iext_theta = 2 * self.stim_e_A
+    #            self.I_pop.Iext_theta = 2 * self.stim_i_A
+    #        elif self._simulationClock.t >= self.no.theta_start_t*msecond:
+    #            ph = self.stim_omega*self._simulationClock.t
+    #            self.E_pop.Iext_theta = self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2) + self.no.theta_noise_sigma*np.random.randn(self.net_Ne)*pA
+    #            self.I_pop.Iext_theta = self.stim_i_A + self.stim_i_A*np.sin(ph - np.pi/2) + self.no.theta_noise_sigma*np.random.randn(self.net_Ni)*pA
+    #        else:
+    #            self.E_pop.Iext_theta = 0.0
+    #            self.I_pop.Iext_theta = 0.0
+
+    #    self.net.add(thetaStimulationFun)
 
 
 

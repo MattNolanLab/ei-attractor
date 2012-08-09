@@ -27,7 +27,7 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [5100, 5115]]
+        [5200, 5215]]
 fitLine = [
         True]
 genRange = [0, 9]
@@ -130,7 +130,7 @@ for Ivel_types in range(len(jobRange_all)):
         #    if gen_stderr[it] > stderr_th:
         #        break
         #    it += 1
-        it = 10
+        it = 11
         line, slope = getLineFit(gen_avg[0:it])
         slope = slope/(Ivel[1] - Ivel[0])
         plot(Ivel[0:it], line)
