@@ -66,6 +66,28 @@ class BrianGridCellNetwork(GridCellNetwork):
         self._initStates()
         self._initClocks()
 
+
+    def setGaussianIextEnv(self):
+        if self.no.sigmaIextGaussian is None:
+            return 1.0, 1.0
+
+        # E cells, distance normalised
+        X_e, Y_e = np.meshgrid(range(self.Ne_x), range(self.Ne_y))
+        X_e = (X_e - self.Ne_x/2.0) / self.Ne_x
+        Y_e = (Y_e - self.Ne_y/2.0) / self.Ne_x
+        d2_e = X_e**2 + Y_e**2
+        env_e = (np.exp(d2_e / 2.0 / self.no.sigmaIextGaussian)).ravel()
+
+        # I cells
+        X_i, Y_i = np.meshgrid(range(self.Ni_x), range(self.Ni_y))
+        X_i = (X_i - self.Ni_x/2.0) / self.Ni_x
+        Y_i = (Y_i - self.Ni_y/2.0) / self.Ni_x
+        d2_i = X_i**2 + Y_i**2
+        env_i = (np.exp(d2_i / 2.0 / self.no.sigmaIextGaussian)).ravel()
+
+        return env_e, env_i
+
+
     def __init__(self, neuronOpts, simulationOpts):
         GridCellNetwork.__init__(self, neuronOpts, simulationOpts)
 
@@ -84,6 +106,9 @@ class BrianGridCellNetwork(GridCellNetwork):
                 self._gridsep, self._gridCenter, self.no.placeSigma)
         # Has place cell input been set up?
         self._placeCellInputOn = False
+
+        # Set up the Gaussian envelope
+        self.gaussianEnv_e, self.gaussianEnv_i = self.setGaussianIextEnv()
 
 
         tau1_GABA = self.no.tau_GABA_A_fall
@@ -277,7 +302,7 @@ class BrianGridCellNetwork(GridCellNetwork):
             if self._simulationClock.t < self.no.Iext_start_dur*msecond:
                 #self.E_pop.Iext_start = self._pc.getSheetInput(0.0, 0.0).ravel() * self.no.Iext_start * pA
                 self.E_pop.Iext_start = self._pc.getSheetInput(self.rat_pos_x[self.Ivel_it],
-                        self.rat_pos_y[self.Ivel_it]).ravel() * self.no.Iext_start * pA
+                        self.rat_pos_y[self.Ivel_it]).ravel() * self.gaussianEnv_e * self.no.Iext_start * pA
                 print "Bump initialisation..."
             else:
                 self.E_pop.Iext_start = 0.0
@@ -311,32 +336,31 @@ class BrianGridCellNetwork(GridCellNetwork):
 
         self.net.add(thetaStimulationFun)
 
-    #def setGaussianThetaCurrent(self):
-    #    '''
-    #    Theta current external stimulation, but multiplicatively modulated
-    #    by a Gaussian function
-    #    '''
-    #    self.stim_omega = 2*np.pi*self.no.theta_freq*Hz
-    #    self.stim_e_A  = self.no.Iext_e_theta/2 * pA
-    #    self.stim_i_A  = self.no.Iext_i_theta/2 * pA
-    #    self.gaussianMultiplicator_e = 
+    def setGaussianThetaCurrent(self):
+        '''
+        Theta current external stimulation, but multiplicatively modulated
+        by a Gaussian function
+        '''
+        self.stim_omega = 2*np.pi*self.no.theta_freq*Hz
+        self.stim_e_A  = self.no.Iext_e_theta/2 * pA
+        self.stim_i_A  = self.no.Iext_i_theta/2 * pA
 
-    #    @network_operation(self._simulationClock)
-    #    def thetaStimulationFun():
-    #        global place_flag
-    #        global place_I
-    #        if self._simulationClock.t < self.no.theta_start_t*msecond:
-    #            self.E_pop.Iext_theta = 2 * self.stim_e_A
-    #            self.I_pop.Iext_theta = 2 * self.stim_i_A
-    #        elif self._simulationClock.t >= self.no.theta_start_t*msecond:
-    #            ph = self.stim_omega*self._simulationClock.t
-    #            self.E_pop.Iext_theta = self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2) + self.no.theta_noise_sigma*np.random.randn(self.net_Ne)*pA
-    #            self.I_pop.Iext_theta = self.stim_i_A + self.stim_i_A*np.sin(ph - np.pi/2) + self.no.theta_noise_sigma*np.random.randn(self.net_Ni)*pA
-    #        else:
-    #            self.E_pop.Iext_theta = 0.0
-    #            self.I_pop.Iext_theta = 0.0
+        @network_operation(self._simulationClock)
+        def thetaStimulationFun():
+            global place_flag
+            global place_I
+            if self._simulationClock.t < self.no.theta_start_t*msecond:
+                self.E_pop.Iext_theta = 2 * self.stim_e_A
+                self.I_pop.Iext_theta = 2 * self.stim_i_A
+            elif self._simulationClock.t >= self.no.theta_start_t*msecond:
+                ph = self.stim_omega*self._simulationClock.t
+                self.E_pop.Iext_theta = (self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2)) * self.gaussianEnv_e + self.no.theta_noise_sigma*np.random.randn(self.net_Ne)*pA
+                self.I_pop.Iext_theta = (self.stim_i_A + self.stim_i_A*np.sin(ph - np.pi/2)) * self.gaussianEnv_i + self.no.theta_noise_sigma*np.random.randn(self.net_Ni)*pA
+            else:
+                self.E_pop.Iext_theta = 0.0
+                self.I_pop.Iext_theta = 0.0
 
-    #    self.net.add(thetaStimulationFun)
+        self.net.add(thetaStimulationFun)
 
 
 

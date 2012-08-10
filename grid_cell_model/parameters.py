@@ -46,6 +46,7 @@ def getOptParser():
     optParser.add_option("--Iext_start_dur",    type="float",  help="Start current duration (ms)")
     optParser.add_option("--Iext_e_theta",      type="float",  help="Theta E external current aplitude (pA)")
     optParser.add_option("--Iext_i_theta",      type="float",  help="Theta I external current aplitude (pA)")
+    optParser.add_option("--sigmaIextGaussian", type="float",  help="Sigma of the gaussian envelope of the external current. If not specified, the envelope is const=1.0 everywhere. Applies to both E and I cells and is normalised to <0, 1>")
     optParser.add_option("--theta_start_t",     type="float",  help="Start time of theta stimulation (ms)")
     optParser.add_option("--theta_freq",        type="float",  help="Theta oscillation frequency (Hz)")
 

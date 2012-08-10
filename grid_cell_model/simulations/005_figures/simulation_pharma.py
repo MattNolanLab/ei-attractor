@@ -60,13 +60,12 @@ options.ndim = 'twisted_torus'
 ei_net = BrianGridCellNetwork(options, simulationOpts=None)
 ei_net.uniformInhibition()
 ei_net.setConstantCurrent()
-ei_net.setStartCurrent()
-ei_net.setThetaCurrentStimulation()
-ei_net.setPlaceCurrentInput()
+#ei_net.setStartCurrent()
+ei_net.setGaussianThetaCurrent()
 
 #const_v = [0.0, 1.0]
 #ei_net.setConstantVelocityCurrent_e(const_v)
-ei_net.setVelocityCurrentInput_e()
+#ei_net.setVelocityCurrentInput_e()
 
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
@@ -204,7 +203,7 @@ for trial_it in range(ei_net.no.ntrials):
         savefig(output_fname + '_bump_position.pdf')
 
         
-        outData = ei_net.getRatData()
+        outData = {}
         #outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
         #outData['bumpPos'] = pos

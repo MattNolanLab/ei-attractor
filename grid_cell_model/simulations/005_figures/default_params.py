@@ -58,6 +58,7 @@ defaultParameters = {
         "Iext_start_dur"      :   100.0,        # ms
         "Iext_e_theta"        :   375.0,        # pA
         "Iext_i_theta"        :   25.0,         # pA
+        "sigmaIextGaussian"   :     0.5,        # Normalised to <0, 1>
         "theta_start_t"       :   0.5e3,        # ms
         "theta_freq"          :   8,            # Hz
 
