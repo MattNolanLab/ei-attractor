@@ -171,10 +171,10 @@ for trial_it in range(ei_net.no.ntrials):
         
         figure()
         ax = subplot(211)
-        plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[:, 1]/pA)
+        plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[:, 0:2]/pA)
         ylabel('E external current (pA)')
         subplot(212, sharex=ax)
-        plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[:, 0]/pA)
+        plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[:, 0:2]/pA)
         xlabel('Time (s)')
         ylabel('I external current (pA)')
         xlim(x_lim)
@@ -187,6 +187,14 @@ for trial_it in range(ei_net.no.ntrials):
         colorbar()
         axis('equal')
         savefig(output_fname + '_firing_snapshot_e.png')
+
+        figure()
+        pcolormesh(np.reshape(Fi[:, len(Fi_t)/2], (ei_net.Ni_y, ei_net.Ni_x)))
+        xlabel('I neuron no.')
+        ylabel('I neuron no.')
+        colorbar()
+        axis('equal')
+        savefig(output_fname + '_firing_snapshot_i.png')
 
 
         # Print a plot of bump position

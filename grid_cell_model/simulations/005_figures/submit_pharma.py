@@ -18,6 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import numpy as np
 
 from default_params import defaultParameters
 from common         import *
@@ -33,20 +34,24 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 1e3  # ms
+parameters['time']              = 1.5e3  # ms
 #parameters['time']              = 3e3  # ms
 parameters['ndumps']            = 1
 
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
-parameters['sigmaIextGaussian'] = 1.0
+parameters['sigmaIextGaussian'] = 0.5/6
 
 #parameters['bumpCurrentSlope']  = 1.0       # Not used here!
 parameters['theta_noise_sigma'] = 0         # pA
 
-parameters['Iext_e_theta']      = 500.0     # pA
-parameters['Iext_i_theta']      = 100.0     # pA
+#parameters['Iext_e_theta']      = 500.0     # pA
+parameters['Iext_i_theta']      = 50.0     # pA
+
+parameters['g_AMPA_total']      = 0.0
+#parameters['g_GABA_total']      = 0.0
+#parameters['g_uni_GABA_total']  = 0.0
 
 
 startJobNum =0
@@ -66,7 +71,9 @@ ac = ArgumentCreator(parameters)
 iterparams = {
 #    'Iplace'    :   [50, 100, 150, 200, 250]
 #    'gridSep' : [50, 60]
-    'sigmaIextGaussian' : [0.25, 0.5,  0.75, 1.0]
+    'sigmaIextGaussian' : np.array([0.25, 0.5, 0.75, 1.0])/6.0
+#    'Iext_i_theta'  :   [50, 100, 150, 200]
+#    'Iext_e_theta'  : [600, 650, 700, 750]
 }
 ac.insertDict(iterparams, mult=False)
 

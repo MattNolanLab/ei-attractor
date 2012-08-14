@@ -73,17 +73,17 @@ class BrianGridCellNetwork(GridCellNetwork):
 
         # E cells, distance normalised
         X_e, Y_e = np.meshgrid(range(self.Ne_x), range(self.Ne_y))
-        X_e = (X_e - self.Ne_x/2.0) / self.Ne_x
-        Y_e = (Y_e - self.Ne_y/2.0) / self.Ne_x
-        d2_e = X_e**2 + Y_e**2
-        env_e = (np.exp(d2_e / 2.0 / self.no.sigmaIextGaussian)).ravel()
+        X_e = (X_e - self.Ne_x/2.0)
+        Y_e = (Y_e - self.Ne_y/2.0)
+        d2_e = (X_e**2 + Y_e**2) / self.Ne_x**2 
+        env_e = (np.exp(-d2_e / 2.0 / self.no.sigmaIextGaussian**2)).ravel()
 
         # I cells
         X_i, Y_i = np.meshgrid(range(self.Ni_x), range(self.Ni_y))
-        X_i = (X_i - self.Ni_x/2.0) / self.Ni_x
-        Y_i = (Y_i - self.Ni_y/2.0) / self.Ni_x
-        d2_i = X_i**2 + Y_i**2
-        env_i = (np.exp(d2_i / 2.0 / self.no.sigmaIextGaussian)).ravel()
+        X_i = (X_i - self.Ni_x/2.0)
+        Y_i = (Y_i - self.Ni_y/2.0)
+        d2_i = (X_i**2 + Y_i**2) / self.Ni_x**2
+        env_i = (np.exp(-d2_i / 2.0 / self.no.sigmaIextGaussian**2)).ravel()
 
         return env_e, env_i
 
@@ -350,8 +350,8 @@ class BrianGridCellNetwork(GridCellNetwork):
             global place_flag
             global place_I
             if self._simulationClock.t < self.no.theta_start_t*msecond:
-                self.E_pop.Iext_theta = 2 * self.stim_e_A
-                self.I_pop.Iext_theta = 2 * self.stim_i_A
+                self.E_pop.Iext_theta = 2 * self.stim_e_A * self.gaussianEnv_e
+                self.I_pop.Iext_theta = 2 * self.stim_i_A * self.gaussianEnv_i
             elif self._simulationClock.t >= self.no.theta_start_t*msecond:
                 ph = self.stim_omega*self._simulationClock.t
                 self.E_pop.Iext_theta = (self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2)) * self.gaussianEnv_e + self.no.theta_noise_sigma*np.random.randn(self.net_Ne)*pA
