@@ -30,7 +30,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+EDDIE = False  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -43,20 +43,25 @@ parameters['prefDirC_i']        = 0
 
 parameters["Iext_e_const"]      = 400.0     # pA
 
+parameters['Iext_e_theta']      = 650       # pA
+parameters['Iext_i_theta']      = 50        # pA
+
+parameters['pAMPA_mu']          = 1.2/0.6
+
 parameters['AMPA_gaussian']     = 1         # bool
-parameters["g_AMPA_total"]      = 4200      # nS
-parameters["g_GABA_total"]      = 1200      # nS
-parameters["g_uni_GABA_total"]  = 240       # nS
+parameters["g_AMPA_total"]      = 4500      # nS
+parameters["g_GABA_total"]      = 400       # nS
+parameters["g_uni_GABA_total"]  = 125        # nS
 
 parameters['theta_noise_sigma'] = 0         # pA
 
-#parameters['Ivel']              = 40        # pA
+#parameters['Ivel']              = 120        # pA
 
-startJobNum = 4000
+startJobNum = 4300
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 simulation_AMPA_gaussian_velocity.py'
+programName         = 'nice python2.6 simulation_AMPA_gaussian_velocity.py'
 blocking            = False
 
 # Cluster parameters

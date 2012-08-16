@@ -22,7 +22,8 @@
 from default_params import defaultParameters
 from common         import *
 
-import logging as lg
+import logging  as lg
+import numpy    as np
 
 
 lg.basicConfig(level=lg.DEBUG)
@@ -33,28 +34,31 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 2e3   # ms
-parameters['theta_start_mon_t'] = 1e3   # ms
+parameters['time']              = 6.0e3   # ms
+parameters['theta_start_mon_t'] = 1.0e3   # ms
 
-parameters['prefDirC_e']        = 0
+parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
-parameters["Iext_e_const"]      = 400.0     # pA
+parameters['Iext_e_theta']      = 650       # pA
+parameters['Iext_i_theta']      = 50        # pA
+
+parameters['pAMPA_mu']          = 1.2/0.6
 
 parameters['AMPA_gaussian']     = 1         # bool
-parameters["g_AMPA_total"]      = 4200      # nS
-parameters["g_GABA_total"]      = 1200      # nS
-parameters["g_uni_GABA_total"]  = 240       # nS
+parameters["g_AMPA_total"]      = 4500      # nS
+parameters["g_GABA_total"]      = 400       # nS
+parameters["g_uni_GABA_total"]  = 125        # nS
 
 parameters['theta_noise_sigma'] = 0         # pA
 
 
 startJobNum = 0
-numRepeat = 1
+numRepeat = 8
 
 # Workstation parameters
-programName         = 'nice python2.6 -i simulation_fig_model.py'
-blocking            = True
+programName         = 'python2.6 -i simulation_fig_model.py'
+blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_fig_model.py'
@@ -64,11 +68,13 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 #iterparams = {
-#        'Iext_e_theta' : [200, 225, 250, 275, 300, 325, 350, 375]
-#        'taum_e_spread' : [0.5, 0.75,   1, 1.25, 1.5, 1.75,   2, 2.25],
-#        'EL_e_spread'   : [0.5,    1, 1.5,    2, 2.5,    3, 3.5,    4]
-#         'theta_noise_sigma' : [0, 20, 40, 60, 80, 100, 120, 140]
-#        'g_GABA_total'  : [800,1000, 1100, 1200, 1300, 1400, 1500, 1600]
+##        'Iext_e_theta' : [500, 525, 550, 575, 600, 625, 650, 700]
+##        'taum_e_spread' : [0.5, 0.75,   1, 1.25, 1.5, 1.75,   2, 2.25],
+##        'EL_e_spread'   : [0.5,    1, 1.5,    2, 2.5,    3, 3.5,    4]
+##         'theta_noise_sigma' : [0, 20, 40, 60, 80, 100, 120, 140]
+##        'g_GABA_total'  : [500, 525, 550, 575]
+##        'g_uni_GABA_total'  : [0, 25, 50, 75, 100, 125, 150, 175]
+##    'pAMPA_mu'  : np.array([0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]) / 0.6
 #}
 #ac.insertDict(iterparams, mult=False)
 

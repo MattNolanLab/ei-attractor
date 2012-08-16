@@ -34,6 +34,7 @@ EDDIE = True  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
+parameters['time']              = 10e3  # ms
 parameters['time']              = 1199.9e3  # ms
 #parameters['time']              = 3e3  # ms
 parameters['ndumps']            = 10
@@ -49,6 +50,7 @@ parameters['gridSep']           = 60        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['E_GABA_A']          = -60
+#parameters['g_GABA_total']      = 3240      # nS
 parameters['g_GABA_total']      = 4320      # nS
 
 

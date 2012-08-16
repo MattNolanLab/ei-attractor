@@ -28,25 +28,28 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+EDDIE = False  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 1199.9e3  # ms
-#parameters['time']              = 3e3  # ms
+#parameters['time']              = 1199.9e3  # ms
+parameters['time']              = 15e3  # ms
 parameters['stateMonDur']       = parameters['time']
-parameters['ndumps']            = 10
+parameters['ndumps']            = 1
 
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
-parameters["Iext_e_const"]      = 400.0     # pA
+parameters['Iext_e_theta']      = 650       # pA
+parameters['Iext_i_theta']      = 50        # pA
+
+parameters['pAMPA_mu']          = 1.2/0.6
 
 parameters['AMPA_gaussian']     = 1         # bool
-parameters["g_AMPA_total"]      = 4200      # nS
-parameters["g_GABA_total"]      = 1200      # nS
-parameters["g_uni_GABA_total"]  = 240       # nS
+parameters["g_AMPA_total"]      = 4500      # nS
+parameters["g_GABA_total"]      = 400       # nS
+parameters["g_uni_GABA_total"]  = 125        # nS
 
 parameters['placeT']            = 10e3      # ms
 parameters['placeDur']          = 100       # ms
@@ -56,11 +59,11 @@ parameters['gridSep']           = 70        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['stateRec_dt']       = 0.25      # ms
-parameters['output_dir']        = 'output_local/'
+parameters['output_dir']        = 'output/'
 
 
-startJobNum = 4200
-numRepeat = 10
+startJobNum = 0
+numRepeat = 8
 
 # Workstation parameters
 programName         = 'python2.6 simulation_AMPA_gaussian.py'
