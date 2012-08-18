@@ -30,7 +30,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -40,8 +40,6 @@ parameters['ngenerations']      = 10
 parameters['velModulationType'] = 'excitatory'
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
-
-parameters["Iext_e_const"]      = 400.0     # pA
 
 parameters['Iext_e_theta']      = 650       # pA
 parameters['Iext_i_theta']      = 50        # pA
@@ -66,7 +64,7 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_AMPA_gaussian_velocity.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=02:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)

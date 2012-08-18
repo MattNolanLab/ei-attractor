@@ -28,15 +28,15 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 15e3  # ms
+parameters['time']              = 6e3  # ms
 parameters['stateMonDur']       = parameters['time']
-parameters['ndumps']            = 1
+parameters['ndumps']            = 10
 
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
@@ -54,16 +54,16 @@ parameters["g_uni_GABA_total"]  = 125        # nS
 parameters['placeT']            = 10e3      # ms
 parameters['placeDur']          = 100       # ms
 
-parameters['bumpCurrentSlope']  = 1.108     # pA/(cm/s), !! this will depend on prefDirC !!
-parameters['gridSep']           = 70        # cm, grid field inter-peak distance
+parameters['bumpCurrentSlope']  = 0.933     # pA/(cm/s), !! this will depend on prefDirC !!
+parameters['gridSep']           = 60        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
 parameters['stateRec_dt']       = 0.25      # ms
 parameters['output_dir']        = 'output/'
 
 
-startJobNum = 0
-numRepeat = 8
+startJobNum = 4400
+numRepeat = 10
 
 # Workstation parameters
 programName         = 'python2.6 simulation_AMPA_gaussian.py'
@@ -71,7 +71,7 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_AMPA_gaussian.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=14:00:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=15:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
