@@ -70,7 +70,7 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'Ivel'       : np.arange(0, 160, 10)}
+        'Ivel'       : np.arange(0, 113, 10)}
 ac.insertDict(iterparams, mult=True)
 
 if EDDIE:

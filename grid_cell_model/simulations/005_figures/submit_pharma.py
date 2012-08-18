@@ -29,32 +29,31 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 1.5e3  # ms
+parameters['time']              = 2e3  # ms
 #parameters['time']              = 3e3  # ms
 parameters['ndumps']            = 1
 
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
-parameters['sigmaIextGaussian'] = 0.5/6
+parameters['Iext_e_theta']      = 650       # pA
+parameters['Iext_i_theta']      = 50        # pA
 
-#parameters['bumpCurrentSlope']  = 1.0       # Not used here!
+parameters['pAMPA_mu']          = 0.5/0.6
+
+parameters['AMPA_gaussian']     = 1         # bool
+parameters["g_AMPA_total"]      = 4500      # nS
+parameters["g_GABA_total"]      = 400       # nS
+parameters["g_uni_GABA_total"]  = 125        # nS
+
 parameters['theta_noise_sigma'] = 0         # pA
 
-#parameters['Iext_e_theta']      = 500.0     # pA
-parameters['Iext_i_theta']      = 50.0     # pA
-
-parameters['g_AMPA_total']      = 0.0
-#parameters['g_GABA_total']      = 0.0
-#parameters['g_uni_GABA_total']  = 0.0
-
-
-startJobNum =0
+startJobNum =9000
 numRepeat = 1
 
 # Workstation parameters
@@ -63,7 +62,7 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_pharma.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:05:00 -pe memory-2G 1"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
@@ -71,11 +70,11 @@ ac = ArgumentCreator(parameters)
 iterparams = {
 #    'Iplace'    :   [50, 100, 150, 200, 250]
 #    'gridSep' : [50, 60]
-    'sigmaIextGaussian' : np.array([0.25, 0.5, 0.75, 1.0])/6.0
-#    'Iext_i_theta'  :   [50, 100, 150, 200]
-#    'Iext_e_theta'  : [600, 650, 700, 750]
+#    'sigmaIextGaussian' : np.array([0.25, 0.5, 0.75, 1.0])/6.0
+    'Iext_e_theta'  : [150, 200, 250, 300, 350, 400, 450, 500, 550, 600]
+    'Iext_i_theta'  : [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190]
 }
-ac.insertDict(iterparams, mult=False)
+ac.insertDict(iterparams, mult=True)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

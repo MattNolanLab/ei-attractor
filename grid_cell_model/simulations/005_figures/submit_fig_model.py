@@ -54,7 +54,7 @@ parameters['theta_noise_sigma'] = 0         # pA
 
 
 startJobNum = 0
-numRepeat = 8
+numRepeat = 1
 
 # Workstation parameters
 programName         = 'python2.6 -i simulation_fig_model.py'
