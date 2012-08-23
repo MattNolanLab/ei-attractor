@@ -63,11 +63,11 @@ ei_net.uniformInhibition()
 ei_net.setConstantCurrent()
 ei_net.setStartCurrent()
 ei_net.setThetaCurrentStimulation()
-ei_net.setPlaceCurrentInput()
+#ei_net.setPlaceCurrentInput()
 
 #const_v = [0.0, 1.0]
 #ei_net.setConstantVelocityCurrent_e(const_v)
-ei_net.setVelocityCurrentInput_e()
+#ei_net.setVelocityCurrentInput_e()
 
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
@@ -125,86 +125,95 @@ for trial_it in range(ei_net.no.ntrials):
                 options.fileNamePrefix, options.job_num, trial_it, dump_it)
 
 
-        #F_tstart = 0
-        #F_tend = options.time*1e-3
-        #F_dt = 0.02
-        #F_winLen = 0.25
-        #Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
-        #Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
+        F_tstart = 0
+        F_tend = options.time*1e-3
+        F_dt = 0.02
+        F_winLen = 0.25
+        Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
+        Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
 
 
-        ## plot firing rates
-        #figure(figsize=figSize)
-        #subplot(211)
-        #T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
-        #pcolormesh(T, FR, Fe)
-        #ylabel('E Neuron no.')
-        #colorbar()
-        #subplot(212)
-        #T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
-        #pcolormesh(T, FR, Fi)
-        #xlabel('Time (s)')
-        #ylabel('I Neuron no.')
-        #colorbar()
-        #savefig(output_fname + '_firing_rate_e.png')
+        # plot firing rates
+        figure(figsize=figSize)
+        subplot(211)
+        T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
+        pcolormesh(T, FR, Fe)
+        ylabel('E Neuron no.')
+        colorbar()
+        subplot(212)
+        T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
+        pcolormesh(T, FR, Fi)
+        xlabel('Time (s)')
+        ylabel('I Neuron no.')
+        colorbar()
+        savefig(output_fname + '_firing_rate_e.png')
 
-        #figure()
-        #ax = subplot(211)
-        #plot(stateMon_e.times, stateMon_e.values[:, 0:2]/mV)
-        #ylabel('E membrane potential (mV)')
-        #subplot(212, sharex=ax)
-        #plot(stateMon_i.times, stateMon_i.values[:, 0:2]/mV)
-        #xlabel('Time (s)')
-        #ylabel('I membrane potential (mV)')
-        #xlim(x_lim)
-        #savefig(output_fname + '_Vm.pdf')
-        #
-        #
-        #figure()
-        #ax = subplot(211)
-        #plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
-        #ylabel('E synaptic current (pA)')
-        #ylim([0, 3000])
-        #subplot(212, sharex=ax)
-        #plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
-        #ylim([-1500, 0])
-        #xlabel('Time (s)')
-        #ylabel('I synaptic current (pA)')
-        #xlim(x_lim)
-        #savefig(output_fname + '_Isyn.pdf')
-        #
-        #figure()
-        #ax = subplot(211)
-        #plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[:, 1]/pA)
-        #ylabel('E external current (pA)')
-        #subplot(212, sharex=ax)
-        #plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[:, 0]/pA)
-        #xlabel('Time (s)')
-        #ylabel('I external current (pA)')
-        #xlim(x_lim)
-        #savefig(output_fname + '_Iext.pdf')
+        figure()
+        ax = subplot(211)
+        plot(stateMon_e.times, stateMon_e.values[:, 0:2]/mV)
+        ylabel('E membrane potential (mV)')
+        subplot(212, sharex=ax)
+        plot(stateMon_i.times, stateMon_i.values[:, 0:2]/mV)
+        xlabel('Time (s)')
+        ylabel('I membrane potential (mV)')
+        xlim(x_lim)
+        savefig(output_fname + '_Vm.pdf')
+        
+        
+        figure()
+        ax = subplot(211)
+        plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
+        ylabel('E synaptic current (pA)')
+        ylim([0, 3000])
+        subplot(212, sharex=ax)
+        plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
+        ylim([-1500, 0])
+        xlabel('Time (s)')
+        ylabel('I synaptic current (pA)')
+        xlim(x_lim)
+        savefig(output_fname + '_Isyn.pdf')
+        
+        figure()
+        ax = subplot(211)
+        plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[:, 1]/pA)
+        ylabel('E external current (pA)')
+        subplot(212, sharex=ax)
+        plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[:, 0]/pA)
+        xlabel('Time (s)')
+        ylabel('I external current (pA)')
+        xlim(x_lim)
+        savefig(output_fname + '_Iext.pdf')
     
-        #figure()
-        #pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
-        #xlabel('E neuron no.')
-        #ylabel('E neuron no.')
-        #colorbar()
-        #axis('equal')
-        #savefig(output_fname + '_firing_snapshot_e.png')
+        figure()
+        pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
+        xlabel('E neuron no.')
+        ylabel('E neuron no.')
+        colorbar()
+        axis('equal')
+        savefig(output_fname + '_firing_snapshot_e.png')
 
 
-        ## Print a plot of bump position
-        #F_dt = 0.02
-        #F_winLen = 0.25
-        #(pos, bumpPos_times) = spikeMon_e.torusPopulationVector([ei_net.Ne_x,
-        #    ei_net.Ne_y], options.theta_start_t*1e-3, options.time*1e-3, F_dt, F_winLen)
-        #figure(figsize=figSize)
-        #plot(bumpPos_times, pos)
-        #xlabel('Time (s)')
-        #ylabel('Bump position (neurons)')
-        #ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
-        #
-        #savefig(output_fname + '_bump_position.pdf')
+        figure()
+        pcolormesh(np.reshape(Fi[:, len(Fi_t)/2], (ei_net.Ni_y, ei_net.Ni_x)))
+        xlabel('I neuron no.')
+        ylabel('I neuron no.')
+        colorbar()
+        axis('equal')
+        savefig(output_fname + '_firing_snapshot_i.png')
+
+
+        # Print a plot of bump position
+        F_dt = 0.02
+        F_winLen = 0.25
+        (pos, bumpPos_times) = spikeMon_e.torusPopulationVector([ei_net.Ne_x,
+            ei_net.Ne_y], options.theta_start_t*1e-3, options.time*1e-3, F_dt, F_winLen)
+        figure(figsize=figSize)
+        plot(bumpPos_times, pos)
+        xlabel('Time (s)')
+        ylabel('Bump position (neurons)')
+        ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
+        
+        savefig(output_fname + '_bump_position.pdf')
 
         
         outData = ei_net.getRatData()

@@ -22,7 +22,8 @@
 from default_params import defaultParameters
 from common         import *
 
-import logging as lg
+import logging  as lg
+import numpy    as np
 
 
 lg.basicConfig(level=lg.DEBUG)
@@ -33,10 +34,10 @@ EDDIE = True  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 1199.9e3  # ms
-#parameters['time']              = 6e3  # ms
+#parameters['time']              = 1199.9e3  # ms
+parameters['time']              = 2e3  # ms
 parameters['stateMonDur']       = parameters['time']
-parameters['ndumps']            = 10
+parameters['ndumps']            = 1
 
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
@@ -44,7 +45,7 @@ parameters['prefDirC_i']        = 0
 parameters['Iext_e_theta']      = 650       # pA
 parameters['Iext_i_theta']      = 50        # pA
 
-parameters['pAMPA_mu']          = 1.2/0.6
+#parameters['pAMPA_sigma']       = 
 
 parameters['AMPA_gaussian']     = 1         # bool
 parameters["g_AMPA_total"]      = 4500      # nS
@@ -62,8 +63,8 @@ parameters['stateRec_dt']       = 0.25      # ms
 parameters['output_dir']        = 'output/'
 
 
-startJobNum = 4400
-numRepeat = 10
+startJobNum = 8000
+numRepeat = 1
 
 # Workstation parameters
 programName         = 'python2.6 simulation_AMPA_gaussian.py'
@@ -71,22 +72,21 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_AMPA_gaussian.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=15:00:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:05:00 -pe memory-2G 1"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#    'Iplace'    :   [50, 100, 150, 200, 250]
-#    'gridSep' : [50, 60]
+iterparams = {
 #    'g_AMPA_total'  : [3600, 3800, 400, 4200]
-#    'Iext_e_const'  : [375, 400, 425, 450]
-#    'g_uni_GABA_total'  : [160, 200, 240, 280]
-#}
-#ac.insertDict(iterparams, mult=False)
+    'pAMPA_sigma'       : np.arange(1.0, 2.0, 0.1) * defaultParameters['pAMPA_sigma'],
+    'g_GABA_total'      : np.arange(0.5, 1.0, 0.1) * defaultParameters['g_GABA_total'],
+    'g_uni_GABA_total'  : np.arange(0.5, 1.0, 0.1) * defaultParameters['g_uni_GABA_total']
+}
+ac.insertDict(iterparams, mult=True, printout=True)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
-submitter.submitAll(startJobNum, numRepeat, dry_run=False)
+submitter.submitAll(startJobNum, numRepeat, dry_run=True)

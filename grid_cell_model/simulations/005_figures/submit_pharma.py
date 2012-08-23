@@ -42,14 +42,18 @@ parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
 parameters['Iext_e_theta']      = 650       # pA
-parameters['Iext_i_theta']      = 50        # pA
+parameters['Iext_i_theta']      = 450       # pA
 
-parameters['pAMPA_mu']          = 0.5/0.6
+parameters['pAMPA_sigma']          = 0.5/6.0
 
 parameters['AMPA_gaussian']     = 1         # bool
-parameters["g_AMPA_total"]      = 4500      # nS
-parameters["g_GABA_total"]      = 400       # nS
-parameters["g_uni_GABA_total"]  = 125        # nS
+#parameters["g_AMPA_total"]      = 4500      # nS
+parameters["g_AMPA_total"]      = 0        # nS
+parameters["g_GABA_total"]      = 320        # nS
+parameters["g_uni_GABA_total"]  = 75        # nS
+
+parameters['sigmaIextGaussian'] = 0.5/6.0
+parameters['shuffleIextGaussian'] = 1
 
 parameters['theta_noise_sigma'] = 0         # pA
 
@@ -62,7 +66,7 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_pharma.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:05:00 -pe memory-2G 1"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:03:00 -pe memory-2G 1"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
@@ -70,11 +74,11 @@ ac = ArgumentCreator(parameters)
 iterparams = {
 #    'Iplace'    :   [50, 100, 150, 200, 250]
 #    'gridSep' : [50, 60]
-#    'sigmaIextGaussian' : np.array([0.25, 0.5, 0.75, 1.0])/6.0
-    'Iext_e_theta'  : [150, 200, 250, 300, 350, 400, 450, 500, 550, 600]
-    'Iext_i_theta'  : [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190]
+    'sigmaIextGaussian' : np.arange(0.6, 1.6, 0.1)/6.0,
+    'Iext_e_theta'  : [400, 450, 500, 550, 600, 650, 700, 750, 800, 850],
+    'Iext_i_theta'  : [800, 850, 900, 950, 1000]
 }
-ac.insertDict(iterparams, mult=True)
+ac.insertDict(iterparams, mult=True, printout=True)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

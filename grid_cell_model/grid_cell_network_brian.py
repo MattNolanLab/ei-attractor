@@ -23,13 +23,15 @@
 import numpy    as np
 import logging  as lg
 
-from numpy.random       import rand, randn
+#from numpy.random       import rand, randn
 from brian              import *
 from scipy              import linspace
 
 from common             import *
 from grid_cell_network  import *
 from place_input        import *
+
+import random
 
 
 class BrianGridCellNetwork(GridCellNetwork):
@@ -38,12 +40,12 @@ class BrianGridCellNetwork(GridCellNetwork):
 
     def _initStates(self):
         # Initialize membrane potential randomly
-        self.E_pop.vm       = (self.no.EL_e + (self.no.Vt_e-self.no.EL_e) * rand(len(self.E_pop))) * mV
+        self.E_pop.vm       = (self.no.EL_e + (self.no.Vt_e-self.no.EL_e) * np.random.rand(len(self.E_pop))) * mV
         self.E_pop.gi1      = 0.0
         self.E_pop.gi2      = 0.0
         self.E_pop.g_ahp    = 0.0
 
-        self.I_pop.vm       = (self.no.EL_i + (self.no.Vt_i-self.no.EL_i) * rand(len(self.I_pop))) * mV
+        self.I_pop.vm       = (self.no.EL_i + (self.no.Vt_i-self.no.EL_i) * np.random.rand(len(self.I_pop))) * mV
         self.I_pop.ge       = 0.0
         self.I_pop.g_ad     = 0.0
         self.I_pop.gNMDA    = 0.0
@@ -55,7 +57,7 @@ class BrianGridCellNetwork(GridCellNetwork):
         self.I_pop.EL       = self.uniformDistrib(self.no.EL_i,   self.no.EL_i_spread,   len(self.I_pop)) * mV
         self.I_pop.taum     = self.uniformDistrib(self.no.taum_i, self.no.taum_i_spread, len(self.I_pop)) * ms
 
-        self.I_pop.tau_ad   = (self.no.ad_tau_i_mean + self.no.ad_tau_i_std * randn(len(self.I_pop.tau_ad))) * ms
+        self.I_pop.tau_ad   = (self.no.ad_tau_i_mean + self.no.ad_tau_i_std * np.random.randn(len(self.I_pop.tau_ad))) * ms
 
     def _initClocks(self):
         for clk in self._clocks:
@@ -84,6 +86,10 @@ class BrianGridCellNetwork(GridCellNetwork):
         Y_i = (Y_i - self.Ni_y/2.0)
         d2_i = (X_i**2 + Y_i**2) / self.Ni_x**2
         env_i = (np.exp(-d2_i / 2.0 / self.no.sigmaIextGaussian**2)).ravel()
+
+        if self.no.shuffleIextGaussian == 1:
+            random.shuffle(env_e)
+            random.shuffle(env_i)
 
         return env_e, env_i
 
@@ -278,6 +284,8 @@ class BrianGridCellNetwork(GridCellNetwork):
         The Gaussian current is implemented by providing an extra multiplier into
         the external current sources of the model (where appropriate)
         '''
+        self.E_pop.Iext_const = self.no.Iext_e_const * self.gaussianEnv_e * pA
+        self.I_pop.Iext_const = self.no.Iext_i_const * self.gaussianEnv_i * pA
 
 
     def setStartCurrent(self, force_pos=None):
