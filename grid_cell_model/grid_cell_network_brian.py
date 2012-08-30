@@ -128,7 +128,7 @@ class BrianGridCellNetwork(GridCellNetwork):
             Ispike      = gL*deltaT*exp((vm-Vt)/deltaT)                                : amp
             Im          = gL*(EL-vm) + g_ahp*(Eahp - vm) + Ispike + Isyn + Iext        : amp
             Isyn        = B_GABA*(gi1 - gi2)*(Esyn - vm)                               : amp
-            Iclamp      = -(gi1 - gi2)*(Esyn - Vclamp)                                 : amp
+            Iclamp      = -( gL*(EL-Vclamp) + gL*deltaT*exp((Vclamp-Vt)/deltaT) + B_GABA*(gi1 - gi2)*(Esyn - Vclamp) + Iext )                                : amp
             dgi1/dt     = -gi1/syn_tau1                                                : siemens
             dgi2/dt     = -gi2/syn_tau2                                                : siemens
             dg_ahp/dt   = -g_ahp/tau_ahp                                               : siemens
@@ -161,7 +161,7 @@ class BrianGridCellNetwork(GridCellNetwork):
             Ispike      = gL*deltaT*exp((vm-Vt)/deltaT)                     : amp
             Im          = gL*(EL-vm)*(1+g_ad/gL) + Ispike + Isyn + Iext     : amp
             Isyn        = ge*(Esyn - vm) + gNMDA*(Esyn - vm)                : amp
-            Iclamp      = -(ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp))     : amp
+            Iclamp      = -( gL*(EL-Vclamp) + gL*deltaT*exp((Vclamp-Vt)/deltaT) + ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp) + Iext )     : amp
             dge/dt      = -ge/syn_tau                                       : siemens
             dg_ad/dt    = -g_ad/tau_ad                                      : siemens
             dgNMDA/dt   = -gNMDA/(100*msecond)                              : siemens
@@ -326,6 +326,8 @@ class BrianGridCellNetwork(GridCellNetwork):
         self.stim_omega = 2*np.pi*self.no.theta_freq*Hz
         self.stim_e_A  = self.no.Iext_e_theta/2 * pA
         self.stim_i_A  = self.no.Iext_i_theta/2 * pA
+        self.theta_ph_jitter_e = self.uniformDistrib(self.no.theta_ph_jit_mean_e, self.no.theta_ph_jit_spread_e, len(self.E_pop))
+        self.theta_ph_jitter_i = self.uniformDistrib(self.no.theta_ph_jit_mean_i, self.no.theta_ph_jit_spread_i, len(self.I_pop))
 
         @network_operation(self._simulationClock)
         def thetaStimulationFun():
@@ -336,8 +338,8 @@ class BrianGridCellNetwork(GridCellNetwork):
                 self.I_pop.Iext_theta = 2 * self.stim_i_A
             elif self._simulationClock.t >= self.no.theta_start_t*msecond:
                 ph = self.stim_omega*self._simulationClock.t
-                self.E_pop.Iext_theta = self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2) + self.no.theta_noise_sigma*np.random.randn(self.net_Ne)*pA
-                self.I_pop.Iext_theta = self.stim_i_A + self.stim_i_A*np.sin(ph - np.pi/2) + self.no.theta_noise_sigma*np.random.randn(self.net_Ni)*pA
+                self.E_pop.Iext_theta = self.stim_e_A + self.stim_e_A*np.sin(ph - np.pi/2 - self.theta_ph_jitter_e) + self.no.theta_noise_sigma*np.random.randn(self.net_Ne)*pA
+                self.I_pop.Iext_theta = self.stim_i_A + self.stim_i_A*np.sin(ph - np.pi/2 - self.theta_ph_jitter_i) + self.no.theta_noise_sigma*np.random.randn(self.net_Ni)*pA
             else:
                 self.E_pop.Iext_theta = 0.0
                 self.I_pop.Iext_theta = 0.0

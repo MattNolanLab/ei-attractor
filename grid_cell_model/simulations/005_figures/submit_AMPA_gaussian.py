@@ -45,25 +45,34 @@ parameters['prefDirC_i']        = 0
 parameters['Iext_e_theta']      = 650       # pA
 parameters['Iext_i_theta']      = 50        # pA
 
-#parameters['pAMPA_sigma']       = 
+parameters['pAMPA_sigma']       = 0.5/6.0
 
 parameters['AMPA_gaussian']     = 1         # bool
-parameters["g_AMPA_total"]      = 4500      # nS
-parameters["g_GABA_total"]      = 400       # nS
-parameters["g_uni_GABA_total"]  = 125        # nS
+parameters["g_AMPA_total"]      = 2250      # nS
+#parameters["g_AMPA_total"]      = 0        # nS
+parameters["g_GABA_total"]      = 320       # nS
+parameters["g_uni_GABA_total"]  = 300       # nS
 
-parameters['placeT']            = 10e3      # ms
-parameters['placeDur']          = 100       # ms
+#parameters['sigmaIextGaussian'] = 0.6/6.0
+#parameters['shuffleIextGaussian'] = 0
+
+parameters['condAddPercSynapses_e'] = 50
+parameters['condAdd_e']             = 20.0  # nS
+
+parameters['tau_AMPA']          = 2 # ms
 
 parameters['bumpCurrentSlope']  = 0.933     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 60        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
+parameters['theta_ph_jit_mean_e'] = 0       # rad
+parameters['theta_ph_jit_spread_e'] = 2*np.pi/10.0  # rad
+
 parameters['stateRec_dt']       = 0.25      # ms
 parameters['output_dir']        = 'output/'
 
 
-startJobNum = 8000
+startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
@@ -72,16 +81,17 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_AMPA_gaussian.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:05:00 -pe memory-2G 1"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:03:00 -pe memory-2G 1"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
 iterparams = {
 #    'g_AMPA_total'  : [3600, 3800, 400, 4200]
-    'pAMPA_sigma'       : np.arange(1.0, 2.0, 0.1) * defaultParameters['pAMPA_sigma'],
-    'g_GABA_total'      : np.arange(0.5, 1.0, 0.1) * defaultParameters['g_GABA_total'],
-    'g_uni_GABA_total'  : np.arange(0.5, 1.0, 0.1) * defaultParameters['g_uni_GABA_total']
+#    'pAMPA_sigma'       : np.arange(1.0, 2.0, 0.1) * defaultParameters['pAMPA_sigma'],
+#    'g_GABA_total'      : np.arange(0.5, 1.0, 0.1) * defaultParameters['g_GABA_total'],
+#    'g_uni_GABA_total'  : np.arange(0.5, 1.0, 0.1) * defaultParameters['g_uni_GABA_total']
+    'Iext_i_theta'      : [50, 100, 150, 200]
 }
 ac.insertDict(iterparams, mult=True, printout=True)
 
@@ -89,4 +99,4 @@ if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
-submitter.submitAll(startJobNum, numRepeat, dry_run=True)
+submitter.submitAll(startJobNum, numRepeat, dry_run=False)

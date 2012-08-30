@@ -40,13 +40,14 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 parser          = getOptParser()
-parser.add_option("--ndumps",  type="int",    help="Number of data output dumps during the simulation")
+parser.add_option("--ndumps",                type="int",    help="Number of data output dumps during the simulation")
 
 (options, args) = parser.parse_args()
 options         = setOptionDictionary(parser, options)
 
 # Other
 figSize = (12,8)
+
 
 
 ################################################################################
@@ -164,7 +165,7 @@ for trial_it in range(ei_net.no.ntrials):
         ylabel('E synaptic current (pA)')
         subplot(212, sharex=ax)
         plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
-        ylim([-1000, 0])
+        #ylim([-1000, 0])
         xlabel('Time (s)')
         ylabel('I synaptic current (pA)')
         xlim(x_lim)
@@ -210,6 +211,12 @@ for trial_it in range(ei_net.no.ntrials):
         ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
         
         savefig(output_fname + '_bump_position.pdf')
+
+
+        # Firing rate of neurons
+        fr_startT = 1.0
+        fr_endT   = 2.0
+
 
         
         outData = {}

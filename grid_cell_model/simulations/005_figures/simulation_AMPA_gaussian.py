@@ -164,10 +164,10 @@ for trial_it in range(ei_net.no.ntrials):
         ax = subplot(211)
         plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
         ylabel('E synaptic current (pA)')
-        ylim([0, 3000])
+        #ylim([-100, 4000])
         subplot(212, sharex=ax)
         plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
-        ylim([-1500, 0])
+        #ylim([-2000, 0])
         xlabel('Time (s)')
         ylabel('I synaptic current (pA)')
         xlim(x_lim)
@@ -216,27 +216,27 @@ for trial_it in range(ei_net.no.ntrials):
         savefig(output_fname + '_bump_position.pdf')
 
         
-        outData = ei_net.getRatData()
-        #outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        #outData = ei_net.getRatData()
+        ##outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
-        #outData['bumpPos'] = pos
-        #outData['bumpPos_times'] = bumpPos_times
+        ##outData['bumpPos'] = pos
+        ##outData['bumpPos_times'] = bumpPos_times
 
-        #outData['Fe'] = Fe
-        #outData['Fe_t'] = Fe_t
+        ##outData['Fe'] = Fe
+        ##outData['Fe_t'] = Fe_t
 
-        outData['spikeCell_e']              = spikeMon_e.aspikes[0:200]
-        outData['spikeCell_i']              = spikeMon_i.aspikes[0:50]
-        outData['options']                  = options._einet_optdict
-        outData['velocityStart']            = options.theta_start_t
+        #outData['spikeCell_e']              = spikeMon_e.aspikes[0:200]
+        #outData['spikeCell_i']              = spikeMon_i.aspikes[0:50]
+        #outData['options']                  = options._einet_optdict
+        #outData['velocityStart']            = options.theta_start_t
 
-        outData['stateMon_times']           = stateMon_Iclamp_e.times
-        outData['stateMon_Iclamp_e_values'] = stateMon_Iclamp_e.values
-        outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
-        outData['stateMon_e_values']        = stateMon_e.values
-        outData['stateMon_i_values']        = stateMon_i.values
-        
-        savemat(output_fname + '_output.mat', outData, do_compression=False)
+        #outData['stateMon_times']           = stateMon_Iclamp_e.times
+        #outData['stateMon_Iclamp_e_values'] = stateMon_Iclamp_e.values
+        #outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
+        #outData['stateMon_e_values']        = stateMon_e.values
+        #outData['stateMon_i_values']        = stateMon_i.values
+        #
+        #savemat(output_fname + '_output.mat', outData, do_compression=False)
 
         print "Dump after " + str(simulationClock.t)
 

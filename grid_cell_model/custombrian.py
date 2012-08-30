@@ -70,6 +70,14 @@ class ExtendedSpikeMonitor(SpikeMonitor):
             total[n_it] = len(self.aspikes[n_it])
         return total
 
+    def getTimedFiringRate(self, startT, endT):
+        total = np.ndarray(len(self.aspikes))
+        for n_it in xrange(len(self.aspikes)):
+            n_spikes = self.aspikes[n_it]
+            n_spikes_filt = len(n_spikes[np.logical_and(n_spikes >= startT, n_spikes <= startT)])
+            total[n_it] = n_spikes_filt / (endT - startT)
+        return total
+
     def torusPopulationVector(self, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=1.0):
         (F, tsteps) = self.getFiringRate(tstart, tend, dt, winLen)
 

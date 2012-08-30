@@ -41,23 +41,28 @@ parameters['ndumps']            = 1
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
-parameters['Iext_e_theta']      = 650       # pA
-parameters['Iext_i_theta']      = 450       # pA
+parameters['Iext_e_theta']      = 400       # pA
+parameters['Iext_i_theta']      = 850       # pA
 
-parameters['pAMPA_sigma']          = 0.5/6.0
+parameters['pAMPA_sigma']       = 0.5/6.0
 
 parameters['AMPA_gaussian']     = 1         # bool
-#parameters["g_AMPA_total"]      = 4500      # nS
-parameters["g_AMPA_total"]      = 0        # nS
-parameters["g_GABA_total"]      = 320        # nS
-parameters["g_uni_GABA_total"]  = 75        # nS
+parameters["g_AMPA_total"]      = 2250      # nS
+#parameters["g_AMPA_total"]      = 0        # nS
+parameters["g_GABA_total"]      = 320       # nS
+parameters["g_uni_GABA_total"]  = 300       # nS
 
-parameters['sigmaIextGaussian'] = 0.5/6.0
-parameters['shuffleIextGaussian'] = 1
+parameters['sigmaIextGaussian'] = 0.6/6.0
+parameters['shuffleIextGaussian'] = 0
+
+parameters['condAddPercSynapses_e'] = 50
+parameters['condAdd_e']             = 20.0  # nS
+
+parameters['tau_AMPA']          = 2 # ms
 
 parameters['theta_noise_sigma'] = 0         # pA
 
-startJobNum =9000
+startJobNum = 8000
 numRepeat = 1
 
 # Workstation parameters
@@ -75,8 +80,11 @@ iterparams = {
 #    'Iplace'    :   [50, 100, 150, 200, 250]
 #    'gridSep' : [50, 60]
     'sigmaIextGaussian' : np.arange(0.6, 1.6, 0.1)/6.0,
-    'Iext_e_theta'  : [400, 450, 500, 550, 600, 650, 700, 750, 800, 850],
-    'Iext_i_theta'  : [800, 850, 900, 950, 1000]
+#    'g_uni_GABA_total'      : [75, 100, 125, 150, 175, 200, 225, 250, 275, 300],
+    'Iext_e_theta'  : [750, 775, 800, 825, 850, 875, 900, 925, 950, 1000],
+#    'Iext_i_theta'  : [650, 700, 750, 800, 850]
+#    'condAddPercSynapses_e' : [ 5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+#    'condAdd_e'             : [20, 25, 30, 35, 40]
 }
 ac.insertDict(iterparams, mult=True, printout=True)
 

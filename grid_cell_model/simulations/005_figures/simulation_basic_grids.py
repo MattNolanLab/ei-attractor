@@ -61,13 +61,13 @@ options.ndim = 'twisted_torus'
 ei_net = BrianGridCellNetwork(options, simulationOpts=None)
 ei_net.uniformInhibition()
 ei_net.setConstantCurrent()
-ei_net.setStartCurrent()
+#ei_net.setStartCurrent()
 ei_net.setThetaCurrentStimulation()
-ei_net.setPlaceCurrentInput()
+#ei_net.setPlaceCurrentInput()
 
 #const_v = [0.0, 1.0]
 #ei_net.setConstantVelocityCurrent_e(const_v)
-ei_net.setVelocityCurrentInput_e()
+#ei_net.setVelocityCurrentInput_e()
 
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
@@ -190,6 +190,14 @@ for trial_it in range(ei_net.no.ntrials):
         axis('equal')
         savefig(output_fname + '_firing_snapshot_e.png')
 
+        figure()
+        pcolormesh(np.reshape(Fi[:, len(Fi_t)/2], (ei_net.Ni_y, ei_net.Ni_x)))
+        xlabel('I neuron no.')
+        ylabel('I neuron no.')
+        colorbar()
+        axis('equal')
+        savefig(output_fname + '_firing_snapshot_i.png')
+
 
         # Print a plot of bump position
         F_dt = 0.02
@@ -205,27 +213,27 @@ for trial_it in range(ei_net.no.ntrials):
         savefig(output_fname + '_bump_position.pdf')
 
         
-        outData = ei_net.getRatData()
-        #outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        #outData = ei_net.getRatData()
+        ##outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
-        #outData['bumpPos'] = pos
-        #outData['bumpPos_times'] = bumpPos_times
+        ##outData['bumpPos'] = pos
+        ##outData['bumpPos_times'] = bumpPos_times
 
-        #outData['Fe'] = Fe
-        #outData['Fe_t'] = Fe_t
+        ##outData['Fe'] = Fe
+        ##outData['Fe_t'] = Fe_t
 
-        outData['spikeCell_e']              = spikeMon_e.aspikes[0:200]
-        outData['spikeCell_i']              = spikeMon_i.aspikes[0:50]
-        outData['options']                  = options._einet_optdict
-        outData['velocityStart']            = options.theta_start_t
+        #outData['spikeCell_e']              = spikeMon_e.aspikes[0:200]
+        #outData['spikeCell_i']              = spikeMon_i.aspikes[0:50]
+        #outData['options']                  = options._einet_optdict
+        #outData['velocityStart']            = options.theta_start_t
 
-        outData['stateMon_times']           = stateMon_Iclamp_e.times
-        outData['stateMon_Iclamp_e_values'] = stateMon_Iclamp_e.values
-        outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
-        outData['stateMon_e_values']        = stateMon_e.values
-        outData['stateMon_i_values']        = stateMon_i.values
+        #outData['stateMon_times']           = stateMon_Iclamp_e.times
+        #outData['stateMon_Iclamp_e_values'] = stateMon_Iclamp_e.values
+        #outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
+        #outData['stateMon_e_values']        = stateMon_e.values
+        #outData['stateMon_i_values']        = stateMon_i.values
         
-        savemat(output_fname + '_output.mat', outData, do_compression=False)
+        #savemat(output_fname + '_output.mat', outData, do_compression=False)
 
         print "Dump after " + str(simulationClock.t)
 

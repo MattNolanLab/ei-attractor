@@ -58,14 +58,16 @@
 #     simulation with any kind of spiking model (leaky IaF, Hodgkin-Huxley,
 #     etc.)
 #
-import numpy    as np
-import logging  as lg
-
 from scipy          import linspace
 from numpy.random   import rand
 from numpy          import sqrt
 
 from common         import *
+
+import numpy    as np
+import logging  as lg
+import random
+
 
 __all__ = ['GridCellNetwork']
 
@@ -165,6 +167,16 @@ class GridCellNetwork(object):
         return np.exp(-d**2/2./sigma**2)
 
 
+    def _addToConnections(self, conductances, perc_synapses, h):
+        '''
+        Picks perc_synapses% of connections from the array and adds h to them
+        '''
+        indexes = random.sample(np.arange(len(conductances)),
+                int(perc_synapses/100.0*len(conductances)))
+        conductances[indexes] *= h
+        return conductances
+
+
     def _centerSurroundConnection(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma, pGABA_mu, pGABA_sigma):
         '''
         Create a center-surround excitatory and inhibitory connections between
@@ -218,8 +230,10 @@ class GridCellNetwork(object):
                 else:
                     raise Exception('AMPA_gaussian parameters must be 0 or 1')
 
-                self._divergentConnectEI(it, range(self.net_Ni),
-                        tmp_templ*g_AMPA_mean)
+                tmp_templ *= g_AMPA_mean
+                # tmp_templ down here must be in the proper units (e.g. nS)
+                tmp_templ = self._addToConnections(tmp_templ, self.no.condAddPercSynapses_e, self.no.condAdd_e)
+                self._divergentConnectEI(it, range(self.net_Ni), tmp_templ)
 
         # I --> E connections
         conn_th = 1e-5

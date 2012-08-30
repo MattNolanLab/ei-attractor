@@ -22,18 +22,19 @@
 from default_params import defaultParameters
 from common         import *
 
-import logging as lg
+import logging  as lg
+import numpy    as np
 
 
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 3e3  # ms
+parameters['time']              = 2e3  # ms
 #parameters['time']              = 3e3  # ms
 parameters['ndumps']            = 1
 
@@ -47,6 +48,8 @@ parameters['bumpCurrentSlope']  = 1.05      # pA/(cm/s), !! this will depend on 
 #parameters['gridSep']           = 40        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
+parameters['g_AMPA_total']      = 0         # nS
+
 
 startJobNum =0
 numRepeat = 1
@@ -57,16 +60,17 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:03:00 -pe memory-2G 1"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-##    'Iplace'    :   [50, 100, 150, 200, 250]
+iterparams = {
+#    'Iplace'    :   [50, 100, 150, 200, 250]
 #    'gridSep' : [50, 60]
-#}
-#ac.insertDict(iterparams, mult=False)
+    'Iext_i_theta' : np.arange(50, 900, 50)
+}
+ac.insertDict(iterparams, mult=False, printout=True)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
