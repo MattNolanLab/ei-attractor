@@ -58,7 +58,7 @@ parameters['g_uni_GABA_total']  = 36.0      # nS
 
 
 startJobNum = 0
-numRepeat = 1
+numRepeat = 4
 
 # Workstation parameters
 programName         = 'python2.6 -i simulation_fig_model.py'
