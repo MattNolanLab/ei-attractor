@@ -61,7 +61,7 @@ options.ndim = 'twisted_torus'
 ei_net = BrianGridCellNetwork(options, simulationOpts=None)
 ei_net.uniformInhibition()
 ei_net.setConstantCurrent()
-#ei_net.setStartCurrent()
+ei_net.setStartCurrent()
 ei_net.setThetaCurrentStimulation()
 #ei_net.setPlaceCurrentInput()
 
@@ -103,7 +103,7 @@ ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
 ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 
 
-#x_lim = [options.time-0.5, options.time]
+#x_lim = [0, options.time/1e3]
 x_lim = [options.time/1e3 - 1, options.time/1e3]
 
 ################################################################################
@@ -163,9 +163,10 @@ for trial_it in range(ei_net.no.ntrials):
         ax = subplot(211)
         plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
         ylabel('E synaptic current (pA)')
+        ylim([-1000, 2000])
         subplot(212, sharex=ax)
         plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
-        ylim([-1000, 0])
+        ylim([-3000, 0])
         xlabel('Time (s)')
         ylabel('I synaptic current (pA)')
         xlim(x_lim)

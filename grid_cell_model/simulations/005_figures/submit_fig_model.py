@@ -40,17 +40,21 @@ parameters['theta_start_mon_t'] = 1.0e3   # ms
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
-parameters['Iext_e_theta']      = 650       # pA
-parameters['Iext_i_theta']      = 50        # pA
+parameters['placeT']            = 10e3      # ms
+parameters['placeDur']          = 100       # ms
 
-parameters['pAMPA_mu']          = 1.2/0.6
+parameters['Iext_e_theta']      = 2000.0    # pA
+parameters['Iext_i_theta']      = 800.0     # pA
 
-parameters['AMPA_gaussian']     = 1         # bool
-parameters["g_AMPA_total"]      = 4500      # nS
-parameters["g_GABA_total"]      = 400       # nS
-parameters["g_uni_GABA_total"]  = 125        # nS
+parameters['Iext_i_const']      = 200.0     # pA
 
-parameters['theta_noise_sigma'] = 0         # pA
+parameters['taum_i_spread']     = 2.0       # ms
+parameters['EL_i_spread']       = 10.0      # mV
+
+parameters['g_AMPA_total']      = 0         # nS
+parameters['g_GABA_total']      = 550.0     # nS
+parameters['g_uni_GABA_total']  = 36.0      # nS
+
 
 
 startJobNum = 0
