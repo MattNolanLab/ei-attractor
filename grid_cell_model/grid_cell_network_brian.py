@@ -407,25 +407,25 @@ class BrianGridCellNetwork(GridCellNetwork):
         self._ratVelocitiesLoaded = True
 
 
-    def setVelocityCurrentInput_e(self, prefDirs_mult=None):
+    def setVelocityCurrentInput_e(self, prefDirs_mask=None):
         '''
         Set up movement simulation, based on preferred directions of neurons.
-        prefDirs_mult can be used to manipulate velocity input strength
+        prefDirs_mask can be used to manipulate velocity input strength
         for each neuron.
         '''
         self._loadRatVelocities()
 
-        if prefDirs_mult is None:
-            self._prefDirs_mult = np.ndarray((len(self.E_pop), 2))
-            self._prefDirs_mult[:, :] = 1.0
+        if prefDirs_mask is None:
+            self._prefDirs_mask_e = np.ndarray((len(self.E_pop), 2))
+            self._prefDirs_mask_e[:, :] = 1.0
         else:
-            self._prefDirs_mult = prefDirs_mult
+            self._prefDirs_mask_e = prefDirs_mask
 
         @network_operation(self._ratClock)
         def velocityChange():
             if self._simulationClock.t >= self.no.theta_start_t*msecond:
                 v = np.array([[self.rat_Ivel_x[self.Ivel_it], self.rat_Ivel_y[self.Ivel_it]]]).T
-                self.E_pop.Iext_vel = np.dot(self.prefDirs_e*self._prefDirs_mult, v).ravel()
+                self.E_pop.Iext_vel = np.dot(self.prefDirs_e*self._prefDirs_mask_e, v).ravel()
                 self.Ivel_it += 1
             else:
                 self.E_pop.Iext_vel = 0.0
