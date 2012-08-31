@@ -48,7 +48,7 @@ parameters['gridSep']           = 60        # cm, grid field inter-peak distance
 parameters['theta_noise_sigma'] = 0         # pA
 
 
-startJobNum =0
+startJobNum = 100
 numRepeat = 1
 
 # Workstation parameters
