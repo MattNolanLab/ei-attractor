@@ -24,13 +24,14 @@ from scipy.io           import loadmat
 from scipy.io           import savemat
 from matplotlib.pyplot  import *
 from tables             import *
+from numpy.fft          import fft2
 
 from grid_cell_analysis import *
 
 
-jobRange = [5300, 5309]
+jobRange = [4400, 4400]
 trialNum = 0
-dumpNum = 8
+dumpNum = 9
 
 jobN = jobRange[1] - jobRange[0] + 1
 
@@ -42,7 +43,7 @@ h = 3.0
 
 # Neuron to extract spikes from
 neuronNum = 10
-spikeType = 'excitatory'
+spikeType = 'inhibitory'
 
 
 dirName = "output/"
@@ -92,6 +93,26 @@ for job_it in range(jobN):
     axis('off')
     savefig(fileName + '_rateMap_' + spikeType + '.png')
 
+    
+    figure()
+    FT_size = 256
+    Fs = 1.0/(h/100.0) # units: 1/m
+    rateMap_pad = np.ndarray((FT_size, FT_size))
+    rateMap_pad[:, :] = 0
+    rateMap_pad[0:rateMap.shape[0], 0:rateMap.shape[0]] = rateMap - np.mean(rateMap.flatten())
+    FT = fft2(rateMap_pad)
+    fxy = np.linspace(-1.0, 1.0, FT_size)
+    fxy_igor = Fs/2.0*np.linspace(-1.0, 1.0, FT_size+1)
+    FX, FY = np.meshgrid(fxy, fxy)
+    FX *= Fs/2.0
+    FY *= Fs/2.0
+    PSD_centered = np.abs(np.fft.fftshift(FT))**2
+    pcolormesh(FX, FY, PSD_centered)
+    #axis('equal')
+    xlim([-10, 10])
+    ylim([-10, 10])
+    savefig(fileName + '_fft2' + spikeType + '.png')
+
 
     figure()
     corr, xedges_corr, yedges_corr = SNAutoCorr(rateMap, arenaDiam, h)
@@ -126,6 +147,11 @@ for job_it in range(jobN):
     h5file.createArray(h5file.root, 'rateMap', rateMap)
     corr[corr.mask==1] = np.nan
     h5file.createArray(h5file.root, 'corrMap', corr)
+    h5file.createArray(h5file.root, 'PSD_centered', PSD_centered)
+    h5file.createArray(h5file.root, 'FFT_FX', FX)
+    h5file.createArray(h5file.root, 'FFT_FY', FY)
+    h5file.createArray(h5file.root, 'FFT_fxy', fxy_igor)
+
 
     h5file.close()
 
