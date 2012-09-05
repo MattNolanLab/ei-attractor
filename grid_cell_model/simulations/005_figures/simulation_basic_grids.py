@@ -63,11 +63,11 @@ ei_net.uniformInhibition()
 ei_net.setConstantCurrent()
 ei_net.setStartCurrent()
 ei_net.setThetaCurrentStimulation()
-#ei_net.setPlaceCurrentInput()
+ei_net.setPlaceCurrentInput()
 
 #const_v = [0.0, 1.0]
 #ei_net.setConstantVelocityCurrent_e(const_v)
-#ei_net.setVelocityCurrentInput_e()
+ei_net.setVelocityCurrentInput_e()
 
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
@@ -83,7 +83,6 @@ if rec_all_spikes:
 else:
     nrecSpike_e = 200
     nrecSpike_i = 50
-
 
 state_record_e = [ei_net.Ne_x/2 -1 , ei_net.Ne_y/2*ei_net.Ne_x + ei_net.Ne_x/2 - 1]
 state_record_i = [ei_net.Ni_x/2 - 1, ei_net.Ni_y/2*ei_net.Ni_x + ei_net.Ni_x/2 - 1]
@@ -103,7 +102,7 @@ ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
 ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 
 
-#x_lim = [0, options.time/1e3]
+#x_lim = [options.time-0.5, options.time]
 x_lim = [options.time/1e3 - 1, options.time/1e3]
 
 ################################################################################
@@ -163,10 +162,10 @@ for trial_it in range(ei_net.no.ntrials):
         ax = subplot(211)
         plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
         ylabel('E synaptic current (pA)')
-        ylim([-1000, 2000])
+        ylim([0, 3000])
         subplot(212, sharex=ax)
         plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
-        ylim([-3000, 0])
+        ylim([-1500, 0])
         xlabel('Time (s)')
         ylabel('I synaptic current (pA)')
         xlim(x_lim)
@@ -199,7 +198,6 @@ for trial_it in range(ei_net.no.ntrials):
         axis('equal')
         savefig(output_fname + '_firing_snapshot_i.png')
 
-
         # Print a plot of bump position
         F_dt = 0.02
         F_winLen = 0.25
@@ -214,27 +212,27 @@ for trial_it in range(ei_net.no.ntrials):
         savefig(output_fname + '_bump_position.pdf')
 
         
-        #outData = ei_net.getRatData()
-        ##outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        outData = ei_net.getRatData()
+        #outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
-        ##outData['bumpPos'] = pos
-        ##outData['bumpPos_times'] = bumpPos_times
+        #outData['bumpPos'] = pos
+        #outData['bumpPos_times'] = bumpPos_times
 
-        ##outData['Fe'] = Fe
-        ##outData['Fe_t'] = Fe_t
+        #outData['Fe'] = Fe
+        #outData['Fe_t'] = Fe_t
 
-        #outData['spikeCell_e']              = spikeMon_e.aspikes[0:200]
-        #outData['spikeCell_i']              = spikeMon_i.aspikes[0:50]
-        #outData['options']                  = options._einet_optdict
-        #outData['velocityStart']            = options.theta_start_t
+        outData['spikeCell_e']              = spikeMon_e.aspikes[0:200]
+        outData['spikeCell_i']              = spikeMon_i.aspikes[0:50]
+        outData['options']                  = options._einet_optdict
+        outData['velocityStart']            = options.theta_start_t
 
-        #outData['stateMon_times']           = stateMon_Iclamp_e.times
-        #outData['stateMon_Iclamp_e_values'] = stateMon_Iclamp_e.values
-        #outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
-        #outData['stateMon_e_values']        = stateMon_e.values
-        #outData['stateMon_i_values']        = stateMon_i.values
+        outData['stateMon_times']           = stateMon_Iclamp_e.times
+        outData['stateMon_Iclamp_e_values'] = stateMon_Iclamp_e.values
+        outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
+        outData['stateMon_e_values']        = stateMon_e.values
+        outData['stateMon_i_values']        = stateMon_i.values
         
-        #savemat(output_fname + '_output.mat', outData, do_compression=False)
+        savemat(output_fname + '_output.mat', outData, do_compression=False)
 
         print "Dump after " + str(simulationClock.t)
 

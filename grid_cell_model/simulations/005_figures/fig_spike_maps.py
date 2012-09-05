@@ -29,9 +29,9 @@ from numpy.fft          import fft2
 from grid_cell_analysis import *
 
 
-jobRange = [4400, 4400]
+jobRange = [3300, 3309]
 trialNum = 0
-dumpNum = 9
+dumpNum = 19
 
 jobN = jobRange[1] - jobRange[0] + 1
 
@@ -43,7 +43,7 @@ h = 3.0
 
 # Neuron to extract spikes from
 neuronNum = 10
-spikeType = 'inhibitory'
+spikeType = 'excitatory'
 
 
 dirName = "output/"
@@ -157,7 +157,7 @@ for job_it in range(jobN):
 
 
 # Save gridness scores
-savemat('job{0:04}_gridness_scores_'.format(jobRange[0]) + '_excitatory.mat',
+savemat('job{0:04}_gridness_scores_'.format(jobRange[0]) + '_' + spikeType + '.mat',
         {'gridnessScores': gridnessScores})
 
 print "Gridness scores:"

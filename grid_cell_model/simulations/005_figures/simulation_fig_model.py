@@ -98,18 +98,21 @@ theta_n_it_range = 2
 theta_state_record_e = range(state_record_e[1] - theta_n_it_range/2,
         state_record_e[1] + theta_n_it_range/2 + 1)
 theta_state_record_i = range(state_record_i[1] - theta_n_it_range/2,
-        state_record_i[0] + theta_n_it_range/2 + 1)
+        state_record_i[1] + theta_n_it_range/2 + 1)
 theta_spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
 theta_spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
+theta_stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = theta_state_record_e, clock=simulationClock)
 theta_stateMon_Iclamp_e = StateMonitor(ei_net.E_pop, 'Iclamp', record = theta_state_record_e, clock=simulationClock)
+theta_stateMon_i = StateMonitor(ei_net.I_pop, 'vm', record = theta_state_record_i, clock=simulationClock)
 theta_stateMon_Iclamp_i = StateMonitor(ei_net.I_pop, 'Iclamp', record = theta_state_record_i, clock=simulationClock)
+theta_stateMon_Iext_e   = StateMonitor(ei_net.E_pop, 'Iext',   record = theta_state_record_e, clock=simulationClock)
 
 ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
 ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 
 ei_net.net.add(theta_spikeMon_e, theta_spikeMon_i, theta_stateMon_Iclamp_e,
-        theta_stateMon_Iclamp_i)
+        theta_stateMon_Iclamp_i, theta_stateMon_Iext_e, theta_stateMon_e, theta_stateMon_i)
 
 
 #x_lim = [options.time-0.5, options.time]
@@ -129,8 +132,11 @@ for trial_it in range(ei_net.no.ntrials):
 
     theta_spikeMon_e.reinit()
     theta_spikeMon_i.reinit()
+    theta_stateMon_e.reinit()
+    theta_stateMon_i.reinit()
     theta_stateMon_Iclamp_e.reinit()
     theta_stateMon_Iclamp_i.reinit()
+    theta_stateMon_Iext_e.reinit()
 
 
     print "  Theta stimulation..."
@@ -400,19 +406,19 @@ for trial_it in range(ei_net.no.ntrials):
             delaxes(gca())
         raster_pp.close()
 
-        ## Average histogram + one neuron
-        #f = phaseFigTemplate()
-        #hists_mean.append(np.mean(hists, 0))
-        #hists_std.append(np.std(hists, 0))
-        #plot(hist_ph, hists_mean[0], 'k', linewidth=2., zorder=1)
-        #gca().fill_between(hist_ph, hists_mean[0]+hists_std[0],
-        #        hists_mean[0]-hists_std[0],
-        #    facecolor='black', alpha=0.1)
-        #plot(hist_ph, hists[0], 'k--', dashes=(5, 2.5), zorder=2)
-        #ylabel('p(spike)')
-        #ylim([-0.01, 0.7])
-        #yticks([0, 0.7])
-        #savefig(avg_fname)
+        # Average histogram + one neuron
+        f = phaseFigTemplate()
+        hists_mean.append(np.mean(hists, 0))
+        hists_std.append(np.std(hists, 0))
+        plot(hist_ph, hists_mean[0], 'k', linewidth=2., zorder=1)
+        gca().fill_between(hist_ph, hists_mean[0]+hists_std[0],
+                hists_mean[0]-hists_std[0],
+            facecolor='black', alpha=0.1)
+        plot(hist_ph, hists[0], 'k--', dashes=(5, 2.5), zorder=2)
+        ylabel('p(spike)')
+        ylim([-0.01, 0.7])
+        yticks([0, 0.7])
+        savefig(avg_fname)
         
         
     saveIgor = True
@@ -421,93 +427,95 @@ for trial_it in range(ei_net.no.ntrials):
         h5file = openFile(output_fname + '_igor_export.h5', mode = "w", title =
                 "Attractor export figures")
 
-        ## Save slice of the raster so it is 1D
-        #raster_start = options.Ne**2/2
-        #raster_end = raster_start + options.Ne
-        #raster_x = np.ndarray((0))
-        #raster_y = np.ndarray((0))
-        #for n_it in xrange(raster_start, raster_end):
-        #    raster_x = np.hstack((raster_x, spikeMon_e[n_it]))
-        #    raster_y = np.hstack((raster_y, np.zeros((len(spikeMon_e[n_it]))) + n_it -
-        #        raster_start))
+        # Save slice of the raster so it is 1D
+        raster_start = options.Ne**2/2
+        raster_end = raster_start + options.Ne
+        raster_x = np.ndarray((0))
+        raster_y = np.ndarray((0))
+        for n_it in xrange(raster_start, raster_end):
+            raster_x = np.hstack((raster_x, spikeMon_e[n_it]))
+            raster_y = np.hstack((raster_y, np.zeros((len(spikeMon_e[n_it]))) + n_it -
+                raster_start))
 
-        #h5file.createArray(h5file.root, 'bump_raster_x', raster_x)
-        #h5file.createArray(h5file.root, 'bump_raster_y', raster_y)
+        h5file.createArray(h5file.root, 'bump_raster_x', raster_x)
+        h5file.createArray(h5file.root, 'bump_raster_y', raster_y)
 
-        ## Bump snapshot
-        #snapTime = 1.5*second
-        #firingSnapshot_e = np.reshape(Fe[:, snapTime/F_dt], (ei_net.Ne_y, ei_net.Ne_x))
-        #firingSnapshot_i = np.reshape(Fi[:, snapTime/F_dt], (ei_net.Ni_y, ei_net.Ni_x))
-        #h5file.createArray(h5file.root, 'bump_snapshot_e', firingSnapshot_e)
-        #h5file.createArray(h5file.root, 'bump_snapshot_i', firingSnapshot_i)
+        # Bump snapshot
+        snapTime = 1.5*second
+        firingSnapshot_e = np.reshape(Fe[:, snapTime/F_dt], (ei_net.Ne_y, ei_net.Ne_x))
+        firingSnapshot_i = np.reshape(Fi[:, snapTime/F_dt], (ei_net.Ni_y, ei_net.Ni_x))
+        h5file.createArray(h5file.root, 'bump_snapshot_e', firingSnapshot_e)
+        h5file.createArray(h5file.root, 'bump_snapshot_i', firingSnapshot_i)
 
-        ## Unfiltered input current, rasters and wavelets
-        #for n_it in range(len(theta_state_record_e)):
-        #    nm_e_t = 'gamma_inhib_{0}_t'.format(n_it)
-        #    nm_e_values = 'gamma_inhib_{0}_values'.format(n_it)
-        #    nm_ras_e_ph = 'gamma_ras_{0}_phases'.format(n_it)
-        #    nm_ras_e_trials = 'gamma_ras_{0}_trials'.format(n_it)
-        #    nm_h_e = 'gamma_hist_{0}'.format(n_it)
-        #    nm_wave_e = 'gamma_wavelet_e_{0}'.format(n_it)
-        #    nm_sig_ph_e = 'gamma_sig_phase_e_{0}'.format(n_it)
-        #    nm_sig_ph_mn_e = 'gamma_sig_phase_mean_e_{0}'.format(n_it)
-        #    nm_sig_ph_std_e = 'gamma_sig_phase_std_e_{0}'.format(n_it)
-        #    it = theta_state_record_e[n_it]
-        #    h5file.createArray(h5file.root, nm_e_t, theta_stateMon_Iclamp_e.times)
-        #    h5file.createArray(h5file.root, nm_e_values,
-        #            theta_stateMon_Iclamp_e[it]/pA)
+        # Unfiltered input current, rasters and wavelets
+        for n_it in range(len(theta_state_record_e)):
+            nm_e_t = 'gamma_inhib_{0}_t'.format(n_it)
+            nm_vm_e_values = 'vm_e_{0}_values'.format(n_it)
+            nm_e_values = 'gamma_inhib_{0}_values'.format(n_it)
+            nm_ras_e_ph = 'gamma_ras_{0}_phases'.format(n_it)
+            nm_ras_e_trials = 'gamma_ras_{0}_trials'.format(n_it)
+            nm_h_e = 'gamma_hist_{0}'.format(n_it)
+            nm_wave_e = 'gamma_wavelet_e_{0}'.format(n_it)
+            nm_sig_ph_e = 'gamma_sig_phase_e_{0}'.format(n_it)
+            nm_sig_ph_mn_e = 'gamma_sig_phase_mean_e_{0}'.format(n_it)
+            nm_sig_ph_std_e = 'gamma_sig_phase_std_e_{0}'.format(n_it)
+            it = theta_state_record_e[n_it]
+            h5file.createArray(h5file.root, nm_e_t, theta_stateMon_Iclamp_e.times)
+            h5file.createArray(h5file.root, nm_vm_e_values, theta_stateMon_e[it]/mV)
+            h5file.createArray(h5file.root, nm_e_values, theta_stateMon_Iclamp_e[it]/pA)
 
-        #    # Rasters
-        #    h5file.createArray(h5file.root, nm_ras_e_ph, raster_list_e[n_it][0])
-        #    h5file.createArray(h5file.root, nm_ras_e_trials, raster_list_e[n_it][1])
+            # Rasters
+            h5file.createArray(h5file.root, nm_ras_e_ph, raster_list_e[n_it][0])
+            h5file.createArray(h5file.root, nm_ras_e_trials, raster_list_e[n_it][1])
 
-        #    # Hists
-        #    h5file.createArray(h5file.root, nm_h_e, hist_list_e[n_it])
-
-
-        #    # Wavelets and signals
-        #    h5file.createArray(h5file.root, nm_wave_e, wavelet_list_e[n_it])
-        #    h5file.createArray(h5file.root, nm_sig_ph_e,
-        #            sig_phase_list_e[n_it][0])
-        #    h5file.createArray(h5file.root, nm_sig_ph_mn_e,
-        #            np.mean(sig_phase_list_e[n_it][0], 0))
-        #    h5file.createArray(h5file.root, nm_sig_ph_std_e,
-        #            np.std(sig_phase_list_e[n_it][0], 0))
+            # Hists
+            h5file.createArray(h5file.root, nm_h_e, hist_list_e[n_it])
 
 
-        ## Cross correlations of synaptic currents
-        #nm_xcorr_t = 'xcorr_ei_t'
-        #nm_xcorr   = 'xcorr_ei'
-        #xc = np.correlate(theta_stateMon_Iclamp_i[state_record_i[0]]/pA, -theta_stateMon_Iclamp_e[state_record_e[1]]/pA,  mode='full')
-        #lxc = len(xc)
-        #h5file.createArray(h5file.root, nm_xcorr_t, np.arange(-(lxc-1)/2, (lxc-1)/2)*options.sim_dt)
-        #h5file.createArray(h5file.root, nm_xcorr, xc)
+            # Wavelets and signals
+            h5file.createArray(h5file.root, nm_wave_e, wavelet_list_e[n_it])
+            h5file.createArray(h5file.root, nm_sig_ph_e,
+                    sig_phase_list_e[n_it][0])
+            h5file.createArray(h5file.root, nm_sig_ph_mn_e,
+                    np.mean(sig_phase_list_e[n_it][0], 0))
+            h5file.createArray(h5file.root, nm_sig_ph_std_e,
+                    np.std(sig_phase_list_e[n_it][0], 0))
+
+
+        # Cross correlations of synaptic currents
+        nm_xcorr_t = 'xcorr_ei_t'
+        nm_xcorr   = 'xcorr_ei'
+        xc = np.correlate(theta_stateMon_Iclamp_i[state_record_i[1]]/pA, -theta_stateMon_Iclamp_e[state_record_e[1]]/pA,  mode='full')
+        lxc = len(xc)
+        h5file.createArray(h5file.root, nm_xcorr_t, np.arange(-(lxc-1)/2, (lxc-1)/2)*options.sim_dt)
+        h5file.createArray(h5file.root, nm_xcorr, xc)
 
 
 
-        #nm_h_mean_e = 'gamma_hists_mean_e'
-        #nm_h_std_e = 'gamma_hists_std_e'
-        #h5file.createArray(h5file.root, nm_h_mean_e, hists_mean[0])
-        #h5file.createArray(h5file.root, nm_h_std_e, hists_std[0])
+        nm_h_mean_e = 'gamma_hists_mean_e'
+        nm_h_std_e = 'gamma_hists_std_e'
+        h5file.createArray(h5file.root, nm_h_mean_e, hists_mean[0])
+        h5file.createArray(h5file.root, nm_h_std_e, hists_std[0])
 
-        #for n_it in range(len(theta_state_record_i)):
-        #    nm_i_t = 'gamma_exc_{0}_t'.format(n_it)
-        #    nm_i_values = 'gamma_exc_{0}_values'.format(n_it)
-        #    it = theta_state_record_i[n_it]
-        #    h5file.createArray(h5file.root, nm_i_t, theta_stateMon_Iclamp_i.times)
-        #    h5file.createArray(h5file.root, nm_i_values,
-        #            theta_stateMon_Iclamp_i[it]/pA)
-
-
-        #nm_h_ph = 'gamma_hist_ph'
-        #nm_sig_ph_ph = 'gamma_sig_pase_phase'
-        #h5file.createArray(h5file.root, nm_h_ph , hist_ph)
-        #h5file.createArray(h5file.root, nm_sig_ph_ph , sig_phase_list_e[0][1])
+        for n_it in range(len(theta_state_record_i)):
+            nm_i_t = 'gamma_exc_{0}_t'.format(n_it)
+            nm_vm_i_values = 'vm_i_{0}_values'.format(n_it)
+            nm_i_values = 'gamma_exc_{0}_values'.format(n_it)
+            it = theta_state_record_i[n_it]
+            h5file.createArray(h5file.root, nm_i_t, theta_stateMon_Iclamp_i.times)
+            h5file.createArray(h5file.root, nm_vm_i_values, theta_stateMon_i[it]/mV)
+            h5file.createArray(h5file.root, nm_i_values, theta_stateMon_Iclamp_i[it]/pA)
 
 
-        ## Export frequency and phase labels
-        #h5file.createArray(h5file.root, 'freq_label' , expt_freq)
-        #h5file.createArray(h5file.root, 'phase_label' , expt_phases)
+        nm_h_ph = 'gamma_hist_ph'
+        nm_sig_ph_ph = 'gamma_sig_pase_phase'
+        h5file.createArray(h5file.root, nm_h_ph , hist_ph)
+        h5file.createArray(h5file.root, nm_sig_ph_ph , sig_phase_list_e[0][1])
+
+
+        # Export frequency and phase labels
+        h5file.createArray(h5file.root, 'freq_label' , expt_freq)
+        h5file.createArray(h5file.root, 'phase_label' , expt_phases)
 
 
         # Export connection profiles in the middle of the sheet
@@ -526,7 +534,33 @@ for trial_it in range(ei_net.no.ntrials):
 
         h5file.close()
 
-        print "Dump after " + str(simulationClock.t)
+
+    saveMat = False
+    if saveMat:
+        outData = {}
+
+        # Save spike times of all neurons
+        outData['spikeCell_e']              = theta_spikeMon_e.aspikes
+        outData['spikeCell_i']              = theta_spikeMon_i.aspikes
+
+
+        outData['times']                    = theta_stateMon_Iclamp_e.times
+        # Save theta signal
+        outData['theta_signal_e']           = theta_stateMon_Iext_e.values
+
+        # Save bandpass filtered inhibition
+        bp_f_start = 40
+        bp_f_stop  = 200
+        outData['gamma_bandpass']           = butterBandPass(theta_stateMon_Iclamp_e.values, simulationClock.dt, bp_f_start, bp_f_stop)
+
+        # Save average firing rate
+
+        # Other
+        outData['options']                  = options._einet_optdict
+
+        savemat(output_fname + '_output.mat', outData, do_compression=False)
+
+    print "Dump after " + str(simulationClock.t)
 
 
     print "End of trial no. " + str(trial_it) + "..."

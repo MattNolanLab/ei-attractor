@@ -34,31 +34,48 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 6.0e3   # ms
+parameters['time']              = 6e3   # ms
 parameters['theta_start_mon_t'] = 1.0e3   # ms
 
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
+
+##############################################################################
+## E-surround (AMPA_ring_like params)
+#
+#parameters['theta_noise_sigma'] = 0         # pA
+##############################################################################
+
+
+
+##############################################################################
+# I_surround (AMPA_gaussian_params)
+parameters['Iext_e_theta']      = 650       # pA
+parameters['Iext_i_theta']      = 50        # pA
+
+parameters['pAMPA_mu']          = 1.2/0.6
+
+parameters['AMPA_gaussian']     = 1         # bool
+parameters["g_AMPA_total"]      = 4500      # nS
+parameters["g_GABA_total"]      = 400       # nS
+parameters["g_uni_GABA_total"]  = 125        # nS
+
 parameters['placeT']            = 10e3      # ms
 parameters['placeDur']          = 100       # ms
 
-parameters['Iext_e_theta']      = 2000.0    # pA
-parameters['Iext_i_theta']      = 800.0     # pA
+parameters['bumpCurrentSlope']  = 0.933     # pA/(cm/s), !! this will depend on prefDirC !!
+parameters['gridSep']           = 60        # cm, grid field inter-peak distance
+parameters['theta_noise_sigma'] = 0         # pA
+##############################################################################
 
-parameters['Iext_i_const']      = 200.0     # pA
 
-parameters['taum_i_spread']     = 2.0       # ms
-parameters['EL_i_spread']       = 10.0      # mV
-
-parameters['g_AMPA_total']      = 0         # nS
-parameters['g_GABA_total']      = 550.0     # nS
-parameters['g_uni_GABA_total']  = 36.0      # nS
+parameters['noise_sigma']       = 0.0       # mV
 
 
 
-startJobNum = 0
-numRepeat = 4
+startJobNum = 21
+numRepeat = 1
 
 # Workstation parameters
 programName         = 'python2.6 -i simulation_fig_model.py'

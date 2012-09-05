@@ -128,7 +128,8 @@ class BrianGridCellNetwork(GridCellNetwork):
             Ispike      = gL*deltaT*exp((vm-Vt)/deltaT)                                : amp
             Im          = gL*(EL-vm) + g_ahp*(Eahp - vm) + Ispike + Isyn + Iext        : amp
             Isyn        = B_GABA*(gi1 - gi2)*(Esyn - vm)                               : amp
-            Iclamp      = -( gL*(EL-Vclamp) + gL*deltaT*exp((Vclamp-Vt)/deltaT) + B_GABA*(gi1 - gi2)*(Esyn - Vclamp) + Iext )                                : amp
+            Iclamp      = -(B_GABA*(gi1 - gi2)*(Esyn - Vclamp))                        : amp
+            Iclamp_all  = -( gL*(EL-Vclamp) + gL*deltaT*exp((Vclamp-Vt)/deltaT) + B_GABA*(gi1 - gi2)*(Esyn - Vclamp) + Iext )                                : amp
             dgi1/dt     = -gi1/syn_tau1                                                : siemens
             dgi2/dt     = -gi2/syn_tau2                                                : siemens
             dg_ahp/dt   = -g_ahp/tau_ahp                                               : siemens
@@ -161,7 +162,8 @@ class BrianGridCellNetwork(GridCellNetwork):
             Ispike      = gL*deltaT*exp((vm-Vt)/deltaT)                     : amp
             Im          = gL*(EL-vm)*(1+g_ad/gL) + Ispike + Isyn + Iext     : amp
             Isyn        = ge*(Esyn - vm) + gNMDA*(Esyn - vm)                : amp
-            Iclamp      = -( gL*(EL-Vclamp) + gL*deltaT*exp((Vclamp-Vt)/deltaT) + ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp) + Iext )     : amp
+            Iclamp      = -(ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp))     : amp
+            Iclamp_all  = -( gL*(EL-Vclamp) + gL*deltaT*exp((Vclamp-Vt)/deltaT) + ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp) + Iext )     : amp
             dge/dt      = -ge/syn_tau                                       : siemens
             dg_ad/dt    = -g_ad/tau_ad                                      : siemens
             dgNMDA/dt   = -gNMDA/(100*msecond)                              : siemens

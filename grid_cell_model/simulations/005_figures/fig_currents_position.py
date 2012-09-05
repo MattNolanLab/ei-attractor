@@ -323,7 +323,7 @@ for job_it in range(jobN):
 # Stats
 slope_e, interc_e, r_e, p_e, stderr_e = stats.linregress(dist_min_grids_e,
         sig_areas_e)
-print "r_e: " + str(r_e), "p_e: " + str(p_e)
+print "r_e: " + str(r_e), "p_e: " + '{0}'.format(p_e)
 
 slope_i, interc_i, r_i, p_i, stderr_i = stats.linregress(dist_min_grids_i,
         sig_areas_i)
