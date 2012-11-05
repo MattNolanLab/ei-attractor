@@ -49,7 +49,7 @@ parameters['theta_noise_sigma'] = 0         # pA
 
 
 startJobNum = 100
-numRepeat = 1
+numRepeat = 10
 
 # Workstation parameters
 programName         = 'python2.6 simulation_stripes.py'
