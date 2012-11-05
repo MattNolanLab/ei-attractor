@@ -127,9 +127,10 @@ class BrianGridCellNetwork(GridCellNetwork):
             dvm/dt      = 1/C*Im + (noise_sigma*xi/taum_mean**.5)                      : volt
             Ispike      = gL*deltaT*exp((vm-Vt)/deltaT)                                : amp
             Im          = gL*(EL-vm) + g_ahp*(Eahp - vm) + Ispike + Isyn + Iext        : amp
-            Isyn        = B_GABA*(gi1 - gi2)*(Esyn - vm)                               : amp
-            Iclamp      = -(B_GABA*(gi1 - gi2)*(Esyn - Vclamp))                        : amp
-            Iclamp_all  = -( gL*(EL-Vclamp) + gL*deltaT*exp((Vclamp-Vt)/deltaT) + B_GABA*(gi1 - gi2)*(Esyn - Vclamp) + Iext )                                : amp
+            Isyn        = B_GABA*(gi1 - gi2)*(Esyn_i - vm) + ge*(Esyn_e - vm) + gNMDA*(Esyn_e - vm) : amp
+            Iclamp      = -(B_GABA*(gi1 - gi2)*(Esyn_i - Vclamp) + ge*(Esyn_e - Vclamp) + gNMDA*(Esyn_e - Vclamp))                        : amp
+            Iclamp_all  = -( gL*(EL-Vclamp) + gL*deltaT*exp((Vclamp-Vt)/deltaT) + Iext ) + Iclamp : amp
+            dge/dt      = -ge/syn_tau_e                                                : siemens
             dgi1/dt     = -gi1/syn_tau1                                                : siemens
             dgi2/dt     = -gi2/syn_tau2                                                : siemens
             dg_ahp/dt   = -g_ahp/tau_ahp                                               : siemens
@@ -147,8 +148,10 @@ class BrianGridCellNetwork(GridCellNetwork):
             noise_sigma = self.no.noise_sigma * mV,
             deltaT      = self.no.deltaT_e * mV,
             Vt          = self.no.Vt_e * mV,
-            Esyn        = self.no.E_GABA_A * mV,
+            Esyn_i      = self.no.E_GABA_A * mV,
+            Esyn_e      = self.no.E_AMPA * mV,
             Vclamp      = self.no.Vclamp * mV,
+            syn_tau_e   = self.no.tau_AMPA * ms,
             syn_tau1    = tau1_GABA * ms,
             syn_tau2    = tau2_GABA * ms,
             B_GABA      = self.B_GABA,
@@ -253,6 +256,17 @@ class BrianGridCellNetwork(GridCellNetwork):
 
         self.net.add(self.extraGABA_conn1, self.extraGABA_conn2)
 
+
+    def uniformExcitation(self):
+        # Uniform E-E connections (only E-E, this does not consider E-I connections)
+        g_AMPA_mean = self.no.g_uni_AMPA_total / self.net_Ne / self.no.uni_AMPA_density * nS
+
+        self.uniAMPA_conn = Connection(self.E_pop, self.E_pop, 'ge')
+        self.uniAMPA_conn.connect_random(self.E_pop, self.E_pop, self.no.uni_GABA_density,
+                weight=g_AMPA_mean)
+
+
+    #def _divergentConnectEE(self, pre, post, weights):
 
     def _divergentConnectEI(self, pre, post, weights):
         self._E_W[pre, post] = weights * nS
