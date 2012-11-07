@@ -131,6 +131,7 @@ class BrianGridCellNetwork(GridCellNetwork):
             Iclamp      = -(B_GABA*(gi1 - gi2)*(Esyn_i - Vclamp) + ge*(Esyn_e - Vclamp) + gNMDA*(Esyn_e - Vclamp))                        : amp
             Iclamp_all  = -( gL*(EL-Vclamp) + gL*deltaT*exp((Vclamp-Vt)/deltaT) + Iext ) + Iclamp : amp
             dge/dt      = -ge/syn_tau_e                                                : siemens
+            dgNMDA/dt   = -gNMDA/tau_NMDA_fall                                         : siemens
             dgi1/dt     = -gi1/syn_tau1                                                : siemens
             dgi2/dt     = -gi2/syn_tau2                                                : siemens
             dg_ahp/dt   = -g_ahp/tau_ahp                                               : siemens
@@ -143,21 +144,22 @@ class BrianGridCellNetwork(GridCellNetwork):
             EL                                                                         : volt
             taum                                                                       : second
             ''',
-            C           = self.no.taum_e * self.no.gL_e * pF,
-            gL          = self.no.gL_e * nS,
-            noise_sigma = self.no.noise_sigma * mV,
-            deltaT      = self.no.deltaT_e * mV,
-            Vt          = self.no.Vt_e * mV,
-            Esyn_i      = self.no.E_GABA_A * mV,
-            Esyn_e      = self.no.E_AMPA * mV,
-            Vclamp      = self.no.Vclamp * mV,
-            syn_tau_e   = self.no.tau_AMPA * ms,
-            syn_tau1    = tau1_GABA * ms,
-            syn_tau2    = tau2_GABA * ms,
-            B_GABA      = self.B_GABA,
-            taum_mean   = self.no.taum_e * ms,
-            tau_ahp     = self.no.tau_AHP_e * ms,
-            Eahp        = self.no.E_AHP_e * mV)
+            C             = self.no.taum_e * self.no.gL_e * pF,
+            gL            = self.no.gL_e * nS,
+            noise_sigma   = self.no.noise_sigma * mV,
+            deltaT        = self.no.deltaT_e * mV,
+            Vt            = self.no.Vt_e * mV,
+            Esyn_i        = self.no.E_GABA_A * mV,
+            Esyn_e        = self.no.E_AMPA * mV,
+            Vclamp        = self.no.Vclamp * mV,
+            syn_tau_e     = self.no.tau_AMPA * ms,
+            tau_NMDA_fall = self.no.tau_NMDA_fall * ms,
+            syn_tau1      = tau1_GABA * ms,
+            syn_tau2      = tau2_GABA * ms,
+            B_GABA        = self.B_GABA,
+            taum_mean     = self.no.taum_e * ms,
+            tau_ahp       = self.no.tau_AHP_e * ms,
+            Eahp          = self.no.E_AHP_e * mV)
 
 
         self.eqs_i = Equations('''
@@ -169,7 +171,7 @@ class BrianGridCellNetwork(GridCellNetwork):
             Iclamp_all  = -( gL*(EL-Vclamp) + gL*deltaT*exp((Vclamp-Vt)/deltaT) + ge*(Esyn - Vclamp) + gNMDA*(Esyn - Vclamp) + Iext )     : amp
             dge/dt      = -ge/syn_tau                                       : siemens
             dg_ad/dt    = -g_ad/tau_ad                                      : siemens
-            dgNMDA/dt   = -gNMDA/(100*msecond)                              : siemens
+            dgNMDA/dt   = -gNMDA/tau_NMDA_fall                              : siemens
             tau_ad                                                          : second
             Iext        = Iext_const + Iext_theta + Iext_vel                : amp
             Iext_const                                                      : amp
@@ -179,15 +181,16 @@ class BrianGridCellNetwork(GridCellNetwork):
             EL                                                              : volt
             taum                                                            : second
             ''',
-            C           = self.no.taum_i * self.no.gL_i * pF,
-            gL          = self.no.gL_i * nS,
-            noise_sigma = self.no.noise_sigma * mV,
-            deltaT      = self.no.deltaT_i * mV,
-            Vt          = self.no.Vt_i * mV,
-            Esyn        = self.no.E_AMPA * mV,
-            Vclamp      = self.no.Vclamp * mV,
-            syn_tau     = self.no.tau_AMPA * ms,
-            taum_mean   = self.no.taum_i * ms)
+            C             = self.no.taum_i * self.no.gL_i * pF,
+            gL            = self.no.gL_i * nS,
+            noise_sigma   = self.no.noise_sigma * mV,
+            deltaT        = self.no.deltaT_i * mV,
+            Vt            = self.no.Vt_i * mV,
+            Esyn          = self.no.E_AMPA * mV,
+            Vclamp        = self.no.Vclamp * mV,
+            syn_tau       = self.no.tau_AMPA * ms,
+            tau_NMDA_fall = self.no.tau_NMDA_fall * ms,
+            taum_mean     = self.no.taum_i * ms)
 
 
         # Other constants
@@ -262,8 +265,10 @@ class BrianGridCellNetwork(GridCellNetwork):
         g_AMPA_mean = self.no.g_uni_AMPA_total / self.net_Ne / self.no.uni_AMPA_density * nS
 
         self.uniAMPA_conn = Connection(self.E_pop, self.E_pop, 'ge')
-        self.uniAMPA_conn.connect_random(self.E_pop, self.E_pop, self.no.uni_GABA_density,
+        self.uniAMPA_conn.connect_random(self.E_pop, self.E_pop, self.no.uni_AMPA_density,
                 weight=g_AMPA_mean)
+
+        self.net.add(self.uniAMPA_conn)
 
 
     #def _divergentConnectEE(self, pre, post, weights):

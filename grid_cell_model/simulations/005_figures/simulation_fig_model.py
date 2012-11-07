@@ -61,6 +61,7 @@ total_start_t = time.time()
 options.ndim = 'twisted_torus'
 ei_net = BrianGridCellNetwork(options, simulationOpts=None)
 ei_net.uniformInhibition()
+ei_net.uniformExcitation()
 ei_net.setConstantCurrent()
 ei_net.setStartCurrent()
 ei_net.setThetaCurrentStimulation()
@@ -88,6 +89,7 @@ spikeMon_i          = ExtendedSpikeMonitor(ei_net.I_pop[0:nrecSpike_i])
 
 stateMon_e          = RecentStateMonitor(ei_net.E_pop, 'vm',     duration=options.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
 stateMon_i          = RecentStateMonitor(ei_net.I_pop, 'vm',     duration=options.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
+stateMon_ge_e       = RecentStateMonitor(ei_net.E_pop, 'ge',     duration=options.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
 stateMon_Iclamp_e   = RecentStateMonitor(ei_net.E_pop, 'Iclamp', duration=options.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
 stateMon_Iclamp_i   = RecentStateMonitor(ei_net.I_pop, 'Iclamp', duration=options.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
 stateMon_Iext_e     = RecentStateMonitor(ei_net.E_pop, 'Iext',   duration=options.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
@@ -97,8 +99,8 @@ stateMon_Iext_i     = RecentStateMonitor(ei_net.I_pop, 'Iext',   duration=option
 theta_n_it_range = 2
 theta_state_record_e = range(state_record_e[1] - theta_n_it_range/2,
         state_record_e[1] + theta_n_it_range/2 + 1)
-theta_state_record_i = range(state_record_i[1] - theta_n_it_range/2,
-        state_record_i[1] + theta_n_it_range/2 + 1)
+theta_state_record_i = range(state_record_i[0] - theta_n_it_range/2,
+        state_record_i[0] + theta_n_it_range/2 + 1)
 theta_spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
 theta_spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
 theta_stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = theta_state_record_e, clock=simulationClock)
@@ -109,6 +111,7 @@ theta_stateMon_Iext_e   = StateMonitor(ei_net.E_pop, 'Iext',   record = theta_st
 
 ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
+ei_net.net.add(stateMon_ge_e)
 ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 
 ei_net.net.add(theta_spikeMon_e, theta_spikeMon_i, theta_stateMon_Iclamp_e,
@@ -183,12 +186,20 @@ for trial_it in range(ei_net.no.ntrials):
     xlim(x_lim)
     savefig(output_fname + '_Vm.pdf')
     
+
+    figure()
+    plot(stateMon_ge_e.times, stateMon_ge_e.values[:, 0:2]/nS)
+    ylabel('E cell ge (nS)')
+    xlabel('Time (s)')
+    xlim(x_lim)
+    savefig(output_fname + '_ge.pdf')
+    
     
     figure()
     ax = subplot(211)
     plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
     ylabel('E synaptic current (pA)')
-    ylim([0, 3000])
+    #ylim([0, 3000])
     subplot(212, sharex=ax)
     plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
     xlabel('Time (s)')
@@ -485,7 +496,7 @@ for trial_it in range(ei_net.no.ntrials):
         # Cross correlations of synaptic currents
         nm_xcorr_t = 'xcorr_ei_t'
         nm_xcorr   = 'xcorr_ei'
-        xc = np.correlate(theta_stateMon_Iclamp_i[state_record_i[1]]/pA, -theta_stateMon_Iclamp_e[state_record_e[1]]/pA,  mode='full')
+        xc = np.correlate(theta_stateMon_Iclamp_i[state_record_i[0]]/pA, -theta_stateMon_Iclamp_e[state_record_e[1]]/pA,  mode='full')
         lxc = len(xc)
         h5file.createArray(h5file.root, nm_xcorr_t, np.arange(-(lxc-1)/2, (lxc-1)/2)*options.sim_dt)
         h5file.createArray(h5file.root, nm_xcorr, xc)

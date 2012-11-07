@@ -46,7 +46,7 @@ parameters['gridSep']           = 70        # cm, grid field inter-peak distance
 
 parameters['theta_noise_sigma'] = 0         # pA
 
-parameters['output_dir']        = 'output_local'
+parameters['output_dir']        = 'output'
 
 #parameters['g_AMPA_total']      = 0.0       # pA
 
@@ -67,7 +67,9 @@ ac = ArgumentCreator(parameters)
 
 iterparams = {
 #        'bumpCurrentSlope'  : [1.15, 1.175, 1.2]
-    'g_AMPA_total' : [defaultParameters['g_AMPA_total'], 0.0]
+#    'g_AMPA_total' : [defaultParameters['g_AMPA_total'], 0.0]
+    'tau_AHP_e'  :   [20,   30,  40,  50,  60,  70,  80,  90],
+    'Iext_e_theta' : [375, 400, 450, 500, 550, 600, 650, 700]
 }
 ac.insertDict(iterparams, mult=False)
 

@@ -110,6 +110,8 @@ def getOptParser():
     optParser.add_option("--tau_AMPA",          type="float",  help="Mean of AMPA synaptic conductance time constant (ms)")
     optParser.add_option("--g_AMPA_total",      type="float",  help="Total AMPA connection synaptic conductance (nS)")
     optParser.add_option("--g_AMPA_std",        type="float",  help="Std. deviation of AMPA connections synaptic conductance (nS)")
+    optParser.add_option("--g_uni_AMPA_total",  type="float",  help="Total AMPA connections synaptic conductance (nS)")
+    optParser.add_option("--uni_AMPA_density",  type="float",  help="Density of uniform AMPA connections (fraction)")
     optParser.add_option("--g_GABA_total",      type="float",  help="Total GABA connections synaptic conductance (nS)")
     optParser.add_option("--g_uni_GABA_total",  type="float",  help="Total uniform GABA A connections synaptic conductance (nS)")
     optParser.add_option("--uni_GABA_density",  type="float",  help="Density of uniform GABA A connections")

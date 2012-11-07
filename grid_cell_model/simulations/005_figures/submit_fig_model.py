@@ -29,7 +29,7 @@ import numpy    as np
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+EDDIE = False  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -40,7 +40,7 @@ parameters['theta_start_mon_t'] = 1.0e3   # ms
 parameters['prefDirC_e']        = 0
 parameters['prefDirC_i']        = 0
 
-surround_type = "I_surround"
+surround_type = "E_surround"
 
 ##############################################################################
 ## E-surround (AMPA_ring_like params)
@@ -76,11 +76,12 @@ else:
     exit(1)
 
 
-parameters['noise_sigma']       = 0.0       # mV
+#parameters['noise_sigma']       = 0.0       # mV
+#parameters['g_uni_AMPA_total']  = 40         # nS
 
 
 
-startJobNum = 6000
+startJobNum = 7000
 numRepeat = 1
 
 # Workstation parameters
@@ -95,7 +96,8 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'Iext_e_theta' : np.arange(375, 625, 25),
+        'g_uni_AMPA_total'  : np.arange(40, 320, 20) 
+#        'Iext_e_theta' : np.arange(375, 625, 25),
 #        'Iext_i_theta' : [25, 50]
 #        'taum_e_spread' : [0.5, 0.75,   1, 1.25, 1.5, 1.75,   2, 2.25],
 #        'EL_e_spread'   : [0.5,    1, 1.5,    2, 2.5,    3, 3.5,    4]
@@ -103,7 +105,7 @@ iterparams = {
 #        'g_GABA_total'  : [500, 525, 550, 575]
 #        'g_uni_GABA_total'  : [0, 25, 50, 75, 100, 125, 150, 175]
 #    'pAMPA_mu'  : np.array([0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]) / 0.6
-        'noise_sigma'   : np.arange(0, 4.1, 0.2)
+#        'noise_sigma'   : np.arange(0, 4.1, 0.2)
 }
 ac.insertDict(iterparams, mult=True, printout=True)
 
