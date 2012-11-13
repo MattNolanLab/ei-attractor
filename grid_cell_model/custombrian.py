@@ -64,6 +64,27 @@ class ExtendedSpikeMonitor(SpikeMonitor):
         lg.debug('End firing rate processing')
         return (r/winLen, times)
 
+
+    def getFiringRateMiddleTheta(self, theta_start_t, theta_freq, tend, winlen):
+        '''
+        Compute firing rate for every neuron with window of length winlen, in
+        the middle of each theta cycle.
+        This will produce an array of average firing rates for each theta cycle,
+        until tend.
+        '''
+        theta_T = 1. / theta_freq
+        return self.getFiringRate(theta_start_t + .5*theta_T, tend, theta_T, winlen)
+
+
+    def getAvgFiringRateMiddleTheta(self, theta_start_t, theta_freq, tend, winlen):
+        '''
+        Do the same thing as getFiringRateMiddleTheta, but for each neuron also
+        compute its average firing rate from theta_start_t to tend
+        '''
+        fr, times = self.getFiringRateMiddleTheta(theta_start_t, theta_freq, tend, winlen)
+        return np.mean(fr, 1)
+
+
     def getNSpikes(self):
         total = np.ndarray(len(self.aspikes))
         for n_it in xrange(len(self.aspikes)):

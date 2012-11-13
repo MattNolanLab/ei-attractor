@@ -49,6 +49,7 @@ options         = setOptionDictionary(parser, options)
 
 # Other
 figSize = (12,8)
+histFigSize = (6, 4)
 
 
 ################################################################################
@@ -99,8 +100,8 @@ stateMon_Iext_i     = RecentStateMonitor(ei_net.I_pop, 'Iext',   duration=option
 theta_n_it_range = 2
 theta_state_record_e = range(state_record_e[1] - theta_n_it_range/2,
         state_record_e[1] + theta_n_it_range/2 + 1)
-theta_state_record_i = range(state_record_i[0] - theta_n_it_range/2,
-        state_record_i[0] + theta_n_it_range/2 + 1)
+theta_state_record_i = range(state_record_i[1] - theta_n_it_range/2,
+        state_record_i[1] + theta_n_it_range/2 + 1)
 theta_spikeMon_e = ExtendedSpikeMonitor(ei_net.E_pop)
 theta_spikeMon_i = ExtendedSpikeMonitor(ei_net.I_pop)
 theta_stateMon_e = StateMonitor(ei_net.E_pop, 'vm', record = theta_state_record_e, clock=simulationClock)
@@ -154,10 +155,46 @@ for trial_it in range(ei_net.no.ntrials):
 
     F_tstart = 0
     F_tend = options.time*1e-3
-    F_dt = 0.02
+    F_dt = 0.05
     F_winLen = 0.25
     Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
     Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
+    Fe_mean = spikeMon_e.getAvgFiringRateMiddleTheta(options.theta_start_mon_t*1e-3, options.theta_freq, options.time*1e-3, .5/options.theta_freq)
+    Fi_mean = spikeMon_i.getAvgFiringRateMiddleTheta(options.theta_start_mon_t*1e-3, options.theta_freq, options.time*1e-3, .5/options.theta_freq)
+
+    # Average firing rate of stellate cells in the middle of each theta cycle
+    figure(figsize=figSize)
+    pcolormesh(np.reshape(Fe_mean, (ei_net.Ne_y, ei_net.Ne_x)))
+    xlabel('E neuron no.')
+    ylabel('E neuron no.')
+    colorbar()
+    axis('equal')
+    savefig(output_fname + '_avg_Fe_theta.png')
+    
+    figure(figsize=histFigSize)
+    hist(Fe_mean, 20)
+    xlabel('E Firing rate (Hz)')
+    ylabel('Count')
+    tight_layout()
+    savefig(output_fname + '_avg_Fe_theta_hist.pdf')
+
+
+
+    # Average firing rate of interneurons in the middle of each theta cycle
+    figure(figsize=figSize)
+    pcolormesh(np.reshape(Fi_mean, (ei_net.Ni_y, ei_net.Ni_x)))
+    xlabel('I neuron no.')
+    ylabel('I neuron no.')
+    colorbar()
+    axis('equal')
+    savefig(output_fname + '_avg_Fi_theta.png')
+
+    figure(figsize=histFigSize)
+    hist(Fi_mean, 20)
+    xlabel('I Firing rate (Hz)')
+    ylabel('Count')
+    tight_layout()
+    savefig(output_fname + '_avg_Fi_theta_hist.pdf')
 
 
     # plot firing rates
@@ -496,7 +533,7 @@ for trial_it in range(ei_net.no.ntrials):
         # Cross correlations of synaptic currents
         nm_xcorr_t = 'xcorr_ei_t'
         nm_xcorr   = 'xcorr_ei'
-        xc = np.correlate(theta_stateMon_Iclamp_i[state_record_i[0]]/pA, -theta_stateMon_Iclamp_e[state_record_e[1]]/pA,  mode='full')
+        xc = np.correlate(theta_stateMon_Iclamp_i[state_record_i[1]]/pA, -theta_stateMon_Iclamp_e[state_record_e[1]]/pA,  mode='full')
         lxc = len(xc)
         h5file.createArray(h5file.root, nm_xcorr_t, np.arange(-(lxc-1)/2, (lxc-1)/2)*options.sim_dt)
         h5file.createArray(h5file.root, nm_xcorr, xc)

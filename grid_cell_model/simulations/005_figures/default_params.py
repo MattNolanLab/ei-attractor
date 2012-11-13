@@ -99,8 +99,8 @@ defaultParameters = {
         "tau_AMPA"              :   1,            # ms
         "tau_NMDA_fall"         :    100,         # ms, only a single exponential used here
         "g_AMPA_total"          :   1400,         # nS
-        "g_uni_AMPA_total"      :    0,          # nS
-        "uni_AMPA_density"      :   0.00,         # fraction
+        "g_uni_AMPA_total"      :    0,           # nS
+        "uni_AMPA_density"      :   0.001,        # fraction
         "tau_GABA_A_rise"       :   0.1,          # ms
         "tau_GABA_A_fall"       :   5,            # ms
         "g_GABA_total"          :   2160,         # nS
