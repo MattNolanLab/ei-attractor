@@ -21,6 +21,8 @@
 import numpy as np
 from matplotlib.pyplot import *
 
+from common import *
+
 
 
 class PlaceCells(object):
@@ -40,23 +42,20 @@ class PlaceCells(object):
         self.centers    = np.array(centers)
         self.widths     = np.array(widths)
 
-        if (self.maxRates.shape != (self.N, 2)):
-            raise Exception('maxRates must be an array with dimensions (N, 2)')
+        print self.centers.shape
 
         if (self.centers.shape != (self.N, 2)):
             raise Exception('centers must be an array with dimensions (N, 2)')
 
-        if (self.widths.shape != (self.N, 2)):
-            raise Exception('widths must be an array with dimensions (N, 2)')
 
-    
     def getFiringRates(self, pos):
         '''
         Return a vector of firing rates for each place cell, given position
         'pos'
         '''
-        return maxRates * np.exp(- ((pos[0] - centers[:, 0])**2 + (pos[1] -
-            centers[:, 1])**2) / (2.0*widths**2)))
+        return self.maxRates * \
+                np.exp(- ((pos[0] - self.centers[:, 0])**2 + (pos[1] - self.centers[:, 1])**2) /\
+                (2.0*self.widths**2))
 
 
     def remap(self, envN):
@@ -64,11 +63,11 @@ class PlaceCells(object):
         Remap the centers and possibly firing rates to the environment number
         envN
         '''
-        pass
+        raise NotImplementedException(PlaceCells.remap.__name__)
 
 
 
-class UniformBoxPlaceCells(PlaceCells):
+class UniformGridBoxPlaceCells(PlaceCells):
     '''
     Generate a uniform distribution of place cells in a 2D environment of a
     rectangular shape.
@@ -88,22 +87,43 @@ class UniformBoxPlaceCells(PlaceCells):
 
         cx           = np.linspace(0, self.boxSize[0], N[0])
         cy           = np.linspace(0, self.boxSize[1], N[1])
-        ctr_x, ctr_y = np.meshgrid(px, py)
-        centers = np.hstack((cx.flatten(), cy.flatten())).T
+        ctr_x, ctr_y = np.meshgrid(cx, cy)
+        centers = np.vstack((ctr_x.flatten(), ctr_y.flatten())).T
         PlaceCells.__init__(self, N[0]*N[1], maxRates, centers, widths)
 
 
-    def remap(self, envN):
-        pass
+#    def remap(self, envN):
+#        pass
+
+
+    def getFiringFields(self, Ns):
+        '''
+        Get firing fields of neurons specified in Ns.
+        if Ns is None, return firing fields for all neurons
+        '''
+        if Ns is None:
+            Narr = np.arange(self.N)
+        else:
+            Narr = Ns
+
+        fields = np.ndarray((len(Narr), szPosY, szPosX))
+        for
+
 
 
 
 if __name__ == '__main__':
-    boxSize = (1.0, 1.0)
+    boxSize = (200, 200)
     N = (10, 10)
-    maxRates = 15 # Hz
-    widths = 0.1
+    totalSz = N[0]*N[1]
+    maxRates = 15
+    widths = 20
 
-    PC = UniformBoxPlaceCells(boxSize, N, maxRates, widths)
+    PC = UniformGridBoxPlaceCells(boxSize, N, maxRates, widths)
     print PC.centers
+
+    pos = (0, 0)
+    print PC.getFiringRates(pos)
+
+
 
