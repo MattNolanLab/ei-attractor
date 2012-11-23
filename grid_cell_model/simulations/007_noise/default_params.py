@@ -62,11 +62,11 @@ defaultParameters = {
         "shuffleIextGaussian"   :       0,        # 0 or 1
         "theta_start_t"         :   0.5e3,        # ms
         "theta_freq"            :   8,            # Hz
-        "theta_noise_sigma"     :   0.0,            # pA
+        "theta_noise_sigma"     :   0.0,          # pA
         "theta_ph_jit_mean_e"   :   0.0,          # rad
-        "theta_ph_jit_spread_e" :   0.0,            # rad
+        "theta_ph_jit_spread_e" :   0.0,          # rad
         "theta_ph_jit_mean_i"   :   0.0,          # rad
-        "theta_ph_jit_spread_i" :   0.0,            # rad
+        "theta_ph_jit_spread_i" :   0.0,          # rad
 
         "taum_e"                :   9.3,          # ms
         "taum_e_spread"         :   0.31,         # ms

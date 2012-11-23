@@ -21,7 +21,10 @@
 import numpy as np
 from matplotlib.pyplot import *
 
-from common import *
+from common import NotImplementedException
+
+
+__all__ = ['PlaceCells', 'UniformBoxPlaceCells']
 
 
 
@@ -67,7 +70,7 @@ class PlaceCells(object):
 
 
 
-class UniformGridBoxPlaceCells(PlaceCells):
+class UniformBoxPlaceCells(PlaceCells):
     '''
     Generate a uniform distribution of place cells in a 2D environment of a
     rectangular shape.
@@ -88,21 +91,18 @@ class UniformGridBoxPlaceCells(PlaceCells):
 
         if not random:
             # Uniform grid
-            cx           = np.linspace(0, self.boxSize[0], N[0])
-            cy           = np.linspace(0, self.boxSize[1], N[1])
+            cx           = np.linspace(-self.boxSize[0]/2.0, self.boxSize[0]/2.0, N[0])
+            cy           = np.linspace(-self.boxSize[1]/2.0, self.boxSize[1]/2.0, N[1])
             ctr_x, ctr_y = np.meshgrid(cx, cy)
             centers = np.vstack((ctr_x.flatten(), ctr_y.flatten())).T
         else:
             # Draw from a random distribution
-            centers = np.random.rand(N[0]*N[1], 2)
+            centers = np.random.rand(N[0]*N[1], 2) - 0.5
             centers[:, 0] *= self.boxSize[0]
             centers[:, 1] *= self.boxSize[1]
 
         PlaceCells.__init__(self, N[0]*N[1], maxRates, centers, widths)
 
-
-#    def remap(self, envN):
-#        pass
 
 
     def getFiringFields(self, Ns, dx):
@@ -131,13 +131,13 @@ class UniformGridBoxPlaceCells(PlaceCells):
 
 
 if __name__ == '__main__':
-    boxSize = (200, 200)
-    N = (100, 100)
+    boxSize = (121, 200)
+    N = (200, 200)
     totalSz = N[0]*N[1]
     maxRates = 15
     widths = 40
 
-    PC = UniformGridBoxPlaceCells(boxSize, N, maxRates, widths, random=True)
+    PC = UniformBoxPlaceCells(boxSize, N, maxRates, widths, random=True)
     print PC.centers
 
     pos = (0, 0)
@@ -149,6 +149,9 @@ if __name__ == '__main__':
     #for it in xrange(N[0]*N[1]):
     #    figure()
     #    pcolor(X, Y, fields[it, :, :])
+
+    plot(PC.centers[:, 0], PC.centers[:, 1], '.')
+    show()
     
 
 
