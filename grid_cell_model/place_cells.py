@@ -73,22 +73,31 @@ class UniformGridBoxPlaceCells(PlaceCells):
     rectangular shape.
     '''
 
-    def __init__(self, boxSize, N, maxRates, widths):
+    def __init__(self, boxSize, N, maxRates, widths, random = False):
         '''
         N        A tuple containing number of place cells in each dimension (X, Y)
         maxRates An array of size Nx*Ny specifying max. firing rate in the place
                     field.
         widths   An array of widths of place fields (they are circular)
+        random   Uniform, but from a random distribution?
         '''
         self.boxSize = boxSize
 
         if (boxSize[0] <= 0 or boxSize[1] <= 0):
             raise Exception('boxSize dimenstions must be positive!')
 
-        cx           = np.linspace(0, self.boxSize[0], N[0])
-        cy           = np.linspace(0, self.boxSize[1], N[1])
-        ctr_x, ctr_y = np.meshgrid(cx, cy)
-        centers = np.vstack((ctr_x.flatten(), ctr_y.flatten())).T
+        if not random:
+            # Uniform grid
+            cx           = np.linspace(0, self.boxSize[0], N[0])
+            cy           = np.linspace(0, self.boxSize[1], N[1])
+            ctr_x, ctr_y = np.meshgrid(cx, cy)
+            centers = np.vstack((ctr_x.flatten(), ctr_y.flatten())).T
+        else:
+            # Draw from a random distribution
+            centers = np.random.rand(N[0]*N[1], 2)
+            centers[:, 0] *= self.boxSize[0]
+            centers[:, 1] *= self.boxSize[1]
+
         PlaceCells.__init__(self, N[0]*N[1], maxRates, centers, widths)
 
 
@@ -96,34 +105,50 @@ class UniformGridBoxPlaceCells(PlaceCells):
 #        pass
 
 
-    def getFiringFields(self, Ns):
+    def getFiringFields(self, Ns, dx):
         '''
         Get firing fields of neurons specified in Ns.
         if Ns is None, return firing fields for all neurons
+
+        dx      Spacing of positions in the box
         '''
         if Ns is None:
             Narr = np.arange(self.N)
         else:
             Narr = Ns
 
-        fields = np.ndarray((len(Narr), szPosY, szPosX))
-        for
+        posX = np.arange(0, self.boxSize[0], dx)
+        posY = np.arange(0, self.boxSize[1], dx)
+
+        fields = np.ndarray((len(Narr), len(posY), len(posX)))
+        for posX_it in xrange(len(posX)):
+            for posY_it in xrange(len(posY)):
+                fields[:, posY_it, posX_it] = self.getFiringRates((posX[posX_it], posY[posY_it]))
+
+        return fields, (posX, posY)
 
 
 
 
 if __name__ == '__main__':
     boxSize = (200, 200)
-    N = (10, 10)
+    N = (100, 100)
     totalSz = N[0]*N[1]
     maxRates = 15
-    widths = 20
+    widths = 40
 
-    PC = UniformGridBoxPlaceCells(boxSize, N, maxRates, widths)
+    PC = UniformGridBoxPlaceCells(boxSize, N, maxRates, widths, random=True)
     print PC.centers
 
     pos = (0, 0)
     print PC.getFiringRates(pos)
 
+    #fields_dx = 10
+    #fields, (posX, posY) = PC.getFiringFields(None, fields_dx)
+    #X, Y = np.meshgrid(posX, posY)
+    #for it in xrange(N[0]*N[1]):
+    #    figure()
+    #    pcolor(X, Y, fields[it, :, :])
+    
 
 
