@@ -29,25 +29,30 @@ x0 = 0
 x1 = 1
 d = np.arange(x0, x1, dx)
 
-y_dim = np.sqrt(3)/2.
-pAMPA_mu = y_dim/2.
+y_dim = np.sqrt(3)/2.0
+pAMPA_mu = y_dim/2.0
 pAMPA_sigma = 0.5/6
+pGABA_mu    = y_dim/2.0
 pGABA_sigma = 0.5/6
 pGABA_const = 0.1
 
 shift = 0.1
 
 
-exc_profile         = np.exp(-(d - pAMPA_mu)**2/2/pAMPA_sigma**2)
-exc_profile_shifted = np.exp(-(d - pAMPA_mu - shift)**2/2/pAMPA_sigma**2)
-inh_profile         = (1-pGABA_const)*np.exp(-d**2/2./pGABA_sigma**2) + pGABA_const
+# Excitatory surround
+ES_exc_profile         = np.exp(-(d - pAMPA_mu)**2/2/pAMPA_sigma**2)
+ES_exc_profile_shifted = np.exp(-(d - pAMPA_mu - shift)**2/2/pAMPA_sigma**2)
+ES_inh_profile         = (1-pGABA_const)*np.exp(-d**2/2./pGABA_sigma**2) + pGABA_const
+# Inhibitory surround
+IS_exc_profile         = np.exp(-d**2/2./pAMPA_sigma**2)
+IS_inh_profile         = (1-pGABA_const)*np.exp(-(d - pGABA_mu)**2/2/pGABA_sigma**2) + pGABA_const
 
 rcParams['font.size'] = 18
 
 figure(figsize=(6, 4))
-plot(d, exc_profile, linewidth=3)
+plot(d, ES_exc_profile, linewidth=3)
 hold('on')
-plot(d, inh_profile, linewidth=3)
+plot(d, ES_inh_profile, linewidth=3)
 xlabel('Distance on torus (norm.)')
 ylabel('Conn strength (norm.)')
 legend(('Excitatory', 'Inhibitory'))
@@ -56,9 +61,11 @@ savefig('conn_weights.png')
 h5file = openFile('conn_weights_func.h5', mode = "w")
 
 h5file.createArray(h5file.root, 'd', d)
-h5file.createArray(h5file.root, 'exc_profile', exc_profile)
-h5file.createArray(h5file.root, 'exc_profile_shifted', exc_profile_shifted)
-h5file.createArray(h5file.root, 'inh_profile', inh_profile)
+h5file.createArray(h5file.root, 'ES_exc_profile',         ES_exc_profile)
+h5file.createArray(h5file.root, 'ES_exc_profile_shifted', ES_exc_profile_shifted)
+h5file.createArray(h5file.root, 'ES_inh_profile',         ES_inh_profile)
+h5file.createArray(h5file.root, 'IS_exc_profile',         IS_exc_profile)
+h5file.createArray(h5file.root, 'IS_inh_profile',         IS_inh_profile)
 
 h5file.close()
 
