@@ -43,9 +43,12 @@ class PlaceCells(object):
         self.N          = N
         self.maxRates   = np.array(maxRates)
         self.centers    = np.array(centers)
-        self.widths     = np.array(widths)
+        if isinstance(widths, int):
+            self.widths = widths
+        else:
+            self.widths     = np.array(widths)
 
-        print self.centers.shape
+        #print self.centers.shape
 
         if (self.centers.shape != (self.N, 2)):
             raise Exception('centers must be an array with dimensions (N, 2)')
@@ -59,6 +62,24 @@ class PlaceCells(object):
         return self.maxRates * \
                 np.exp(- ((pos[0] - self.centers[:, 0])**2 + (pos[1] - self.centers[:, 1])**2) /\
                 (2.0*self.widths**2))
+
+
+    def getFiringField(self, positions, neuronN):
+        '''
+        Return a firing field for a list of positions of a cell with id 'neuronN'
+
+        neuronN     An integer ID of the neuron
+        positions   A tuple of position arrays (X, Y)
+        '''
+        if isinstance(self.widths, int):
+            width = self.widths
+        else:
+            width = self.widths[neuronN]
+
+        return self.maxRates * \
+                np.exp(- ((positions[0] - self.centers[neuronN, 0])**2 +
+                    (positions[1] - self.centers[neuronN, 1])**2) /\
+                    (2.0*width**2))
 
 
     def remap(self, envN):
@@ -117,8 +138,8 @@ class UniformBoxPlaceCells(PlaceCells):
         else:
             Narr = Ns
 
-        posX = np.arange(0, self.boxSize[0], dx)
-        posY = np.arange(0, self.boxSize[1], dx)
+        posX = np.arange(-self.boxSize[0]/2.0, self.boxSize[0]/2.0, dx)
+        posY = np.arange(-self.boxSize[1]/2.0, self.boxSize[1]/2.0, dx)
 
         fields = np.ndarray((len(Narr), len(posY), len(posX)))
         for posX_it in xrange(len(posX)):
@@ -126,6 +147,21 @@ class UniformBoxPlaceCells(PlaceCells):
                 fields[:, posY_it, posX_it] = self.getFiringRates((posX[posX_it], posY[posY_it]))
 
         return fields, (posX, posY)
+
+
+    def getSingleCellFiringField(self, neuronN, dx):
+        '''
+        Return a firing field of a single place cell.
+
+        dx      Spacing of positions in the box
+        '''
+        posX = np.arange(-self.boxSize[0]/2.0, self.boxSize[0]/2.0, dx)
+        posY = np.arange(-self.boxSize[1]/2.0, self.boxSize[1]/2.0, dx)
+
+        positions = np.meshgrid(posX, posY)
+        field = self.getFiringField(positions, neuronN)
+
+        return (field, positions)
 
 
 
@@ -143,13 +179,23 @@ if __name__ == '__main__':
     pos = (0, 0)
     print PC.getFiringRates(pos)
 
-    #fields_dx = 10
+    fields_dx = 2
     #fields, (posX, posY) = PC.getFiringFields(None, fields_dx)
     #X, Y = np.meshgrid(posX, posY)
     #for it in xrange(N[0]*N[1]):
     #    figure()
     #    pcolor(X, Y, fields[it, :, :])
 
+    # Single cell firing field
+    neuronN = 0
+    field, positions = PC.getSingleCellFiringField(neuronN, fields_dx)
+    figure()
+    pcolor(positions[0], positions[1], field)
+    axis('equal')
+    colorbar()
+
+
+    figure()
     plot(PC.centers[:, 0], PC.centers[:, 1], '.')
     show()
     
