@@ -27,10 +27,13 @@
 #include "sliexceptions.h"
 #include "nestmodule.h"
 
+
 // include headers with your own stuff
 #include "gridcells.h"
 #include "iaf_gridcells.h"
 #include "ramp_current_generator.h"
+#include "place_cell_generator.h"
+
 
 // -- Interface to dynamic module loader ---------------------------------------
 
@@ -76,8 +79,8 @@ mynest::GridCells::~GridCells()
            to load it.
       */
      return std::string(
-       "/mymodule /C++ ($Revision: 8512 $) provide-component "
-       "/mymodule /SLI (7165) require-component"
+       "/gridcells /C++ ($Revision: 8512 $) provide-component "
+       "/gridcells /SLI (7165) require-component"
        );
    }
 
@@ -194,6 +197,9 @@ mynest::GridCells::~GridCells()
 
     nest::register_model<nest::ramp_current_generator>(nest::NestModule::get_network(), 
                                         "ramp_current_generator");
+
+    nest::register_model<nest::place_cell_generator>(nest::NestModule::get_network(), 
+                                        "place_cell_generator");
 
 
     /* Register a SLI function.

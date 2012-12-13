@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "Bootstrapping GridCells module"
+echo "Bootstrapping MyModule"
 
 if test -d autom4te.cache ; then
 # we must remove this cache, because it
@@ -22,13 +22,7 @@ else
 fi
 
 libtool_major=`$LIBTOOLIZE --version | head -n1 | cut -d\) -f2 | cut -d\. -f1`
-if test $libtool_major -lt 2; then
-  echo "  -> Patching configure.ac for libtoolize 1.5..."
-  patch -s -f -p0 < extras/libtool-1.5-fix.patch
-  $LIBTOOLIZE --force --copy --ltdl
-else
-  $LIBTOOLIZE --force --copy --quiet --ltdl
-fi
+$LIBTOOLIZE --force --copy --ltdl
 
 echo "  -> Re-running aclocal ..."
 if test $libtool_major -le 2; then
