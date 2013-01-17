@@ -21,6 +21,7 @@
 
 from default_params import defaultParameters
 from common         import *
+from scipy.io       import savemat
 
 import logging  as lg
 import numpy    as np
@@ -42,52 +43,18 @@ parameters['theta_start_mon_t'] = 1.0e3   # ms
 parameters['prefDirC_e']        = 0
 parameters['prefDirC_i']        = 0
 
-surround_type = "E_surround"
+parameters['theta_noise_sigma'] = 0         # pA
 
-##############################################################################
-## E-surround (AMPA_ring_like params)
-#
-if surround_type == "E_surround":
-    parameters['theta_noise_sigma'] = 0         # pA
-##############################################################################
+
+parameters['noise_sigma']       = 0.0       # mV
 
 
 
-##############################################################################
-# I_surround (AMPA_gaussian_params)
-elif surround_type == "I_surround":
-#    parameters['Iext_e_theta']      = 650       # pA
-    parameters['Iext_i_theta']      = 25        # pA
-    
-    parameters['pAMPA_mu']          = 1.2/0.6
-    
-    parameters['AMPA_gaussian']     = 1         # bool
-    parameters["g_AMPA_total"]      = 4500      # nS
-    parameters["g_GABA_total"]      = 400       # nS
-    parameters["g_uni_GABA_total"]  = 125        # nS
-    
-    parameters['placeT']            = 10e3      # ms
-    parameters['placeDur']          = 100       # ms
-    
-    parameters['bumpCurrentSlope']  = 0.933     # pA/(cm/s), !! this will depend on prefDirC !!
-    parameters['gridSep']           = 60        # cm, grid field inter-peak distance
-    parameters['theta_noise_sigma'] = 0         # pA
-##############################################################################
-else:
-    print "unknown surround profile type!"
-    exit(1)
-
-
-#parameters['noise_sigma']       = 0.0       # mV
-#parameters['g_uni_AMPA_total']  = 40         # nS
-
-
-
-startJobNum = 0
+startJobNum = 1
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 -i simulation_param_sweep.py'
+programName         = 'python2.6 simulation_param_sweep.py'
 blocking            = True
 
 # Cluster parameters
@@ -97,15 +64,49 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#    'theta_noise_sigma' : [0, 20, 40, 60, 80, 100, 120, 140]
-#    #'noise_sigma'   : np.arange(0, 4.1, 0.2)
-#}
-#ac.insertDict(iterparams, mult=True, printout=True)
+# Range of parameters around default values
+# Let's choose a 10% jitter around the default values
+Ndim        = 2     # Number of values for each dimension
+jitter_frac = 0.1    # Fraction
+Iext_e_amp_default = parameters['Iext_e_const'] + parameters['Iext_e_theta']
+
+jitter_frac_arr = np.linspace(1.0-jitter_frac, 1.0+jitter_frac, Ndim)
+
+theta_depth_range = jitter_frac_arr*parameters['Iext_e_const']
+Iext_e_amp_range  = jitter_frac_arr*Iext_e_amp_default
+
+Iext_e_const_arr     = []
+Iext_e_theta_arr     = []
+g_AMPA_total_arr     = []
+g_GABA_total_arr     = []
+g_uni_GABA_total_arr = []
+for theta_depth in theta_depth_range:
+    for Iext_e_amp in Iext_e_amp_range:
+        for E_coupling in jitter_frac_arr:
+            for I_coupling in jitter_frac_arr:
+                Iext_e_const_arr.append(theta_depth)
+                Iext_e_theta_arr.append(Iext_e_amp - theta_depth)
+                g_AMPA_total_arr.append(E_coupling*parameters['g_AMPA_total'])
+                g_GABA_total_arr.append(I_coupling*parameters['g_GABA_total'])
+                g_uni_GABA_total_arr.append(I_coupling*parameters['g_uni_GABA_total'])
+
+
+iterparams = {
+        'Iext_e_const'      : Iext_e_const_arr,
+        'Iext_e_theta'      : Iext_e_theta_arr,
+        'g_AMPA_total'      : g_AMPA_total_arr,
+        'g_GABA_total'      : g_GABA_total_arr,
+        'g_uni_GABA_total'  : g_uni_GABA_total_arr
+}
+ac.insertDict(iterparams, mult=False, printout=True)
 
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
-submitter.submitAll(startJobNum, numRepeat, dry_run=False)
+submitter.submitAll(startJobNum, numRepeat, dry_run=True)
+
+# Export the iterparams
+savemat(parameters['output_dir'] + '/param_sweep_iterparams.mat', iterparams, oned_as='row')
+

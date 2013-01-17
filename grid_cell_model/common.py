@@ -113,7 +113,7 @@ class ArgumentCreator(object):
         '''
         Insert a dictionary with the parameter name and a list of values. If
         mult==True, then for each parameter value in 'd', copy the parameter set
-        with the value from 'd'. In other words, this allow to create
+        with the value from 'd'. In other words, this allows to create
         multidimensional parameters batch jobs. If mult==false, then the size of
         list in d must be the same size as the total number of items in the
         resulting parameter list.
