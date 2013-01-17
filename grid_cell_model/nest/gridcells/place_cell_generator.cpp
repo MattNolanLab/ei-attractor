@@ -27,11 +27,13 @@
 #include "dictutils.h"
 #include "exceptions.h"
 
+using namespace nest;
+
 /* ----------------------------------------------------------------
  * Default constructors defining default parameter
  * ---------------------------------------------------------------- */
 
-nest::place_cell_generator::Parameters_::Parameters_()
+mynest::place_cell_generator::Parameters_::Parameters_()
   : rate_(0.0    )  // pA
 {}
 
@@ -40,14 +42,14 @@ nest::place_cell_generator::Parameters_::Parameters_()
  * Parameter extraction and manipulation functions
  * ---------------------------------------------------------------- */
 
-void nest::place_cell_generator::Parameters_::get(DictionaryDatum &d) const
+void mynest::place_cell_generator::Parameters_::get(DictionaryDatum &d) const
 {
-  def<double>(d, names::rate, rate_);
+  def<double>(d, nest::names::rate, rate_);
 }
 
-void nest::place_cell_generator::Parameters_::set(const DictionaryDatum& d)
+void mynest::place_cell_generator::Parameters_::set(const DictionaryDatum& d)
 {
-  updateValue<double>(d, names::rate, rate_);
+  updateValue<double>(d, nest::names::rate, rate_);
   if ( rate_ < 0 )
     throw BadProperty("The rate cannot be negative.");
 }
@@ -57,13 +59,13 @@ void nest::place_cell_generator::Parameters_::set(const DictionaryDatum& d)
  * Default and copy constructor for node
  * ---------------------------------------------------------------- */
 
-nest::place_cell_generator::place_cell_generator()
+mynest::place_cell_generator::place_cell_generator()
   : Node(),
     device_(),
     P_()
 {}
 
-nest::place_cell_generator::place_cell_generator(const place_cell_generator& n)
+mynest::place_cell_generator::place_cell_generator(const place_cell_generator& n)
   : Node(n),
     device_(n.device_),
     P_(n.P_)
@@ -74,19 +76,19 @@ nest::place_cell_generator::place_cell_generator(const place_cell_generator& n)
  * Node initialization functions
  * ---------------------------------------------------------------- */
 
-void nest::place_cell_generator::init_state_(const Node& proto)
+void mynest::place_cell_generator::init_state_(const Node& proto)
 {
   const place_cell_generator& pr = downcast<place_cell_generator>(proto);
 
   device_.init_state(pr.device_);
 }
 
-void nest::place_cell_generator::init_buffers_()
+void mynest::place_cell_generator::init_buffers_()
 {
   device_.init_buffers();
 }
 
-void nest::place_cell_generator::calibrate()
+void mynest::place_cell_generator::calibrate()
 {
   device_.calibrate();
 
@@ -99,7 +101,7 @@ void nest::place_cell_generator::calibrate()
  * Update function and event hook
  * ---------------------------------------------------------------- */
 
-void nest::place_cell_generator::update(Time const & T, const long_t from, const long_t to)
+void mynest::place_cell_generator::update(Time const & T, const long_t from, const long_t to)
 {
   assert(to >= 0 && (delay) from < Scheduler::get_min_delay());
   assert(from < to);
@@ -118,14 +120,14 @@ void nest::place_cell_generator::update(Time const & T, const long_t from, const
 
     if ( n_spikes > 0 ) // we must not send events with multiplicity 0
     {
-      SpikeEvent se;
+      nest::SpikeEvent se;
       se.set_multiplicity(n_spikes);
       network()->send(*this, se, lag);
     }
   }
 }
 
-//void nest::place_cell_generator::event_hook(DSSpikeEvent& e)
+//void mynest::place_cell_generator::event_hook(DSSpikeEvent& e)
 //{
 //  librandom::RngPtr rng = net_->get_rng(get_thread());
 //  ulong_t n_spikes = V_.poisson_dev_.uldev(rng);

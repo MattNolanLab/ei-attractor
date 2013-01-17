@@ -30,7 +30,7 @@
 #include "connection.h"
 #include "poisson_randomdev.h"
 
-namespace nest
+namespace mynest
 {
 /*! Class poisson_generator simulates a large population
     of randomly (Poisson) firing neurons. It replaces the old
@@ -91,7 +91,7 @@ Remarks:
 SeeAlso: poisson_generator_ps, Device, parrot_neuron
 */
 
-  class place_cell_generator : public Node
+  class place_cell_generator : public nest::Node
   {
 
   public:
@@ -108,7 +108,7 @@ SeeAlso: poisson_generator_ps, Device, parrot_neuron
 
     using Node::event_hook;
 
-    port check_connection(Connection&, port);
+    nest::port check_connection(nest::Connection&, nest::port);
 
     void get_status(DictionaryDatum &) const;
     void set_status(const DictionaryDatum &) ;
@@ -119,8 +119,8 @@ SeeAlso: poisson_generator_ps, Device, parrot_neuron
     void init_buffers_();
     void calibrate();
 
-    void update(Time const &, const long_t, const long_t);
-    void event_hook(DSSpikeEvent&);
+    void update(nest::Time const &, const nest::long_t, const nest::long_t);
+//    void event_hook(nest::DSSpikeEvent&);
 
     // ------------------------------------------------------------
 
@@ -144,16 +144,16 @@ SeeAlso: poisson_generator_ps, Device, parrot_neuron
 
     // ------------------------------------------------------------
 
-    StimulatingDevice<SpikeEvent> device_;
+    nest::StimulatingDevice<nest::SpikeEvent> device_;
     Parameters_ P_;
     Variables_  V_;
 
   };
 
   inline
-  port place_cell_generator::check_connection(Connection& c, port receptor_type)
+  nest::port place_cell_generator::check_connection(nest::Connection& c, nest::port receptor_type)
   {
-    DSSpikeEvent e;
+    nest::SpikeEvent e;
     e.set_sender(*this);
     c.check_event(e);
     return c.get_target()->connect_sender(e, receptor_type);
@@ -181,6 +181,6 @@ SeeAlso: poisson_generator_ps, Device, parrot_neuron
     P_ = ptmp;
   }
 
-} // namespace nest
+} // namespace mynest
 
 #endif

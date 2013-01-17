@@ -3,7 +3,7 @@
 # Hans Ekkehard Plesser, April 2008
 # Automake file for the Developer Module
 # 
-# libmymodule is built as a normal, installable library.
+# libgridcells is built as a normal, installable library.
 # It will be installed to $prefix/lib by make install.
 # 
 # Headers from this directory are not to be installed upon
@@ -22,17 +22,16 @@
 
 libdir= @libdir@/nest
 
-lib_LTLIBRARIES=      gridcells.la libgridcells.la
+lib_LTLIBRARIES=      gridcellsmodule.la libgridcellsmodule.la
 
-gridcells_la_CXXFLAGS= @AM_CXXFLAGS@
-gridcells_la_SOURCES=   gridcells.cpp      gridcells.h	\
-						iaf_gridcells.cpp iaf_gridcells.h \
-						ramp_current_generator.cpp ramp_current_generator.h	\
-						place_cell_generator.cpp place_cell_generator.h
-gridcells_la_LDFLAGS=  -module
+gridcellsmodule_la_CXXFLAGS= @AM_CXXFLAGS@
+gridcellsmodule_la_SOURCES=  gridcellsmodule.cpp      gridcellsmodule.h \
+							 place_cell_generator.cpp place_cell_generator.h \
+							 iaf_gridcells.cpp		  iaf_gridcells.h
+gridcellsmodule_la_LDFLAGS=  -module
 
-libgridcells_la_CXXFLAGS= $(gridcells_la_CXXFLAGS) -DLINKED_MODULE
-libgridcells_la_SOURCES=  $(gridcells_la_SOURCES)
+libgridcellsmodule_la_CXXFLAGS= $(gridcellsmodule_la_CXXFLAGS) -DLINKED_MODULE
+libgridcellsmodule_la_SOURCES=  $(gridcellsmodule_la_SOURCES)
 
 MAKEFLAGS= @MAKE_FLAGS@
 
@@ -42,7 +41,7 @@ AM_CPPFLAGS= @NEST_CPPFLAGS@ \
 .PHONY: install-slidoc
 
 nobase_pkgdata_DATA=\
-	sli/gridcells.sli
+	sli/gridcellsmodule.sli
 
 install-slidoc:
 	NESTRCFILENAME=/dev/null $(DESTDIR)$(NEST_PREFIX)/bin/sli --userargs="@HELPDIRS@" $(NEST_PREFIX)/share/nest/sli/install-help.sli

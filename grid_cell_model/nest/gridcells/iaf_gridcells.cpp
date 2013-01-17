@@ -362,7 +362,8 @@ void nest::iaf_gridcells::init_buffers_()
 
   B_.step_ = Time::get_resolution().get_ms();
 
-  B_.IntegrationStep_ = std::min(0.05, B_.step_);
+  //B_.IntegrationStep_ = std::min(0.05, B_.step_);
+  B_.IntegrationStep_ = B_.step_;
 
   B_.I_stim_ = 0.0;
 }

@@ -1,15 +1,22 @@
 /*
- *  gridcells.cpp
+ *  gridcellsmodule.cpp
+ *
  *  This file is part of NEST.
  *
- *  Copyright (C) 2008 by
- *  The NEST Initiative
+ *  Copyright (C) 2004 The NEST Initiative
  *
- *  See the file AUTHORS for details.
+ *  NEST is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 2 of the License, or
+ *  (at your option) any later version.
  *
- *  Permission is granted to compile and modify
- *  this file for non-commercial use.
- *  See the file LICENSE for details.
+ *  NEST is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with NEST.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -27,13 +34,10 @@
 #include "sliexceptions.h"
 #include "nestmodule.h"
 
-
 // include headers with your own stuff
-#include "gridcells.h"
-#include "iaf_gridcells.h"
-#include "ramp_current_generator.h"
+#include "gridcellsmodule.h"
 #include "place_cell_generator.h"
-
+#include "iaf_gridcells.h"
 
 // -- Interface to dynamic module loader ---------------------------------------
 
@@ -47,11 +51,11 @@
  * The dynamicloader can then load modulename and search for symbol "mod" in it.
  */
  
-mynest::GridCells gridcells_LTX_mod;
+mynest::GridCellsModule gridcellsmodule_LTX_mod;
 
 // -- DynModule functions ------------------------------------------------------
 
-mynest::GridCells::GridCells()
+mynest::GridCellsModule::GridCellsModule()
   { 
 #ifdef LINKED_MODULE
      // register this module at the dynamic loader
@@ -61,26 +65,26 @@ mynest::GridCells::GridCells()
 #endif     
    }
 
-mynest::GridCells::~GridCells()
+mynest::GridCellsModule::~GridCellsModule()
    {
    }
 
-   const std::string mynest::GridCells::name(void) const
+   const std::string mynest::GridCellsModule::name(void) const
    {
-     return std::string("EI Network Module"); // Return name of the module
+     return std::string("Grid cells NEST module"); // Return name of the module
    }
 
-   const std::string mynest::GridCells::commandstring(void) const
+   const std::string mynest::GridCellsModule::commandstring(void) const
    {
-     /* 1. Tell interpreter that we provide the C++ part of GridCells with the
+     /* 1. Tell interpreter that we provide the C++ part of GridCellsModule with the
            current revision number. 
-        2. Instruct the interpreter to check that mymodule-init.sli exists, 
-           provides at least version 1.0 of the SLI interface to GridCells, and
+        2. Instruct the interpreter to check that gridcellsmodule-init.sli exists, 
+           provides at least version 1.0 of the SLI interface to GridCellsModule, and
            to load it.
       */
      return std::string(
-       "/gridcells /C++ ($Revision: 8512 $) provide-component "
-       "/gridcells /SLI (7165) require-component"
+       "/gridcellsmodule /C++ ($Revision: 9902 $) provide-component "
+       "/gridcellsmodule /SLI (7165) require-component"
        );
    }
 
@@ -134,7 +138,7 @@ mynest::GridCells::~GridCells()
       SeeAlso:
       Connect, ConvergentConnect, DivergentConnect
    */
-   void mynest::GridCells::StepPatternConnect_Vi_i_Vi_i_lFunction::execute(SLIInterpreter *i) const
+   void mynest::GridCellsModule::StepPatternConnect_Vi_i_Vi_i_lFunction::execute(SLIInterpreter *i) const
    {
      // Check if we have (at least) five arguments on the stack.
      i->assert_stack_load(5);
@@ -185,32 +189,36 @@ mynest::GridCells::~GridCells()
 
   //-------------------------------------------------------------------------------------
 
-  void mynest::GridCells::init(SLIInterpreter *i, nest::Network*)
+  void mynest::GridCellsModule::init(SLIInterpreter *i, nest::Network*)
   {
     /* Register a neuron or device model.
        Give node type as template argument and the name as second argument.
        The first argument is always a reference to the network.
        Return value is a handle for later unregistration.
     */
+    nest::register_model<place_cell_generator>(nest::NestModule::get_network(), 
+                                        "place_cell_generator");
+
     nest::register_model<nest::iaf_gridcells>(nest::NestModule::get_network(), 
                                         "iaf_gridcells");
 
-    nest::register_model<nest::ramp_current_generator>(nest::NestModule::get_network(), 
-                                        "ramp_current_generator");
 
-    nest::register_model<nest::place_cell_generator>(nest::NestModule::get_network(), 
-                                        "place_cell_generator");
-
+//    /* Register a synapse type.
+//       Give synapse type as template argument and the name as second argument.
+//       The first argument is always a reference to the network.
+//    */
+//    nest::register_prototype_connection<DropOddSpikeConnection>(nest::NestModule::get_network(), 
+//                                                       "drop_odd_synapse");
 
     /* Register a SLI function.
        The first argument is the function name for SLI, the second a pointer to
        the function object. If you do not want to overload the function in SLI,
        you do not need to give the mangled name. If you give a mangled name, you
-       should define a type trie in the mymodule-init.sli file.
+       should define a type trie in the gridcellsmodule-init.sli file.
     */
     i->createcommand("StepPatternConnect_Vi_i_Vi_i_l", 
                      &stepPatternConnect_Vi_i_Vi_i_lFunction);
 
-  }  // GridCells::init()
+  }  // GridCellsModule::init()
 
  
