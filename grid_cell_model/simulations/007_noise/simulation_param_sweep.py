@@ -116,6 +116,7 @@ print "Network setup time:",duration,"seconds"
 ################################################################################
 
 simulationClock = ei_net._getSimulationClock()
+stateRecordClock = Clock(dt=2*ms)
 
 rec_all_spikes = True
 if rec_all_spikes:
@@ -125,24 +126,25 @@ else:
     nrecSpike_e = 200
     nrecSpike_i = 50
 
-state_record_e = [ei_net.Ne_x/2 - 1, ei_net.Ne_y/2*ei_net.Ne_x + ei_net.Ne_x/2 - 1]
-state_record_i = [ei_net.Ni_x/2 - 1, ei_net.Ni_y/2*ei_net.Ni_x + ei_net.Ni_x/2 - 1]
+NStateRecord_e = 100
+NStateRecord_i = 50
+
+state_record_e = random.sample(xrange(ei_net.Ne_x*ei_net.Ne_y), NStateRecord_e)
+state_record_i = random.sample(xrange(ei_net.Ni_x*ei_net.Ni_y), NStateRecord_i)
 
 spikeMon_e          = ExtendedSpikeMonitor(ei_net.E_pop[0:nrecSpike_e])
 spikeMon_i          = ExtendedSpikeMonitor(ei_net.I_pop[0:nrecSpike_i])
 
-stateMon_e          = StateMonitor(ei_net.E_pop, 'vm',     record = state_record_e, clock=simulationClock)
-stateMon_i          = StateMonitor(ei_net.I_pop, 'vm',     record = state_record_i, clock=simulationClock)
-stateMon_ge_e       = StateMonitor(ei_net.E_pop, 'ge',     record = state_record_e, clock=simulationClock)
-stateMon_Iclamp_e   = StateMonitor(ei_net.E_pop, 'Iclamp', record = state_record_e, clock=simulationClock)
-stateMon_Iclamp_i   = StateMonitor(ei_net.I_pop, 'Iclamp', record = state_record_i, clock=simulationClock)
-stateMon_Iext_e     = StateMonitor(ei_net.E_pop, 'Iext',   record = state_record_e, clock=simulationClock)
-stateMon_Iext_i     = StateMonitor(ei_net.I_pop, 'Iext',   record = state_record_i, clock=simulationClock)
+stateMon_e          = StateMonitor(ei_net.E_pop, 'vm',     record = state_record_e, clock=stateRecordClock)
+stateMon_i          = StateMonitor(ei_net.I_pop, 'vm',     record = state_record_i, clock=stateRecordClock)
+stateMon_Iclamp_e   = StateMonitor(ei_net.E_pop, 'Iclamp', record = state_record_e, clock=stateRecordClock)
+stateMon_Iclamp_i   = StateMonitor(ei_net.I_pop, 'Iclamp', record = state_record_i, clock=stateRecordClock)
+stateMon_Iext_e     = StateMonitor(ei_net.E_pop, 'Iext',   record = state_record_e, clock=stateRecordClock)
+stateMon_Iext_i     = StateMonitor(ei_net.I_pop, 'Iext',   record = state_record_i, clock=stateRecordClock)
 
 
 ei_net.net.add(spikeMon_e, spikeMon_i)
 ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
-ei_net.net.add(stateMon_ge_e)
 ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
 
 
@@ -161,15 +163,15 @@ for trial_it in range(ei_net.no.ntrials):
     print "  Network initialisation..."
     ei_net.net.run(options.theta_start_mon_t*msecond, report='stdout')
 
-    spikeMon_e.reinit()
-    spikeMon_i.reinit()
-    stateMon_e.reinit()
-    stateMon_i.reinit()
-    stateMon_Iclamp_e.reinit()
-    stateMon_Iclamp_i.reinit()
-    stateMon_ge_e.reinit()
-    stateMon_Iext_e.reinit()
-    stateMon_Iext_i.reinit()
+    #spikeMon_e.reinit()
+    #spikeMon_i.reinit()
+    #stateMon_e.reinit()
+    #stateMon_i.reinit()
+    #stateMon_Iclamp_e.reinit()
+    #stateMon_Iclamp_i.reinit()
+    #stateMon_ge_e.reinit()
+    #stateMon_Iext_e.reinit()
+    #stateMon_Iext_i.reinit()
 
     print "  Theta stimulation..."
     ei_net.net.run((options.time - options.theta_start_mon_t)*msecond, report='stdout')
@@ -181,12 +183,12 @@ for trial_it in range(ei_net.no.ntrials):
             options.fileNamePrefix, options.job_num, trial_it)
 
 
-    F_tstart = options.theta_start_mon_t*1e-3
-    F_tend = options.time*1e-3
-    F_dt = 0.05
-    F_winLen = 0.25
-    Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
-    Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
+    #F_tstart = options.theta_start_mon_t*1e-3
+    #F_tend = options.time*1e-3
+    #F_dt = 0.05
+    #F_winLen = 0.25
+    #Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
+    #Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
 
 
 
@@ -202,15 +204,6 @@ for trial_it in range(ei_net.no.ntrials):
     savefig(output_fname + '_Vm.pdf')
     
 
-    figure()
-    plot(stateMon_ge_e.times, stateMon_ge_e.values[0:2, :].T/nS)
-    ylabel('E cell ge (nS)')
-    xlabel('Time (s)')
-    xlim(x_lim)
-    savefig(output_fname + '_ge.pdf')
-    
-
-    
     figure()
     ax = subplot(211)
     plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0:2, :].T/pA)
@@ -234,28 +227,44 @@ for trial_it in range(ei_net.no.ntrials):
     xlim(x_lim)
     savefig(output_fname + '_Iext.png')
     
-    figure()
-    pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
-    xlabel('E neuron no.')
-    ylabel('E neuron no.')
-    colorbar()
-    axis('equal')
-    savefig(output_fname + '_firing_snapshot_e.png')
+    #figure()
+    #pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
+    #xlabel('E neuron no.')
+    #ylabel('E neuron no.')
+    #colorbar()
+    #axis('equal')
+    #savefig(output_fname + '_firing_snapshot_e.png')
 
-    figure()
-    pcolormesh(np.reshape(Fi[:, len(Fi_t)/2], (ei_net.Ni_y, ei_net.Ni_x)))
-    xlabel('I neuron no.')
-    ylabel('I neuron no.')
-    colorbar()
-    axis('equal')
-    savefig(output_fname + '_firing_snapshot_i.png')
+    #figure()
+    #pcolormesh(np.reshape(Fi[:, len(Fi_t)/2], (ei_net.Ni_y, ei_net.Ni_x)))
+    #xlabel('I neuron no.')
+    #ylabel('I neuron no.')
+    #colorbar()
+    #axis('equal')
+    #savefig(output_fname + '_firing_snapshot_i.png')
 
 
 
     ###################################################################### 
-    #                  
+    #                           Export data
     ###################################################################### 
+    outData = dict()
+    #outData['timeSnapshot'] = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
+    outData['spikeCell_e']              = spikeMon_e.aspikes
+    outData['spikeCell_i']              = spikeMon_i.aspikes
+    outData['options']                  = options._einet_optdict
+    outData['theta_start_mon_t']        = options.theta_start_mon_t
+
+    outData['stateMon_times']           = stateMon_Iclamp_e.times
+    outData['stateMon_Iclamp_e_values'] = stateMon_Iclamp_e.values
+    outData['stateMon_Iclamp_i_values'] = stateMon_Iclamp_i.values
+    outData['stateMon_e_values']        = stateMon_e.values
+    outData['stateMon_i_values']        = stateMon_i.values
+    outData['state_record_e']           = state_record_e
+    outData['state_record_i']           = state_record_i
+    
+    savemat(output_fname + '_output.mat', outData, do_compression=False)
 
 
     ei_net.reinit()

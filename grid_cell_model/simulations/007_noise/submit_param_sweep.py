@@ -36,7 +36,7 @@ parameters = defaultParameters
 
 parameters['output_dir'] = 'output_local'
 
-parameters['time']              = 2e3   # ms
+parameters['time']              = 6e3   # ms
 parameters['theta_start_mon_t'] = 1.0e3   # ms
 
 parameters['prefDirC_e']        = 0
