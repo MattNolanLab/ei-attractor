@@ -52,45 +52,6 @@ options         = setOptionDictionary(parser, options)
 figSize = (12,8)
 histFigSize = (6, 4)
 
-def correlogram_local(T1, T2, width=20 * ms, bin=1 * ms, T=None):
-    '''
-    Returns a cross-correlogram with lag in [-width,width] and given bin size.
-    T is the total duration (optional) and should be greater than the duration of T1 and T2.
-    The result is in Hz (rate of coincidences in each bin).
-
-    N.B.: units are discarded.
-    TODO: optimise?
-    N.B.1: Adapted from the Brian simulator code
-    '''
-    if (len(T1) == 0) or (len(T2) == 0): # empty spike train
-        return NaN, NaN
-    # Remove units
-    width = float(width)
-    T1 = array(T1)
-    T2 = array(T2)
-    i = 0
-    j = 0
-    n = int(ceil(width / bin)) # Histogram length
-    l = []
-    for t in T1:
-        while i < len(T2) and T2[i] < t - width: # other possibility use searchsorted
-            i += 1
-        while j < len(T2) and T2[j] < t + width:
-            j += 1
-        l.extend(T2[i:j] - t)
-    H, bins = histogram(l, bins=arange(2 * n + 1) * bin - n * bin) #, new = True)
-
-    # Divide by time to get rate
-    if T is None:
-        T = max(T1[-1], T2[-1]) - min(T1[0], T2[0])
-    # Windowing function (triangle)
-    W = zeros(2 * n)
-    W[:n] = T - bin * arange(n - 1, -1, -1)
-    W[n:] = T - bin * arange(n)
-
-    return H / W, bins
-
-
 def plotHistBars(binEdges, hist):
     binCenters = 0.5*(binEdges[1:] + binEdges[:-1])
     bar(binCenters, hist, width=binCenters[1]-binCenters[0])
