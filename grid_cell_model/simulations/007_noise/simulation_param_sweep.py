@@ -37,6 +37,7 @@ import math
 import sys
 import numpy as np
 import logging as lg
+import random
 
 
 lg.basicConfig(level=lg.DEBUG)
@@ -51,6 +52,48 @@ options         = setOptionDictionary(parser, options)
 figSize = (12,8)
 histFigSize = (6, 4)
 
+def correlogram_local(T1, T2, width=20 * ms, bin=1 * ms, T=None):
+    '''
+    Returns a cross-correlogram with lag in [-width,width] and given bin size.
+    T is the total duration (optional) and should be greater than the duration of T1 and T2.
+    The result is in Hz (rate of coincidences in each bin).
+
+    N.B.: units are discarded.
+    TODO: optimise?
+    N.B.1: Adapted from the Brian simulator code
+    '''
+    if (len(T1) == 0) or (len(T2) == 0): # empty spike train
+        return NaN, NaN
+    # Remove units
+    width = float(width)
+    T1 = array(T1)
+    T2 = array(T2)
+    i = 0
+    j = 0
+    n = int(ceil(width / bin)) # Histogram length
+    l = []
+    for t in T1:
+        while i < len(T2) and T2[i] < t - width: # other possibility use searchsorted
+            i += 1
+        while j < len(T2) and T2[j] < t + width:
+            j += 1
+        l.extend(T2[i:j] - t)
+    H, bins = histogram(l, bins=arange(2 * n + 1) * bin - n * bin) #, new = True)
+
+    # Divide by time to get rate
+    if T is None:
+        T = max(T1[-1], T2[-1]) - min(T1[0], T2[0])
+    # Windowing function (triangle)
+    W = zeros(2 * n)
+    W[:n] = T - bin * arange(n - 1, -1, -1)
+    W[n:] = T - bin * arange(n)
+
+    return H / W, bins
+
+
+def plotHistBars(binEdges, hist):
+    binCenters = 0.5*(binEdges[1:] + binEdges[:-1])
+    bar(binCenters, hist, width=binCenters[1]-binCenters[0])
 
 ################################################################################
 #                              Network setup
@@ -118,6 +161,16 @@ for trial_it in range(ei_net.no.ntrials):
     print "  Network initialisation..."
     ei_net.net.run(options.theta_start_mon_t*msecond, report='stdout')
 
+    spikeMon_e.reinit()
+    spikeMon_i.reinit()
+    stateMon_e.reinit()
+    stateMon_i.reinit()
+    stateMon_Iclamp_e.reinit()
+    stateMon_Iclamp_i.reinit()
+    stateMon_ge_e.reinit()
+    stateMon_Iext_e.reinit()
+    stateMon_Iext_i.reinit()
+
     print "  Theta stimulation..."
     ei_net.net.run((options.time - options.theta_start_mon_t)*msecond, report='stdout')
     duration=time.time()-start_time
@@ -128,7 +181,7 @@ for trial_it in range(ei_net.no.ntrials):
             options.fileNamePrefix, options.job_num, trial_it)
 
 
-    F_tstart = 0
+    F_tstart = options.theta_start_mon_t*1e-3
     F_tend = options.time*1e-3
     F_dt = 0.05
     F_winLen = 0.25
@@ -139,10 +192,10 @@ for trial_it in range(ei_net.no.ntrials):
 
     figure()
     ax = subplot(211)
-    plot(stateMon_e.times, stateMon_e.values[:, 0:2]/mV)
+    plot(stateMon_e.times, stateMon_e.values[0:2, :].T/mV)
     ylabel('E membrane potential (mV)')
     subplot(212, sharex=ax)
-    plot(stateMon_i.times, stateMon_i.values[:, 0:2]/mV)
+    plot(stateMon_i.times, stateMon_i.values[0:2, :].T/mV)
     xlabel('Time (s)')
     ylabel('I membrane potential (mV)')
     xlim(x_lim)
@@ -150,7 +203,7 @@ for trial_it in range(ei_net.no.ntrials):
     
 
     figure()
-    plot(stateMon_ge_e.times, stateMon_ge_e.values[:, 0:2]/nS)
+    plot(stateMon_ge_e.times, stateMon_ge_e.values[0:2, :].T/nS)
     ylabel('E cell ge (nS)')
     xlabel('Time (s)')
     xlim(x_lim)
@@ -160,11 +213,11 @@ for trial_it in range(ei_net.no.ntrials):
     
     figure()
     ax = subplot(211)
-    plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
+    plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0:2, :].T/pA)
     ylabel('E synaptic current (pA)')
     #ylim([0, 3000])
     subplot(212, sharex=ax)
-    plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
+    plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[0:2, :].T/pA)
     xlabel('Time (s)')
     ylabel('I synaptic current (pA)')
     xlim(x_lim)
@@ -172,10 +225,10 @@ for trial_it in range(ei_net.no.ntrials):
     
     figure()
     ax = subplot(211)
-    plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[:, 1]/pA)
+    plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[1, :].T/pA)
     ylabel('E external current (pA)')
     subplot(212, sharex=ax)
-    plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[:, 0]/pA)
+    plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[0, :].T/pA)
     xlabel('Time (s)')
     ylabel('I external current (pA)')
     xlim(x_lim)
@@ -203,6 +256,57 @@ for trial_it in range(ei_net.no.ntrials):
     #              Fit a 2D Gaussian to the firing rate (sheet)
     #                            E-cells only
     ###################################################################### 
+    # Use fitGaussianBump2d
+
+
+
+    ###################################################################### 
+    #                  Cross correlations of spike trains
+    ###################################################################### 
+    # Excitatory cells
+    xc_Ncells = 1000
+    xc_width  = 250 * ms
+    xc_bin    = 1 * ms
+    cells = random.sample(xrange(ei_net.Ne_x*ei_net.Ne_y), xc_Ncells)
+    XC_hists = []
+    maxLags = []
+
+    for c1_id in xrange(xc_Ncells):
+        print "c1_id: ", c1_id
+        for c2_id in xrange(xc_Ncells):
+            if c2_id == c1_id:
+                continue
+
+            H, bins = correlogram_local(spikeMon_e[c1_id], spikeMon_e[c2_id],
+                xc_width, xc_bin)
+            if H is not NaN:
+                binCenters = 0.5*(bins[:-1] + bins[1:])
+                maxLag = binCenters[np.argmax(H)]
+                XC_hists.append((H, bins))
+                maxLags.append(maxLag)
+                #figure()
+                #plotHistBars(bins*1e3, H)
+                #savefig(output_fname + '_xc_{0}_{1}'.format(c1_id, c2_id))
+                #close()
+                
+    figure()
+    hist(maxLags, normed=True)
+    xlabel('Max lag of x-correlogram (s)')
+    ylabel('Frequency')
+    savefig(output_fname + '_maxLagsHist.pdf')
+
+
+    ###################################################################### 
+    #                  Power spectra of E and I currents
+    ###################################################################### 
+
+
+
+    ###################################################################### 
+    #                Phase locking of spikes relative to
+    #                           theta and gamma
+    ###################################################################### 
+    
 
 
 

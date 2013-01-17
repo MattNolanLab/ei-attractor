@@ -133,7 +133,7 @@ spikeMon = SpikeMonitor(SG)
 stateMon = StateMonitor(NrnG, "vm", record=True, clock=simulationClock)
 net.add(spikeMon, stateMon)
 
-net.run(T)
+net.run(T, report='stdout')
 
 raster_plot(spikeMon)
 

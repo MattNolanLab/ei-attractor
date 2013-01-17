@@ -34,13 +34,15 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 
 parameters = defaultParameters
 
+parameters['output_dir'] = 'output_local'
+
 parameters['time']              = 2e3   # ms
 parameters['theta_start_mon_t'] = 1.0e3   # ms
 
 parameters['prefDirC_e']        = 0
 parameters['prefDirC_i']        = 0
 
-surround_type = "I_surround"
+surround_type = "E_surround"
 
 ##############################################################################
 ## E-surround (AMPA_ring_like params)
@@ -76,7 +78,7 @@ else:
     exit(1)
 
 
-parameters['noise_sigma']       = 0.0       # mV
+#parameters['noise_sigma']       = 0.0       # mV
 #parameters['g_uni_AMPA_total']  = 40         # nS
 
 
@@ -85,21 +87,21 @@ startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 -i simulation_fig_model.py'
-blocking            = False
+programName         = 'python2.6 -i simulation_param_sweep.py'
+blocking            = True
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_fig_model.py'
+eddie_scriptName    = 'eddie_submit.sh simulation_param_sweep.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:10:00"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-iterparams = {
-    'theta_noise_sigma' : [0, 20, 40, 60, 80, 100, 120, 140]
-    #'noise_sigma'   : np.arange(0, 4.1, 0.2)
-}
-ac.insertDict(iterparams, mult=True, printout=True)
+#iterparams = {
+#    'theta_noise_sigma' : [0, 20, 40, 60, 80, 100, 120, 140]
+#    #'noise_sigma'   : np.arange(0, 4.1, 0.2)
+#}
+#ac.insertDict(iterparams, mult=True, printout=True)
 
 
 if EDDIE:

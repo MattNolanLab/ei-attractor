@@ -19,8 +19,12 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
+import scipy
 from scipy.signal import *
+from numpy.fft.fftpack import fft
 from Wavelets import Morlet
+
+from matplotlib.pyplot import *
 
 from os import system
 
@@ -122,6 +126,17 @@ def createIgorSpikeRaster(spikes, yvals=None):
 
     return (raster_x, raster_y)
 
+def fft_real_freq(sig, dt):
+    '''
+    Compute a DFT of a real signal and return an array of frequencies and
+    Fourier coefficients
+    '''
+    S = fft(sig)
+    S_F = np.linspace(0, 1, len(S)/2) / dt / 2.0
+
+    return S_F, S[0:len(S_F)]
+
+
     
 ##############################################################################
 #                         Image analysis functions
@@ -137,30 +152,27 @@ def fitGaussian2D(sig, X, Y, C0, A0, mu0_x, mu0_y, sigma0):
 
         fun = C + A*exp(-||X - mu||^2 / (2*sigma^2))
     '''
-    x0 = np.ndarray([C0, A0, mu0_x, mu0_y, sigma0])
-    fun = lambda x:  x[0] + x[1] * np.exp( -((X - x[2])**2 + (Y - x[3])**2)/2./ x[4]**2 )
-    #                 |      |                      |               |             |
-    #                 C      A                    mu_x            mu_y          sigma
+    x0 = np.array([C0, A0, mu0_x, mu0_y, sigma0])
+    fun = lambda x:  (x[0] + x[1] * np.exp( -((X - x[2])**2 + (Y - x[3])**2)/2./ x[4]**2 )) - sig
+    #                  |      |                      |               |             |
+    #                  C      A                    mu_x            mu_y          sigma
 
     xest,ierr = scipy.optimize.leastsq(fun, x0)
     return xest
 
 
-def fitGaussianBump2D(rateMap):
+def fitGaussianBump2D(rateMap, X, Y):
     '''
     Fit a Gaussian to a rate map, using least squares method.
     '''
-    sz = rateMap.shape
-    X, Y = np.meshgrid(np.arange(sz[1]), np.arange(sz[0]))
-    X -= sz[1]/2.
-    Y -= sz[0]/2.
     C0      = 0.0
     A0      = 1.0
-    mu0_x   = 0.0
-    mu0_y   = 0.0
+    mu0_x   = 1.0
+    mu0_y   = 1.0
     sigma0  = 1.0
     
-    return fitGaussian2D(rateMap, X, Y, C0, A0, mu0_x, mu0_y, sigma0)
+    return fitGaussian2D(rateMap.flatten(), X.flatten(), Y.flatten(), C0, A0,
+            mu0_x, mu0_y, sigma0)
     
 
 
@@ -171,7 +183,7 @@ def fitGaussianBump2D(rateMap):
 if __name__ == "__main__":
     sz = (100, 100)
 
-    X, Y = np.meshgrid(np.arange(sz[1], sz[0]))
+    X, Y = np.meshgrid(np.arange(sz[1]), np.arange(sz[0]))
     X -= 0.5 * sz[1]
     Y -= 0.5 * sz[0]
 
@@ -179,10 +191,14 @@ if __name__ == "__main__":
     A       = 10.0
     mu_x    = -3.0
     mu_y    = 11.5
-    sigma   = 10.0
+    sigma   = 100.0
 
     rateMap = C + A*np.exp(- ((X - mu_x)**2 + (Y - mu_y)**2) / (2*sigma**2))
+    param_est = fitGaussianBump2D(rateMap, X, Y)
+    Cest, Aest, muxest, muyest, sigmaest = param_est
 
+    print param_est
+    
     
 
 
