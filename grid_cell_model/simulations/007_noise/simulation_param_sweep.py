@@ -140,7 +140,7 @@ for trial_it in range(ei_net.no.ntrials):
     print "Simulation time:",duration,"seconds"
     
     
-    output_fname = "{0}/{1}job{2:04}_trial{3:04}".format(options.output_dir,
+    output_fname = "{0}/{1}job{2:05}_trial{3:04}".format(options.output_dir,
             options.fileNamePrefix, options.job_num, trial_it)
 
 
@@ -153,40 +153,40 @@ for trial_it in range(ei_net.no.ntrials):
 
 
 
-    figure()
-    ax = subplot(211)
-    plot(stateMon_e.times, stateMon_e.values[0:2, :].T/mV)
-    ylabel('E membrane potential (mV)')
-    subplot(212, sharex=ax)
-    plot(stateMon_i.times, stateMon_i.values[0:2, :].T/mV)
-    xlabel('Time (s)')
-    ylabel('I membrane potential (mV)')
-    xlim(x_lim)
-    savefig(output_fname + '_Vm.pdf')
-    
+    #figure()
+    #ax = subplot(211)
+    #plot(stateMon_e.times, stateMon_e.values[0:2, :].T/mV)
+    #ylabel('E membrane potential (mV)')
+    #subplot(212, sharex=ax)
+    #plot(stateMon_i.times, stateMon_i.values[0:2, :].T/mV)
+    #xlabel('Time (s)')
+    #ylabel('I membrane potential (mV)')
+    #xlim(x_lim)
+    #savefig(output_fname + '_Vm.pdf')
+    #
 
-    figure()
-    ax = subplot(211)
-    plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0:2, :].T/pA)
-    ylabel('E synaptic current (pA)')
-    #ylim([0, 3000])
-    subplot(212, sharex=ax)
-    plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[0:2, :].T/pA)
-    xlabel('Time (s)')
-    ylabel('I synaptic current (pA)')
-    xlim(x_lim)
-    savefig(output_fname + '_Isyn.pdf')
-    
-    figure()
-    ax = subplot(211)
-    plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[1, :].T/pA)
-    ylabel('E external current (pA)')
-    subplot(212, sharex=ax)
-    plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[0, :].T/pA)
-    xlabel('Time (s)')
-    ylabel('I external current (pA)')
-    xlim(x_lim)
-    savefig(output_fname + '_Iext.png')
+    #figure()
+    #ax = subplot(211)
+    #plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[0:2, :].T/pA)
+    #ylabel('E synaptic current (pA)')
+    ##ylim([0, 3000])
+    #subplot(212, sharex=ax)
+    #plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[0:2, :].T/pA)
+    #xlabel('Time (s)')
+    #ylabel('I synaptic current (pA)')
+    #xlim(x_lim)
+    #savefig(output_fname + '_Isyn.pdf')
+    #
+    #figure()
+    #ax = subplot(211)
+    #plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[1, :].T/pA)
+    #ylabel('E external current (pA)')
+    #subplot(212, sharex=ax)
+    #plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[0, :].T/pA)
+    #xlabel('Time (s)')
+    #ylabel('I external current (pA)')
+    #xlim(x_lim)
+    #savefig(output_fname + '_Iext.png')
     
     #figure()
     #pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))

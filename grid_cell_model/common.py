@@ -258,7 +258,7 @@ class QsubSubmitter(ProgramSubmitter):
     def RunProgram(self, args, job_num, dry_run):
         cmdStr = 'qsub ' + self._qsub_params + ' ' + \
                 "-o " + self._qsub_output_dir + ' ' + \
-                "-N job{0:04} ".format(job_num) + \
+                "-N job{0:05} ".format(job_num) + \
                 self._scriptName + ' ' + args
         log_info('root.QsubSubmitter', 'Submitting command: \n' + cmdStr)
         if not dry_run:

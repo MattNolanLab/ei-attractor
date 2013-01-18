@@ -29,7 +29,7 @@ import numpy    as np
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -96,7 +96,7 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-    'theta_noise_sigma' : [0, 20, 40, 60, 80, 100, 120, 140]
+    'theta_noise_sigma' : [0, 50, 100, 150, 200, 250, 300, 350]
     #'noise_sigma'   : np.arange(0, 4.1, 0.2)
 }
 ac.insertDict(iterparams, mult=True, printout=True)

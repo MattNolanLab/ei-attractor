@@ -30,12 +30,12 @@ import numpy    as np
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['output_dir'] = 'output_local'
+parameters['output_dir'] = 'output'
 
 parameters['time']              = 6e3   # ms
 parameters['theta_start_mon_t'] = 1.0e3   # ms
@@ -50,7 +50,7 @@ parameters['noise_sigma']       = 0.0       # mV
 
 
 
-startJobNum = 1
+startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
@@ -66,7 +66,7 @@ ac = ArgumentCreator(parameters)
 
 # Range of parameters around default values
 # Let's choose a 10% jitter around the default values
-Ndim        = 2     # Number of values for each dimension
+Ndim        = 10     # Number of values for each dimension
 jitter_frac = 0.1    # Fraction
 Iext_e_amp_default = parameters['Iext_e_const'] + parameters['Iext_e_theta']
 
@@ -105,7 +105,7 @@ if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
-submitter.submitAll(startJobNum, numRepeat, dry_run=True)
+submitter.submitAll(startJobNum, numRepeat, dry_run=False)
 
 # Export the iterparams
 savemat(parameters['output_dir'] + '/param_sweep_iterparams.mat', iterparams, oned_as='row')
