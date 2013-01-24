@@ -18,73 +18,170 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from scipy              import linspace
 from scipy.io           import loadmat, savemat
 from matplotlib.pyplot  import *
 
+from tools              import *
+
+import numpy
 import numpy as np
+import pp
+import tools
 
 
-def countSpikesPerTheta(spikeTimes, theta_start_t, theta_freq):
-    '''
-    Count number of spikes per each theta cycle and return as an array.
-    '''
-    spikes_offset = spikeTimes - theta_start_t
-    spikes_theta_no = np.array(spikes_offset // (1. / theta_freq), dtype=int)
-    nThetas = int(np.max(spikes_theta_no))
-    spikesPerEachTheta = []
-    for theta_it in xrange(nThetas):
-        spikesPerEachTheta.append(np.count_nonzero(spikes_theta_no == theta_it))
-
-    return np.array(spikesPerEachTheta)
-        
-    
-
-
-output_dir = 'output'
-fileNamePrefix = ''
-trial_it = 0
 jobStart = 0
-
-Ndim = 10
-spikesPerTheta_all = np.ndarray((Ndim, Ndim, Ndim, Ndim))
+jobEnd   = 10000
 
 
-job_num = jobStart
-for theta_depth in xrange(Ndim):
-    for Iext_e_amp in xrange(Ndim):
-        for E_coupling in xrange(Ndim):
-            for I_coupling in xrange(Ndim):
-                print 'job_num', job_num
+def spikeStatistics(spikeTimes, theta_start_t, theta_freq, T):
+    '''
+    Count
+      - number of spikes per each theta cycle and return as an array.
+      - phase of first spike with respect to theta
+    '''
+    theta_T = (1. / theta_freq)
+    spikes_offset = spikeTimes - theta_start_t
+    spikes_theta_no = numpy.array(spikes_offset // theta_T, dtype=int)
+    nThetas = (T - theta_start_t) // theta_T
+    spikesPerEachTheta = []
+    phaseOfFirstSpike = []
+    for theta_it in xrange(nThetas):
+        # No. of spikes per theta
+        spikesTheta = spikes_theta_no == theta_it
+        spikesPerEachTheta.append(numpy.count_nonzero(spikesTheta))
 
-                input_fname = "{0}/{1}job{2:05}_trial{3:04}_output.mat".format(output_dir,
-                        fileNamePrefix, job_num, trial_it)
-                inData = loadmat(input_fname, squeeze_me=True)
-                
-                
-                stateMon_times = inData['stateMon_times']
-                mon_dt = stateMon_times[1] - stateMon_times[0]
-                theta_start_t = int(inData['theta_start_mon_t']) / 1e3
-                theta_freq = int(inData['options']['theta_freq'])
-                
-                ################################################################################
-                #                      Number of spikes per theta cycle
-                ################################################################################
-                Ncells_e = len(inData['spikeCell_e'])
-                spikesPerTheta = []
-                for n_it in xrange(Ncells_e):
-                    spikesPerTheta.append(countSpikesPerTheta(inData['spikeCell_e'][n_it],
-                        theta_start_t, theta_freq))
-                spikesPerTheta = np.array(spikesPerTheta)
+        # Time of the first spike, nans removed
+        firstSpike = spikesTheta.nonzero()[0]
+        if len(firstSpike) > 0:
+            phaseOfFirstSpike.append( (spikes_offset[firstSpike[0]] -
+                    theta_it*theta_T) / theta_T * 2 * numpy.pi )
 
-                spikesPerTheta_all[theta_depth, Iext_e_amp, E_coupling,
-                        I_coupling] = np.mean(np.mean(spikesPerTheta, axis=1))
-                
-                
-                job_num += 1
+    return numpy.mean(spikesPerEachTheta), numpy.mean(phaseOfFirstSpike)
+        
 
+
+def currentStatistics(current, dt, theta_start_t, theta_freq):
+    '''
+    Remove the portion of the signal before theta_start_t, and then compute:
+      * amplitude of the current (simply max) per each theta cycle
+      * total charge per theta cycle
+    '''
+    curr_phase = tools.splitSigToThetaCycles(current[theta_start_t/dt:],
+            1./theta_freq, dt)
+
+    curr_max = numpy.max(curr_phase, axis=1)
+    curr_min = numpy.min(curr_phase, axis=1)
+    charge = tools.getChargeTheta(curr_phase, dt)
+
+    return numpy.mean(curr_max), numpy.mean(curr_min), numpy.mean(charge)
+
+
+def upSample(sig, dt):
+    return numpy.repeat(sig, 2), dt/2.0 
+
+
+def loadAndDoStats(job_num):
+    print 'job_num', job_num
+
+    output_dir = 'output_local/'
+    fileNamePrefix = ''
+    trial_it = 0
+    
+    input_fname = "{0}/{1}job{2:05}_trial{3:04}_output.mat".format(output_dir,
+            fileNamePrefix, job_num, trial_it)
+    inData = scipy.io.loadmat(input_fname, squeeze_me=False)
+    
+    
+    stateMon_times = inData['stateMon_times'][:, 0]
+    mon_dt = stateMon_times[1] - stateMon_times[0]
+    theta_start_t = int(inData['theta_start_mon_t']) / 1e3
+    theta_freq = int(inData['options']['theta_freq'])
+    sim_T = float(inData['options']['time']) / 1e3
+    
+    ################################################################################
+    #                      Number of spikes per theta cycle
+    ################################################################################
+    Ncells_e = len(inData['spikeCell_e'])
+    spikesPerTheta = []
+    phaseOfFirstSpike = []
+    for n_it in xrange(Ncells_e):
+        sp, ph = spikeStatistics(inData['spikeCell_e'][n_it, 0].flatten(), theta_start_t,
+                theta_freq, sim_T)
+        spikesPerTheta.append(sp)
+        phaseOfFirstSpike.append(ph)
+
+
+    Ncells_state_e = len(inData['stateMon_Iclamp_e_values'])
+    curr_max = []
+    curr_min = []
+    charge   = []
+    for n_it in xrange(Ncells_state_e):
+        data, mon_dt_up = upSample(inData['stateMon_Iclamp_e_values'][n_it, :],
+                mon_dt)
+        c_max, c_min, Q = currentStatistics(data, mon_dt_up, theta_start_t, theta_freq)
+        curr_max.append(c_max)
+        curr_min.append(c_min)
+        charge.append(Q)
+
+    #import pdb; pdb.set_trace()
+
+    return spikesPerTheta, phaseOfFirstSpike, curr_max, curr_min, charge
+
+
+
+
+
+#Ndim = 10
+#spikesPerTheta_all      = numpy.ndarray((Ndim, Ndim, Ndim, Ndim), dtype=object)
+#phaseOfFirstSpike_all   = numpy.ndarray((Ndim, Ndim, Ndim, Ndim), dtype=object)
+
+parallel = True
+
+all_data = []
+
+if parallel:
+    job_server = pp.Server(ppservers=())
+    
+    jobs = []
+    for job_num in xrange(jobStart, jobEnd):
+        jobs.append(job_server.submit(
+            loadAndDoStats,
+            (job_num,),
+            (spikeStatistics, currentStatistics, upSample),
+            ("numpy", "scipy.io", "tools")))
+    
+    for job_num in xrange(jobStart, jobEnd):
+        all_data.append(jobs[job_num - jobStart]())
+else:
+    for job_num in xrange(jobStart, jobEnd):
+        all_data.append(loadAndDoStats(job_num))
+
+#job_num = jobStart
+#for theta_depth in xrange(Ndim):
+#    for Iext_e_amp in xrange(Ndim):
+#        for E_coupling in xrange(Ndim):
+#            for I_coupling in xrange(Ndim):
+#                #if job_num > 0: continue
+#
+#                spikesPerTheta_all[theta_depth, Iext_e_amp, E_coupling,
+#                        I_coupling] = numpy.array(spikesPerTheta)
+#                phaseOfFirstSpike_all[theta_depth, Iext_e_amp, E_coupling,
+#                        I_coupling] = numpy.array(phaseOfFirstSpike)
+#                
+#                
+#                job_num += 1
+
+all_data = np.array(all_data)
 
 outData = {}
-outData['spikesPerTheta_all'] = spikesPerTheta_all
-savemat(output_dir + '/param_sweep_data_analysis.mat', outData)
+outData['all_data'] = all_data
+#outData['spikesPerTheta']       = all_data[:, 0]
+#outData['phaseOfFirstSpike']    = all_data[:, 1]
+#outData['curr_max']             = all_data[:, 2]
+#outData['curr_min']             = all_data[:, 3]
+#outData['charge']               = all_data[:, 4]
+
+
+outDataDir = 'output_local'
+savemat(outDataDir + '/param_sweep_data_analysis.mat', outData)
 

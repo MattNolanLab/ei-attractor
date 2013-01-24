@@ -69,6 +69,31 @@ def createJobDir(options):
             exit(1)
     return outputDir
 
+
+
+def splitSigToThetaCycles(sig, thetaT, dt):
+    '''
+    Take a 1D signal (np array) and rescale it to a 2D array, in which every row
+    corresponds to one theta cycle.
+    thetaT must be a multiple of dt
+    The last, unaligned part of the signal will be discarded.
+
+    Phase(sig, t=0) must be 0, no phase shifts!
+    '''
+    n_ph = thetaT / dt
+    q_ph = len(sig) // n_ph
+    return np.reshape(sig[0:q_ph*n_ph], (q_ph, n_ph))
+
+
+def getChargeTheta(sig_theta_sliced, dt):
+    '''
+    For each theta cycle, find the total charge of synaptic current.
+    Each row of sig_theta_sliced is one theta cycle
+    '''
+    return np.trapz(sig_theta_sliced, dx=dt, axis=1)
+
+
+
 def phaseCWT(sig, Tph, dt, maxF, dF=2):
     '''
     Calculate Morlet wavelet transform of a signal, but as a function of
