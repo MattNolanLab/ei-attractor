@@ -94,38 +94,80 @@ def loadAndDoStats(job_num):
     
     stateMon_times = inData['stateMon_times'][:, 0]
     mon_dt = stateMon_times[1] - stateMon_times[0]
-    theta_start_t = int(inData['theta_start_mon_t']) / 1e3
+    theta_start_t = float(inData['theta_start_mon_t']) / 1e3
     theta_freq = int(inData['options']['theta_freq'])
     sim_T = float(inData['options']['time']) / 1e3
     
     ################################################################################
-    #                      Number of spikes per theta cycle
+    #                              E/I cell statistics
     ################################################################################
-    Ncells_e = len(inData['spikeCell_e'])
-    spikesPerTheta = []
-    phaseOfFirstSpike = []
-    for n_it in xrange(Ncells_e):
-        sp, ph = spikeStatistics(inData['spikeCell_e'][n_it, 0].flatten(), theta_start_t,
-                theta_freq, sim_T)
-        spikesPerTheta.append(sp)
-        phaseOfFirstSpike.append(ph)
+    e_spikesPerTheta    = []
+    e_phaseOfFirstSpike = []
+    e_curr_max = []
+    e_curr_min = []
+    e_charge   = []
+
+    i_spikesPerTheta    = []
+    i_phaseOfFirstSpike = []
+    i_curr_max = []
+    i_curr_min = []
+    i_charge   = []
+
+    for EI_id in [0, 1]:
+        if (EI_id == 0):
+            # E cells
+            spikes          = inData['spikeCell_e']
+            Iclamp          = inData['stateMon_Iclamp_e_values']
+            Ncells          = len(spikes)
+            Ncells_state    = len(Iclamp)
+
+            spikesPerTheta      = e_spikesPerTheta
+            phaseOfFirstSpike   = e_phaseOfFirstSpike
+            curr_max            = e_curr_max
+            curr_min            = e_curr_min
+            charge              = e_charge
+        elif (EI_id == 1):
+            # I cells
+            spikes          = inData['spikeCell_i']
+            Iclamp          = inData['stateMon_Iclamp_i_values']
+            Ncells          = len(spikes)
+            Ncells_state    = len(Iclamp)
+
+            spikesPerTheta      = i_spikesPerTheta
+            phaseOfFirstSpike   = i_phaseOfFirstSpike
+            curr_max            = i_curr_max
+            curr_min            = i_curr_min
+            charge              = i_charge
+        else:
+            raise IndexError("EI_id is not 0(E) or 1(I)!")
+
+        for n_it in xrange(Ncells):
+            sp, ph = spikeStatistics(spikes[n_it, 0].flatten(), theta_start_t,
+                    theta_freq, sim_T)
+            spikesPerTheta.append(sp)
+            phaseOfFirstSpike.append(ph)
 
 
-    Ncells_state_e = len(inData['stateMon_Iclamp_e_values'])
-    curr_max = []
-    curr_min = []
-    charge   = []
-    for n_it in xrange(Ncells_state_e):
-        data, mon_dt_up = upSample(inData['stateMon_Iclamp_e_values'][n_it, :],
-                mon_dt)
-        c_max, c_min, Q = currentStatistics(data, mon_dt_up, theta_start_t, theta_freq)
-        curr_max.append(c_max)
-        curr_min.append(c_min)
-        charge.append(Q)
+        for n_it in xrange(Ncells_state):
+            data, mon_dt_up = upSample(Iclamp[n_it, :],
+                    mon_dt)
+            c_max, c_min, Q = currentStatistics(data, mon_dt_up, theta_start_t, theta_freq)
+            curr_max.append(c_max)
+            curr_min.append(c_min)
+            charge.append(Q)
 
     #import pdb; pdb.set_trace()
 
-    return spikesPerTheta, phaseOfFirstSpike, curr_max, curr_min, charge
+    return e_spikesPerTheta, \
+           e_phaseOfFirstSpike, \
+           e_curr_max, \
+           e_curr_min, \
+           e_charge, \
+           i_spikesPerTheta, \
+           i_phaseOfFirstSpike, \
+           i_curr_max, \
+           i_curr_min, \
+           i_charge
 
 
 
@@ -140,7 +182,7 @@ parallel = True
 all_data = []
 
 if parallel:
-    job_server = pp.Server(ppservers=())
+    job_server = pp.Server(ppservers=('jupiter1', 'localhost', 'jupiter3'))
     
     jobs = []
     for job_num in xrange(jobStart, jobEnd):
