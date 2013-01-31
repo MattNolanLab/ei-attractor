@@ -164,7 +164,7 @@ def fft_real_freq(sig, dt):
 
     
 ##############################################################################
-#                         Image analysis functions
+#                      Image analysis/manipulation functions
 ##############################################################################
 
 def fitGaussian2D(sig, X, Y, C0, A0, mu0_x, mu0_y, sigma0):
@@ -198,7 +198,7 @@ def fitGaussianBump2D(rateMap, X, Y):
     
     return fitGaussian2D(rateMap.flatten(), X.flatten(), Y.flatten(), C0, A0,
             mu0_x, mu0_y, sigma0)
-    
+
 
 
 ##############################################################################
