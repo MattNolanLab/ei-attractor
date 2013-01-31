@@ -266,12 +266,6 @@ else:
     iterparams = loadmat(iterparams_fname)
 
     multiDimData     = numpy.ndarray((Ndim, Ndim, Ndim, Ndim), dtype=object)
-    #theta_depth_arr      = numpy.ndarray((Ndim, Ndim, Ndim, Ndim))
-    #Iext_e_theta_arr     = numpy.ndarray((Ndim, Ndim, Ndim, Ndim))
-    #g_AMPA_total_arr     = numpy.ndarray((Ndim, Ndim, Ndim, Ndim))
-    #g_GABA_total_arr     = numpy.ndarray((Ndim, Ndim, Ndim, Ndim))
-    #g_uni_GABA_total_arr = numpy.ndarray((Ndim, Ndim, Ndim, Ndim))
-    
     
     job_num = jobStart
     for theta_depth in xrange(Ndim):
@@ -305,8 +299,12 @@ else:
     e_spikesPerTheta_std     = []
     e_phaseOfFirstSpike      = []
     e_phaseOfFirstSpike_std  = []
+    e_curr_max               = []
+    e_curr_max_std           = []
     i_spikesPerTheta         = []
     i_spikesPerTheta_std     = []
+    i_curr_min               = []
+    i_curr_min_std           = []
 
     for theta_depth_it in xrange(Ndim):
         e_spikes = multiDimData[theta_depth_it, 0.5*Ndim, 0.5*Ndim,
@@ -319,21 +317,37 @@ else:
         e_phaseOfFirstSpike.append(np.mean(e_phase_nonan))
         e_phaseOfFirstSpike_std.append(np.std(e_phase_nonan))
 
+        e_curr = multiDimData[theta_depth_it, 0.5*Ndim, 0.5*Ndim,
+                0.5*Ndim][2].flatten()
+        e_curr_max.append(np.mean(e_curr))
+        e_curr_max_std.append(np.std(e_curr))
+
         i_spikes = multiDimData[theta_depth_it, 0.5*Ndim, 0.5*Ndim,
                 0.5*Ndim][5].flatten()
         i_spikesPerTheta.append(np.mean(i_spikes))
         i_spikesPerTheta_std.append(np.std(i_spikes))
+
+        i_curr = multiDimData[theta_depth_it, 0.5*Ndim, 0.5*Ndim,
+                0.5*Ndim][8].flatten()
+        i_curr_min.append(np.mean(i_curr))
+        i_curr_min_std.append(np.std(i_curr))
 
         # Choose examples of data
         if theta_depth_it == example_it:
             e_phaseOfFirstSpike_ex  = e_phase_nonan
             e_spikesPerTheta_ex     = e_spikes
             i_spikesPerTheta_ex     = i_spikes
+            e_curr_max_ex           = e_curr
+            i_curr_min_ex           = i_curr
             theta_depth_ex          = theta_depth_x[theta_depth_it]
 
             exJobNum = example_it*10**3 + int(0.5*Ndim)*10**2 + int(0.5*Ndim)*10 +int(0.5*Ndim)
             print "Theta depth example job number is " + str(exJobNum)
             e_firingRate_ex, i_firingRate_ex = getFiringRate(exJobNum)
+            startJobNum = 0*10**3 + int(0.5*Ndim)*10**2 + int(0.5*Ndim)*10 +int(0.5*Ndim)
+            endJobNum = (Ndim-1)*10**3 + int(0.5*Ndim)*10**2 + int(0.5*Ndim)*10 +int(0.5*Ndim)
+            e_firingRate_start, i_firingRate_start = getFiringRate(startJobNum)
+            e_firingRate_end, i_firingRate_end = getFiringRate(endJobNum)
 
     
     e_spikesPerTheta_sem = np.array(e_spikesPerTheta_std) / np.sqrt(Ndim)
@@ -355,19 +369,31 @@ else:
     h5file.createArray(theta_depth_gr, "e_phaseOfFirstSpike_std", e_phaseOfFirstSpike_std)
     h5file.createArray(theta_depth_gr, "e_phaseOfFirstSpike_sem", e_phaseOfFirstSpike_sem)
 
+    h5file.createArray(theta_depth_gr, "e_curr_max",     e_curr_max)
+    h5file.createArray(theta_depth_gr, "e_curr_max_std", e_curr_max_std)
+
     h5file.createArray(theta_depth_gr, "i_spikesPerTheta",     i_spikesPerTheta)
     h5file.createArray(theta_depth_gr, "i_spikesPerTheta_std", i_spikesPerTheta_std)
     h5file.createArray(theta_depth_gr, "i_spikesPerTheta_sem", i_spikesPerTheta_sem)
+
+    h5file.createArray(theta_depth_gr, "i_curr_min",     i_curr_min)
+    h5file.createArray(theta_depth_gr, "i_curr_min_std", i_curr_min_std)
 
     h5file.createArray(theta_depth_gr, "theta_depth", theta_depth_x)
 
     h5file.createArray(theta_depth_gr, "e_spikesPerTheta_ex",    e_spikesPerTheta_ex)
     h5file.createArray(theta_depth_gr, "e_phaseOfFirstSpike_ex", e_phaseOfFirstSpike_ex)
     h5file.createArray(theta_depth_gr, "e_firingRate_ex",        e_firingRate_ex)
+    h5file.createArray(theta_depth_gr, "e_firingRate_start",     e_firingRate_start)
+    h5file.createArray(theta_depth_gr, "e_firingRate_end",       e_firingRate_end)
 
+    h5file.createArray(theta_depth_gr, "e_curr_max_ex",          e_curr_max_ex)
     h5file.createArray(theta_depth_gr, "i_spikesPerTheta_ex",    i_spikesPerTheta_ex)
     h5file.createArray(theta_depth_gr, "i_firingRate_ex",        i_firingRate_ex)
+    h5file.createArray(theta_depth_gr, "i_curr_min_ex",          i_curr_min_ex)
     h5file.createArray(theta_depth_gr, "theta_depth_ex",         theta_depth_ex)
+    h5file.createArray(theta_depth_gr, "i_firingRate_start",     i_firingRate_start)
+    h5file.createArray(theta_depth_gr, "i_firingRate_end",       i_firingRate_end)
 
 
 
