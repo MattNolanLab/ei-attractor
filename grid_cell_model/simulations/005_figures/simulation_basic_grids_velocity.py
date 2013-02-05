@@ -135,6 +135,8 @@ for gen_it in range(options.ngenerations):
 
     
     outData = {}
+    outData['spikeCell_e']   = spikeMon_e.aspikes
+    outData['spikeCell_i']   = spikeMon_i.aspikes
     outData['bumpPos']       = pos
     outData['bumpPos_times'] = bumpPos_times
     outData['options']       = options._einet_optdict

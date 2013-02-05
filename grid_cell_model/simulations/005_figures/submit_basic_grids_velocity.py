@@ -45,11 +45,10 @@ parameters['theta_noise_sigma'] = 0          # pA
 #parameters['noise_sigma']       = 0          # mV
 parameters['stateMonDuration']  = 10e3       # ms
 
-parameters['uni_GABA_density']  = 1.0
 
 #parameters['Ivel']              = 40        # pA
 
-startJobNum = 2040
+startJobNum = 9000
 numRepeat = 1
 
 # Workstation parameters
@@ -64,8 +63,9 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'Ivel'       : np.arange(0, 160, 10)}
-ac.insertDict(iterparams, mult=True)
+        'Iext_e_theta' : np.arange(0, 360, 30),
+        'Ivel'         : np.arange(0, 160, 10)}
+ac.insertDict(iterparams, mult=True, printout=True)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
