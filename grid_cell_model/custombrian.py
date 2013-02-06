@@ -49,20 +49,8 @@ class ExtendedSpikeMonitor(SpikeMonitor):
         length is int((tend-tstart)/dt)+1 long.
         dt does not have to be relevant to simulation dt at all
         '''
-        lg.debug('Start firing rate processing')
-        szRate = int((tend-tstart)/dt)+1
-        r = np.ndarray((len(self.aspikes), szRate))
-        times = np.ndarray(szRate)
-        for n_i in xrange(len(self.aspikes)):
-            tmp = np.array(self.aspikes[n_i])
-            for t_i in xrange(szRate):
-                t = tstart + t_i*dt
-                r[n_i][t_i] = np.sum(np.logical_and(tmp > t-winLen/2, tmp <
-                    t+winLen/2))
-                times[t_i] = t
+        return spike_analysis.firingRateSlidingWindow(tstart, tend, dt, winLen)
 
-        lg.debug('End firing rate processing')
-        return (r/winLen, times)
 
 
     def getFiringRateMiddleTheta(self, theta_start_t, theta_freq, tend, winlen):

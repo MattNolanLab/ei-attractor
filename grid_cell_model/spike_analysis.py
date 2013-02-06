@@ -46,3 +46,29 @@ def multipleFiringRate(spikeTrainArray, tstart, tend):
 
 
 
+def firingRateSlidingWindow(spikeTrain, tstart, tend, dt, winLen):
+    '''
+    Compute sliding window firing rate for the neuron
+    dt      resolution of firing rate
+    winLen  Length of the sliding window
+
+    The spikes are computed from tstart to tend, so that the resulting array
+    length is int((tend-tstart)/dt)+1 long.
+    dt does not have to be relevant to simulation dt at all
+    '''
+    #lg.debug('Start firing rate processing')
+    szRate = int((tend-tstart)/dt)+1
+    r = np.ndarray((len(spikeTrain), szRate))
+    times = np.ndarray(szRate)
+    for n_i in xrange(len(spikeTrain)):
+        tmp = np.array(spikeTrain[n_i])
+        for t_i in xrange(szRate):
+            t = tstart + t_i*dt
+            r[n_i][t_i] = np.sum(np.logical_and(tmp > t-winLen/2, tmp <
+                t+winLen/2))
+            times[t_i] = t
+
+    #lg.debug('End firing rate processing')
+    return (r/winLen, times)
+
+
