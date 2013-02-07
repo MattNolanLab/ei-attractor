@@ -26,24 +26,24 @@ from matplotlib.pyplot  import *
 
 
 
-jobs = np.arange(9000, 9192)
+jobs = np.arange(9128, 9192)
 NIvel = 16
 jobRange_all = np.reshape(jobs, (len(jobs)/NIvel, NIvel))[:, [0, -1]]
 fitLine = [False] * len(jobRange_all)
 genRange = [0, 9]
 
 leg = []
-for Iext_e_theta in np.arange(0, 360, 30):
+for Iext_e_theta in np.arange(240, 360, 30):
     leg.append(str(Iext_e_theta) + ' pA')
 leg = tuple(leg)
 
 stderr_th = 5   # neurons
 
-rcParams['font.size'] = 14
+rcParams['font.size'] = 16
 
-jobRange_all = jobRange_all[np.arange(0, len(jobRange_all), 2), :]
-fitLine = np.array(fitLine)[np.arange(0, len(fitLine), 2), :]
-leg = tuple(np.array(leg)[np.arange(0, len(leg), 2), :])
+#jobRange_all = jobRange_all[np.arange(0, len(jobRange_all), 2), :]
+#fitLine = np.array(fitLine)[np.arange(0, len(fitLine), 2), :]
+#leg = tuple(np.array(leg)[np.arange(0, len(leg), 2), :])
 
 
 
@@ -149,5 +149,6 @@ for Ivel_types in range(len(jobRange_all)):
     
 
 legend(leg, loc='best')
-savefig('{0}/job{1:04}_bump_velocity_estimation.pdf'.format(dirName, jobRange[0]))
+savefig('{0}/job{1:04}_bump_velocity_estimation.pdf'.format(dirName,
+    jobRange_all[0, 0]))
 

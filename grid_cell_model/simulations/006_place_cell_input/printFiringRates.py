@@ -32,8 +32,8 @@ import spike_analysis
 
 
 
-jobs = np.arange(9000, 9001)
-genRange = [0, 0]
+jobs = np.arange(9171, 9192)
+genRange = [0, 9]
 
 rcParams['font.size'] = 14
 
@@ -78,7 +78,8 @@ def processData(jobNum, gen_it, fo):
     xlabel('Time (s)')
     ylabel('I neuron #')
 
-    savefig('{0}/job{1:04}_firingRate.png'.format(fo.dirName, jobNum))
+    savefig('{0}/job{1:04}_gen{2:04}_firingRate.png'.format(fo.dirName, jobNum,
+        gen_it))
 
     return True
 
