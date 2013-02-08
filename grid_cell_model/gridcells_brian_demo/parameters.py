@@ -23,7 +23,6 @@ import numpy as np
 
 __all__ = ['defaultParameters']
 
-_defaultOutputDir = "output/"
 
 y_dim       = np.sqrt(3)/2.
 
@@ -34,12 +33,10 @@ class Parameters(object):
 
 defaultParameters = Parameters()
 
-defaultParameters.Ne                    =   68
-defaultParameters.Ni                    =   34
-defaultParameters.delay                 =   1.0          # ms
+defaultParameters.time                  =   1e3          # ms
 
-defaultParameters.rat_dt                =   20.0         # ms
-defaultParameters.ratVelFName           = '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
+defaultParameters.Ne                    =   20
+defaultParameters.Ni                    =   20
 
 defaultParameters.gridSep               = 70             # cm
 
@@ -48,29 +45,23 @@ defaultParameters.pAMPA_sigma           =   0.5/6
 defaultParameters.pGABA_mu              =   y_dim/2.0
 defaultParameters.pGABA_sigma           =   0.5/6
 defaultParameters.AMPA_gaussian         =   0            # bool
-defaultParameters.prefDirC_e            =   4.0
+defaultParameters.prefDirC_e            =   0.0
 defaultParameters.prefDirC_i            =   0.0
 defaultParameters.arenaSize             =   180.0        # cm
-defaultParameters.Iplace                =   250.0        # pA
-defaultParameters.placeDur              =    100         # ms
-defaultParameters.placeSigma            =      7         # cm (CHECK)
 
 defaultParameters.NMDA_amount           =   2.0          # %
 
-defaultParameters.Iext_e_const          =   300.0        # pA
-defaultParameters.Iext_i_const          =   200.0        # pA
-defaultParameters.Iext_start            =   300.0        # pA
-defaultParameters.Iext_start_dur        =   100.0        # ms
-defaultParameters.Iext_e_theta          =   375.0        # pA
-defaultParameters.Iext_i_theta          =    25.0        # pA
-defaultParameters.theta_start_t         =   0.5e3        # ms
-defaultParameters.theta_freq            =   8            # Hz
-defaultParameters.theta_noise_sigma     =   0.0          # pA
+defaultParameters.Iext_e_const          =   500.0        # pA
+defaultParameters.Iext_i_const          =   300.0        # pA
+defaultParameters.Iext_start            =   100.0        # pA
+defaultParameters.Iext_start_dur        =   200.0        # ms
+defaultParameters.Iext_start_size       =   1./3         # fraction
+
 
 defaultParameters.taum_e                =   9.3          # ms
-defaultParameters.taum_e_spread         =   0.31         # ms
+defaultParameters.taum_e_spread         =   2.0          # ms
 defaultParameters.EL_e                  =   -68.5        # mV
-defaultParameters.EL_e_spread           =   0.20         # mV
+defaultParameters.EL_e_spread           =   5.0          # mV
 defaultParameters.Vt_e                  =   -50          # mV
 defaultParameters.Vr_e                  =   -68.5        # mV
 defaultParameters.gL_e                  =   22.73        # nS
@@ -82,9 +73,9 @@ defaultParameters.t_ref_e               =   0.1          # ms
 defaultParameters.V_peak_e              =   -40          # mV
 
 defaultParameters.taum_i                =   10           # ms
-defaultParameters.taum_i_spread         =   0            # ms
+defaultParameters.taum_i_spread         =   2.0          # ms
 defaultParameters.EL_i                  =   -60          # mV
-defaultParameters.EL_i_spread           =   0            # mV
+defaultParameters.EL_i_spread           =   2.0          # mV
 defaultParameters.Vt_i                  =   -45          # mV
 defaultParameters.Vr_i                  =   -60          # mV
 defaultParameters.gL_i                  =   22.73        # nS
@@ -97,13 +88,10 @@ defaultParameters.V_peak_i              =  -35           # mV
 
 defaultParameters.tau_AMPA              =   1            # ms
 defaultParameters.tau_NMDA_fall         =    100         # ms only a single exponential used here
-defaultParameters.g_AMPA_total          =   1400         # nS
+defaultParameters.g_AMPA_total          =   1200.0        # nS
 defaultParameters.tau_GABA_A_rise       =   0.1          # ms
 defaultParameters.tau_GABA_A_fall       =   5            # ms
-defaultParameters.g_GABA_total          =   2160         # nS
-defaultParameters.g_uni_GABA_total      =   28           # nS
-defaultParameters.uni_GABA_density      =   0.4
-
+defaultParameters.g_GABA_total          =   400.0        # nS
 
 defaultParameters.E_AMPA                =   0            # mV
 defaultParameters.E_GABA_A              =   -75          # mV
@@ -115,7 +103,8 @@ defaultParameters.sim_dt                =   0.1          # ms
 defaultParameters.Vclamp                =   -50          # mV
 
 
-defaultParameters.output_dir            =   _defaultOutputDir
+defaultParameters.output_dir            =   "output_local/"
+
 defaultParameters.stateMonDur           =  20e3          # ms
 
 

@@ -20,8 +20,6 @@
 #
 from brian      import *
 
-from custombrian             import *
-
 import time
 import numpy as np
 
@@ -48,7 +46,7 @@ net_Ni = Ni_x * Ni_y
 
 
 # Clocks
-_simulationClock = Clock(dt = opt.sim_dt * msecond)
+simulationClock = Clock(dt = opt.sim_dt * msecond)
 
 
 # Other
@@ -60,6 +58,9 @@ figSize = (12,8)
 #            Helper functions to generate ring-like and Gaussian
 #                  synaptic weights on a twisted torus
 ################################################################################
+def uniformDistrib(mean, spread, N):
+    return mean - spread/2.0 * rand(N)
+
 
 # Get a preferred direction for a neuron
 def getPreferredDirection(pos_x, pos_y):
@@ -134,32 +135,24 @@ def _generateGaussianWeights(a, others, sigma, prefDir, prefDirC):
 
 
 
-def _centerSurroundConnection(AMPA_gaussian, pAMPA_mu, pAMPA_sigma, pGABA_mu, pGABA_sigma):
+def _centerSurroundConnection(pAMPA_mu, pAMPA_sigma, pGABA_sigma, AMPA_conn, GABA_conn):
     '''
     Create a center-surround excitatory and inhibitory connections between
     both populations.
 
     The connections are remapped to [1.0, sqrt(3)/2], whether the topology
     is a twisted torus or just a regular torus.
-
-    AMPA_gaussian switches between two cases:
-        true    Each exciatory neuron has a 2D excitatory gaussian profile,
-                while each inhibitory neuron has a ring-like profile
-                pAMPA_mu, pAMPA_sigma, pGABA_sigma are used,
-                pGABA_mu is discarded
-        false   Each excitatory neuron has a ring-like profile, while
-                each inhibitory neuron has a gaussian profile.
-                pAMPA_sigma, pGABA_mu, pGABA_sigma are used,
-                pAMPA_mu is discarded
     '''
-    g_AMPA_mean = opt.g_AMPA_total / net_Ne
-    g_GABA_mean = opt.g_GABA_total / net_Ni
+    g_AMPA_mean = float(opt.g_AMPA_total) / net_Ne
+    g_GABA_mean = float(opt.g_GABA_total) / net_Ni
 
     # E --> I connections
     X, Y = np.meshgrid(np.arange(Ni_x), np.arange(Ni_y))
     X = 1. * X / Ni_x
     Y = 1. * Y / Ni_y * y_dim
     others_e = np.vstack((X.ravel(), Y.ravel())).T
+
+    _E_W = np.asarray(AMPA_conn.W) # Direct setting of connections into a dense array
 
     prefDirs_e = np.ndarray((net_Ne, 2))
     for y in xrange(Ne_y):
@@ -177,18 +170,14 @@ def _centerSurroundConnection(AMPA_gaussian, pAMPA_mu, pAMPA_sigma, pGABA_mu, pG
             pd_norm_e = np.ndarray((1, 2)) # normalise preferred dirs before sending them
             pd_norm_e[0, 0] = 1. * pd_e[0] / Ni_x
             pd_norm_e[0, 1] = 1. * pd_e[1] / Ni_y * y_dim
-            if AMPA_gaussian == 1:
-                tmp_templ = _generateGaussianWeights(a, others_e,
-                        pAMPA_sigma, pd_norm_e, opt.prefDirC_e)
-            elif AMPA_gaussian == 0:
-                tmp_templ = _generateRinglikeWeights(a, others_e,
-                        pAMPA_mu, pAMPA_sigma, pd_norm_e, opt.prefDirC_e)
-            else:
-                raise Exception('AMPA_gaussian parameters must be 0 or 1')
+            tmp_templ = _generateRinglikeWeights(a, others_e,
+                    pAMPA_mu, pAMPA_sigma, pd_norm_e, opt.prefDirC_e)
 
             tmp_templ *= g_AMPA_mean
             # tmp_templ down here must be in the proper units (e.g. nS)
-            _divergentConnectEI(it, range(net_Ni), tmp_templ)
+            # _E_W[X, Y] --> X...pre, Y...postsynaptic
+            _E_W[it, range(net_Ni)] = tmp_templ * nS
+
 
     # I --> E connections
     conn_th = 1e-5
@@ -210,18 +199,22 @@ def _centerSurroundConnection(AMPA_gaussian, pAMPA_mu, pAMPA_sigma, pGABA_mu, pG
             pd_norm_i = np.ndarray((1, 2)) # normalise preferred dirs before sending them
             pd_norm_i[0, 0] = 1. * pd_i[0] / Ne_x
             pd_norm_i[0, 1] = 1. * pd_i[1] / Ne_y * y_dim
-            if AMPA_gaussian == 1:
-                tmp_templ = _generateRinglikeWeights(a, others_i,
-                        pGABA_mu, pGABA_sigma, pd_norm_i, opt.prefDirC_i)
-            elif AMPA_gaussian == 0:
-                tmp_templ = _generateGaussianWeights(a, others_i,
-                        pGABA_sigma, pd_norm_i, opt.prefDirC_i)
-            else:
-                raise Exception('AMPA_gaussian parameters must be 0 or 1')
+            tmp_templ = _generateGaussianWeights(a, others_i,
+                    pGABA_sigma, pd_norm_i, opt.prefDirC_i)
 
             E_nid = (tmp_templ > conn_th).nonzero()[0]
-            _divergentConnectIE(it, E_nid, B_GABA*g_GABA_mean*tmp_templ[E_nid])
+            GABA_conn.W.rows[it] = E_nid
+            GABA_conn.W.data[it] = B_GABA*g_GABA_mean*tmp_templ[E_nid] * nS
 
+
+def spikeMonitorFiringRate(spikeMonitor, tstart, tend):
+    N = len(spikeMonitor.source)
+    firingRate = np.ndarray((N, ))
+    for n_it in xrange(N):
+        spikes = spikeMonitor[n_it]
+        firingRate[n_it] = np.sum(np.logical_and(spikes >= tstart, spikes <= tend)) / (tend - tstart)
+
+    return firingRate
 
 
 
@@ -324,7 +317,7 @@ E_pop = NeuronGroup(
         threshold=opt.V_peak_e * mV,
         reset="vm=Vr_e; g_ahp=g_AHP_e",
         refractory=opt.t_ref_e * msecond,
-        clock=_simulationClock)
+        clock=simulationClock)
 
 I_pop = NeuronGroup(
         N = net_Ni,
@@ -332,29 +325,22 @@ I_pop = NeuronGroup(
         threshold=opt.V_peak_i * mV,
         reset=opt.Vr_i * mV,
         refractory=opt.t_ref_i * msecond,
-        clock=_simulationClock)
+        clock=simulationClock)
 
 net = Network(E_pop, I_pop)
 
 # Setup adaptation connections: neuron on itself
 if opt.ad_i_g_inc != 0.0:
-    adaptConn_i = IdentityConnection(I_pop, I_pop, 'g_ad',
-            weight=opt.ad_i_g_inc*nS)
+    adaptConn_i = IdentityConnection(I_pop, I_pop, 'g_ad', weight=opt.ad_i_g_inc*nS)
     net.add(adaptConn_i)
 
 # Connect E-->I and I-->E
-AMPA_conn = Connection(E_pop, I_pop, 'ge',
-    structure='dense')
-NMDA_conn = Connection(E_pop, I_pop, 'gNMDA',
-    structure='dense')
+AMPA_conn = Connection(E_pop, I_pop, 'ge', structure='dense')
+NMDA_conn = Connection(E_pop, I_pop, 'gNMDA', structure='dense')
 GABA_conn1 = Connection(I_pop, E_pop, 'gi1')
 GABA_conn2 = Connection(I_pop, E_pop, 'gi2')
 
-# Weight matrices which are used in _divergentConnectXY() functions
-_E_W = np.asarray(AMPA_conn.W)
-
-_centerSurroundConnection(opt.AMPA_gaussian, opt.pAMPA_mu,
-        opt.pAMPA_sigma, opt.pGABA_mu, opt.pGABA_sigma)
+_centerSurroundConnection(opt.pAMPA_mu, opt.pAMPA_sigma, opt.pGABA_sigma, AMPA_conn, GABA_conn1)
 
 # Now simply copy AMPA --> NMDA and GABA_conn1 --> GABA_conn2
 NMDA_conn.connect(E_pop, I_pop, AMPA_conn.W * .01 * opt.NMDA_amount)
@@ -384,44 +370,60 @@ I_pop.taum     = uniformDistrib(opt.taum_i, opt.taum_i_spread, len(I_pop)) * ms
 I_pop.tau_ad   = (opt.ad_tau_i_mean + opt.ad_tau_i_std * np.random.randn(len(I_pop.tau_ad))) * ms
 
 
-exit(1)
+################################################################################
+#                      External input currents settings
+################################################################################
+E_pop.Iext_const = opt.Iext_e_const * pA
+I_pop.Iext_const = opt.Iext_i_const * pA
 
 
-ei_net.setConstantCurrent()
-ei_net.setStartCurrent()
+# Bump initialisation currents
+_startCurrentClock = Clock(dt=50*ms)
 
-ei_net.uniformInhibition()
-ei_net.setThetaCurrentStimulation()
+init_X, init_Y = np.meshgrid(np.arange(Ne_x), np.arange(Ne_y))
+init_X = init_X - Ne_x/2.0
+init_Y = init_Y - Ne_y/2.0
+Istart_coeff = np.array(np.sqrt(init_X**2 + init_Y**2) < opt.Iext_start_size*Ne_y, dtype=float).flatten()
+
+@network_operation(_startCurrentClock)
+def startCurrentFun():
+    if simulationClock.t < opt.Iext_start_dur*msecond:
+        E_pop.Iext_start = Istart_coeff * opt.Iext_start * pA
+        print "Bump initialisation..."
+    else:
+        E_pop.Iext_start = 0.0
+
+net.add(startCurrentFun)
 
 
 
 #const_v = [0.0, 1.0]
-#ei_net.setConstantVelocityCurrent_e(const_v)
-ei_net.setVelocityCurrentInput_e()
+#setConstantVelocityCurrent_e(const_v)
+#setVelocityCurrentInput_e()
+
 
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
 #                            End Network setup
 ################################################################################
 
-simulationClock = ei_net._getSimulationClock()
 
-state_record_e = [ei_net.Ne_x/2 -1 , ei_net.Ne_y/2*ei_net.Ne_x + ei_net.Ne_x/2 - 1]
-state_record_i = [ei_net.Ni_x/2 - 1, ei_net.Ni_y/2*ei_net.Ni_x + ei_net.Ni_x/2 - 1]
+state_record_e = [Ne_x/2 -1 , Ne_y/2*Ne_x + Ne_x/2 - 1]
+state_record_i = [Ni_x/2 - 1, Ni_y/2*Ni_x + Ni_x/2 - 1]
 
-spikeMon_e          = ExtendedSpikeMonitor(ei_net.E_pop)
-spikeMon_i          = ExtendedSpikeMonitor(ei_net.I_pop)
+spikeMon_e          = SpikeMonitor(E_pop)
+spikeMon_i          = SpikeMonitor(I_pop)
 
-stateMon_e          = RecentStateMonitor(ei_net.E_pop, 'vm',     duration=opt.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
-stateMon_i          = RecentStateMonitor(ei_net.I_pop, 'vm',     duration=opt.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
-stateMon_Iclamp_e   = RecentStateMonitor(ei_net.E_pop, 'Iclamp', duration=opt.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
-stateMon_Iclamp_i   = RecentStateMonitor(ei_net.I_pop, 'Iclamp', duration=opt.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
-stateMon_Iext_e     = RecentStateMonitor(ei_net.E_pop, 'Iext',   duration=opt.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
-stateMon_Iext_i     = RecentStateMonitor(ei_net.I_pop, 'Iext',   duration=opt.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
+stateMon_e          = RecentStateMonitor(E_pop, 'vm',     duration=opt.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
+stateMon_i          = RecentStateMonitor(I_pop, 'vm',     duration=opt.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
+stateMon_Iclamp_e   = RecentStateMonitor(E_pop, 'Iclamp', duration=opt.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
+stateMon_Iclamp_i   = RecentStateMonitor(I_pop, 'Iclamp', duration=opt.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
+stateMon_Iext_e     = RecentStateMonitor(E_pop, 'Iext',   duration=opt.stateMonDur*ms,   record = state_record_e, clock=simulationClock)
+stateMon_Iext_i     = RecentStateMonitor(I_pop, 'Iext',   duration=opt.stateMonDur*ms,   record = state_record_i, clock=simulationClock)
 
-ei_net.net.add(spikeMon_e, spikeMon_i)
-ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
-ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
+net.add(spikeMon_e, spikeMon_i)
+net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
+net.add(stateMon_Iext_e, stateMon_Iext_i)
 
 
 #x_lim = [opt.time-0.5, opt.time]
@@ -432,37 +434,25 @@ x_lim = [opt.time/1e3 - 1, opt.time/1e3]
 ################################################################################
 print "Simulation running..."
 start_time=time.time()
-ei_net.net.run(opt.time/opt.ndumps*msecond, report='stdout')
+net.run(opt.time*msecond, report='stdout')
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
 
 
-output_fname = "{0}/{1}job{2:04}_trial{3:04}_dump{4:03}".format(opt.output_dir,
-        opt.fileNamePrefix, opt.job_num, trial_it, dump_it)
+output_fname = "{0}/gridcells_sim".format(opt.output_dir)
 
-
-F_tstart = 0
-F_tend = opt.time*1e-3
-F_dt = 0.02
-F_winLen = 0.25
-Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
-Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
 
 
 # plot firing rates
 figure(figsize=figSize)
-subplot(211)
-T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
-pcolormesh(T, FR, Fe)
+ax = subplot(211)
+raster_plot(spikeMon_e)
 ylabel('E Neuron no.')
-colorbar()
-subplot(212)
-T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
-pcolormesh(T, FR, Fi)
+subplot(212, sharex=ax)
+raster_plot(spikeMon_i)
 xlabel('Time (s)')
 ylabel('I Neuron no.')
-colorbar()
-savefig(output_fname + '_firing_rate_e.png')
+savefig(output_fname + '_raster_plot.png')
 
 figure()
 ax = subplot(211)
@@ -476,11 +466,18 @@ xlim(x_lim)
 savefig(output_fname + '_Vm.pdf')
 
 
+#figure()
+#pcolormesh(np.reshape(AMPA_conn.W[0, :], (Ni_y, Ni_x)))
+#colorbar()
+#xlabel('I neuron #')
+#ylabel('I neuron #')
+
+
 figure()
 ax = subplot(211)
 plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
 ylabel('E synaptic current (pA)')
-ylim([0, 3000])
+ylim([0, 1500])
 subplot(212, sharex=ax)
 plot(stateMon_Iclamp_i.times, stateMon_Iclamp_i.values[:, 0:2]/pA)
 ylim([-1500, 0])
@@ -489,19 +486,14 @@ ylabel('I synaptic current (pA)')
 xlim(x_lim)
 savefig(output_fname + '_Isyn.pdf')
 
-figure()
-ax = subplot(211)
-plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[:, 1]/pA)
-ylabel('E external current (pA)')
-subplot(212, sharex=ax)
-plot(stateMon_Iext_i.times, -stateMon_Iext_i.values[:, 0]/pA)
-xlabel('Time (s)')
-ylabel('I external current (pA)')
-xlim(x_lim)
-savefig(output_fname + '_Iext.pdf')
+
+F_tstart = opt.time*1e-3 - 1
+F_tend = opt.time*1e-3
+
 
 figure()
-pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
+Fe = spikeMonitorFiringRate(spikeMon_e, F_tstart, F_tend)
+pcolormesh(np.reshape(Fe, (Ne_y, Ne_x)))
 xlabel('E neuron no.')
 ylabel('E neuron no.')
 colorbar()
@@ -509,30 +501,15 @@ axis('equal')
 savefig(output_fname + '_firing_snapshot_e.png')
 
 figure()
-pcolormesh(np.reshape(Fi[:, len(Fi_t)/2], (ei_net.Ni_y, ei_net.Ni_x)))
+Fi = spikeMonitorFiringRate(spikeMon_i, F_tstart, F_tend)
+pcolormesh(np.reshape(Fi, (Ni_y, Ni_x)))
 xlabel('I neuron no.')
 ylabel('I neuron no.')
 colorbar()
 axis('equal')
 savefig(output_fname + '_firing_snapshot_i.png')
 
-# Print a plot of bump position
-F_dt = 0.02
-F_winLen = 0.25
-(pos, bumpPos_times) = spikeMon_e.torusPopulationVector([ei_net.Ne_x,
-    ei_net.Ne_y], opt.theta_start_t*1e-3, opt.time*1e-3, F_dt, F_winLen)
-figure(figsize=figSize)
-plot(bumpPos_times, pos)
-xlabel('Time (s)')
-ylabel('Bump position (neurons)')
-ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
-
-savefig(output_fname + '_bump_position.pdf')
-
         
-
-#                            End main cycle
-################################################################################
 
 total_time = time.time()-total_start_t
 print "Overall time: ", total_time, " seconds"
