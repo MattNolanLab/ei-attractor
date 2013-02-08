@@ -34,6 +34,7 @@ class Parameters(object):
 defaultParameters = Parameters()
 
 defaultParameters.time                  =   1e3          # ms
+defaultParameters.output_dir            =   "./"
 
 defaultParameters.Ne                    =   20
 defaultParameters.Ni                    =   20
@@ -103,7 +104,6 @@ defaultParameters.sim_dt                =   0.1          # ms
 defaultParameters.Vclamp                =   -50          # mV
 
 
-defaultParameters.output_dir            =   "output_local/"
 
 defaultParameters.stateMonDur           =  20e3          # ms
 

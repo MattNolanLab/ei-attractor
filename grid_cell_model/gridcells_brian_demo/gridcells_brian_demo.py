@@ -18,12 +18,39 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+#
+# This file is a simplified version of the model published in
+#
+# Pastoll, H., Solanka, L., van Rossum, M. C. W., & Nolan, M. F. (2013).
+# Feedback inhibition enables theta-nested gamma oscillations and grid firing fields.
+# Neuron, 77(1), 141–154. doi:10.1016/j.neuron.2012.11.032
+#
+# The simulation here demonstrates an emergence of a continuous attractor state
+# on a twisted torus. Several key things have been simplified:
+#   * No theta-nested gamma oscillations are present in the model
+#   * The network does not perform path integration of velocity inputs (i.e. the
+#     bump is "stable". For changing this see the referenced publication and
+#     prefDir parameters.
+#   * The simulation time is a few seconds for demonstration purposes
+#
+# The model simulates two populations of excitatory (stellate cells) and
+# inhibitory (fast spiking interneurons (FS)) that are layed out on a twisted
+# torus of size 1xsqrt(3)/2. The two populations are reciprocally connected,
+# without direct connections between stellate cells. Both populations
+# receive an external, constant current input to sustain the activity in the
+# network. In the beginning of the simulation, the firing rate of a subset of
+# excitatory neurons is elevated (by an extra external current drive) to switch
+# the network into an asynchronous bump state.
+#
+# For more information, consult the referenced paper.
+
 from brian      import *
 
 import time
 import numpy as np
 
 import parameters
+
 
 
 ################################################################################
@@ -82,7 +109,7 @@ def getPreferredDirection(pos_x, pos_y):
 def _remap_twisted_torus(a, others, prefDir):
     '''
     Take a, the position of one neuron on the twisted torus and compute the
-    distance of this neuron from others, accounting from preferred direction of
+    distance of this neuron from others, accounting for the preferred direction of
     the neuron (a). Return an array of distances.
     '''
     a_x = a[0, 0]
@@ -394,12 +421,6 @@ def startCurrentFun():
         E_pop.Iext_start = 0.0
 
 net.add(startCurrentFun)
-
-
-
-#const_v = [0.0, 1.0]
-#setConstantVelocityCurrent_e(const_v)
-#setVelocityCurrentInput_e()
 
 
 duration=time.time()-start_time
