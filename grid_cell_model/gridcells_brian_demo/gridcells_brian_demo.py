@@ -23,28 +23,32 @@
 #
 # Pastoll, H., Solanka, L., van Rossum, M. C. W., & Nolan, M. F. (2013).
 # Feedback inhibition enables theta-nested gamma oscillations and grid firing fields.
-# Neuron, 77(1), 141–154. doi:10.1016/j.neuron.2012.11.032
+# Neuron, 77(1), 141-154. doi:10.1016/j.neuron.2012.11.032
 #
 # The simulation here demonstrates an emergence of a continuous attractor state
 # on a twisted torus. Several key things have been simplified:
 #   * No theta-nested gamma oscillations are present in the model
 #   * The network does not perform path integration of velocity inputs (i.e. the
-#     bump is "stable". For changing this see the referenced publication and
+#     bump is "static". For changing this see the referenced publication and
 #     prefDir parameters.
 #   * The simulation time is a few seconds for demonstration purposes
 #
 # The model simulates two populations of excitatory (stellate cells) and
 # inhibitory (fast spiking interneurons (FS)) that are layed out on a twisted
-# torus of size 1xsqrt(3)/2. The two populations are reciprocally connected,
+# torus of size (X, Y) = (1, sqrt(3)/2). The two populations are connected,
 # without direct connections between stellate cells. Both populations
 # receive an external, constant current input to sustain the activity in the
 # network. In the beginning of the simulation, the firing rate of a subset of
 # excitatory neurons is elevated (by an extra external current drive) to switch
 # the network into an asynchronous bump state.
+# The output of the simulation is a raster plot, plots of synaptic currents, and
+# firing rate plots of neurons transformed into 2D coordinates of the twisted
+# torus.
 #
 # For more information, consult the referenced paper.
 
 from brian      import *
+from mpl_toolkits.mplot3d import Axes3D
 
 import time
 import numpy as np
@@ -78,6 +82,7 @@ simulationClock = Clock(dt = opt.sim_dt * msecond)
 
 # Other
 figSize = (12,8)
+x_lim = [opt.time/1e3 - 1, opt.time/1e3]
 
 
 
@@ -110,7 +115,10 @@ def _remap_twisted_torus(a, others, prefDir):
     '''
     Take a, the position of one neuron on the twisted torus and compute the
     distance of this neuron from others, accounting for the preferred direction of
-    the neuron (a). Return an array of distances.
+    the neuron (a).
+    Y coordinates are twisted, i.e. X will have additional position shifts
+    when determining minimum.
+    Return an array of distances.
     '''
     a_x = a[0, 0]
     a_y = a[0, 1]
@@ -137,8 +145,6 @@ def _generateRinglikeWeights(a, others, mu, sigma, prefDir, prefDirC):
 
     Here we assume that X coordinates are normalised to <0, 1), and Y
     coordinates are normalised to <0, sqrt(3)/2)
-    Y coordinates are twisted, i.e. X will have additional position shifts
-    when determining minimum.
     '''
     prefDir = np.array(prefDir, dtype=float) * prefDirC
     d = _remap_twisted_torus(a, others, prefDir)
@@ -151,8 +157,6 @@ def _generateGaussianWeights(a, others, sigma, prefDir, prefDirC):
 
     Here we assume that X coordinates are normalised to <0, 1), and Y
     coordinates are normalised to <0, sqrt(3)/2)
-    Y coordinates are twisted, i.e. X will have additional position shifts
-    when determining minimum.
     '''
 
     #import pdb; pdb.set_trace()
@@ -197,8 +201,7 @@ def _centerSurroundConnection(pAMPA_mu, pAMPA_sigma, pGABA_sigma, AMPA_conn, GAB
             pd_norm_e = np.ndarray((1, 2)) # normalise preferred dirs before sending them
             pd_norm_e[0, 0] = 1. * pd_e[0] / Ni_x
             pd_norm_e[0, 1] = 1. * pd_e[1] / Ni_y * y_dim
-            tmp_templ = _generateRinglikeWeights(a, others_e,
-                    pAMPA_mu, pAMPA_sigma, pd_norm_e, opt.prefDirC_e)
+            tmp_templ = _generateRinglikeWeights(a, others_e, pAMPA_mu, pAMPA_sigma, pd_norm_e, opt.prefDirC_e)
 
             tmp_templ *= g_AMPA_mean
             # tmp_templ down here must be in the proper units (e.g. nS)
@@ -226,8 +229,7 @@ def _centerSurroundConnection(pAMPA_mu, pAMPA_sigma, pGABA_sigma, AMPA_conn, GAB
             pd_norm_i = np.ndarray((1, 2)) # normalise preferred dirs before sending them
             pd_norm_i[0, 0] = 1. * pd_i[0] / Ne_x
             pd_norm_i[0, 1] = 1. * pd_i[1] / Ne_y * y_dim
-            tmp_templ = _generateGaussianWeights(a, others_i,
-                    pGABA_sigma, pd_norm_i, opt.prefDirC_i)
+            tmp_templ = _generateGaussianWeights(a, others_i, pGABA_sigma, pd_norm_i, opt.prefDirC_i)
 
             E_nid = (tmp_templ > conn_th).nonzero()[0]
             GABA_conn.W.rows[it] = E_nid
@@ -253,12 +255,11 @@ start_time=time.time()
 total_start_t = time.time()
 
 
-# Create network
+# Normalization factors for the difference of Gaussians (GABA_A) - see e.g.
+# Dyan&Abbott, Theoretical Neuroscience
 tau1_GABA = opt.tau_GABA_A_fall
-tau2_GABA = opt.tau_GABA_A_rise * opt.tau_GABA_A_fall / \
-        (opt.tau_GABA_A_rise + opt.tau_GABA_A_fall);
-B_GABA = 1/((tau2_GABA/tau1_GABA)**(opt.tau_GABA_A_rise/tau1_GABA) - 
-        (tau2_GABA/tau1_GABA)**(opt.tau_GABA_A_rise/tau2_GABA))
+tau2_GABA = opt.tau_GABA_A_rise * opt.tau_GABA_A_fall / (opt.tau_GABA_A_rise + opt.tau_GABA_A_fall);
+B_GABA = 1/((tau2_GABA/tau1_GABA)**(opt.tau_GABA_A_rise/tau1_GABA) - (tau2_GABA/tau1_GABA)**(opt.tau_GABA_A_rise/tau2_GABA))
 
 # Stellate cell equations
 eqs_e = Equations('''
@@ -366,7 +367,6 @@ AMPA_conn = Connection(E_pop, I_pop, 'ge', structure='dense')
 NMDA_conn = Connection(E_pop, I_pop, 'gNMDA', structure='dense')
 GABA_conn1 = Connection(I_pop, E_pop, 'gi1')
 GABA_conn2 = Connection(I_pop, E_pop, 'gi2')
-
 _centerSurroundConnection(opt.pAMPA_mu, opt.pAMPA_sigma, opt.pGABA_sigma, AMPA_conn, GABA_conn1)
 
 # Now simply copy AMPA --> NMDA and GABA_conn1 --> GABA_conn2
@@ -404,15 +404,15 @@ E_pop.Iext_const = opt.Iext_e_const * pA
 I_pop.Iext_const = opt.Iext_i_const * pA
 
 
-# Bump initialisation currents
-_startCurrentClock = Clock(dt=50*ms)
+# Bump initialisation currents - A disc of neurons in the middle of the torus
+startCurrentClock = Clock(dt=50*ms)
 
 init_X, init_Y = np.meshgrid(np.arange(Ne_x), np.arange(Ne_y))
 init_X = init_X - Ne_x/2.0
 init_Y = init_Y - Ne_y/2.0
 Istart_coeff = np.array(np.sqrt(init_X**2 + init_Y**2) < opt.Iext_start_size*Ne_y, dtype=float).flatten()
 
-@network_operation(_startCurrentClock)
+@network_operation(startCurrentClock)
 def startCurrentFun():
     if simulationClock.t < opt.Iext_start_dur*msecond:
         E_pop.Iext_start = Istart_coeff * opt.Iext_start * pA
@@ -447,8 +447,6 @@ net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
 net.add(stateMon_Iext_e, stateMon_Iext_i)
 
 
-#x_lim = [opt.time-0.5, opt.time]
-x_lim = [opt.time/1e3 - 1, opt.time/1e3]
 
 ################################################################################
 #                              Main cycle
@@ -464,17 +462,45 @@ output_fname = "{0}/gridcells_sim".format(opt.output_dir)
 
 
 
-# plot firing rates
+# Raster plot
 figure(figsize=figSize)
 ax = subplot(211)
 raster_plot(spikeMon_e)
-ylabel('E Neuron no.')
+ylabel('E Neuron #')
 subplot(212, sharex=ax)
 raster_plot(spikeMon_i)
 xlabel('Time (s)')
-ylabel('I Neuron no.')
+ylabel('I Neuron #')
+suptitle('Flattened raster plot')
 savefig(output_fname + '_raster_plot.png')
 
+# 3D raster plot
+fig = figure()
+ax = fig.add_subplot(111, projection='3d')
+hold('on')
+for n_it in xrange(len(spikeMon_e.source)):
+    n_Spikes = len(spikeMon_e[n_it])
+    x_coord = [n_it % Ne_x]  * n_Spikes
+    y_coord = [n_it // Ne_x] * n_Spikes
+    ax.scatter(x_coord, y_coord, spikeMon_e[n_it])
+ax.set_xlabel('Neuron #')
+ax.set_ylabel('Neuron #')
+ax.set_zlabel('Time (s)')
+title('3D raster plot of E cells on the torus')
+savefig(output_fname + '_raster_plot_3d.png')
+
+
+# An example of AMPA connections E cell --> all interneurons
+figure()
+pcolormesh(np.reshape(AMPA_conn.W[0, :], (Ni_y, Ni_x)))
+colorbar()
+xlabel('I neuron #')
+ylabel('I neuron #')
+title('Outgoing synaptic weights of an E neuron (nS)')
+savefig(output_fname + '_connections_EI.png')
+
+
+# Vm
 figure()
 ax = subplot(211)
 plot(stateMon_e.times, stateMon_e.values[:, 0:2]/mV)
@@ -484,16 +510,11 @@ plot(stateMon_i.times, stateMon_i.values[:, 0:2]/mV)
 xlabel('Time (s)')
 ylabel('I membrane potential (mV)')
 xlim(x_lim)
+suptitle('Membrane potentials of E and I cells')
 savefig(output_fname + '_Vm.pdf')
 
 
-#figure()
-#pcolormesh(np.reshape(AMPA_conn.W[0, :], (Ni_y, Ni_x)))
-#colorbar()
-#xlabel('I neuron #')
-#ylabel('I neuron #')
-
-
+# Synaptic currents
 figure()
 ax = subplot(211)
 plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
@@ -505,12 +526,13 @@ ylim([-1500, 0])
 xlabel('Time (s)')
 ylabel('I synaptic current (pA)')
 xlim(x_lim)
+suptitle('Postsynaptic currents of E and I cells')
 savefig(output_fname + '_Isyn.pdf')
 
 
+# Firing rate of E cells on the twisted torus
 F_tstart = opt.time*1e-3 - 1
 F_tend = opt.time*1e-3
-
 
 figure()
 Fe = spikeMonitorFiringRate(spikeMon_e, F_tstart, F_tend)
@@ -519,8 +541,11 @@ xlabel('E neuron no.')
 ylabel('E neuron no.')
 colorbar()
 axis('equal')
+title('Firing rates (torus) of E cells')
 savefig(output_fname + '_firing_snapshot_e.png')
 
+
+# Firing rate of I cells on the twisted torus
 figure()
 Fi = spikeMonitorFiringRate(spikeMon_i, F_tstart, F_tend)
 pcolormesh(np.reshape(Fi, (Ni_y, Ni_x)))
@@ -528,6 +553,7 @@ xlabel('I neuron no.')
 ylabel('I neuron no.')
 colorbar()
 axis('equal')
+title('Firing rates (torus) of I cells')
 savefig(output_fname + '_firing_snapshot_i.png')
 
         
@@ -535,3 +561,4 @@ savefig(output_fname + '_firing_snapshot_i.png')
 total_time = time.time()-total_start_t
 print "Overall time: ", total_time, " seconds"
 
+show()

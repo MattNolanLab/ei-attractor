@@ -21,91 +21,88 @@
 
 import numpy as np
 
-__all__ = ['defaultParameters']
+__all__ = ['defaultParameters', 'defaultParameters']
 
 
 y_dim       = np.sqrt(3)/2.
 
 
-class Parameters(object):
-    pass
+class DefaultParameters(object):
+    def __init__(s):
+        s.time                  =   1e3          # ms
+        s.output_dir            =   "./"
+        
+        s.Ne                    =   68
+        s.Ni                    =   34
+        
+        s.gridSep               = 70             # cm
+        
+        s.pAMPA_mu              =   y_dim/2.0
+        s.pAMPA_sigma           =   0.5/6
+        s.pGABA_mu              =   y_dim/2.0
+        s.pGABA_sigma           =   0.5/6
+        s.AMPA_gaussian         =   0            # bool
+        s.prefDirC_e            =   0            # neurons: not normalized, i.e. 4
+        s.prefDirC_i            =   0            # neurons: not normalized
+        s.arenaSize             =   180.0        # cm
+        
+        s.NMDA_amount           =   2.0          # %
+        
+        s.Iext_e_const          =   500.0        # pA
+        s.Iext_i_const          =   300.0        # pA
+        s.Iext_start            =   100.0        # pA
+        s.Iext_start_dur        =   200.0        # ms
+        s.Iext_start_size       =   1./3         # fraction
+        
+        
+        s.taum_e                =   9.3          # ms
+        s.taum_e_spread         =   2.0          # ms
+        s.EL_e                  =   -68.5        # mV
+        s.EL_e_spread           =   5.0          # mV
+        s.Vt_e                  =   -50          # mV
+        s.Vr_e                  =   -68.5        # mV
+        s.gL_e                  =   22.73        # nS
+        s.deltaT_e              =   0.4          # mV
+        s.E_AHP_e               =   -80          # mV
+        s.tau_AHP_e             =   20           # ms
+        s.g_AHP_e_max           =   5.0          # nS
+        s.t_ref_e               =   0.1          # ms
+        s.V_peak_e              =   -40          # mV
+        
+        s.taum_i                =   10           # ms
+        s.taum_i_spread         =   2.0          # ms
+        s.EL_i                  =   -60          # mV
+        s.EL_i_spread           =   2.0          # mV
+        s.Vt_i                  =   -45          # mV
+        s.Vr_i                  =   -60          # mV
+        s.gL_i                  =   22.73        # nS
+        s.t_ref_i               =   0.1          # ms
+        s.deltaT_i              =   0.4          # mV
+        s.ad_tau_i_mean         =   7.5          # ms
+        s.ad_tau_i_std          =   0.5          # ms Unused in the simulation for now
+        s.ad_i_g_inc            =   22.73        # nS
+        s.V_peak_i              =  -35           # mV
+        
+        s.tau_AMPA              =   1            # ms
+        s.tau_NMDA_fall         =    100         # ms only a single exponential used here
+        s.g_AMPA_total          =   1200.0        # nS
+        s.tau_GABA_A_rise       =   0.1          # ms
+        s.tau_GABA_A_fall       =   5            # ms
+        s.g_GABA_total          =   400.0        # nS
+        
+        s.E_AMPA                =   0            # mV
+        s.E_GABA_A              =   -75          # mV
+        
+        s.noise_sigma           =   2            # mV
+        s.sigma_init_cond       =   10           # mV
+        
+        s.sim_dt                =   0.1          # ms
+        s.Vclamp                =   -50          # mV
+        
+        
+        
+        s.stateMonDur           =  20e3          # ms
 
 
-defaultParameters = Parameters()
-
-defaultParameters.time                  =   1e3          # ms
-defaultParameters.output_dir            =   "./"
-
-defaultParameters.Ne                    =   20
-defaultParameters.Ni                    =   20
-
-defaultParameters.gridSep               = 70             # cm
-
-defaultParameters.pAMPA_mu              =   y_dim/2.0
-defaultParameters.pAMPA_sigma           =   0.5/6
-defaultParameters.pGABA_mu              =   y_dim/2.0
-defaultParameters.pGABA_sigma           =   0.5/6
-defaultParameters.AMPA_gaussian         =   0            # bool
-defaultParameters.prefDirC_e            =   0.0
-defaultParameters.prefDirC_i            =   0.0
-defaultParameters.arenaSize             =   180.0        # cm
-
-defaultParameters.NMDA_amount           =   2.0          # %
-
-defaultParameters.Iext_e_const          =   500.0        # pA
-defaultParameters.Iext_i_const          =   300.0        # pA
-defaultParameters.Iext_start            =   100.0        # pA
-defaultParameters.Iext_start_dur        =   200.0        # ms
-defaultParameters.Iext_start_size       =   1./3         # fraction
-
-
-defaultParameters.taum_e                =   9.3          # ms
-defaultParameters.taum_e_spread         =   2.0          # ms
-defaultParameters.EL_e                  =   -68.5        # mV
-defaultParameters.EL_e_spread           =   5.0          # mV
-defaultParameters.Vt_e                  =   -50          # mV
-defaultParameters.Vr_e                  =   -68.5        # mV
-defaultParameters.gL_e                  =   22.73        # nS
-defaultParameters.deltaT_e              =   0.4          # mV
-defaultParameters.E_AHP_e               =   -80          # mV
-defaultParameters.tau_AHP_e             =   20           # ms
-defaultParameters.g_AHP_e_max           =   5.0          # nS
-defaultParameters.t_ref_e               =   0.1          # ms
-defaultParameters.V_peak_e              =   -40          # mV
-
-defaultParameters.taum_i                =   10           # ms
-defaultParameters.taum_i_spread         =   2.0          # ms
-defaultParameters.EL_i                  =   -60          # mV
-defaultParameters.EL_i_spread           =   2.0          # mV
-defaultParameters.Vt_i                  =   -45          # mV
-defaultParameters.Vr_i                  =   -60          # mV
-defaultParameters.gL_i                  =   22.73        # nS
-defaultParameters.t_ref_i               =   0.1          # ms
-defaultParameters.deltaT_i              =   0.4          # mV
-defaultParameters.ad_tau_i_mean         =   7.5          # ms
-defaultParameters.ad_tau_i_std          =   0.5          # ms Unused in the simulation for now
-defaultParameters.ad_i_g_inc            =   22.73        # nS
-defaultParameters.V_peak_i              =  -35           # mV
-
-defaultParameters.tau_AMPA              =   1            # ms
-defaultParameters.tau_NMDA_fall         =    100         # ms only a single exponential used here
-defaultParameters.g_AMPA_total          =   1200.0        # nS
-defaultParameters.tau_GABA_A_rise       =   0.1          # ms
-defaultParameters.tau_GABA_A_fall       =   5            # ms
-defaultParameters.g_GABA_total          =   400.0        # nS
-
-defaultParameters.E_AMPA                =   0            # mV
-defaultParameters.E_GABA_A              =   -75          # mV
-
-defaultParameters.noise_sigma           =   2            # mV
-defaultParameters.sigma_init_cond       =   10           # mV
-
-defaultParameters.sim_dt                =   0.1          # ms
-defaultParameters.Vclamp                =   -50          # mV
-
-
-
-defaultParameters.stateMonDur           =  20e3          # ms
-
-
+defaultParameters = DefaultParameters()
 
