@@ -149,7 +149,8 @@ nest::iaf_gridcells::Parameters::Parameters()
     tau_AHP         (  20.0 ), // ms
     E_AHP           ( -80.0 ), // mV
     g_AHP_max       (   0.0 ), // nS
-    V_clamp         ( -50.0 )  // mV
+    V_clamp         ( -50.0 ), // mV
+    g_NMDA_fraction (   0.0 ), // percent of AMPA weight
 {
   update_clamp_potentials();
 }
@@ -217,6 +218,8 @@ void nest::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
   def<double>(d, names::E_AHP,           E_AHP);
   def<double>(d, names::g_AHP_max,       g_AHP_max);
   def<double>(d, names::V_clamp,         V_clamp);
+
+  def<double>(d, names::g_NMDA_fraction, g_NMDA_fraction);
 }
 
 void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
@@ -247,6 +250,8 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
 
   updateValue<double>(d, names::V_clamp,         V_clamp);
 
+  updateValue<double>(d, names::g_NMDA_fraction, g_NMDA_fraction);
+
   update_clamp_potentials();
 
 
@@ -266,6 +271,9 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
           tau_GABA_A_rise <= 0 || tau_GABA_A_fall <= 0 ||
           tau_AHP <= 0)
     throw BadProperty("All time constants must be strictly positive.");
+
+  if (g_NMDA_fraction < 0)
+      throw BadProperty("NMDA fraction of AMPA conductance must be >= 0!");
 
   // TODO: check all other parameters
 }
@@ -395,7 +403,7 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
     if ( S_.r_ > 0 )
       --S_.r_;
 
-    // numerical integration using Explicit Euler: should be enough for our purpose
+    // numerical integration using Forward Euler: should be enough for our purpose
     while (t < B_.step_)
     {
       const int status = iaf_gridcells_dynamics(
@@ -442,8 +450,9 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
     }
 
     // Process all spikes
-    S_.y_[S::G_AMPA]   += B_.spike_inputs_[AMPA].get_value(lag);
-    S_.y_[S::G_NMDA]   += B_.spike_inputs_[NMDA].get_value(lag);
+    double AMPA_spike =  B_.spike_inputs_[AMPA_NMDA].get_value(lag);
+    S_.y_[S::G_AMPA]   += AMPA_spike;
+    S_.y_[S::G_NMDA]   += AMPA_spike * .01 * P.g_NMDA_fraction;
     S_.y_[S::G_GABA_A] += B_.spike_inputs_[GABA_A].get_value(lag);
       
     // set new input current
@@ -451,9 +460,9 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
     S_.y_[S::I_STIM] = B_.I_stim_;
 
     // Set clamp currents
-    S_.y_[S::I_CLAMP_AMPA]    = S_.y_[S::G_AMPA]    * P.E_clamp_AMPA;
-    S_.y_[S::I_CLAMP_NMDA]    = S_.y_[S::G_NMDA]    * P.E_clamp_NMDA;
-    S_.y_[S::I_CLAMP_GABA_A]  = S_.y_[S::G_GABA_A]  * P.E_clamp_GABA_A;
+    S_.y_[S::I_CLAMP_AMPA]    = -S_.y_[S::G_AMPA]    * P.E_clamp_AMPA;
+    S_.y_[S::I_CLAMP_NMDA]    = -S_.y_[S::G_NMDA]    * P.E_clamp_NMDA;
+    S_.y_[S::I_CLAMP_GABA_A]  = -S_.y_[S::G_GABA_A]  * P.E_clamp_GABA_A;
 
     // log state data
     B_.logger_.record_data(origin.get_steps() + lag);

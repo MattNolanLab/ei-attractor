@@ -113,6 +113,7 @@ namespace nest
     const Name g_AHP("g_AHP");
     const Name g_AMPA("g_AMPA");
     const Name g_NMDA("g_NMDA");
+    const Name g_NMDA_fraction("g_NMDA_fraction");
     const Name g_GABA_A("g_GABA_A");
     const Name I_stim("I_stim");
     const Name V_clamp("V_clamp");
@@ -176,8 +177,8 @@ namespace nest
      *       Excluding port 0 avoids accidental connections.
      */
     enum SynapseTypes {
-        AMPA = 0,
-        NMDA,
+        AMPA_NMDA = 0,
+        //NMDA,
         GABA_A,
         SYNAPSE_TYPES_SIZE };
 
@@ -225,7 +226,9 @@ namespace nest
       double_t E_AHP;
       double_t g_AHP_max;
 
-      double_t V_clamp;     // Ideal voltage clamp potential
+      double_t g_NMDA_fraction; // NMDA fraction of the AMPA conductance
+
+      double_t V_clamp;     // Ideal voltage clamp holding potential
 
   
       Parameters();  //!< Sets default parameter values
@@ -397,8 +400,7 @@ namespace nest
 
     DictionaryDatum receptor_type = new Dictionary();
   
-    (*receptor_type)["AMPA"] = AMPA;
-    (*receptor_type)["NMDA"] = NMDA;
+    (*receptor_type)["AMPA_NMDA"] = AMPA_NMDA;
     (*receptor_type)["GABA_A"] = GABA_A;
   
     (*d)["receptor_types"] = receptor_type;
