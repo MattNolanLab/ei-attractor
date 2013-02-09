@@ -26,12 +26,15 @@
 
 # Use python 2.6
 
-module load python/2.6.3
+module load python/2.6.6
 
 
 BASE=../../
-export PYTHONPATH="/exports/work/inf_ndtc/s0966762/python-modules/lib/python2.6/site-packages:$BASE"
+export PYTHONPATH="/exports/work/inf_ndtc/s0966762/usr/local/lib/python2.6/site-packages:$BASE"
+
+export LOCAL_DIR=/exports/work/inf_ndtc/lsolanka
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
 
 
 # Run the program
-python2.6 simulation.py $* 
+python2.6 $* 
