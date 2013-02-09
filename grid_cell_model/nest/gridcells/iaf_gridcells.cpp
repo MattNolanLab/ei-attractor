@@ -150,7 +150,7 @@ nest::iaf_gridcells::Parameters::Parameters()
     E_AHP           ( -80.0 ), // mV
     g_AHP_max       (   0.0 ), // nS
     V_clamp         ( -50.0 ), // mV
-    g_NMDA_fraction (   0.0 ), // percent of AMPA weight
+    g_NMDA_fraction (   0.0 )  // percent of AMPA weight
 {
   update_clamp_potentials();
 }

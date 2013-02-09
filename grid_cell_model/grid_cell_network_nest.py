@@ -78,7 +78,7 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.Install('gridcellsmodule')
         nest.ResetKernel()
         nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": True})
-        nest.SetKernelStatus({"local_num_threads" : 4})
+        nest.SetKernelStatus({"local_num_threads" : self.no.nthreads})
 
         self.e_neuron_params = {
                 "V_m"              : self.no.EL_e,
@@ -151,13 +151,13 @@ class NestGridCellNetwork(GridCellNetwork):
                 self.no.pAMPA_sigma, self.no.pGABA_mu, self.no.pGABA_sigma)
 
         # Noise generators
-        self.noise_gen_e = nest.Create('noise_generator', self.net_Ne,
+        self.noise_gen_e = nest.Create('noise_generator', 1,
                 params={'mean' : 0.0, 'std' : self.no.noise_sigma})
-        self.noise_gen_i = nest.Create('noise_generator', self.net_Ni,
+        self.noise_gen_i = nest.Create('noise_generator', 1,
                 params={'mean' : 0.0, 'std' : self.no.noise_sigma})
 
-        nest.Connect(self.noise_gen_e, self.E_pop)
-        nest.Connect(self.noise_gen_i, self.I_pop)
+        nest.DivergentConnect(self.noise_gen_e, self.E_pop)
+        nest.DivergentConnect(self.noise_gen_i, self.I_pop)
 
         self._initStates()
         self._initCellularProperties()

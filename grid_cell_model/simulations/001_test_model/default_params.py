@@ -31,6 +31,7 @@ defaultParameters = {
         "Ne"                    :   34,
         "Ni"                    :   34,
         "delay"                 :   1.0,          # ms
+        "nthreads"              :   8,
 
         "rat_dt"                :   20.0,         # ms
         "ratVelFName"           : '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
