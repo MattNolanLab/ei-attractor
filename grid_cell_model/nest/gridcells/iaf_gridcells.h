@@ -120,6 +120,7 @@ namespace nest
     const Name I_clamp_AMPA("I_clamp_AMPA");
     const Name I_clamp_NMDA("I_clamp_NMDA");
     const Name I_clamp_GABA_A("I_clamp_GABA_A");
+    const Name rat_pos_x("rat_pos_x");
   }
 
 
@@ -229,6 +230,10 @@ namespace nest
       double_t g_NMDA_fraction; // NMDA fraction of the AMPA conductance
 
       double_t V_clamp;     // Ideal voltage clamp holding potential
+
+
+      static std::vector<double> rat_pos_x;
+      static bool rat_data_set; // Not thread-safe but anyway we only set it and check
 
   
       Parameters();  //!< Sets default parameter values

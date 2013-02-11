@@ -163,6 +163,13 @@ class NestGridCellNetwork(GridCellNetwork):
         self._initCellularProperties()
 
 
+        # Just for test
+        a = np.arange(100) * 1.0 + 0.5
+        nest.SetStatus([self.E_pop[0]], params="rat_pos_x", val=[a])
+        for node in E_pop:
+            print nest.GetStatus([node], keys='rat_pos_x')
+
+
     def simulate(self, time):
         '''Run the simulation'''
         nest.Simulate(time)

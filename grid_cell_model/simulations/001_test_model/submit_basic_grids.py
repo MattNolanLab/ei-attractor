@@ -40,6 +40,7 @@ numRepeat = 1
 
 # Workstation parameters
 programName         = 'python2.6 -i simulation_basic_grids.py'
+#programName         = 'python2.6 -i -m cProfile -s time -o profile.txt simulation_basic_grids.py'
 blocking            = True
 
 # Cluster parameters
