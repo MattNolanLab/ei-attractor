@@ -53,11 +53,11 @@ defaultParameters = {
 
         "NMDA_amount"           :   2.0,          # %
 
-        "Iext_e_const"          :   500.0,        # pA
-        "Iext_i_const"          :   200.0,        # pA
+        "Iext_e_const"          :   550.0,        # pA
+        "Iext_i_const"          :   300.0,        # pA
         "Iext_start"            :   300.0,        # pA
         "Iext_start_dur"        :   100.0,        # ms
-        "Iext_e_theta"          :   375.0,        # pA
+        "Iext_e_theta"          :     0.0,        # pA
         "Iext_i_theta"          :    25.0,        # pA
         "sigmaIextGaussian"     :     0.5,        # Normalised to <0, 1>
         "shuffleIextGaussian"   :       0,        # 0 or 1
@@ -99,12 +99,11 @@ defaultParameters = {
         
         "tau_AMPA"              :   1,            # ms
         "tau_NMDA_fall"         :    100,         # ms, only a single exponential used here
-        "g_AMPA_total"          :   1400,         # nS
-        "g_uni_AMPA_total"      :    0,           # nS
+        "g_AMPA_total"          :   1200,         # nS
         "uni_AMPA_density"      :   0.001,        # fraction
         "tau_GABA_A_rise"       :   0.1,          # ms
         "tau_GABA_A_fall"       :   5,            # ms
-        "g_GABA_total"          :   2160,         # nS
+        "g_GABA_total"          :   650,         # nS
         "g_uni_GABA_total"      :   28,           # nS
         "uni_GABA_density"      :   0.4,
 
@@ -114,7 +113,7 @@ defaultParameters = {
         "E_AMPA"                :   0,            # mV
         "E_GABA_A"              :   -75,          # mV
         
-        "noise_sigma"           :   100.0,        # pA
+        "noise_sigma"           :   200.0,        # pA
         "sigma_init_cond"       :   10,           # mV
         
         "sim_dt"                :   0.1,          # ms

@@ -159,15 +159,22 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.DivergentConnect(self.noise_gen_e, self.E_pop)
         nest.DivergentConnect(self.noise_gen_i, self.I_pop)
 
+        self.theta_source = nest.Create('ac_generator', 1, 
+                params={'amplitude' : self.no.Iext_e_theta/2.0,
+                        'offset'    : self.no.Iext_e_theta/2.0,
+                        'phase'     : 0.0,
+                        'frequency' : 8.0}) #Hz
+        nest.DivergentConnect(self.theta_source, self.E_pop)
+
         self._initStates()
         self._initCellularProperties()
 
 
         # Just for test
-        a = np.arange(100) * 1.0 + 0.5
-        nest.SetStatus([self.E_pop[0]], params="rat_pos_x", val=[a])
-        for node in E_pop:
-            print nest.GetStatus([node], keys='rat_pos_x')
+        #a = np.arange(100) * 1.0 + 0.5
+        #nest.SetStatus([self.E_pop[0]], params="rat_pos_x", val=[a])
+        #for node in self.E_pop:
+        #    print nest.GetStatus([node], keys='rat_pos_x')[0]
 
 
     def simulate(self, time):

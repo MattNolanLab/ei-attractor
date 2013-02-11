@@ -37,7 +37,6 @@
 #include <iostream>
 #include <cstdio>
 
-#include <iterator>
 
 /* ---------------------------------------------------------------- 
  * Recordables map
@@ -130,7 +129,6 @@ int nest::iaf_gridcells_dynamics(double, const double y[], double f[], void* pno
  * Default constructors defining default parameters and state
  * ---------------------------------------------------------------- */
 
-bool nest::iaf_gridcells::Parameters::rat_data_set = false;
     
 nest::iaf_gridcells::Parameters::Parameters()
   : V_peak          (   0.0 ), // mV
@@ -224,7 +222,6 @@ void nest::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
   def<double>(d, names::V_clamp,         V_clamp);
 
   def<double>(d, names::g_NMDA_fraction, g_NMDA_fraction);
-  def< std::vector<double> >(d, names::rat_pos_x, rat_pos_x);
 }
 
 void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
@@ -256,13 +253,6 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
   updateValue<double>(d, names::V_clamp,         V_clamp);
 
   updateValue<double>(d, names::g_NMDA_fraction, g_NMDA_fraction);
-
-  if (!rat_data_set) {
-    updateValue< std::vector<double> >(d, names::rat_pos_x, rat_pos_x);
-    rat_data_set = true;
-  } else {
-    //std::cerr << "Warning: resetting rat_data more than once!" << std::endl;
-  }
 
 
   update_clamp_potentials();

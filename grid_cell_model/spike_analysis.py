@@ -44,6 +44,16 @@ def multipleFiringRate(spikeTrainArray, tstart, tend):
 
     return result
 
+def firingRateFromPairs(N, N_ids, times, tstart, tend):
+    '''
+    Compute average firing rate for all the neurons in the range <0, N), given
+    two arrays: N_ids (neuron ids) and times of spikes corresponding to N_ids).
+    '''
+    result = np.ndarray((N, ))
+    for n_it in xrange(N):
+        result[n_it] = firingRate(times[N_ids == n_it], tstart, tend)
+    return result
+
 
 
 def firingRateSlidingWindow(spikeTrain, tstart, tend, dt, winLen):

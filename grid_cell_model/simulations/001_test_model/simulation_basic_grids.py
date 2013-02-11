@@ -26,6 +26,7 @@ from optparse   import OptionParser
 
 from parameters              import *
 from grid_cell_network_nest  import *
+from spike_analysis          import firingRateFromPairs
 
 import time
 import numpy as np
@@ -85,7 +86,12 @@ state_record_i = [ei_net.Ni_x/2 - 1, ei_net.Ni_y/2*ei_net.Ni_x + ei_net.Ni_x/2 -
 spikeMon_e = ei_net.getSpikeDetector("E")
 spikeMon_i = ei_net.getSpikeDetector("I")
 
-stateMon_params = {'withtime' : True, 'interval' : 0.1, 'record_from' : ['V_m', 'I_clamp_AMPA', 'I_clamp_NMDA', 'I_clamp_GABA_A']}
+stateMon_params = {
+        'withtime' : True,
+        'interval' : 0.1,
+        'record_from' : ['V_m', 'I_clamp_AMPA', 'I_clamp_NMDA',
+            'I_clamp_GABA_A', 'I_stim']
+}
 stateMon_e = ei_net.getStateMonitor("E", state_record_e, stateMon_params)
 stateMon_i = ei_net.getStateMonitor("I", state_record_i, stateMon_params)
 
@@ -117,14 +123,24 @@ nest.raster_plot.from_device(spikeMon_i, hist=False)
 events_e = nest.GetStatus(stateMon_e)[0]['events']
 events_i = nest.GetStatus(stateMon_i)[0]['events']
 
+# External currents
+figure()
+ax = subplot(211)
+plot(events_e['times'], events_e['I_stim'])
+ylabel('E cell $I_{stim}$')
+subplot(212)
+plot(events_i['times'], events_i['I_stim'])
+ylabel('I cell $I_{stim}$')
+xlabel('Time (ms)')
+
+
 # E/I Vm
 figure()
 ax = subplot(211)
 plot(events_e['times'], events_e['V_m'])
 ylabel('E cell $V_m$')
 subplot(212)
-events = nest.GetStatus(stateMon_i)[0]['events']
-plot(events_i['times'], events_e['V_m'])
+plot(events_i['times'], events_i['V_m'])
 ylabel('I cell $V_m$')
 xlabel('Time (ms)')
 
@@ -140,6 +156,7 @@ xlabel('Time (s)')
 ylabel('I synaptic current (pA)')
 xlim(x_lim)
 savefig(output_fname + '_Isyn.pdf')
+
 #
 #figure()
 #ax = subplot(211)
@@ -152,21 +169,38 @@ savefig(output_fname + '_Isyn.pdf')
 #xlim(x_lim)
 #savefig(output_fname + '_Iext.pdf')
 #
-#figure()
-#pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
-#xlabel('E neuron no.')
-#ylabel('E neuron no.')
-#colorbar()
-#axis('equal')
-#savefig(output_fname + '_firing_snapshot_e.png')
-#
-#figure()
-#pcolormesh(np.reshape(Fi[:, len(Fi_t)/2], (ei_net.Ni_y, ei_net.Ni_x)))
-#xlabel('I neuron no.')
-#ylabel('I neuron no.')
-#colorbar()
-#axis('equal')
-#savefig(output_fname + '_firing_snapshot_i.png')
+
+
+# Firing rate of E cells on the twisted torus
+F_tstart = ei_net.no.time - 1e3
+F_tend = ei_net.no.time
+
+figure()
+senders = nest.GetStatus(spikeMon_e)[0]['events']['senders'] - ei_net.E_pop[0]
+spikeTimes   = nest.GetStatus(spikeMon_e)[0]['events']['times']
+Fe = firingRateFromPairs(ei_net.net_Ne, senders, spikeTimes, F_tstart, F_tend)
+pcolormesh(np.reshape(Fe*1e3, (ei_net.Ne_y, ei_net.Ne_x)))
+xlabel('E neuron no.')
+ylabel('E neuron no.')
+colorbar()
+axis('equal')
+title('Firing rates (torus) of E cells')
+savefig(output_fname + '_firing_snapshot_e.png')
+
+
+## Firing rate of I cells on the twisted torus
+figure()
+senders = nest.GetStatus(spikeMon_i)[0]['events']['senders'] - ei_net.I_pop[0]
+spikeTimes   = nest.GetStatus(spikeMon_i)[0]['events']['times']
+Fi = firingRateFromPairs(ei_net.net_Ni, senders, spikeTimes, F_tstart, F_tend)
+pcolormesh(np.reshape(Fi*1e3, (ei_net.Ni_y, ei_net.Ni_x)))
+xlabel('I neuron no.')
+ylabel('I neuron no.')
+colorbar()
+axis('equal')
+title('Firing rates (torus) of I cells')
+savefig(output_fname + '_firing_snapshot_i.png')
+
 
 show()
 

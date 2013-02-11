@@ -29,7 +29,7 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 5.0e3  # ms
+parameters['time']              = 10e3  # ms
 
 parameters['output_dir']        = 'output'
 
