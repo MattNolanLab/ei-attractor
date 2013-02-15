@@ -34,7 +34,7 @@ CLUSTER = False  # if CLUSTER, submit on a cluster using qsub
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 3e3  # ms
+parameters['time']              = 5e3  # ms
 parameters['ndumps']            = 1
 
 parameters['placeT']            = 10e3      # ms
