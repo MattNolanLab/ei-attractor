@@ -55,7 +55,7 @@ numRepeat = 1
 
 # Workstation parameters
 programName         = 'python2.6 simulation.py'
-blocking            = False
+blocking            = True
 
 # Cluster parameters
 eddie_scriptName    = 'cluster_submit.sh simulation.py'

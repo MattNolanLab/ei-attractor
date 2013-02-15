@@ -1,6 +1,6 @@
 
 clean:
-	rm *.pyc
-	rm output/*
+	rm -f *.pyc
+	rm -rf output/*
 
 pack:
