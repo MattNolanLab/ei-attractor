@@ -32,7 +32,7 @@
 #  the main idea behind the model, which is supported by experimental evidence.
 #
 #  Both neuron types can receive AMPA, NMDA and GABA_A events. NMDA is only in
-#  E --> I direction.
+#  the E --> I direction.
 #
 #  The topology of connections has several characteristics:
 #
@@ -58,6 +58,7 @@
 #     simulation with any kind of spiking model (leaky IaF, Hodgkin-Huxley,
 #     etc.)
 #
+
 from scipy          import linspace
 from numpy.random   import rand
 from numpy          import sqrt
@@ -128,6 +129,16 @@ class GridCellNetwork(object):
 
 
     def _remap_twisted_torus(self, a, others, prefDir):
+        '''
+        Take positions of a single neuron (a) and an array of neurons (others)
+        on the neural sheet and calculate their distances, as if they were laid
+        out on a twisted torus.
+
+        The distance is essentially a minimum of original and shifted parts of
+        the neural sheet.
+
+        Return an array of distances.
+        '''
         a_x = a[0, 0]
         a_y = a[0, 1]
         prefDir_x = prefDir[0, 0]

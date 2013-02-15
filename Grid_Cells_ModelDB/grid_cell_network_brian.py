@@ -396,6 +396,9 @@ class BrianGridCellNetwork(GridCellNetwork):
 
 
     def _loadRatVelocities(self):
+        '''
+        Create data structures for rat movement simulation
+        '''
         if self._ratVelocitiesLoaded:
             return
 
@@ -514,6 +517,11 @@ class BrianGridCellNetwork(GridCellNetwork):
 
 
     def setPlaceCurrentInput(self):
+        '''
+        Place cell current input.
+        Set up a source of current that resets the bump position in specified 
+        intervals.
+        '''
         self._placeClock  = Clock(self.no.placeDur*msecond)
         self._clocks.append(self._placeClock)
         self._placeCellInputOn = True
