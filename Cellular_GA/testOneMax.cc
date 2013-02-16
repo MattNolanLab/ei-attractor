@@ -30,7 +30,7 @@ void printHelp();
 
 /* Chromosome specification */
 #ifndef CHR_LENGTH
-#   define CHR_LENGTH 1000
+#   define CHR_LENGTH 10000
 #endif
 const int chrLength = CHR_LENGTH;
 OneMaxChromosomeFactory factory(chrLength);

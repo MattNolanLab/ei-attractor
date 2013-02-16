@@ -186,7 +186,7 @@ Grid CellularGA::getLocalGrid() const
         int localGridX = floor((float)params.gridXSize / gMPI.getMatrixSize());
         ret.x = localGridX;
 
-        //dbg_msg("My matrix pos X: " << gMPI.getMyMatrixPos().x << endl);
+        dbg_msg("My matrix pos X: " << gMPI.getMyMatrixPos().x << endl);
         
         if (gMPI.getMyMatrixPos().x == gMPI.getMatrixSize() - 1)
             ret.x = params.gridXSize - (gMPI.getMatrixSize() - 1) * localGridX;
@@ -202,7 +202,7 @@ Grid CellularGA::getLocalGrid() const
         int localGridY = floor((float)params.gridYSize / gMPI.getMatrixSize());
         ret.y = localGridY;
 
-        //dbg_msg("My matrix pos Y: " << gMPI.getMyMatrixPos().y << endl);
+        dbg_msg("My matrix pos Y: " << gMPI.getMyMatrixPos().y << endl);
 
         if(gMPI.getMyMatrixPos().y == gMPI.getMatrixSize() - 1)
             ret.y = params.gridYSize - (gMPI.getMatrixSize() - 1) * localGridY;
@@ -602,7 +602,7 @@ const int CellularGA::GAMPI_TAG_BESTCHR     = 4;
 
 Chromosome *CellularGA::getMPIChromosome(Grid p, int rank)
 {
-    //dbg_msg(endl);
+    dbg_msg(endl);
 
     MPI_Request req;
     int reqCount;
@@ -701,8 +701,8 @@ CellularGA::MPINeighbours::MPINeighbours(const GlobalMPI &g) :
     /* Initialize Neighbour requests */
     Grid myPos = gMPI.getMyMatrixPos();
 
-    //dbg_msg("myPos: " << myPos.y << ", " << myPos.x << ", MatrixSize: " <<
-    //        gMPI.getMatrixSize() << endl);
+    dbg_msg("myPos: " << myPos.y << ", " << myPos.x << ", MatrixSize: " <<
+            gMPI.getMatrixSize() << endl);
 
     size = 0;
     if (myPos.y > 0)
@@ -726,6 +726,8 @@ CellularGA::MPINeighbours::MPINeighbours(const GlobalMPI &g) :
         size++;
     }
 
+    dbg_msg("size: " << size << endl);
+
     for (int i = 0; i < size; i++)
     {
         assert(ranks[i] < gMPI.getProcNum());
@@ -741,6 +743,8 @@ CellularGA::MPINeighbours::MPINeighbours(const GlobalMPI &g) :
 
 bool CellularGA::MPINeighbours::checkRequests(Grid &p, int &r)
 {
+    dbg_msg(endl);
+
     int index = -1;
     int flag = 0;
     MPI_Status status;
@@ -962,7 +966,7 @@ void CellularGA::MPIStats::beginStat()
         }
         else
         {
-            fitnessReqs[i] = NULL;
+            fitnessReqs[i] = MPI_REQUEST_NULL;
         }
     }
 }
@@ -978,6 +982,7 @@ bool CellularGA::MPIStats::getStat(GAStat &stat)
     int procNum = gMPI.getProcNum();
     int myRank = gMPI.getMyRank();
 
+    dbg_msg("procNum: " << procNum << endl);
 
     err = MPI_Testany(procNum, fitnessReqs, &index, &flag, &status);
     CHECK_MPI_ERROR(err);

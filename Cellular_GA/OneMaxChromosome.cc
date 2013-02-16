@@ -155,6 +155,9 @@ void OneMaxChromosome::mutate(double mRate)
 
 void OneMaxChromosome::print(std::ostream &s) const
 {
+    if (array->getSize() > 1000)
+        return;
+
     for (int i = 0; i < array->getSize(); i++)
     {
         s << array->getBit(i);
