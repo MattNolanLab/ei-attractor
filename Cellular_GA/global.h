@@ -9,6 +9,7 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
+#include <cstdlib>
 #include <cmath>
 #include <cassert>
 
