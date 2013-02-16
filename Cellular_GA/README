@@ -1,0 +1,63 @@
+Kódovanie: ISO-8859-2
+
+Tento archiv obsahuje spoloèný projekt do predmetov ARC, EVO a BIN.
+
+Pre predmety ARC a EVO bola vytvorená implementácia Difúzneho genetického
+algoritmu. Výpoèet demon¹truje rie¹enie jednoduché problému OneMax, s
+voliteµnou då¾kou chromozómu. Je mo¾né pou¾i» variantu projektu jednak s
+pou¾itím MPI a tie¾ aj bez akejkoµvek nutnosti linkovania MPI kni¾nice.
+Systém je takto nezávislý na MPI.
+
+Pre predmet BIN je pou¾itá sekvenèná verzia celulárneho modelu GA ako
+èas» implementácie genetického algoritmu. Druhá èas» demon¹truje uèenie
+neurónovej sie»e pomocou tohoto algoritmu na jednoduchom probléme klasifikácie.
+
+ * Popis pre predmet ARC a EVO je v súbore README.ARC (Jiøí Jaro¹)
+ * Popis pre predmet BIN je v súbore ../Doc/dokumentacia.txt (Zby¹ek Gajda)
+
+
+
+Popis celulárneho modelu genetického algoritmu
+==============================================
+
+Celulárny genetický algoritmus je paralelná verzia genetického algoritmu, kde
+jedinci sú usporiadaní (väè¹inou, ale nemusí to tak by») do mrie¾kovej
+¹truktúry. Proces selekcie a krí¾enia v¹ak neprebieha globálne v celej
+populácii. Namiesto toho ka¾dý jedinec vstupuje do procesu krí¾enia s niekoµkými
+vybranými jedincami zo svojho okolia. Tento model je pododbný ostrovnému, ale s
+tým rozdielom, ¾e v celulárnom genetickom algoritme je ka¾dý jedinec samostatným
+ostrovom a na samostatnom procesore. Týmto spôsobom sa najlep¹í jedinec ne¹íri
+okam¾ite do celej populácie a populácia dosahuje vy¹¹iu diverzitu.
+
+Zrejme existuje znaèné mno¾stvo variant celulárneho modelu, ktoré sa od seba
+lí¹ia spôsobom selekcie, krí¾enia a aplikáciou mutácie. Ja som implementoval
+variantu, ktorá pracuje nasledujúcim spôsobom:
+
+  1. Vytvor populáciu jedincov, usporiadaných do dvojrozmernej mrie¾ky. Ka¾dému
+     procesoru priraï èas» mrie¾ky podµa poètu dostupných procesorov.
+  
+  Následne pre ka¾dý procesor vykonávaj paralelne:
+
+  2. Vyber náhodné miesto P v lokálnej mrie¾ke. Z tohto miesta vykonaj náhodnú
+     cestu dopredu definovanej då¾ky a na tejto ceste vyber najlep¹ieho jedinca.
+     Cestu z bodu P opakuj a vyber ïal¹ieho jedinca.
+
+  3. Jedincov získaných v predchádzajúcom kroku skrí¾ a vytvor tak potomka.
+
+  4. Potomka zmutuj s pou¾itím definovanej mutaènej pravdepodobnosti.
+
+  5. Ak fitness hodnota potomka získaného z bodu 4. je vy¹¹ia ako fitness
+     jedinca v bode P, nahraï jedinca v bode P potomkom z bodu 4.
+
+  6. Opakuj body 2. a¾ 5. kým nevytvorí¹ po¾adovaný poèet nových jedincov. Tento
+     bod je pova¾ovaný ako koniec generácie.
+
+  7. Opakuj body 2. a¾ 7. kým nie je splnená podmienka ukonèenia algoritmu.
+
+
+Literatúra
+
+[1] K. W. C. Ku, M. W. Mak, and W. C. Siu. A cellular genetic algorithm for
+     training recurrent neural networks. In Proceedings of the International
+     Conference on Neural Networks and Signal Processing, pages 140--143, 1995.
+     http://citeseer.comp.nus.edu.sg/295805.html

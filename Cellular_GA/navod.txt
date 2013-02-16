@@ -1,0 +1,1 @@
+Kompletne informacie ohladom prekladu programu su v subore README a README.ARC
