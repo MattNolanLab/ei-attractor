@@ -8,7 +8,3 @@ M_DEBUG (gridcellsmodule.sli) (Initializing SLI support for GridCellsModule.) me
 /gridcellsmodule /SLI ($Revision: 7918 $) provide-component
 /gridcellsmodule /C++ (7165) require-component
 
-/StepPatternConnect [ /arraytype /integertype /arraytype /integertype /literaltype ]
-{ 
-  StepPatternConnect_Vi_i_Vi_i_l
-} def

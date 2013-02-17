@@ -42,8 +42,9 @@ simtime = 2e3    # Simulation time in ms
 delay   = 2.0    # synaptic delay in ms
 
 # Place cell parameters
-PC_N    = 400
-PC_rate = 2.5   # Hz
+PC_N    = 250
+PC_rate = 200.0 # Hz
+PC_GC_N = 0.1   # Fraction of grid cells to connect to
 
 
 # Initialize the parameters of the integrate and fire neuron
@@ -52,23 +53,23 @@ C_m             = 250.0
 g_L             = C_m / tauMem
 E_L             = -70.0
 t_ref           = 2.0
-V_peak          = 2000.0
+V_peak          = 40.0
 V_reset         = E_L
 E_AMPA          = 0.0
 tau_AMPA_fall   = 3.0
-I_e             = 0.0
+I_e             = 200.0
 
 Delta_T         = 2.0
 tau_w           = 10.0
-V_th            = 1000.0
+V_th            = -58.0
 
-GC_N    = 1
+GC_N    = 1000
 
 
-J_ex  = 0.75/4
+J_ex  = 1.0      # nS
 J_in  = 0
 
-numThreads = 1
+numThreads = 4
 nest.SetKernelStatus({"resolution": dt, "print_time": True})
 nest.SetKernelStatus({"local_num_threads": numThreads})
 
@@ -101,17 +102,18 @@ nest.SetStatus([PC_spikes],[{"label": "Place cells",
 GC_model = "iaf_gridcells"
 GC = nest.Create(GC_model, GC_N, params = neuron_params)
 
-GC_meter = nest.Create('multimeter', 1, params = {'withtime': True, 'interval': 0.1, 'record_from': ['V_m']})
+GC_meter = nest.Create('multimeter', 2, params = {'withtime': True, 'interval': 0.1, 'record_from': ['V_m']})
 
 print "Connecting devices."
 
 #nest.CopyModel("static_synapse","ex_AMPA",{"weight":J_ex, "delay":delay,
 #    "receptor_type": receptors["AMPA"]})
 
-nest.DivergentConnect(PC, GC, model="static_synapse", weight=J_ex, delay=delay)
-#nest.ConvergentConnect(PC, PC_spikes, model="static_synapse")
+nest.RandomDivergentConnect(PC, GC, int(PC_GC_N*len(GC)), model="static_synapse", weight=J_ex, delay=delay)
 
-nest.Connect(GC_meter, [GC[0]])
+nest.ConvergentConnect(PC, PC_spikes, model="static_synapse")
+
+nest.Connect(GC_meter, [GC[0], GC[1]])
 
 endbuild=time.time()
 
@@ -129,7 +131,7 @@ sim_time   = endsimulate-endbuild
 
 print 'sim_time: ', sim_time
 
-#nest.raster_plot.from_device(PC_spikes, hist=True)
+nest.raster_plot.from_device(PC_spikes, hist=True)
 
 # obtain and display data
 events = nest.GetStatus(GC_meter)[0]['events']
@@ -141,10 +143,10 @@ pl.title('Grid cell')
 pl.plot(t, events['V_m'])
 pl.ylabel('Membrane potential [mV]')
 
-#events = nest.GetStatus(GC_meter)[1]['events']
-#t = events['times'];
-#pl.subplot(2, 1, 2, sharex=ax, sharey=ax)
-#pl.plot(t, events['V_m'])
+events = nest.GetStatus(GC_meter)[1]['events']
+t = events['times'];
+pl.subplot(2, 1, 2, sharex=ax, sharey=ax)
+pl.plot(t, events['V_m'])
 
 
 #nest.raster_plot.show()

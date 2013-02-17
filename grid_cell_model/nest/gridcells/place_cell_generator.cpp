@@ -33,7 +33,7 @@ using namespace nest;
  * Default constructors defining default parameter
  * ---------------------------------------------------------------- */
 
-mynest::place_cell_generator::Parameters_::Parameters_()
+gridcells::place_cell_generator::Parameters_::Parameters_()
   : rate_(0.0    )  // pA
 {}
 
@@ -42,12 +42,12 @@ mynest::place_cell_generator::Parameters_::Parameters_()
  * Parameter extraction and manipulation functions
  * ---------------------------------------------------------------- */
 
-void mynest::place_cell_generator::Parameters_::get(DictionaryDatum &d) const
+void gridcells::place_cell_generator::Parameters_::get(DictionaryDatum &d) const
 {
   def<double>(d, nest::names::rate, rate_);
 }
 
-void mynest::place_cell_generator::Parameters_::set(const DictionaryDatum& d)
+void gridcells::place_cell_generator::Parameters_::set(const DictionaryDatum& d)
 {
   updateValue<double>(d, nest::names::rate, rate_);
   if ( rate_ < 0 )
@@ -59,13 +59,13 @@ void mynest::place_cell_generator::Parameters_::set(const DictionaryDatum& d)
  * Default and copy constructor for node
  * ---------------------------------------------------------------- */
 
-mynest::place_cell_generator::place_cell_generator()
+gridcells::place_cell_generator::place_cell_generator()
   : Node(),
     device_(),
     P_()
 {}
 
-mynest::place_cell_generator::place_cell_generator(const place_cell_generator& n)
+gridcells::place_cell_generator::place_cell_generator(const place_cell_generator& n)
   : Node(n),
     device_(n.device_),
     P_(n.P_)
@@ -76,19 +76,19 @@ mynest::place_cell_generator::place_cell_generator(const place_cell_generator& n
  * Node initialization functions
  * ---------------------------------------------------------------- */
 
-void mynest::place_cell_generator::init_state_(const Node& proto)
+void gridcells::place_cell_generator::init_state_(const Node& proto)
 {
   const place_cell_generator& pr = downcast<place_cell_generator>(proto);
 
   device_.init_state(pr.device_);
 }
 
-void mynest::place_cell_generator::init_buffers_()
+void gridcells::place_cell_generator::init_buffers_()
 {
   device_.init_buffers();
 }
 
-void mynest::place_cell_generator::calibrate()
+void gridcells::place_cell_generator::calibrate()
 {
   device_.calibrate();
 
@@ -101,7 +101,7 @@ void mynest::place_cell_generator::calibrate()
  * Update function and event hook
  * ---------------------------------------------------------------- */
 
-void mynest::place_cell_generator::update(Time const & T, const long_t from, const long_t to)
+void gridcells::place_cell_generator::update(Time const & T, const long_t from, const long_t to)
 {
   assert(to >= 0 && (delay) from < Scheduler::get_min_delay());
   assert(from < to);
@@ -127,7 +127,7 @@ void mynest::place_cell_generator::update(Time const & T, const long_t from, con
   }
 }
 
-//void mynest::place_cell_generator::event_hook(DSSpikeEvent& e)
+//void gridcells::place_cell_generator::event_hook(DSSpikeEvent& e)
 //{
 //  librandom::RngPtr rng = net_->get_rng(get_thread());
 //  ulong_t n_spikes = V_.poisson_dev_.uldev(rng);
