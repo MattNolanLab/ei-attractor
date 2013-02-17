@@ -77,7 +77,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
         nest.Install('gridcellsmodule')
         nest.ResetKernel()
-        nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": True})
+        nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": False})
         nest.SetKernelStatus({"local_num_threads" : self.no.nthreads})
 
         self.e_neuron_params = {
@@ -177,8 +177,9 @@ class NestGridCellNetwork(GridCellNetwork):
         #    print nest.GetStatus([node], keys='rat_pos_x')[0]
 
 
-    def simulate(self, time):
+    def simulate(self, time, printTime=True):
         '''Run the simulation'''
+        nest.SetKernelStatus({"print_time": printTime})
         nest.Simulate(time)
 
 

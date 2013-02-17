@@ -108,7 +108,7 @@ x_lim = [0, options.time]
 print "Simulation running..."
 start_time=time.time()
     
-ei_net.simulate(options.time)
+ei_net.simulate(options.time, printTime=False)
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
 

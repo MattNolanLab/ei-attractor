@@ -23,13 +23,14 @@ from default_params import defaultParameters
 from common         import *
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+EDDIE = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
 parameters['time']              = 10e3  # ms
+parameters['nthreads']          = 1
 
 parameters['output_dir']        = 'output'
 
@@ -39,13 +40,12 @@ startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 -i simulation_basic_grids.py'
-#programName         = 'python2.6 -i -m cProfile -s time -o profile.txt simulation_basic_grids.py'
+programName         = 'python2.6 simulation_basic_grids.py'
 blocking            = True
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:05:00 -pe openmpi_smp8_mark2 16"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
