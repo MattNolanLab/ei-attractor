@@ -101,7 +101,7 @@ gridcells::GridCellsModule::~GridCellsModule()
     nest::register_model<place_cell_generator>(nest::NestModule::get_network(), 
                                         "place_cell_generator");
 
-    nest::register_model<nest::iaf_gridcells>(nest::NestModule::get_network(), 
+    nest::register_model<iaf_gridcells>(nest::NestModule::get_network(), 
                                         "iaf_gridcells");
 
 

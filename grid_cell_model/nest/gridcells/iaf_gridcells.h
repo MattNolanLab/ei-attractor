@@ -30,67 +30,78 @@
 #include "universal_data_logger.h"
 #include "recordables_map.h"
 
-/* 
-iaf_gridcells - Conductance based exponential integrate-and-fire neuron. Forward Euler integration method.
+/**
+  Conductance based exponential integrate-and-fire neuron. Forward Euler
+  integration method
 
-Description:
-iaf_gridcells is a non-adaptive, exponential integrate and fire neuron. Refractory properties can be set by AHP currents. The model can receive AMPA, NMDA, and GABA_A synapses.
+  iaf_gridcells is a non-adaptive, exponential integrate and fire neuron.
+  Refractory properties can be set by AHP currents. The model can receive
+  AMPA, NMDA, and GABA_A synapses.
 
-The membrane potential is given by the following differential equation:
-C dV/dt= -g_L(V-E_L)+g_L*Delta_T*exp((V-V_T)/Delta_T) - g_XXXX(t)(V-E_XXXX) + I_e
+  The membrane potential is given by the following differential equation:
+    C dV/dt= -g_L(V-E_L)+g_L*Delta_T*exp((V-V_T)/Delta_T) - g_XXXX(t)(V-E_XXXX) + I_e
 
-where
+    where
 
-XXXX is all of:
-  * AMPA
-  * NMDA
-  * GABA_A
-
-AMPA conductances are modeled as a single exponential. NMDA, GABA_A conductances are modeled as a difference of exponentials, peaked at the incoming weight values
-
-Parameters: 
-The following parameters can be set in the status dictionary.
-
-Dynamic state variables:
-  V_m               double - Membrane potential in mV
-  g_AMPA            double - AMPA synaptic conductance in nS.
-  g_NMDA            double - NMDA synaptic conductance in nS.
-  g_GABA_A          double - GABA_A synaptic conductance in nS.
-
-Membrane Parameters:
-  V_peak            double - Spike detection threshold in mV.
-  V_reset           double - Reset value for V_m after a spike. In mV.
-  t_ref             double - Duration of refractory period in ms. 
-  g_L               double - Leak conductance in nS.
-  C_m               double - Capacity of the membrane in pF
-  E_L               double - Leak reversal potential in mV. 
-  E_AHP             double - Reversal potential of afterhyperpolarisation in mV (AHP)
-  tau_AHP           double - decay time of AHP in ms (exp function)
-  g_AHP_max         double - Amplitude (exponential) of the AHP conductance
-  I_e               double - Constant external input current in pA.
-
-Spike initiation parameters:
-  Delta_T           double - Slope factor in mV
-  V_th              double - Spike initiation threshold in mV
-
-Synaptic parameters
-  E_AMPA            double - AMPA reversal potential in mV
-  E_NMDA            double - NMDA reversal potential in mV
-  E_GABA_A          double - GABA_A reversal potential in mV
-
-  tau_AMPA_fall     double - decay time of AMPA synaptic conductance in ms
-  tau_NMDA_fall     double - decay time of NMDA synaptic conductance in ms
-  tau_NMDA_rise     double - rise time of NMDA synaptic conductance in ms
-  tau_GABA_A_fall   double - decay time of GABA_A synaptic conductance in ms
-  tau_GABA_A_rise   double - rise time of GABA_A synaptic conductance in ms
-
-
-Sends: SpikeEvent
-
-Receives: SpikeEvent, CurrentEvent, DataLoggingRequest
-
-SeeAlso: iaf_cond_exp, aeif_cond_alpha
-*/
+  XXXX is all of:
+    * AMPA
+    * NMDA
+    * GABA_A
+  
+  AMPA conductances are modeled as a single exponential. NMDA, GABA_A
+  conductances are modeled as a difference of exponentials, peaked at
+  the incoming weight values.
+  
+  Parameters: 
+  The following parameters can be set in the status dictionary.
+  
+  Dynamic state variables:
+    V_m               double - Membrane potential in mV
+    g_AMPA            double - AMPA synaptic conductance in nS.
+    g_NMDA            double - NMDA synaptic conductance in nS.
+    g_GABA_A          double - GABA_A synaptic conductance in nS.
+  
+  Membrane Parameters:
+    V_peak            double - Spike detection threshold in mV.
+    V_reset           double - Reset value for V_m after a spike. In mV.
+    t_ref             double - Duration of refractory period in ms. 
+    g_L               double - Leak conductance in nS.
+    C_m               double - Capacity of the membrane in pF
+    E_L               double - Leak reversal potential in mV. 
+    E_AHP             double - Reversal potential of afterhyperpolarisation in mV (AHP)
+    tau_AHP           double - decay time of AHP in ms (exp function)
+    g_AHP_max         double - Amplitude (exponential) of the AHP conductance
+  
+  Spike initiation parameters:
+    Delta_T           double - Slope factor in mV
+    V_th              double - Spike initiation threshold in mV
+  
+  Synaptic parameters
+    E_AMPA            double - AMPA reversal potential in mV
+    E_NMDA            double - NMDA reversal potential in mV
+    E_GABA_A          double - GABA_A reversal potential in mV
+  
+    tau_AMPA_fall     double - decay time of AMPA synaptic conductance in ms
+    tau_NMDA_fall     double - decay time of NMDA synaptic conductance in ms
+    tau_NMDA_rise     double - rise time of NMDA synaptic conductance in ms
+    tau_GABA_A_fall   double - decay time of GABA_A synaptic conductance in ms
+    tau_GABA_A_rise   double - rise time of GABA_A synaptic conductance in ms
+    
+  Input current parameters
+    I_const           double - Constant external input current in pA.
+    I_sin_amp         double - Sinusoidally modulated current amplitude in pA
+    I_sin_freq        double - Sinusoidally modulated current frequency in Hz
+    I_sin_phase       double - Sinusoidally modulated current phase in rad
+    I_noise_std       double - Gaussian distributed noise std. dev. in pA
+    I_noise_dt        double - Interval between changes in current in ms (default 1.0 ms)
+  
+  
+  Sends: SpikeEvent
+  
+  Receives: SpikeEvent, CurrentEvent, DataLoggingRequest
+  
+  SeeAlso: iaf_cond_exp, aeif_cond_alpha
+**/
 
 namespace nest
 {
@@ -121,7 +132,11 @@ namespace nest
     const Name I_clamp_NMDA("I_clamp_NMDA");
     const Name I_clamp_GABA_A("I_clamp_GABA_A");
   }
+} //namespace nest
 
+
+namespace gridcells
+{
 
   /**
    * Function computing right-hand side of ODE for GSL solver.
@@ -137,7 +152,7 @@ namespace nest
   int iaf_gridcells_dynamics (double, const double*, double*, void*);
 
   class iaf_gridcells:
-    public Archiving_Node
+    public nest::Archiving_Node
   {
     
   public:        
@@ -154,18 +169,18 @@ namespace nest
      * way of doing things, although all other compilers
      * happily live without.
      */
-    using Node::connect_sender;
-    using Node::handle;
+    using nest::Node::connect_sender;
+    using nest::Node::handle;
 
-    port check_connection(Connection &, port);
+    nest::port check_connection(nest::Connection &, nest::port);
     
-    void handle(SpikeEvent &);
-    void handle(CurrentEvent &);
-    void handle(DataLoggingRequest &);
+    void handle(nest::SpikeEvent &);
+    void handle(nest::CurrentEvent &);
+    void handle(nest::DataLoggingRequest &);
     
-    port connect_sender(SpikeEvent &, port);
-    port connect_sender(CurrentEvent &, port);
-    port connect_sender(DataLoggingRequest &, port);
+    nest::port connect_sender(nest::SpikeEvent &, nest::port);
+    nest::port connect_sender(nest::CurrentEvent &, nest::port);
+    nest::port connect_sender(nest::DataLoggingRequest &, nest::port);
 
     void get_status(DictionaryDatum &) const;
     void set_status(const DictionaryDatum &);
@@ -186,14 +201,14 @@ namespace nest
     void init_state_(const Node &proto);
     void init_buffers_();
     void calibrate();
-    void update(const Time &, const long_t, const long_t);
+    void update(const nest::Time &, const nest::long_t, const nest::long_t);
 
     // make dynamics function quasi-member
     friend int iaf_gridcells_dynamics(double, const double*, double*, void*);
 
     // The next two classes need to be friends to access the State_ class/member
-    friend class RecordablesMap<iaf_gridcells>;
-    friend class UniversalDataLogger<iaf_gridcells>;
+    friend class nest::RecordablesMap<iaf_gridcells>;
+    friend class nest::UniversalDataLogger<iaf_gridcells>;
 
 
   private:
@@ -285,7 +300,7 @@ namespace nest
 
       double_t       y_[STATE_VEC_SIZE];  //!< neuron state, must be C-array for GSL solver
       double_t    dydt_[STATE_VEC_SIZE];  //!<  derivatives
-      int_t       r_;                  //!< number of refractory steps remaining
+      nest::int_t    r_;                  //!< number of refractory steps remaining
 
       State_(const Parameters &);      //!< Default initialization
       State_(const State_ &);
@@ -306,11 +321,11 @@ namespace nest
       Buffers_(const Buffers_ &, iaf_gridcells &);  //!<Sets buffer pointers to 0
 
       //! Logger for all analog data
-      UniversalDataLogger<iaf_gridcells> logger_;
+      nest::UniversalDataLogger<iaf_gridcells> logger_;
 
       /** buffers and sums up incoming spikes/currents */
-      std::vector<RingBuffer> spike_inputs_;
-      RingBuffer currents_;
+      std::vector<nest::RingBuffer> spike_inputs_;
+      nest::RingBuffer currents_;
 
       // IntergrationStep_ should be reset with the neuron on ResetNetwork,
       // but remain unchanged during calibration. Since it is initialized with
@@ -336,7 +351,7 @@ namespace nest
      */
     struct Variables_
     {
-      int_t RefractoryCounts_;
+      nest::int_t RefractoryCounts_;
     };
 
     // Access functions for UniversalDataLogger -------------------------------
@@ -350,46 +365,49 @@ namespace nest
 
     // ---------------------------------------------------------------- 
 
-    Parameters P;
+    Parameters  P;
     State_      S_;
     Variables_  V_;
     Buffers_    B_;
 
     //! Mapping of recordables names to access functions
-    static RecordablesMap<iaf_gridcells> recordablesMap_;
+    static nest::RecordablesMap<iaf_gridcells> recordablesMap_;
   };
 
+
+
+  /* ----------------------------------------------------------------------- */
   inline  
-  port iaf_gridcells::check_connection(Connection &c, port receptor_type)
+  nest::port iaf_gridcells::check_connection(nest::Connection &c, nest::port receptor_type)
   {
-    SpikeEvent e;
+    nest::SpikeEvent e;
     e.set_sender(*this);
     c.check_event(e);
     return c.get_target()->connect_sender(e, receptor_type);
   }
 
   inline
-  port iaf_gridcells::connect_sender(SpikeEvent &, port receptor_type)
+  nest::port iaf_gridcells::connect_sender(nest::SpikeEvent &, nest::port receptor_type)
   {
     if (receptor_type < 0 || receptor_type >= SYNAPSE_TYPES_SIZE)
-      throw UnknownReceptorType(receptor_type, get_name());
+      throw nest::UnknownReceptorType(receptor_type, get_name());
     return receptor_type;
   }
 
   inline
-  port iaf_gridcells::connect_sender(DataLoggingRequest& dlr, 
-				     port receptor_type)
+  nest::port iaf_gridcells::connect_sender(nest::DataLoggingRequest& dlr, 
+          nest::port receptor_type)
   {
     if (receptor_type != 0)
-      throw UnknownReceptorType(receptor_type, get_name());
+      throw nest::UnknownReceptorType(receptor_type, get_name());
     return B_.logger_.connect_logging_device(dlr, recordablesMap_);
   }
 
   inline
-  port iaf_gridcells::connect_sender(CurrentEvent &, port receptor_type)
+  nest::port iaf_gridcells::connect_sender(nest::CurrentEvent &, nest::port receptor_type)
   {
     if (receptor_type != 0)
-      throw UnknownReceptorType(receptor_type, get_name());
+      throw nest::UnknownReceptorType(receptor_type, get_name());
     return 0;
   }
  
@@ -398,7 +416,7 @@ namespace nest
   {
     P.get(d);
     S_.get(d);
-    Archiving_Node::get_status(d);
+    nest::Archiving_Node::get_status(d);
 
     DictionaryDatum receptor_type = new Dictionary();
   
@@ -406,7 +424,7 @@ namespace nest
     (*receptor_type)["GABA_A"] = GABA_A;
   
     (*d)["receptor_types"] = receptor_type;
-    (*d)[names::recordables] = recordablesMap_.get_list();
+    (*d)[nest::names::recordables] = recordablesMap_.get_list();
   }
 
   inline
@@ -428,7 +446,7 @@ namespace nest
     S_ = stmp;
   }
   
-} // namespace
+} // namespace gridcells
 
 #endif // HAVE_GSL_1_11
 #endif // IAF_GRIDCELLS_H
