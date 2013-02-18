@@ -98,10 +98,10 @@ nest::GridCellsModule::~GridCellsModule()
        The first argument is always a reference to the network.
        Return value is a handle for later unregistration.
     */
-    nest::register_model<gridcells::place_cell_generator>(nest::NestModule::get_network(), 
+    nest::register_model<place_cell_generator>(nest::NestModule::get_network(), 
                                         "place_cell_generator");
 
-    nest::register_model<gridcells::iaf_gridcells>(nest::NestModule::get_network(), 
+    nest::register_model<iaf_gridcells>(nest::NestModule::get_network(), 
                                         "iaf_gridcells");
 
 

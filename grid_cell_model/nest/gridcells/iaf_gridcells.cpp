@@ -38,18 +38,15 @@
 #include <cstdio>
 
 
-using namespace nest;
-
+namespace nest
+{
+    
 /* ---------------------------------------------------------------- 
  * Recordables map
  * ---------------------------------------------------------------- */
 
-RecordablesMap<gridcells::iaf_gridcells> gridcells::iaf_gridcells::recordablesMap_;
+RecordablesMap<iaf_gridcells> iaf_gridcells::recordablesMap_;
 
-namespace nest
-{
-    using namespace gridcells;
-    
     /*
      * template specialization must be placed in namespace
      *
@@ -57,7 +54,7 @@ namespace nest
      * for each quantity to be recorded.
      */
     template <>
-    void RecordablesMap<gridcells::iaf_gridcells>::create()
+    void RecordablesMap<iaf_gridcells>::create()
     {
         // use standard names whereever you can for consistency!
         insert_(names::V_m, 
@@ -79,13 +76,12 @@ namespace nest
         insert_(names::I_clamp_GABA_A, 
             &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::I_CLAMP_GABA_A>);
     }
-}
 
-//int gridcells::iaf_gridcells::evolve_substeps = 0;
-//int gridcells::iaf_gridcells::evolve_N = 0;
+//int iaf_gridcells::evolve_substeps = 0;
+//int iaf_gridcells::evolve_N = 0;
 
 extern "C"
-int gridcells::iaf_gridcells_dynamics(double, const double y[], double f[], void* pnode)
+int iaf_gridcells_dynamics(double, const double y[], double f[], void* pnode)
 {
     // a shorthand
     typedef iaf_gridcells::State_ S;
@@ -133,7 +129,7 @@ int gridcells::iaf_gridcells_dynamics(double, const double y[], double f[], void
  * ---------------------------------------------------------------- */
 
     
-gridcells::iaf_gridcells::Parameters::Parameters()
+iaf_gridcells::Parameters::Parameters()
     : V_peak          (   0.0 ), // mV
       V_reset         ( -60.0 ), // mV
       t_ref           (   0.0 ), // ms
@@ -160,14 +156,14 @@ gridcells::iaf_gridcells::Parameters::Parameters()
     update_clamp_potentials();
 }
 
-void gridcells::iaf_gridcells::Parameters::update_clamp_potentials()
+void iaf_gridcells::Parameters::update_clamp_potentials()
 {
     E_clamp_AMPA    = E_AMPA - V_clamp;
     E_clamp_NMDA    = E_NMDA - V_clamp;
     E_clamp_GABA_A  = E_GABA_A - V_clamp;
 }
 
-gridcells::iaf_gridcells::State_::State_(const Parameters &p)
+iaf_gridcells::State_::State_(const Parameters &p)
     : r_(0)
 {
     y_[0] = p.E_L;
@@ -176,7 +172,7 @@ gridcells::iaf_gridcells::State_::State_(const Parameters &p)
     }
 }
 
-gridcells::iaf_gridcells::State_::State_(const State_ &s)
+iaf_gridcells::State_::State_(const State_ &s)
     : r_(s.r_)
 {
     for ( size_t i = 0; i < STATE_VEC_SIZE; ++i ) {
@@ -184,8 +180,8 @@ gridcells::iaf_gridcells::State_::State_(const State_ &s)
     }
 }
 
-gridcells::iaf_gridcells::State_&
-gridcells::iaf_gridcells::State_::operator=(const State_ &s)
+iaf_gridcells::State_&
+iaf_gridcells::State_::operator=(const State_ &s)
 {
     assert(this != &s);  // would be bad logical error in program
     
@@ -200,7 +196,7 @@ gridcells::iaf_gridcells::State_::operator=(const State_ &s)
  * Paramater and state extractions and manipulation functions
  * ---------------------------------------------------------------- */
 
-void gridcells::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
+void iaf_gridcells::Parameters::get(DictionaryDatum &d) const
 {
     // ! Some of these names are locally defined as they are not part of NEST distribution
     def<double>(d, names::V_peak,     V_peak);
@@ -231,7 +227,7 @@ void gridcells::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
     def<double>(d, names::g_NMDA_fraction, g_NMDA_fraction);
 }
 
-void gridcells::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
+void iaf_gridcells::Parameters::set(const DictionaryDatum &d)
 {
     updateValue<double>(d, names::V_peak,     V_peak);
     updateValue<double>(d, names::V_reset,    V_reset);
@@ -288,7 +284,7 @@ void gridcells::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
     // TODO: check all other parameters
 }
 
-void gridcells::iaf_gridcells::State_::get(DictionaryDatum &d) const
+void iaf_gridcells::State_::get(DictionaryDatum &d) const
 {
     def<double>(d,names::V_m,      y_[V_M]);
     def<double>(d,names::g_AHP,    y_[G_AHP]);
@@ -298,7 +294,7 @@ void gridcells::iaf_gridcells::State_::get(DictionaryDatum &d) const
     def<double>(d,names::I_stim,   y_[I_STIM]);
 }
 
-void gridcells::iaf_gridcells::State_::set(const DictionaryDatum &d, const Parameters &)
+void iaf_gridcells::State_::set(const DictionaryDatum &d, const Parameters &)
 {
     updateValue<double>(d,names::V_m,      y_[V_M]);
     updateValue<double>(d,names::g_AMPA,   y_[G_AMPA]);
@@ -310,7 +306,7 @@ void gridcells::iaf_gridcells::State_::set(const DictionaryDatum &d, const Param
         throw BadProperty("Conductances must not be negative.");
 }
 
-gridcells::iaf_gridcells::Buffers_::Buffers_(iaf_gridcells &n)
+iaf_gridcells::Buffers_::Buffers_(iaf_gridcells &n)
     : logger_(n),
       spike_inputs_(std::vector<RingBuffer>(SYNAPSE_TYPES_SIZE))
 {
@@ -318,7 +314,7 @@ gridcells::iaf_gridcells::Buffers_::Buffers_(iaf_gridcells &n)
     // init_buffers_().
 }
 
-gridcells::iaf_gridcells::Buffers_::Buffers_(const Buffers_ &, iaf_gridcells &n)
+iaf_gridcells::Buffers_::Buffers_(const Buffers_ &, iaf_gridcells &n)
     : logger_(n),
       spike_inputs_(std::vector<RingBuffer>(SYNAPSE_TYPES_SIZE))
 {
@@ -330,18 +326,18 @@ gridcells::iaf_gridcells::Buffers_::Buffers_(const Buffers_ &, iaf_gridcells &n)
  * Default and copy constructor for node, and destructor
  * ---------------------------------------------------------------- */
 
-gridcells::iaf_gridcells::iaf_gridcells()
+iaf_gridcells::iaf_gridcells()
     : Archiving_Node(),  P(), S_(P), B_(*this)
 {
     recordablesMap_.create();
 }
 
-gridcells::iaf_gridcells::iaf_gridcells(const iaf_gridcells &n)
+iaf_gridcells::iaf_gridcells(const iaf_gridcells &n)
     : Archiving_Node(n), P(n.P), S_(n.S_), B_(n.B_, *this)
 {
 }
 
-gridcells::iaf_gridcells::~iaf_gridcells()
+iaf_gridcells::~iaf_gridcells()
 {
 }
 
@@ -349,20 +345,20 @@ gridcells::iaf_gridcells::~iaf_gridcells()
  * Node initialization functions
  * ---------------------------------------------------------------- */
 
-void gridcells::iaf_gridcells::init_node_(const Node &proto)
+void iaf_gridcells::init_node_(const Node &proto)
 {
     const iaf_gridcells &pr = downcast<iaf_gridcells>(proto);
     P = pr.P;
     S_ = pr.S_;
 }
 
-void gridcells::iaf_gridcells::init_state_(const Node &proto)
+void iaf_gridcells::init_state_(const Node &proto)
 {
     const iaf_gridcells &pr = downcast<iaf_gridcells>(proto);
     S_ = pr.S_;
 }
 
-void gridcells::iaf_gridcells::init_buffers_()
+void iaf_gridcells::init_buffers_()
 {
     for (int i = 0; i < B_.spike_inputs_.size(); i++) {
         B_.spike_inputs_[i].clear();
@@ -381,7 +377,7 @@ void gridcells::iaf_gridcells::init_buffers_()
     B_.I_stim_ = 0.0;
 }
 
-void gridcells::iaf_gridcells::calibrate()
+void iaf_gridcells::calibrate()
 {
     B_.logger_.init();  // ensures initialization in case mm connected after Simulate
     V_.RefractoryCounts_ = Time(Time::ms(P.t_ref)).get_steps();
@@ -392,7 +388,7 @@ void gridcells::iaf_gridcells::calibrate()
  * Update and spike handling functions
  * ---------------------------------------------------------------- */
 
-void gridcells::iaf_gridcells::update(const Time &origin, const long_t from, const long_t to)
+void iaf_gridcells::update(const Time &origin, const long_t from, const long_t to)
 {
     typedef State_ S;
 
@@ -476,7 +472,7 @@ void gridcells::iaf_gridcells::update(const Time &origin, const long_t from, con
     }
 }
   
-void gridcells::iaf_gridcells::handle(SpikeEvent &e)
+void iaf_gridcells::handle(SpikeEvent &e)
 {
     assert(e.get_delay() > 0);
     assert(e.get_weight() >= 0);
@@ -490,7 +486,7 @@ void gridcells::iaf_gridcells::handle(SpikeEvent &e)
     B_.spike_inputs_[p].add_value(steps, w*mult);
 }
 
-void gridcells::iaf_gridcells::handle(CurrentEvent &e)
+void iaf_gridcells::handle(CurrentEvent &e)
 {
   assert ( e.get_delay() > 0 );
 
@@ -502,9 +498,11 @@ void gridcells::iaf_gridcells::handle(CurrentEvent &e)
 			 w*c);
 }
 
-void gridcells::iaf_gridcells::handle(DataLoggingRequest &e)
+void iaf_gridcells::handle(DataLoggingRequest &e)
 {
   B_.logger_.handle(e);
 }
+
+} // namespace nest
 
 #endif // HAVE_GSL_1_11

@@ -132,11 +132,7 @@ namespace nest
     const Name I_clamp_NMDA("I_clamp_NMDA");
     const Name I_clamp_GABA_A("I_clamp_GABA_A");
   }
-} //namespace nest
 
-
-namespace gridcells
-{
 
   /**
    * Function computing right-hand side of ODE for GSL solver.
@@ -151,8 +147,7 @@ namespace gridcells
   extern "C"
   int iaf_gridcells_dynamics (double, const double*, double*, void*);
 
-  class iaf_gridcells:
-    public nest::Archiving_Node
+  class iaf_gridcells : public nest::Archiving_Node
   {
     
   public:        
@@ -446,7 +441,7 @@ namespace gridcells
     S_ = stmp;
   }
   
-} // namespace gridcells
+} // namespace nest
 
 #endif // HAVE_GSL_1_11
 #endif // IAF_GRIDCELLS_H

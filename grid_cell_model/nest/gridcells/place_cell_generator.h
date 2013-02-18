@@ -30,7 +30,7 @@
 #include "connection.h"
 #include "poisson_randomdev.h"
 
-namespace gridcells
+namespace nest
 {
 
   class place_cell_generator : public nest::Node
@@ -121,6 +121,6 @@ namespace gridcells
     P_ = ptmp;
   }
 
-} // namespace gridcells
+} // namespace nest
 
 #endif
