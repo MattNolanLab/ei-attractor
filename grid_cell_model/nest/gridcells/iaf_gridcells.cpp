@@ -38,11 +38,13 @@
 #include <cstdio>
 
 
+using namespace nest;
+
 /* ---------------------------------------------------------------- 
  * Recordables map
  * ---------------------------------------------------------------- */
 
-nest::RecordablesMap<gridcells::iaf_gridcells> gridcells::iaf_gridcells::recordablesMap_;
+RecordablesMap<gridcells::iaf_gridcells> gridcells::iaf_gridcells::recordablesMap_;
 
 namespace nest
 {
@@ -201,116 +203,116 @@ gridcells::iaf_gridcells::State_::operator=(const State_ &s)
 void gridcells::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
 {
     // ! Some of these names are locally defined as they are not part of NEST distribution
-    def<double>(d, nest::names::V_peak,     V_peak);
-    def<double>(d, nest::names::V_reset,    V_reset);
-    def<double>(d, nest::names::t_ref,      t_ref);
+    def<double>(d, names::V_peak,     V_peak);
+    def<double>(d, names::V_reset,    V_reset);
+    def<double>(d, names::t_ref,      t_ref);
 
-    def<double>(d, nest::names::g_L,        g_L);
-    def<double>(d, nest::names::C_m,        C_m);
-    def<double>(d, nest::names::E_L,        E_L); 
-    def<double>(d, nest::names::E_AMPA,     E_AMPA); 
-    def<double>(d, nest::names::E_NMDA,     E_NMDA); 
-    def<double>(d, nest::names::E_GABA_A,   E_GABA_A); 
-    def<double>(d, nest::names::Delta_T,    Delta_T);
-    def<double>(d, nest::names::V_th,       V_th);
-    def<double>(d, nest::names::I_e,        I_e);
+    def<double>(d, names::g_L,        g_L);
+    def<double>(d, names::C_m,        C_m);
+    def<double>(d, names::E_L,        E_L); 
+    def<double>(d, names::E_AMPA,     E_AMPA); 
+    def<double>(d, names::E_NMDA,     E_NMDA); 
+    def<double>(d, names::E_GABA_A,   E_GABA_A); 
+    def<double>(d, names::Delta_T,    Delta_T);
+    def<double>(d, names::V_th,       V_th);
+    def<double>(d, names::I_e,        I_e);
 
-    def<double>(d, nest::names::tau_AMPA_fall,   tau_AMPA_fall);
-    def<double>(d, nest::names::tau_NMDA_rise,   tau_NMDA_rise);
-    def<double>(d, nest::names::tau_NMDA_fall,   tau_NMDA_fall);
-    def<double>(d, nest::names::tau_GABA_A_rise, tau_GABA_A_rise);
-    def<double>(d, nest::names::tau_GABA_A_fall, tau_GABA_A_fall);
+    def<double>(d, names::tau_AMPA_fall,   tau_AMPA_fall);
+    def<double>(d, names::tau_NMDA_rise,   tau_NMDA_rise);
+    def<double>(d, names::tau_NMDA_fall,   tau_NMDA_fall);
+    def<double>(d, names::tau_GABA_A_rise, tau_GABA_A_rise);
+    def<double>(d, names::tau_GABA_A_fall, tau_GABA_A_fall);
 
-    def<double>(d, nest::names::tau_AHP,         tau_AHP);
-    def<double>(d, nest::names::E_AHP,           E_AHP);
-    def<double>(d, nest::names::g_AHP_max,       g_AHP_max);
-    def<double>(d, nest::names::V_clamp,         V_clamp);
+    def<double>(d, names::tau_AHP,         tau_AHP);
+    def<double>(d, names::E_AHP,           E_AHP);
+    def<double>(d, names::g_AHP_max,       g_AHP_max);
+    def<double>(d, names::V_clamp,         V_clamp);
 
-    def<double>(d, nest::names::g_NMDA_fraction, g_NMDA_fraction);
+    def<double>(d, names::g_NMDA_fraction, g_NMDA_fraction);
 }
 
 void gridcells::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
 {
-    updateValue<double>(d, nest::names::V_peak,     V_peak);
-    updateValue<double>(d, nest::names::V_reset,    V_reset);
-    updateValue<double>(d, nest::names::t_ref,      t_ref);
+    updateValue<double>(d, names::V_peak,     V_peak);
+    updateValue<double>(d, names::V_reset,    V_reset);
+    updateValue<double>(d, names::t_ref,      t_ref);
 
-    updateValue<double>(d, nest::names::g_L,        g_L);
-    updateValue<double>(d, nest::names::C_m,        C_m);
-    updateValue<double>(d, nest::names::E_L,        E_L); 
-    updateValue<double>(d, nest::names::E_AMPA,     E_AMPA); 
-    updateValue<double>(d, nest::names::E_NMDA,     E_NMDA); 
-    updateValue<double>(d, nest::names::E_GABA_A,   E_GABA_A); 
-    updateValue<double>(d, nest::names::Delta_T,    Delta_T);
-    updateValue<double>(d, nest::names::V_th,       V_th);
-    updateValue<double>(d, nest::names::I_e,        I_e);
+    updateValue<double>(d, names::g_L,        g_L);
+    updateValue<double>(d, names::C_m,        C_m);
+    updateValue<double>(d, names::E_L,        E_L); 
+    updateValue<double>(d, names::E_AMPA,     E_AMPA); 
+    updateValue<double>(d, names::E_NMDA,     E_NMDA); 
+    updateValue<double>(d, names::E_GABA_A,   E_GABA_A); 
+    updateValue<double>(d, names::Delta_T,    Delta_T);
+    updateValue<double>(d, names::V_th,       V_th);
+    updateValue<double>(d, names::I_e,        I_e);
 
-    updateValue<double>(d, nest::names::tau_AMPA_fall,   tau_AMPA_fall);
-    updateValue<double>(d, nest::names::tau_NMDA_rise,   tau_NMDA_rise);
-    updateValue<double>(d, nest::names::tau_NMDA_fall,   tau_NMDA_fall);
-    updateValue<double>(d, nest::names::tau_GABA_A_rise, tau_GABA_A_rise);
-    updateValue<double>(d, nest::names::tau_GABA_A_fall, tau_GABA_A_fall);
+    updateValue<double>(d, names::tau_AMPA_fall,   tau_AMPA_fall);
+    updateValue<double>(d, names::tau_NMDA_rise,   tau_NMDA_rise);
+    updateValue<double>(d, names::tau_NMDA_fall,   tau_NMDA_fall);
+    updateValue<double>(d, names::tau_GABA_A_rise, tau_GABA_A_rise);
+    updateValue<double>(d, names::tau_GABA_A_fall, tau_GABA_A_fall);
 
-    updateValue<double>(d, nest::names::tau_AHP,         tau_AHP);
-    updateValue<double>(d, nest::names::E_AHP,           E_AHP);
-    updateValue<double>(d, nest::names::g_AHP_max,       g_AHP_max);
+    updateValue<double>(d, names::tau_AHP,         tau_AHP);
+    updateValue<double>(d, names::E_AHP,           E_AHP);
+    updateValue<double>(d, names::g_AHP_max,       g_AHP_max);
 
-    updateValue<double>(d, nest::names::V_clamp,         V_clamp);
+    updateValue<double>(d, names::V_clamp,         V_clamp);
 
-    updateValue<double>(d, nest::names::g_NMDA_fraction, g_NMDA_fraction);
+    updateValue<double>(d, names::g_NMDA_fraction, g_NMDA_fraction);
 
 
     update_clamp_potentials();
 
 
     if ( V_reset >= V_peak )
-        throw nest::BadProperty("Reset potential must be smaller than spike cut-off threshold.");
+        throw BadProperty("Reset potential must be smaller than spike cut-off threshold.");
       
     if ( V_peak <= V_th )
-        throw nest::BadProperty("V_peak must be larger than threshold.");
+        throw BadProperty("V_peak must be larger than threshold.");
 
     if ( C_m <= 0 )
-        throw nest::BadProperty("Capacitance must be strictly positive.");
+        throw BadProperty("Capacitance must be strictly positive.");
       
     if ( t_ref < 0 )
-        throw nest::BadProperty("Refractory time cannot be negative.");
+        throw BadProperty("Refractory time cannot be negative.");
         
     if ( tau_AMPA_fall <=0 || tau_NMDA_rise <= 0 || tau_NMDA_fall <= 0 ||
          tau_GABA_A_rise <= 0 || tau_GABA_A_fall <= 0 ||
          tau_AHP <= 0)
-        throw nest::BadProperty("All time constants must be strictly positive.");
+        throw BadProperty("All time constants must be strictly positive.");
 
     if (g_NMDA_fraction < 0)
-        throw nest::BadProperty("NMDA fraction of AMPA conductance must be >= 0!");
+        throw BadProperty("NMDA fraction of AMPA conductance must be >= 0!");
 
     // TODO: check all other parameters
 }
 
 void gridcells::iaf_gridcells::State_::get(DictionaryDatum &d) const
 {
-    def<double>(d,nest::names::V_m,      y_[V_M]);
-    def<double>(d,nest::names::g_AHP,    y_[G_AHP]);
-    def<double>(d,nest::names::g_AMPA,   y_[G_AMPA]);
-    def<double>(d,nest::names::g_NMDA,   y_[G_NMDA]);
-    def<double>(d,nest::names::g_GABA_A, y_[G_GABA_A]);
-    def<double>(d,nest::names::I_stim,   y_[I_STIM]);
+    def<double>(d,names::V_m,      y_[V_M]);
+    def<double>(d,names::g_AHP,    y_[G_AHP]);
+    def<double>(d,names::g_AMPA,   y_[G_AMPA]);
+    def<double>(d,names::g_NMDA,   y_[G_NMDA]);
+    def<double>(d,names::g_GABA_A, y_[G_GABA_A]);
+    def<double>(d,names::I_stim,   y_[I_STIM]);
 }
 
 void gridcells::iaf_gridcells::State_::set(const DictionaryDatum &d, const Parameters &)
 {
-    updateValue<double>(d,nest::names::V_m,      y_[V_M]);
-    updateValue<double>(d,nest::names::g_AMPA,   y_[G_AMPA]);
-    updateValue<double>(d,nest::names::g_NMDA,   y_[G_NMDA]);
-    updateValue<double>(d,nest::names::g_GABA_A, y_[G_GABA_A]);
-    updateValue<double>(d,nest::names::I_stim,   y_[I_STIM]);
+    updateValue<double>(d,names::V_m,      y_[V_M]);
+    updateValue<double>(d,names::g_AMPA,   y_[G_AMPA]);
+    updateValue<double>(d,names::g_NMDA,   y_[G_NMDA]);
+    updateValue<double>(d,names::g_GABA_A, y_[G_GABA_A]);
+    updateValue<double>(d,names::I_stim,   y_[I_STIM]);
 
     if ( y_[G_AMPA] < 0 || y_[G_NMDA] < 0 || y_[G_GABA_A] < 0 )
-        throw nest::BadProperty("Conductances must not be negative.");
+        throw BadProperty("Conductances must not be negative.");
 }
 
 gridcells::iaf_gridcells::Buffers_::Buffers_(iaf_gridcells &n)
     : logger_(n),
-      spike_inputs_(std::vector<nest::RingBuffer>(SYNAPSE_TYPES_SIZE))
+      spike_inputs_(std::vector<RingBuffer>(SYNAPSE_TYPES_SIZE))
 {
     // Initialization of the remaining members is deferred to
     // init_buffers_().
@@ -318,7 +320,7 @@ gridcells::iaf_gridcells::Buffers_::Buffers_(iaf_gridcells &n)
 
 gridcells::iaf_gridcells::Buffers_::Buffers_(const Buffers_ &, iaf_gridcells &n)
     : logger_(n),
-      spike_inputs_(std::vector<nest::RingBuffer>(SYNAPSE_TYPES_SIZE))
+      spike_inputs_(std::vector<RingBuffer>(SYNAPSE_TYPES_SIZE))
 {
     // Initialization of the remaining members is deferred to
     // init_buffers_().
@@ -371,7 +373,7 @@ void gridcells::iaf_gridcells::init_buffers_()
 
     B_.logger_.reset();
 
-    B_.step_ = nest::Time::get_resolution().get_ms();
+    B_.step_ = Time::get_resolution().get_ms();
 
     //B_.IntegrationStep_ = std::min(0.05, B_.step_);
     B_.IntegrationStep_ = B_.step_;
@@ -382,7 +384,7 @@ void gridcells::iaf_gridcells::init_buffers_()
 void gridcells::iaf_gridcells::calibrate()
 {
     B_.logger_.init();  // ensures initialization in case mm connected after Simulate
-    V_.RefractoryCounts_ = nest::Time(nest::Time::ms(P.t_ref)).get_steps();
+    V_.RefractoryCounts_ = Time(Time::ms(P.t_ref)).get_steps();
     assert(V_.RefractoryCounts_ >= 0);  // since t_ref >= 0, this can only fail in error
 }
 
@@ -390,16 +392,16 @@ void gridcells::iaf_gridcells::calibrate()
  * Update and spike handling functions
  * ---------------------------------------------------------------- */
 
-void gridcells::iaf_gridcells::update(const nest::Time &origin, const nest::long_t from, const nest::long_t to)
+void gridcells::iaf_gridcells::update(const Time &origin, const long_t from, const long_t to)
 {
     typedef State_ S;
 
-    assert ( to >= 0 && (nest::delay) from < nest::Scheduler::get_min_delay() );
+    assert ( to >= 0 && (delay) from < Scheduler::get_min_delay() );
     assert ( from < to );
     assert ( State_::V_M == 0 );
 
 
-    for ( nest::long_t lag = from; lag < to; ++lag )
+    for ( long_t lag = from; lag < to; ++lag )
     {
         double t = 0.0;
 
@@ -425,12 +427,12 @@ void gridcells::iaf_gridcells::update(const nest::Time &origin, const nest::long
                 std::cerr << S_.y_[S::G_GABA_A] << std::endl;
 
             if ( status != GSL_SUCCESS )
-                throw nest::GSLSolverFailure(get_name(), status);
+                throw GSLSolverFailure(get_name(), status);
 
 
             // check for unreasonable values; we allow V_M to explode
             if (S_.y_[State_::V_M] < -1e3)
-                throw nest::NumericalInstability(get_name());
+                throw NumericalInstability(get_name());
 
 
             // Spikes
@@ -446,8 +448,8 @@ void gridcells::iaf_gridcells::update(const nest::Time &origin, const nest::long
                 // AHP reactivation
                 S_.y_[State_::G_AHP] = P.g_AHP_max;
                 
-                set_spiketime(nest::Time::step(origin.get_steps() + lag + 1));
-                nest::SpikeEvent se;
+                set_spiketime(Time::step(origin.get_steps() + lag + 1));
+                SpikeEvent se;
                 network()->send(*this, se, lag);
             }
 
@@ -474,13 +476,13 @@ void gridcells::iaf_gridcells::update(const nest::Time &origin, const nest::long
     }
 }
   
-void gridcells::iaf_gridcells::handle(nest::SpikeEvent &e)
+void gridcells::iaf_gridcells::handle(SpikeEvent &e)
 {
     assert(e.get_delay() > 0);
     assert(e.get_weight() >= 0);
-    assert(e.get_rport() < static_cast<nest::int_t>(SYNAPSE_TYPES_SIZE));
+    assert(e.get_rport() < static_cast<int_t>(SYNAPSE_TYPES_SIZE));
 
-    const nest::Time& t = network()->get_slice_origin();
+    const Time& t = network()->get_slice_origin();
     long_t steps        = e.get_rel_delivery_steps(t);
     double w            = e.get_weight();
     double mult         = e.get_multiplicity();

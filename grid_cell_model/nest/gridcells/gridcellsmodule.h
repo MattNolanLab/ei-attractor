@@ -32,7 +32,7 @@ namespace nest
 }
 
 // Put your stuff into your own namespace.
-namespace gridcells {
+namespace nest {
   
 /**
  * Class defining your model.

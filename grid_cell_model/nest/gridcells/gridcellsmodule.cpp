@@ -51,11 +51,11 @@
  * The dynamicloader can then load modulename and search for symbol "mod" in it.
  */
  
-gridcells::GridCellsModule gridcellsmodule_LTX_mod;
+nest::GridCellsModule gridcellsmodule_LTX_mod;
 
 // -- DynModule functions ------------------------------------------------------
 
-gridcells::GridCellsModule::GridCellsModule()
+nest::GridCellsModule::GridCellsModule()
   { 
 #ifdef LINKED_MODULE
      // register this module at the dynamic loader
@@ -65,16 +65,16 @@ gridcells::GridCellsModule::GridCellsModule()
 #endif     
    }
 
-gridcells::GridCellsModule::~GridCellsModule()
+nest::GridCellsModule::~GridCellsModule()
    {
    }
 
-   const std::string gridcells::GridCellsModule::name(void) const
+   const std::string nest::GridCellsModule::name(void) const
    {
      return std::string("Grid cells NEST module"); // Return name of the module
    }
 
-   const std::string gridcells::GridCellsModule::commandstring(void) const
+   const std::string nest::GridCellsModule::commandstring(void) const
    {
      /* 1. Tell interpreter that we provide the C++ part of GridCellsModule with the
            current revision number. 
@@ -91,17 +91,17 @@ gridcells::GridCellsModule::~GridCellsModule()
 
   //-------------------------------------------------------------------------------------
 
-  void gridcells::GridCellsModule::init(SLIInterpreter *i, nest::Network*)
+  void nest::GridCellsModule::init(SLIInterpreter *i, nest::Network*)
   {
     /* Register a neuron or device model.
        Give node type as template argument and the name as second argument.
        The first argument is always a reference to the network.
        Return value is a handle for later unregistration.
     */
-    nest::register_model<place_cell_generator>(nest::NestModule::get_network(), 
+    nest::register_model<gridcells::place_cell_generator>(nest::NestModule::get_network(), 
                                         "place_cell_generator");
 
-    nest::register_model<iaf_gridcells>(nest::NestModule::get_network(), 
+    nest::register_model<gridcells::iaf_gridcells>(nest::NestModule::get_network(), 
                                         "iaf_gridcells");
 
 
