@@ -30,66 +30,73 @@
 #include "universal_data_logger.h"
 #include "recordables_map.h"
 
-/* 
-iaf_gridcells - Conductance based exponential integrate-and-fire neuron. Forward Euler integration method.
+/**
+  Conductance based exponential integrate-and-fire neuron. Forward Euler integration method.
+  
+  Description:
+  iaf_gridcells is a non-adaptive, exponential integrate and fire neuron. Refractory properties can be set by AHP currents. The model can receive AMPA, NMDA, and GABA_A synapses.
+  
+  The membrane potential is given by the following differential equation:
+  C dV/dt= -g_L(V-E_L)+g_L*Delta_T*exp((V-V_T)/Delta_T) - g_XXXX(t)(V-E_XXXX) + I_e
+  
+  where
+  
+  XXXX is all of:
+    * AMPA
+    * NMDA
+    * GABA_A
+  
+  AMPA conductances are modeled as a single exponential. NMDA, GABA_A conductances are modeled as a difference of exponentials, peaked at the incoming weight values
+  
+  Parameters: 
+  The following parameters can be set in the status dictionary.
+  
+  Dynamic state variables:
+    V_m               double - Membrane potential in mV
+    g_AMPA            double - AMPA synaptic conductance in nS.
+    g_NMDA            double - NMDA synaptic conductance in nS.
+    g_GABA_A          double - GABA_A synaptic conductance in nS.
+  
+  Membrane Parameters:
+    V_peak            double - Spike detection threshold in mV.
+    V_reset           double - Reset value for V_m after a spike. In mV.
+    t_ref             double - Duration of refractory period in ms. 
+    g_L               double - Leak conductance in nS.
+    C_m               double - Capacity of the membrane in pF
+    E_L               double - Leak reversal potential in mV. 
+    E_AHP             double - Reversal potential of afterhyperpolarisation in mV (AHP)
+    tau_AHP           double - decay time of AHP in ms (exp function)
+    g_AHP_max         double - Amplitude (exponential) of the AHP conductance
+  
+  Spike initiation parameters:
+    Delta_T           double - Slope factor in mV
+    V_th              double - Spike initiation threshold in mV
+  
+  Synaptic parameters
+    E_AMPA            double - AMPA reversal potential in mV
+    E_NMDA            double - NMDA reversal potential in mV
+    E_GABA_A          double - GABA_A reversal potential in mV
+  
+    tau_AMPA_fall     double - decay time of AMPA synaptic conductance in ms
+    tau_NMDA_fall     double - decay time of NMDA synaptic conductance in ms
+    tau_NMDA_rise     double - rise time of NMDA synaptic conductance in ms
+    tau_GABA_A_fall   double - decay time of GABA_A synaptic conductance in ms
+    tau_GABA_A_rise   double - rise time of GABA_A synaptic conductance in ms
 
-Description:
-iaf_gridcells is a non-adaptive, exponential integrate and fire neuron. Refractory properties can be set by AHP currents. The model can receive AMPA, NMDA, and GABA_A synapses.
-
-The membrane potential is given by the following differential equation:
-C dV/dt= -g_L(V-E_L)+g_L*Delta_T*exp((V-V_T)/Delta_T) - g_XXXX(t)(V-E_XXXX) + I_e
-
-where
-
-XXXX is all of:
-  * AMPA
-  * NMDA
-  * GABA_A
-
-AMPA conductances are modeled as a single exponential. NMDA, GABA_A conductances are modeled as a difference of exponentials, peaked at the incoming weight values
-
-Parameters: 
-The following parameters can be set in the status dictionary.
-
-Dynamic state variables:
-  V_m               double - Membrane potential in mV
-  g_AMPA            double - AMPA synaptic conductance in nS.
-  g_NMDA            double - NMDA synaptic conductance in nS.
-  g_GABA_A          double - GABA_A synaptic conductance in nS.
-
-Membrane Parameters:
-  V_peak            double - Spike detection threshold in mV.
-  V_reset           double - Reset value for V_m after a spike. In mV.
-  t_ref             double - Duration of refractory period in ms. 
-  g_L               double - Leak conductance in nS.
-  C_m               double - Capacity of the membrane in pF
-  E_L               double - Leak reversal potential in mV. 
-  E_AHP             double - Reversal potential of afterhyperpolarisation in mV (AHP)
-  tau_AHP           double - decay time of AHP in ms (exp function)
-  g_AHP_max         double - Amplitude (exponential) of the AHP conductance
-  I_e               double - Constant external input current in pA.
-
-Spike initiation parameters:
-  Delta_T           double - Slope factor in mV
-  V_th              double - Spike initiation threshold in mV
-
-Synaptic parameters
-  E_AMPA            double - AMPA reversal potential in mV
-  E_NMDA            double - NMDA reversal potential in mV
-  E_GABA_A          double - GABA_A reversal potential in mV
-
-  tau_AMPA_fall     double - decay time of AMPA synaptic conductance in ms
-  tau_NMDA_fall     double - decay time of NMDA synaptic conductance in ms
-  tau_NMDA_rise     double - rise time of NMDA synaptic conductance in ms
-  tau_GABA_A_fall   double - decay time of GABA_A synaptic conductance in ms
-  tau_GABA_A_rise   double - rise time of GABA_A synaptic conductance in ms
-
-
-Sends: SpikeEvent
-
-Receives: SpikeEvent, CurrentEvent, DataLoggingRequest
-
-SeeAlso: iaf_cond_exp, aeif_cond_alpha
+  Current source parameters
+    I_const           double - Constant external input current in pA.
+    I_ac_amp          double - AC current (sin) amplitude
+    I_ac_freq         double - AC current frequency
+    I_ac_phase        double - AC current phase
+    I_noise_std       double - Gaussian noise standard deviation
+    I_noise_dt        double - dt of the update of I_noise (defaults to 1.0 ms)
+  
+  
+  Sends: SpikeEvent
+  
+  Receives: SpikeEvent, CurrentEvent, DataLoggingRequest
+  
+  SeeAlso: iaf_cond_exp, aeif_cond_alpha
 */
 
 namespace nest
@@ -120,6 +127,13 @@ namespace nest
     const Name I_clamp_AMPA("I_clamp_AMPA");
     const Name I_clamp_NMDA("I_clamp_NMDA");
     const Name I_clamp_GABA_A("I_clamp_GABA_A");
+    const Name I_const("I_const");
+    const Name I_ac_amp("I_ac_amp");
+    const Name I_ac_freq("I_ac_freq");
+    const Name I_ac_phase("I_ac_phase");
+    const Name I_ac_start_t("I_ac_start_t");
+    const Name I_noise_std("I_noise_std");
+    const Name I_noise_dt("I_noise_dt");
   }
 
 
@@ -202,34 +216,40 @@ namespace nest
     //! Independent parameters
     struct Parameters
     {
-      double_t V_peak;     //!< Spike detection threshold in mV
-      double_t V_reset;    //!< Reset Potential in mV
-      double_t t_ref;      //!< Refractory period in ms
+      double_t V_peak;          //!< Spike detection threshold in mV
+      double_t V_reset;         //!< Reset Potential in mV
+      double_t t_ref;           //!< Refractory period in ms
 
-      double_t g_L;         //!< Leak Conductance in nS
-      double_t C_m;         //!< Membrane Capacitance in pF
-      double_t E_L;         //!< Leak reversal Potential (aka resting potential) in mV
-      double_t E_AMPA;
-      double_t E_NMDA;
-      double_t E_GABA_A;
-      double_t Delta_T;     //!< Slope faktor in ms.
-      double_t V_th;        //!< Spike threshold in mV.
-      double_t I_e;         //!< Intrinsic current in pA.
+      double_t g_L;             //!< Leak Conductance in nS
+      double_t C_m;             //!< Membrane Capacitance in pF
+      double_t E_L;             //!< Leak reversal Potential (aka resting potential) in mV
+      double_t E_AMPA;          //!< AMPA reversal potential in mV
+      double_t E_NMDA;          //!< NMDA reversal potential in mV
+      double_t E_GABA_A;        //!< GABA_A reversal potential in mV
+      double_t Delta_T;         //!< Spike initiation exponential slope factor in mV
+      double_t V_th;            //!< Spike threshold in mV.
 
-      double_t tau_AMPA_fall;
-      double_t tau_NMDA_rise;
-      double_t tau_NMDA_fall;
-      double_t tau_GABA_A_rise;
-      double_t tau_GABA_A_fall;
+      double_t tau_AMPA_fall;   //!< AMPA time constant in ms
+      double_t tau_NMDA_rise;   //!< NMDA rise time constant in ms
+      double_t tau_NMDA_fall;   //!< NMDA fall time constant in ms
+      double_t tau_GABA_A_rise; //!< GABA_A rise time constant in ms
+      double_t tau_GABA_A_fall; //!< GABA_A fall time constant in ms
   
-      double_t tau_AHP;
-      double_t E_AHP;
-      double_t g_AHP_max;
+      double_t tau_AHP;         //!< AHP time constant in ms
+      double_t E_AHP;           //!< AHP conductance reversal potential in mV
+      double_t g_AHP_max;       //!< AHP maximal conductance value in nS
 
-      double_t g_NMDA_fraction; // NMDA fraction of the AMPA conductance
+      double_t g_NMDA_fraction; //!< NMDA fraction of the AMPA conductance in %
 
-      double_t V_clamp;     // Ideal voltage clamp holding potential
+      double_t V_clamp;         //!< Ideal voltage clamp holding potential
 
+      double_t I_const;         //!< Intrinsic current in pA.
+      double_t I_ac_amp;        //!< AC current (sin) amplitude in pA
+      double_t I_ac_freq;       //!< AC current frequency in Hz
+      double_t I_ac_phase;      //!< AC current phase in rad
+      double_t I_ac_start_t;    //!< AC current start time in ms
+      double_t I_noise_std;     //!< Gaussian noise std. dev. in pA
+      double_t I_noise_dt;      //!< Gaussian noise update time interval in ms
 
 
   
@@ -238,14 +258,13 @@ namespace nest
       void get(DictionaryDatum &) const;  //!< Store current values in dictionary
       void set(const DictionaryDatum &);  //!< Set values from dicitonary
 
-      /**
-       * Clamp potentials
-       */
-      double_t E_clamp_AMPA;
-      double_t E_clamp_NMDA;
-      double_t E_clamp_GABA_A;
 
-        private:
+      /* Clamp potentials, managed internally */
+      double_t E_clamp_AMPA;    //!< AMPA clamp potential in mV
+      double_t E_clamp_NMDA;    //!< NMDA clamp potential in mV
+      double_t E_clamp_GABA_A;  //!< GABA_A clamp potential in mV
+
+      private:
       void update_clamp_potentials();
     
     };
