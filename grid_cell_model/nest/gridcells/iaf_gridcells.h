@@ -29,6 +29,8 @@
 #include "connection.h"
 #include "universal_data_logger.h"
 #include "recordables_map.h"
+#include "normal_randomdev.h"
+#include "PulsatingCurrentGenerator.h"
 
 /**
   Conductance based exponential integrate-and-fire neuron. Forward Euler integration method.
@@ -213,6 +215,39 @@ namespace nest
   private:
     // ---------------------------------------------------------------- 
 
+    /**
+     * Parameters for normally distributed random numbers
+     */
+    struct NoiseGenerator {
+        long_t next_step; //!< When to generate new random number (in units of sim dt)
+        long_t dt_steps;  //!< Number of sim dt steps between rnd generations
+        Time gen_dt;      //!< Generator dt
+        librandom::NormalRandomDev normal_dev; //!< normal rnd generator
+
+        /**
+         * Manually set the generator time step
+         *
+         * @param new_dt New time step of the generator
+         */
+        void setGendt(const Time& new_dt) {
+            gen_dt = new_dt;
+            dt_steps = gen_dt.get_steps();
+        }
+
+        /**
+         * Advance the generator from the current time
+         *
+         * @param now Current time. next_step will contain when a new value
+         *            should be generated
+         */
+        void advance(long_t now) {
+            next_step = now + dt_steps;
+        }
+    };
+
+    /* --------------------------------------------------------------------- */
+
+
     //! Independent parameters
     struct Parameters
     {
@@ -253,7 +288,7 @@ namespace nest
 
 
   
-      Parameters();  //!< Sets default parameter values
+      Parameters();             //!< Sets default parameter values
 
       void get(DictionaryDatum &) const;  //!< Store current values in dictionary
       void set(const DictionaryDatum &);  //!< Set values from dicitonary
@@ -263,6 +298,9 @@ namespace nest
       double_t E_clamp_AMPA;    //!< AMPA clamp potential in mV
       double_t E_clamp_NMDA;    //!< NMDA clamp potential in mV
       double_t E_clamp_GABA_A;  //!< GABA_A clamp potential in mV
+
+      NoiseGenerator noiseGen;  //!< Normal distribution noise generator 
+      PulsatingCurrentGenerator thetaGen; //!< Theta current generator
 
       private:
       void update_clamp_potentials();
@@ -321,31 +359,34 @@ namespace nest
      */
     struct Buffers_
     {
-      Buffers_(iaf_gridcells &);                    //!<Sets buffer pointers to 0
-      Buffers_(const Buffers_ &, iaf_gridcells &);  //!<Sets buffer pointers to 0
+        Buffers_(iaf_gridcells &);                    //!<Sets buffer pointers to 0
+        Buffers_(const Buffers_ &, iaf_gridcells &);  //!<Sets buffer pointers to 0
 
-      //! Logger for all analog data
-      UniversalDataLogger<iaf_gridcells> logger_;
+        //! Logger for all analog data
+        UniversalDataLogger<iaf_gridcells> logger_;
 
-      /** buffers and sums up incoming spikes/currents */
-      std::vector<RingBuffer> spike_inputs_;
-      RingBuffer currents_;
+        /** buffers and sums up incoming spikes/currents */
+        std::vector<RingBuffer> spike_inputs_;
+        RingBuffer currents_;
 
-      // IntergrationStep_ should be reset with the neuron on ResetNetwork,
-      // but remain unchanged during calibration. Since it is initialized with
-      // step_, and the resolution cannot change after nodes have been created,
-      // it is safe to place both here.
-      double_t step_;             //!< step size in ms
-      double   IntegrationStep_;  //!< current integration time step, updated by GSL
+        // IntergrationStep_ should be reset with the neuron on ResetNetwork,
+        // but remain unchanged during calibration. Since it is initialized with
+        // step_, and the resolution cannot change after nodes have been created,
+        // it is safe to place both here.
+        double_t step_;             //!< step size in ms
+        double   IntegrationStep_;  //!< current integration time step, updated by GSL
 
-      /** 
-       * Input current injected by CurrentEvent.
-       * This variable is used to transport the current applied into the
-       * _dynamics function computing the derivative of the state vector.
-       * It must be a part of Buffers_, since it is initialized once before
-       * the first simulation, but not modified before later Simulate calls.
-       */
-      double_t I_stim_;
+        /** 
+         * Input current injected by CurrentEvent.
+         * This variable is used to transport the current applied into the
+         * _dynamics function computing the derivative of the state vector.
+         * It must be a part of Buffers_, since it is initialized once before
+         * the first simulation, but not modified before later Simulate calls.
+         */
+        double_t I_stim_;
+
+        double I_noise; //!< Noise current
+        double I_theta; //!< Theta current
     };
 
     // ---------------------------------------------------------------- 
@@ -369,14 +410,17 @@ namespace nest
 
     // ---------------------------------------------------------------- 
 
-    Parameters P;
-    State_      S_;
-    Variables_  V_;
-    Buffers_    B_;
+    Parameters      P;
+    State_          S_;
+    Variables_      V_;
+    Buffers_        B_;
+    NoiseGenerator  noiseGen;
 
     //! Mapping of recordables names to access functions
     static RecordablesMap<iaf_gridcells> recordablesMap_;
   };
+
+
 
   inline  
   port iaf_gridcells::check_connection(Connection &c, port receptor_type)

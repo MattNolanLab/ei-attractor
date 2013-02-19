@@ -23,16 +23,16 @@ from default_params import defaultParameters
 from common         import *
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+EDDIE = False  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 10e3  # ms
-parameters['nthreads']          = 1
+parameters['time']              = 2e3  # ms
+parameters['nthreads']          = 4
 
-parameters['output_dir']        = 'output'
+parameters['output_dir']        = 'output_local'
 
 
 
@@ -40,7 +40,7 @@ startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 simulation_basic_grids.py'
+programName         = 'python2.6 -i simulation_basic_grids.py'
 blocking            = True
 
 # Cluster parameters

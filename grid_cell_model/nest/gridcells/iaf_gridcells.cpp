@@ -94,9 +94,6 @@ int nest::iaf_gridcells_dynamics(double, const double y[], double f[], void* pno
     // y[] here is---and must be---the state vector supplied by the integrator,
     // not the state vector in the node, node.S_.y[]. 
     
-    // The following code is verbose for the sake of clarity. We assume that a
-    // good compiler will optimize the verbosity away ...
-    
     // shorthand for state variables
     const double_t V            = y[S::V_M  ];
     const double_t g_AHP        = y[S::G_AHP];
@@ -115,11 +112,12 @@ int nest::iaf_gridcells_dynamics(double, const double y[], double f[], void* pno
         ( -node.P.g_L * ( (V-node.P.E_L) - I_spike) 
         - I_AHP
         - I_syn_AMPA - I_syn_NMDA - I_syn_GABA_A
-        + node.B_.I_stim_) / node.P.C_m;
-    f[S::I_STIM]   = NAN; // This is only for recording
-    f[S::G_AHP]    = -g_AHP    / node.P.tau_AHP;       // After-hyperpolarisation conductance (nS)
-    f[S::G_AMPA]   = -g_AMPA   / node.P.tau_AMPA_fall; // Synaptic Conductance (nS)
-    f[S::G_NMDA]   = -g_NMDA   / node.P.tau_NMDA_fall; // Synaptic Conductance (nS)
+        + node.B_.I_stim_ + node.P.I_const + node.B_.I_theta
+        + node.B_.I_noise) / node.P.C_m;
+    //f[S::I_STIM]   = NAN;                                // This is only for recording
+    f[S::G_AHP]    = -g_AHP    / node.P.tau_AHP;         // After-hyperpolarisation conductance (nS)
+    f[S::G_AMPA]   = -g_AMPA   / node.P.tau_AMPA_fall;   // Synaptic Conductance (nS)
+    f[S::G_NMDA]   = -g_NMDA   / node.P.tau_NMDA_fall;   // Synaptic Conductance (nS)
     f[S::G_GABA_A] = -g_GABA_A / node.P.tau_GABA_A_fall; // Synaptic Conductance (nS)
     
     return GSL_SUCCESS;
@@ -156,10 +154,14 @@ nest::iaf_gridcells::Parameters::Parameters()
       I_ac_amp        (   0.0 ), // pA
       I_ac_freq       (   8.0 ), // Hz
       I_ac_phase      (   0.0 ), // rad
+      I_ac_start_t    (   0.0 ), // ms
       I_noise_std     (   0.0 ), // pA
-      I_noise_dt      (   1.0 )  // ms
+      I_noise_dt      (   1.0 ), // ms
+      
+      thetaGen(Time::get_resolution().get_ms(), 0.0, I_ac_start_t, I_ac_amp, I_ac_freq, I_ac_phase)
 {
     update_clamp_potentials();
+    noiseGen.setGendt(Time::ms(I_noise_dt));
 }
 
 void nest::iaf_gridcells::Parameters::update_clamp_potentials()
@@ -297,6 +299,12 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
         throw BadProperty("NMDA fraction of AMPA conductance must be >= 0!");
 
     // TODO: check all other parameters
+    
+
+    // Everything OK, set the noise generator
+    noiseGen.setGendt(Time::ms(I_noise_dt));
+    thetaGen = PulsatingCurrentGenerator(Time::get_resolution().get_ms(), 0.0,
+            I_ac_start_t, I_ac_amp, I_ac_freq, I_ac_phase);
 }
 
 void nest::iaf_gridcells::State_::get(DictionaryDatum &d) const
@@ -388,7 +396,9 @@ void nest::iaf_gridcells::init_buffers_()
     //B_.IntegrationStep_ = std::min(0.05, B_.step_);
     B_.IntegrationStep_ = B_.step_;
 
-    B_.I_stim_ = 0.0;
+    B_.I_stim_ = .0;
+    B_.I_noise = .0;
+    B_.I_theta = .0;
 }
 
 void nest::iaf_gridcells::calibrate()
@@ -405,6 +415,7 @@ void nest::iaf_gridcells::calibrate()
 void nest::iaf_gridcells::update(const Time &origin, const long_t from, const long_t to)
 {
     typedef nest::iaf_gridcells::State_ S;
+    long_t start_t = origin.get_steps();
 
     assert ( to >= 0 && (delay) from < Scheduler::get_min_delay() );
     assert ( from < to );
@@ -414,9 +425,10 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
     for ( long_t lag = from; lag < to; ++lag )
     {
         double t = 0.0;
+        long_t now = start_t + lag;
 
         if ( S_.r_ > 0 )
-          --S_.r_;
+            --S_.r_;
 
         // numerical integration using Forward Euler: should be enough for our purpose
         while (t < B_.step_)
@@ -431,40 +443,42 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
 
             // Integrate, forward Euler
             for (int i = 0; i < S::INTEG_SIZE; i++)
-              S_.y_[i] += B_.IntegrationStep_ * S_.dydt_[i];
+                S_.y_[i] += B_.IntegrationStep_ * S_.dydt_[i];
 
-            if (S_.y_[S::G_GABA_A] < 0)
-                std::cerr << S_.y_[S::G_GABA_A] << std::endl;
+            //if (S_.y_[S::G_GABA_A] < 0)
+            //    std::cerr << S_.y_[S::G_GABA_A] << std::endl;
 
             if ( status != GSL_SUCCESS )
-              throw GSLSolverFailure(get_name(), status);
+                throw GSLSolverFailure(get_name(), status);
 
 
             // check for unreasonable values; we allow V_M to explode
             if (S_.y_[State_::V_M] < -1e3)
-              throw NumericalInstability(get_name());
+                throw NumericalInstability(get_name());
 
 
             // Spikes
             if ( S_.r_ > 0 )
-              S_.y_[State_::V_M] = P.V_reset;
+            {
+                S_.y_[State_::V_M] = P.V_reset;
+            }
             else if ( S_.y_[State_::V_M] >= P.V_peak )
             {
-              S_.y_[State_::V_M]  = P.V_reset;
-              S_.r_               = V_.RefractoryCounts_;
+                S_.y_[State_::V_M]  = P.V_reset;
+                S_.r_               = V_.RefractoryCounts_;
 
-              // AHP reactivation
-              S_.y_[State_::G_AHP] = P.g_AHP_max;
-              
-              set_spiketime(Time::step(origin.get_steps() + lag + 1));
-              SpikeEvent se;
-              network()->send(*this, se, lag);
+                // AHP reactivation
+                S_.y_[State_::G_AHP] = P.g_AHP_max;
+                
+                set_spiketime(Time::step(origin.get_steps() + lag + 1));
+                SpikeEvent se;
+                network()->send(*this, se, lag);
             }
 
             t += B_.IntegrationStep_;
         }
 
-        // Process all spikes
+        // Process all incoming spikes
         double AMPA_spike =  B_.spike_inputs_[AMPA_NMDA].get_value(lag);
         S_.y_[S::G_AMPA]   += AMPA_spike;
         S_.y_[S::G_NMDA]   += AMPA_spike * .01 * P.g_NMDA_fraction;
@@ -472,7 +486,6 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
           
         // set new input current
         B_.I_stim_ = B_.currents_.get_value(lag);
-        S_.y_[S::I_STIM] = B_.I_stim_;
 
         // Set clamp currents
         S_.y_[S::I_CLAMP_AMPA]    = -S_.y_[S::G_AMPA]    * P.E_clamp_AMPA;
@@ -480,7 +493,20 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
         S_.y_[S::I_CLAMP_GABA_A]  = -S_.y_[S::G_GABA_A]  * P.E_clamp_GABA_A;
 
         // log state data
-        B_.logger_.record_data(origin.get_steps() + lag);
+        B_.logger_.record_data(now);
+
+        // Noise generation
+        if (now >= P.noiseGen.next_step) {
+            B_.I_noise = P.I_noise_std * noiseGen.normal_dev(net_->get_rng(get_thread()));
+            P.noiseGen.advance(now);
+        }
+
+        // Theta current generator
+        B_.I_theta = P.thetaGen.getCurrent();
+        P.thetaGen.advance();
+
+        // Stimulation current recording
+        S_.y_[S::I_STIM] = P.I_const + B_.I_theta + B_.I_stim_ + B_.I_noise;
     }
 }
   

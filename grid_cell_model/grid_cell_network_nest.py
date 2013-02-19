@@ -98,7 +98,12 @@ class NestGridCellNetwork(GridCellNetwork):
                 "tau_AHP"          : self.no.tau_AHP_e,
                 "E_AHP"            : self.no.E_AHP_e,
                 "g_AHP_max"        : self.no.g_AHP_e_max,
-                "I_e"              : self.no.Iext_e_const,
+                "I_const"          : self.no.Iext_e_const,
+                "I_ac_amp"         : self.no.Iext_e_theta,
+                "I_ac_freq"        : self.no.theta_freq,
+                "I_ac_phase"       : 0.0,
+                "I_ac_start_t"     : self.no.theta_start_t,
+                "I_noise_std"      : self.no.noise_sigma,
                 "V_clamp"          : self.no.Vclamp}
 
         self.i_neuron_params = {
@@ -119,7 +124,12 @@ class NestGridCellNetwork(GridCellNetwork):
                 "tau_AHP"          : self.no.ad_tau_i_mean,
                 "E_AHP"            : self.no.EL_i,  # !!! Here there is no adaptaion
                 "g_AHP_max"        : self.no.ad_i_g_inc,
-                "I_e"              : self.no.Iext_i_const,
+                "I_const"          : self.no.Iext_i_const,
+                "I_ac_amp"         : self.no.Iext_i_theta,
+                "I_ac_freq"        : self.no.theta_freq,
+                "I_ac_phase"       : 0.0,
+                "I_ac_start_t"     : self.no.theta_start_t,
+                "I_noise_std"      : self.no.noise_sigma,
                 "V_clamp"          : self.no.Vclamp,
                 "g_NMDA_fraction"  : self.no.NMDA_amount}
 
@@ -149,22 +159,6 @@ class NestGridCellNetwork(GridCellNetwork):
         # Connect E-->I and I-->E
         self._centerSurroundConnection(self.no.AMPA_gaussian, self.no.pAMPA_mu,
                 self.no.pAMPA_sigma, self.no.pGABA_mu, self.no.pGABA_sigma)
-
-        # Noise generators
-        self.noise_gen_e = nest.Create('noise_generator', 1,
-                params={'mean' : 0.0, 'std' : self.no.noise_sigma})
-        self.noise_gen_i = nest.Create('noise_generator', 1,
-                params={'mean' : 0.0, 'std' : self.no.noise_sigma})
-
-        nest.DivergentConnect(self.noise_gen_e, self.E_pop)
-        nest.DivergentConnect(self.noise_gen_i, self.I_pop)
-
-        self.theta_source = nest.Create('ac_generator', 1, 
-                params={'amplitude' : self.no.Iext_e_theta/2.0,
-                        'offset'    : self.no.Iext_e_theta/2.0,
-                        'phase'     : 0.0,
-                        'frequency' : 8.0}) #Hz
-        nest.DivergentConnect(self.theta_source, self.E_pop)
 
         self._initStates()
         self._initCellularProperties()

@@ -27,7 +27,9 @@ lib_LTLIBRARIES=      gridcellsmodule.la libgridcellsmodule.la
 gridcellsmodule_la_CXXFLAGS= @AM_CXXFLAGS@
 gridcellsmodule_la_SOURCES=  gridcellsmodule.cpp      gridcellsmodule.h \
 							 place_cell_generator.cpp place_cell_generator.h \
-							 iaf_gridcells.cpp		  iaf_gridcells.h
+							 iaf_gridcells.cpp		  iaf_gridcells.h	\
+							 CurrentGenerator.h	\
+							 PulsatingCurrentGenerator.h
 gridcellsmodule_la_LDFLAGS=  -module
 
 libgridcellsmodule_la_CXXFLAGS= $(gridcellsmodule_la_CXXFLAGS) -DLINKED_MODULE

@@ -108,11 +108,11 @@ x_lim = [0, options.time]
 print "Simulation running..."
 start_time=time.time()
     
-ei_net.simulate(options.time, printTime=False)
+ei_net.simulate(options.time, printTime=True)
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
 
-output_fname = "{0}/{1}job{2:04}_".format(options.output_dir, options.fileNamePrefix, options.job_num)
+output_fname = "{0}/{1}job{2:05}_".format(options.output_dir, options.fileNamePrefix, options.job_num)
 
 
 
@@ -132,6 +132,14 @@ subplot(212)
 plot(events_i['times'], events_i['I_stim'])
 ylabel('I cell $I_{stim}$')
 xlabel('Time (ms)')
+
+
+# Histogram of E external current (to validate noise)
+figure()
+hist(events_e['I_stim'], 100)
+xlabel('Current (pA)')
+ylabel('Count')
+
 
 
 # E/I Vm
