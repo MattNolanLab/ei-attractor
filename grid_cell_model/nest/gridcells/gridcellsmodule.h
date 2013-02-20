@@ -28,78 +28,65 @@
 
 namespace nest
 {
-  class Network;
+    class Network;
 }
+
 
 // Put your stuff into your own namespace.
 namespace mynest {
   
+
+
 /**
- * Class defining your model.
- * @note For each model, you must define one such class, with a unique name.
+ * This module provides classes for the implementation of the grid cell system.
+ *
+ * Currently the models provided are
+ *  1. *iaf_gridcells* -- Exponential integrate and fire neuron with after-spike
+ *        hyperpolarisation conductance, AMPA, NMDA-like and GABA_A synapses
+ *  1. *place_cell_generator * -- a simple model that simulates place cell
+ *        firing fields. It a non-homogeneous Poisson process, in which the mean
+ *        firing rate changes as a Gaussian function of a 2D environment
  */
 class GridCellsModule : public DynModule
 {
-public:
+    public:
 
-  // Interface functions ------------------------------------------
-  
-  /**
-   * @note The constructor registers the module with the dynamic loader. 
-   *       Initialization proper is performed by the init() method.
-   */
-  GridCellsModule();
-  
-  /**
-   * @note The destructor does not do much in modules. Proper "downrigging"
-   *       is the responsibility of the unregister() method.
-   */
-  ~GridCellsModule();
+    // Interface functions ------------------------------------------
+    
+    /**
+     * @note The constructor registers the module with the dynamic loader. 
+     *       Initialization proper is performed by the init() method.
+     */
+    GridCellsModule();
+    
+    /**
+     * @note The destructor does not do much in modules. Proper "downrigging"
+     *       is the responsibility of the unregister() method.
+     */
+    ~GridCellsModule();
 
-  /**
-   * Initialize module by registering models with the network.
-   * @param SLIInterpreter* SLI interpreter
-   * @param nest::Network*  Network with which to register models
-   * @note  Parameter Network is needed for historical compatibility
-   *        only.
-   */
-  void init(SLIInterpreter*, nest::Network*);
+    /**
+     * Initialize module by registering models with the network.
+     * @param SLIInterpreter* SLI interpreter
+     * @param nest::Network*  Network with which to register models
+     * @note  Parameter Network is needed for historical compatibility
+     *        only.
+     */
+    void init(SLIInterpreter*, nest::Network*);
 
-  /**
-   * Return the name of your model.
-   */
-  const std::string name(void) const;
-  
-  /**
-   * Return the name of a sli file to execute when GridCellsModule is loaded.
-   * This mechanism can be used to define SLI commands associated with your
-   * module, in particular, set up type tries for functions you have defined.
-   */
-  const std::string commandstring(void) const;
+    /**
+     * Return the name of your model.
+     */
+    const std::string name(void) const;
+    
+    /**
+     * Return the name of a sli file to execute when GridCellsModule is loaded.
+     * This mechanism can be used to define SLI commands associated with your
+     * module, in particular, set up type tries for functions you have defined.
+     */
+    const std::string commandstring(void) const;
      
-public:
-  
-  // Classes implementing your functions -----------------------------
-  
-  /**
-   * Implement a function for a step-pattern-based connection.
-   * @note What this function does is described in the SLI documentation
-   *       in the cpp file.
-   * @note The mangled name indicates this function expects the following
-   *       arguments on the stack (bottom first): vector of int, int, 
-   *       vector of int, int. 
-   * @note You must define a member object in your module class
-   *       of the function class. execute() is later invoked on this
-   *       member.
-   */
-  class StepPatternConnect_Vi_i_Vi_i_lFunction: public SLIFunction
-     {
-     public:
-       void execute(SLIInterpreter *) const;
-     };
-
-     StepPatternConnect_Vi_i_Vi_i_lFunction stepPatternConnect_Vi_i_Vi_i_lFunction;
-  };
+};
 } // namespace mynest
 
 #endif
