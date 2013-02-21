@@ -158,11 +158,9 @@ nest::iaf_gridcells::Parameters::Parameters()
       I_ac_start_t    (   0.0 ), // ms
       I_noise_std     (   0.0 ), // pA
       I_noise_dt      (   1.0 ), // ms
-      pref_dir_x      (   0.0 ), // unitless
-      pref_dir_y      (   0.0 ), // unitless
       
       thetaGen(Time::get_resolution().get_ms(), 0.0, I_ac_start_t, I_ac_amp, I_ac_freq, I_ac_phase),
-      velGen(Time::get_resolution().get_ms(), 0.0, I_ac_start_t, PrefDirs(pref_dir_x, pref_dir_y))
+      velGen(Time::get_resolution().get_ms(), 0.0, I_ac_start_t, PrefDirs(.0, .0))
 {
     update_clamp_potentials();
     noiseGen.setGendt(Time::ms(I_noise_dt));
@@ -241,8 +239,8 @@ void nest::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
     def<double>(d, names::I_noise_std,      I_noise_std);
     def<double>(d, names::I_noise_dt,       I_noise_dt);
 
-    def<double>(d, names::pref_dir_x,       pref_dir_x);
-    def<double>(d, names::pref_dir_y,       pref_dir_y);
+    def<double>(d, names::pref_dir_x,       velGen.getPrefDirs().x);
+    def<double>(d, names::pref_dir_y,       velGen.getPrefDirs().y);
 
 
     // Provide velocity inputs from velGen
@@ -290,19 +288,33 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
     updateValue<double>(d, names::I_noise_std,      I_noise_std);
     updateValue<double>(d, names::I_noise_dt,       I_noise_dt);
 
-    updateValue<double>(d, names::pref_dir_x,       pref_dir_x);
-    updateValue<double>(d, names::pref_dir_y,       pref_dir_y);
-
 
     // Set velocity input into velGen - it manages the static data
+    // We need to collect all the parameters, because updateValue does nothing
+    // when the name is not present in the dictionary
     // TODO: check thread safety here, but should be OK
-    std::vector<double> pos_x;
-    std::vector<double> pos_y;
-    double pos_dt;
-    updateValue< vector<double> >(d, names::rat_pos_x,  pos_x);
-    updateValue< vector<double> >(d, names::rat_pos_y,  pos_y);
-    updateValue<double>(          d, names::rat_pos_dt, pos_dt);
-    velGen.setVelocityInputs(VelocityInputs(pos_x, pos_y, pos_dt));
+    vecType pos_x = velGen.getVelocityInputs().getPosX();
+    vecType pos_y = velGen.getVelocityInputs().getPosY();
+    double pos_dt = velGen.getVelocityInputs().get_dt();
+    bool updated = false;
+    updated = updateValue<vecType>(d, names::rat_pos_x,  pos_x);
+    updated = updateValue<vecType>(d, names::rat_pos_y,  pos_y) || updated;
+    updated = updateValue<double>( d, names::rat_pos_dt, pos_dt) || updated;
+    if (updated) {
+        std::cout << "updating " << std::endl;
+        velGen.setVelocityInputs(VelocityInputs(pos_x, pos_y, pos_dt));
+    }
+
+
+    // Set preferred directions for the current neuron
+    PrefDirs p = velGen.getPrefDirs();
+    updateValue<double>(d, names::pref_dir_x, p.x);
+    updateValue<double>(d, names::pref_dir_y, p.y);
+    velGen.setPrefDirs(p);
+
+
+    velGen.setGenStart(I_ac_start_t);
+
 
     update_clamp_potentials();
 
@@ -534,8 +546,13 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
         B_.I_theta = P.thetaGen.getCurrent();
         P.thetaGen.advance();
 
+        // Velocity current
+        B_.I_vel = P.velGen.getCurrent();
+        P.velGen.advance();
+
         // Stimulation current recording
-        S_.y_[S::I_STIM] = P.I_const + B_.I_theta + B_.I_stim_ + B_.I_noise;
+        //S_.y_[S::I_STIM] = P.I_const + B_.I_theta + B_.I_stim_ + B_.I_noise;
+        S_.y_[S::I_STIM] = B_.I_vel;
     }
 }
   

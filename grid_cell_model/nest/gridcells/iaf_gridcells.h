@@ -292,10 +292,6 @@ namespace nest
       double_t I_noise_std;     //!< Gaussian noise std. dev. in pA
       double_t I_noise_dt;      //!< Gaussian noise update time interval in ms
 
-      double_t pref_dir_x;      //!< Preferred direction of movement X for this neuron
-      double_t pref_dir_y;      //!< Preferred direction of movement Y for this neuron
-
-  
       Parameters();             //!< Sets default parameter values
 
       void get(DictionaryDatum &) const;  //!< Store current values in dictionary
@@ -397,6 +393,7 @@ namespace nest
 
         double I_noise; //!< Noise current
         double I_theta; //!< Theta current
+        double I_vel;   //!< Velocity current
     };
 
     // ---------------------------------------------------------------- 
@@ -487,9 +484,9 @@ namespace nest
   void iaf_gridcells::set_status(const DictionaryDatum &d)
   {
     Parameters ptmp = P;  // temporary copy in case of errors
-    ptmp.set(d);            // throws if BadProperty
-    State_      stmp = S_;  // temporary copy in case of errors
-    stmp.set(d, ptmp);      // throws if BadProperty
+    ptmp.set(d);          // throws if BadProperty
+    State_     stmp = S_; // temporary copy in case of errors
+    stmp.set(d, ptmp);    // throws if BadProperty
 
     // We now know that (ptmp, stmp) are consistent. We do not 
     // write them back to (P, S_) before we are also sure that 

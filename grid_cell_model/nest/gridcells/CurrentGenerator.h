@@ -76,6 +76,11 @@ class CurrentGenerator {
     /** Reset the state to when t==startT. **/
     virtual void reset() = 0;
 
+    /** Get start time **/
+    double getStartTime() const { return startT; }
+    /** Set start time **/
+    void   setStartTime(double t) { startT = t; }
+
     protected:
 
     double dt;      //!< Simulation time step

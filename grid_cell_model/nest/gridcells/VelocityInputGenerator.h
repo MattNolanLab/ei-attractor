@@ -23,10 +23,12 @@
 #define VELOCITYINPUTGENERATOR_H
 
 #include <vector>
+#include <iostream>
 
 #include "CurrentGenerator.h"
 #include "gridcells_exceptions.h"
 
+typedef std::vector<double> vecType;
 
 /**
  * Velocity inputs structure.
@@ -37,18 +39,18 @@ class VelocityInputs {
 
 
     public:
-    VelocityInputs() {
-        dt = .0;
-    }
+    VelocityInputs() :
+        dt(20.0), ratPosX(), ratPosY(), ratVelX(), ratVelY()
+    {}
 
 
-    VelocityInputs(const std::vector<double>& x, const std::vector<double>& y, double dt) :
+    VelocityInputs(const vecType& x, const vecType& y, double dt) :
         dt(dt)
     {
         setPos(x, y);
     }
 
-    void setPos(const std::vector<double>& x, const std::vector<double>& y) {
+    void setPos(const vecType& x, const vecType& y) {
         if (x.size() != y.size())
             throw nest::DimensionMismatch(x.size(), y.size());
 
@@ -57,30 +59,36 @@ class VelocityInputs {
         calculateVelocity();
     }
 
-    const std::vector<double>& getVelX() const { return ratVelX; }
-    const std::vector<double>& getVelY() const { return ratVelY; }
-    double get_dt() const { return dt; }
-
+    const vecType& getVelX() const { return ratVelX; }
+    const vecType& getVelY() const { return ratVelY; }
     int getXSize() const { return ratVelX.size(); }
     int getYSize() const { return ratVelY.size(); }
 
-    const std::vector<double>& getPosX() const { return ratPosX; }
-    const std::vector<double>& getPosY() const { return ratPosY; }
+    double get_dt() const { return dt; }
+
+    const vecType& getPosX() const { return ratPosX; }
+    const vecType& getPosY() const { return ratPosY; }
 
 
     private:
     void calculateVelocity() {
-        for (int i = 0; i < ratPosX.size() - 1; i++) {
-            ratVelX[i] = (ratPosX[i+1] - ratPosX[i-1]) / (dt * 1e-3);
-            ratVelY[i] = (ratPosY[i+1] - ratPosY[i-1]) / (dt * 1e-3);
+        std::cout << "ratPosX.size(): " << ratPosX.size() << std::endl;
+
+        if (ratPosX.size() > 1) {
+            ratVelX = vecType(ratPosX.size() - 1);
+            ratVelY = vecType(ratPosY.size() - 1);
+            for (int i = 0; i < ratPosX.size() - 1; i++) {
+                ratVelX[i] = (ratPosX[i+1] - ratPosX[i]) / (dt * 1e-3);
+                ratVelY[i] = (ratPosY[i+1] - ratPosY[i]) / (dt * 1e-3);
+            }
         }
     }
 
-    std::vector<double> ratPosX; //!< Animal positions X (cm)
-    std::vector<double> ratPosY; //!< Animal positions Y (cm)
-    std::vector<double> ratVelX; //!< Animal velocity X (cm/s)
-    std::vector<double> ratVelY; //!< Animal velocity Y (cm/s)
-    double dt;                   //!< Time step for the positions (ms)
+    vecType ratPosX; //!< Animal positions X (cm)
+    vecType ratPosY; //!< Animal positions Y (cm)
+    vecType ratVelX; //!< Animal velocity X (cm/s)
+    vecType ratVelY; //!< Animal velocity Y (cm/s)
+    double dt;       //!< Time step for the positions (ms)
 };
 
 
@@ -135,7 +143,7 @@ class VelocityInputGenerator : public CurrentGenerator {
     {
         veldtSteps = (int) (velInputs.get_dt() / dt);
         if (veldtSteps != veldtSteps)
-            throw nest::BadProperty("The velocity input time step must be a multiple of the simulation time step!");
+            throw nest::BadProperty("Velocity input time step must be a multiple of the simulation time step!");
 
         if (veldtSteps == 0)
             throw nest::BadProperty("Velocity input time step must be >= the simulation time step!");
@@ -143,13 +151,15 @@ class VelocityInputGenerator : public CurrentGenerator {
         stepNow = 0;
         nextChange = stepNow + veldtSteps;
         velInputIt = 0;
+        currT = stepNow * dt;
     }
 
 
-    /** Get input current for the current step. But only when we are active **/
+    /** Get input current for the current step **/
     double getCurrent() {
-        double currT = stepNow*dt + startT;
-        if (currT >= genStart) {
+
+        if (currT >= genStart && velInputIt < velInputs.getXSize()
+                && velInputIt < velInputs.getYSize()) {
             double x = velInputs.getVelX()[velInputIt] * prefDirs.x;
             double y = velInputs.getVelY()[velInputIt] * prefDirs.y;
             return x + y;
@@ -162,9 +172,11 @@ class VelocityInputGenerator : public CurrentGenerator {
     void advance()
     {
         stepNow++;
+        currT = stepNow*dt + startT;
         if (stepNow >= nextChange) {
             nextChange += veldtSteps;
-            velInputIt++;
+            if (currT >= genStart)  // Inc the vel array index only when activated
+                velInputIt++;
         }
     }
 
@@ -175,6 +187,7 @@ class VelocityInputGenerator : public CurrentGenerator {
         stepNow = 0;
         nextChange = stepNow + veldtSteps;
         velInputIt = 0;
+        currT = stepNow*dt + startT;
     }
 
 
@@ -186,11 +199,6 @@ class VelocityInputGenerator : public CurrentGenerator {
      * @param vi Velocity inputs
      */
     void setVelocityInputs(const VelocityInputs& vi) {
-        if (vi.getXSize() == 0)
-            throw SizeException("Size of the X part of the velocity vector must be > 0");
-        if (vi.getYSize() == 0)
-            throw SizeException("Size of the Y part of the velocity vector must be > 0");
-
         velInputs = vi;
     }
 
@@ -202,19 +210,22 @@ class VelocityInputGenerator : public CurrentGenerator {
 
 
     /** Get preferred directions **/
-    const PrefDirs& getPrefDirs() const {
-        return prefDirs;
-    }
+    const PrefDirs& getPrefDirs() const { return prefDirs; } 
+    /** Set preferred directions **/
+    void            setPrefDirs(const PrefDirs& p) { prefDirs = p; }
+    /** Set start time of current generation **/
+    void  setGenStart(double t) { genStart = t; }
 
     private:
 
-    double genStart;   //!< When to start generating an input
-    PrefDirs prefDirs; //!< Preferred direction of this generator
+    double genStart;    //!< When to start generating an input
+    PrefDirs prefDirs;  //!< Preferred direction of this generator
 
-    long   stepNow;
-    long   velInputIt;
-    int    veldtSteps;
-    double nextChange;
+    double currT;       //!< Current time in ms
+    long   stepNow;     //!< Step at the current time
+    long   velInputIt;  //!< Index into the velocity input vector
+    int    veldtSteps;  //!< Number of simulation time steps per velocity input step
+    double nextChange;  //!< When is the next change of velocity input occuring?
 
 
     static VelocityInputs velInputs; //!< Velocity inputs, shared by all objects
