@@ -75,6 +75,8 @@ class NestGridCellNetwork(GridCellNetwork):
         self.stateMon_e = None
         self.stateMon_i = None
 
+        self._ratVelocitiesLoaded = False
+
         nest.Install('gridcellsmodule')
         nest.ResetKernel()
         nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": False})
@@ -104,7 +106,9 @@ class NestGridCellNetwork(GridCellNetwork):
                 "I_ac_phase"       : 0.0,
                 "I_ac_start_t"     : self.no.theta_start_t,
                 "I_noise_std"      : self.no.noise_sigma,
-                "V_clamp"          : self.no.Vclamp}
+                "V_clamp"          : self.no.Vclamp,
+                "rat_pos_x"        : [],
+                "rat_pos_y"        : []}
 
         self.i_neuron_params = {
                 "V_m"              : self.no.EL_i,
@@ -131,7 +135,9 @@ class NestGridCellNetwork(GridCellNetwork):
                 "I_ac_start_t"     : self.no.theta_start_t,
                 "I_noise_std"      : self.no.noise_sigma,
                 "V_clamp"          : self.no.Vclamp,
-                "g_NMDA_fraction"  : self.no.NMDA_amount}
+                "g_NMDA_fraction"  : self.no.NMDA_amount,
+                "rat_pos_x"        : [],
+                "rat_pos_y"        : []}
 
 
         #tau1_GABA = self.no.tau_GABA_A_fall
@@ -162,13 +168,6 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self._initStates()
         self._initCellularProperties()
-
-
-        # Just for test
-        #a = np.arange(100) * 1.0 + 0.5
-        #nest.SetStatus([self.E_pop[0]], params="rat_pos_x", val=[a])
-        #for node in self.E_pop:
-        #    print nest.GetStatus([node], keys='rat_pos_x')[0]
 
 
     def simulate(self, time, printTime=True):
@@ -255,16 +254,6 @@ class NestGridCellNetwork(GridCellNetwork):
     ############################################################################ 
     #                     External sources definitions
     ############################################################################ 
-    def setConstantCurrent(self):
-        '''
-        Constant uniform excitatory drive. All the populations will receive this
-        current throughout the simulation, given by:
-          Iext_e_const  E population
-          Iext_i_const  I population
-        '''
-        self.E_pop.Iext_const = self.no.Iext_e_const * pA
-        self.I_pop.Iext_const = self.no.Iext_i_const * pA
-
 
     def setStartCurrent(self, force_pos=None):
         # This will either need to instantiate the start current model or set
@@ -278,34 +267,29 @@ class NestGridCellNetwork(GridCellNetwork):
 
 
     def _loadRatVelocities(self):
+        '''
+        Load rat velocities (in this case positions only)
+        '''
         if self._ratVelocitiesLoaded:
             return
 
         self.ratData    = loadmat(self.no.ratVelFName)
-        self.rat_dt     = self.ratData['dt'][0][0]
+        self.rat_dt     = self.ratData['dt'][0][0]      # units: sec
 
         self.rat_pos_x  = self.ratData['pos_x'].ravel()
         self.rat_pos_y  = self.ratData['pos_y'].ravel()
-        self.rat_vel_x  = np.diff(self.rat_pos_x)/(self.no.rat_dt * ms)
-        self.rat_vel_y  = np.diff(self.rat_pos_y)/(self.no.rat_dt * ms)
-        
+
         # Map velocities to currents: we use the slope of bump speed vs. rat speed and
         # inter-peak grid field distance to remap
         # Bump current slope must be estimated
-        velC = self.Ne_x / self.no.gridSep / self.no.bumpCurrentSlope
-        self.rat_Ivel_x = self.rat_vel_x * velC * pA
-        self.rat_Ivel_y = self.rat_vel_y * velC * pA
-        
-        print "mean rat_vel_x:  " + str(np.mean(np.abs(self.rat_vel_x))) + " cm/s"
-        print "mean rat_vel_y:  " + str(np.mean(np.abs(self.rat_vel_y))) + " cm/s"
-        print "max  rat_vel_x:  " + str(np.max(np.abs(self.rat_vel_x))) + " cm/s"
-        print "max  rat_vel_y:  " + str(np.max(np.abs(self.rat_vel_y))) + " cm/s"
-        print "mean rat_Ivel_x: " + str(np.mean(np.abs(self.rat_Ivel_x))/pA) + " pA"
-        print "mean rat_Ivel_y: " + str(np.mean(np.abs(self.rat_Ivel_y))/pA) + " pA"
-        print "max rat_Ivel_x: "  + str(np.max(np.abs(self.rat_Ivel_x))/pA) + " pA"
-        print "max rat_Ivel_y: "  + str(np.max(np.abs(self.rat_Ivel_y))/pA) + " pA"
+        self.velC = self.Ne_x / self.no.gridSep / self.no.bumpCurrentSlope
 
-        self.Ivel_it   = 0
+        # Load velocities into nest: they are all shared among all iaf_gridcells
+        # nodes so only one neuron needs setting the actual values
+        nest.SetStatus([self.E_pop[0]], {
+            "rat_pos_x" :  self.rat_pos_x,
+            "rat_pos_y" :  self.rat_pos_y,
+            "rat_pos_dt":  self.rat_dt*1e3}) # s --> ms
 
         self._ratVelocitiesLoaded = True
 
@@ -318,29 +302,57 @@ class NestGridCellNetwork(GridCellNetwork):
         '''
         self._loadRatVelocities()
 
+
         if prefDirs_mask is None:
             self._prefDirs_mask_e = np.ndarray((len(self.E_pop), 2))
             self._prefDirs_mask_e[:, :] = 1.0
         else:
-            self._prefDirs_mask_e = prefDirs_mask
+            raise NotImplementedException("NestGridCellNetwork.setVelocityCurrentInput_e.prefDirs_mask")
 
-        @network_operation(self._ratClock)
-        def velocityChange():
-            if self._simulationClock.t >= self.no.theta_start_t*msecond:
-                v = np.array([[self.rat_Ivel_x[self.Ivel_it], self.rat_Ivel_y[self.Ivel_it]]]).T
-                self.E_pop.Iext_vel = np.dot(self.prefDirs_e*self._prefDirs_mask_e, v).ravel()
-                self.Ivel_it += 1
-            else:
-                self.E_pop.Iext_vel = 0.0
-
-        self.net.add(velocityChange)
+        nest.SetStatus(self.E_pop, "pref_dir_x", self.prefDirs_e[:, 0]);
+        nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
+        nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
 
+    def setConstantVelocityCurrent_e(self, vel, start_t=None, end_t=None):
+        '''
+        Set the model so that there is only a constant velocity current input.
+        '''
+        if start_t is not None:
+            raise Exception("Const velocity start time cannot be overridden in this model!")
 
+        start_t = self.no.theta_start_t
+
+        if end_t is None:
+            end_t = self.no.time
+
+
+        self.rat_dt = 20.0 # ms
+        nVel = int((end_t - start_t) / self.rat_dt)
+        self.rat_pos_x = np.cumsum(np.array([vel[0]] * nVel)) * (self.rat_dt*1e-3)
+        self.rat_pos_y = np.cumsum(np.array([vel[1]] * nVel)) * (self.rat_dt*1e-3)
+
+        # Load velocities into nest: they are all shared among all iaf_gridcells
+        # nodes so only one neuron needs setting the actual values
+        nest.SetStatus([self.E_pop[0]], {
+            "rat_pos_x" :  self.rat_pos_x,
+            "rat_pos_y" :  self.rat_pos_y,
+            "rat_pos_dt":  self.rat_dt}) # s --> ms
+
+        print self.rat_pos_x
+        print self.rat_pos_y
+
+        # Map velocities to currents: we use the slope of bump speed vs. rat speed and
+        # inter-peak grid field distance to remap
+        # Bump current slope must be estimated
+        self.velC = self.Ne_x / self.no.gridSep / self.no.bumpCurrentSlope
+
+        nest.SetStatus(self.E_pop, "pref_dir_x", self.prefDirs_e[:, 0]);
+        nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
+        nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
     def setPlaceCurrentInput(self):
         pass
-
 
 
 

@@ -63,8 +63,8 @@ ei_net = NestGridCellNetwork(options, simulationOpts=None)
 #ei_net.setThetaCurrentStimulation()
 #ei_net.setPlaceCurrentInput()
 
-#const_v = [0.0, 1.0]
-#ei_net.setConstantVelocityCurrent_e(const_v)
+const_v = [50.0, 0.0]
+ei_net.setConstantVelocityCurrent_e(const_v)
 #ei_net.setVelocityCurrentInput_e()
 
 duration=time.time()-start_time
@@ -128,6 +128,7 @@ figure()
 ax = subplot(211)
 plot(events_e['times'], events_e['I_stim'])
 ylabel('E cell $I_{stim}$')
+axis('tight')
 subplot(212)
 plot(events_i['times'], events_i['I_stim'])
 ylabel('I cell $I_{stim}$')
