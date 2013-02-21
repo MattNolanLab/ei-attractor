@@ -242,6 +242,8 @@ void nest::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
     def<double>(d, names::pref_dir_x,       velGen.getPrefDirs().x);
     def<double>(d, names::pref_dir_y,       velGen.getPrefDirs().y);
 
+    def<double>(d, names::velC,             velC);
+
 
     // Provide velocity inputs from velGen
     const VelocityInputs& vi = velGen.getVelocityInputs();
@@ -287,6 +289,8 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
     updateValue<double>(d, names::I_ac_start_t,     I_ac_start_t);
     updateValue<double>(d, names::I_noise_std,      I_noise_std);
     updateValue<double>(d, names::I_noise_dt,       I_noise_dt);
+
+    updateValue<double>(d, names::velC,             velC);
 
 
     // Set velocity input into velGen - it manages the static data
@@ -547,7 +551,7 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
         P.thetaGen.advance();
 
         // Velocity current
-        B_.I_vel = P.velGen.getCurrent();
+        B_.I_vel = P.velC * P.velGen.getCurrent();
         P.velGen.advance();
 
         // Stimulation current recording

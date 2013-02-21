@@ -142,6 +142,7 @@ namespace nest
     const Name rat_pos_dt("rat_pos_dt");
     const Name pref_dir_x("pref_dir_x");
     const Name pref_dir_y("pref_dir_y");
+    const Name velC("velC");
   }
 
 
@@ -291,6 +292,8 @@ namespace nest
       double_t I_ac_start_t;    //!< AC current start time in ms
       double_t I_noise_std;     //!< Gaussian noise std. dev. in pA
       double_t I_noise_dt;      //!< Gaussian noise update time interval in ms
+
+      double_t velC;            //!< Velocity current multiplier constant
 
       Parameters();             //!< Sets default parameter values
 
