@@ -36,6 +36,7 @@
 #include <iomanip>
 #include <iostream>
 #include <cstdio>
+#include <vector>
 
 
 /* ---------------------------------------------------------------- 
@@ -157,8 +158,11 @@ nest::iaf_gridcells::Parameters::Parameters()
       I_ac_start_t    (   0.0 ), // ms
       I_noise_std     (   0.0 ), // pA
       I_noise_dt      (   1.0 ), // ms
+      pref_dir_x      (   0.0 ), // unitless
+      pref_dir_y      (   0.0 ), // unitless
       
-      thetaGen(Time::get_resolution().get_ms(), 0.0, I_ac_start_t, I_ac_amp, I_ac_freq, I_ac_phase)
+      thetaGen(Time::get_resolution().get_ms(), 0.0, I_ac_start_t, I_ac_amp, I_ac_freq, I_ac_phase),
+      velGen(Time::get_resolution().get_ms(), 0.0, I_ac_start_t, PrefDirs(pref_dir_x, pref_dir_y))
 {
     update_clamp_potentials();
     noiseGen.setGendt(Time::ms(I_noise_dt));
@@ -236,6 +240,17 @@ void nest::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
     def<double>(d, names::I_ac_start_t,     I_ac_start_t);
     def<double>(d, names::I_noise_std,      I_noise_std);
     def<double>(d, names::I_noise_dt,       I_noise_dt);
+
+    def<double>(d, names::pref_dir_x,       pref_dir_x);
+    def<double>(d, names::pref_dir_y,       pref_dir_y);
+
+
+    // Provide velocity inputs from velGen
+    const VelocityInputs& vi = velGen.getVelocityInputs();
+    def< std::vector<double> >(d, names::rat_pos_x,  vi.getPosX());
+    def< std::vector<double> >(d, names::rat_pos_y,  vi.getPosY());
+    def<double>(               d, names::rat_pos_dt, vi.get_dt());
+
 }
 
 void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
@@ -274,6 +289,20 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
     updateValue<double>(d, names::I_ac_start_t,     I_ac_start_t);
     updateValue<double>(d, names::I_noise_std,      I_noise_std);
     updateValue<double>(d, names::I_noise_dt,       I_noise_dt);
+
+    updateValue<double>(d, names::pref_dir_x,       pref_dir_x);
+    updateValue<double>(d, names::pref_dir_y,       pref_dir_y);
+
+
+    // Set velocity input into velGen - it manages the static data
+    // TODO: check thread safety here, but should be OK
+    std::vector<double> pos_x;
+    std::vector<double> pos_y;
+    double pos_dt;
+    updateValue< vector<double> >(d, names::rat_pos_x,  pos_x);
+    updateValue< vector<double> >(d, names::rat_pos_y,  pos_y);
+    updateValue<double>(          d, names::rat_pos_dt, pos_dt);
+    velGen.setVelocityInputs(VelocityInputs(pos_x, pos_y, pos_dt));
 
     update_clamp_potentials();
 

@@ -31,6 +31,7 @@
 #include "recordables_map.h"
 #include "normal_randomdev.h"
 #include "PulsatingCurrentGenerator.h"
+#include "VelocityInputGenerator.h"
 
 /**
   Conductance based exponential integrate-and-fire neuron. Forward Euler integration method.
@@ -136,6 +137,11 @@ namespace nest
     const Name I_ac_start_t("I_ac_start_t");
     const Name I_noise_std("I_noise_std");
     const Name I_noise_dt("I_noise_dt");
+    const Name rat_pos_x("rat_pos_x");
+    const Name rat_pos_y("rat_pos_y");
+    const Name rat_pos_dt("rat_pos_dt");
+    const Name pref_dir_x("pref_dir_x");
+    const Name pref_dir_y("pref_dir_y");
   }
 
 
@@ -286,6 +292,8 @@ namespace nest
       double_t I_noise_std;     //!< Gaussian noise std. dev. in pA
       double_t I_noise_dt;      //!< Gaussian noise update time interval in ms
 
+      double_t pref_dir_x;      //!< Preferred direction of movement X for this neuron
+      double_t pref_dir_y;      //!< Preferred direction of movement Y for this neuron
 
   
       Parameters();             //!< Sets default parameter values
@@ -301,9 +309,11 @@ namespace nest
 
       NoiseGenerator noiseGen;  //!< Normal distribution noise generator 
       PulsatingCurrentGenerator thetaGen; //!< Theta current generator
+      VelocityInputGenerator velGen;
 
       private:
       void update_clamp_potentials();
+
     
     };
 
@@ -396,8 +406,9 @@ namespace nest
      */
     struct Variables_
     {
-      int_t RefractoryCounts_;
+        int_t RefractoryCounts_;
     };
+
 
     // Access functions for UniversalDataLogger -------------------------------
     

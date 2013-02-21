@@ -29,7 +29,9 @@ gridcellsmodule_la_SOURCES=  gridcellsmodule.cpp      gridcellsmodule.h \
 							 place_cell_generator.cpp place_cell_generator.h \
 							 iaf_gridcells.cpp		  iaf_gridcells.h	\
 							 CurrentGenerator.h	\
-							 PulsatingCurrentGenerator.h
+							 PulsatingCurrentGenerator.h \
+							 VelocityInputGenerator.cpp VelocityInputGenerator.h \
+							 gridcells_exceptions.h
 gridcellsmodule_la_LDFLAGS=  -module
 
 libgridcellsmodule_la_CXXFLAGS= $(gridcellsmodule_la_CXXFLAGS) -DLINKED_MODULE
