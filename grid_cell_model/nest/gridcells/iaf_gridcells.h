@@ -231,6 +231,11 @@ namespace nest
         Time gen_dt;      //!< Generator dt
         librandom::NormalRandomDev normal_dev; //!< normal rnd generator
 
+        /** Create a default NoiseGenerator **/
+        NoiseGenerator() :
+            next_step(0), gen_dt(Time::ms(1.0)), dt_steps(gen_dt.get_steps())
+        {}
+
         /**
          * Manually set the generator time step
          *

@@ -113,7 +113,7 @@ int nest::iaf_gridcells_dynamics(double, const double y[], double f[], void* pno
         ( -node.P.g_L * ( (V-node.P.E_L) - I_spike) 
         - I_AHP
         - I_syn_AMPA - I_syn_NMDA - I_syn_GABA_A
-        + node.B_.I_stim_ + node.P.I_const + node.B_.I_theta
+        + node.B_.I_stim_ + node.P.I_const + node.B_.I_theta + node.B_.I_vel
         + node.B_.I_noise) / node.P.C_m;
     //f[S::I_STIM]   = NAN;                                // This is only for recording
     f[S::G_AHP]    = -g_AHP    / node.P.tau_AHP;         // After-hyperpolarisation conductance (nS)
@@ -316,7 +316,7 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
     updateValue<double>(d, names::pref_dir_y, p.y);
     velGen.setPrefDirs(p);
 
-
+    // Velocity generator
     velGen.setGenStart(I_ac_start_t);
 
 
@@ -555,8 +555,8 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
         P.velGen.advance();
 
         // Stimulation current recording
-        //S_.y_[S::I_STIM] = P.I_const + B_.I_theta + B_.I_stim_ + B_.I_noise;
-        S_.y_[S::I_STIM] = B_.I_vel;
+        S_.y_[S::I_STIM] = P.I_const + B_.I_theta + B_.I_stim_ + B_.I_vel + B_.I_noise;
+        //S_.y_[S::I_STIM] = B_.I_vel;
     }
 }
   
