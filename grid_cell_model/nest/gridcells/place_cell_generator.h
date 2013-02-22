@@ -54,6 +54,8 @@ namespace mynest
  *  - origin     double - Time origin for device timer in ms
  *  - start      double - begin of device application with resp. to origin in ms
  *  - stop       double - end of device application with resp. to origin in ms
+ *  - rat_pos_x  vector<double> - positional information X (cm)
+ *  - rat_pos_y  vector<double> - positional information Y (cm)
  *
  */
 class place_cell_generator : public nest::Node

@@ -91,6 +91,7 @@ class PlaceCells(object):
 
 
 
+
 class UniformBoxPlaceCells(PlaceCells):
     '''
     Generate a uniform distribution of place cells in a 2D environment of a

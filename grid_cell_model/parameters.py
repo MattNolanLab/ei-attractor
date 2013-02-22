@@ -125,6 +125,10 @@ def getOptParser():
     optParser.add_option("--E_AMPA",            type="float",  help="AMPA reversal potential (V)")
     optParser.add_option("--E_GABA_A",          type="float",  help="GABA A reversal potential (V)")
 
+    optParser.add_option("--N_place_cells",     type="float",  help="Number of place cells connected to grid cells")
+    optParser.add_option("--pc_max_rate",       type="float",  help="Place cell maximal firing rate (Hz)")
+    optParser.add_option("--pc_field_std",      type="float",  help="Std. deviation of the Gaussian specifying the place field size (cm)")
+
     optParser.add_option("--noise_sigma",       type="float",  help="Std. dev of neural noise (V)")
     optParser.add_option("--theta_noise_sigma", type="float",  help="Std. dev of theta stimulation noise (V)")
     optParser.add_option("--sigma_init_cond",   type="float",  help="Std. dev of distribution of initial membrane voltages (V)")

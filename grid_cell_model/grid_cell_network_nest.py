@@ -29,6 +29,7 @@ from numpy.random       import rand, randn
 from common             import *
 from grid_cell_network  import *
 from place_input        import *
+from place_cells        import *
 
 import random
 import nest
@@ -76,6 +77,8 @@ class NestGridCellNetwork(GridCellNetwork):
         self.stateMon_i = None
 
         self._ratVelocitiesLoaded = False
+
+        self.PC = []
 
         nest.Install('gridcellsmodule')
         nest.ResetKernel()
@@ -207,6 +210,24 @@ class NestGridCellNetwork(GridCellNetwork):
             raise ValueError("Unsupported type of spike detector: " + type)
 
 
+
+    def getGenericSpikeDetector(self, gids, label=""):
+        '''
+        NEST specific function to get a spike detector that monitors a
+        population of neurons with global id set to gids
+
+        gids    A list of global ids of the neurons to monitor
+        '''
+        mon = nest.Create('spike_detector')
+        nest.SetStatus(mon, {
+            "label"     : label,
+            'withtime'  : True,
+            'withgid'   : True})
+        nest.ConvergentConnect(gids, mon)
+        return mon
+
+
+
     def getStateMonitor(self, type, N_ids, params):
         '''
         Return a state monitor for a given population (type) and relative
@@ -274,7 +295,7 @@ class NestGridCellNetwork(GridCellNetwork):
             return
 
         self.ratData    = loadmat(self.no.ratVelFName)
-        self.rat_dt     = self.ratData['dt'][0][0]      # units: sec
+        self.rat_dt     = self.ratData['dt'][0][0]*1e3      # units: ms
 
         self.rat_pos_x  = self.ratData['pos_x'].ravel()
         self.rat_pos_y  = self.ratData['pos_y'].ravel()
@@ -283,13 +304,6 @@ class NestGridCellNetwork(GridCellNetwork):
         # inter-peak grid field distance to remap
         # Bump current slope must be estimated
         self.velC = self.Ne_x / self.no.gridSep / self.no.bumpCurrentSlope
-
-        # Load velocities into nest: they are all shared among all iaf_gridcells
-        # nodes so only one neuron needs setting the actual values
-        nest.SetStatus([self.E_pop[0]], {
-            "rat_pos_x" :  self.rat_pos_x,
-            "rat_pos_y" :  self.rat_pos_y,
-            "rat_pos_dt":  self.rat_dt*1e3}) # s --> ms
 
         self._ratVelocitiesLoaded = True
 
@@ -308,6 +322,15 @@ class NestGridCellNetwork(GridCellNetwork):
             self._prefDirs_mask_e[:, :] = 1.0
         else:
             raise NotImplementedException("NestGridCellNetwork.setVelocityCurrentInput_e.prefDirs_mask")
+
+
+        # Load velocities into nest: they are all shared among all iaf_gridcells
+        # nodes so only one neuron needs setting the actual values
+        npos = int(self.no.time / self.rat_dt)
+        nest.SetStatus([self.E_pop[0]], {
+            "rat_pos_x" :  self.rat_pos_x[0:npos],
+            "rat_pos_y" :  self.rat_pos_y[0:npos],
+            "rat_pos_dt":  self.rat_dt}) # s --> ms
 
         nest.SetStatus(self.E_pop, "pref_dir_x", self.prefDirs_e[:, 0]);
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
@@ -351,9 +374,39 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
-    def setPlaceCurrentInput(self):
-        pass
 
+    def setPlaceCells(self):
+        '''
+        Generate place cells and connect them to grid cells. The wiring is
+        fixed, and there is no plasticity.
+        '''
+        if (self.no.N_place_cells != 0):
+            print "Setting up place cells"
+            self._loadRatVelocities()
+
+            boxSize = [self.no.arenaSize, self.no.arenaSize]
+            N_pc_size = int(np.sqrt(self.no.N_place_cells))
+            N = [N_pc_size, N_pc_size]
+            self.N_pc_created = N_pc_size**2
+            self.PCHelper = UniformBoxPlaceCells(boxSize, N,
+                    self.no.pc_max_rate, self.no.pc_field_std, random=False)
+
+            self.PC = nest.Create('place_cell_generator', self.N_pc_created,
+                    params={'rate'       : self.no.pc_max_rate,
+                            'field_size' : self.no.pc_field_std,
+                            'start'      : self.no.theta_start_t})
+            nest.SetStatus(self.PC, 'ctr_x', self.PCHelper.centers[:, 0])
+            nest.SetStatus(self.PC, 'ctr_y', self.PCHelper.centers[:, 1])
+
+            npos = int(self.no.time / self.rat_dt)
+            nest.SetStatus([self.PC[0]], params={
+                'rat_pos_x' : self.rat_pos_x[0:npos],
+                'rat_pos_y' : self.rat_pos_y[0:npos]})
+
+            # TODO: connections
+
+        else:
+            print "Warning: trying to set up place cells with N_place_cells == 0"
 
 
     ############################################################################ 

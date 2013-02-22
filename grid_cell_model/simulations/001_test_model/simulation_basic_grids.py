@@ -57,15 +57,14 @@ total_start_t = time.time()
 
 ei_net = NestGridCellNetwork(options, simulationOpts=None)
 
-#ei_net.uniformInhibition()
-#ei_net.setConstantCurrent()
-#ei_net.setStartCurrent()
-#ei_net.setThetaCurrentStimulation()
-#ei_net.setPlaceCurrentInput()
-
 const_v = [50.0, 0.0]
-ei_net.setConstantVelocityCurrent_e(const_v)
+#ei_net.setConstantVelocityCurrent_e(const_v)
 #ei_net.setVelocityCurrentInput_e()
+
+#ei_net.uniformInhibition()
+#ei_net.setStartCurrent()
+ei_net.setPlaceCells()
+
 
 duration=time.time()-start_time
 print "Network setup time:",duration,"seconds"
@@ -85,6 +84,7 @@ state_record_i = [ei_net.Ni_x/2 - 1, ei_net.Ni_y/2*ei_net.Ni_x + ei_net.Ni_x/2 -
 
 spikeMon_e = ei_net.getSpikeDetector("E")
 spikeMon_i = ei_net.getSpikeDetector("I")
+pc_spikemon = ei_net.getGenericSpikeDetector(ei_net.PC, "Place cells")
 
 stateMon_params = {
         'withtime' : True,
@@ -119,6 +119,9 @@ output_fname = "{0}/{1}job{2:05}_".format(options.output_dir, options.fileNamePr
 # Raster plot
 nest.raster_plot.from_device(spikeMon_e, hist=False)
 nest.raster_plot.from_device(spikeMon_i, hist=False)
+if (len(ei_net.PC) != 0):
+    nest.raster_plot.from_device(pc_spikemon, hist=False)
+    title('Place cells')
 
 events_e = nest.GetStatus(stateMon_e)[0]['events']
 events_i = nest.GetStatus(stateMon_i)[0]['events']
