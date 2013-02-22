@@ -30,6 +30,8 @@
 #include "universal_data_logger.h"
 #include "recordables_map.h"
 #include "normal_randomdev.h"
+
+#include "gridcells_names.h"
 #include "PulsatingCurrentGenerator.h"
 #include "VelocityInputGenerator.h"
 
@@ -104,47 +106,6 @@
 
 namespace nest
 {
-  namespace names
-  {
-    /**
-     * Add state and parameter names to the nest::names namespace
-     */
-    const Name E_AMPA("E_AMPA");
-    const Name E_NMDA("E_NMDA");
-    const Name E_GABA_A("E_GABA_A");
-    const Name tau_AMPA_fall("tau_AMPA_fall");
-    const Name tau_NMDA_rise("tau_NMDA_rise");
-    const Name tau_NMDA_fall("tau_NMDA_fall");
-    const Name tau_GABA_A_rise("tau_GABA_A_rise");
-    const Name tau_GABA_A_fall("tau_GABA_A_fall");
-    const Name E_AHP("E_AHP");
-    const Name g_AHP_max("g_AHP_max");
-    const Name tau_AHP("tau_AHP");
-    const Name g_AHP("g_AHP");
-    const Name g_AMPA("g_AMPA");
-    const Name g_NMDA("g_NMDA");
-    const Name g_NMDA_fraction("g_NMDA_fraction");
-    const Name g_GABA_A("g_GABA_A");
-    const Name I_stim("I_stim");
-    const Name V_clamp("V_clamp");
-    const Name I_clamp_AMPA("I_clamp_AMPA");
-    const Name I_clamp_NMDA("I_clamp_NMDA");
-    const Name I_clamp_GABA_A("I_clamp_GABA_A");
-    const Name I_const("I_const");
-    const Name I_ac_amp("I_ac_amp");
-    const Name I_ac_freq("I_ac_freq");
-    const Name I_ac_phase("I_ac_phase");
-    const Name I_ac_start_t("I_ac_start_t");
-    const Name I_noise_std("I_noise_std");
-    const Name I_noise_dt("I_noise_dt");
-    const Name rat_pos_x("rat_pos_x");
-    const Name rat_pos_y("rat_pos_y");
-    const Name rat_pos_dt("rat_pos_dt");
-    const Name pref_dir_x("pref_dir_x");
-    const Name pref_dir_y("pref_dir_y");
-    const Name velC("velC");
-  }
-
 
   /**
    * Function computing right-hand side of ODE for GSL solver.

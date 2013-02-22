@@ -25,10 +25,10 @@
 #include <vector>
 #include <iostream>
 
+#include "gridcells_definitions.h"
 #include "CurrentGenerator.h"
 #include "gridcells_exceptions.h"
 
-typedef std::vector<double> vecType;
 
 /**
  * Velocity inputs structure.
