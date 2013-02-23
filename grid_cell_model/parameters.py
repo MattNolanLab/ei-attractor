@@ -128,6 +128,7 @@ def getOptParser():
     optParser.add_option("--N_place_cells",     type="float",  help="Number of place cells connected to grid cells")
     optParser.add_option("--pc_max_rate",       type="float",  help="Place cell maximal firing rate (Hz)")
     optParser.add_option("--pc_field_std",      type="float",  help="Std. deviation of the Gaussian specifying the place field size (cm)")
+    optParser.add_option("--pc_conn_weight",    type="float",  help="Connection weight from each place to grid cells (nS)")
 
     optParser.add_option("--noise_sigma",       type="float",  help="Std. dev of neural noise (V)")
     optParser.add_option("--theta_noise_sigma", type="float",  help="Std. dev of theta stimulation noise (V)")

@@ -524,9 +524,13 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
         }
 
         // Process all incoming spikes
-        double AMPA_spike =  B_.spike_inputs_[AMPA_NMDA].get_value(lag);
-        S_.y_[S::G_AMPA]   += AMPA_spike;
-        S_.y_[S::G_NMDA]   += AMPA_spike * .01 * P.g_NMDA_fraction;
+        // There are two types of AMPA receptors: thos that produce AMPA+NMDA,
+        // and those that produce only AMPA conductances
+        S_.y_[S::G_AMPA]   += B_.spike_inputs_[AMPA].get_value(lag);
+
+        double AMPA_NMDA_spike =  B_.spike_inputs_[AMPA_NMDA].get_value(lag);
+        S_.y_[S::G_AMPA]   += AMPA_NMDA_spike;
+        S_.y_[S::G_NMDA]   += AMPA_NMDA_spike * .01 * P.g_NMDA_fraction;
         S_.y_[S::G_GABA_A] += B_.spike_inputs_[GABA_A].get_value(lag);
           
         // set new input current

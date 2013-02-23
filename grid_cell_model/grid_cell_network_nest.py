@@ -163,6 +163,8 @@ class NestGridCellNetwork(GridCellNetwork):
                 params={'receptor_type' : self.i_receptors['AMPA_NMDA']})
         nest.CopyModel('static_synapse', 'E_GABA_A',
                 params={'receptor_type' : self.e_receptors['GABA_A']})
+        nest.CopyModel('static_synapse', 'PC_AMPA',
+                params={'receptor_type' : self.e_receptors['AMPA']})
 
 
         # Connect E-->I and I-->E
@@ -355,6 +357,8 @@ class NestGridCellNetwork(GridCellNetwork):
         self.rat_pos_x = np.cumsum(np.array([vel[0]] * nVel)) * (self.rat_dt*1e-3)
         self.rat_pos_y = np.cumsum(np.array([vel[1]] * nVel)) * (self.rat_dt*1e-3)
 
+        self._ratVelocitiesLoaded = True # Force this velocities, not the animal
+
         # Load velocities into nest: they are all shared among all iaf_gridcells
         # nodes so only one neuron needs setting the actual values
         nest.SetStatus([self.E_pop[0]], {
@@ -404,6 +408,34 @@ class NestGridCellNetwork(GridCellNetwork):
                 'rat_pos_y' : self.rat_pos_y[0:npos]})
 
             # TODO: connections
+            # Here we extract connections from the PlaceCellInput class that was
+            # originaly used as a current input generator for place cell
+            # resetting mechanism. The output of this class perfectly matches
+            # how divergent connections from a single place cell should be
+            # mapped onto the twisted torus grid cell sheet
+
+            # how divergent the connections are, 3sigma rule --> division by 6.
+            connStdDev          = self.no.gridSep / 2. / 6.
+            pc_weight_threshold = 0.1
+
+            pc_input = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize,
+                    self.no.gridSep, [.0, .0], fieldSigma=connStdDev)
+            ctr_x = nest.GetStatus(self.PC, 'ctr_x')
+            ctr_y = nest.GetStatus(self.PC, 'ctr_y')
+            for pc_id in xrange(self.N_pc_created):
+                w = pc_input.getSheetInput(ctr_x[pc_id], ctr_y[pc_id]).flatten()
+                gt_th = w > pc_weight_threshold
+                post = np.array(self.E_pop)[gt_th]
+                w    = w[gt_th]
+                #print post, w
+                nest.DivergentConnect(
+                        [self.PC[pc_id]],
+                        list(post),
+                        weight=list(w * self.no.pc_conn_weight),
+                        delay=[self.no.delay] * len(w),
+                        model='PC_AMPA')
+
+
 
         else:
             print "Warning: trying to set up place cells with N_place_cells == 0"

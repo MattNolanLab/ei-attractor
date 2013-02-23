@@ -162,6 +162,7 @@ namespace nest
      */
     enum SynapseTypes {
         AMPA_NMDA = 0,
+        AMPA,
         //NMDA,
         GABA_A,
         SYNAPSE_TYPES_SIZE };
@@ -442,8 +443,9 @@ namespace nest
 
     DictionaryDatum receptor_type = new Dictionary();
   
+    (*receptor_type)["AMPA"]      = AMPA;
     (*receptor_type)["AMPA_NMDA"] = AMPA_NMDA;
-    (*receptor_type)["GABA_A"] = GABA_A;
+    (*receptor_type)["GABA_A"]    = GABA_A;
   
     (*d)["receptor_types"] = receptor_type;
     (*d)[names::recordables] = recordablesMap_.get_list();

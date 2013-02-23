@@ -38,7 +38,7 @@ class PlaceCellInput(object):
         Create a place cell input template. Here we work with a twisted torus
         topology with dimensions X x Y = 1 x sqrt(3)/2.
         Ne_x/y      size of the neural sheet
-        arenaSize   Arena diameter (cm)
+        arenaSize   Arena radius (cm)
         gridSep     Distance between grid field peaks (cm)
         gridCenter  Offset of the center of grid fields (cm)
         fieldSigma  Sigma of the gaussians used to produce the template (cm)
@@ -72,6 +72,7 @@ class PlaceCellInput(object):
         arena2 = np.exp(-( (X_mod - shift_x)**2 + (Y_mod-shift_y)**2)/2/self.sigma**2)
 
         self.arena = arena1 + arena2
+        self.arena = self.arena / np.max(self.arena)
         self.X= X
         self.Y= Y
 
@@ -79,7 +80,7 @@ class PlaceCellInput(object):
     def getSheetInput(self, pos_x, pos_y):
         '''
         Return the sheet input for a given position of the animal.
-        Rows are the X dimension.
+        Rows are the Y dimension.
         '''
         x = (pos_x - self.arenaSize)/self.dx
         y = (pos_y - self.arenaSize)/self.dx

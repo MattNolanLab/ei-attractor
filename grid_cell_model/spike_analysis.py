@@ -19,6 +19,9 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
+import scipy
+
+from scipy import weave
 
 
 def firingRate(spikeTrain, tstart, tend):
@@ -81,4 +84,64 @@ def firingRateSlidingWindow(spikeTrain, tstart, tend, dt, winLen):
     #lg.debug('End firing rate processing')
     return (r/winLen, times)
 
+
+def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
+    '''
+    Compute a firing rate with a sliding window from a tuple of spike data:
+    spikes is a tuple(n_id, times), in which n_id is a list/array of neuron id
+    and times is a list/array of spike times
+
+    spikes  A pair (n_id, spikes)
+    N       Total number of neurons
+    tstart  When the firing rate will start (ms)
+    tend    End time of firing rate (ms)
+    dt      Sliding window dt - not related to simulation time (ms)
+    winLen  Length of the sliding window (ms)
+
+    return  a n array of shape (N, int((tend-tstart)/dt)+1
+    '''
+    print "Start sliding firing rate.."
+    
+    szRate = int((tend-tstart)/dt)+1
+    n_ids       = np.array(spikes[0])
+    spikeTimes  = np.array(spikes[1])
+    lenSpikes   = len(spikeTimes)
+    bitSpikes   = np.zeros((N, szRate))
+    fr          = np.zeros((N, szRate))
+    dtWlen      = int(winLen/dt)
+    times       = np.arange(tstart, tend+dt, dt)
+
+    print max(n_ids)
+
+    code = """
+        for (int i = 0; i < lenSpikes; i++)
+        {
+            int spikeSteps = (spikeTimes(i) - tstart) / dt;
+            int n_id = n_ids(i);
+            bitSpikes(n_id, spikeSteps) += 1;
+        }
+
+        for (int n_id = 0; n_id < N; n_id++)
+            for (int t = 0; t < szRate; t++)
+            {
+                fr(n_id, t) = .0;
+                for (int s = 0; s < dtWlen; s++)
+                    if ((t+s) < szRate)
+                        fr(n_id, t) += bitSpikes(n_id, t+s);
+            }
+        """
+
+    err = weave.inline(code,
+            ['N', 'szRate', 'dtWlen', 'lenSpikes', 'n_ids', 'spikeTimes',
+                'tstart', 'dt', 'bitSpikes', 'fr'],
+            type_converters=weave.converters.blitz,
+            compiler='gcc',
+            extra_compile_args=['-O3'],
+            verbose=2)
+
+    print "End sliding firing rate"
+
+    return fr/(winLen*1e-3), times
+
+        
 

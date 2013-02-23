@@ -29,13 +29,13 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 10e3  # ms
+parameters['time']              = 2e3  # ms
 parameters['nthreads']          = 8
 
 parameters['output_dir']        = 'output_local'
 
-parameters['Ne']                = 10
-parameters['Ni']                = 10
+parameters['Ne']                = 34
+parameters['Ni']                = 34
 
 parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70.0      # cm, grid field inter-peak distance

@@ -116,6 +116,7 @@ defaultParameters = {
         "N_place_cells"         :   0,
         "pc_max_rate"           :   20.0,         # Hz
         "pc_field_std"          :   20.0,         # cm
+        "pc_conn_weight"        :   1.,          # nS
         
         "noise_sigma"           :   200.0,        # pA
         "sigma_init_cond"       :   10,           # mV
