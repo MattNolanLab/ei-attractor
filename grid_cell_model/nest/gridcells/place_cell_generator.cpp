@@ -182,7 +182,7 @@ void place_cell_generator::update(Time const & T, const long_t from, const long_
             // positional vector
             if (now >= next_pos_step) {
                 next_pos_step = now + sim_dt_per_pos_dt;
-                if (pos_it < P_.rat_pos_x.size())
+                if (pos_it < P_.rat_pos_x.size() - 1)
                     pos_it++;
                 setFiringRate();
             }

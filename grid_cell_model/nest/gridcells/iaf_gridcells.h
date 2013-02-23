@@ -320,6 +320,7 @@ namespace nest
       double_t    dydt_[STATE_VEC_SIZE];  //!<  derivatives
       int_t       r_;                  //!< number of refractory steps remaining
 
+      State_();
       State_(const Parameters &);      //!< Default initialization
       State_(const State_ &);
       State_& operator = (const State_ &);

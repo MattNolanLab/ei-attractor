@@ -173,6 +173,13 @@ void nest::iaf_gridcells::Parameters::update_clamp_potentials()
     E_clamp_GABA_A  = E_GABA_A - V_clamp;
 }
 
+nest::iaf_gridcells::State_::State_()
+    : r_(0)
+{
+    for ( size_t i = 0; i <STATE_VEC_SIZE; ++i )
+        y_[i] = 0;
+}
+
 nest::iaf_gridcells::State_::State_(const Parameters &p)
     : r_(0)
 {
@@ -499,7 +506,14 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
 
             // check for unreasonable values; we allow V_M to explode
             if (S_.y_[State_::V_M] < -1e3)
+            {
+                std::cout << "V_m: " << S_.y_[State_::V_M] << std::endl;
                 throw NumericalInstability(get_name());
+            }
+            else
+            {
+                std::cout << "V_m: " << S_.y_[State_::V_M] << std::endl;
+            }
 
 
             // Spikes

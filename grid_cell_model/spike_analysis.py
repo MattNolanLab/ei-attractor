@@ -102,7 +102,7 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
     '''
     print "Start sliding firing rate.."
     
-    szRate = int((tend-tstart)/dt)+1
+    szRate      = int((tend-tstart)/dt)+1
     n_ids       = np.array(spikes[0])
     spikeTimes  = np.array(spikes[1])
     lenSpikes   = len(spikeTimes)
@@ -111,14 +111,17 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
     dtWlen      = int(winLen/dt)
     times       = np.arange(tstart, tend+dt, dt)
 
-    print max(n_ids)
+    print np.max(n_ids)
 
     code = """
         for (int i = 0; i < lenSpikes; i++)
         {
             int spikeSteps = (spikeTimes(i) - tstart) / dt;
-            int n_id = n_ids(i);
-            bitSpikes(n_id, spikeSteps) += 1;
+            if (spikeSteps >= 0)
+            {
+                int n_id = n_ids(i);
+                bitSpikes(n_id, spikeSteps) += 1;
+            }
         }
 
         for (int n_id = 0; n_id < N; n_id++)
@@ -147,8 +150,11 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
 
 
 def torusPopulationVector(spikes, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=1.0):
-        F, tsteps = slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen)
-        return torusPopulationVectorFromRates((F, tsteps), sheetSize)
+    N = sheetSize[0]*sheetSize[1]
+    F, tsteps = slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen)
+
+    print "exiting torusPopulationVector"
+    return torusPopulationVectorFromRates((F, tsteps), sheetSize)
 
 
 def torusPopulationVectorFromRates(FR, sheetSize):

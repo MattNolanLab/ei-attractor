@@ -41,7 +41,8 @@ libgridcellsmodule_la_SOURCES=  $(gridcellsmodule_la_SOURCES)
 MAKEFLAGS= @MAKE_FLAGS@
 
 AM_CPPFLAGS= @NEST_CPPFLAGS@ \
-             @INCLTDL@      
+             @INCLTDL@      \
+			 -g
 
 .PHONY: install-slidoc
 

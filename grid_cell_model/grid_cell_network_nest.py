@@ -35,6 +35,14 @@ import random
 import nest
 
 
+class PosInputs(object):
+    def __init__(self, pos_x, pos_y, pos_dt):
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.pos_dt = pos_dt
+
+
+
 class NestGridCellNetwork(GridCellNetwork):
     def uniformDistrib(self, mean, spread, N):
         return mean - spread/2.0 * rand(N)
@@ -77,6 +85,7 @@ class NestGridCellNetwork(GridCellNetwork):
         self.stateMon_i = None
 
         self._ratVelocitiesLoaded = False
+        self._placeCellsLoaded = False
 
         self.PC = []
 
@@ -378,15 +387,25 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
+        self.setPlaceCells(start=0.0, end=self.no.theta_start_t,
+                posIn=PosInputs([self.no.gridSep/4], [.0], self.rat_dt))
 
-    def setPlaceCells(self):
+
+    def setPlaceCells(self, start=None, end=None, posIn=None):
         '''
         Generate place cells and connect them to grid cells. The wiring is
         fixed, and there is no plasticity.
         '''
+        if start is None:
+            start = self.no.theta_start_t
+        if end is None:
+            end = self.no.time
+        if (posIn is None):
+            self._loadRatVelocities()
+            posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
+
         if (self.no.N_place_cells != 0):
             print "Setting up place cells"
-            self._loadRatVelocities()
 
             boxSize = [self.no.arenaSize, self.no.arenaSize]
             N_pc_size = int(np.sqrt(self.no.N_place_cells))
@@ -398,16 +417,26 @@ class NestGridCellNetwork(GridCellNetwork):
             self.PC = nest.Create('place_cell_generator', self.N_pc_created,
                     params={'rate'       : self.no.pc_max_rate,
                             'field_size' : self.no.pc_field_std,
-                            'start'      : self.no.theta_start_t})
+                            'start'      : start,
+                            'stop'       : end})
             nest.SetStatus(self.PC, 'ctr_x', self.PCHelper.centers[:, 0])
             nest.SetStatus(self.PC, 'ctr_y', self.PCHelper.centers[:, 1])
 
+            #print "ctr_x", self.PCHelper.centers[:, 0]
+            #print "ctr_y", self.PCHelper.centers[:, 1]
+
             npos = int(self.no.time / self.rat_dt)
             nest.SetStatus([self.PC[0]], params={
-                'rat_pos_x' : self.rat_pos_x[0:npos],
-                'rat_pos_y' : self.rat_pos_y[0:npos]})
+                'rat_pos_x' : posIn.pos_x[0:npos],
+                'rat_pos_y' : posIn.pos_y[0:npos],
+                'rat_pos_dt': posIn.pos_dt})
 
-            # TODO: connections
+            test_x = nest.GetStatus([self.PC[0]], 'rat_pos_x')
+            test_y = nest.GetStatus([self.PC[0]], 'rat_pos_y')
+            #print test_x, test_y
+
+
+            # Connections
             # Here we extract connections from the PlaceCellInput class that was
             # originaly used as a current input generator for place cell
             # resetting mechanism. The output of this class perfectly matches
@@ -422,6 +451,7 @@ class NestGridCellNetwork(GridCellNetwork):
                     self.no.gridSep, [.0, .0], fieldSigma=connStdDev)
             ctr_x = nest.GetStatus(self.PC, 'ctr_x')
             ctr_y = nest.GetStatus(self.PC, 'ctr_y')
+            #print ctr_x, ctr_y
             for pc_id in xrange(self.N_pc_created):
                 w = pc_input.getSheetInput(ctr_x[pc_id], ctr_y[pc_id]).flatten()
                 gt_th = w > pc_weight_threshold
@@ -439,6 +469,8 @@ class NestGridCellNetwork(GridCellNetwork):
 
         else:
             print "Warning: trying to set up place cells with N_place_cells == 0"
+
+        self._placeCellsLoaded = True
 
 
     ############################################################################ 

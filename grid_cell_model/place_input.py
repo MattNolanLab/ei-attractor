@@ -90,15 +90,16 @@ class PlaceCellInput(object):
 
 
 if __name__=="__main__":
-    Ne_x = 68
-    Ne_y = 58
+    Ne_x = 34
+    Ne_y = 30
     arenaSize = 180.
     gridsep = 70            # cm
     gridCenter = [0, 0]
     
     pc = PlaceCellInput(Ne_x, Ne_y, arenaSize, gridsep, gridCenter)
-    #pcolormesh(pc.X, pc.Y, pc.arena); axis('equal'); show()
-    #pcolormesh(pc.arena); axis('equal'); show()
+    pcolormesh(pc.X, pc.Y, pc.arena); axis('equal'); show()
+    pcolormesh(pc.arena); axis('equal'); show()
+    pcolormesh(pc.getSheetInput(.0, .0)); show()
     
     
     vel_fname = '../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
