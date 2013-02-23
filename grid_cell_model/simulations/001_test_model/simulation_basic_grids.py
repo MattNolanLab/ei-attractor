@@ -63,7 +63,7 @@ ei_net.setConstantVelocityCurrent_e(const_v)
 
 #ei_net.uniformInhibition()
 #ei_net.setStartCurrent()
-ei_net.setPlaceCells()
+#ei_net.setPlaceCells()
 
 
 duration=time.time()-start_time
@@ -118,7 +118,7 @@ output_fname = "{0}/{1}job{2:05}_".format(options.output_dir, options.fileNamePr
 F_tstart = 0.0
 F_tend = options.time
 F_dt = 20.0
-F_winLen = 200.0
+F_winLen = 500.0
 senders = nest.GetStatus(spikeMon_e)[0]['events']['senders'] - ei_net.E_pop[0]
 spikeTimes   = nest.GetStatus(spikeMon_e)[0]['events']['times']
 Fe, Fe_t = slidingFiringRateTuple((senders, spikeTimes), ei_net.net_Ne,
@@ -129,6 +129,15 @@ spikeTimes   = nest.GetStatus(spikeMon_i)[0]['events']['times']
 Fi, Fi_t = slidingFiringRateTuple((senders, spikeTimes), ei_net.net_Ni,
         F_tstart, F_tend, F_dt, F_winLen)
 
+
+# Print a plot of bump position
+(pos, bumpPos_times) = torusPopulationVectorFromRates((Fe, Fe_t), [ei_net.Ne_y,
+    ei_net.Ne_x])
+figure(figsize=figSize)
+plot(bumpPos_times, pos)
+xlabel('Time (s)')
+ylabel('Bump position (neurons)')
+ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
 
 
 # Raster plot

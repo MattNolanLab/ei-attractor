@@ -89,19 +89,7 @@ class ExtendedSpikeMonitor(SpikeMonitor):
 
     def torusPopulationVector(self, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=1.0):
         (F, tsteps) = self.getFiringRate(tstart, tend, dt, winLen)
-
-        sheetSize_x = sheetSize[0]
-        sheetSize_y = sheetSize[1]
-        
-        P = np.ndarray((len(tsteps), 2), dtype=complex)
-        X, Y = np.meshgrid(np.arange(sheetSize_x), np.arange(sheetSize_y))
-        X = np.exp(1j*(X - sheetSize_x/2)/sheetSize_x*2*np.pi).ravel()
-        Y = np.exp(1j*(Y - sheetSize_y/2)/sheetSize_y*2*np.pi).ravel()
-        for t_it in xrange(len(tsteps)):
-            P[t_it, 0] = np.dot(F[:, t_it], X)
-            P[t_it, 1] = np.dot(F[:, t_it], Y)
-
-        return (np.angle(P)/2/np.pi*sheetSize, tsteps)
+        return spike_analysis.torusPopulationVectorFromRates((F, tsteps), sheetSize)
 
 
 
