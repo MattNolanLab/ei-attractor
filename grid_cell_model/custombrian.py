@@ -49,7 +49,7 @@ class ExtendedSpikeMonitor(SpikeMonitor):
         length is int((tend-tstart)/dt)+1 long.
         dt does not have to be relevant to simulation dt at all
         '''
-        return spike_analysis.firingRateSlidingWindow(tstart, tend, dt, winLen)
+        return spike_analysis.firingRateSlidingWindow(self.aspikes, tstart, tend, dt, winLen)
 
 
 
