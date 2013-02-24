@@ -47,36 +47,34 @@ class PulsatingCurrentGenerator : public CurrentGenerator {
     PulsatingCurrentGenerator(double dt, double startT, double startWhen, double A, double f, double phi) :
         CurrentGenerator(dt, startT), startWhen(startWhen), A(A), f(f*1e-3), phi(phi)
     {
-        currTime = startT;
         currSteps = 0;
-        I = getCurrentAtTime(startT);
     }
 
 
     double getCurrent() {
-        return I;
+        double currTime = startT + currSteps*dt;
+        if (currTime < startWhen) {
+            return .0;
+        } else {
+            return getCurrentAtTime(currTime);
+        }
     }
 
 
     /** Advance one time step **/
     void advance() {
         currSteps++;
-        currTime = startT + currSteps*dt;
-        if (currTime < startWhen) {
-            I = .0;
-        } else {
-            I =  getCurrentAtTime(currTime);
-        }
     }
 
 
     void reset() {
-        currTime = startT;
         currSteps = 0;
-        I = getCurrentAtTime(startT);
     }
 
 
+    void printCurrSteps() {
+        std::cout << "currSteps: " << currSteps << std::endl;
+    }
 
     private:
 
@@ -86,16 +84,14 @@ class PulsatingCurrentGenerator : public CurrentGenerator {
      * @param t Specified time.
      */
     double getCurrentAtTime(double t) {
-        return .5 * A * (1. + sin(2. * M_PI * f * currTime + phi));
+        return .5 * A * (1. + sin(2. * M_PI * f * t + phi));
     }
 
     double A;           //!< Amplitude (max) (pA)
     double f;           //!< Frequency (1/msec) Different to what is in the constructor
     double phi;         //!< Phase (rad)
 
-    double currTime;    //!< Current simulation time (ms)
-    double currSteps;   //!< Number of steps from startT
-    double I;           //!< Current current (pA)
+    long   currSteps;   //!< Number of steps from startT
 
     double startWhen;   //!< When to start emitting pulsating current (ms)
 };
