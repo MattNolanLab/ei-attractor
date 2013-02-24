@@ -108,24 +108,24 @@ int nest::iaf_gridcells_dynamics(double, const double y[], double f[], void* pno
     
     const double_t I_spike   = node.P.Delta_T * std::exp((V - node.P.V_th) / node.P.Delta_T);
 
-    if (node.get_gid() == 24)
-    {
-        std::cout << "dynamics: " << std::endl <<
-            node.P.g_L << std::endl <<
-            V << std::endl <<
-            node.P.E_L << std::endl <<
-            I_spike << std::endl <<
-            I_AHP << std::endl <<
-            I_syn_AMPA << std::endl <<
-            I_syn_NMDA << std::endl <<
-            I_syn_GABA_A << std::endl <<
-            node.B_.I_stim_ << std::endl <<
-            node.P.I_const << std::endl <<
-            node.B_.I_theta << std::endl <<
-            node.B_.I_vel << std::endl <<
-            node.B_.I_noise << std::endl <<
-            node.P.C_m << std::endl;
-    }
+    //if (node.get_gid() == 24)
+    //{
+    //    std::cout << "dynamics: " << std::endl <<
+    //        node.P.g_L << std::endl <<
+    //        V << std::endl <<
+    //        node.P.E_L << std::endl <<
+    //        I_spike << std::endl <<
+    //        I_AHP << std::endl <<
+    //        I_syn_AMPA << std::endl <<
+    //        I_syn_NMDA << std::endl <<
+    //        I_syn_GABA_A << std::endl <<
+    //        node.B_.I_stim_ << std::endl <<
+    //        node.P.I_const << std::endl <<
+    //        node.B_.I_theta << std::endl <<
+    //        node.B_.I_vel << std::endl <<
+    //        node.B_.I_noise << std::endl <<
+    //        node.P.C_m << std::endl;
+    //}
     
     // dv/dt
     f[S::V_M  ] =
@@ -177,6 +177,7 @@ nest::iaf_gridcells::Parameters::Parameters()
       I_ac_start_t    (   0.0 ), // ms
       I_noise_std     (   0.0 ), // pA
       I_noise_dt      (   1.0 ), // ms
+      velC            (   0.0 ), // no units
       
       thetaGen(Time::get_resolution().get_ms(), 0.0, I_ac_start_t, I_ac_amp, I_ac_freq, I_ac_phase),
       velGen(Time::get_resolution().get_ms(), 0.0, I_ac_start_t, PrefDirs(.0, .0))
@@ -196,7 +197,6 @@ void nest::iaf_gridcells::Parameters::update_clamp_potentials()
 nest::iaf_gridcells::State_::State_(const Parameters &p)
     : r_(0)
 {
-    std::cout << "State_::State_(const Parameters&)" << std::endl;
     y_[V_M] = p.E_L;
     dydt_[V_M] = 0;
     for ( size_t i = 1; i <STATE_VEC_SIZE; ++i )
@@ -209,7 +209,6 @@ nest::iaf_gridcells::State_::State_(const Parameters &p)
 nest::iaf_gridcells::State_::State_(const State_ &s)
     : r_(s.r_)
 {
-    //std::cout << "State_::State_(const State_&)" << std::endl;
     for ( size_t i = 0; i < STATE_VEC_SIZE; ++i )
     {
         y_[i] = s.y_[i];
@@ -337,7 +336,6 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
     updated = updateValue<vecType>(d, names::rat_pos_y,  pos_y) || updated;
     updated = updateValue<double>( d, names::rat_pos_dt, pos_dt) || updated;
     if (updated) {
-        std::cout << "updating " << std::endl;
         velGen.setVelocityInputs(VelocityInputs(pos_x, pos_y, pos_dt));
     }
 
@@ -405,7 +403,6 @@ void nest::iaf_gridcells::State_::set(const DictionaryDatum &d, const Parameters
     if ( y_[G_AMPA] < 0 || y_[G_NMDA] < 0 || y_[G_GABA_A] < 0 )
         throw BadProperty("Conductances must not be negative.");
 
-    //std::cout << "V_m:" << y_[V_M] << std::endl;
 }
 
 nest::iaf_gridcells::Buffers_::Buffers_(iaf_gridcells &n)
@@ -431,7 +428,6 @@ nest::iaf_gridcells::Buffers_::Buffers_(const Buffers_ &, iaf_gridcells &n)
 nest::iaf_gridcells::iaf_gridcells()
   : Archiving_Node(), P(), S_(P), B_(*this)
 {
-    std::cout << "iaf_gridcells::iaf_gridcells()" << std::endl;
     recordablesMap_.create();
 }
 
@@ -515,25 +511,6 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
         // numerical integration using Forward Euler: should be enough for our purpose
         while (t < B_.step_)
         {
-            if (get_gid() == 24)
-            {
-                if (S_.y_[State_::V_M] < -1e3 || S_.y_[State_::V_M] > 1e3 )
-                {
-                    std::cout << "now: " << now << std::endl;
-                    std::cout << "  V_m: " << S_.y_[State_::V_M] << std::endl;
-                    std::cout << "  gid: " << get_gid() << std::endl;
-                    std::cout << "  dydt_[V_M]: " << S_.dydt_[State_::V_M] << std::endl;
-                    throw NumericalInstability(get_name());
-                }
-                else
-                {
-                    std::cout << "now: " << now << std::endl;
-                    std::cout << "  V_m: " << S_.y_[State_::V_M] << std::endl;
-                    std::cout << "  gid: " << get_gid() << std::endl;
-                    std::cout << "  dydt_[V_M]: " << S_.dydt_[State_::V_M] << std::endl;
-                }
-            }
-
             const int status = iaf_gridcells_dynamics(
                     t,
                     S_.y_,

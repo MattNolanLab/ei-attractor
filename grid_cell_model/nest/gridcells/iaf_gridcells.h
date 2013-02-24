@@ -467,13 +467,6 @@ namespace nest
     // if we get here, temporaries contain consistent set of properties
     P = ptmp;
     S_ = stmp;
-
-    if (get_gid() == 24)
-    {
-        std::cout << "iaf_gridcells::set_status(): V_m after stmp.set(): " << S_.y_[State_::V_M] << std::endl;
-        std::cout << "iaf_gridcells::set_status(): dV_m after stmp.set(): " << S_.dydt_[State_::V_M] << std::endl;
-    }
-
   }
   
 } // namespace

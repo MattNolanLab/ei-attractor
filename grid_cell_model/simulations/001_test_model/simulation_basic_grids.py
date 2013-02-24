@@ -129,21 +129,21 @@ spikeTimes_i   = nest.GetStatus(spikeMon_i)[0]['events']['times']
 Fi, Fi_t = slidingFiringRateTuple((senders_i, spikeTimes_i), ei_net.net_Ni,
         F_tstart, F_tend, F_dt, F_winLen)
 
-#senders_pc     = nest.GetStatus(pc_spikemon)[0]['events']['senders'] - ei_net.PC[0]
-#spikeTimes_pc  = nest.GetStatus(pc_spikemon)[0]['events']['times']
-#Fpc, Fpc_t = slidingFiringRateTuple((senders_pc, spikeTimes_pc),
-#        ei_net.N_pc_created, 0.0, ei_net.no.theta_start_t, F_dt, F_winLen)
-#
-#
-### Firing rate of place cells on the twisted torus
-#figure()
-#pcolormesh(np.reshape(Fpc[:, len(Fpc_t)/2], (np.sqrt(ei_net.N_pc_created),
-#    np.sqrt(ei_net.N_pc_created))))
-#xlabel('PC neuron no.')
-#ylabel('PC neuron no.')
-#colorbar()
-#axis('equal')
-#title('PC firing rates')
+senders_pc     = nest.GetStatus(pc_spikemon)[0]['events']['senders'] - ei_net.PC[0]
+spikeTimes_pc  = nest.GetStatus(pc_spikemon)[0]['events']['times']
+Fpc, Fpc_t = slidingFiringRateTuple((senders_pc, spikeTimes_pc),
+        ei_net.N_pc_created, 0.0, ei_net.no.theta_start_t, F_dt, F_winLen)
+
+
+## Firing rate of place cells on the twisted torus
+figure()
+pcolormesh(np.reshape(Fpc[:, len(Fpc_t)/2], (np.sqrt(ei_net.N_pc_created),
+    np.sqrt(ei_net.N_pc_created))))
+xlabel('PC neuron no.')
+ylabel('PC neuron no.')
+colorbar()
+axis('equal')
+title('PC firing rates')
 
 
 
