@@ -107,6 +107,25 @@ int nest::iaf_gridcells_dynamics(double, const double y[], double f[], void* pno
     const double_t I_syn_GABA_A = g_GABA_A * (V - node.P.E_GABA_A);
     
     const double_t I_spike   = node.P.Delta_T * std::exp((V - node.P.V_th) / node.P.Delta_T);
+
+    if (node.get_gid() == 24)
+    {
+        std::cout << "dynamics: " << std::endl <<
+            node.P.g_L << std::endl <<
+            V << std::endl <<
+            node.P.E_L << std::endl <<
+            I_spike << std::endl <<
+            I_AHP << std::endl <<
+            I_syn_AMPA << std::endl <<
+            I_syn_NMDA << std::endl <<
+            I_syn_GABA_A << std::endl <<
+            node.B_.I_stim_ << std::endl <<
+            node.P.I_const << std::endl <<
+            node.B_.I_theta << std::endl <<
+            node.B_.I_vel << std::endl <<
+            node.B_.I_noise << std::endl <<
+            node.P.C_m << std::endl;
+    }
     
     // dv/dt
     f[S::V_M  ] =
@@ -173,26 +192,29 @@ void nest::iaf_gridcells::Parameters::update_clamp_potentials()
     E_clamp_GABA_A  = E_GABA_A - V_clamp;
 }
 
-nest::iaf_gridcells::State_::State_()
-    : r_(0)
-{
-    for ( size_t i = 0; i <STATE_VEC_SIZE; ++i )
-        y_[i] = 0;
-}
 
 nest::iaf_gridcells::State_::State_(const Parameters &p)
     : r_(0)
 {
-    y_[0] = p.E_L;
+    std::cout << "State_::State_(const Parameters&)" << std::endl;
+    y_[V_M] = p.E_L;
+    dydt_[V_M] = 0;
     for ( size_t i = 1; i <STATE_VEC_SIZE; ++i )
+    {
         y_[i] = 0;
+        dydt_[i] = 0;
+    }
 }
 
 nest::iaf_gridcells::State_::State_(const State_ &s)
     : r_(s.r_)
 {
+    //std::cout << "State_::State_(const State_&)" << std::endl;
     for ( size_t i = 0; i < STATE_VEC_SIZE; ++i )
+    {
         y_[i] = s.y_[i];
+        dydt_[i] = s.dydt_[i];
+    }
 }
 
 nest::iaf_gridcells::State_& nest::iaf_gridcells::State_::operator=(const State_ &s)
@@ -200,7 +222,10 @@ nest::iaf_gridcells::State_& nest::iaf_gridcells::State_::operator=(const State_
     assert(this != &s);  // would be bad logical error in program
     
     for ( size_t i = 0; i < STATE_VEC_SIZE; ++i )
+    {
         y_[i] = s.y_[i];
+        dydt_[i] = s.dydt_[i];
+    }
     r_ = s.r_;
     return *this;
 }
@@ -379,6 +404,8 @@ void nest::iaf_gridcells::State_::set(const DictionaryDatum &d, const Parameters
 
     if ( y_[G_AMPA] < 0 || y_[G_NMDA] < 0 || y_[G_GABA_A] < 0 )
         throw BadProperty("Conductances must not be negative.");
+
+    //std::cout << "V_m:" << y_[V_M] << std::endl;
 }
 
 nest::iaf_gridcells::Buffers_::Buffers_(iaf_gridcells &n)
@@ -404,6 +431,7 @@ nest::iaf_gridcells::Buffers_::Buffers_(const Buffers_ &, iaf_gridcells &n)
 nest::iaf_gridcells::iaf_gridcells()
   : Archiving_Node(), P(), S_(P), B_(*this)
 {
+    std::cout << "iaf_gridcells::iaf_gridcells()" << std::endl;
     recordablesMap_.create();
 }
 
@@ -451,6 +479,7 @@ void nest::iaf_gridcells::init_buffers_()
     B_.I_stim_ = .0;
     B_.I_noise = .0;
     B_.I_theta = .0;
+    B_.I_vel   = .0;
 }
 
 void nest::iaf_gridcells::calibrate()
@@ -458,6 +487,7 @@ void nest::iaf_gridcells::calibrate()
     B_.logger_.init();  // ensures initialization in case mm connected after Simulate
     V_.RefractoryCounts_ = Time(Time::ms(P.t_ref)).get_steps();
     assert(V_.RefractoryCounts_ >= 0);  // since t_ref >= 0, this can only fail in error
+    //S_.y_[State_::V_M] = 0;
 }
 
 /* ---------------------------------------------------------------- 
@@ -485,6 +515,25 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
         // numerical integration using Forward Euler: should be enough for our purpose
         while (t < B_.step_)
         {
+            if (get_gid() == 24)
+            {
+                if (S_.y_[State_::V_M] < -1e3 || S_.y_[State_::V_M] > 1e3 )
+                {
+                    std::cout << "now: " << now << std::endl;
+                    std::cout << "  V_m: " << S_.y_[State_::V_M] << std::endl;
+                    std::cout << "  gid: " << get_gid() << std::endl;
+                    std::cout << "  dydt_[V_M]: " << S_.dydt_[State_::V_M] << std::endl;
+                    throw NumericalInstability(get_name());
+                }
+                else
+                {
+                    std::cout << "now: " << now << std::endl;
+                    std::cout << "  V_m: " << S_.y_[State_::V_M] << std::endl;
+                    std::cout << "  gid: " << get_gid() << std::endl;
+                    std::cout << "  dydt_[V_M]: " << S_.dydt_[State_::V_M] << std::endl;
+                }
+            }
+
             const int status = iaf_gridcells_dynamics(
                     t,
                     S_.y_,
@@ -492,6 +541,9 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
                     reinterpret_cast<void *>(this));
 
             //assert(S_.y_[S::G_GABA_A] >= 0);
+
+            // check for unreasonable values; we allow V_M to explode
+
 
             // Integrate, forward Euler
             for (int i = 0; i < S::INTEG_SIZE; i++)
@@ -503,17 +555,6 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
             if ( status != GSL_SUCCESS )
                 throw GSLSolverFailure(get_name(), status);
 
-
-            // check for unreasonable values; we allow V_M to explode
-            if (S_.y_[State_::V_M] < -1e3)
-            {
-                std::cout << "V_m: " << S_.y_[State_::V_M] << std::endl;
-                throw NumericalInstability(get_name());
-            }
-            else
-            {
-                std::cout << "V_m: " << S_.y_[State_::V_M] << std::endl;
-            }
 
 
             // Spikes

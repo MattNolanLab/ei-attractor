@@ -159,7 +159,8 @@ class VelocityInputGenerator : public CurrentGenerator {
     double getCurrent() {
 
         if (currT >= genStart && velInputIt < velInputs.getXSize()
-                && velInputIt < velInputs.getYSize()) {
+                && velInputIt < velInputs.getYSize())
+        {
             double x = velInputs.getVelX()[velInputIt] * prefDirs.x;
             double y = velInputs.getVelY()[velInputIt] * prefDirs.y;
             return x + y;

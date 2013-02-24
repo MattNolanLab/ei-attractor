@@ -320,7 +320,6 @@ namespace nest
       double_t    dydt_[STATE_VEC_SIZE];  //!<  derivatives
       int_t       r_;                  //!< number of refractory steps remaining
 
-      State_();
       State_(const Parameters &);      //!< Default initialization
       State_(const State_ &);
       State_& operator = (const State_ &);
@@ -459,7 +458,6 @@ namespace nest
     ptmp.set(d);          // throws if BadProperty
     State_     stmp = S_; // temporary copy in case of errors
     stmp.set(d, ptmp);    // throws if BadProperty
-
     // We now know that (ptmp, stmp) are consistent. We do not 
     // write them back to (P, S_) before we are also sure that 
     // the properties to be set in the parent class are internally 
@@ -469,6 +467,13 @@ namespace nest
     // if we get here, temporaries contain consistent set of properties
     P = ptmp;
     S_ = stmp;
+
+    if (get_gid() == 24)
+    {
+        std::cout << "iaf_gridcells::set_status(): V_m after stmp.set(): " << S_.y_[State_::V_M] << std::endl;
+        std::cout << "iaf_gridcells::set_status(): dV_m after stmp.set(): " << S_.dydt_[State_::V_M] << std::endl;
+    }
+
   }
   
 } // namespace
