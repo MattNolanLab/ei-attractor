@@ -29,7 +29,7 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 5e3  # ms
+parameters['time']              = 10e3  # ms
 parameters['nthreads']          = 8
 
 parameters['output_dir']        = 'output_local'
@@ -46,7 +46,7 @@ startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'valgrind --track-origins=yes python2.6 simulation_basic_grids.py'
+programName         = 'python2.6 simulation_basic_grids.py'
 blocking            = True
 
 # Cluster parameters

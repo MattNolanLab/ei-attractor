@@ -111,13 +111,16 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
     dtWlen      = int(winLen/dt)
     times       = np.arange(tstart, tend+dt, dt)
 
-    print np.max(n_ids)
+    print "max(n_ids): ", np.max(n_ids)
+    print 'szRate: ', szRate
+    print 'N: ', N
+    print 'dtWlen: ', dtWlen
 
     code = """
         for (int i = 0; i < lenSpikes; i++)
         {
             int spikeSteps = (spikeTimes(i) - tstart) / dt;
-            if (spikeSteps >= 0)
+            if (spikeSteps >= 0 && spikeSteps < szRate)
             {
                 int n_id = n_ids(i);
                 bitSpikes(n_id, spikeSteps) += 1;

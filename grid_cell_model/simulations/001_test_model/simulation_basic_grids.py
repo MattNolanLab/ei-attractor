@@ -132,52 +132,9 @@ Fi, Fi_t = slidingFiringRateTuple((senders_i, spikeTimes_i), ei_net.net_Ni,
 senders_pc     = nest.GetStatus(pc_spikemon)[0]['events']['senders'] - ei_net.PC[0]
 spikeTimes_pc  = nest.GetStatus(pc_spikemon)[0]['events']['times']
 Fpc, Fpc_t = slidingFiringRateTuple((senders_pc, spikeTimes_pc),
-        ei_net.N_pc_created, 0.0, ei_net.no.theta_start_t, F_dt, F_winLen)
+        ei_net.N_pc_created, F_tstart, F_tend, F_dt, F_winLen)
 
 
-## Firing rate of place cells on the twisted torus
-figure()
-pcolormesh(np.reshape(Fpc[:, len(Fpc_t)/2], (np.sqrt(ei_net.N_pc_created),
-    np.sqrt(ei_net.N_pc_created))))
-xlabel('PC neuron no.')
-ylabel('PC neuron no.')
-colorbar()
-axis('equal')
-title('PC firing rates')
-
-
-
-# Print a plot of bump position
-(pos, bumpPos_times) = torusPopulationVector(
-        (senders_e, spikeTimes_e), [ei_net.Ne_x, ei_net.Ne_y],
-        tstart = ei_net.no.theta_start_t,
-        tend   = ei_net.no.time,
-        dt     = F_dt,
-        winLen = F_winLen)
-
-figure(figsize=figSize)
-plot(bumpPos_times, pos)
-xlabel('Time (s)')
-ylabel('Bump position (neurons)')
-legend(['X', 'Y'])
-ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
-
-# Firing rate of E cells on the twisted torus
-figure()
-pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
-xlabel('E neuron no.')
-ylabel('E neuron no.')
-colorbar()
-axis('equal')
-title('Firing rates (torus) of E cells')
-savefig(output_fname + '_firing_snapshot_e.png')
-
-if (len(ei_net.PC) != 0):
-    nest.raster_plot.from_device(pc_spikemon, hist=False)
-    title('Place cells')
-
-show()
-exit(0)
 
 # Raster plot
 nest.raster_plot.from_device(spikeMon_e, hist=False)
@@ -185,6 +142,10 @@ nest.raster_plot.from_device(spikeMon_i, hist=False)
 
 events_e = nest.GetStatus(stateMon_e)[0]['events']
 events_i = nest.GetStatus(stateMon_i)[0]['events']
+if (len(ei_net.PC) != 0):
+    nest.raster_plot.from_device(pc_spikemon, hist=False)
+    title('Place cells')
+
 
 
 figure()
@@ -242,8 +203,18 @@ xlim(x_lim)
 savefig(output_fname + '_Isyn.pdf')
 
 
+# Firing rate of E cells on the twisted torus
+figure()
+pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
+xlabel('E neuron no.')
+ylabel('E neuron no.')
+colorbar()
+axis('equal')
+title('Firing rates (torus) of E cells')
+savefig(output_fname + '_firing_snapshot_e.png')
 
-## Firing rate of I cells on the twisted torus
+
+# Firing rate of I cells on the twisted torus
 figure()
 pcolormesh(np.reshape(Fi[:, len(Fi_t)/2], (ei_net.Ni_y, ei_net.Ni_x)))
 xlabel('I neuron no.')
@@ -252,6 +223,31 @@ colorbar()
 axis('equal')
 title('Firing rates (torus) of I cells')
 savefig(output_fname + '_firing_snapshot_i.png')
+
+## Firing rate of place cells on the twisted torus
+figure()
+pcolormesh(np.reshape(Fpc[:, len(Fpc_t)/2], (np.sqrt(ei_net.N_pc_created),
+    np.sqrt(ei_net.N_pc_created))))
+xlabel('PC neuron no.')
+ylabel('PC neuron no.')
+colorbar()
+axis('equal')
+title('PC firing rates')
+
+# Print a plot of bump position
+(pos, bumpPos_times) = torusPopulationVector(
+        (senders_e, spikeTimes_e), [ei_net.Ne_x, ei_net.Ne_y],
+        tstart = ei_net.no.theta_start_t,
+        tend   = ei_net.no.time,
+        dt     = F_dt,
+        winLen = F_winLen)
+
+figure(figsize=figSize)
+plot(bumpPos_times, pos)
+xlabel('Time (s)')
+ylabel('Bump position (neurons)')
+legend(['X', 'Y'])
+ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
 
 
 show()

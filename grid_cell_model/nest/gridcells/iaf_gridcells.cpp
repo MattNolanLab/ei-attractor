@@ -108,24 +108,6 @@ int nest::iaf_gridcells_dynamics(double, const double y[], double f[], void* pno
     
     const double_t I_spike   = node.P.Delta_T * std::exp((V - node.P.V_th) / node.P.Delta_T);
 
-    //if (node.get_gid() == 24)
-    //{
-    //    std::cout << "dynamics: " << std::endl <<
-    //        node.P.g_L << std::endl <<
-    //        V << std::endl <<
-    //        node.P.E_L << std::endl <<
-    //        I_spike << std::endl <<
-    //        I_AHP << std::endl <<
-    //        I_syn_AMPA << std::endl <<
-    //        I_syn_NMDA << std::endl <<
-    //        I_syn_GABA_A << std::endl <<
-    //        node.B_.I_stim_ << std::endl <<
-    //        node.P.I_const << std::endl <<
-    //        node.B_.I_theta << std::endl <<
-    //        node.B_.I_vel << std::endl <<
-    //        node.B_.I_noise << std::endl <<
-    //        node.P.C_m << std::endl;
-    //}
     
     // dv/dt
     f[S::V_M  ] =
@@ -177,7 +159,6 @@ nest::iaf_gridcells::Parameters::Parameters()
       I_ac_start_t    (   0.0 ), // ms
       I_noise_std     (   0.0 ), // pA
       I_noise_dt      (   1.0 ), // ms
-      velC            (   0.0 ), // no units
       
       thetaGen(Time::get_resolution().get_ms(), 0.0, I_ac_start_t, I_ac_amp, I_ac_freq, I_ac_phase),
       velGen(Time::get_resolution().get_ms(), 0.0, I_ac_start_t, PrefDirs(.0, .0))
@@ -517,21 +498,23 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
                     S_.dydt_,
                     reinterpret_cast<void *>(this));
 
-            //assert(S_.y_[S::G_GABA_A] >= 0);
-
-            // check for unreasonable values; we allow V_M to explode
-
 
             // Integrate, forward Euler
             for (int i = 0; i < S::INTEG_SIZE; i++)
                 S_.y_[i] += B_.IntegrationStep_ * S_.dydt_[i];
 
+
             //if (S_.y_[S::G_GABA_A] < 0)
             //    std::cerr << S_.y_[S::G_GABA_A] << std::endl;
+
 
             if ( status != GSL_SUCCESS )
                 throw GSLSolverFailure(get_name(), status);
 
+
+            // check for unreasonable values; we allow V_M to explode
+            if (S_.y_[State_::V_M] < -1e3)
+                throw NumericalInstability(get_name());
 
 
             // Spikes
