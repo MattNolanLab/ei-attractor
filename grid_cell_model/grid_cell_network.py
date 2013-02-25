@@ -127,6 +127,65 @@ class GridCellNetwork(object):
         raise NotImplementedException("GridCellNetwork.getOutgoingConnections")
 
 
+    def _remap_twisted_torus(self, a, others, prefDir):
+    
+        a_x = float(a[0, 0])
+        a_y = float(a[0, 1])
+        prefDir_x = float(prefDir[0, 0])
+        prefDir_y = float(prefDir[0, 1])
+    
+        #others_x = others[:, 0] + prefDir_x
+        #others_y = others[:, 1] + prefDir_y
+    
+        #d1 = sqrt((a_x - others_x)**2 + (a_y - others_y)**2)
+        #d2 = sqrt((a_x - others_x - 1.)**2 + (a_y - others_y)**2)
+        #d3 = sqrt((a_x - others_x + 1.)**2 + (a_y - others_y)**2)
+        #d4 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y - self.y_dim)**2)
+        #d5 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y - self.y_dim)**2)
+        #d6 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y + self.y_dim)**2)
+        #d7 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y + self.y_dim)**2)
+    
+        szO = others.shape[0]
+        y_dim = float(self.y_dim)
+        ret = np.ndarray((szO,))
+    
+        code = '''
+        #define SQ(x) ((double)(x) * (x))
+        #define MIN(x1, x2) ((x1) < (x2) ? (x1) : (x2))
+    
+        for (int i = 0; i < szO; i++)
+        {
+            double others_x = others(i, 0);
+            double others_y = others(i, 1);
+            others_x += (double) prefDir_x;
+            others_y += (double) prefDir_y;
+    
+            double d1 = sqrt(SQ(a_x - others_x) +       SQ(a_y - others_y));
+            double d2 = sqrt(SQ(a_x - others_x + 1.) +  SQ(a_y - others_y));
+            double d3 = sqrt(SQ(a_x - others_x + 1.) +  SQ(a_y - others_y));
+            double d4 = sqrt(SQ(a_x - others_x + 0.5) + SQ(a_y - others_y - y_dim));
+            double d5 = sqrt(SQ(a_x - others_x - 0.5) + SQ(a_y - others_y - y_dim));
+            double d6 = sqrt(SQ(a_x - others_x + 0.5) + SQ(a_y - others_y + y_dim));
+            double d7 = sqrt(SQ(a_x - others_x - 0.5) + SQ(a_y - others_y + y_dim));
+    
+            ret(i) = MIN(d7, MIN(d6, MIN(d5, MIN(d4, MIN(d3, MIN(d2, d1))))));
+    
+        }
+        '''
+        
+        weave.inline(code,
+            ['others', 'szO', 'ret', 'prefDir_x', 'prefDir_y', 'a_x', 'a_y', 'y_dim'],
+            type_converters=weave.converters.blitz,
+            compiler='gcc',
+            extra_compile_args=['-O3'],
+            verbose=2)
+    
+        
+        #return np.min((d1, d2, d3, d4, d5, d6, d7), 0)
+        #import pdb; pdb.set_trace()
+        #print ret
+        return ret
+
 
     def _generateRinglikeWeights(self, a, others, mu, sigma, prefDir, prefDirC):
         '''
@@ -136,7 +195,7 @@ class GridCellNetwork(object):
         when determining minimum
         '''
         prefDir = np.array(prefDir, dtype=float) * prefDirC
-        d = data_analysis.remap_twisted_torus(a, others, prefDir)
+        d = self._remap_twisted_torus(a, others, prefDir)
         return np.exp(-(d - mu)**2/2/sigma**2)
 
 
@@ -144,7 +203,7 @@ class GridCellNetwork(object):
 
         #import pdb; pdb.set_trace()
         prefDir = np.array(prefDir, dtype=float) * prefDirC
-        d = data_analysis.remap_twisted_torus(a, others, prefDir)
+        d = self._remap_twisted_torus(a, others, prefDir)
         return np.exp(-d**2/2./sigma**2)
 
 
