@@ -12,18 +12,18 @@ outputNum = '002';
 
 fontSize = 16;
 
-sim_flag = false;
+sim_flag = true;
 
 
-nTrials = 4;
+nTrials = 1;
 Ni_it = 1;
 Ne_it = 1;
 pA = 1e12;
 
-
+datestr(now, 'yyyy-mm-dd_HH-MM-SS')
 
 if sim_flag
-    N_vec = [100:50:1000];
+    N_vec = [1000];
     NN = numel(N_vec);
 
     %global_opt.we_std_vec = [600:10:1300] * 1e-12;
@@ -32,12 +32,13 @@ if sim_flag
     alpha_E_max = 5.40e-8;
     alpha_I_max = 3.96e-8;
 
-    al_coeff_vec = [0.5:0.05:1.5];
+    al_coeff_vec = [1.0];
     Nalpha = numel(al_coeff_vec);
 
     % N...outer, alpha...inner cycle
     parfor it = 1:NN*Nalpha
         display(sprintf('parameter %d out of %d', it, NN*Nalpha));
+        datestr(now, 'yyyy-mm-dd_HH-MM-SS')
             opt = getStdCellProperties();
 
 
@@ -90,7 +91,7 @@ if sim_flag
             opt.Imon_i = [1  2];
 
             % simulation time
-            opt.T = 2.5;
+            opt.T = 5;
 
 
             % 
@@ -158,7 +159,7 @@ if sim_flag
             results_F(it, :) = F;
             results_coh(it, :) = coh;
             results(it, :) = tmpresults;
-
+        datestr(now, 'yyyy-mm-dd_HH-MM-SS')
     end
     
     save('-v7.3', sprintf('%s_narrow_const_net_size_weights_%s.mat', outputNum, datestr(now, 'yyyy-mm-dd_HH-MM-SS')));

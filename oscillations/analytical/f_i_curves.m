@@ -4,7 +4,7 @@
 close all;
 clear all;
 
-refrac = (0:2:14) * 1e-3;
+refrac = [0:2:14 20] * 1e-3;
 
 pA = 1e12;
 fontSize = 15;
@@ -15,7 +15,7 @@ E_cell.taum = 9.3e-3;
 E_cell.El = -68.5e-3;
 E_cell.Vt = -50.0e-3;
 E_cell.Vr = E_cell.El;
-E_cell.Rm = 44e6; % MOhm
+E_cell.Rm = 40e6; % MOhm
 
 
 % Inhibitory cell

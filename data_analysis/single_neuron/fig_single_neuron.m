@@ -52,9 +52,9 @@ parfor job_it = 1:numel(job_range)
     %---------------------------------------------
     % Plot single neuron rate and spike responses
     %---------------------------------------------
-    neuronNum = 8;
-    t_start = 1;
-    neuronSpikes = theta_spikeCell_e{neuronNum} - t_start;
+    neuronNum = 20;
+    t_start = velocityStart*1e-3;
+    neuronSpikes = spikeCell_e{neuronNum} - t_start;
     h = 5.0;  % cm
     arenaDiam = 180;   % cm
     

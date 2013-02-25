@@ -104,7 +104,7 @@ class DynamicIVCurve(object):
             ret += "VT:   " + str(self.VT*1e3) + " mV\n"
             return ret
 
-    def binCurrent(self, Vm, Im, 
+    #def binCurrent(self, Vm, Im, 
 
     def __init__(self, Iin, Vm, dV, dt, binStartV, binEndV, nbins, C=None):
         self.Iin = Iin
