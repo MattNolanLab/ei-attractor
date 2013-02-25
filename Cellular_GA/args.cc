@@ -8,6 +8,7 @@
 
 
 #include <sstream>
+#include <cstring>
 
 #include "args.h"
 
