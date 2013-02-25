@@ -19,7 +19,7 @@ function plotSpikes_xy(neuronSpikes, ratData_pos_x, ratData_pos_y, dt_rat, neuro
     %fig = figure;
     plot(ratData_pos_x(1:m_i), ratData_pos_y(1:m_i));
     hold on;
-    plot(neuronPos_x, neuronPos_y, '.r', 'MarkerSize', 5);
+    plot(neuronPos_x, neuronPos_y, '.r', 'MarkerSize', 10);
     plot([30 80], [-100 -100], 'LineWidth', 7, 'Color', 'k');
     hold off;
     axis off;

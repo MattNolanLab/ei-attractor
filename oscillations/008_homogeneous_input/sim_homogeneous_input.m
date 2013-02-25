@@ -8,14 +8,14 @@ close all;
 path('../include/', path);
 
 outputDir = 'output_local';
-outputNum = '001';
+outputNum = 'tmp';
 
 fontSize = 16;
 
 sim_flag = true;
 
 
-nTrials = 4;
+nTrials = 1;
 Ni_it = 1;
 Ne_it = 1;
 pA = 1e12;
@@ -23,14 +23,14 @@ pA = 1e12;
 
 
 if sim_flag
-    N_vec = [100:50:1000];
+    N_vec = 1000;%[100:50:1000];
     NN = numel(N_vec);
 
 
     alpha_E_max = 5.40e-8;
-    alpha_I_max = 3.96e-8;
+    alpha_I_max = 4.5e-8;
 
-    al_coeff_vec = [0.5:0.05:1.5];
+    al_coeff_vec = 1; %[0.5:0.05:1.5];
     Nalpha = numel(al_coeff_vec);
 
     % N...outer, alpha...inner cycle
@@ -44,20 +44,18 @@ if sim_flag
 
             opt.Ne = fix(0.9 * opt.N);
             opt.Ni = fix(0.1 * opt.N);
-            opt.Ne_ext = 1000;
-            opt.Ni_ext = 1000;
+            opt.N_ext = 1000;
 
             % All variables are in basic units, i.e. s, volt, etc.
             opt.e_sparseness = 0.4;
             opt.i_sparseness = 0.8;
             
             % Densities of external connections onto E/I populations
-            opt.e_ext_density = 0.5;
-            opt.i_ext_density = 0.5;
+            opt.e_ext_density = 0.25;
+            opt.i_ext_density = 0.25;
             
             % Firing rates of external connections (per ext. neuron)
-            opt.r_e_ext = 40;
-            opt.r_i_ext = 40;
+            opt.r_ext = 40;
 
 
             opt.we = 1/opt.Ne * alpha_E_max / opt.e_sparseness * opt.alpha_coeff;
@@ -68,7 +66,7 @@ if sim_flag
             opt.wi = 1/opt.Ni * alpha_I_max / opt.i_sparseness * opt.alpha_coeff; % pS
             opt.refrac_i = opt.refrac_i_mean + opt.refrac_i_std*randn(opt.Ni, 1);
 
-            opt.we_ext_e = 900e-12;
+            opt.we_ext_e = 1400e-12;
             opt.we_ext_i = opt.we_ext_e/4.5;
 
             % Noise (mV)
@@ -144,36 +142,36 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-coherence_th = 0.2;
-
-trial_it = 1;
-F = reshape(results_F(:, trial_it), Nalpha, NN)';
-coh = reshape(results_coh(:, trial_it), Nalpha, NN)';
-
-F(coh < coherence_th) = nan;
-coh(coh < coherence_th) = nan;
-
-figure('Position', [800 1050 900 1050]);
-[N_grid al_grid] = meshgrid(al_coeff_vec, N_vec);
-subplot(2,1,1, 'FontSize', fontSize);
-surf(al_grid, N_grid, F);
-xlabel('Network size');
-ylabel('Synaptic coupling (normalised)');
-zlabel('Frequency (Hz)');
-view(-64, 46);
-
-subplot(2,1,2, 'FontSize', fontSize);
-surf(al_grid, N_grid, coh);
-xlabel('Network size');
-ylabel('Synaptic coupling (normalised)');
-zlabel('Coherence');
-view(-64, 46);
-
-
-set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
-print('-depsc2', sprintf('%s/%s_freq_coh_net_size_syn_strength.eps', ...
-        outputDir, outputNum));    
+% 
+% coherence_th = 0.2;
+% 
+% trial_it = 1;
+% F = reshape(results_F(:, trial_it), Nalpha, NN)';
+% coh = reshape(results_coh(:, trial_it), Nalpha, NN)';
+% 
+% F(coh < coherence_th) = nan;
+% coh(coh < coherence_th) = nan;
+% 
+% figure('Position', [800 1050 900 1050]);
+% [N_grid al_grid] = meshgrid(al_coeff_vec, N_vec);
+% subplot(2,1,1, 'FontSize', fontSize);
+% surf(al_grid, N_grid, F);
+% xlabel('Network size');
+% ylabel('Synaptic coupling (normalised)');
+% zlabel('Frequency (Hz)');
+% view(-64, 46);
+% 
+% subplot(2,1,2, 'FontSize', fontSize);
+% surf(al_grid, N_grid, coh);
+% xlabel('Network size');
+% ylabel('Synaptic coupling (normalised)');
+% zlabel('Coherence');
+% view(-64, 46);
+% 
+% 
+% set(gcf,'PaperPositionMode','auto', 'Renderer', 'painters');
+% print('-depsc2', sprintf('%s/%s_freq_coh_net_size_syn_strength.eps', ...
+%         outputDir, outputNum));    
 
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -183,7 +181,7 @@ p_o.figVisible = 'off';
 p_o.f_x_lim = [0 400];
 p_o.C_x_lim = [0 200];
 
-for it = 1%:NN*Nalpha
+for it = 1:NN*Nalpha
     N = N_vec(fix((it-1)/Nalpha) + 1);
     alpha_coeff = al_coeff_vec(mod(it-1, Nalpha) + 1);
     

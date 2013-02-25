@@ -3,19 +3,21 @@
 path('../include', path);
 
 close all;
-%clear all;
+clear all;
     
 
     % Load file and process? If not - assuming the tracking has already
     % been done and results saved to tracking*.mat file
     %loadFlag = true;
-    
-    jobId = 9010;
+    job_range = 5100:5139
+parfor job_it = 1:numel(job_range)
+    jobId = job_range(job_it);
     trial_it = 0;
     chpntId = 1;
     folder = '../../../central_data_store/simulation_data/EI_network/005_grids/';
     fname = sprintf('%s/job%04d_trial%04d_output.mat', folder, jobId, trial_it)
     
+    display(jobId);
     
     saveFig = true;
     
@@ -33,7 +35,10 @@ close all;
 %     [start_i end_i] = regexp(fileName, 'job\d+_\d\d\d\d-\d\d-\d\dT\d\d-\d\d-\d\d_', 'Start', 'End');
 %     fileBase = fileName(start_i:end_i-1);
     
-    load(fname);
+    data = load(fname);
+    theta_spikeCell_e = data.theta_spikeCell_e;
+    pos_x = data.pos_x;
+    pos_y = data.pos_y;
 %     opt = parseOptions(options);
 %     optStr = ['_s' num2str(opt.sheet_size) '_alpha' num2str(opt.alpha)];   
 %     sheet_size = opt.sheet_size;
@@ -55,7 +60,7 @@ close all;
     
     fontSize = 25;
 
-    figure('Position', [100 200 1000 300]);
+    figure('Position', [100 200 1000 300], 'Visible', 'off');
     subplot(1, 3, 1, 'FontSize', fontSize);
     plotSpikes_xy(neuronSpikes, pos_x, pos_y, dt_rat, neuronNum);
     xlim([-arenaDiam/2 arenaDiam/2]);
@@ -95,7 +100,7 @@ close all;
         set(gcf(), 'PaperPositionMode', 'auto', 'Renderer', 'painters');
         print('-depsc', sprintf('%s/job%.4d_single_neuron_response.eps', ...
             folder, jobId));
-        print('-dpng', sprintf('%s/job%.4d_single_neuron_response.png', ...
+        print('-dpng', '-r1200', sprintf('%s/job%.4d_single_neuron_response.png', ...
             folder, jobId));
         
 %    end
@@ -113,6 +118,7 @@ close all;
     set(gca, 'Position', pos);
 
 
-    set(gcf(), 'PaperPositionMode', 'auto', 'Renderer', 'painters');
-    print('-depsc', sprintf('%s/job%.4d_single_neuron_autocorr_corr.eps', ...
-        folder, jobId));
+    %set(gcf(), 'PaperPositionMode', 'auto', 'Renderer', 'painters');
+    %print('-depsc', sprintf('%s/job%.4d_single_neuron_autocorr_corr.eps', ...
+    %    folder, jobId));
+end
