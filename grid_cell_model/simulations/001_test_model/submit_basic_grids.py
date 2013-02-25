@@ -34,12 +34,12 @@ parameters['nthreads']          = 8
 
 parameters['output_dir']        = 'output_local'
 
-parameters['Ne']                = 34
-parameters['Ni']                = 34
+parameters['Ne']                = 5
+parameters['Ni']                = 5
 
 parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70.0      # cm, grid field inter-peak distance
-parameters['N_place_cells']     = 20*20
+parameters['N_place_cells']     = 4
 
 
 startJobNum = 0
