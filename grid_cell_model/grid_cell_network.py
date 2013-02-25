@@ -58,11 +58,12 @@
 #     simulation with any kind of spiking model (leaky IaF, Hodgkin-Huxley,
 #     etc.)
 #
-from scipy          import linspace
+from scipy          import linspace, weave
 from numpy.random   import rand
 from numpy          import sqrt
 
 from common         import *
+import data_analysis
 
 import numpy    as np
 import logging  as lg
@@ -127,26 +128,6 @@ class GridCellNetwork(object):
 
 
 
-    def _remap_twisted_torus(self, a, others, prefDir):
-        a_x = a[0, 0]
-        a_y = a[0, 1]
-        prefDir_x = prefDir[0, 0]
-        prefDir_y = prefDir[0, 1]
-
-        others_x = others[:, 0] + prefDir_x
-        others_y = others[:, 1] + prefDir_y
-
-        d1 = sqrt((a_x - others_x)**2 + (a_y - others_y)**2)
-        d2 = sqrt((a_x - others_x - 1.)**2 + (a_y - others_y)**2)
-        d3 = sqrt((a_x - others_x + 1.)**2 + (a_y - others_y)**2)
-        d4 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y - self.y_dim)**2)
-        d5 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y - self.y_dim)**2)
-        d6 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y + self.y_dim)**2)
-        d7 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y + self.y_dim)**2)
-        
-        return np.min((d1, d2, d3, d4, d5, d6, d7), 0)
-            
-
     def _generateRinglikeWeights(self, a, others, mu, sigma, prefDir, prefDirC):
         '''
         Here we assume that X coordinates are normalised to <0, 1), and Y
@@ -155,7 +136,7 @@ class GridCellNetwork(object):
         when determining minimum
         '''
         prefDir = np.array(prefDir, dtype=float) * prefDirC
-        d = self._remap_twisted_torus(a, others, prefDir)
+        d = data_analysis.remap_twisted_torus(a, others, prefDir)
         return np.exp(-(d - mu)**2/2/sigma**2)
 
 
@@ -163,7 +144,7 @@ class GridCellNetwork(object):
 
         #import pdb; pdb.set_trace()
         prefDir = np.array(prefDir, dtype=float) * prefDirC
-        d = self._remap_twisted_torus(a, others, prefDir)
+        d = data_analysis.remap_twisted_torus(a, others, prefDir)
         return np.exp(-d**2/2./sigma**2)
 
 
@@ -173,7 +154,7 @@ class GridCellNetwork(object):
         '''
         indexes = random.sample(np.arange(len(conductances)),
                 int(perc_synapses/100.0*len(conductances)))
-        conductances[indexes] *= h
+        conductances[indexes] += h
         return conductances
 
 
@@ -198,6 +179,8 @@ class GridCellNetwork(object):
 
         g_AMPA_mean = self.no.g_AMPA_total / self.net_Ne
         g_GABA_mean = self.no.g_GABA_total / self.net_Ni
+        g_uni_GABA_mean = self.no.g_uni_GABA_total / self.net_Ni / self.no.uni_GABA_density
+        print "g_uni_GABA_mean: ", g_uni_GABA_mean
 
         # E --> I connections
         X, Y = np.meshgrid(np.arange(self.Ni_x), np.arange(self.Ni_y))
@@ -232,7 +215,6 @@ class GridCellNetwork(object):
 
                 tmp_templ *= g_AMPA_mean
                 # tmp_templ down here must be in the proper units (e.g. nS)
-                tmp_templ = self._addToConnections(tmp_templ, self.no.condAddPercSynapses_e, self.no.condAdd_e)
                 self._divergentConnectEI(it, range(self.net_Ni), tmp_templ)
 
         # I --> E connections
@@ -264,8 +246,11 @@ class GridCellNetwork(object):
                 else:
                     raise Exception('AMPA_gaussian parameters must be 0 or 1')
 
+                tmp_templ *= self.B_GABA*g_GABA_mean
+                self._addToConnections(tmp_templ,
+                        self.no.uni_GABA_density*100.0, g_uni_GABA_mean)
                 E_nid = (tmp_templ > conn_th).nonzero()[0]
-                self._divergentConnectIE(it, E_nid, self.B_GABA*g_GABA_mean*tmp_templ[E_nid])
+                self._divergentConnectIE(it, E_nid, tmp_templ[E_nid])
 
 
     def uniformInhibition(self):
