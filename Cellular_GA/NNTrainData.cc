@@ -12,6 +12,7 @@
 #include <sstream>
 
 #include <cassert>
+#include <cstdint>
 
 #include "NNTrainData.h"
 #include "error.h"

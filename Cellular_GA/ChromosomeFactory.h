@@ -66,36 +66,36 @@ class OneMaxChromosomeFactory : public ChromosomeFactory
 /**
  * Neural Net Chromosome factory. Produces a neural network chromosome.
  */
-//class NNChromosomeFactory : public ChromosomeFactory
-//{
-//  public:
-//
-//    /**
-//     * Constructor.
-//     *
-//     * @param numLayers Number of layers.
-//     * @param lSizes An array of size for each layer.
-//     */
-//    NNChromosomeFactory(unsigned numLayers, const unsigned* lSizes,
-//            const NNTrainData& trainData) :
-//        numLayers(numLayers), lSizes(lSizes), trainData(trainData) { }
-//
-//    /**
-//     * Produce a chromosome, initialized randomly.
-//     *
-//     * @return Produced chromosome.
-//     */
-//    Chromosome *getChromosome()
-//    {
-//        return new NNChromosome(numLayers, lSizes, &trainData);
-//    }
-//
-//  private:
-//    /** Chromosome length, in bits **/
-//    unsigned numLayers;
-//    const unsigned* lSizes;
-//    const NNTrainData& trainData;
-//};
+class NNChromosomeFactory : public ChromosomeFactory
+{
+  public:
+
+    /**
+     * Constructor.
+     *
+     * @param numLayers Number of layers.
+     * @param lSizes An array of size for each layer.
+     */
+    NNChromosomeFactory(unsigned numLayers, const unsigned* lSizes,
+            const NNTrainData& trainData) :
+        numLayers(numLayers), lSizes(lSizes), trainData(trainData) { }
+
+    /**
+     * Produce a chromosome, initialized randomly.
+     *
+     * @return Produced chromosome.
+     */
+    Chromosome *getChromosome()
+    {
+        return new NNChromosome(numLayers, lSizes, &trainData);
+    }
+
+  private:
+    /** Chromosome length, in bits **/
+    unsigned numLayers;
+    const unsigned* lSizes;
+    const NNTrainData& trainData;
+};
 
 
 #endif /* CHROMOSOMEFACTORY_H */

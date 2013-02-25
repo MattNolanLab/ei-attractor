@@ -25,19 +25,19 @@ BIN = testOneMax *.o
 DEPFILE = Makefile.dep
 
 BASE = args.o error.o CellularGA.o Chromosome.o OneMaxChromosome.o \
-	   NeuralNetwork.o 
-#NNChromosome.o NNOneCharChromosome.o RecNeuralNet.o NNTrainData.o 
+	   NeuralNetwork.o \
+	   NNChromosome.o NNOneCharChromosome.o RecNeuralNet.o NNTrainData.o
 
-USE_MPI ?= 1
+USE_MPI ?= 0
 DEBUG ?= -DNDEBUG_ADDITIONAL
 CXXADD ?= 
 
 ifeq ($(USE_MPI), 1)
 	CXX = mpicxx
-	CXXFLAGS = -O3 -g -W -Wall $(DEBUG) -DARC_MPI_ENABLED
+	CXXFLAGS = -O3 -g -W -Wall $(DEBUG) -DARC_MPI_ENABLED -std=c++0x
 else
 	CXX = g++
-	CXXFLAGS = -O3 -g -W -Wall $(DEBUG)
+	CXXFLAGS = -O3 -g -W -Wall $(DEBUG) -std=c++0x
 endif
 
 CXXFLAGS += $(CXXADD)
@@ -68,7 +68,7 @@ clean:
 	rm -f $(BIN)
 
 deps:
-	g++ -MM *.cc > $(DEPFILE)
+	g++ -MM $(CXXFLAGS) *.cc > $(DEPFILE)
 
 pack:
 	tar cvzf xsolan00.tar.gz $(PACK_FILES)
