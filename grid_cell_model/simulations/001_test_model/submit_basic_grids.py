@@ -29,24 +29,26 @@ EDDIE = False  # if eddie, submit on a cluster using qsub
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 10e3  # ms
+parameters['time']              = 5e3  # ms
 parameters['nthreads']          = 8
 
 parameters['output_dir']        = 'output_local'
 
-parameters['Ne']                = 5
-parameters['Ni']                = 5
+parameters['Ne']                = 34
+parameters['Ni']                = 34
 
 parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 70.0      # cm, grid field inter-peak distance
-parameters['N_place_cells']     = 4
+parameters['N_place_cells']     = 30*30
+
+parameters['noise_sigma']       = 200.0       # pA
 
 
 startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 simulation_basic_grids.py'
+programName         = 'python2.6 -i simulation_basic_grids.py'
 blocking            = True
 
 # Cluster parameters

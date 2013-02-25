@@ -58,12 +58,12 @@ total_start_t = time.time()
 ei_net = NestGridCellNetwork(options, simulationOpts=None)
 
 const_v = [0.0, 0.0]
-#ei_net.setConstantVelocityCurrent_e(const_v)
-#ei_net.setVelocityCurrentInput_e()
+ei_net.setConstantVelocityCurrent_e(const_v)
+ei_net.setVelocityCurrentInput_e()
 
 #ei_net.uniformInhibition()
 #ei_net.setStartCurrent()
-ei_net.setPlaceCells()
+#ei_net.setPlaceCells()
 
 
 duration=time.time()-start_time
@@ -129,18 +129,22 @@ spikeTimes_i   = nest.GetStatus(spikeMon_i)[0]['events']['times']
 Fi, Fi_t = slidingFiringRateTuple((senders_i, spikeTimes_i), ei_net.net_Ni,
         F_tstart, F_tend, F_dt, F_winLen)
 
-senders_pc     = nest.GetStatus(pc_spikemon)[0]['events']['senders'] - ei_net.PC[0]
-spikeTimes_pc  = nest.GetStatus(pc_spikemon)[0]['events']['times']
-Fpc, Fpc_t = slidingFiringRateTuple((senders_pc, spikeTimes_pc),
-        ei_net.N_pc_created, F_tstart, F_tend, F_dt, F_winLen)
+
+if (len(ei_net.PC) != 0):
+    senders_pc     = nest.GetStatus(pc_spikemon)[0]['events']['senders'] - ei_net.PC[0]
+    spikeTimes_pc  = nest.GetStatus(pc_spikemon)[0]['events']['times']
+    Fpc, Fpc_t = slidingFiringRateTuple((senders_pc, spikeTimes_pc),
+            ei_net.N_pc_created, F_tstart, F_tend, F_dt, F_winLen)
 
 
 
 # Raster plot
 nest.raster_plot.from_device(spikeMon_e, hist=False)
+title('E cells')
 nest.raster_plot.from_device(spikeMon_i, hist=False)
+title('I cells')
 
-events_e = nest.GetStatus(stateMon_e)[0]['events']
+events_e = nest.GetStatus(stateMon_e)[1]['events']
 events_i = nest.GetStatus(stateMon_i)[0]['events']
 if (len(ei_net.PC) != 0):
     nest.raster_plot.from_device(pc_spikemon, hist=False)
@@ -148,15 +152,24 @@ if (len(ei_net.PC) != 0):
 
 
 
+# Flattened firing rate of E cells
 figure()
 T, N_id = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
 pcolormesh(T, N_id,  Fe)
 xlabel("Time (s)")
 ylabel("Neuron #")
 axis('tight')
+colorbar()
+title('Firing rate of E cells')
 
 figure()
-pcolormesh(Fi)
+T, N_id = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
+pcolormesh(T, N_id,  Fi)
+xlabel("Time (s)")
+ylabel("Neuron #")
+axis('tight')
+colorbar()
+title('Firing rate of I cells')
 
 
 # External currents
@@ -171,12 +184,13 @@ ylabel('I cell $I_{stim}$')
 xlabel('Time (ms)')
 
 
-# Histogram of E external current (to validate noise)
-figure()
-hist(events_e['I_stim'], 100)
-xlabel('Current (pA)')
-ylabel('Count')
-
+#
+## Histogram of E external current (to validate noise)
+#figure()
+#hist(events_e['I_stim'], 100)
+#xlabel('Current (pA)')
+#ylabel('Count')
+#
 
 
 # E/I Vm
@@ -190,7 +204,7 @@ ylabel('I cell $V_m$')
 xlabel('Time (ms)')
 
 
-
+# E/I I_syn
 figure()
 ax = subplot(211)
 plot(events_e['times'], events_e['I_clamp_GABA_A'])
@@ -225,14 +239,16 @@ title('Firing rates (torus) of I cells')
 savefig(output_fname + '_firing_snapshot_i.png')
 
 ## Firing rate of place cells on the twisted torus
-figure()
-pcolormesh(np.reshape(Fpc[:, len(Fpc_t)/2], (np.sqrt(ei_net.N_pc_created),
-    np.sqrt(ei_net.N_pc_created))))
-xlabel('PC neuron no.')
-ylabel('PC neuron no.')
-colorbar()
-axis('equal')
-title('PC firing rates')
+if (len(ei_net.PC) != 0):
+    figure()
+    pcolormesh(np.reshape(Fpc[:, 0], (np.sqrt(ei_net.N_pc_created),
+        np.sqrt(ei_net.N_pc_created))))
+    xlabel('PC neuron no.')
+    ylabel('PC neuron no.')
+    colorbar()
+    axis('equal')
+    title('PC firing rates')
+
 
 # Print a plot of bump position
 (pos, bumpPos_times) = torusPopulationVector(

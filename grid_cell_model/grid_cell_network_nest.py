@@ -115,7 +115,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 "I_const"          : self.no.Iext_e_const,
                 "I_ac_amp"         : self.no.Iext_e_theta,
                 "I_ac_freq"        : self.no.theta_freq,
-                "I_ac_phase"       : 0.0,
+                "I_ac_phase"       : -np.pi/2,
                 "I_ac_start_t"     : self.no.theta_start_t,
                 "I_noise_std"      : self.no.noise_sigma,
                 "V_clamp"          : self.no.Vclamp,
@@ -143,7 +143,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 "I_const"          : self.no.Iext_i_const,
                 "I_ac_amp"         : self.no.Iext_i_theta,
                 "I_ac_freq"        : self.no.theta_freq,
-                "I_ac_phase"       : 0.0,
+                "I_ac_phase"       : -np.pi/2,
                 "I_ac_start_t"     : self.no.theta_start_t,
                 "I_noise_std"      : self.no.noise_sigma,
                 "V_clamp"          : self.no.Vclamp,
@@ -261,15 +261,6 @@ class NestGridCellNetwork(GridCellNetwork):
             return self.stateMon_i
 
 
-    def uniformInhibition(self):
-        g_GABA_mean = self.no.g_uni_GABA_total / self.net_Ni / self.no.uni_GABA_density * nS
-
-        self.extraGABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
-        self.extraGABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
-
-
-
-    #def _divergentConnectEE(self, pre, post, weights):
 
     def _divergentConnectEI(self, pre, post, weights):
         post_global = list(self.I_pop[0] + np.array(post))
@@ -292,10 +283,6 @@ class NestGridCellNetwork(GridCellNetwork):
         # parameters of the external current model
         pass
 
-
-
-    def setThetaCurrentStimulation(self):
-        pass
 
 
     def _loadRatVelocities(self):
@@ -388,7 +375,7 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
         self.setPlaceCells(start=0.0, end=self.no.theta_start_t,
-                posIn=PosInputs([self.no.gridSep/4], [.0], self.rat_dt))
+                posIn=PosInputs([.0], [.0], self.rat_dt))
 
 
     def setPlaceCells(self, start=None, end=None, posIn=None):
