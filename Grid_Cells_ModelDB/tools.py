@@ -29,6 +29,7 @@ from matplotlib.pyplot import *
 from os import system
 
 
+
 def butterHighPass(sig, dt, f_pass):
     nyq_f = 1./dt/2
     norm_f_pass = f_pass/nyq_f
