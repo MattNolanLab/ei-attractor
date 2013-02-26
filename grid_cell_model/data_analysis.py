@@ -38,7 +38,7 @@ class Position2D(object):
 
 class GaussianInitParams(object):
     def __init__(self):
-        self.A0      = 1.0
+        self.A0      = 10.0
         self.mu0_x   = 1.0
         self.mu0_y   = 1.0
         self.sigma0  = 1.0
@@ -213,13 +213,13 @@ def fitGaussianTT(sig_f, i, dim):
         dist = remapTwistedTorus(a, others, dim)
         #dist = np.sqrt((others.x - a.x)**2 + (others.y - a.y)**2)
         print "C:", x[0], a, "sigma:", x[3]
-        return (np.abs(x[0]) * np.exp( -dist**2/2./ x[3]**2 )) - sig_f
+        return np.abs(x[0]) * np.exp( -dist**2/2./ x[3]**2 ) - sig_f
 #                       |                            |
 #                       A                          sigma
 
     x0 = np.array([i.A0, i.mu0_x, i.mu0_y, i.sigma0])
 
-    xest,ierr = scipy.optimize.leastsq(gaussDiff, x0, maxfev=10000)
+    xest,ierr = scipy.optimize.leastsq(gaussDiff, x0)
     return xest
 
 
@@ -234,9 +234,9 @@ def fitGaussianBumpTT(sig, dim):
     Fit a Gaussian to a rate map, using least squares method.
     '''
     init = GaussianInitParams()
-    init.mu0_x = dim.x / 2.0
-    init.mu0_y = dim.y / 2.0
-    init.sigma0  = 1.0
+    init.mu0_y, init.mu0_x  = np.unravel_index(np.argmax(sig), sig.shape)
+    init.A0 = sig[init.mu0_y, init.mu0_x]
+    init.sigma0  = np.max([dim.x, dim.y]) / 2.0
     
     return fitGaussianTT(rateMap.flatten(), init, dim)
 
@@ -264,46 +264,46 @@ if (__name__ == '__main__'):
 
     from matplotlib.pyplot import *
 
-#    dims = Position2D()
-#    dims.x = 34
-#    dims.y = 34
-#    a = Position2D()
-#    a.x = 0; a.y = 0
-#    remapAndPlot(a, dims)
-#
-#    a.x = dims.x/2.
-#    a.y = 0
-#    remapAndPlot(a, dims)
-#
-#    a.x = dims.x - 1;
-#    a.y = 0
-#    remapAndPlot(a, dims)
-#
-#    a.x = 0
-#    a.y = dims.y/2.0
-#    remapAndPlot(a, dims)
-#
-#    a.x = dims.x/2.0
-#    a.y = dims.y/2.0
-#    remapAndPlot(a, dims)
-#
-#    a.x = dims.x - 1
-#    a.y = dims.y/2.0
-#    remapAndPlot(a, dims)
-#
-#    a.x = 0
-#    a.y = dims.y - 1
-#    remapAndPlot(a, dims)
-#
-#    a.x = dims.x/2.0
-#    a.y = dims.y - 1
-#    remapAndPlot(a, dims)
-#
-#    a.x = dims.x - 1
-#    a.y = dims.y - 1
-#    remapAndPlot(a, dims)
-#
-#    show()
+    dims = Position2D()
+    dims.x = 34
+    dims.y = 34
+    a = Position2D()
+    a.x = 0; a.y = 0
+    remapAndPlot(a, dims)
+
+    a.x = dims.x/2.
+    a.y = 0
+    remapAndPlot(a, dims)
+
+    a.x = dims.x - 1;
+    a.y = 0
+    remapAndPlot(a, dims)
+
+    a.x = 0
+    a.y = dims.y/2.0
+    remapAndPlot(a, dims)
+
+    a.x = dims.x/2.0
+    a.y = dims.y/2.0
+    remapAndPlot(a, dims)
+
+    a.x = dims.x - 1
+    a.y = dims.y/2.0
+    remapAndPlot(a, dims)
+
+    a.x = 0
+    a.y = dims.y - 1
+    remapAndPlot(a, dims)
+
+    a.x = dims.x/2.0
+    a.y = dims.y - 1
+    remapAndPlot(a, dims)
+
+    a.x = dims.x - 1
+    a.y = dims.y - 1
+    remapAndPlot(a, dims)
+
+    show()
 
 
     ###################################################################### 
@@ -318,9 +318,9 @@ if (__name__ == '__main__'):
     pos.x = X.flatten()
     pos.y = Y.flatten()
 
-    A       = 10.0
-    mu_x    = 0.1
-    mu_y    = 70.0
+    A       = 20.0
+    mu_x    = 99
+    mu_y    = 50.0
     sigma   = 20
 
     a0 = Position2D()
@@ -328,6 +328,8 @@ if (__name__ == '__main__'):
     a0.y = mu_y
     dist = remapTwistedTorus(a0, pos, dims)
     rateMap = A*np.exp(- dist**2 / (2*sigma**2))
+    rateMap += A*0.2*np.random.randn(rateMap.shape[0])
+    rateMap[rateMap < 0] = 0
     rateMap = np.reshape(rateMap, (dims.y, dims.x))
   
     figure()
@@ -340,3 +342,4 @@ if (__name__ == '__main__'):
 
     print param_est
     
+    show()
