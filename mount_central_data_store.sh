@@ -1,4 +1,5 @@
 #!/bin/bash
+# Add the directory if it doesn't exist yet
 mkdir -p central_data_store
 
 sshfs \
