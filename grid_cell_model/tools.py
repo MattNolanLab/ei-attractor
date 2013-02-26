@@ -163,42 +163,6 @@ def fft_real_freq(sig, dt):
 
 
     
-##############################################################################
-#                      Image analysis/manipulation functions
-##############################################################################
-
-def fitGaussian2D(sig, X, Y, C0, A0, mu0_x, mu0_y, sigma0):
-    '''
-    Fit a 2D Gaussian function to a 2D signal
-    rateMap     A 2D array, population firing rate
-    X, Y        Spatial locations, the same size as rateMap
-    C0, A0, mu0_x, mu0_y, sigma0 
-                Initial parameters for the Gaussian
-
-        fun = C + A*exp(-||X - mu||^2 / (2*sigma^2))
-    '''
-    x0 = np.array([C0, A0, mu0_x, mu0_y, sigma0])
-    fun = lambda x:  (x[0] + x[1] * np.exp( -((X - x[2])**2 + (Y - x[3])**2)/2./ x[4]**2 )) - sig
-    #                  |      |                      |               |             |
-    #                  C      A                    mu_x            mu_y          sigma
-
-    xest,ierr = scipy.optimize.leastsq(fun, x0)
-    return xest
-
-
-def fitGaussianBump2D(rateMap, X, Y):
-    '''
-    Fit a Gaussian to a rate map, using least squares method.
-    '''
-    C0      = 0.0
-    A0      = 1.0
-    mu0_x   = 1.0
-    mu0_y   = 1.0
-    sigma0  = 1.0
-    
-    return fitGaussian2D(rateMap.flatten(), X.flatten(), Y.flatten(), C0, A0,
-            mu0_x, mu0_y, sigma0)
-
 
 
 ##############################################################################
@@ -206,25 +170,7 @@ def fitGaussianBump2D(rateMap, X, Y):
 ##############################################################################
 
 if __name__ == "__main__":
-    sz = (100, 100)
-
-    X, Y = np.meshgrid(np.arange(sz[1]), np.arange(sz[0]))
-    X -= 0.5 * sz[1]
-    Y -= 0.5 * sz[0]
-
-    C       = 0.0
-    A       = 10.0
-    mu_x    = -3.0
-    mu_y    = 11.5
-    sigma   = 100.0
-
-    rateMap = C + A*np.exp(- ((X - mu_x)**2 + (Y - mu_y)**2) / (2*sigma**2))
-    param_est = fitGaussianBump2D(rateMap, X, Y)
-    Cest, Aest, muxest, muyest, sigmaest = param_est
-
-    print param_est
-    
-    
+    pass    
 
 
 

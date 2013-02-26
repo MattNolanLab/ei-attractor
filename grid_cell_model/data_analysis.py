@@ -19,13 +19,32 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 from scipy.io import loadmat
+from scipy    import weave
 from matplotlib.pyplot import *
 
 import numpy as np
+import scipy.optimize
+
+class Position2D(object):
+
+    def __init__(self):
+        self.x = None
+        self.y = None
+
+    def __str__(self):
+        return "Position2D: x: " + str(self.x) + ", y: " + str(self.y)
 
 
-class ReturnStruct(object):
-    pass
+
+class GaussianInitParams(object):
+    def __init__(self):
+        self.C0      = 0.0
+        self.A0      = 1.0
+        self.mu0_x   = 1.0
+        self.mu0_y   = 1.0
+        self.sigma0  = 1.0
+
+
 
 def circularVariance(x, range):
     ''' Returns circular moments of a vector of circular variable x, defined in
@@ -39,7 +58,7 @@ def circularVariance(x, range):
 
 def bumpVariancePos(dirName, fileNamePrefix, jobRange, trialRange, t_start):
     '''t_start - in discrete time'''
-    ret = ReturnStruct()
+    ret = Position2D()
 
     fileNameTemp = "{0}/{1}job{2:04}_trial{3:04}"
     F_dt = 0.2
@@ -99,58 +118,57 @@ def bumpVariancePos(dirName, fileNamePrefix, jobRange, trialRange, t_start):
 
 
 
-## Remap a distance between 'a' and others on a two dimensional twisted torus
+
+## Remap a distance between 'a' and others on a twisted torus
 #
-# Take 'a' which is a 2D position and others, which is a vetor of 2D positions
-# and compute the distances between them
-def remapTwistedTorus(self, a, others, prefDir, x_dim, y_dim):
+# Take 'a' which is a 2D position and others, which is a vector of 2D positions
+# and compute the distances between them based on the topology of the twisted
+# torus, mainly its dimensions.
+# 
+# If you just want to remap a function of (X, Y), set a==[[0, 0]].
+#
+# @param a  An array of shape (1, 2) that specifies a position on the twisted
+#           torus.
+# @param others An array of shape (N, 2) that gives the positions on the twisted
+#               torus to compute distance from.
+# @param x_dim  X dimension of the torus
+# @param y_dim  Y dimension of the torus
+# @return       An array of shape (N, ) with all the distances
+#
+def remapTwistedTorus(a, others, dim):
 
-    a_x = float(a[0, 0])
-    a_y = float(a[0, 1])
-    prefDir_x = float(prefDir[0, 0])
-    prefDir_y = float(prefDir[0, 1])
-
-    #others_x = others[:, 0] + prefDir_x
-    #others_y = others[:, 1] + prefDir_y
-
-    #d1 = sqrt((a_x - others_x)**2 + (a_y - others_y)**2)
-    #d2 = sqrt((a_x - others_x - 1.)**2 + (a_y - others_y)**2)
-    #d3 = sqrt((a_x - others_x + 1.)**2 + (a_y - others_y)**2)
-    #d4 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y - self.y_dim)**2)
-    #d5 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y - self.y_dim)**2)
-    #d6 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y + self.y_dim)**2)
-    #d7 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y + self.y_dim)**2)
-
-    szO = others.shape[0]
-    y_dim = float(self.y_dim)
+    a_x = float(a.x)
+    a_y = float(a.y)
+    others_x = others.x
+    others_y = others.y
+    szO = others.x.shape[0]
     ret = np.ndarray((szO,))
+    x_dim = dim.x
+    y_dim = dim.y
 
     code = '''
-    #define SQ(x) ((double)(x) * (x))
+    #define SQ(x) ((x) * (x))
     #define MIN(x1, x2) ((x1) < (x2) ? (x1) : (x2))
 
     for (int i = 0; i < szO; i++)
     {
-        double others_x = others(i, 0);
-        double others_y = others(i, 1);
-        others_x += (double) prefDir_x;
-        others_y += (double) prefDir_y;
+        double o_x = others_x(i);
+        double o_y = others_y(i);
 
-        double d1 = sqrt(SQ(a_x - others_x) +       SQ(a_y - others_y));
-        double d2 = sqrt(SQ(a_x - others_x + 1.) +  SQ(a_y - others_y));
-        double d3 = sqrt(SQ(a_x - others_x + 1.) +  SQ(a_y - others_y));
-        double d4 = sqrt(SQ(a_x - others_x + 0.5) + SQ(a_y - others_y - y_dim));
-        double d5 = sqrt(SQ(a_x - others_x - 0.5) + SQ(a_y - others_y - y_dim));
-        double d6 = sqrt(SQ(a_x - others_x + 0.5) + SQ(a_y - others_y + y_dim));
-        double d7 = sqrt(SQ(a_x - others_x - 0.5) + SQ(a_y - others_y + y_dim));
+        double d1 = sqrt(SQ(a_x - o_x            ) + SQ(a_y - o_y        ));
+        double d2 = sqrt(SQ(a_x - o_x - x_dim    ) + SQ(a_y - o_y        ));
+        double d3 = sqrt(SQ(a_x - o_x + x_dim    ) + SQ(a_y - o_y        ));
+        double d4 = sqrt(SQ(a_x - o_x + 0.5*x_dim) + SQ(a_y - o_y - y_dim));
+        double d5 = sqrt(SQ(a_x - o_x - 0.5*x_dim) + SQ(a_y - o_y - y_dim));
+        double d6 = sqrt(SQ(a_x - o_x + 0.5*x_dim) + SQ(a_y - o_y + y_dim));
+        double d7 = sqrt(SQ(a_x - o_x - 0.5*x_dim) + SQ(a_y - o_y + y_dim));
 
         ret(i) = MIN(d7, MIN(d6, MIN(d5, MIN(d4, MIN(d3, MIN(d2, d1))))));
-
     }
     '''
     
     weave.inline(code,
-        ['others', 'szO', 'ret', 'prefDir_x', 'prefDir_y', 'a_x', 'a_y', 'y_dim'],
+        ['others_x', 'others_y', 'szO', 'ret', 'a_x', 'a_y', 'x_dim', 'y_dim'],
         type_converters=weave.converters.blitz,
         compiler='gcc',
         extra_compile_args=['-O3'],
@@ -161,5 +179,163 @@ def remapTwistedTorus(self, a, others, prefDir, x_dim, y_dim):
     #import pdb; pdb.set_trace()
     #print ret
     return ret
-        
 
+
+
+##############################################################################
+#                      Image analysis/manipulation functions
+##############################################################################
+
+
+
+## Fit a 2D Gaussian function to a 2D signal using a least squares method.
+#
+# The Gaussian is not generic - sigmax = sigmay = sigma, i.e. it is circular
+# only.
+#
+# The function fitted looks like this:
+#     fun = C + A*exp(-||X - mu||^2 / (2*sigma^2))
+#
+#
+# @param sig    A 2D array, the input signal
+# @param X      X Spatial locations, the same size as sig
+# @param Y      Y spatial location, the same size as sig
+# TODO: doc
+# @return Estimated values in the order specified above for C...sigma
+#
+def fitGaussian2D(sig_f, i, dim):
+    X, Y = np.meshgrid(np.arange(dims.x), np.arange(dims.y))
+    others = Position2D()
+    others.x = X.flatten()
+    others.y = Y.flatten()
+
+    a = Position2D()
+    def gaussDiff(x):
+        a.x = x[2] % dims.x # mu_x
+        a.y = x[3] % dims.y # mu_y
+        dist = remapTwistedTorus(a, others, dim)
+        #dist = np.sqrt((others.x - a.x)**2 + (others.y - a.y)**2)
+        print x[2], x[3]
+        return (np.abs(x[0]) + np.abs(x[1]) * np.exp( -dist**2/2./ x[4]**2 )) - sig_f
+#                |      |                            |
+#                C      A                          sigma
+
+    x0 = np.array([i.C0, i.A0, i.mu0_x, i.mu0_y, i.sigma0])
+
+    xest,ierr = scipy.optimize.leastsq(gaussDiff, x0, maxfev=10000)
+    return xest
+
+
+def fitGaussianBump2D(sig, dim):
+    '''
+    Fit a Gaussian to a rate map, using least squares method.
+    '''
+    init = GaussianInitParams()
+    init.mu0_x = dim.x / 2.0
+    init.mu0_y = dim.y / 2.0
+    init.sigma0  = 1.0
+    
+    return fitGaussian2D(rateMap.flatten(), init, dim)
+
+
+
+
+##############################################################################
+#                           Tests
+##############################################################################
+
+def remapAndPlot(a, dims):
+    X, Y = np.meshgrid(np.arange(dims.x), np.arange(dims.y))
+    others = Position2D()
+    others.x = X.flatten()
+    others.y = Y.flatten()
+    dist = remapTwistedTorus(a, others, dims)
+    figure()
+    pcolormesh(np.reshape(dist, (dims.y, dims.x)))
+    title('a:(x, y): ' + str(a.x) + ', ' + str(a.y) + ', x_dim:' + str(dims.x) +
+            ', y_dim: ' + str(dims.y))
+    axis('equal')
+
+
+if (__name__ == '__main__'):
+
+    from matplotlib.pyplot import *
+
+#    dims = Position2D()
+#    dims.x = 34
+#    dims.y = 34
+#    a = Position2D()
+#    a.x = 0; a.y = 0
+#    remapAndPlot(a, dims)
+#
+#    a.x = dims.x/2.
+#    a.y = 0
+#    remapAndPlot(a, dims)
+#
+#    a.x = dims.x - 1;
+#    a.y = 0
+#    remapAndPlot(a, dims)
+#
+#    a.x = 0
+#    a.y = dims.y/2.0
+#    remapAndPlot(a, dims)
+#
+#    a.x = dims.x/2.0
+#    a.y = dims.y/2.0
+#    remapAndPlot(a, dims)
+#
+#    a.x = dims.x - 1
+#    a.y = dims.y/2.0
+#    remapAndPlot(a, dims)
+#
+#    a.x = 0
+#    a.y = dims.y - 1
+#    remapAndPlot(a, dims)
+#
+#    a.x = dims.x/2.0
+#    a.y = dims.y - 1
+#    remapAndPlot(a, dims)
+#
+#    a.x = dims.x - 1
+#    a.y = dims.y - 1
+#    remapAndPlot(a, dims)
+#
+#    show()
+
+
+    ###################################################################### 
+    # Gaussian bump fitting on a twisted torus
+    dims = Position2D()
+    dims.x = 100
+    dims.y = 100
+
+    X, Y = np.meshgrid(np.arange(dims.x), np.arange(dims.y))
+
+    pos = Position2D()
+    pos.x = X.flatten()
+    pos.y = Y.flatten()
+
+
+    C       = 0.0
+    A       = 10.0
+    mu_x    = 5.0
+    mu_y    = 5.0
+    sigma   = 20
+
+    a0 = Position2D()
+    a0.x = mu_x
+    a0.y = mu_y
+    dist = remapTwistedTorus(a0, pos, dims)
+    rateMap = C + A*np.exp(- dist**2 / (2*sigma**2))
+    rateMap = np.reshape(rateMap, (dims.y, dims.x))
+  
+    figure()
+    pcolormesh(np.reshape(dist, (dims.y, dims.x))); colorbar()
+    figure()
+    pcolormesh(X, Y, rateMap); colorbar()
+  
+    param_est = fitGaussianBump2D(rateMap, dims)
+    Cest, Aest, muxest, muyest, sigmaest = param_est
+
+    print param_est
+    
