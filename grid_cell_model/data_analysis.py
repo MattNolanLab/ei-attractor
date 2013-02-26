@@ -38,7 +38,6 @@ class Position2D(object):
 
 class GaussianInitParams(object):
     def __init__(self):
-        self.C0      = 0.0
         self.A0      = 1.0
         self.mu0_x   = 1.0
         self.mu0_y   = 1.0
@@ -142,9 +141,10 @@ def remapTwistedTorus(a, others, dim):
     others_x = others.x
     others_y = others.y
     szO = others.x.shape[0]
-    ret = np.ndarray((szO,))
     x_dim = dim.x
     y_dim = dim.y
+
+    ret = np.ndarray((szO,))
 
     code = '''
     #define SQ(x) ((x) * (x))
@@ -174,10 +174,6 @@ def remapTwistedTorus(a, others, dim):
         extra_compile_args=['-O3'],
         verbose=2)
 
-    
-    #return np.min((d1, d2, d3, d4, d5, d6, d7), 0)
-    #import pdb; pdb.set_trace()
-    #print ret
     return ret
 
 
@@ -194,16 +190,17 @@ def remapTwistedTorus(a, others, dim):
 # only.
 #
 # The function fitted looks like this:
-#     fun = C + A*exp(-||X - mu||^2 / (2*sigma^2))
+#     fun = A*exp(-||X - mu||^2 / (2*sigma^2))
+#
+# The initialisation parameters are A, mu_x, mu_y, sigma
 #
 #
-# @param sig    A 2D array, the input signal
-# @param X      X Spatial locations, the same size as sig
-# @param Y      Y spatial location, the same size as sig
-# TODO: doc
-# @return Estimated values in the order specified above for C...sigma
+# @param sig_f  Signal function value - this is fitted, use the Position2D class
+# @param i      A struct with initialisation values
+# @param dim    Dimensions of the twisted torus (Position2D)
+# @return Estimated values in the order specified above for A...sigma
 #
-def fitGaussian2D(sig_f, i, dim):
+def fitGaussianTT(sig_f, i, dim):
     X, Y = np.meshgrid(np.arange(dims.x), np.arange(dims.y))
     others = Position2D()
     others.x = X.flatten()
@@ -211,22 +208,28 @@ def fitGaussian2D(sig_f, i, dim):
 
     a = Position2D()
     def gaussDiff(x):
-        a.x = x[2] % dims.x # mu_x
-        a.y = x[3] % dims.y # mu_y
+        a.x = x[1] # mu_x
+        a.y = x[2] # mu_y
         dist = remapTwistedTorus(a, others, dim)
         #dist = np.sqrt((others.x - a.x)**2 + (others.y - a.y)**2)
-        print x[2], x[3]
-        return (np.abs(x[0]) + np.abs(x[1]) * np.exp( -dist**2/2./ x[4]**2 )) - sig_f
-#                |      |                            |
-#                C      A                          sigma
+        print "C:", x[0], a, "sigma:", x[3]
+        return (np.abs(x[0]) * np.exp( -dist**2/2./ x[3]**2 )) - sig_f
+#                       |                            |
+#                       A                          sigma
 
-    x0 = np.array([i.C0, i.A0, i.mu0_x, i.mu0_y, i.sigma0])
+    x0 = np.array([i.A0, i.mu0_x, i.mu0_y, i.sigma0])
 
     xest,ierr = scipy.optimize.leastsq(gaussDiff, x0, maxfev=10000)
     return xest
 
 
-def fitGaussianBump2D(sig, dim):
+
+## Fit a 2D Gaussian onto a (potential) firing rate bump. On Twisted torus
+#
+# @param sig    Firing rate map to fit - a 2D numpy array
+# @param sim    Dimensions of the twisted torus (Position2D)
+# @return Estimated values for the Gaussian (see Position2D)
+def fitGaussianBumpTT(sig, dim):
     '''
     Fit a Gaussian to a rate map, using least squares method.
     '''
@@ -235,7 +238,7 @@ def fitGaussianBump2D(sig, dim):
     init.mu0_y = dim.y / 2.0
     init.sigma0  = 1.0
     
-    return fitGaussian2D(rateMap.flatten(), init, dim)
+    return fitGaussianTT(rateMap.flatten(), init, dim)
 
 
 
@@ -315,18 +318,16 @@ if (__name__ == '__main__'):
     pos.x = X.flatten()
     pos.y = Y.flatten()
 
-
-    C       = 0.0
     A       = 10.0
-    mu_x    = 5.0
-    mu_y    = 5.0
+    mu_x    = 0.1
+    mu_y    = 70.0
     sigma   = 20
 
     a0 = Position2D()
     a0.x = mu_x
     a0.y = mu_y
     dist = remapTwistedTorus(a0, pos, dims)
-    rateMap = C + A*np.exp(- dist**2 / (2*sigma**2))
+    rateMap = A*np.exp(- dist**2 / (2*sigma**2))
     rateMap = np.reshape(rateMap, (dims.y, dims.x))
   
     figure()
@@ -334,8 +335,8 @@ if (__name__ == '__main__'):
     figure()
     pcolormesh(X, Y, rateMap); colorbar()
   
-    param_est = fitGaussianBump2D(rateMap, dims)
-    Cest, Aest, muxest, muyest, sigmaest = param_est
+    param_est = fitGaussianBumpTT(rateMap, dims)
+    Aest, muxest, muyest, sigmaest = param_est
 
     print param_est
     
