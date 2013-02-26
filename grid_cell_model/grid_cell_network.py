@@ -161,7 +161,7 @@ class GridCellNetwork(object):
             others_y += (double) prefDir_y;
     
             double d1 = sqrt(SQ(a_x - others_x) +       SQ(a_y - others_y));
-            double d2 = sqrt(SQ(a_x - others_x + 1.) +  SQ(a_y - others_y));
+            double d2 = sqrt(SQ(a_x - others_x - 1.) +  SQ(a_y - others_y));
             double d3 = sqrt(SQ(a_x - others_x + 1.) +  SQ(a_y - others_y));
             double d4 = sqrt(SQ(a_x - others_x + 0.5) + SQ(a_y - others_y - y_dim));
             double d5 = sqrt(SQ(a_x - others_x - 0.5) + SQ(a_y - others_y - y_dim));
