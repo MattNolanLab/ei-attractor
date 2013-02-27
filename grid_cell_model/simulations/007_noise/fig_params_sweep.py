@@ -21,13 +21,12 @@
 from scipy.io           import loadmat, savemat
 from matplotlib.pyplot  import *
 
-from tools              import *
-from spike_analysis     import firingRate, multipleFiringRate
+from analysis.signal    import splitSigToThetaCycles, getChargeTheta
+from analysis.spikes    import firingRate, multipleFiringRate
 
 import numpy
 import numpy as np
 import pp
-import tools
 
 
 jobStart = 0
@@ -67,12 +66,12 @@ def currentStatistics(current, dt, theta_start_t, theta_freq):
       * amplitude of the current (simply max) per each theta cycle
       * total charge per theta cycle
     '''
-    curr_phase = tools.splitSigToThetaCycles(current[theta_start_t/dt:],
+    curr_phase = splitSigToThetaCycles(current[theta_start_t/dt:],
             1./theta_freq, dt)
 
     curr_max = numpy.max(curr_phase, axis=1)
     curr_min = numpy.min(curr_phase, axis=1)
-    charge = tools.getChargeTheta(curr_phase, dt)
+    charge = getChargeTheta(curr_phase, dt)
 
     return numpy.mean(curr_max), numpy.mean(curr_min), numpy.mean(charge)
 

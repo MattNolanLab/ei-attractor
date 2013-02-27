@@ -26,7 +26,7 @@ from optparse   import OptionParser
 
 from parameters              import *
 from grid_cell_network_nest  import *
-from spike_analysis          import *
+from analysis.spikes         import slidingFiringRateTuple, torusPopulationVector
 
 import time
 import numpy as np

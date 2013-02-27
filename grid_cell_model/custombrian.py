@@ -7,6 +7,8 @@ import logging as lg
 
 from datetime import datetime
 
+from analysis.spikes import firingRateSlidingWindow, torusPopulationVectorFromRates
+
 
 
 class ExtendedSpikeMonitor(SpikeMonitor):
@@ -49,7 +51,7 @@ class ExtendedSpikeMonitor(SpikeMonitor):
         length is int((tend-tstart)/dt)+1 long.
         dt does not have to be relevant to simulation dt at all
         '''
-        return spike_analysis.firingRateSlidingWindow(self.aspikes, tstart, tend, dt, winLen)
+        return firingRateSlidingWindow(self.aspikes, tstart, tend, dt, winLen)
 
 
 
@@ -89,7 +91,7 @@ class ExtendedSpikeMonitor(SpikeMonitor):
 
     def torusPopulationVector(self, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=1.0):
         (F, tsteps) = self.getFiringRate(tstart, tend, dt, winLen)
-        return spike_analysis.torusPopulationVectorFromRates((F, tsteps), sheetSize)
+        return torusPopulationVectorFromRates((F, tsteps), sheetSize)
 
 
 

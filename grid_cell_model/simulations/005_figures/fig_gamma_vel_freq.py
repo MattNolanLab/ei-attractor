@@ -25,7 +25,7 @@ from matplotlib.pyplot  import *
 from tables             import *
 
 from grid_cell_analysis import *
-from tools              import *
+from analysis.signal    import butterBandPass, CWT
 
 
 jobRange = [100, 100]

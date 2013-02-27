@@ -1,5 +1,5 @@
 #
-#   spike_analysis.py
+#   spikes.py
 #
 #   Functions for analysis of spike trains
 #
@@ -22,6 +22,10 @@ import numpy as np
 import scipy
 
 from scipy import weave
+
+__all__ = ['firingRate', 'multipleFiringRate', 'firingRateFromPairs',
+        'firingRateSlidingWindow', 'slidingFiringRateTuple',
+        'torusPopulationVector', 'torusPopulationVectorFromRates']
 
 
 def firingRate(spikeTrain, tstart, tend):

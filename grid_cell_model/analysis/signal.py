@@ -1,7 +1,7 @@
 #
-#   tools.py
+#   signal.py
 #
-#   Some useful data analysis functions.
+#   Signal analysis tools: ffts, cwt, etc. specific to GridCells
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -27,6 +27,11 @@ from Wavelets import Morlet
 from matplotlib.pyplot import *
 
 from os import system
+
+__all__ = ['butterHighPass', 'butterBandPass', 'spikePhaseTrialRaster',
+        'splitSigToThetaCycles', 'getChargeTheta', 'phaseCWT', 'CWT',
+        'fft_real_freq']
+
 
 def butterHighPass(sig, dt, f_pass):
     nyq_f = 1./dt/2
@@ -54,34 +59,26 @@ def spikePhaseTrialRaster(spikeTimes, f, start_t=0):
     times  = np.mod(spikeTimes, 1./f)
     return (phases, times, trials)
 
-def createJobDir(options):
-    # Create job directory in options.output_dir/jobXXXX
-    outputDir = options.output_dir + '/job{0:04}'.format(options.job_num) +'/'
-    ec = system('mkdir ' + outputDir)
-    if ec != 0:
-        print "Could not create output directory: " + outputDir
-        ec = system('ls ' + outputDir)
-        if ec == 0:
-            print "But it can be listed --> continuing!"
-        else:
-            print "And it cannot be listed. Check your permissions and rerun!"
-            exit(1)
-    return outputDir
 
 
 
+## Take a 1D signal and rescale it to signals of individual theta cycles.
+#
+# Each row of the result contains one theta cycle and it is assumed that theta
+# is generated continuously.
+#
+# The last, unaligned part of the signal will be discarded.
+# 
+# Phase(sig, t=0) must be 0, no phase shifts!
+#
+# @param sig   Signal with dt.
+# @param thetaT Theta period. MUST be a multiple of dt
+# @param dt     Time resolution of the signal. 
 def splitSigToThetaCycles(sig, thetaT, dt):
-    '''
-    Take a 1D signal (np array) and rescale it to a 2D array, in which every row
-    corresponds to one theta cycle.
-    thetaT must be a multiple of dt
-    The last, unaligned part of the signal will be discarded.
-
-    Phase(sig, t=0) must be 0, no phase shifts!
-    '''
     n_ph = thetaT / dt
     q_ph = len(sig) // n_ph
     return np.reshape(sig[0:q_ph*n_ph], (q_ph, n_ph))
+
 
 
 def getChargeTheta(sig_theta_sliced, dt):
@@ -135,26 +132,16 @@ def CWT(sig, dt, maxF, dF=2):
     return np.abs(w.cwt)**2, 1./(w.scales*w.fourierwl*dt)
 
 
-def createIgorSpikeRaster(spikes, yvals=None):
-    '''
-    spikes  row-wise 2d array of spike times
-    '''
-    if yvals is None:
-        yvals = range(len(spikes)) + 1
 
-    raster_x = np.ndarray((0))
-    raster_y = np.ndarray((0))
-    for it in range(len(spikes)):
-        raster_x = np.hstack((raster_x, spikes[it]))
-        raster_y = np.hstack((raster_y, np.zeros((len(spikes[it]))) + yvals[it]))
-
-    return (raster_x, raster_y)
-
+## Compute a DFT of a real signal and return an array of frequencies and
+# Fourier coefficients.
+#
+# @param sig    The signal
+# @param dt     Sampling rate of the signal
+# @return A tuple (F, sig~). F is an array of frequencies, sig~ is the fourier
+#         transform
+#
 def fft_real_freq(sig, dt):
-    '''
-    Compute a DFT of a real signal and return an array of frequencies and
-    Fourier coefficients
-    '''
     S = fft(sig)
     S_F = np.linspace(0, 1, len(S)/2) / dt / 2.0
 
@@ -162,7 +149,6 @@ def fft_real_freq(sig, dt):
 
 
     
-
 
 ##############################################################################
 #                                   Tests

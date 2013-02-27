@@ -63,7 +63,6 @@ from numpy.random   import rand
 from numpy          import sqrt
 
 from common         import *
-import data_analysis
 
 import numpy    as np
 import logging  as lg

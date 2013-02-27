@@ -29,7 +29,7 @@ from optparse   import OptionParser
 from parameters              import *
 from grid_cell_network_brian import *
 from custombrian             import *
-from tools                   import *
+from analysis.signal         import butterHighPass, butterBandPass,spikePhaseTrialRaster, phaseCWT
 from plotting                import *
 
 import time

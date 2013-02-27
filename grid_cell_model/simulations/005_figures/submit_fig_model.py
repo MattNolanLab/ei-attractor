@@ -100,10 +100,10 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-iterparams = {
-        'Ne'    : [8, 12, 16, 20, 24, 28, 32],
-        'Ni'    : [8, 12, 16, 20, 24, 28, 32]
-        
+#iterparams = {
+#        'Ne'    : [8, 12, 16, 20, 24, 28, 32],
+#        'Ni'    : [8, 12, 16, 20, 24, 28, 32]
+#        
 #        'g_uni_AMPA_total'  : np.arange(40, 320, 20) 
 #        'Iext_e_theta' : np.arange(375, 625, 25),
 #        'Iext_i_theta' : [25, 50]
@@ -114,8 +114,8 @@ iterparams = {
 #        'g_uni_GABA_total'  : [0, 25, 50, 75, 100, 125, 150, 175]
 #    'pAMPA_mu'  : np.array([0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]) / 0.6
 #        'noise_sigma'   : np.arange(0, 4.1, 0.2)
-}
-ac.insertDict(iterparams, mult=False, printout=True)
+#}
+#ac.insertDict(iterparams, mult=False, printout=True)
 
 
 if EDDIE:
