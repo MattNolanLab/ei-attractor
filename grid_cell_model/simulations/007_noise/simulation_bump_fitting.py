@@ -26,6 +26,7 @@ from optparse   import OptionParser
 from parameters              import *
 from grid_cell_network_nest  import *
 from analysis.spikes         import slidingFiringRateTuple, torusPopulationVector
+from analysis.image          import Position2D, fitGaussianBumpTT
 
 import time
 import numpy as np
@@ -144,6 +145,12 @@ bumpI = bumpT / F_dt
 bump_e = np.reshape(Fe[:, bumpI], (ei_net.Ne_y, ei_net.Ne_x))
 bump_i = np.reshape(Fi[:, bumpI], (ei_net.Ni_y, ei_net.Ni_x))
 
+dim_e = Position2D()
+dim_e.x = ei_net.Ne_x
+dim_e.y = ei_net.Ne_y
+G_est = fitGaussianBumpTT(bump_e, dim_e)
+print G_est
+
 
 # Flattened firing rate of E/I cells
 figure()
@@ -165,6 +172,18 @@ colorbar()
 title('Firing rate of I cells')
 
 
+# Flattened firing rate of Place cells
+figure()
+T, N_id = np.meshgrid(Fpc_t, np.arange(ei_net.N_pc_created))
+xlim([0, 1000])
+pcolormesh(T, N_id, Fpc)
+xlabel("Time (s)")
+ylabel("Neuron #")
+axis('tight')
+colorbar()
+title('Firing rate of Place cells')
+
+
 ## External currents
 #figure()
 #ax = subplot(211)
@@ -183,7 +202,7 @@ figure()
 ax = subplot(211)
 plot(events_e['times'], events_e['V_m'])
 ylabel('E cell $V_m$')
-subplot(212)
+subplot(212, sharex=ax)
 plot(events_i['times'], events_i['V_m'])
 ylabel('I cell $V_m$')
 xlabel('Time (ms)')
