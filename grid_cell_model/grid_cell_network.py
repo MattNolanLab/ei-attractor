@@ -63,6 +63,7 @@ from numpy.random   import rand
 from numpy          import sqrt
 
 from common         import *
+from analysis.image import Position2D, remapTwistedTorus
 
 import numpy    as np
 import logging  as lg
@@ -126,83 +127,56 @@ class GridCellNetwork(object):
         raise NotImplementedException("GridCellNetwork.getOutgoingConnections")
 
 
-    def _remap_twisted_torus(self, a, others, prefDir):
-    
-        a_x = float(a[0, 0])
-        a_y = float(a[0, 1])
-        prefDir_x = float(prefDir[0, 0])
-        prefDir_y = float(prefDir[0, 1])
-    
-        #others_x = others[:, 0] + prefDir_x
-        #others_y = others[:, 1] + prefDir_y
-    
-        #d1 = sqrt((a_x - others_x)**2 + (a_y - others_y)**2)
-        #d2 = sqrt((a_x - others_x - 1.)**2 + (a_y - others_y)**2)
-        #d3 = sqrt((a_x - others_x + 1.)**2 + (a_y - others_y)**2)
-        #d4 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y - self.y_dim)**2)
-        #d5 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y - self.y_dim)**2)
-        #d6 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y + self.y_dim)**2)
-        #d7 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y + self.y_dim)**2)
-    
-        szO = others.shape[0]
-        y_dim = float(self.y_dim)
-        ret = np.ndarray((szO,))
-    
-        code = '''
-        #define SQ(x) ((double)(x) * (x))
-        #define MIN(x1, x2) ((x1) < (x2) ? (x1) : (x2))
-    
-        for (int i = 0; i < szO; i++)
-        {
-            double others_x = others(i, 0);
-            double others_y = others(i, 1);
-            others_x += (double) prefDir_x;
-            others_y += (double) prefDir_y;
-    
-            double d1 = sqrt(SQ(a_x - others_x) +       SQ(a_y - others_y));
-            double d2 = sqrt(SQ(a_x - others_x - 1.) +  SQ(a_y - others_y));
-            double d3 = sqrt(SQ(a_x - others_x + 1.) +  SQ(a_y - others_y));
-            double d4 = sqrt(SQ(a_x - others_x + 0.5) + SQ(a_y - others_y - y_dim));
-            double d5 = sqrt(SQ(a_x - others_x - 0.5) + SQ(a_y - others_y - y_dim));
-            double d6 = sqrt(SQ(a_x - others_x + 0.5) + SQ(a_y - others_y + y_dim));
-            double d7 = sqrt(SQ(a_x - others_x - 0.5) + SQ(a_y - others_y + y_dim));
-    
-            ret(i) = MIN(d7, MIN(d6, MIN(d5, MIN(d4, MIN(d3, MIN(d2, d1))))));
-    
-        }
-        '''
-        
-        weave.inline(code,
-            ['others', 'szO', 'ret', 'prefDir_x', 'prefDir_y', 'a_x', 'a_y', 'y_dim'],
-            type_converters=weave.converters.blitz,
-            compiler='gcc',
-            extra_compile_args=['-O3'],
-            verbose=2)
-    
-        
-        #return np.min((d1, d2, d3, d4, d5, d6, d7), 0)
-        #import pdb; pdb.set_trace()
-        #print ret
-        return ret
 
-
+    ## Generate ring-like weights.
+    #
+    # Here we assume that X coordinates are normalised to <0, 1), and Y
+    # coordinates are normalised to <0, sqrt(3)/2) Y coordinates are twisted,
+    # i.e. X will have additional position shifts when determining minimum.
+    #
+    # @param a        Neuron center, normalised. A Position2D object.
+    # @param others   Positions of postsynaptic neurons. A Position2D object.
+    # @param mu       Radius of the circular function
+    # @param sigma    Width of the circular function
+    # @param prefDir  Preferred direction of the cell. A Position2D object.
+    # @param prefDirC A preferred direction coefficient. A multiplier.
+    # @return An array (1D) of normalized weights.
+    #
     def _generateRinglikeWeights(self, a, others, mu, sigma, prefDir, prefDirC):
-        '''
-        Here we assume that X coordinates are normalised to <0, 1), and Y
-        coordinates are normalised to <0, sqrt(3)/2)
-        Y coordinates are twisted, i.e. X will have additional position shifts
-        when determining minimum
-        '''
-        prefDir = np.array(prefDir, dtype=float) * prefDirC
-        d = self._remap_twisted_torus(a, others, prefDir)
+        dim = Position2D()
+        dim.x = 1.0
+        dim.y = self.y_dim
+
+        a.x -= prefDirC*prefDir.x
+        a.y -= prefDirC*prefDir.y
+
+        d = remapTwistedTorus(a, others, dim)
         return np.exp(-(d - mu)**2/2/sigma**2)
 
 
+    ## Generate Gaussian-like weights, i.e. local connections
+    #
+    # Here we assume that X coordinates are normalised to <0, 1), and Y
+    # coordinates are normalised to <0, sqrt(3)/2) Y coordinates are twisted,
+    # i.e. X will have additional position shifts when determining minimum.
+    #
+    # @param a        Neuron center, normalised. A Position2D object.
+    # @param others   Positions of postsynaptic neurons. A Position2D object.
+    # @param sigma    Std. dev. of the Gaussian (normalised)
+    # @param prefDir  Preferred direction of the cell. A Position2D object.
+    # @param prefDirC A preferred direction coefficient. A multiplier.
+    # @return An array (1D) of normalized weights.
+    #
     def _generateGaussianWeights(self, a, others, sigma, prefDir, prefDirC):
-
         #import pdb; pdb.set_trace()
-        prefDir = np.array(prefDir, dtype=float) * prefDirC
-        d = self._remap_twisted_torus(a, others, prefDir)
+        dim = Position2D()
+        dim.x = 1.0
+        dim.y = self.y_dim
+
+        a.x -= prefDirC*prefDir.x
+        a.y -= prefDirC*prefDir.y
+
+        d = remapTwistedTorus(a, others, dim)
         return np.exp(-d**2/2./sigma**2)
 
 
@@ -241,10 +215,15 @@ class GridCellNetwork(object):
         print "g_uni_GABA_mean: ", g_uni_GABA_mean
 
         # E --> I connections
+        others_e  = Position2D()
+        pd_norm_e = Position2D()
+        a         = Position2D()
+
         X, Y = np.meshgrid(np.arange(self.Ni_x), np.arange(self.Ni_y))
         X = 1. * X / self.Ni_x
         Y = 1. * Y / self.Ni_y * self.y_dim
-        others_e = np.vstack((X.ravel(), Y.ravel())).T
+        others_e.x = X.ravel()
+        others_e.y = Y.ravel()
 
         self.prefDirs_e = np.ndarray((self.net_Ne, 2))
         for y in xrange(self.Ne_y):
@@ -254,14 +233,15 @@ class GridCellNetwork(object):
                 it = y*self.Ne_x + x
 
                 x_e_norm = float(x) / self.Ne_x
+                a.x = x_e_norm
+                a.y = y_e_norm
 
-                a = np.array([[x_e_norm, y_e_norm]])
                 pd_e = getPreferredDirection(x, y)
                 self.prefDirs_e[it, :] = pd_e
 
-                pd_norm_e = np.ndarray((1, 2)) # normalise preferred dirs before sending them
-                pd_norm_e[0, 0] = 1. * pd_e[0] / self.Ni_x
-                pd_norm_e[0, 1] = 1. * pd_e[1] / self.Ni_y * self.y_dim
+                pd_norm_e.x = 1. * pd_e[0] / self.Ni_x
+                pd_norm_e.y = 1. * pd_e[1] / self.Ni_y * self.y_dim
+
                 if AMPA_gaussian == 1:
                     tmp_templ = self._generateGaussianWeights(a, others_e,
                             pAMPA_sigma, pd_norm_e, self.no.prefDirC_e)
@@ -276,25 +256,33 @@ class GridCellNetwork(object):
                 self._divergentConnectEI(it, range(self.net_Ni), tmp_templ)
 
         # I --> E connections
-        conn_th = 1e-5
-        self.prefDirs_i = np.ndarray((self.net_Ni, 2))
+        others_i  = Position2D()
+        pd_norm_i = Position2D()
+        a         = Position2D()
+
         X, Y = np.meshgrid(np.arange(self.Ne_x), np.arange(self.Ne_y))
         X = 1. * X / self.Ne_x
         Y = 1. * Y / self.Ne_y * self.y_dim
-        others_i = np.vstack((X.ravel(), Y.ravel())).T
+        others_i.x = X.ravel()
+        others_i.y = Y.ravel()
+
+        conn_th = 1e-5
+        self.prefDirs_i = np.ndarray((self.net_Ni, 2))
         for y in xrange(self.Ni_y):
             y_i_norm = float(y) / self.Ni_y * self.y_dim
             for x in xrange(self.Ni_x):
-                x_i_norm = float(x) / self.Ni_x
                 it = y*self.Ni_x + x
+                x_i_norm = float(x) / self.Ni_x
 
-                a = np.array([[x_i_norm, y_i_norm]])
+                a.x = x_i_norm
+                a.y = y_i_norm
+
                 pd_i = getPreferredDirection(x, y)
                 self.prefDirs_i[it, :] = pd_i
 
-                pd_norm_i = np.ndarray((1, 2)) # normalise preferred dirs before sending them
-                pd_norm_i[0, 0] = 1. * pd_i[0] / self.Ne_x
-                pd_norm_i[0, 1] = 1. * pd_i[1] / self.Ne_y * self.y_dim
+                pd_norm_i.x = 1. * pd_i[0] / self.Ne_x
+                pd_norm_i.y = 1. * pd_i[1] / self.Ne_y * self.y_dim
+
                 if AMPA_gaussian == 1:
                     tmp_templ = self._generateRinglikeWeights(a, others_i,
                             pGABA_mu, pGABA_sigma, pd_norm_i, self.no.prefDirC_i)
