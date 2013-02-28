@@ -21,7 +21,7 @@
 from matplotlib.pyplot import *
 from brian import *
 
-from tools import *
+from analysis.signal import butterHighPass
 
 small_plot_figsize = (3.75, 2.75)
 small_plot_axsize = [0.3, 0.15, 0.65, 0.80]

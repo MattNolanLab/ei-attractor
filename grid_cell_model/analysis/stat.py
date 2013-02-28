@@ -1,8 +1,7 @@
-#!/bin/sh
 #
-#   eddie_submit.sh
+#   stat.py
 #
-#   Submit job to the cluster.
+#   Statistical analysis packages for GridCells
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -20,21 +19,18 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Initialise environment module
 
-. /etc/profile.d/modules.sh
-
-# Use python 2.6
-
-module load python/2.6.6
+__all__ = ['circularVariance']
 
 
-BASE=../../
-export PYTHONPATH="/exports/work/inf_ndtc/s0966762/usr/local/lib/python2.6/site-packages:$BASE"
+def circularvariance(x, range):
+    ''' Returns circular moments of a vector of circular variable x, defined in
+    the 'range' (this will be mapped to a circle)'''
+    c = np.exp(1j*2*np.pi*x/range)
+    avg = np.mean(c)
+    theta_avg = np.angle(avg)
+    theta_var = 1 - np.abs(avg)
+    return (theta_avg, theta_var)
+    
 
-export LOCAL_DIR=/exports/work/inf_ndtc/lsolanka
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
 
-
-# Run the program
-python2.6 $* 

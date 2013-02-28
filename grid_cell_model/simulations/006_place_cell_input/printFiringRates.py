@@ -28,7 +28,8 @@ from scipy.io           import loadmat
 from scipy.optimize     import leastsq
 from matplotlib.pyplot  import *
 
-import spike_analysis
+from analysis           import spikes
+from analysis.spikes    import firingRateSlidingWindow
 
 
 
@@ -63,8 +64,8 @@ def processData(jobNum, gen_it, fo):
     F_tend = T*1e-3
     F_dt = 0.05
     F_winLen = 0.25
-    Fe, Fe_t = spike_analysis.firingRateSlidingWindow(spikeCell_e, F_tstart, F_tend, F_dt, F_winLen) 
-    Fi, Fi_t = spike_analysis.firingRateSlidingWindow(spikeCell_i, F_tstart, F_tend, F_dt, F_winLen) 
+    Fe, Fe_t = firingRateSlidingWindow(spikeCell_e, F_tstart, F_tend, F_dt, F_winLen) 
+    Fi, Fi_t = firingRateSlidingWindow(spikeCell_i, F_tstart, F_tend, F_dt, F_winLen) 
 
     from matplotlib.pyplot import figure, subplot, pcolormesh, xlabel, ylabel, savefig
     figure()
@@ -99,7 +100,7 @@ if parallel:
                     processData,
                     (jobNum, gen_it, fo),
                     (),
-                    ("numpy", "scipy.io", "spike_analysis", "matplotlib.pyplot")))
+                    ("numpy", "scipy.io", "analysis.spikes", "matplotlib.pyplot")))
 
     it = 0
     res = []

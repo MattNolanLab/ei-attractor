@@ -1,0 +1,11 @@
+This is the python data analysis package that contains several generic and custom
+made data analysis routines
+
+
+Directory/file structure proposal
+
+analysis/
+    
+    stat.py     Statistical analysis
+    image.py    Image analysis
+    other.py    Other, unstructured routines

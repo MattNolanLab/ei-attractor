@@ -1,7 +1,7 @@
 #
-#   data_analysis.py
+#   other.py
 #
-#   Some useful data analysis functions
+#   Other routines that do not fit into generic structure of the package.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -18,28 +18,13 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from scipy.io import loadmat
-from matplotlib.pyplot import *
 
-import numpy as np
+__all__ ['bumpVariancePos']
 
-
-class ReturnStruct(object):
-    pass
-
-def circularVariance(x, range):
-    ''' Returns circular moments of a vector of circular variable x, defined in
-    the 'range' (this will be mapped to a circle)'''
-    c = np.exp(1j*2*np.pi*x/range)
-    avg = np.mean(c)
-    theta_avg = np.angle(avg)
-    theta_var = 1 - np.abs(avg)
-    return (theta_avg, theta_var)
-    
 
 def bumpVariancePos(dirName, fileNamePrefix, jobRange, trialRange, t_start):
     '''t_start - in discrete time'''
-    ret = ReturnStruct()
+    ret = Position2D()
 
     fileNameTemp = "{0}/{1}job{2:04}_trial{3:04}"
     F_dt = 0.2
@@ -99,67 +84,37 @@ def bumpVariancePos(dirName, fileNamePrefix, jobRange, trialRange, t_start):
 
 
 
-## Remap a distance between 'a' and others on a two dimensional twisted torus
-#
-# Take 'a' which is a 2D position and others, which is a vetor of 2D positions
-# and compute the distances between them
-def remapTwistedTorus(self, a, others, prefDir, x_dim, y_dim):
-
-    a_x = float(a[0, 0])
-    a_y = float(a[0, 1])
-    prefDir_x = float(prefDir[0, 0])
-    prefDir_y = float(prefDir[0, 1])
-
-    #others_x = others[:, 0] + prefDir_x
-    #others_y = others[:, 1] + prefDir_y
-
-    #d1 = sqrt((a_x - others_x)**2 + (a_y - others_y)**2)
-    #d2 = sqrt((a_x - others_x - 1.)**2 + (a_y - others_y)**2)
-    #d3 = sqrt((a_x - others_x + 1.)**2 + (a_y - others_y)**2)
-    #d4 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y - self.y_dim)**2)
-    #d5 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y - self.y_dim)**2)
-    #d6 = sqrt((a_x - others_x + 0.5)**2 + (a_y - others_y + self.y_dim)**2)
-    #d7 = sqrt((a_x - others_x - 0.5)**2 + (a_y - others_y + self.y_dim)**2)
-
-    szO = others.shape[0]
-    y_dim = float(self.y_dim)
-    ret = np.ndarray((szO,))
-
-    code = '''
-    #define SQ(x) ((double)(x) * (x))
-    #define MIN(x1, x2) ((x1) < (x2) ? (x1) : (x2))
-
-    for (int i = 0; i < szO; i++)
-    {
-        double others_x = others(i, 0);
-        double others_y = others(i, 1);
-        others_x += (double) prefDir_x;
-        others_y += (double) prefDir_y;
-
-        double d1 = sqrt(SQ(a_x - others_x) +       SQ(a_y - others_y));
-        double d2 = sqrt(SQ(a_x - others_x + 1.) +  SQ(a_y - others_y));
-        double d3 = sqrt(SQ(a_x - others_x + 1.) +  SQ(a_y - others_y));
-        double d4 = sqrt(SQ(a_x - others_x + 0.5) + SQ(a_y - others_y - y_dim));
-        double d5 = sqrt(SQ(a_x - others_x - 0.5) + SQ(a_y - others_y - y_dim));
-        double d6 = sqrt(SQ(a_x - others_x + 0.5) + SQ(a_y - others_y + y_dim));
-        double d7 = sqrt(SQ(a_x - others_x - 0.5) + SQ(a_y - others_y + y_dim));
-
-        ret(i) = MIN(d7, MIN(d6, MIN(d5, MIN(d4, MIN(d3, MIN(d2, d1))))));
-
-    }
+def createIgorSpikeRaster(spikes, yvals=None):
     '''
-    
-    weave.inline(code,
-        ['others', 'szO', 'ret', 'prefDir_x', 'prefDir_y', 'a_x', 'a_y', 'y_dim'],
-        type_converters=weave.converters.blitz,
-        compiler='gcc',
-        extra_compile_args=['-O3'],
-        verbose=2)
+    spikes  row-wise 2d array of spike times
+    '''
+    if yvals is None:
+        yvals = range(len(spikes)) + 1
 
-    
-    #return np.min((d1, d2, d3, d4, d5, d6, d7), 0)
-    #import pdb; pdb.set_trace()
-    #print ret
-    return ret
-        
+    raster_x = np.ndarray((0))
+    raster_y = np.ndarray((0))
+    for it in range(len(spikes)):
+        raster_x = np.hstack((raster_x, spikes[it]))
+        raster_y = np.hstack((raster_y, np.zeros((len(spikes[it]))) + yvals[it]))
+
+    return (raster_x, raster_y)
+
+
+def createJobDir(options):
+    # Create job directory in options.output_dir/jobXXXX
+    outputDir = options.output_dir + '/job{0:04}'.format(options.job_num) +'/'
+    ec = system('mkdir ' + outputDir)
+    if ec != 0:
+        print "Could not create output directory: " + outputDir
+        ec = system('ls ' + outputDir)
+        if ec == 0:
+            print "But it can be listed --> continuing!"
+        else:
+            print "And it cannot be listed. Check your permissions and rerun!"
+            exit(1)
+    return outputDir
+
+
+
+
 

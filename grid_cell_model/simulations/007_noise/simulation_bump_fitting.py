@@ -1,8 +1,7 @@
 #
-#   simulation_basic_grids.py
+#   simulation_bump_fitting.py
 #
-#   Main simulation run: grid fields with theta input and all the inhibition
-#   (for gamma) and place input.
+#   Main simulation run: Fitting a Gaussian to the bump and frequency analysis.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -115,6 +114,9 @@ print "Simulation time:",duration,"seconds"
 output_fname = "{0}/{1}job{2:05}_".format(options.output_dir, options.fileNamePrefix, options.job_num)
 
 
+events_e = nest.GetStatus(stateMon_e)[1]['events']
+events_i = nest.GetStatus(stateMon_i)[0]['events']
+
 F_tstart = 0.0
 F_tend = options.time
 F_dt = 20.0
@@ -137,22 +139,13 @@ if (len(ei_net.PC) != 0):
             ei_net.N_pc_created, F_tstart, F_tend, F_dt, F_winLen)
 
 
-
-# Raster plot
-nest.raster_plot.from_device(spikeMon_e, hist=False)
-title('E cells')
-nest.raster_plot.from_device(spikeMon_i, hist=False)
-title('I cells')
-
-events_e = nest.GetStatus(stateMon_e)[1]['events']
-events_i = nest.GetStatus(stateMon_i)[0]['events']
-if (len(ei_net.PC) != 0):
-    nest.raster_plot.from_device(pc_spikemon, hist=False)
-    title('Place cells')
+bumpT = ei_net.no.time - 2*F_winLen
+bumpI = bumpT / F_dt
+bump_e = np.reshape(Fe[:, bumpI], (ei_net.Ne_y, ei_net.Ne_x))
+bump_i = np.reshape(Fi[:, bumpI], (ei_net.Ni_y, ei_net.Ni_x))
 
 
-
-# Flattened firing rate of E cells
+# Flattened firing rate of E/I cells
 figure()
 T, N_id = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
 pcolormesh(T, N_id,  Fe)
@@ -172,25 +165,17 @@ colorbar()
 title('Firing rate of I cells')
 
 
-# External currents
-figure()
-ax = subplot(211)
-plot(events_e['times'], events_e['I_stim'])
-ylabel('E cell $I_{stim}$')
-axis('tight')
-subplot(212)
-plot(events_i['times'], events_i['I_stim'])
-ylabel('I cell $I_{stim}$')
-xlabel('Time (ms)')
-
-
-#
-## Histogram of E external current (to validate noise)
+## External currents
 #figure()
-#hist(events_e['I_stim'], 100)
-#xlabel('Current (pA)')
-#ylabel('Count')
-#
+#ax = subplot(211)
+#plot(events_e['times'], events_e['I_stim'])
+#ylabel('E cell $I_{stim}$')
+#axis('tight')
+#subplot(212)
+#plot(events_i['times'], events_i['I_stim'])
+#ylabel('I cell $I_{stim}$')
+#xlabel('Time (ms)')
+
 
 
 # E/I Vm
@@ -219,7 +204,7 @@ savefig(output_fname + '_Isyn.pdf')
 
 # Firing rate of E cells on the twisted torus
 figure()
-pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
+pcolormesh(bump_e)
 xlabel('E neuron no.')
 ylabel('E neuron no.')
 colorbar()
@@ -230,7 +215,7 @@ savefig(output_fname + '_firing_snapshot_e.png')
 
 # Firing rate of I cells on the twisted torus
 figure()
-pcolormesh(np.reshape(Fi[:, len(Fi_t)/2], (ei_net.Ni_y, ei_net.Ni_x)))
+pcolormesh(bump_i)
 xlabel('I neuron no.')
 ylabel('I neuron no.')
 colorbar()
@@ -238,32 +223,33 @@ axis('equal')
 title('Firing rates (torus) of I cells')
 savefig(output_fname + '_firing_snapshot_i.png')
 
-## Firing rate of place cells on the twisted torus
-if (len(ei_net.PC) != 0):
-    figure()
-    pcolormesh(np.reshape(Fpc[:, 0], (np.sqrt(ei_net.N_pc_created),
-        np.sqrt(ei_net.N_pc_created))))
-    xlabel('PC neuron no.')
-    ylabel('PC neuron no.')
-    colorbar()
-    axis('equal')
-    title('PC firing rates')
+
+### Firing rate of place cells on the twisted torus
+#if (len(ei_net.PC) != 0):
+#    figure()
+#    pcolormesh(np.reshape(Fpc[:, 0], (np.sqrt(ei_net.N_pc_created),
+#        np.sqrt(ei_net.N_pc_created))))
+#    xlabel('PC neuron no.')
+#    ylabel('PC neuron no.')
+#    colorbar()
+#    axis('equal')
+#    title('PC firing rates')
 
 
-# Print a plot of bump position
-(pos, bumpPos_times) = torusPopulationVector(
-        (senders_e, spikeTimes_e), [ei_net.Ne_x, ei_net.Ne_y],
-        tstart = ei_net.no.theta_start_t,
-        tend   = ei_net.no.time,
-        dt     = F_dt,
-        winLen = F_winLen)
-
-figure(figsize=figSize)
-plot(bumpPos_times, pos)
-xlabel('Time (s)')
-ylabel('Bump position (neurons)')
-legend(['X', 'Y'])
-ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
+## Print a plot of bump position
+#(pos, bumpPos_times) = torusPopulationVector(
+#        (senders_e, spikeTimes_e), [ei_net.Ne_x, ei_net.Ne_y],
+#        tstart = ei_net.no.theta_start_t,
+#        tend   = ei_net.no.time,
+#        dt     = F_dt,
+#        winLen = F_winLen)
+#
+#figure(figsize=figSize)
+#plot(bumpPos_times, pos)
+#xlabel('Time (s)')
+#ylabel('Bump position (neurons)')
+#legend(['X', 'Y'])
+#ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
 
 
 show()
