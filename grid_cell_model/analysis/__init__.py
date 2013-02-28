@@ -19,4 +19,4 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__all__ = ['stat', 'image', 'spikes', 'other']
+__all__ = ['statistics', 'image', 'spikes', 'other']

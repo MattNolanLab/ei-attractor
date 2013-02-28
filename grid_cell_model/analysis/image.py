@@ -19,7 +19,6 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from scipy.io import loadmat
 from scipy    import weave
 from matplotlib.pyplot import *
 
@@ -74,8 +73,8 @@ def remapTwistedTorus(a, others, dim):
     others_x = others.x
     others_y = others.y
     szO = others.x.shape[0]
-    x_dim = dim.x
-    y_dim = dim.y
+    x_dim = float(dim.x)
+    y_dim = float(dim.y)
 
     ret = np.ndarray((szO,))
 
