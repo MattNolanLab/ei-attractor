@@ -134,7 +134,7 @@ def remapTwistedTorus(a, others, dim):
 # @return Estimated values in the order specified above for A...sigma
 #
 def fitGaussianTT(sig_f, i, dim):
-    X, Y = np.meshgrid(np.arange(dims.x), np.arange(dims.y))
+    X, Y = np.meshgrid(np.arange(dim.x), np.arange(dim.y))
     others = Position2D()
     others.x = X.flatten()
     others.y = Y.flatten()
@@ -160,7 +160,7 @@ def fitGaussianTT(sig_f, i, dim):
 ## Fit a 2D Gaussian onto a (potential) firing rate bump. On Twisted torus
 #
 # @param sig    Firing rate map to fit - a 2D numpy array
-# @param sim    Dimensions of the twisted torus (Position2D)
+# @param dim    Dimensions of the twisted torus (Position2D)
 # @return Estimated values for the Gaussian (see Position2D)
 def fitGaussianBumpTT(sig, dim):
     '''
@@ -171,7 +171,7 @@ def fitGaussianBumpTT(sig, dim):
     init.A0 = sig[init.mu0_y, init.mu0_x]
     init.sigma0  = np.max([dim.x, dim.y]) / 2.0
     
-    return fitGaussianTT(rateMap.flatten(), init, dim)
+    return fitGaussianTT(sig.flatten(), init, dim)
 
 
 
