@@ -30,7 +30,7 @@ from os import system
 
 __all__ = ['butterHighPass', 'butterBandPass', 'spikePhaseTrialRaster',
         'splitSigToThetaCycles', 'getChargeTheta', 'phaseCWT', 'CWT',
-        'fft_real_freq']
+        'fft_real_freq', 'relativePowerFFT', 'relativePower']
 
 
 def butterHighPass(sig, dt, f_pass):
@@ -147,6 +147,55 @@ def fft_real_freq(sig, dt):
 
     return S_F, S[0:len(S_F)]
 
+
+
+## Compute power from FFT data in a specified frequency range, relative to the
+# total power.
+#
+# This function will throw an error if the desired frequency range is out of the
+# range of the actual signal.
+#
+# @param fftData A vector of Fourier coefficients.
+# @param fftF    Frequencies corresponding to fftData (Hz).
+# @param Frange  A tuple containing the frequency range (Hz).
+# @return Relative power in the specified freqency range.
+#
+def relativePowerFFT(fftData, fftF, Frange):
+    Fidx = np.nonzero(np.logical_and(fftF >= Frange[0], fftF <= Frange[1]))[0]
+    P = np.abs(fftData)**2
+    rangeP = sum(P[Fidx])
+    return rangeP / sum(P)
+
+
+## Compute relative power of a specified frequency range of a signal.
+#
+# @param sig    The signal.
+# @param dt     dt of the signal.
+# @param Frange A tuple containing the frequency range.
+#
+# @return Relative power in the specified freqency range.
+#
+def relativePower(sig, dt, Frange):
+    fftF, fftData = fft_real_freq(sig - np.mean(sig), dt)
+    return relativePowerFFT(fftData, fftF, Frange)
+
+
+# Get frequency with maximum power
+#
+# @param fftData Fourier coefficients of the signal.
+# @param fftF    A corresponding array of frequencies
+# @param Frange  A tuple containing frequency range to restrict the analysis to.
+#
+# @return An index to fftF, the frequency with maximum power.
+#
+def maxPowerFrequency(fftData, fftF, Frange=None):
+    P = np.abs(fftData)**2
+
+    if (Frange == None):
+        return fftF[np.argmax(P)]
+    else:
+        range = np.logical_and(fftF >= Frange[0], fftF <= Frange[1])
+        return fftF[range][np.argmax(P[range])]
 
     
 

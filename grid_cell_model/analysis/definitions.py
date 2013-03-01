@@ -1,7 +1,7 @@
 #
-#   __init__.py
+#   definitions.py
 #
-#   Data analysis package.
+#   Type definitions common to the whole package.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,4 +19,17 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__all__ = ['statistics', 'image', 'spikes', 'other', 'definitions']
+
+## A range object.
+#
+# Defines low bound (start) and high bound (stop)
+#
+class Range(object):
+
+    def __init__(self, start, stop):
+        self.start = start
+        self.stop = stop
+
+
+    def __str__(self):
+        return "[start: " + self.start + ', stop: ' + self.stop
