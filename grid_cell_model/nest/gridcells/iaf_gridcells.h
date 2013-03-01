@@ -101,7 +101,6 @@
   
   Receives: SpikeEvent, CurrentEvent, DataLoggingRequest
   
-  SeeAlso: iaf_cond_exp, aeif_cond_alpha
 */
 
 namespace nest
@@ -247,6 +246,7 @@ namespace nest
       double_t tau_AHP;         //!< AHP time constant in ms
       double_t E_AHP;           //!< AHP conductance reversal potential in mV
       double_t g_AHP_max;       //!< AHP maximal conductance value in nS
+      bool     g_AHP_ad;        //!< Whether AHP should be adapting or not
 
       double_t g_NMDA_fraction; //!< NMDA fraction of the AMPA conductance in %
 

@@ -112,6 +112,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 "tau_AHP"          : self.no.tau_AHP_e,
                 "E_AHP"            : self.no.E_AHP_e,
                 "g_AHP_max"        : self.no.g_AHP_e_max,
+                "g_AHP_ad"         : False,
                 "I_const"          : self.no.Iext_e_const,
                 "I_ac_amp"         : self.no.Iext_e_theta,
                 "I_ac_freq"        : self.no.theta_freq,
@@ -138,8 +139,9 @@ class NestGridCellNetwork(GridCellNetwork):
                 "tau_NMDA_fall"    : self.no.tau_NMDA_fall,
                 "tau_GABA_A_fall"  : self.no.tau_GABA_A_fall,
                 "tau_AHP"          : self.no.ad_tau_i_mean,
-                "E_AHP"            : self.no.EL_i,  # !!! Here there is no adaptaion
+                "E_AHP"            : self.no.EL_i,  # AHP has a role of adaptation here 
                 "g_AHP_max"        : self.no.ad_i_g_inc,
+                "g_AHP_ad"         : True,
                 "I_const"          : self.no.Iext_i_const,
                 "I_ac_amp"         : self.no.Iext_i_theta,
                 "I_ac_freq"        : self.no.theta_freq,
@@ -152,12 +154,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 "rat_pos_y"        : []}
 
 
-        #tau1_GABA = self.no.tau_GABA_A_fall
-        #tau2_GABA = self.no.tau_GABA_A_rise * self.no.tau_GABA_A_fall / \
-        #        (self.no.tau_GABA_A_rise + self.no.tau_GABA_A_fall);
-        #self.B_GABA = 1/((tau2_GABA/tau1_GABA)**(self.no.tau_GABA_A_rise/tau1_GABA) - 
-        #        (tau2_GABA/tau1_GABA)**(self.no.tau_GABA_A_rise/tau2_GABA))
-        self.B_GABA = 1.0
+        self.B_GABA = 1.0   # Must be here for compatibility with brian code
 
         self.e_model_name = "iaf_gridcells"
         self.i_model_name = "iaf_gridcells"
