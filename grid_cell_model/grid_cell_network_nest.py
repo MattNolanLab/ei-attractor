@@ -261,6 +261,18 @@ class NestGridCellNetwork(GridCellNetwork):
             return self.stateMon_i
 
 
+    ## Create a user defined state monitor (multimeter)
+    #
+    # @param gids   Global IDs of the neurons.
+    # @param params Parameter of the state monitors
+    # @return Global IDs for manipulation in the nest space
+    #
+    def getGenericStateMonitor(self, gids, params):
+        mon = nest.Create('multimeter', len(gids), params=params)
+        nest.Connect(mon, gids)
+        return mon
+
+
 
     def _divergentConnectEI(self, pre, post, weights):
         post_global = list(self.I_pop[0] + np.array(post))
