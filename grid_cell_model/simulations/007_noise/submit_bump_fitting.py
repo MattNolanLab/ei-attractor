@@ -29,7 +29,7 @@ CLUSTER = False  # if eddie, submit on a cluster using qsub
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 30e3  # ms
+parameters['time']              = 5e3  # ms
 parameters['nthreads']          = 8
 
 parameters['output_dir']        = 'output_local'
@@ -42,6 +42,12 @@ parameters['gridSep']           = 70.0      # cm, grid field inter-peak distance
 parameters['N_place_cells']     = 30*30
 
 parameters['noise_sigma']       = 200.0       # pA
+
+
+# Gamma analysis parameters
+parameters['gammaNSample']      = 0.05       # fraction
+parameters['gammaRangeLow']     = 50.0      # Hz
+parameters['gammaRangeHigh']    = 100.0     # Hz
 
 
 startJobNum = 0

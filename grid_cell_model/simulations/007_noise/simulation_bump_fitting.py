@@ -19,17 +19,20 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from scipy.io   import loadmat
-from scipy.io   import savemat
-from optparse   import OptionParser
+import numpy as np
+
+from numpy.random            import choice
+from scipy.io                import loadmat
+from scipy.io                import savemat
+from optparse                import OptionParser
 
 from parameters              import *
 from grid_cell_network_nest  import *
 from analysis.spikes         import slidingFiringRateTuple, torusPopulationVector
 from analysis.image          import Position2D, fitGaussianBumpTT
+from analysis.signal         import fft_real_freq, relativePowerFFT, maxPowerFrequency
 
 import time
-import numpy as np
 import nest
 import nest.raster_plot
 
@@ -39,13 +42,49 @@ mV = 1e-3
 lg.basicConfig(level=lg.DEBUG)
 
 parser          = getOptParser()
-parser.add_option("--ndumps",  type="int",    help="Number of data output dumps during the simulation")
+parser.add_option("--ndumps",         type="int",    help="Number of data output dumps during the simulation")
+parser.add_option("--gammaNSample",   type="float",   help="Fraction of neurons in the network to sample from, for the frequency analysis.")
+parser.add_option("--gammaRangeLow",  type="float",  help="Relative gamma power analysis range low (Hz)")
+parser.add_option("--gammaRangeHigh", type="float",  help="Relative gamma power analysis range high (Hz)")
 
 (options, args) = parser.parse_args()
 options         = setOptionDictionary(parser, options)
 
 # Other
 figSize = (12,8)
+
+
+################################################################################
+#                              Helper functions
+################################################################################
+## Compute power of gamma relative to the total power in the signal
+#
+# @param stateMon   NEST state monitor(s).
+# @param gRange     A tuple containing the gamma range (Hz)
+# @param sigName    A name of the signal to extract from the state monitor.
+#
+def relativeGammaPower(stateMon, gRange, sigName):
+    N = len(stateMon)
+    stat = nest.GetStatus(stateMon)
+
+    relP = np.ndarray((N, ))
+    maxF = np.ndarray((N, ))
+    powerSpectra_P = []
+    powerSpectra_F = []
+
+    for nidx in xrange(N):
+        print "relativeGammaPower: ", nidx
+        times = stat[nidx]['events']['times'] 
+        dt = (times[1] - times[0]) * 1e-3 # sec
+        sig = stat[nidx]['events'][sigName]
+        fftF, fftData = fft_real_freq(sig - np.mean(sig), dt)
+        relP[nidx] = relativePowerFFT(fftData, fftF, Frange=gRange)
+        maxF[nidx] = maxPowerFrequency(fftData, fftF, Frange=gRange)
+        powerSpectra_P.append(np.abs(fftData)**2)
+
+    powerSpectra_F = fftF
+    return relP, maxF, (np.array(powerSpectra_P), powerSpectra_F)
+
 
 
 ################################################################################
@@ -82,6 +121,9 @@ else:
 state_record_e = [ei_net.Ne_x/2 -1 , ei_net.Ne_y/2*ei_net.Ne_x + ei_net.Ne_x/2 - 1]
 state_record_i = [ei_net.Ni_x/2 - 1, ei_net.Ni_y/2*ei_net.Ni_x + ei_net.Ni_x/2 - 1]
 
+NSample = int(options.gammaNSample * ei_net.net_Ne)
+stateRecF_e = choice(ei_net.E_pop, NSample, replace=False)
+
 spikeMon_e = ei_net.getSpikeDetector("E")
 spikeMon_i = ei_net.getSpikeDetector("I")
 pc_spikemon = ei_net.getGenericSpikeDetector(ei_net.PC, "Place cells")
@@ -92,8 +134,14 @@ stateMon_params = {
         'record_from' : ['V_m', 'I_clamp_AMPA', 'I_clamp_NMDA',
             'I_clamp_GABA_A', 'I_stim']
 }
-stateMon_e = ei_net.getStateMonitor("E", state_record_e, stateMon_params)
-stateMon_i = ei_net.getStateMonitor("I", state_record_i, stateMon_params)
+stateMonF_params = {
+        'withtime' : True,
+        'interval' : 0.1,
+        'record_from' : ['I_clamp_GABA_A']
+}
+stateMon_e  = ei_net.getStateMonitor("E", state_record_e, stateMon_params)
+stateMon_i  = ei_net.getStateMonitor("I", state_record_i, stateMon_params)
+stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params)
 
 
 
@@ -255,20 +303,48 @@ savefig(output_fname + '_firing_snapshot_i.png')
 #    title('PC firing rates')
 
 
-## Print a plot of bump position
-#(pos, bumpPos_times) = torusPopulationVector(
-#        (senders_e, spikeTimes_e), [ei_net.Ne_x, ei_net.Ne_y],
-#        tstart = ei_net.no.theta_start_t,
-#        tend   = ei_net.no.time,
-#        dt     = F_dt,
-#        winLen = F_winLen)
-#
-#figure(figsize=figSize)
-#plot(bumpPos_times, pos)
-#xlabel('Time (s)')
-#ylabel('Bump position (neurons)')
-#legend(['X', 'Y'])
-#ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
+# Print a plot of bump position
+(pos, bumpPos_times) = torusPopulationVector(
+        (senders_e, spikeTimes_e), [ei_net.Ne_x, ei_net.Ne_y],
+        tstart = ei_net.no.theta_start_t,
+        tend   = ei_net.no.time,
+        dt     = F_dt,
+        winLen = F_winLen)
+
+figure(figsize=figSize)
+plot(bumpPos_times, pos)
+xlabel('Time (s)')
+ylabel('Bump position (neurons)')
+legend(['X', 'Y'])
+ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
+
+
+# Relative gamma power of inhibition in a sample of E neurons
+figure()
+subplot(1, 2, 1)
+gRange = (options.gammaRangeLow, options.gammaRangeHigh)
+relP_e, maxF_e, spectra_e = relativeGammaPower(stateMonF_e, gRange, 'I_clamp_GABA_A')
+hist(relP_e)
+xlabel('Relative power ($pA^2$)')
+ylabel('Count')
+
+subplot(1, 2, 2)
+hist(maxF_e)
+xlabel('Max. F (Hz)')
+ylabel('Count')
+
+
+figure()
+NP = 5
+Fmax = 150
+spectra_e_P = spectra_e[0]
+spectra_e_F = spectra_e[1]
+Frange = spectra_e_F <= Fmax
+spectra_e_F = np.array([spectra_e_F]*spectra_e_P.shape[0])
+plot(spectra_e_F[0:NP, Frange].T, spectra_e_P[0:NP, Frange].T)
+xlabel('Frequency (Hz)')
+ylabel('Power ($pA^2$)')
+title('Power spectra of $I_{syn}$ of ' + str(NP) + ' selected E neurons')
 
 
 show()
