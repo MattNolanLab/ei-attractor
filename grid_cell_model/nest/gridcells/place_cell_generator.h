@@ -62,71 +62,71 @@ class place_cell_generator : public nest::Node
 {
     public:
 
-    /**
-     * The generator is threaded, so the RNG to use is determined
-     * at run-time, depending on thread.
-     */
-    place_cell_generator();
-    place_cell_generator(place_cell_generator const&);
+        /**
+         * The generator is threaded, so the RNG to use is determined
+         * at run-time, depending on thread.
+         */
+        place_cell_generator();
+        place_cell_generator(place_cell_generator const&);
 
-    bool has_proxies() const {return true;}
+        bool has_proxies() const {return true;}
 
 
-    nest::port check_connection(nest::Connection&, nest::port);
+        nest::port check_connection(nest::Connection&, nest::port);
 
-    void get_status(DictionaryDatum &) const;
-    void set_status(const DictionaryDatum &) ;
+        void get_status(DictionaryDatum &) const;
+        void set_status(const DictionaryDatum &) ;
 
 
     private:
 
-    void init_state_(const Node&);
-    void init_buffers_();
-    void calibrate();
+        void init_state_(const Node&);
+        void init_buffers_();
+        void calibrate();
 
-    void update(nest::Time const &, const nest::long_t, const nest::long_t);
+        void update(nest::Time const &, const nest::long_t, const nest::long_t);
 
-    /** Generate a gaussian function of the current position **/
-    double gaussianFunction();
+        /** Generate a gaussian function of the current position **/
+        double gaussianFunction();
 
-    /** Set the internal, actual firing rate of the poisson generator **/
-    void setFiringRate();
+        /** Set the internal, actual firing rate of the poisson generator **/
+        void setFiringRate();
 
-    // ------------------------------------------------------------
+        // ------------------------------------------------------------
 
-    /**
-     * Store independent parameters of the model.
-     */
-    struct Parameters_ {
-        double rate;        //!< process rate in Hz
-        double ctr_x;       //!< X field center (cm)
-        double ctr_y;       //!< Y field center (cm)
-        double field_size;  //!< Std. dev. of the Gaussian field
+        /**
+         * Store independent parameters of the model.
+         */
+        struct Parameters_ {
+            double rate;        //!< process rate in Hz
+            double ctr_x;       //!< X field center (cm)
+            double ctr_y;       //!< Y field center (cm)
+            double field_size;  //!< Std. dev. of the Gaussian field
 
-        static vecType rat_pos_x;  //!< Animal positions x
-        static vecType rat_pos_y;  //!< Animal positions y
-        static double  rat_pos_dt;  //!< Animal positions time step
+            static vecType rat_pos_x;  //!< Animal positions x
+            static vecType rat_pos_y;  //!< Animal positions y
+            static double  rat_pos_dt;  //!< Animal positions time step
 
-        Parameters_();      //!< Sets default parameter values
+            Parameters_();      //!< Sets default parameter values
 
-        void get(DictionaryDatum&) const;  //!< Store current values in dictionary
-        void set(const DictionaryDatum&);  //!< Set values from dicitonary
-    };
-
-
-    int  sim_dt_per_pos_dt;
-    long next_pos_step;     //!< Next simulation step advance
-    long pos_it;
+            void get(DictionaryDatum&) const;  //!< Store current values in dictionary
+            void set(const DictionaryDatum&);  //!< Set values from dicitonary
+        };
 
 
-    // ------------------------------------------------------------
+        int  sim_dt_per_pos_dt;
+        long next_pos_step;     //!< Next simulation step advance
+        long pos_it;
 
-    librandom::PoissonRandomDev poisson_dev_;  //!< Random deviate generator
 
-    // ------------------------------------------------------------
+        // ------------------------------------------------------------
 
-    nest::StimulatingDevice<nest::SpikeEvent> device_;
-    Parameters_ P_;
+        librandom::PoissonRandomDev poisson_dev_;  //!< Random deviate generator
+
+        // ------------------------------------------------------------
+
+        nest::StimulatingDevice<nest::SpikeEvent> device_;
+        Parameters_ P_;
 
 };
 

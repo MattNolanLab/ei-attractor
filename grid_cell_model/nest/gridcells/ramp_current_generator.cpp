@@ -42,16 +42,16 @@ nest::ramp_current_generator::Parameters_::Parameters_()
 
 void nest::ramp_current_generator::Parameters_::get(DictionaryDatum &d) const
 {
-  def<double>(d, "a", a);
-  def<double>(d, "b", b);
-  def<double>(d, "c", c);
+    def<double>(d, "a", a);
+    def<double>(d, "b", b);
+    def<double>(d, "c", c);
 }  
 
 void nest::ramp_current_generator::Parameters_::set(const DictionaryDatum& d)
 {
-  updateValue<double>(d, "a", a);
-  updateValue<double>(d, "b", b);
-  updateValue<double>(d, "c", c);
+    updateValue<double>(d, "a", a);
+    updateValue<double>(d, "b", b);
+    updateValue<double>(d, "c", c);
 }
 
 
@@ -60,13 +60,13 @@ void nest::ramp_current_generator::Parameters_::set(const DictionaryDatum& d)
  * ---------------------------------------------------------------- */
 
 nest::ramp_current_generator::ramp_current_generator()
-  : Node(),
+    : Node(),
     device_(), 
     P_()
 {}
 
 nest::ramp_current_generator::ramp_current_generator(const ramp_current_generator& n)
-  : Node(n), 
+    : Node(n), 
     device_(n.device_),
     P_(n.P_)
 {}
@@ -78,28 +78,28 @@ nest::ramp_current_generator::ramp_current_generator(const ramp_current_generato
 
 void nest::ramp_current_generator::init_node_(const Node& proto)
 {
-  const ramp_current_generator& pr = downcast<ramp_current_generator>(proto);
+    const ramp_current_generator& pr = downcast<ramp_current_generator>(proto);
 
-  device_.init_parameters(pr.device_);
-  
-  P_ = pr.P_;
+    device_.init_parameters(pr.device_);
+
+    P_ = pr.P_;
 }
 
 void nest::ramp_current_generator::init_state_(const Node& proto)
 { 
-  const ramp_current_generator& pr = downcast<ramp_current_generator>(proto);
+    const ramp_current_generator& pr = downcast<ramp_current_generator>(proto);
 
-  device_.init_state(pr.device_);
+    device_.init_state(pr.device_);
 }
 
 void nest::ramp_current_generator::init_buffers_()
 { 
-  device_.init_buffers();
+    device_.init_buffers();
 }
 
 void nest::ramp_current_generator::calibrate()
 {
-  device_.calibrate();
+    device_.calibrate();
 }
 
 
@@ -108,15 +108,17 @@ void nest::ramp_current_generator::calibrate()
  * ---------------------------------------------------------------- */
 
 void nest::ramp_current_generator::update(Time const &origin, 
-                                const long_t from, const long_t to)
+        const long_t from, const long_t to)
 {
-  long_t start = origin.get_steps();
-  long_t t = origin.get_ms();
+    long_t start = origin.get_steps();
+    long_t t = origin.get_ms();
 
-  CurrentEvent ce;
-  ce.set_current(std::max(0.0, (P_.a * t + P_.b) * P_.c));
+    CurrentEvent ce;
+    ce.set_current(std::max(0.0, (P_.a * t + P_.b) * P_.c));
 
-  for ( long_t offs = from ; offs < to ; ++offs )
-    if( device_.is_active( Time::step(start+offs) ) )
-      network()->send(*this, ce, offs);
+    for ( long_t offs = from ; offs < to ; ++offs )
+        if( device_.is_active( Time::step(start+offs) ) )
+            network()->send(*this, ce, offs);
 }
+
+
