@@ -59,7 +59,6 @@ total_start_t = time.time()
 
 options.ndim = 'twisted_torus'
 ei_net = BrianGridCellNetwork(options, simulationOpts=None)
-ei_net.uniformInhibition()
 ei_net.setConstantCurrent()
 ei_net.setStartCurrent(force_pos=[0.0, 0.0])
 ei_net.setThetaCurrentStimulation()

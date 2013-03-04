@@ -61,7 +61,6 @@ const_v = [0.0, 0.0]
 ei_net.setConstantVelocityCurrent_e(const_v)
 ei_net.setVelocityCurrentInput_e()
 
-#ei_net.uniformInhibition()
 #ei_net.setStartCurrent()
 #ei_net.setPlaceCells()
 
