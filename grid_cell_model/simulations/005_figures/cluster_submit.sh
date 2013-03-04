@@ -27,6 +27,7 @@
 # Use python 2.6
 
 module load python/2.6.6
+module load openmpi-gcc
 
 
 LOCAL_DIR=/exports/work/inf_ndtc/lsolanka/
