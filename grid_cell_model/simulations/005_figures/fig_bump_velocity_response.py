@@ -27,7 +27,7 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [5200, 5215]]
+        [1000, 1005]]
 fitLine = [
         True]
 genRange = [0, 9]
@@ -77,13 +77,13 @@ for Ivel_types in range(len(jobRange_all)):
     jobN = jobRange[1] - jobRange[0] + 1
     genN = genRange[1] - genRange[0] + 1
     
-    sheetSize = 68  # !!! MUST be set properly
+    sheetSize = 34  # !!! MUST be set properly
     
     t_start = 3
     
     dirName = "output/"
     fileNamePrefix = ''
-    fileNameTemp = "{0}/{1}job{2:04}_gen{3:04}"
+    fileNameTemp = "{0}/{1}job{2:05}_gen{3:04}"
     
     
     res         = []
@@ -116,7 +116,7 @@ for Ivel_types in range(len(jobRange_all)):
     
     
     # TODO: export this in simulations
-    Ivel = range(0, 160, 10)
+    Ivel = range(0, 60, 10)
     errorbar(Ivel, gen_avg, gen_stderr, fmt='o-')
     xlabel('Velocity current (pA)')
     ylabel('Bump velocity (neurons/s)')
@@ -134,7 +134,7 @@ for Ivel_types in range(len(jobRange_all)):
         line, slope = getLineFit(gen_avg[0:it])
         slope = slope/(Ivel[1] - Ivel[0])
         plot(Ivel[0:it], line)
-        title("Line fit slope: " + str(slope) + ' nrns/s/pA')
+        title("Line fit slope: " + str(slope*1e3) + ' nrns/s/pA')
     
 
 legend(leg, loc='best')
