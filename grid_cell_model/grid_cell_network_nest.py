@@ -34,6 +34,8 @@ from place_cells        import *
 import random
 import nest
 
+nest.Install('gridcellsmodule')
+
 
 class PosInputs(object):
     def __init__(self, pos_x, pos_y, pos_dt):
@@ -89,7 +91,6 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self.PC = []
 
-        nest.Install('gridcellsmodule')
         nest.ResetKernel()
         nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": False})
         nest.SetKernelStatus({"local_num_threads" : self.no.nthreads})
@@ -352,8 +353,9 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self._ratVelocitiesLoaded = True # Force this velocities, not the animal
 
-        # Load velocities into nest: they are all shared among all iaf_gridcells
-        # nodes so only one neuron needs setting the actual values
+        # Load velocities into nest: they are all shared among all
+        # iaf_gridcells nodes so only one neuron needs setting the actual
+        # values
         nest.SetStatus([self.E_pop[0]], {
             "rat_pos_x" :  self.rat_pos_x,
             "rat_pos_y" :  self.rat_pos_y,
@@ -362,17 +364,16 @@ class NestGridCellNetwork(GridCellNetwork):
         print self.rat_pos_x
         print self.rat_pos_y
 
-        # Map velocities to currents: we use the slope of bump speed vs. rat speed and
-        # inter-peak grid field distance to remap
-        # Bump current slope must be estimated
-        self.velC = self.Ne_x / self.no.gridSep / self.no.bumpCurrentSlope
+        # Map velocities to currents: Here the mapping is 1:1, i.e. the
+        # velocity dictates the current
+        self.velC = 1.
 
         nest.SetStatus(self.E_pop, "pref_dir_x", self.prefDirs_e[:, 0]);
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
         self.setPlaceCells(start=0.0, end=self.no.theta_start_t,
-                posIn=PosInputs([.0], [.0], self.rat_dt))
+                posIn=PosInputs([0.], [.0], self.rat_dt))
 
 
     def setPlaceCells(self, start=None, end=None, posIn=None):
@@ -406,9 +407,6 @@ class NestGridCellNetwork(GridCellNetwork):
             nest.SetStatus(self.PC, 'ctr_x', self.PCHelper.centers[:, 0])
             nest.SetStatus(self.PC, 'ctr_y', self.PCHelper.centers[:, 1])
 
-            #print "ctr_x", self.PCHelper.centers[:, 0]
-            #print "ctr_y", self.PCHelper.centers[:, 1]
-
             npos = int(self.no.time / self.rat_dt)
             nest.SetStatus([self.PC[0]], params={
                 'rat_pos_x' : posIn.pos_x[0:npos],
@@ -435,7 +433,6 @@ class NestGridCellNetwork(GridCellNetwork):
                     self.no.gridSep, [.0, .0], fieldSigma=connStdDev)
             ctr_x = nest.GetStatus(self.PC, 'ctr_x')
             ctr_y = nest.GetStatus(self.PC, 'ctr_y')
-            #print ctr_x, ctr_y
             for pc_id in xrange(self.N_pc_created):
                 w = pc_input.getSheetInput(ctr_x[pc_id], ctr_y[pc_id]).flatten()
                 gt_th = w > pc_weight_threshold
