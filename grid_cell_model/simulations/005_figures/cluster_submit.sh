@@ -29,12 +29,19 @@
 module load python/2.6.6
 
 
+LOCAL_DIR=/exports/work/inf_ndtc/lsolanka/
 BASE=../../
-export PYTHONPATH="/exports/work/inf_ndtc/s0966762/usr/local/lib/python2.6/site-packages:$BASE"
+export PYTHONPATH="$LOCAL_DIR/usr/local/lib/python2.6/site-packages:$LOCAL_DIR/usr/local/lib64/python2.6/site-packages:$BASE:"
+
 
 export LOCAL_DIR=/exports/work/inf_ndtc/lsolanka
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib:$LOCAL_DIR/usr/local/lib/nest
 
+# OpenMP settings
+export OMP_NUM_THREADS=$NSLOTS
+
+echo OMP_NUM_THREADS=$OMP_NUM_THREADS
+echo PYTHONPATH=$PYTHONPATH
 
 # Run the program
 python2.6 $* 
