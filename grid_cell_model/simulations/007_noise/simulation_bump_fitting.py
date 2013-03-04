@@ -57,9 +57,9 @@ total_start_t = time.time()
 
 ei_net = NestGridCellNetwork(options, simulationOpts=None)
 
-const_v = [0.0, 0.0]
+const_v = [40.0, 0.0]
 ei_net.setConstantVelocityCurrent_e(const_v)
-ei_net.setVelocityCurrentInput_e()
+#ei_net.setVelocityCurrentInput_e()
 
 #ei_net.uniformInhibition()
 #ei_net.setStartCurrent()
@@ -121,7 +121,7 @@ events_i = nest.GetStatus(stateMon_i)[0]['events']
 F_tstart = 0.0
 F_tend = options.time
 F_dt = 20.0
-F_winLen = 500.0
+F_winLen = 250.0
 senders_e      = nest.GetStatus(spikeMon_e)[0]['events']['senders'] - ei_net.E_pop[0]
 spikeTimes_e   = nest.GetStatus(spikeMon_e)[0]['events']['times']
 Fe, Fe_t = slidingFiringRateTuple((senders_e, spikeTimes_e), ei_net.net_Ne,
@@ -255,20 +255,20 @@ savefig(output_fname + '_firing_snapshot_i.png')
 #    title('PC firing rates')
 
 
-## Print a plot of bump position
-#(pos, bumpPos_times) = torusPopulationVector(
-#        (senders_e, spikeTimes_e), [ei_net.Ne_x, ei_net.Ne_y],
-#        tstart = ei_net.no.theta_start_t,
-#        tend   = ei_net.no.time,
-#        dt     = F_dt,
-#        winLen = F_winLen)
-#
-#figure(figsize=figSize)
-#plot(bumpPos_times, pos)
-#xlabel('Time (s)')
-#ylabel('Bump position (neurons)')
-#legend(['X', 'Y'])
-#ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
+# Print a plot of bump position
+(pos, bumpPos_times) = torusPopulationVector(
+        (senders_e, spikeTimes_e), [ei_net.Ne_x, ei_net.Ne_y],
+        tstart = 0.0,
+        tend   = ei_net.no.time,
+        dt     = F_dt,
+        winLen = F_winLen)
+
+figure(figsize=figSize)
+plot(bumpPos_times, pos)
+xlabel('Time (s)')
+ylabel('Bump position (neurons)')
+legend(['X', 'Y'])
+ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
 
 
 show()
