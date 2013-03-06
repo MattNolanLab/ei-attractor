@@ -30,7 +30,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-CLUSTER = False  # if eddie, submit on a cluster using qsub
+CLUSTER = False  # if true, submit on a cluster using qsub
 
 
 parameters = defaultParameters
