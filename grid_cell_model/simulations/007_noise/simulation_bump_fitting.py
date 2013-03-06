@@ -97,7 +97,7 @@ total_start_t = time.time()
 
 ei_net = NestGridCellNetwork(options, simulationOpts=None)
 
-const_v = [0.0, 0.0]
+const_v = [00.0, 0.0]
 ei_net.setConstantVelocityCurrent_e(const_v)
 ei_net.setVelocityCurrentInput_e()
 
@@ -215,7 +215,7 @@ pcolormesh(T, N_id,  Fe)
 ylabel("Neuron #")
 axis('tight')
 colorbar()
-suptitle('Firing rate of E cells')
+title('Firing rate of E cells')
 subplot(3, 1, 2)
 T, N_id = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
 pcolormesh(T, N_id,  Fi)
@@ -223,7 +223,7 @@ pcolormesh(T, N_id,  Fi)
 ylabel("Neuron #")
 axis('tight')
 colorbar()
-suptitle('Firing rate of I cells')
+title('Firing rate of I cells')
 # Flattened firing rate of Place cells
 subplot(3, 1, 3)
 T, N_id = np.meshgrid(Fpc_t, np.arange(ei_net.N_pc_created))
@@ -237,16 +237,18 @@ title('Firing rate of Place cells')
 savefig(output_fname + '_FR_flat.png')
 
 
-## External currents
-#figure()
-#ax = subplot(211)
-#plot(events_e['times'], events_e['I_stim'])
-#ylabel('E cell $I_{stim}$')
-#axis('tight')
-#subplot(212)
-#plot(events_i['times'], events_i['I_stim'])
-#ylabel('I cell $I_{stim}$')
-#xlabel('Time (ms)')
+# External currents
+figure()
+ax = subplot(211)
+plot(events_e[1]['times'], events_e[1]['I_stim'])
+plot(events_e[0]['times'], events_e[0]['I_stim'])
+ylabel('E cell $I_{stim}$')
+axis('tight')
+subplot(212)
+plot(events_i[1]['times'], events_i[1]['I_stim'])
+plot(events_i[0]['times'], events_i[0]['I_stim'])
+ylabel('I cell $I_{stim}$')
+xlabel('Time (ms)')
 
 
 # E/I Vm
