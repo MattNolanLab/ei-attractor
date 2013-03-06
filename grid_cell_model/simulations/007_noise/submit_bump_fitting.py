@@ -41,11 +41,11 @@ parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on 
 parameters['gridSep']           = 70.0      # cm, grid field inter-peak distance
 parameters['N_place_cells']     = 30*30
 
-parameters['noise_sigma']       = 200.0       # pA
+parameters['noise_sigma']       = 000.0       # pA
 
 
 # Gamma analysis parameters
-parameters['gammaNSample']      = 0.05       # fraction
+parameters['gammaNSample']      = 0.05      # fraction
 parameters['gammaRangeLow']     = 50.0      # Hz
 parameters['gammaRangeHigh']    = 100.0     # Hz
 

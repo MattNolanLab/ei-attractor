@@ -53,7 +53,7 @@ defaultParameters = {
 
         "NMDA_amount"           :   2.0,          # %
 
-        "Iext_e_const"          :   400.0,        # pA
+        "Iext_e_const"          :   600.0,        # pA
         "Iext_i_const"          :   250.0,        # pA
         #"Iext_start"            :   300.0,        # pA
         #"Iext_start_dur"        :   100.0,        # ms
@@ -102,8 +102,8 @@ defaultParameters = {
         "g_AMPA_total"          :   1600,         # nS
         "tau_GABA_A_rise"       :   0.1,          # ms
         "tau_GABA_A_fall"       :   5,            # ms
-        "g_GABA_total"          :   700,         # nS
-        "g_uni_GABA_total"      :   10,           # nS
+        "g_GABA_total"          :   1200,         # nS
+        "g_uni_GABA_total"      :   30,           # nS
         "uni_GABA_density"      :   0.4,
 
         "E_AMPA"                :   0,            # mV

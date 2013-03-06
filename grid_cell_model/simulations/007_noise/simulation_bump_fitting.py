@@ -52,6 +52,7 @@ options         = setOptionDictionary(parser, options)
 
 # Other
 figSize = (12,8)
+rcParams['font.size'] = 16
 
 
 ################################################################################
@@ -145,8 +146,8 @@ stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params)
 
 
 
-#x_lim = [options.time-0.5, options.time]
-x_lim = [0, options.time]
+x_lim = [options.time-1e3, options.time]
+#x_lim = [0, options.time]
 
 
 
@@ -160,11 +161,15 @@ ei_net.simulate(options.time, printTime=True)
 duration=time.time()-start_time
 print "Simulation time:",duration,"seconds"
 
-output_fname = "{0}/{1}job{2:05}_".format(options.output_dir, options.fileNamePrefix, options.job_num)
+output_fname = "{0}/{1}job{2:05}".format(options.output_dir, options.fileNamePrefix, options.job_num)
 
 
-events_e = nest.GetStatus(stateMon_e)[1]['events']
-events_i = nest.GetStatus(stateMon_i)[0]['events']
+events_e = []
+events_i = []
+events_e.append(nest.GetStatus(stateMon_e)[0]['events'])
+events_e.append(nest.GetStatus(stateMon_e)[1]['events'])
+events_i.append(nest.GetStatus(stateMon_i)[0]['events'])
+events_i.append(nest.GetStatus(stateMon_i)[1]['events'])
 
 F_tstart = 0.0
 F_tend = options.time
@@ -200,28 +205,27 @@ G_est = fitGaussianBumpTT(bump_e, dim_e)
 print G_est
 
 
+
 # Flattened firing rate of E/I cells
-figure()
+figure(figsize=(12, 10))
+subplot(3, 1, 1)
 T, N_id = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
 pcolormesh(T, N_id,  Fe)
-xlabel("Time (s)")
+#xlabel("Time (s)")
 ylabel("Neuron #")
 axis('tight')
 colorbar()
-title('Firing rate of E cells')
-
-figure()
+suptitle('Firing rate of E cells')
+subplot(3, 1, 2)
 T, N_id = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
 pcolormesh(T, N_id,  Fi)
-xlabel("Time (s)")
+#xlabel("Time (s)")
 ylabel("Neuron #")
 axis('tight')
 colorbar()
-title('Firing rate of I cells')
-
-
+suptitle('Firing rate of I cells')
 # Flattened firing rate of Place cells
-figure()
+subplot(3, 1, 3)
 T, N_id = np.meshgrid(Fpc_t, np.arange(ei_net.N_pc_created))
 xlim([0, 1000])
 pcolormesh(T, N_id, Fpc)
@@ -230,6 +234,7 @@ ylabel("Neuron #")
 axis('tight')
 colorbar()
 title('Firing rate of Place cells')
+savefig(output_fname + '_FR_flat.png')
 
 
 ## External currents
@@ -244,29 +249,39 @@ title('Firing rate of Place cells')
 #xlabel('Time (ms)')
 
 
-
 # E/I Vm
 figure()
 ax = subplot(211)
-plot(events_e['times'], events_e['V_m'])
+hold('on')
+plot(events_e[1]['times'], events_e[1]['V_m'])
+plot(events_e[0]['times'], events_e[0]['V_m'])
+legend(['middle', 'edge'])
 ylabel('E cell $V_m$')
 subplot(212, sharex=ax)
-plot(events_i['times'], events_i['V_m'])
+plot(events_i[1]['times'], events_i[1]['V_m'])
+plot(events_i[0]['times'], events_i[0]['V_m'])
+legend(['middle', 'edge'])
 ylabel('I cell $V_m$')
 xlabel('Time (ms)')
+xlim(x_lim)
+savefig(output_fname + '_Vm.png')
 
 
 # E/I I_syn
 figure()
 ax = subplot(211)
-plot(events_e['times'], events_e['I_clamp_GABA_A'])
+plot(events_e[1]['times'], events_e[1]['I_clamp_GABA_A'])
+plot(events_e[0]['times'], events_e[0]['I_clamp_GABA_A'])
+legend(['middle', 'edge'])
 ylabel('E synaptic current (pA)')
 subplot(212, sharex=ax)
-plot(events_i['times'], events_i['I_clamp_AMPA'] + events_i['I_clamp_NMDA'])
+plot(events_i[1]['times'], events_i[1]['I_clamp_AMPA'] + events_i[1]['I_clamp_NMDA'])
+plot(events_i[0]['times'], events_i[0]['I_clamp_AMPA'] + events_i[0]['I_clamp_NMDA'])
+legend(['middle', 'edge'])
 xlabel('Time (s)')
 ylabel('I synaptic current (pA)')
 xlim(x_lim)
-savefig(output_fname + '_Isyn.pdf')
+savefig(output_fname + '_Isyn.png')
 
 
 # Firing rate of E cells on the twisted torus
@@ -310,28 +325,29 @@ savefig(output_fname + '_firing_snapshot_i.png')
         tend   = ei_net.no.time,
         dt     = F_dt,
         winLen = F_winLen)
-
 figure(figsize=figSize)
 plot(bumpPos_times, pos)
 xlabel('Time (s)')
 ylabel('Bump position (neurons)')
 legend(['X', 'Y'])
 ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
+savefig(output_fname + '_bump_position.pdf')
 
 
 # Relative gamma power of inhibition in a sample of E neurons
-figure()
+figure(figsize=(12, 6))
 subplot(1, 2, 1)
 gRange = (options.gammaRangeLow, options.gammaRangeHigh)
 relP_e, maxF_e, spectra_e = relativeGammaPower(stateMonF_e, gRange, 'I_clamp_GABA_A')
 hist(relP_e)
-xlabel('Relative power ($pA^2$)')
+xlabel('Relative power')
 ylabel('Count')
 
 subplot(1, 2, 2)
 hist(maxF_e)
 xlabel('Max. F (Hz)')
 ylabel('Count')
+savefig(output_fname + '_rel_gamma_P.pdf')
 
 
 figure()
@@ -345,6 +361,7 @@ plot(spectra_e_F[0:NP, Frange].T, spectra_e_P[0:NP, Frange].T)
 xlabel('Frequency (Hz)')
 ylabel('Power ($pA^2$)')
 title('Power spectra of $I_{syn}$ of ' + str(NP) + ' selected E neurons')
+savefig(output_fname + '_P_spectra.pdf')
 
 
 show()
