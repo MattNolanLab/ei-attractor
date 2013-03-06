@@ -187,7 +187,7 @@ for gen_it in range(options.ngenerations):
     # Print a plot of bump position
     (pos, bumpPos_times) = torusPopulationVector(
             (senders_e, spikeTimes_e), [ei_net.Ne_x, ei_net.Ne_y],
-            tstart = 0,
+            tstart = ei_net.no.theta_start_t,
             tend   = ei_net.no.time,
             dt     = F_dt,
             winLen = F_winLen)
