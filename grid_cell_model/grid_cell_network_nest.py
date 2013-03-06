@@ -76,10 +76,10 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": False})
         nest.SetKernelStatus({"local_num_threads" : self.no.nthreads})
 
-    def reinit(self):
-        self._initNESTKernel()
-        self._initStates()
-        self._initClocks()
+    #def reinit(self):
+    #    self._initNESTKernel()
+    #    self._initStates()
+    #    self._initClocks()
 
 
 
