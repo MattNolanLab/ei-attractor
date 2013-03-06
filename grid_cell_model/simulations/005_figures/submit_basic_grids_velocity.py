@@ -36,13 +36,15 @@ CLUSTER = False  # if eddie, submit on a cluster using qsub
 parameters = defaultParameters
 
 parameters['time']              = 10e3      # ms
-parameters['ngenerations']      = 10
+parameters['delay']             = 0.1       # ms
+
+parameters['ngenerations']      = 1
 parameters['velModulationType'] = 'excitatory'
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
 
 parameters['theta_noise_sigma'] = 0          # pA
-parameters['noise_sigma']       = 200       # pA
+parameters['noise_sigma']       = 150.       # pA
 
 parameters['Ne']                = 34
 parameters['Ni']                = 34
@@ -51,7 +53,7 @@ parameters['gridSep']           = 70.0      # cm, grid field inter-peak distance
 
 parameters['Ivel']              = 40        # pA
 
-parameters['output_dir']        = 'output'
+parameters['output_dir']        = 'output_local'
 parameters['nthreads']          = 8
 
 startJobNum = 1000
