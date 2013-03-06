@@ -71,8 +71,13 @@ class NestGridCellNetwork(GridCellNetwork):
         for clk in self._clocks:
             clk.reinit()
 
+    def _initNESTKernel(self):
+        nest.ResetKernel()
+        nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": False})
+        nest.SetKernelStatus({"local_num_threads" : self.no.nthreads})
+
     def reinit(self):
-        self.net.reinit(states=False)
+        self._initNESTKernel()
         self._initStates()
         self._initClocks()
 
@@ -91,9 +96,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self.PC = []
 
-        nest.ResetKernel()
-        nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": False})
-        nest.SetKernelStatus({"local_num_threads" : self.no.nthreads})
+        self._initNESTKernel()
 
         self.e_neuron_params = {
                 "V_m"              : self.no.EL_e,
