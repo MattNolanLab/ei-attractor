@@ -1,5 +1,5 @@
 #
-#   submit_job.py
+#   submit_basic_grids.py
 #
 #   Submit job(s) to the cluster/workstation
 #
@@ -29,12 +29,12 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-CLUSTER = False  # if true, submit on a cluster using qsub
+CLUSTER = True  # if true, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['time']              = 5e3      # ms
+parameters['time']              = 1200e3      # ms
 parameters['delay']             = 0.1       # ms
 
 parameters['prefDirC_e']        = 4
@@ -51,12 +51,12 @@ parameters['bumpCurrentSlope']  = 0.53      # pA/(cm/s), !! this will depend on 
 
 #parameters['pc_max_rate']       = 100.0     # Hz
 
-parameters['output_dir']        = 'output_local'
+parameters['output_dir']        = 'output'
 parameters['nthreads']          = 8
 parameters['ndumps']            = 1
 
-startJobNum = 0
-numRepeat = 1
+startJobNum = 1100
+numRepeat = 2
 
 # Workstation parameters
 programName         = 'python2.6 simulation_basic_grids.py'
@@ -64,13 +64,13 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'cluster_submit.sh simulation_basic_grids.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+qsub_params         = "-R y -P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe OpenMP 8"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'pc_max_rate'   : np.arange(0, 90, 10)
+        'pc_max_rate'   : np.arange(0, 110, 10)
 }
 ac.insertDict(iterparams, mult=False)
 
