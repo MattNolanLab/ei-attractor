@@ -39,9 +39,8 @@ export LOCAL_DIR=/exports/work/inf_ndtc/lsolanka
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib:$LOCAL_DIR/usr/local/lib/nest
 
 # OpenMP settings
-export OMP_NUM_THREADS=$NSLOTS
-
-echo OMP_NUM_THREADS=$OMP_NUM_THREADS
+#export OMP_NUM_THREADS=$NSLOTS
+#echo OMP_NUM_THREADS=$OMP_NUM_THREADS
 echo PYTHONPATH=$PYTHONPATH
 
 # Run the program
