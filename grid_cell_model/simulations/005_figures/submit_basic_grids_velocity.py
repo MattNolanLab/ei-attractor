@@ -30,7 +30,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-CLUSTER = False  # if true, submit on a cluster using qsub
+CLUSTER = True  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -38,7 +38,7 @@ parameters = defaultParameters
 parameters['time']              = 10e3      # ms
 parameters['delay']             = 0.1       # ms
 
-parameters['ngenerations']      = 1
+parameters['ngenerations']      = 10
 parameters['velModulationType'] = 'excitatory'
 parameters['prefDirC_e']        = 4
 parameters['prefDirC_i']        = 0
@@ -51,9 +51,9 @@ parameters['Ni']                = 34
 parameters['N_place_cells']     = 30*30
 parameters['gridSep']           = 70.0      # cm, grid field inter-peak distance
 
-parameters['Ivel']              = 40        # pA
+#parameters['Ivel']              = 40        # pA
 
-parameters['output_dir']        = 'output_local'
+parameters['output_dir']        = 'output'
 parameters['nthreads']          = 8
 
 startJobNum = 1000
@@ -65,18 +65,19 @@ blocking            = False
 
 # Cluster parameters
 eddie_scriptName    = 'cluster_submit.sh simulation_basic_grids_velocity.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe memory-2G 2"
+qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:20:00 -pe OpenMP 8"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
+iterparams = {
 #        'Iext_e_theta' : np.arange(0, 360, 30),
-#        'Ivel'         : np.arange(0, 160, 10)}
-#ac.insertDict(iterparams, mult=True, printout=True)
+        'Ivel'         : np.arange(0, 160, 10)}
+ac.insertDict(iterparams, mult=True, printout=True)
 
 if CLUSTER:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)
+
