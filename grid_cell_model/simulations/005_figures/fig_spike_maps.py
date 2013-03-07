@@ -27,11 +27,12 @@ from tables             import *
 from numpy.fft          import fft2
 
 from analysis.grid_cells import extractSpikePositions2D, plotSpikes2D, SNSpatialRate2D, SNAutoCorr, cellGridnessScore
+from analysis.conversion import neuronSpikes
 
 
-jobRange = [3300, 3309]
+jobRange = [1121, 1121]
 trialNum = 0
-dumpNum = 19
+dumpNum = 0
 
 jobN = jobRange[1] - jobRange[0] + 1
 
@@ -48,7 +49,7 @@ spikeType = 'excitatory'
 
 dirName = "output/"
 fileNamePrefix = ''
-fileNameTemp = "{0}/{1}job{2:04}_trial{3:04}_dump{4:03}"
+fileNameTemp = "{0}/{1}job{2:05}_trial{3:04}_dump{4:03}"
 
 gridnessScores = []
 
@@ -70,14 +71,16 @@ for job_it in range(jobN):
     rat_dt          = data['dt'][0][0]
     velocityStart   = data['velocityStart'][0][0]
     if spikeType == 'excitatory':
-        spikeTimes  = data['spikeCell_e'].ravel()
+        senders     = data['senders_e'].flat
+        spikeTimes  = data['spikeTimes_e'].flat
     if spikeType == 'inhibitory':
-        spikeTimes  = data['spikeCell_i'].ravel()
+        senders     = data['senders_i'].flat
+        spikeTimes  = data['spikeTimes_i'].flat
 
     gridSep         = data['options']['gridSep'][0][0][0][0]
     corr_cutRmin    = gridSep / 2
 
-    spikes = spikeTimes[neuronNum] - velocityStart*1e-3
+    spikes = (neuronSpikes(neuronNum, senders, spikeTimes) - velocityStart)*1e-3
     spikes = np.delete(spikes, np.nonzero(spikes < 0)[0])
 
     figure()
