@@ -28,7 +28,7 @@ from scipy.stats        import sem
 from matplotlib.pyplot  import *
 from tables             import *
 
-from grid_cell_analysis import *
+from analysis.grid_cells import SNSpatialRate2D, cellGridnessScore
 
 
 jobStart = 2000
@@ -86,9 +86,9 @@ def loadAndCalcGridness(spikesFileNameTemp, dirName, fileNamePrefix, jobNum,
     spikes = spikeTimes[neuronNum] - velocityStart*1e-3
     spikes = numpy.delete(spikes, numpy.nonzero(spikes < 0)[0])
     
-    rateMap, xedges, yedges = grid_cell_analysis.SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt, arenaDiam, h)
+    rateMap, xedges, yedges = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt, arenaDiam, h)
     maxRate = numpy.max(rateMap.flatten())
-    G, crossCorr, angles = grid_cell_analysis.cellGridnessScore(rateMap, arenaDiam, h, corr_cutRmin)
+    G, crossCorr, angles = cellGridnessScore(rateMap, arenaDiam, h, corr_cutRmin)
     return (G, maxRate)
 
 

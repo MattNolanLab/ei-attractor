@@ -25,7 +25,7 @@ from scipy.io           import loadmat
 from matplotlib.pyplot  import *
 from tables             import *
 
-from grid_cell_analysis import *
+from analysis.grid_cells import SNFiringRate, motionDirection
 
 
 jobNum = 3100

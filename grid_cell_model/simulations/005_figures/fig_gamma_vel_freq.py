@@ -24,8 +24,8 @@ from scipy.io           import loadmat
 from matplotlib.pyplot  import *
 from tables             import *
 
-from grid_cell_analysis import *
-from analysis.signal    import butterBandPass, CWT
+from analysis.grid_cells import extractSpikePositions2D
+from analysis.signal     import butterBandPass, CWT
 
 
 jobRange = [100, 100]

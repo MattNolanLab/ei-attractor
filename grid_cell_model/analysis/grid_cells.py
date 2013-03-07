@@ -1,5 +1,5 @@
 #
-#   grid_cell_analysis.py
+#   grid_cells.py
 #
 #   Grid cell analysis module. Use this to analyse spikes/membrane potentials
 #   of grid cell models.
@@ -32,8 +32,12 @@ __all__ = ['gaussianFilter', 'extractSpikePositions2D', 'plotSpikes2D', 'SNSpati
         'SNFiringRate', 'motionDirection', 'SNAutoCorr', 'cellGridnessScore']
 
 
+
+## Simple Gaussian function
+#
+# @param X      The X parameter for the Gaussian
+# @param sigma  Std. deviation of the Gaussian
 def gaussianFilter(X, sigma):
-    '''Simple Gaussian function'''
     return np.exp(-X**2/ 2.0 / sigma**2)
 
 
