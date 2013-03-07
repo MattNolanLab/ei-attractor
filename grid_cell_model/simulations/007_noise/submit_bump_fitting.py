@@ -34,7 +34,7 @@ parameters['nthreads']          = 8
 
 parameters['output_dir']        = 'output_local'
 
-parameters['Ne']                = 68
+parameters['Ne']                = 34
 parameters['Ni']                = 34
 
 parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
