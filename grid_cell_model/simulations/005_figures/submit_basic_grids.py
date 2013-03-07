@@ -18,6 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import numpy as np
 
 from default_params import defaultParameters
 from common         import *
@@ -33,7 +34,7 @@ CLUSTER = False  # if true, submit on a cluster using qsub
 
 parameters = defaultParameters
 
-parameters['time']              = 10e3      # ms
+parameters['time']              = 5e3      # ms
 parameters['delay']             = 0.1       # ms
 
 parameters['prefDirC_e']        = 4
@@ -47,6 +48,8 @@ parameters['Ni']                = 34
 parameters['N_place_cells']     = 30*30
 parameters['gridSep']           = 60.0      # cm, grid field inter-peak distance
 parameters['bumpCurrentSlope']  = 0.53      # pA/(cm/s), !! this will depend on prefDirC !!
+
+#parameters['pc_max_rate']       = 100.0     # Hz
 
 parameters['output_dir']        = 'output_local'
 parameters['nthreads']          = 8
@@ -66,10 +69,10 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#        'bumpCurrentSlope'  : [1.15, 1.175, 1.2]
-#}
-#ac.insertDict(iterparams, mult=False)
+iterparams = {
+        'pc_max_rate'   : np.arange(0, 90, 10)
+}
+ac.insertDict(iterparams, mult=False)
 
 if CLUSTER:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

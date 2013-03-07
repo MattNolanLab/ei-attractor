@@ -126,9 +126,17 @@ for trial_it in range(options.ntrials):
         Fe, Fe_t = slidingFiringRateTuple((senders_e, spikeTimes_e), ei_net.net_Ne,
                 F_tstart, F_tend, F_dt, F_winLen)
 
+        if (len(ei_net.PC) != 0):
+            senders_pc     = nest.GetStatus(pc_spikemon)[0]['events']['senders'] - ei_net.PC[0]
+            spikeTimes_pc  = nest.GetStatus(pc_spikemon)[0]['events']['times']
+            Fpc, Fpc_t = slidingFiringRateTuple((senders_pc, spikeTimes_pc),
+                    ei_net.N_pc_created, F_tstart, F_tend, F_dt, F_winLen)
+
+
         bumpT = ei_net.no.time - 2*F_winLen
         bumpI = bumpT / F_dt
         bump_e = np.reshape(Fe[:, bumpI], (ei_net.Ne_y, ei_net.Ne_x))
+
 
         # Flattened firing rate of E/I cells
         figure()
@@ -140,6 +148,21 @@ for trial_it in range(options.ntrials):
         colorbar()
         title('Firing rate of E cells')
         savefig(output_fname + '_firing_rate_flat.png')
+
+
+        # Flattened firing rate of Place cells
+        if (len(ei_net.PC) != 0):
+            figure()
+            T, N_id = np.meshgrid(Fpc_t, np.arange(ei_net.N_pc_created))
+            xlim([0, 1000])
+            pcolormesh(T, N_id, Fpc)
+            xlabel("Time (s)")
+            ylabel("Neuron #")
+            axis('tight')
+            colorbar()
+            title('Firing rate of Place cells')
+            savefig(output_fname + '_firing_rate_flat_pc.png')
+
         
         
         # External currents
@@ -152,6 +175,7 @@ for trial_it in range(options.ntrials):
         plot(events_i['times'], events_i['I_stim'])
         ylabel('I cell $I_{stim}$')
         xlabel('Time (ms)')
+        savefig(output_fname + '_Iext.png')
         
         
         
