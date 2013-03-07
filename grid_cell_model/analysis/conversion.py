@@ -1,7 +1,7 @@
 #
-#   __init__.py
+#   conversion.py
 #
-#   Data analysis package.
+#   Conversion module. Convert between different formats of data, types, etc.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,4 +19,5 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__all__ = ['conversion', 'grid_cells', 'image', 'other', 'signal', 'spikes', 'statistics']
+
+

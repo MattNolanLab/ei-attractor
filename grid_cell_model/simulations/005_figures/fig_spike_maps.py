@@ -26,7 +26,7 @@ from matplotlib.pyplot  import *
 from tables             import *
 from numpy.fft          import fft2
 
-from grid_cell_analysis import *
+from analysis.grid_cells import extractSpikePositions2D, plotSpikes2D, SNSpatialRate2D, SNAutoCorr, cellGridnessScore
 
 
 jobRange = [3300, 3309]
