@@ -1,5 +1,5 @@
 #
-#   grid_cell_network_brian.py
+#   gc_net_brian.py
 #
 #   Brian-specific implementation of the grid cell model
 #
@@ -27,9 +27,9 @@ import logging  as lg
 from brian              import *
 from scipy              import linspace
 
-from common             import *
-from grid_cell_network  import *
-from place_input        import *
+from submitting.submitters      import *
+from gc_net      import *
+from place_input import *
 
 import random
 
@@ -247,17 +247,17 @@ class BrianGridCellNetwork(GridCellNetwork):
         self._initCellularProperties()
 
 
-    def uniformInhibition(self):
-        g_GABA_mean = self.no.g_uni_GABA_total / self.net_Ni / self.no.uni_GABA_density * nS
+    #def uniformInhibition(self):
+    #    g_GABA_mean = self.no.g_uni_GABA_total / self.net_Ni / self.no.uni_GABA_density * nS
 
-        self.extraGABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
-        self.extraGABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
+    #    self.extraGABA_conn1 = Connection(self.I_pop, self.E_pop, 'gi1')
+    #    self.extraGABA_conn2 = Connection(self.I_pop, self.E_pop, 'gi2')
 
-        self.extraGABA_conn1.connect_random(self.I_pop, self.E_pop, self.no.uni_GABA_density,
-                weight=self.B_GABA*g_GABA_mean)
-        self.extraGABA_conn2.connect(self.I_pop, self.E_pop, self.extraGABA_conn1.W) 
+    #    self.extraGABA_conn1.connect_random(self.I_pop, self.E_pop, self.no.uni_GABA_density,
+    #            weight=self.B_GABA*g_GABA_mean)
+    #    self.extraGABA_conn2.connect(self.I_pop, self.E_pop, self.extraGABA_conn1.W) 
 
-        self.net.add(self.extraGABA_conn1, self.extraGABA_conn2)
+    #    self.net.add(self.extraGABA_conn1, self.extraGABA_conn2)
 
 
     def uniformExcitation(self):

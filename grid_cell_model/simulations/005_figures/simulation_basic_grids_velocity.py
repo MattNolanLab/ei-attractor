@@ -26,9 +26,13 @@ from scipy.io   import loadmat
 from scipy.io   import savemat
 from optparse   import OptionParser
 
-from parameters              import *
-from grid_cell_network_brian import *
-from custombrian             import *
+import nest
+import nest.raster_plot
+
+from models.parameters       import *
+from models.gc_net_nest      import *
+from analysis.spikes         import slidingFiringRateTuple, torusPopulationVector
+from analysis.image          import Position2D, fitGaussianBumpTT
 
 import time
 import math
@@ -59,21 +63,12 @@ for gen_it in range(options.ngenerations):
     print "Starting network and connections initialization..."
     start_time=time.time()
     total_start_t = time.time()
-
-    ei_net = BrianGridCellNetwork(options, simulationOpts=None)
-    ei_net.uniformInhibition()
-    ei_net.setConstantCurrent()
-    ei_net.setStartCurrent()
-    ei_net.setThetaCurrentStimulation()
-    const_v = [1.0, 0.0]
-    if options.velModulationType == "excitatory":
-        #Modulation of excitatory neurons (weight shifts are E-->I)
-        ei_net.setConstantVelocityCurrent_e(const_v)
-    elif options.velModulationType == "inhibitory":
-        #Modulation of inhibitory neurons (weight shifts are I-->E)
-        ei_net.setConstantVelocityCurrent_i(const_v)
-    else:
-        raise Exception("Unknown velocity modulation type")
+    
+    ei_net = NestGridCellNetwork(options, simulationOpts=None)
+    
+    const_v = [options.Ivel, 0.0]
+    ei_net.setConstantVelocityCurrent_e(const_v)
+    
     
     
     duration=time.time()-start_time
@@ -81,69 +76,136 @@ for gen_it in range(options.ngenerations):
     #                            End Network setup
     ################################################################################
     
-    simulationClock = ei_net._getSimulationClock()
-    
+    rec_all_spikes = True
+    if rec_all_spikes:
+        nrecSpike_e = ei_net.Ne_x*ei_net.Ne_y
+        nrecSpike_i = ei_net.Ni_x*ei_net.Ni_y
+    else:
+        nrecSpike_e = 200
+        nrecSpike_i = 50
     
     state_record_e = [ei_net.Ne_x/2 -1 , ei_net.Ne_y/2*ei_net.Ne_x + ei_net.Ne_x/2 - 1]
     state_record_i = [ei_net.Ni_x/2 - 1, ei_net.Ni_y/2*ei_net.Ni_x + ei_net.Ni_x/2 - 1]
     
-    spikeMon_e          = ExtendedSpikeMonitor(ei_net.E_pop)
-    spikeMon_i          = ExtendedSpikeMonitor(ei_net.I_pop)
+    spikeMon_e = ei_net.getSpikeDetector("E")
+    spikeMon_i = ei_net.getSpikeDetector("I")
+    pc_spikemon = ei_net.getGenericSpikeDetector(ei_net.PC, "Place cells")
     
-    stateMon_e          = RecentStateMonitor(ei_net.E_pop, 'vm',     duration=options.stateMonDuration*msecond, record = state_record_e, clock=simulationClock)
-    stateMon_i          = RecentStateMonitor(ei_net.I_pop, 'vm',     duration=options.stateMonDuration*msecond, record = state_record_i, clock=simulationClock)
-    stateMon_Iclamp_e   = RecentStateMonitor(ei_net.E_pop, 'Iclamp', duration=options.stateMonDuration*msecond, record = state_record_e, clock=simulationClock)
-    stateMon_Iclamp_i   = RecentStateMonitor(ei_net.I_pop, 'Iclamp', duration=options.stateMonDuration*msecond, record = state_record_i, clock=simulationClock)
-    stateMon_Iext_e     = RecentStateMonitor(ei_net.E_pop, 'Iext',   duration=options.stateMonDuration*msecond, record = state_record_e, clock=simulationClock)
-    stateMon_Iext_i     = RecentStateMonitor(ei_net.I_pop, 'Iext',   duration=options.stateMonDuration*msecond, record = state_record_i, clock=simulationClock)
+    #stateMon_params = {
+    #        'withtime' : True,
+    #        'interval' : 0.1,
+    #        'record_from' : ['V_m', 'I_clamp_AMPA', 'I_clamp_NMDA',
+    #            'I_clamp_GABA_A', 'I_stim']
+    #}
+    #stateMon_e = ei_net.getStateMonitor("E", state_record_e, stateMon_params)
+    #stateMon_i = ei_net.getStateMonitor("I", state_record_i, stateMon_params)
+
     
-    ei_net.net.add(spikeMon_e, spikeMon_i)
-    ei_net.net.add(stateMon_e, stateMon_i, stateMon_Iclamp_e, stateMon_Iclamp_i)
-    ei_net.net.add(stateMon_Iext_e, stateMon_Iext_i)
-    
-    
-    #x_lim = [options.time-0.5, options.time]
-    x_lim = [options.time/1e3 - 1, options.time/1e3]
+    #x_lim = [options.time/1e3 - 1, options.time/1e3]
+    x_lim = [0, options.time]
     
     ################################################################################
     #                              Main cycle
     ################################################################################
     print "Simulation running..."
     start_time=time.time()
-    
-    ei_net.net.run(options.time*msecond, report='stdout')
+        
+    ei_net.simulate(options.time, printTime=False)
     duration=time.time()-start_time
     print "Simulation time:",duration,"seconds"
-    
-    
-    output_fname = "{0}/{1}job{2:04}_gen{3:04}".format(options.output_dir,
+
+    output_fname = "{0}/{1}job{2:05}_gen{3:04}".format(options.output_dir,
             options.fileNamePrefix, options.job_num, gen_it)
     
 
+    #events_e = nest.GetStatus(stateMon_e)[0]['events']
+    #events_i = nest.GetStatus(stateMon_i)[1]['events']
+
+    F_tstart = 0.0
+    F_tend = options.time
+    F_dt = 20.0
+    F_winLen = 250.0
+    senders_e      = nest.GetStatus(spikeMon_e)[0]['events']['senders'] - ei_net.E_pop[0]
+    spikeTimes_e   = nest.GetStatus(spikeMon_e)[0]['events']['times']
+    #Fe, Fe_t = slidingFiringRateTuple((senders_e, spikeTimes_e), ei_net.net_Ne,
+    #        F_tstart, F_tend, F_dt, F_winLen)
+
+    #bumpT = ei_net.no.time - 2*F_winLen
+    #bumpI = bumpT / F_dt
+    #bump_e = np.reshape(Fe[:, bumpI], (ei_net.Ne_y, ei_net.Ne_x))
+
+    ## Flattened firing rate of E/I cells
+    #figure()
+    #T, N_id = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
+    #pcolormesh(T, N_id,  Fe)
+    #xlabel("Time (ms)")
+    #ylabel("Neuron #")
+    #axis('tight')
+    #colorbar()
+    #title('Firing rate of E cells')
+    #savefig(output_fname + '_firing_rate_flat.png')
+    
+    
+    ## External currents
+    #figure()
+    #ax = subplot(211)
+    #plot(events_e['times'], events_e['I_stim'])
+    #ylabel('E cell $I_{stim}$')
+    #axis('tight')
+    #subplot(212)
+    #plot(events_i['times'], events_i['I_stim'])
+    #ylabel('I cell $I_{stim}$')
+    #xlabel('Time (ms)')
+    
+    
+    
+    ## E/I I_syn
+    #figure()
+    #ax = subplot(211)
+    #plot(events_e['times'], events_e['I_clamp_GABA_A'])
+    #ylabel('E synaptic current (pA)')
+    #subplot(212, sharex=ax)
+    #plot(events_i['times'], events_i['I_clamp_AMPA'] + events_i['I_clamp_NMDA'])
+    #xlabel('Time (ms)')
+    #ylabel('I synaptic current (pA)')
+    #xlim(x_lim)
+    #savefig(output_fname + '_Isyn.pdf')
+    #
+    #
+    ## Firing rate of E cells on the twisted torus
+    #figure()
+    #pcolormesh(bump_e)
+    #xlabel('E neuron no.')
+    #ylabel('E neuron no.')
+    #colorbar()
+    #axis('equal')
+    #title('Firing rates (torus) of E cells')
+    #savefig(output_fname + '_firing_snapshot_e.png')
+    
+    
+    
     # Print a plot of bump position
-    F_dt = 0.02
-    F_winLen = 0.25
-    (pos, bumpPos_times) = spikeMon_e.torusPopulationVector([ei_net.Ne_x,
-        ei_net.Ne_y], options.theta_start_t*1e-3, options.time*1e-3, F_dt, F_winLen)
+    (pos, bumpPos_times) = torusPopulationVector(
+            (senders_e, spikeTimes_e), [ei_net.Ne_x, ei_net.Ne_y],
+            tstart = ei_net.no.theta_start_t,
+            tend   = ei_net.no.time,
+            dt     = F_dt,
+            winLen = F_winLen)
     figure(figsize=figSize)
     plot(bumpPos_times, pos)
-    xlabel('Time (s)')
+    xlabel('Time (ms)')
     ylabel('Bump position (neurons)')
+    legend(['X', 'Y'])
     ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
-    
     savefig(output_fname + '_bump_position.pdf')
 
-    
     outData = {}
-    outData['spikeCell_e']   = spikeMon_e.aspikes
-    outData['spikeCell_i']   = spikeMon_i.aspikes
     outData['bumpPos']       = pos
     outData['bumpPos_times'] = bumpPos_times
     outData['options']       = options._einet_optdict
     outData['velocityStart'] = options.theta_start_t
     outData['Ivel']          = options.Ivel
     savemat(output_fname + '_output.mat', outData, do_compression=True)
-
 
     print "End of generation no. " + str(gen_it) + "..."
     print 

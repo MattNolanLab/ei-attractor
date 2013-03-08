@@ -25,7 +25,7 @@ from scipy.io           import savemat
 from matplotlib.pyplot  import *
 from tables             import *
 
-from grid_cell_analysis import *
+from analysis.grid_cells import extractSpikePositions2D, plotSpikes2D, SNSpatialRate2D, SNAutoCorr, cellGridnessScore
 
 
 jobRange = [2000, 2049]

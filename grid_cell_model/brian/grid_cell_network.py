@@ -27,7 +27,7 @@ from numpy.random   import rand, randn
 from brian          import *
 from scipy          import linspace
 
-from common         import *
+from submitting.submitters         import *
 
 class IextManager(object):
     '''

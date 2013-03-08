@@ -1,5 +1,5 @@
 #
-#   submit_job.py
+#   submit_basic_grids.py
 #
 #   Submit job(s) to the cluster/workstation
 #
@@ -18,9 +18,11 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import numpy as np
+from scipy.io       import savemat
 
 from default_params import defaultParameters
-from common         import *
+from submitting.submitters         import *
 
 import logging as lg
 
@@ -28,53 +30,60 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+CLUSTER = True  # if true, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-#parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 3e3  # ms
-parameters['ndumps']            = 1
+parameters['time']              = 1200e3      # ms
+parameters['delay']             = 0.1       # ms
 
-parameters['placeT']            = 10e3      # ms
+parameters['prefDirC_e']        = 4
+parameters['prefDirC_i']        = 0
 
-parameters['stateMonDur']       = parameters['time']
+parameters['theta_noise_sigma'] = 0          # pA
+parameters['noise_sigma']       = 150.       # pA
 
-parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
-parameters['gridSep']           = 70        # cm, grid field inter-peak distance
+parameters['Ne']                = 34
+parameters['Ni']                = 34
+parameters['N_place_cells']     = 30*30
+parameters['gridSep']           = 60.0      # cm, grid field inter-peak distance
+parameters['bumpCurrentSlope']  = 0.53      # pA/(cm/s), !! this will depend on prefDirC !!
 
-parameters['theta_noise_sigma'] = 0         # pA
+#parameters['pc_max_rate']       = 100.0     # Hz
 
 parameters['output_dir']        = 'output'
+parameters['nthreads']          = 8
+parameters['ndumps']            = 1
 
-#parameters['g_AMPA_total']      = 0.0       # pA
-
-
-startJobNum = 0
-numRepeat = 1
+startJobNum = 2000
+numRepeat = 10
 
 # Workstation parameters
 programName         = 'python2.6 simulation_basic_grids.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
+cluster_scriptName  = 'cluster_submit.sh simulation_basic_grids.py'
+qsub_params         = "-R y -P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe OpenMP 8"
 qsub_output_dir     = parameters['output_dir']
 
-ac = ArgumentCreator(parameters)
+ac = ArgumentCreator(parameters, printout=True)
 
 iterparams = {
-#        'bumpCurrentSlope'  : [1.15, 1.175, 1.2]
-#    'g_AMPA_total' : [defaultParameters['g_AMPA_total'], 0.0]
-    'tau_AHP_e'  :   [20,   30,  40,  50,  60,  70,  80,  90],
-    'Iext_e_theta' : [375, 400, 450, 500, 550, 600, 650, 700]
+        'pc_max_rate'   : np.arange(0, 100, 10),
+        'pc_conn_weight': np.arange(0.5, 5.5, 0.5)
 }
-ac.insertDict(iterparams, mult=False)
+ac.insertDict(iterparams, mult=True)
 
-if EDDIE:
-    submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
+if CLUSTER:
+    submitter = QsubSubmitter(ac, cluster_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)
+
+# Export the iterparams
+iterparams_fname = "{0}/job{1:05}_iterparams".format(parameters['output_dir'], startJobNum)
+submitter.exportIterParams(iterparams_fname)
+
+

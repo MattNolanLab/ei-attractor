@@ -20,7 +20,7 @@
 #
 
 from default_params import defaultParameters
-from common         import *
+from submitting.submitters         import *
 
 import logging as lg
 
@@ -28,7 +28,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+CLUSTER = True  # if True, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -52,7 +52,7 @@ programName         = 'python2.6 simulation_inhibitory_modulation.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_inhibitory_modulation.py'
+cluster_scriptName  = 'eddie_submit.sh simulation_inhibitory_modulation.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:30:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
@@ -64,8 +64,8 @@ iterparams = {
 }
 ac.insertDict(iterparams, mult=False)
 
-if EDDIE:
-    submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
+if CLUSTER:
+    submitter = QsubSubmitter(ac, cluster_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)

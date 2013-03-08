@@ -50,7 +50,7 @@
  *
  * The dynamicloader can then load modulename and search for symbol "mod" in it.
  */
- 
+
 mynest::GridCellsModule gridcellsmodule_LTX_mod;
 
 
@@ -59,10 +59,10 @@ mynest::GridCellsModule gridcellsmodule_LTX_mod;
 mynest::GridCellsModule::GridCellsModule()
 { 
 #   ifdef LINKED_MODULE
-        // register this module at the dynamic loader
-        // this is needed to allow for linking in this module at compile time
-        // all registered modules will be initialized by the main app's dynamic loader
-        nest::DynamicLoaderModule::registerLinkedModule(this);
+    // register this module at the dynamic loader
+    // this is needed to allow for linking in this module at compile time
+    // all registered modules will be initialized by the main app's dynamic loader
+    nest::DynamicLoaderModule::registerLinkedModule(this);
 #   endif     
 }
 
@@ -79,15 +79,15 @@ const std::string mynest::GridCellsModule::name(void) const
 const std::string mynest::GridCellsModule::commandstring(void) const
 {
     /* 1. Tell interpreter that we provide the C++ part of GridCellsModule with the
-          current revision number. 
+       current revision number. 
        2. Instruct the interpreter to check that gridcellsmodule-init.sli exists, 
-          provides at least version 1.0 of the SLI interface to GridCellsModule, and
-          to load it.
-     */
+       provides at least version 1.0 of the SLI interface to GridCellsModule, and
+       to load it.
+       */
     return std::string(
-      "/gridcellsmodule /C++ ($Revision: 9902 $) provide-component "
-      "/gridcellsmodule /SLI (7165) require-component"
-      );
+            "/gridcellsmodule /C++ ($Revision: 9902 $) provide-component "
+            "/gridcellsmodule /SLI (7165) require-component"
+            );
 }
 
 //-------------------------------------------------------------------------------------
@@ -101,4 +101,4 @@ void mynest::GridCellsModule::init(SLIInterpreter *i, nest::Network*)
             "iaf_gridcells");
 }
 
- 
+

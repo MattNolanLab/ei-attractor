@@ -1,5 +1,5 @@
 #
-#   grid_cell_network.py
+#   gc_net.py
 #   
 #   Simulator independent grid cell network code
 #
@@ -62,7 +62,7 @@ from scipy          import linspace, weave
 from numpy.random   import rand
 from numpy          import sqrt
 
-from common         import *
+from submitting.submitters         import *
 from analysis.image import Position2D, remapTwistedTorus
 
 import numpy    as np

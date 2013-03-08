@@ -27,7 +27,7 @@ from matplotlib.pyplot  import *
 
 
 jobRange_all = [
-        [5200, 5215]]
+        [1000, 1015]]
 fitLine = [
         True]
 genRange = [0, 9]
@@ -77,13 +77,13 @@ for Ivel_types in range(len(jobRange_all)):
     jobN = jobRange[1] - jobRange[0] + 1
     genN = genRange[1] - genRange[0] + 1
     
-    sheetSize = 68  # !!! MUST be set properly
+    sheetSize = 34  # !!! MUST be set properly
     
     t_start = 3
     
     dirName = "output/"
     fileNamePrefix = ''
-    fileNameTemp = "{0}/{1}job{2:04}_gen{3:04}"
+    fileNameTemp = "{0}/{1}job{2:05}_gen{3:04}"
     
     
     res         = []
@@ -134,9 +134,9 @@ for Ivel_types in range(len(jobRange_all)):
         line, slope = getLineFit(gen_avg[0:it])
         slope = slope/(Ivel[1] - Ivel[0])
         plot(Ivel[0:it], line)
-        title("Line fit slope: " + str(slope) + ' nrns/s/pA')
+        title("Line fit slope: " + str(slope*1e3) + ' nrns/s/pA')
     
 
 legend(leg, loc='best')
-savefig('{0}/job{1:04}_bump_velocity_estimation.pdf'.format(dirName, jobRange[0]))
+savefig('{0}/job{1:05}_bump_velocity_estimation.pdf'.format(dirName, jobRange[0]))
 

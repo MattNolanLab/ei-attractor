@@ -41,6 +41,7 @@ namespace nest
         const Name E_AHP("E_AHP");
         const Name g_AHP_max("g_AHP_max");
         const Name tau_AHP("tau_AHP");
+        const Name g_AHP_ad("g_AHP_ad");
         const Name g_AHP("g_AHP");
         const Name g_AMPA("g_AMPA");
         const Name g_NMDA("g_NMDA");

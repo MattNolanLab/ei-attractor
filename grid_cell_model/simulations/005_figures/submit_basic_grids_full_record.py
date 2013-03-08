@@ -20,7 +20,7 @@
 #
 
 from default_params import defaultParameters
-from common         import *
+from submitting.submitters         import *
 
 import logging as lg
 
@@ -28,7 +28,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+CLUSTER = True  # if True, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -59,7 +59,7 @@ programName         = 'nice python2.6 simulation_basic_grids_full_record.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids_full_record.py'
+cluster_scriptName  = 'eddie_submit.sh simulation_basic_grids_full_record.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=14:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
@@ -70,8 +70,8 @@ ac = ArgumentCreator(parameters)
 #}
 #ac.insertDict(iterparams, mult=False)
 
-if EDDIE:
-    submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
+if CLUSTER:
+    submitter = QsubSubmitter(ac, cluster_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)

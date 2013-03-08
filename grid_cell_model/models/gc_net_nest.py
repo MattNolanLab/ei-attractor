@@ -1,5 +1,5 @@
 #
-#   grid_cell_network_nest.py
+#   gc_net_nest.py
 #
 #   Nest-specific implementation of the grid cell model
 #
@@ -26,13 +26,16 @@ import logging  as lg
 from scipy              import linspace
 from numpy.random       import rand, randn
 
-from common             import *
-from grid_cell_network  import *
-from place_input        import *
-from place_cells        import *
+from submitting.submitters      import *
+from gc_net      import *
+from place_input import *
+from place_cells import *
 
 import random
 import nest
+
+
+nest.Install('gridcellsmodule')
 
 
 class PosInputs(object):
@@ -69,10 +72,15 @@ class NestGridCellNetwork(GridCellNetwork):
         for clk in self._clocks:
             clk.reinit()
 
-    def reinit(self):
-        self.net.reinit(states=False)
-        self._initStates()
-        self._initClocks()
+    def _initNESTKernel(self):
+        nest.ResetKernel()
+        nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": False})
+        nest.SetKernelStatus({"local_num_threads" : self.no.nthreads})
+
+    #def reinit(self):
+    #    self._initNESTKernel()
+    #    self._initStates()
+    #    self._initClocks()
 
 
 
@@ -89,10 +97,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self.PC = []
 
-        nest.Install('gridcellsmodule')
-        nest.ResetKernel()
-        nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": False})
-        nest.SetKernelStatus({"local_num_threads" : self.no.nthreads})
+        self._initNESTKernel()
 
         self.e_neuron_params = {
                 "V_m"              : self.no.EL_e,
@@ -112,6 +117,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 "tau_AHP"          : self.no.tau_AHP_e,
                 "E_AHP"            : self.no.E_AHP_e,
                 "g_AHP_max"        : self.no.g_AHP_e_max,
+                "g_AHP_ad"         : False,
                 "I_const"          : self.no.Iext_e_const,
                 "I_ac_amp"         : self.no.Iext_e_theta,
                 "I_ac_freq"        : self.no.theta_freq,
@@ -138,8 +144,9 @@ class NestGridCellNetwork(GridCellNetwork):
                 "tau_NMDA_fall"    : self.no.tau_NMDA_fall,
                 "tau_GABA_A_fall"  : self.no.tau_GABA_A_fall,
                 "tau_AHP"          : self.no.ad_tau_i_mean,
-                "E_AHP"            : self.no.EL_i,  # !!! Here there is no adaptaion
+                "E_AHP"            : self.no.EL_i,  # AHP has a role of adaptation here 
                 "g_AHP_max"        : self.no.ad_i_g_inc,
+                "g_AHP_ad"         : True,
                 "I_const"          : self.no.Iext_i_const,
                 "I_ac_amp"         : self.no.Iext_i_theta,
                 "I_ac_freq"        : self.no.theta_freq,
@@ -152,12 +159,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 "rat_pos_y"        : []}
 
 
-        #tau1_GABA = self.no.tau_GABA_A_fall
-        #tau2_GABA = self.no.tau_GABA_A_rise * self.no.tau_GABA_A_fall / \
-        #        (self.no.tau_GABA_A_rise + self.no.tau_GABA_A_fall);
-        #self.B_GABA = 1/((tau2_GABA/tau1_GABA)**(self.no.tau_GABA_A_rise/tau1_GABA) - 
-        #        (tau2_GABA/tau1_GABA)**(self.no.tau_GABA_A_rise/tau2_GABA))
-        self.B_GABA = 1.0
+        self.B_GABA = 1.0   # Must be here for compatibility with brian code
 
         self.e_model_name = "iaf_gridcells"
         self.i_model_name = "iaf_gridcells"
@@ -367,8 +369,9 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self._ratVelocitiesLoaded = True # Force this velocities, not the animal
 
-        # Load velocities into nest: they are all shared among all iaf_gridcells
-        # nodes so only one neuron needs setting the actual values
+        # Load velocities into nest: they are all shared among all
+        # iaf_gridcells nodes so only one neuron needs setting the actual
+        # values
         nest.SetStatus([self.E_pop[0]], {
             "rat_pos_x" :  self.rat_pos_x,
             "rat_pos_y" :  self.rat_pos_y,
@@ -377,17 +380,16 @@ class NestGridCellNetwork(GridCellNetwork):
         print self.rat_pos_x
         print self.rat_pos_y
 
-        # Map velocities to currents: we use the slope of bump speed vs. rat speed and
-        # inter-peak grid field distance to remap
-        # Bump current slope must be estimated
-        self.velC = self.Ne_x / self.no.gridSep / self.no.bumpCurrentSlope
+        # Map velocities to currents: Here the mapping is 1:1, i.e. the
+        # velocity dictates the current
+        self.velC = 1.
 
         nest.SetStatus(self.E_pop, "pref_dir_x", self.prefDirs_e[:, 0]);
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
         self.setPlaceCells(start=0.0, end=self.no.theta_start_t,
-                posIn=PosInputs([.0], [.0], self.rat_dt))
+                posIn=PosInputs([0.], [.0], self.rat_dt))
 
 
     def setPlaceCells(self, start=None, end=None, posIn=None):
@@ -421,9 +423,6 @@ class NestGridCellNetwork(GridCellNetwork):
             nest.SetStatus(self.PC, 'ctr_x', self.PCHelper.centers[:, 0])
             nest.SetStatus(self.PC, 'ctr_y', self.PCHelper.centers[:, 1])
 
-            #print "ctr_x", self.PCHelper.centers[:, 0]
-            #print "ctr_y", self.PCHelper.centers[:, 1]
-
             npos = int(self.no.time / self.rat_dt)
             nest.SetStatus([self.PC[0]], params={
                 'rat_pos_x' : posIn.pos_x[0:npos],
@@ -450,7 +449,6 @@ class NestGridCellNetwork(GridCellNetwork):
                     self.no.gridSep, [.0, .0], fieldSigma=connStdDev)
             ctr_x = nest.GetStatus(self.PC, 'ctr_x')
             ctr_y = nest.GetStatus(self.PC, 'ctr_y')
-            #print ctr_x, ctr_y
             for pc_id in xrange(self.N_pc_created):
                 w = pc_input.getSheetInput(ctr_x[pc_id], ctr_y[pc_id]).flatten()
                 gt_th = w > pc_weight_threshold

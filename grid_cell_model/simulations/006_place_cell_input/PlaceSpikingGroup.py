@@ -23,7 +23,7 @@ import numpy as np
 import brian
 from brian import *
 
-from place_cells import *
+from models.place_cells import *
 
 
 class PlaceSpikingGroup(brian.PoissonGroup):

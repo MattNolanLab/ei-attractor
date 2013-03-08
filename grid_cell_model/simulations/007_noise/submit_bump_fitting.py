@@ -20,10 +20,10 @@
 #
 
 from default_params import defaultParameters
-from common         import *
+from submitting.submitters         import *
 
 
-CLUSTER = False  # if eddie, submit on a cluster using qsub
+CLUSTER = False  # if True, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -58,7 +58,7 @@ programName         = 'python2.6 -i simulation_bump_fitting.py'
 blocking            = True
 
 # Cluster parameters
-eddie_scriptName    = 'cluster_submit.sh simulation_bump_fitting.py'
+cluster_scriptName  = 'cluster_submit.sh simulation_bump_fitting.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:05:00 -pe openmpi_smp8_mark2 16"
 qsub_output_dir     = parameters['output_dir']
 
@@ -73,7 +73,7 @@ ac = ArgumentCreator(parameters)
 #ac.insertDict(iterparams, mult=False)
 
 if CLUSTER:
-    submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
+    submitter = QsubSubmitter(ac, cluster_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)

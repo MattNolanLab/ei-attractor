@@ -26,8 +26,8 @@ from scipy.io                import loadmat
 from scipy.io                import savemat
 from optparse                import OptionParser
 
-from parameters              import *
-from grid_cell_network_nest  import *
+from models.parameters       import *
+from models.gc_net_nest      import *
 from analysis.spikes         import slidingFiringRateTuple, torusPopulationVector
 from analysis.image          import Position2D, fitGaussianBumpTT
 from analysis.signal         import fft_real_freq, relativePowerFFT, maxPowerFrequency
@@ -99,9 +99,8 @@ ei_net = NestGridCellNetwork(options, simulationOpts=None)
 
 const_v = [00.0, 0.0]
 ei_net.setConstantVelocityCurrent_e(const_v)
-ei_net.setVelocityCurrentInput_e()
+#ei_net.setVelocityCurrentInput_e()
 
-#ei_net.uniformInhibition()
 #ei_net.setStartCurrent()
 #ei_net.setPlaceCells()
 
@@ -174,7 +173,7 @@ events_i.append(nest.GetStatus(stateMon_i)[1]['events'])
 F_tstart = 0.0
 F_tend = options.time
 F_dt = 20.0
-F_winLen = 500.0
+F_winLen = 250.0
 senders_e      = nest.GetStatus(spikeMon_e)[0]['events']['senders'] - ei_net.E_pop[0]
 spikeTimes_e   = nest.GetStatus(spikeMon_e)[0]['events']['times']
 Fe, Fe_t = slidingFiringRateTuple((senders_e, spikeTimes_e), ei_net.net_Ne,

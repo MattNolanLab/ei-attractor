@@ -24,8 +24,8 @@ from scipy.io   import loadmat
 from scipy.io   import savemat
 from optparse   import OptionParser
 
-from parameters              import *
-from grid_cell_network_nest  import *
+from models.parameters       import *
+from models.gc_net_nest      import *
 from analysis.spikes         import slidingFiringRateTuple, torusPopulationVector
 
 import time
@@ -61,7 +61,6 @@ const_v = [0.0, 0.0]
 ei_net.setConstantVelocityCurrent_e(const_v)
 ei_net.setVelocityCurrentInput_e()
 
-#ei_net.uniformInhibition()
 #ei_net.setStartCurrent()
 #ei_net.setPlaceCells()
 

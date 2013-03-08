@@ -31,10 +31,11 @@ defaultParameters = {
         "Ne"                    :   68,
         "Ni"                    :   34,
         "delay"                 :   1.0,          # ms
+        "nthreads"              :   1,
 
         "rat_dt"                :   20.0,         # ms
-        "ratVelFName"           : '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
-        #"ratVelFName"           : '../../../../data/hafting_et_al_2005/rat_trajectory_original.mat',
+        "ratVelFName"           : '../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
+        #"ratVelFName"           : '../../../data/hafting_et_al_2005/rat_trajectory_original.mat',
 
         "gridSep"               : 70,             # cm
 
@@ -112,8 +113,13 @@ defaultParameters = {
     
         "E_AMPA"                :   0,            # mV
         "E_GABA_A"              :   -75,          # mV
+
+        "N_place_cells"         :   0,
+        "pc_max_rate"           :   100.0,         # Hz
+        "pc_field_std"          :   20.0,         # cm
+        "pc_conn_weight"        :   5.,          # nS
         
-        "noise_sigma"           :   2,            # mV
+        "noise_sigma"           :   100.0,        # pA
         "sigma_init_cond"       :   10,           # mV
         
         "sim_dt"                :   0.1,          # ms

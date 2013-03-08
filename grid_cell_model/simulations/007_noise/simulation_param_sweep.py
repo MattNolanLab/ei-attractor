@@ -26,11 +26,11 @@ from scipy.io   import loadmat
 from scipy.io   import savemat
 from optparse   import OptionParser
 
-from parameters              import *
-from grid_cell_network_brian import *
-from custombrian             import *
+from models.parameters       import *
+from models.gc_net_brian     import *
+from models.custombrian      import *
 from tools                   import *
-from plotting                import *
+from otherpkg.plotting                import *
 
 import time
 import math
@@ -65,7 +65,6 @@ total_start_t = time.time()
 
 options.ndim = 'twisted_torus'
 ei_net = BrianGridCellNetwork(options, simulationOpts=None)
-ei_net.uniformInhibition()
 ei_net.uniformExcitation()
 ei_net.setConstantCurrent()
 ei_net.setStartCurrent()

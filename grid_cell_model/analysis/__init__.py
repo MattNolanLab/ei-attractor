@@ -19,4 +19,5 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__all__ = ['statistics', 'image', 'spikes', 'other', 'definitions']
+__all__ = ['conversion', 'grid_cells', 'image', 'other', 'signal', 'spikes',
+        'statistics', "Wavelets"]

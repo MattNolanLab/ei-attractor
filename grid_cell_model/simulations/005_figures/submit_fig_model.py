@@ -20,7 +20,7 @@
 #
 
 from default_params import defaultParameters
-from common         import *
+from submitting.submitters         import *
 
 import logging  as lg
 import numpy    as np
@@ -29,7 +29,7 @@ import numpy    as np
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = False  # if eddie, submit on a cluster using qsub
+CLUSTER = False  # if True, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -42,7 +42,7 @@ parameters['output_dir'] = 'output_local'
 parameters['prefDirC_e']        = 0
 parameters['prefDirC_i']        = 0
 
-parameters['Ne'] = 34
+parameters['Ne'] = 68
 parameters['Ni'] = 34
 
 surround_type = "E_surround"
@@ -94,11 +94,11 @@ programName         = 'python2.6 -i simulation_fig_model.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_fig_model.py'
+cluster_scriptName  = 'eddie_submit.sh simulation_fig_model.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:10:00"
 qsub_output_dir     = parameters['output_dir']
 
-ac = ArgumentCreator(parameters)
+ac = ArgumentCreator(parameters, printout=True)
 
 #iterparams = {
 #        'Ne'    : [8, 12, 16, 20, 24, 28, 32],
@@ -115,11 +115,11 @@ ac = ArgumentCreator(parameters)
 #    'pAMPA_mu'  : np.array([0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]) / 0.6
 #        'noise_sigma'   : np.arange(0, 4.1, 0.2)
 #}
-#ac.insertDict(iterparams, mult=False, printout=True)
+#ac.insertDict(iterparams, mult=False)
 
 
-if EDDIE:
-    submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
+if CLUSTER:
+    submitter = QsubSubmitter(ac, cluster_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)

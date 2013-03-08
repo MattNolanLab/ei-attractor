@@ -1,8 +1,7 @@
-#!/bin/sh
 #
-#   eddie_submit.sh
+#   __init__.py
 #
-#   Submit job to the cluster.
+#   Package initialization file
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -20,18 +19,5 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Initialise environment module
-
-. /etc/profile.d/modules.sh
-
-# Use python 2.6
-
-module load python/2.6.3
-
-
-BASE=../../
-export PYTHONPATH="/exports/work/inf_ndtc/s0966762/usr/local/lib/python2.6/site-packages:$BASE"
-
-
-# Run the program
-python2.6 $* 
+__all__ = ["custombrian", "gc_net", "gc_net_brian", "gc_net_nest",
+        "parameters", "place_cells", "place_input"]

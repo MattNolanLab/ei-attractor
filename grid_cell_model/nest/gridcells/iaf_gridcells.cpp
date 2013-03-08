@@ -150,6 +150,7 @@ nest::iaf_gridcells::Parameters::Parameters()
       tau_AHP         (  20.0 ), // ms
       E_AHP           ( -80.0 ), // mV
       g_AHP_max       (   0.0 ), // nS
+      g_AHP_ad        ( false ), // bool
       V_clamp         ( -50.0 ), // mV
       g_NMDA_fraction (   0.0 ), // percent of AMPA weight
       I_const         (   0.0 ), // pA
@@ -239,6 +240,7 @@ void nest::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
     def<double>(d, names::tau_AHP,          tau_AHP);
     def<double>(d, names::E_AHP,            E_AHP);
     def<double>(d, names::g_AHP_max,        g_AHP_max);
+    def<bool>  (d, names::g_AHP_ad,         g_AHP_ad);
     def<double>(d, names::V_clamp,          V_clamp);
 
     def<double>(d, names::g_NMDA_fraction,  g_NMDA_fraction);
@@ -289,6 +291,7 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
     updateValue<double>(d, names::tau_AHP,          tau_AHP);
     updateValue<double>(d, names::E_AHP,            E_AHP);
     updateValue<double>(d, names::g_AHP_max,        g_AHP_max);
+    updateValue<bool>  (d, names::g_AHP_ad,         g_AHP_ad);
 
     updateValue<double>(d, names::V_clamp,          V_clamp);
 
@@ -527,8 +530,12 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
                 S_.y_[State_::V_M]  = P.V_reset;
                 S_.r_               = V_.RefractoryCounts_;
 
-                // AHP reactivation
-                S_.y_[State_::G_AHP] = P.g_AHP_max;
+                // AHP reactivation/addition
+                if (P.g_AHP_ad) {
+                    S_.y_[State_::G_AHP] += P.g_AHP_max;
+                } else {
+                    S_.y_[State_::G_AHP] = P.g_AHP_max;
+                }
                 
                 set_spiketime(Time::step(origin.get_steps() + lag + 1));
                 SpikeEvent se;
