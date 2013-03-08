@@ -29,7 +29,7 @@ from optparse   import OptionParser
 import nest
 import nest.raster_plot
 
-from parameters              import *
+from models.parameters       import *
 from models.gc_net_nest      import *
 from analysis.spikes         import slidingFiringRateTuple, torusPopulationVector
 from analysis.image          import Position2D, fitGaussianBumpTT

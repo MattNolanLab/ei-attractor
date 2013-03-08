@@ -12,6 +12,9 @@ Package structure:
     gc_net_nest.py
         NEST specific implementation of the grid cell network
 
+    parameters.py
+        Grid cell network generic parameters
+
     place_cells.py
         Place cell simulation model
 

@@ -24,7 +24,7 @@ from scipy.io   import loadmat
 from scipy.io   import savemat
 from optparse   import OptionParser
 
-from parameters              import *
+from models.parameters       import *
 from models.gc_net_nest      import *
 from analysis.spikes         import slidingFiringRateTuple, torusPopulationVector
 
