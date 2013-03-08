@@ -32,7 +32,7 @@ from optparse   import OptionParser
 
 from models.parameters       import *
 from models.gc_net_brian     import *
-from custombrian             import *
+from models.custombrian      import *
 
 import time
 import math

@@ -2,6 +2,9 @@ This package defines all the higher level models (i.e. python based). For the
 nest model, have a look at ../nest/
 
 Package structure:
+    
+    custombrian.py
+        Custom-made models derived from brian classes
 
     gc_net.py 
         Base class for the grid cell network. Simulator independent
