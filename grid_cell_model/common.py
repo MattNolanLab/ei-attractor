@@ -85,13 +85,14 @@ class ArgumentCreator(object):
     method)
     '''
     
-    def __init__(self, defaultOpts):
+    def __init__(self, defaultOpts, printout=False):
         '''
         defaultOpts should be a dictionary (not a list)
         '''
         self._do = defaultOpts
         self._resList = [defaultOpts]
         self._printData = []
+        self.printout = printout
 
         # remove job_num parameter from the list, it should be defined during
         # job submission
@@ -109,7 +110,7 @@ class ArgumentCreator(object):
 
         return ret
 
-    def insertDict(self, d, mult=True, printout=False):
+    def insertDict(self, d, mult=True):
         '''
         Insert a dictionary with the parameter name and a list of values. If
         mult==True, then for each parameter value in 'd', copy the parameter set
@@ -118,7 +119,7 @@ class ArgumentCreator(object):
         list in d must be the same size as the total number of items in the
         resulting parameter list.
         '''
-        if printout:
+        if (self.printout):
             for key, vals in d.iteritems():
                 self._printData.append(key)
 
@@ -176,7 +177,7 @@ class ArgumentCreator(object):
     def getPrintArgString(self, it):
         res = ''
         for arg in self._printData:
-            res += arg + ': {0:3.3f}'.format(self._resList[it][arg]) + '\t'
+            res += arg + ' {0:3.3f}'.format(self._resList[it][arg]) + ' '
         return res
 
 
@@ -210,8 +211,12 @@ class ProgramSubmitter(object):
                 prt.append((curr_job_num, self._ac.getPrintArgString(it)))
                 curr_job_num += 1
 
-        for vals in prt:
-            print vals[0], ': ',  vals[1]
+        if (self._ac.printout):
+            self._printStr = self.getPrintoutString(prt)
+            print self._printStr
+        else:
+            self._printStr = None
+
 
     def submitOne(self, it, startJobNum, repeat=1):
         curr_job_num = startJobNum
@@ -219,6 +224,27 @@ class ProgramSubmitter(object):
             print "Submitting simulation " + str(it)
             self.RunProgram(self._ac.getArgString(it, curr_job_num), curr_job_num, dry_run)
             curr_job_num += 1
+
+
+    def getPrintoutString(self, prt):
+        res = ""
+        for vals in prt:
+            res += "{0} {1}\n".format(vals[0], vals[1])
+        return res
+
+
+    ## Export parameter sweep information to a text file.
+    #
+    # The format is:
+    #   jobNum param1 value param2 value ...
+    #
+    # @param fname File name to write to
+    #
+    def exportIterParams(self, fname):
+        f = open(fname, 'w')
+        f.write(self._printStr)
+        f.close()
+
 
 
 class GenericSubmitter(ProgramSubmitter):
