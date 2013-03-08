@@ -13,3 +13,5 @@ analysis/
     signal.py       Signal analysis routines, fft, filtering, etc.
     spikes.py       Generic, topic independent spike analysis
     statistics.py   Statistical analysis
+    Wavelets.py     Continuous wavelet transform (different from signal.py
+                    because of licensing)
