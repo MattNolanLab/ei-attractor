@@ -64,7 +64,7 @@ programName         = 'python2.6 simulation_basic_grids.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'cluster_submit.sh simulation_basic_grids.py'
+cluster_scriptName  = 'cluster_submit.sh simulation_basic_grids.py'
 qsub_params         = "-R y -P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe OpenMP 8"
 qsub_output_dir     = parameters['output_dir']
 
@@ -77,7 +77,7 @@ iterparams = {
 ac.insertDict(iterparams, mult=True)
 
 if CLUSTER:
-    submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
+    submitter = QsubSubmitter(ac, cluster_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)

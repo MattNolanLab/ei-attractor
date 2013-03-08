@@ -30,7 +30,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+CLUSTER = True  # if True, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -63,7 +63,7 @@ programName         = 'nice python2.6 simulation_AMPA_gaussian_velocity.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_AMPA_gaussian_velocity.py'
+cluster_scriptName  = 'eddie_submit.sh simulation_AMPA_gaussian_velocity.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=02:00:00 -pe memory-2G 2"
 qsub_output_dir     = parameters['output_dir']
 
@@ -73,8 +73,8 @@ iterparams = {
         'Ivel'       : np.arange(0, 113, 10)}
 ac.insertDict(iterparams, mult=True)
 
-if EDDIE:
-    submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
+if CLUSTER:
+    submitter = QsubSubmitter(ac, cluster_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)

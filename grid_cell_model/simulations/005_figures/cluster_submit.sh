@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#   eddie_submit.sh
+#   cluster_submit.sh
 #
 #   Submit job to the cluster.
 #

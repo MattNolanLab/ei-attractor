@@ -30,7 +30,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 
-CLUSTER = True  # if eddie, submit on a cluster using qsub
+CLUSTER = True  # if True, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -64,7 +64,7 @@ programName         = 'python2.6 simulation_basic_grids_velocity.py'
 blocking            = False
 
 # Cluster parameters
-eddie_scriptName    = 'cluster_submit.sh simulation_basic_grids_velocity.py'
+cluster_scriptName  = 'cluster_submit.sh simulation_basic_grids_velocity.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:20:00 -pe OpenMP 8"
 qsub_output_dir     = parameters['output_dir']
 
@@ -76,7 +76,7 @@ iterparams = {
 ac.insertDict(iterparams, mult=True)
 
 if CLUSTER:
-    submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
+    submitter = QsubSubmitter(ac, cluster_scriptName, qsub_params, qsub_output_dir)
 else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#   eddie_submit.sh
+#   cluster_submit.sh
 #
 #   Submit job to the cluster.
 #
@@ -26,16 +26,12 @@
 
 # Use python 2.6
 
-module load python/2.6.6
-module load openmpi-gcc
+module load python/2.6.3
 
 
 BASE=../../
-export LOCAL_DIR=/exports/work/inf_ndtc/lsolanka
-export PYTHONPATH="$LOCAL_DIR/usr/local/lib/python2.6/site-packages:$LOCAL_DIR/usr/local/lib64/python2.6/site-packages:$BASE"
-
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib:$LOCAL_DIR/usr/local/lib/nest"
+export PYTHONPATH="/exports/work/inf_ndtc/s0966762/usr/local/lib/python2.6/site-packages:$BASE"
 
 
 # Run the program
-mpirun -np $NSLOTS python2.6 $* 
+python2.6 simulation.py $* 
