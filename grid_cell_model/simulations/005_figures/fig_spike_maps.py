@@ -30,7 +30,7 @@ from analysis.grid_cells import extractSpikePositions2D, plotSpikes2D, SNSpatial
 from analysis.conversion import neuronSpikes
 
 
-jobRange = [1121, 1121]
+jobRange = [1100, 1121]
 trialNum = 0
 dumpNum = 0
 
