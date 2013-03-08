@@ -28,7 +28,7 @@ from scipy.io   import savemat
 from optparse   import OptionParser
 
 from parameters              import *
-from grid_cell_network_brian import *
+from models.gc_net_brian     import *
 from custombrian             import *
 
 import time

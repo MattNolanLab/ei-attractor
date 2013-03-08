@@ -1,5 +1,5 @@
 #
-#   grid_cell_network_nest.py
+#   gc_net_nest.py
 #
 #   Nest-specific implementation of the grid cell model
 #
@@ -26,13 +26,14 @@ import logging  as lg
 from scipy              import linspace
 from numpy.random       import rand, randn
 
-from common             import *
-from grid_cell_network  import *
-from place_input        import *
-from place_cells        import *
+from common      import *
+from gc_net      import *
+from place_input import *
+from place_cells import *
 
 import random
 import nest
+
 
 nest.Install('gridcellsmodule')
 

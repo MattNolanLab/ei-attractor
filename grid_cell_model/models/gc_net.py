@@ -1,5 +1,5 @@
 #
-#   grid_cell_network.py
+#   gc_net.py
 #   
 #   Simulator independent grid cell network code
 #

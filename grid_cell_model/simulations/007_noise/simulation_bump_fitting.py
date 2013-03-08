@@ -24,7 +24,7 @@ from scipy.io   import savemat
 from optparse   import OptionParser
 
 from parameters              import *
-from grid_cell_network_nest  import *
+from models.gc_net_nest      import *
 from analysis.spikes         import slidingFiringRateTuple, torusPopulationVector
 from analysis.image          import Position2D, fitGaussianBumpTT
 

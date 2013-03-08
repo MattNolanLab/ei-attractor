@@ -1,5 +1,5 @@
 #
-#   grid_cell_network_brian.py
+#   gc_net_brian.py
 #
 #   Brian-specific implementation of the grid cell model
 #
@@ -27,9 +27,9 @@ import logging  as lg
 from brian              import *
 from scipy              import linspace
 
-from common             import *
-from grid_cell_network  import *
-from place_input        import *
+from common      import *
+from gc_net      import *
+from place_input import *
 
 import random
 
