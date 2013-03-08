@@ -6,6 +6,10 @@ Directory/file structure proposal
 
 analysis/
     
-    stat.py     Statistical analysis
-    image.py    Image analysis
-    other.py    Other, unstructured routines
+    conversion.py   Conversion routines (file formats, data structures, etc.)
+    grid_cells.py   Grid cell specific data analysis
+    image.py        Image analysis
+    other.py        Other, unstructured routines
+    signal.py       Signal analysis routines, fft, filtering, etc.
+    spikes.py       Generic, topic independent spike analysis
+    statistics.py   Statistical analysis

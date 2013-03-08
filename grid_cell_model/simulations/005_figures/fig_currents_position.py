@@ -27,7 +27,7 @@ from scipy                      import stats
 from matplotlib.pyplot          import *
 from tables                     import *
 
-from grid_cell_analysis         import *
+from analysis.grid_cells        import SNSpatialRate2D
 from tools                      import *
 
 

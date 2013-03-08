@@ -63,7 +63,6 @@ for gen_it in range(options.ngenerations):
     total_start_t = time.time()
 
     ei_net = BrianGridCellNetwork(options, simulationOpts=None)
-    ei_net.uniformInhibition()
     ei_net.setConstantCurrent()
     ei_net.setStartCurrent()
     ei_net.setThetaCurrentStimulation()

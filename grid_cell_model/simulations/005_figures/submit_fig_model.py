@@ -42,7 +42,7 @@ parameters['output_dir'] = 'output_local'
 parameters['prefDirC_e']        = 0
 parameters['prefDirC_i']        = 0
 
-parameters['Ne'] = 34
+parameters['Ne'] = 68
 parameters['Ni'] = 34
 
 surround_type = "E_surround"

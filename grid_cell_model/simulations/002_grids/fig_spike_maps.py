@@ -23,7 +23,7 @@ import numpy as np
 from scipy.io           import loadmat
 from matplotlib.pyplot  import *
 
-from grid_cell_analysis import *
+from grid_cell_analysis import plotSpikes2D, SNSpatialRate2D
 
 
 jobRange = [1500, 1534]
