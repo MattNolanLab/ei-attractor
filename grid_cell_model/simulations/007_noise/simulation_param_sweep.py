@@ -30,7 +30,7 @@ from models.parameters       import *
 from models.gc_net_brian     import *
 from models.custombrian      import *
 from tools                   import *
-from plotting                import *
+from otherpkg.plotting                import *
 
 import time
 import math
