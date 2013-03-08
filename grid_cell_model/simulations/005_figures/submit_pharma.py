@@ -74,7 +74,7 @@ eddie_scriptName    = 'eddie_submit.sh simulation_pharma.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:03:00 -pe memory-2G 1"
 qsub_output_dir     = parameters['output_dir']
 
-ac = ArgumentCreator(parameters)
+ac = ArgumentCreator(parameters, printout=True)
 
 iterparams = {
 #    'Iplace'    :   [50, 100, 150, 200, 250]
@@ -86,7 +86,7 @@ iterparams = {
 #    'condAddPercSynapses_e' : [ 5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
 #    'condAdd_e'             : [20, 25, 30, 35, 40]
 }
-ac.insertDict(iterparams, mult=True, printout=True)
+ac.insertDict(iterparams, mult=True)
 
 if EDDIE:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

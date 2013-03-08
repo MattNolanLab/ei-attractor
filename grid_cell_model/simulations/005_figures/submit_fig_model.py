@@ -98,7 +98,7 @@ eddie_scriptName    = 'eddie_submit.sh simulation_fig_model.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:10:00"
 qsub_output_dir     = parameters['output_dir']
 
-ac = ArgumentCreator(parameters)
+ac = ArgumentCreator(parameters, printout=True)
 
 #iterparams = {
 #        'Ne'    : [8, 12, 16, 20, 24, 28, 32],
@@ -115,7 +115,7 @@ ac = ArgumentCreator(parameters)
 #    'pAMPA_mu'  : np.array([0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]) / 0.6
 #        'noise_sigma'   : np.arange(0, 4.1, 0.2)
 #}
-#ac.insertDict(iterparams, mult=False, printout=True)
+#ac.insertDict(iterparams, mult=False)
 
 
 if EDDIE:

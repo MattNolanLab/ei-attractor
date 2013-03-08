@@ -93,13 +93,13 @@ eddie_scriptName    = 'eddie_submit.sh simulation_fig_model.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:10:00"
 qsub_output_dir     = parameters['output_dir']
 
-ac = ArgumentCreator(parameters)
+ac = ArgumentCreator(parameters, printout=True)
 
 iterparams = {
     'theta_noise_sigma' : [0, 50, 100, 150, 200, 250, 300, 350]
     #'noise_sigma'   : np.arange(0, 4.1, 0.2)
 }
-ac.insertDict(iterparams, mult=True, printout=True)
+ac.insertDict(iterparams, mult=True)
 
 
 if EDDIE:

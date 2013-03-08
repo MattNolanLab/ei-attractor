@@ -68,12 +68,12 @@ eddie_scriptName    = 'cluster_submit.sh simulation_basic_grids_velocity.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:20:00 -pe OpenMP 8"
 qsub_output_dir     = parameters['output_dir']
 
-ac = ArgumentCreator(parameters)
+ac = ArgumentCreator(parameters, printout=True)
 
 iterparams = {
 #        'Iext_e_theta' : np.arange(0, 360, 30),
         'Ivel'         : np.arange(0, 160, 10)}
-ac.insertDict(iterparams, mult=True, printout=True)
+ac.insertDict(iterparams, mult=True)
 
 if CLUSTER:
     submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)

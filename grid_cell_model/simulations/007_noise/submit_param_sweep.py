@@ -62,7 +62,7 @@ eddie_scriptName    = 'eddie_submit.sh simulation_param_sweep.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:15:00"
 qsub_output_dir     = parameters['output_dir']
 
-ac = ArgumentCreator(parameters)
+ac = ArgumentCreator(parameters, printout=True)
 
 # Range of parameters around default values
 # Let's choose a 10% jitter around the default values
@@ -98,7 +98,7 @@ iterparams = {
         'g_GABA_total'      : g_GABA_total_arr,
         'g_uni_GABA_total'  : g_uni_GABA_total_arr
 }
-ac.insertDict(iterparams, mult=False, printout=True)
+ac.insertDict(iterparams, mult=False)
 
 
 if EDDIE:
