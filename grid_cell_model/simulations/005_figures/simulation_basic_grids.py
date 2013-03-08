@@ -242,5 +242,5 @@ for trial_it in range(options.ntrials):
 ################################################################################
 
 total_time = time.time()-total_start_t
-print "Overall time: ", total_time, " seconds"
+print "Overall time:", total_time, "seconds"
 
