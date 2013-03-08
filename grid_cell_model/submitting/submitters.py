@@ -19,7 +19,7 @@
 
 
 import os
-from log import *
+from otherpkg.log import *
 
 
 # Get a preferred direction for a neuron
