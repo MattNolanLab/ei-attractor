@@ -3,11 +3,17 @@ nest model, have a look at ../nest/
 
 Package structure:
 
-    grid_cell_network.py 
+    gc_net.py 
         Base class for the grid cell network. Simulator independent
 
-    grid_cell_network_brian.py
+    gc_net_brian.py
         Brian specific implementation of the grid cell network.
 
-    grid_cell_network_nest.py
+    gc_net_nest.py
         NEST specific implementation of the grid cell network
+
+    place_cells.py
+        Place cell simulation model
+
+    place_input.py
+        Place cell input *current* (no explicit place cells).

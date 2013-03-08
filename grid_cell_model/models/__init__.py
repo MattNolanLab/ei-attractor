@@ -19,4 +19,5 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__all__ = ["gc_net", "gc_net_brian", "gc_net_nest", "place_cells"]
+__all__ = ["gc_net", "gc_net_brian", "gc_net_nest", "place_cells",
+        "place_input"]
