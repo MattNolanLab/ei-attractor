@@ -26,7 +26,7 @@ import logging  as lg
 from scipy              import linspace
 from numpy.random       import rand, randn
 
-from common      import *
+from submitting.submitters      import *
 from gc_net      import *
 from place_input import *
 from place_cells import *

@@ -20,7 +20,7 @@
 #
 
 from default_params import defaultParameters
-from common         import *
+from submitting.submitters         import *
 
 import logging as lg
 

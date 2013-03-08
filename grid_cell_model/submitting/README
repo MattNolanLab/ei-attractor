@@ -1,0 +1,8 @@
+The submitting package contains module(s) that deal with submitting models on a
+SMP machine or a cluster or any similar architecture.
+
+Package contents:
+    
+    submitters.py
+        Classes that deal with generating parameters and submitting them.
+        TODO: separate exceptions and submitters

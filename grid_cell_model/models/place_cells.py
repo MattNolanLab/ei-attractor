@@ -21,7 +21,7 @@
 import numpy as np
 from matplotlib.pyplot import *
 
-from common import NotImplementedException
+from submitting.submitters import NotImplementedException
 
 
 __all__ = ['PlaceCells', 'UniformBoxPlaceCells']
