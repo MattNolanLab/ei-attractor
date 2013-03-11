@@ -19,8 +19,6 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from matplotlib.pyplot import *
-
 from submitting.submitters import NotImplementedException
 
 
@@ -168,6 +166,8 @@ class UniformBoxPlaceCells(PlaceCells):
 
 
 if __name__ == '__main__':
+    from matplotlib.pyplot import *
+
     boxSize = (121, 200)
     N = (200, 200)
     totalSz = N[0]*N[1]

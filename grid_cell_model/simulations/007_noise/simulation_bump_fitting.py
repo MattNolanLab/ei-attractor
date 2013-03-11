@@ -21,16 +21,19 @@
 
 import numpy as np
 
-from numpy.random            import choice
-from scipy.io                import loadmat
-from scipy.io                import savemat
-from optparse                import OptionParser
+from matplotlib.pyplot  import *
 
-from models.parameters       import *
-from models.gc_net_nest      import *
-from analysis.spikes         import slidingFiringRateTuple, torusPopulationVector
-from analysis.image          import Position2D, fitGaussianBumpTT
-from analysis.signal         import fft_real_freq, relativePowerFFT, maxPowerFrequency
+from numpy.random       import choice
+from scipy.io           import loadmat
+from scipy.io           import savemat
+from optparse           import OptionParser
+from matplotlib.mlab    import detrend_mean, psd
+
+from models.parameters  import *
+from models.gc_net_nest import *
+from analysis.spikes    import slidingFiringRateTuple, torusPopulationVector
+from analysis.image     import Position2D, fitGaussianBumpTT
+from analysis.signal    import relativePower, maxPowerFrequency
 
 import time
 import nest
@@ -65,6 +68,7 @@ rcParams['font.size'] = 16
 # @param sigName    A name of the signal to extract from the state monitor.
 #
 def relativeGammaPower(stateMon, gRange, sigName):
+
     N = len(stateMon)
     stat = nest.GetStatus(stateMon)
 
@@ -78,12 +82,14 @@ def relativeGammaPower(stateMon, gRange, sigName):
         times = stat[nidx]['events']['times'] 
         dt = (times[1] - times[0]) * 1e-3 # sec
         sig = stat[nidx]['events'][sigName]
-        fftF, fftData = fft_real_freq(sig - np.mean(sig), dt)
-        relP[nidx] = relativePowerFFT(fftData, fftF, Frange=gRange)
-        maxF[nidx] = maxPowerFrequency(fftData, fftF, Frange=gRange)
-        powerSpectra_P.append(np.abs(fftData)**2)
+        NFFT = 10000 # 0.5s/0.1ms nearest power of 2
+        Pxx, F = psd(sig - np.mean(sig), NFFT, Fs=1./dt, noverlap=NFFT/10,
+                pad_to=NFFT*2)
+        relP[nidx] = relativePower(Pxx, F, Frange=gRange)
+        maxF[nidx] = maxPowerFrequency(Pxx, F, Frange=gRange)
+        powerSpectra_P.append(Pxx)
 
-    powerSpectra_F = fftF
+    powerSpectra_F = F
     return relP, maxF, (np.array(powerSpectra_P), powerSpectra_F)
 
 
@@ -145,8 +151,8 @@ stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params)
 
 
 
-x_lim = [options.time-1e3, options.time]
-#x_lim = [0, options.time]
+#x_lim = [options.time-1e3, options.time]
+x_lim = [0, options.time]
 
 
 
@@ -360,7 +366,7 @@ Frange = spectra_e_F <= Fmax
 spectra_e_F = np.array([spectra_e_F]*spectra_e_P.shape[0])
 plot(spectra_e_F[0:NP, Frange].T, spectra_e_P[0:NP, Frange].T)
 xlabel('Frequency (Hz)')
-ylabel('Power ($pA^2$)')
+ylabel('Power ($pA^2$/Hz)')
 title('Power spectra of $I_{syn}$ of ' + str(NP) + ' selected E neurons')
 savefig(output_fname + '_P_spectra.pdf')
 

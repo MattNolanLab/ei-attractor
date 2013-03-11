@@ -23,7 +23,6 @@
 import numpy    as np
 import logging  as lg
 
-#from numpy.random       import rand, randn
 from brian              import *
 from scipy              import linspace
 

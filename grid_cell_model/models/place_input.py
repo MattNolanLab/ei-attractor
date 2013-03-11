@@ -19,7 +19,6 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from matplotlib.pyplot import *
 
 from scipy.io import loadmat
 
@@ -90,6 +89,7 @@ class PlaceCellInput(object):
 
 
 if __name__=="__main__":
+    from matplotlib.pyplot import *
     Ne_x = 34
     Ne_y = 30
     arenaSize = 180.

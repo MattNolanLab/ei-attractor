@@ -29,7 +29,7 @@ CLUSTER = False  # if True, submit on a cluster using qsub
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 3e3  # ms
+parameters['time']              = 5e3  # ms
 parameters['nthreads']          = 8
 
 parameters['output_dir']        = 'output_local'
@@ -46,7 +46,7 @@ parameters['gammaNSample']      = 0.05      # fraction
 parameters['gammaRangeLow']     = 50.0      # Hz
 parameters['gammaRangeHigh']    = 100.0     # Hz
 
-parameters['noise_sigma']       = 000.0       # pA
+parameters['noise_sigma']       = 150.0       # pA
 parameters['delay']             = 0.1
 
 
