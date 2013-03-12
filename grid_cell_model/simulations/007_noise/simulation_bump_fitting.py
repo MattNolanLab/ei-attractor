@@ -27,7 +27,7 @@ from numpy.random       import choice
 from scipy.io           import loadmat
 from scipy.io           import savemat
 from optparse           import OptionParser
-from matplotlib.mlab    import detrend_mean, psd
+from matplotlib.mlab    import detrend_mean, psd, window_hanning
 
 from models.parameters  import *
 from models.gc_net_nest import *
@@ -66,8 +66,9 @@ rcParams['font.size'] = 16
 # @param stateMon   NEST state monitor(s).
 # @param gRange     A tuple containing the gamma range (Hz)
 # @param sigName    A name of the signal to extract from the state monitor.
+# @param tstart     When to start analysis (s)
 #
-def relativeGammaPower(stateMon, gRange, sigName):
+def relativeGammaPower(stateMon, gRange, sigName, tstart=0.0):
 
     N = len(stateMon)
     stat = nest.GetStatus(stateMon)
@@ -81,10 +82,10 @@ def relativeGammaPower(stateMon, gRange, sigName):
         print "relativeGammaPower: ", nidx
         times = stat[nidx]['events']['times'] 
         dt = (times[1] - times[0]) * 1e-3 # sec
-        sig = stat[nidx]['events'][sigName]
-        NFFT = 10000 # 0.5s/0.1ms nearest power of 2
-        Pxx, F = psd(sig - np.mean(sig), NFFT, Fs=1./dt, noverlap=NFFT/10,
-                pad_to=NFFT*2)
+        sig = stat[nidx]['events'][sigName][int(tstart/dt):]
+        NFFT = 5000 
+        Pxx, F = psd(sig - np.mean(sig), NFFT, Fs=1./dt,
+                noverlap=int(NFFT*0.75), window=window_hanning)
         relP[nidx] = relativePower(Pxx, F, Frange=gRange)
         maxF[nidx] = maxPowerFrequency(Pxx, F, Frange=gRange)
         powerSpectra_P.append(Pxx)
@@ -151,8 +152,8 @@ stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params)
 
 
 
-#x_lim = [options.time-1e3, options.time]
-x_lim = [0, options.time]
+x_lim = [options.time-2e3, options.time]
+#x_lim = [0, options.time]
 
 
 
@@ -342,10 +343,12 @@ savefig(output_fname + '_bump_position.pdf')
 
 
 # Relative gamma power of inhibition in a sample of E neurons
+Ftstart = 3 # sec
 figure(figsize=(12, 6))
 subplot(1, 2, 1)
 gRange = (options.gammaRangeLow, options.gammaRangeHigh)
-relP_e, maxF_e, spectra_e = relativeGammaPower(stateMonF_e, gRange, 'I_clamp_GABA_A')
+relP_e, maxF_e, spectra_e = relativeGammaPower(stateMonF_e, gRange,
+        'I_clamp_GABA_A', tstart=Ftstart)
 hist(relP_e)
 xlabel('Relative power')
 ylabel('Count')
@@ -371,8 +374,7 @@ title('Power spectra of $I_{syn}$ of ' + str(NP) + ' selected E neurons')
 savefig(output_fname + '_P_spectra.pdf')
 
 
-show()
-
+#show()
         
 #                            End main cycle
 ################################################################################
