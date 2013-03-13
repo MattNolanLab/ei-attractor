@@ -1,7 +1,7 @@
 #
-#   __init__.py
+#   datamanip.py
 #
-#   Package initialization file
+#   Loading and saving data in the simulations/analysis.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,5 +19,32 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__all__ = ["custombrian", "datamanip", "gc_net", "gc_net_brian", "gc_net_nest",
-        "parameters", "place_cells", "place_input"]
+import numpy as np
+
+
+class DataManipulator(object):
+    '''
+    Class for saving and loading data structures transparently
+    
+    Use this interface to access the data manipulation routines. This should be
+    independent of the underlying data format.
+    '''
+
+
+
+
+class HDF5Manipulator(DataManipulator):
+    '''
+    An implementation of DataManipulator for the HDF5 data format.
+
+    We use h5py here, because of its very simple design.
+    '''
+
+
+
+class MatManipulator(DataManipulator):
+    '''
+    An implementation of DataManipulator for the Matlab file format.
+    
+    Uses loadmat and savemat.
+    '''
