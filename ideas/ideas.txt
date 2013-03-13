@@ -1,0 +1,68 @@
+== Place cells and grid cells ==
+
+The idea is to take the grid cell attractor network and connect to it an
+explicit representation of place cells. As we know that place cells can remap
+globally (that is the most interesting part, although rate remapping could be
+interesting as well), we want to set up a system that will learn the
+connections. Next the connections are either (i) shuffled (ii) or another form
+of global remapping would occur. What will be the prediction of gridness score
+for such an action?
+
+ - will the network survive in face of global remapping?
+ - will the gridness score drop (to zero or just decrease)?
+
+After the remapping happens, we can ask the following:
+
+ - Will the system learn new connections for the new environment/context?
+ - If yes, how long (in real time) will that happen, i.e. how long does it take
+   for the gridness score to increase to a reasonable value?
+ - Assuming connections have been formed for an old environment and a new
+   environment.  Now if we switch from one to another (global remapping), will
+   this affect gridness score?
+ - How many environments can be represented without the gridness score dropping
+   considerably?
+ - Can a grid cell network with theta nested gamma oscillations (and perhaps
+   also the place cells would be somehow modulated in this way) learn the
+   connections faster than an asynchronous network?
+
+All of the previous points are based on an assumption that the continuous
+attractor network alone cannot sustain the position of the bump without
+intervention (i.e. resetting) from the place cell population. My current and
+previous simulations strongly suggest that spiking attractor networks are too
+unstable, even when considering a noiseless case, to store a continuous
+variable for longer than a few seconds (also others' work as well of course)
+
+All the previous points would be sufficient for at least 7-8 meaningful
+figures.
+
+
+=== Will the gridness score survive in face of global remapping? ===
+
+- Show that the attractor model we have does not produce grid fields when place
+  cells are disabled.  This will be nothing new but will just corroborate the
+  previous results we and others have developed previously.
+
+- Show that the network has a non-zero variance of 'drift' over several
+  independent runs. Quantify whether the drift is systematic (could arise from
+  not-ideally-symetric connection profiles) or random.  The quantification is
+  relatively simple: take the mean of the bump drift over several (50-100) runs
+  and     see if it is zero (random) or non-zero (systematic). The network must
+  be the same, but simply starting from a different (random) state.
+
+  This section will allow to incorporate all the drift information I have done
+  during the past simulations and in (Pastoll et al., 2013).
+
+- Show that the attractor network with predefined connections from place cells
+  has proper grid fields.
+
+- Show that the synapses from place cells can be learned using an appropriate
+  hebbian learning rule (LTP, or even STDP?). This is straghtforward to think
+  of, especially given that (Guanella et al.) have shown it is possible.
+  However here we have a spiking attractor network.
+    - LTP - the weight will only increase - weird
+    - STDP - could eliminate connections from place cells that do not correlate
+      with the bump position
+
+- Compare the plastic synapses, especially weights, with the predefined case.
+
+
