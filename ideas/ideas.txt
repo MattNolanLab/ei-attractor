@@ -36,13 +36,13 @@ All the previous points would be sufficient for at least 7-8 meaningful
 figures.
 
 
-=== Will the gridness score survive in face of global remapping? ===
 
-- Show that the attractor model we have does not produce grid fields when place
+=== A spiking continuous attractor can use STDP to learn connections from place cells ===
+1. Show that the attractor model we have does not produce grid fields when place
   cells are disabled.  This will be nothing new but will just corroborate the
   previous results we and others have developed previously.
 
-- Show that the network has a non-zero variance of 'drift' over several
+2. Show that the network has a non-zero variance of 'drift' over several
   independent runs. Quantify whether the drift is systematic (could arise from
   not-ideally-symetric connection profiles) or random.  The quantification is
   relatively simple: take the mean of the bump drift over several (50-100) runs
@@ -52,17 +52,46 @@ figures.
   This section will allow to incorporate all the drift information I have done
   during the past simulations and in (Pastoll et al., 2013).
 
-- Show that the attractor network with predefined connections from place cells
+3. Show that the attractor network with predefined connections from place cells
   has proper grid fields.
 
-- Show that the synapses from place cells can be learned using an appropriate
-  hebbian learning rule (LTP, or even STDP?). This is straghtforward to think
-  of, especially given that (Guanella et al.) have shown it is possible.
-  However here we have a spiking attractor network.
+4. Show that the synapses from place cells can be learned using an appropriate
+  hebbian learning rule. This is straghtforward to think of, especially given
+  that (Guanella et al.) have shown it is possible.  However here we have a
+  spiking attractor network.
     - LTP - the weight will only increase - weird
     - STDP - could eliminate connections from place cells that do not correlate
-      with the bump position
+      with the bump position?
 
-- Compare the plastic synapses, especially weights, with the predefined case.
+5. Compare the plastic synapses, especially weights, with the predefined case.
 
 
+Result: 1 or 2 figures
+
+Time line:
+ - (1), (2), (3) are done - one week to put it together 
+ - (4, 5) - Study and implement the learning rule in the model (NEST), 3 weeks
+ - Total estimated: 1 month
+
+
+=== Global remapping of place cells weakens spatial information to grid cells ===
+1. Show what happens with the gridness score when global remapping occurs
+
+2. As an addition (supplementary) show what happens when rate remapping occurs.
+
+3. Show the correlation analysis of global remapping (this is finished), and
+  compare it to experimental data. Is the (random) global remapping in the
+  model similar to remapping in CA1 or CA3, or perhaps none? This might be done
+  before (1) perhaps.
+
+Results: 1 figure or part of larger figure.
+
+Timeline:
+ - (1), (3) are near completion (place cells in the NEST model): 1 week
+ - (2): if implemented, will require thinking about the rate remapping concept
+        1-2 weeks
+ - total 2-3 weeks
+
+
+=== Grid cells can learn synaptic connections from two place cell contexts ===
+1. 
