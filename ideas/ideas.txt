@@ -69,7 +69,7 @@ figures.
 Result: 1 or 2 figures
 
 Time line:
- - (1), (2), (3) are done - one week to put it together 
+ - (1), (2), (3) are done - 1 week to put it together 
  - (4, 5) - Study and implement the learning rule in the model (NEST), 3 weeks
  - Total estimated: 1 month
 
@@ -94,4 +94,47 @@ Timeline:
 
 
 === Grid cells can learn synaptic connections from two place cell contexts ===
-1. 
+1. Show that the hebbian learning rule can learn connections from the new
+ context (after global remapping).
+    - Does the gridness score drop compared to only one environment?
+    - What are the receptive fields of grid cells?
+    - Does the successful remapping depend on properties of place cells, such
+      as overlap between neighboring place fields, etc.?
+    - How long does it take to learn the new connections?
+    - Can the contexts be switched back on forth?
+
+Result: 1 figure
+Timeline: 2-3 weeks at least, conservatively 4 weeks
+
+
+=== Grid cells can learn synaptic connections from multiple place cell contexts ===
+1. Show that the learning rule that was used in the previous sections is
+  sufficient for the network to learn multiple place cell contexts.
+
+2. How many contexts can be learned before the place cell input breaks down and
+  doesn't provide any spatial information?
+
+3. Could it depend on the number of place cells, and their overlap?
+
+Results: 1 figure
+
+Timeline: 
+ - (0): figure out the necessary computations and whether (2) is even possible
+     computationally. If not, then some time will have to be spent figuring out
+     how to address this.
+     1 week
+ - (1): 2 weeks
+ - (2): 1 week
+ - (3): 1 week
+ Total: 5 weeks
+
+
+=== Total time spent on the place cell project ===
+ - 4 weeks
+ - 3 weeks
+ - 4 weeks
+ - 5 weeks
+ Total: 4 months
+
+
+
