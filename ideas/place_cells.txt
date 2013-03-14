@@ -1,4 +1,4 @@
-== Place cells and grid cells ==
+= Place cells and grid cells =
 
 The idea is to take the grid cell attractor network and connect to it an
 explicit representation of place cells. As we know that place cells can remap
@@ -37,7 +37,7 @@ figures.
 
 
 
-=== A spiking continuous attractor can use STDP to learn connections from place cells ===
+== A spiking continuous attractor can use STDP to learn connections from place cells ==
 1. Show that the attractor model we have does not produce grid fields when place
   cells are disabled.  This will be nothing new but will just corroborate the
   previous results we and others have developed previously.
@@ -74,7 +74,7 @@ Time line:
  - Total estimated: 1 month
 
 
-=== Global remapping of place cells weakens spatial information to grid cells ===
+== Global remapping of place cells weakens spatial information to grid cells ==
 1. Show what happens with the gridness score when global remapping occurs
 
 2. As an addition (supplementary) show what happens when rate remapping occurs.
@@ -93,7 +93,7 @@ Timeline:
  - total 2-3 weeks
 
 
-=== Grid cells can learn synaptic connections from two place cell contexts ===
+== Grid cells can learn synaptic connections from two place cell contexts ==
 1. Show that the hebbian learning rule can learn connections from the new
  context (after global remapping).
     - Does the gridness score drop compared to only one environment?
@@ -107,7 +107,7 @@ Result: 1 figure
 Timeline: 2-3 weeks at least, conservatively 4 weeks
 
 
-=== Grid cells can learn synaptic connections from multiple place cell contexts ===
+== Grid cells can learn synaptic connections from multiple place cell contexts ==
 1. Show that the learning rule that was used in the previous sections is
   sufficient for the network to learn multiple place cell contexts.
 
@@ -129,7 +129,7 @@ Timeline:
  Total: 5 weeks
 
 
-=== Total time spent on the place cell project ===
+== Total time spent on the place cell project ==
  - 4 weeks
  - 3 weeks
  - 4 weeks
