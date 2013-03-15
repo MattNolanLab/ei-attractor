@@ -5,6 +5,7 @@ partly on Python (brian, numpy, scipy, matplotlib) and/or C++ (NEST simulator).
 
 There are two versions therefore, that can (but it is not recommended) be
 intermixed:
+
  - **Brian version**: based on the Brian simulator. This is rather obsolete,
    Brian has become painfully slow with this model and as of current state
    does not allow for parallelisation of the simulation.
