@@ -53,5 +53,30 @@ place holder will be implemented can depend on these factors:
 One needs to satisfactorily answer these questions before any implementation
 commences, otherwise we will run into troubles.
 
+### DB vs. filesystem ###
+In general, databases should hold persistent data that are potentially being
+queried in a fast and efficient way. On the other hand simulation data can be
+large-scale with rather fast reading-writing, and stored in a shared
+filesystem.
 
-## Data set realization ##
+Therefore it should be safe to say that storing larger amounts of data that are
+not queried often is not suited for database storage.
+
+### Hierarchy ###
+The user might want to store data in a hierarchical format. While this would
+easily be accomplished by a file-system based storage or HDF5, other formats,
+like matlab, would not allow for a hierarchical storage.
+
+In the case of specific file format not allowing for a hierarchical data
+manipulation, one would have to emulate this, i.e. mangle the variable
+identifiers so as to mimic the file hierarchy. Possible limitations of this
+approach:
+    * A character clash between an identifier and the hierarchy delimiter
+    * A limit on the size of object identifier. In this case the levels of
+      hierarchy are not (theoretically) infinite.
+
+### Big data vs. query data ###
+This has been explained already.
+
+
+
