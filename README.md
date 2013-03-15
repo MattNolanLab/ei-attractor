@@ -7,12 +7,10 @@ There are two versions therefore, that can (but it is not recommended) be
 intermixed:
 
  - **Brian version**: based on the Brian simulator. This is rather obsolete,
-   Brian has become painfully slow with this model and as of current state
-   does not allow for parallelisation of the simulation.
- 
-   It is however very flexible to use, because model descriptions can be
-   easily manipulated by simply changing the differential equations and a
-   few additional settings.
+   Brian has become painfully slow with this model and as of current state does
+   not allow for parallelisation of the simulation.  It is however very
+   flexible to use, because model descriptions can be easily manipulated by
+   simply changing the differential equations and a few additional settings.
  
  - **NEST version**: Optimized version that implements the grid cell model
    as a module for the NEST simulator. It is about 10-20 times faster than
