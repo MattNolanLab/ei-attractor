@@ -48,3 +48,9 @@ class MatManipulator(DataManipulator):
     
     Uses loadmat and savemat.
     '''
+
+
+
+
+# Test this module
+if __name__ == "__main__":
