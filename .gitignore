@@ -3,3 +3,5 @@ central_data_store
 *.o
 *.swp
 .DS_Store
+
+INSTALL.html

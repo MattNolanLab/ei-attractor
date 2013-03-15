@@ -11,6 +11,7 @@ Prerequisites
 =============
 
 The project requires some common prerequisites:
+
     - Python 2.6/2.7
     - numpy  >= 1.6.2
     - scipy  >= 0.11.0
@@ -37,7 +38,8 @@ NEST version
 
 If you are planning to use NEST_ for simulations, you need these extra
 programs:
-    - C++ compiler (gcc, mingw, etc.)
+
+    - C++ compiler (gcc, mingw, ...)
     - `NEST simulator`_ >= 2.0.0
 
 
