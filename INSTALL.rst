@@ -10,15 +10,15 @@ Prerequisites_ that the user must install in order to start simulation.
 Prerequisites
 =============
 
-The project requires some common prerequisites:
+The model requires some common prerequisites:
 
-    - Python 2.6/2.7
-    - numpy  >= 1.6.2
-    - scipy  >= 0.11.0
-    - ideally matplotlib >= 1.1.1
-    - in some cases the hdf5 library, but this is rather optional. If you don't
-      want to use hdf5 in your simulation scripts, you will need to set the
-      correct output data format (this is currently in a TODO state).
+- Python 2.6/2.7
+- numpy  >= 1.6.2
+- scipy  >= 0.11.0
+- ideally matplotlib >= 1.1.1
+- in some cases the hdf5 library, but this is rather optional. If you don't
+  want to use hdf5 in your simulation scripts, you will need to set the
+  correct output data format (this is currently in a TODO state).
 
 All of these should be possible to install with your favorite installer (pip,
 easy_install, ...)
@@ -39,8 +39,8 @@ NEST version
 If you are planning to use NEST_ for simulations, you need these extra
 programs:
 
-    - C++ compiler (gcc, mingw, ...)
-    - `NEST simulator`_ >= 2.0.0
+- C++ compiler (gcc, mingw, ...)
+- `NEST simulator`_ >= 2.0.0
 
 
 
