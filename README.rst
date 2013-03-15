@@ -38,58 +38,60 @@ Repository content
 ==================
 
 The repository contains several folders, however the most important one is
-grid_cell_model. It contains the model and all its necessary component. All
-other folders are either experiments not very related to the actual model, but
-in the future could be useful.
+**grid_cell_model**. This directory contains the grid cell model and all its
+necessary components. All other folders are either experiments not very related
+to the actual model, or side-projects that could be useful in the future.
 
-Cellular_GA
+*Cellular_GA*
     A very simple MPI implementation of a Cellular Genetic algorithm [KU1995]_.
     This version, or the `Evolving objects`_ can be later used for more
     automatic parameter optimization.
 
-Grid_Cells_ModelDB
+*Grid_Cells_ModelDB*
     A version of grid cells that will be prepared to ModelDB. This will be
     removed in the future.
 
-cuda_test
+*cuda_test*
     A simple test of GPU computing. Nothing significant.
 
-data
+*data*
     Data files useful in the simulations. Contain rodent tracking data and
     preprocessing scripts.
 
-data_analysis
+*data_analysis*
     Lots of older MATLAB analysis scripts used in my MSc. thesis. No longer
     maintained, as all these analysis scripts have been ported to Python.
 
-graphs
+*graphs*
     Graph theory scripts
 
-grid_cell_model
-    Grid cell model simulation scripts and source files
+**grid_cell_model**
+    Grid cell model simulation scripts and source files. This is the main
+    directory. If you just want to work with the grid cell model, you can
+    simply ignore all the other directories.
 
-ideas
+*ideas*
     Ideas for future modeling that are written down
 
-model_fitting
+*model_fitting*
     Scripts for estimating I-V curve data and subsequently fitting integrate
     and fire models onto the I-V curves. This is no longer maintained actively.
 
-mult_bump_spiking_net
+*mult_bump_spiking_net*
     The first, simplified implementation of the spiking bump attractor network,
     based on [BURAK2009]_. This is quite dead (but will be resurrected when I
     am writing up my thesis - soon)
 
-nest_interface
+*nest_interface*
     A proposal. Possible work in progress to design a C++ NEST interface. God
     knows if it is useful anyhow yet.
 
-oscillations
+*oscillations*
     Some ancient MATLAB scripts dealing with simulation and analysis of
     gamma oscillations. This was a side-project that was later transferred to
     the theta-gamma oscillatory attractor model (grid_cell_model).
 
-ramp_model
+*ramp_model*
     Another side project that dealt with Hugh Pastoll's ramp gamma model. Due
     to lack of time, this was stopped.
 
