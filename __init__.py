@@ -41,4 +41,5 @@ they will use "name.h5" as an identifier. If the user wants to use the shelve
 module, they will just use "name.shelve", etc.
 '''
 
+from interface import DataStorage
 

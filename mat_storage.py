@@ -1,7 +1,7 @@
 #
-#   shelve_test.py
+#   mat_storage.py
 #
-#   Test the shelve module.
+#   Data storage into a Matlab .mat file.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -18,27 +18,14 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import shelve
-import pickle
-import numpy as np
-
-filename = "data.shelve"
-d = shelve.open(filename, protocol=pickle.HIGHEST_PROTOCOL)
-d.clear()
-
-d["ahoj"] = np.arange(1000000)
-
-d.sync()
-d.close()
 
 
-del d
+#class MatDataStorage(DataStorage):
+#    '''
+#    An implementation of DataStorage for the Matlab file format.
+#    
+#    Uses loadmat and savemat.
+#    '''
+#    pass
 
-d = shelve.open(filename)
-print d.keys()
 
-arr = d['ahoj']
-print arr
-print arr.dtype
-
-d.close()
