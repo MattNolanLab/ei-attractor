@@ -1,3 +1,4 @@
+#! /usr/bin/env python2.6
 #
 #   submit_bump_fitting.py
 #
@@ -66,6 +67,7 @@ ac = ArgumentCreator(parameters)
 
 iterparams = {
         'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
+        #'noise_sigma' : [150.0]
 }
 ac.insertDict(iterparams, mult=False)
 
