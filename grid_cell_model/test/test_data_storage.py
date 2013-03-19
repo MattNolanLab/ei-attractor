@@ -1,3 +1,4 @@
+#! /usr/bin/env python2.6
 #
 #   data_storage.py
 #
@@ -35,7 +36,7 @@ print "ds['ahoj']:\t", ds['ahoj']
 
 ds.close()
 
-ds = DataStorage.open('test.h5')
+ds = DataStorage.open('test.h5', mode='a')
 print "ds['compound']\t", ds['compound']
 print "ds\t", ds
 print "ds['compound']['comp1']\t", ds['compound']['comp1']
