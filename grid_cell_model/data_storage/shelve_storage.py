@@ -1,7 +1,7 @@
 #
-#   __init__.py
+#   shelve_storage.py
 #
-#   Package initialization file
+#   Data storage based on the shelve module
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,5 +19,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__all__ = ["custombrian", "datamanip", "gc_net", "gc_net_brian", "gc_net_nest",
-        "parameters", "place_cells", "place_input"]
+#class ShelveDataStorage(DataStorage):
+#    pass
+#
+#

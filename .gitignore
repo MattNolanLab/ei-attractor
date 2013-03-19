@@ -2,3 +2,4 @@ central_data_store
 *.pyc
 *.o
 *.swp
+.DS_Store
