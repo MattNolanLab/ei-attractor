@@ -23,13 +23,13 @@ import numpy as np
 from data_storage import DataStorage
 
 
-ds = DataStorage.open('test.h5')
+ds = DataStorage.open('test.h5', 'w')
 
 ds['ahoj'] = 124
 ds['compound'] = {'comp1': np.arange(100), 'comp2': 1234, 'str':
         'StringStringString',
         'nestedDict' : {'n1': 1, 'n2' : 2}}
-ds['big'] = np.arange(10000000)
+ds['big'] = np.arange(1000000)
 ds['2d'] = np.random.rand(100, 100)
 
 print "ds['ahoj']:\t", ds['ahoj']
@@ -48,5 +48,16 @@ ds['compound']['comp1'][0] = 10
 print "ds['compound']['comp1']", ds['compound']['comp1']
 print ds['compound']['comp1'][...]
 
+
+###############################################################################
+# Lists
+ds['list'] = [1, 2, 3, 4]
+ds['list_nested'] = [1, 2, 3, ['ahoj', 1, {'a': 10, 'b': 'text'}]]
+
 ds.close()
+
+ds = DataStorage.open('test.h5', mode='a')
+print ds['list']
+print ds['list_nested']
+print ds['list_nested'][3][2].keys()
 
