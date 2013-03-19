@@ -68,6 +68,7 @@ from analysis.image import Position2D, remapTwistedTorus
 import numpy    as np
 import logging  as lg
 import random
+from exceptions import NotImplementedError
 
 
 __all__ = ['GridCellNetwork']
@@ -370,3 +371,12 @@ class GridCellNetwork(object):
         Setup a place cell current input that resets the bump position every user defined period.
         '''
         raise NotImplementedException("GridCellNetwork.setPlaceCurrentInput")
+
+    def getAttrDictionary(self):
+        '''
+        Get a dictionary containing all the necessary attributes the user might
+        need in order to work with data produced by the simulation.
+        '''
+        raise NotImplementedError()
+
+

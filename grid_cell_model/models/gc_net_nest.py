@@ -475,3 +475,37 @@ class NestGridCellNetwork(GridCellNetwork):
     ############################################################################ 
     def getRatData(self):
         return self.ratData
+
+
+    def getAttrDictionary(self):
+        d = {}
+
+        d['PC'             ] = self.PC
+        d['e_neuron_params'] = self.e_neuron_params
+        d['i_neuron_params'] = self.i_neuron_params
+        d['B_GABA'         ] = self.B_GABA
+        d['E_pop'          ] = self.E_pop
+        d['I_pop'          ] = self.I_pop
+        d['PC'             ] = self.PC
+        d['net_Ne'         ] = self.net_Ne
+        d['net_Ni'         ] = self.net_Ni
+        d['rat_pos_x'      ] = self.rat_pos_x
+        d['rat_pos_y'      ] = self.rat_pos_y
+        d['rat_dt'         ] = self.rat_dt
+        d['velC'           ] = self.velC
+        d['Ne_x'           ] = self.Ne_x
+        d['Ne_y'           ] = self.Ne_y
+        d['Ni_x'           ] = self.Ni_x
+        d['Ni_y'           ] = self.Ni_y
+        d['prefDirs_e'     ] = self.prefDirs_e
+        d['N_pc_created'   ] = self.N_pc_created
+
+        return d
+            
+
+
+
+
+
+
+
