@@ -62,11 +62,11 @@ class HDF5DataStorage(DataStorage):
 
 
     @classmethod
-    def factory(cls, filePath):
+    def factory(cls, filePath, mode):
         '''
         Create the HDF5DataStorage object from a file.
         '''
-        f = h5py.File(filePath, 'a')
+        f = h5py.File(filePath, mode)
         return cls(f, f['/'])
 
        

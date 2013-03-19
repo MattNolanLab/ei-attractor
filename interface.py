@@ -41,13 +41,19 @@ class DataStorage(MutableMapping):
     '''
 
     @classmethod
-    def open(cls, filePath):
+    def open(cls, filePath, mode='w'):
         '''
         Given the file Path, return the DataStorage object with the correct
         implementation, inferred from the filePath extension.
+        
+        filePath
+            Full path to the filename to open
+        mode='w'
+            File mode. The default is to overwrite the old file. Use 'a' to
+            append.
         '''
         import hdf5_storage
-        return hdf5_storage.HDF5DataStorage.factory(filePath)
+        return hdf5_storage.HDF5DataStorage.factory(filePath, mode=mode)
 
 
 
