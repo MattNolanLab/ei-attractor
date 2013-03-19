@@ -20,6 +20,7 @@
 #
 import numpy as np
 from matplotlib.pyplot  import *
+
 from matplotlib.mlab    import detrend_mean, psd, window_hanning
 
 from analysis.spikes    import slidingFiringRateTuple, torusPopulationVector
@@ -305,4 +306,4 @@ title('Power spectra of $I_{syn}$ of ' + str(NP) + ' selected E neurons')
 savefig(output_fname + '_P_spectra.pdf')
 
 
-show()
+#show()
