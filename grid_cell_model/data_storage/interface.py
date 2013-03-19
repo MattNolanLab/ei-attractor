@@ -1,5 +1,5 @@
 #
-#   datamanip.py
+#   interface.py
 #
 #   Loading and saving data in the simulations/analysis.
 #
@@ -19,38 +19,34 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import numpy as np
+from collections import MutableMapping
 
 
-class DataManipulator(object):
+class DataStorage(MutableMapping):
     '''
-    Class for saving and loading data structures transparently
+    Class for saving and loading data structures transparently.
     
     Use this interface to access the data manipulation routines. This should be
     independent of the underlying data format.
     '''
+    pass
 
 
-
-
-class HDF5Manipulator(DataManipulator):
-    '''
-    An implementation of DataManipulator for the HDF5 data format.
-
-    We use h5py here, because of its very simple design.
-    '''
-
-
-
-class MatManipulator(DataManipulator):
-    '''
-    An implementation of DataManipulator for the Matlab file format.
-    
-    Uses loadmat and savemat.
-    '''
+#class ShelveDataStorage(DataStorage):
+#    pass
+#
+#
+#class MatDataStorage(DataStorage):
+#    '''
+#    An implementation of DataStorage for the Matlab file format.
+#    
+#    Uses loadmat and savemat.
+#    '''
+#    pass
 
 
 
 
 # Test this module
 if __name__ == "__main__":
+    pass
