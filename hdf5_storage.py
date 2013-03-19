@@ -78,7 +78,17 @@ class HDF5DataStorage(DataStorage):
     def __getitem__(self, key):
         val = self._group[key]
         if (isinstance(val, h5py.Group)):
-            return HDF5DataStorage(self._file, val)
+            if (val.attrs['type'] == 'dict'):
+                return HDF5DataStorage(self._file, val)
+            elif (val.attrs['type'] == 'list'):
+                res = []
+                for k in val.keys():
+                    res.append(HDF5DataStorage(self._file, val)[k])
+                return res
+            else:
+                raise Exception("Unknown type attribute encountered while " +
+                        "parsing the get request. Please check whether your " +
+                        "HDF5 file is in correct format")
         else:
             return val.value
 
@@ -121,50 +131,26 @@ class HDF5DataStorage(DataStorage):
                 compound types are stored recursively and for each a group is
                 created instead of dataset.
         '''
-        if (isinstance(value, dict)):
-            newGrp = grp.create_group(name)
-            for k, v in value.iteritems():
-                self._createDataMember(k, v, newGrp)
-        else:
-            try:
-                grp.create_dataset(name=name, data= value, compression="gzip")
-            except TypeError:
-                grp.create_dataset(name=name, data= value)
-
-
-
-###############################################################################
-#                               Tests
-###############################################################################
-if __name__ == '__main__':
-    import numpy as np
-
-    ds = HDF5DataStorage.factory('test.h5')
-
-    ds['ahoj'] = 124
-    ds['compound'] = {'comp1': np.arange(100), 'comp2': 1234, 'str':
-            'StringStringString',
-            'nestedDict' : {'n1': 1, 'n2' : 2}}
-    ds['big'] = np.random.rand(1000000)
-    ds['2d'] = np.random.rand(100, 100)
-
-    print "ds['ahoj']:\t", ds['ahoj']
-
-    ds.close()
-
-    ds = HDF5DataStorage.factory('test.h5')
-    print "ds['compound']\t", ds['compound']
-    print "ds\t", ds
-    print "ds['compound']['comp1']\t", ds['compound']['comp1']
-    print "ds['compound']['comp2']\t", ds['compound']['comp2']
-    print "ds['compound']['str']\t", ds['compound']['str']
-    print "ds.keys()", ds.keys()
-
-    ds['compound']['comp1'][0] = 10
-    print "ds['compound']['comp1']", ds['compound']['comp1']
-    print ds['compound']['comp1'][...]
-
-    ds.close()
-
+        try:
+            if (isinstance(value, dict)):
+                newGrp = grp.create_group(name)
+                newGrp.attrs['type'] = 'dict'
+                for k, v in value.iteritems():
+                    self._createDataMember(k, v, newGrp)
+            elif (isinstance(value, list)):
+                newGrp = grp.create_group(name)
+                newGrp.attrs['type'] = 'list'
+                it = 0
+                for v in value:
+                    self._createDataMember(str(it), v, newGrp)
+                    it += 1
+            else:
+                try:
+                    grp.create_dataset(name=name, data= value, compression="gzip")
+                except TypeError:
+                    grp.create_dataset(name=name, data= value)
+        except TypeError:
+            print "Could not create a data member %s" % name
+            raise
 
 
