@@ -30,7 +30,7 @@ CLUSTER = False  # if True, submit on a cluster using qsub
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 10e3  # ms
+parameters['time']              = 1e3  # ms
 parameters['nthreads']          = 8
 
 parameters['output_dir']        = 'output_local'
@@ -66,8 +66,8 @@ qsub_output_dir     = parameters['output_dir']
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
-        #'noise_sigma' : [150.0]
+        #'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
+        'noise_sigma' : [150.0]
 }
 ac.insertDict(iterparams, mult=False)
 

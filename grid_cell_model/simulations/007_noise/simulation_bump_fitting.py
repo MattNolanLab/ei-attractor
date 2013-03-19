@@ -25,7 +25,6 @@ from matplotlib.pyplot  import *
 
 from numpy.random       import choice
 from optparse           import OptionParser
-from matplotlib.mlab    import detrend_mean, psd, window_hanning
 
 from models.parameters  import *
 from models.gc_net_nest import *
@@ -48,10 +47,6 @@ parser.add_option("--gammaRangeHigh", type="float",  help="Relative gamma power 
 
 (options, args) = parser.parse_args()
 options         = setOptionDictionary(parser, options)
-
-# Other
-figSize = (12,8)
-rcParams['font.size'] = 16
 
 
 def getSenders(nest_spikeMon, id, gid_group_start):
@@ -121,10 +116,6 @@ stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params)
 
 
 
-x_lim = [options.time-2e3, options.time]
-#x_lim = [0, options.time]
-
-
 
 ################################################################################
 #                              Main cycle
@@ -143,6 +134,9 @@ out = DataStorage.open(output_fname + ".h5", 'w')
 
 ################################################################################
 #                               Save data
+out['options'] = options._einet_optdict
+out['ei_net']  = ei_net.getAttrDictionary()
+
 # Save spikes
 out['spikeMon_e'] = {
         'status'    : nest.GetStatus(spikeMon_e)[0],
@@ -160,8 +154,9 @@ if (len(ei_net.PC) != 0):
         }
 
 #Save state variables
-out['stateMon_i_0'] = nest.GetStatus(stateMon_i)[0]
-out['stateMon_i_1'] = nest.GetStatus(stateMon_i)[1]
+out['stateMon_e'] = nest.GetStatus(stateMon_e)
+out['stateMon_i'] = nest.GetStatus(stateMon_i)
+out['stateMonF_e']  = nest.GetStatus(stateMonF_e)
 
 out.close()
 #                             End Save data
