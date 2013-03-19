@@ -1,7 +1,7 @@
 #
-#   h5py_test.py
+#   mat_storage.py
 #
-#   Test HDF5 access.
+#   Data storage into a Matlab .mat file.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -20,53 +20,12 @@
 #
 
 
-import h5py
-import numpy as np
+#class MatDataStorage(DataStorage):
+#    '''
+#    An implementation of DataStorage for the Matlab file format.
+#    
+#    Uses loadmat and savemat.
+#    '''
+#    pass
 
-from collections import MutableMapping
-
-
-fileName = "test_h5py.h5"
-f = h5py.File(fileName, 'w')
-
-grp = f.create_group('testGrp')
-print grp.name
-print grp.attrs.keys()
-
-grp.attrs['attr1'] = 'ahoj'
-print grp.attrs.keys()
-print grp.attrs['attr1']
-
-ds = f.create_dataset('dtst', data=np.array([10, 20.0, 30]))
-
-print f['dtst']
-print f['dtst'][:]
-print f['dtst'].dtype
-print f['dtst'].shape
-
-print f.keys()
-print len(f)
-
-del f['dtst']
-print len(f)
-
-del f['testGrp']
-print len(f)
-
-
-
-grp = f.create_group("duplicate")
-f['duplicate']['ahoj'] = 1234
-
-print f['duplicate']['ahoj'].value
-print f['duplicate']['ahoj']
-print type(f['duplicate']['ahoj'].value)
-
-
-
-a = {'a': 1, 'b': 2}
-print a.__iter__()
-
-
-isscalar(a)
 

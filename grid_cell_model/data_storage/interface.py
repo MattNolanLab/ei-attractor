@@ -28,25 +28,32 @@ class DataStorage(MutableMapping):
     
     Use this interface to access the data manipulation routines. This should be
     independent of the underlying data format.
+
+    Use the open @classmethod (DataStorage.open(filePath)) to create the right
+    implementation for your file format. Currently HDF5 files are supported
+    only.
+
+    Note that the [] operator returns a **copy** of a non-compound data
+    structure, while if the data is compound (dict-like) it will return a
+    reference only! This is done for the sake of efficiency, as loading big
+    chunks of data from a dictionary can be quite inefficient. The copy
+    semantics of the non-compound data access can be changed in the future.
     '''
-    pass
 
-
-#class ShelveDataStorage(DataStorage):
-#    pass
-#
-#
-#class MatDataStorage(DataStorage):
-#    '''
-#    An implementation of DataStorage for the Matlab file format.
-#    
-#    Uses loadmat and savemat.
-#    '''
-#    pass
+    @classmethod
+    def open(cls, filePath):
+        '''
+        Given the file Path, return the DataStorage object with the correct
+        implementation, inferred from the filePath extension.
+        '''
+        import hdf5_storage
+        return hdf5_storage.HDF5DataStorage.factory(filePath)
 
 
 
 
-# Test this module
+###############################################################################
+#                                  Tests
+###############################################################################
 if __name__ == "__main__":
     pass
