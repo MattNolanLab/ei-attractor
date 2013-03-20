@@ -185,12 +185,24 @@ def maxPowerFrequency(Pxx, F, Frange=None):
 
     
 
-##############################################################################
-#                                   Tests
-##############################################################################
+def globalExtrema(sig, func):
+    '''
+    Return global maximum of a signal.
+    
+    ``sig``
+        A 1D array, in which case a global extremum will be returned as a single
+        value, or a 2D array, for which an array of extrema will be returned,
+        one extremum for **each row**. Numpy arrays accepted only.
 
-if __name__ == "__main__":
-    pass    
-
+    ``func``
+        Numpy extremum function. Must accept the 'axis' parameter
+    '''
+    shpLen = len(sig.shape)
+    if (shpLen == 1):
+        return func(sig)
+    elif (shpLen == 2):
+        return func(sig, axis=1)
+    else:
+        raise TypeError("signal must be either 1D or a 2D numpy array!")
 
 
