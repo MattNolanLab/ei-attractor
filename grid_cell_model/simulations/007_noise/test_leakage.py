@@ -21,12 +21,14 @@
 #
 
 import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib.pyplot import plot, xlabel, ylabel, show, xlim, figure
 from matplotlib.mlab import psd, window_hanning, window_none
+from scipy.signal    import correlate
 
 
 F = [8., 48. , 56.  , 64.]
-A = [1.,   .25,   .57,  0.26]
+A = [0.,   .25,   .57,  0.26]
 #P = [0., np.pi/4., np.pi/2., np.pi/4.*3.]
 noiseA = 0.0
 
@@ -58,5 +60,7 @@ xlabel('Frequency (Hz)')
 ylabel('Power (1/Hz)')
 xlim([0, 100])
 
+figure()
+plt.plot(t, correlate(sig, sig)[len(sig) - 1:])
 
 show()
