@@ -51,6 +51,7 @@ print ds['compound']['comp1'][...]
 
 ###############################################################################
 # Lists
+# Large lists of simple data type are very painfully slow to store and reload..
 ds['list'] = [1, 2, 3, 4]
 ds['list_nested'] = [1, 2, 3, ['ahoj', 1, {'a': 10, 'b': 'text'}]]
 
@@ -61,3 +62,15 @@ print ds['list']
 print ds['list_nested']
 print ds['list_nested'][3][2].keys()
 
+# Check if the order is maintained
+lst = range(5000)
+print lst
+ds['list_order'] = lst
+
+ds.close()
+
+ds = DataStorage.open('test.h5', mode='a')
+lst_test = ds['list_order']
+print "lst_test == lst:", lst_test == lst
+
+###############################################################################
