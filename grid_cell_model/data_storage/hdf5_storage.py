@@ -162,8 +162,10 @@ class HDF5DataStorage(DataStorage):
             elif (isinstance(value, list)):
                 newGrp = grp.create_group(name)
                 newGrp.attrs['type'] = 'list'
-                nDigits = int(np.ceil(np.log10(len(value))))
-                digit = "{0:0" + str(nDigits) + "}"
+                ln = len(value)
+                if (ln != 0):
+                    nDigits = int(np.ceil(np.log10(ln)))
+                    digit = "{0:0" + str(nDigits) + "}"
                 it = 0
                 for v in value:
                     self._createDataMember(digit.format(it), v, newGrp)
