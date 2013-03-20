@@ -44,7 +44,7 @@ def bumpPosition(spikes, sheetSize, tstart, tend, dt, winLen, units="s"):
     plot(bumpPos_times, pos)
     xlabel('Time (%s)' % units)
     ylabel('Bump position (neurons)')
-    legend(['X', 'Y'])
+    legend(['X', 'Y'], loc='upper left')
     ylim([-Ne_x/2 - 5, Ne_x/2 + 5])
     tight_layout()
 
