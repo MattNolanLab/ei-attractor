@@ -59,8 +59,11 @@ def peakAmp(stateMon, startT, thetaFreq, fieldStr, extFunc):
 
     return np.array(peaks)
 
-def autocorrelation(sig):
-    return np.correlate(sig, sig, mode=2)[len(sig)-1:]
+def autocorrelation(sig, norm=False):
+    c = np.correlate(sig, sig, mode=2)[len(sig)-1:]
+    if (norm):
+        c /= max(c)
+    return c
 
 def downSample(sig, times, factor):
     idx = np.arange(0, len(sig), 10)
@@ -100,8 +103,9 @@ for jobNum in jobNums:
     times = d['stateMonF_e'][0]['events']['times']
     sig, times = downSample(sig, times, 10)
     dt = times[1] - times[0]
-    slice = 1. / (options['theta_freq']*1e-3) / dt
-    plt.plot(times[0:slice], autocorrelation(sig)[0:slice])
+    slice = 2. / (options['theta_freq'] * 1e-3) / dt
+    ac = autocorrelation(sig - np.mean(sig), norm=True)
+    plt.plot(times[0:slice], ac[0:slice])
 
     
 plt.figure()
