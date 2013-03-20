@@ -18,7 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
+import numpy as np
 import h5py
 from interface import DataStorage
 
@@ -34,6 +34,7 @@ class HDF5DataStorage(DataStorage):
     These types of objects can be stored currently:
         * primitive numeric data types
         * array-like objects (ideally as numpy arrays)
+        * lists (see note on `List performance`_
         * strings
         * Objects of class dict and classes derived from dict, containing all
             of the above types, including itself
@@ -49,6 +50,19 @@ class HDF5DataStorage(DataStorage):
         >>> d[key'][0] = 10
 
     This will change only the copy of the object stored in the file.
+
+    List performance
+    ----------------
+    Lists in Python are heterogeneous data structure and therefore the storage
+    in HDF5 is not trivial. Currently a list is stored as a group with an
+    attribute 'type' == 'list'. Each item in a list can is stored in a
+    corresponding format (i.e. dictionaries and lists as groups, other types
+    natively). This, indeed, has some performance limitations: creation and
+    reading of large lists of basic data types will be very slow (even simple
+    lists of 5000 elements will take a few seconds to store and load).
+
+    It is therefore recommended to convert the list to some other data type
+    before storing it through this interface.
     '''
 
     def __init__(self, fileObj, grp):
@@ -125,11 +139,14 @@ class HDF5DataStorage(DataStorage):
 
         This assumes that 'name' can be safely created in grp.
 
-        We distinguish two data types:
+        We distinguish three data types:
             * non-compound: atomic types, arrays, strings
             * compound: dict objects and classes inherited from dict. The
                 compound types are stored recursively and for each a group is
                 created instead of dataset.
+            * lists: list objects and classes inherited from list. A list is
+              stored recursively as a group. See a note in `List performance`_
+              for the performance limitations of storing lists.
         '''
         try:
             if (isinstance(value, dict)):
@@ -140,9 +157,11 @@ class HDF5DataStorage(DataStorage):
             elif (isinstance(value, list)):
                 newGrp = grp.create_group(name)
                 newGrp.attrs['type'] = 'list'
+                nDigits = int(np.ceil(np.log10(len(value))))
+                digit = "{0:0" + str(nDigits) + "}"
                 it = 0
                 for v in value:
-                    self._createDataMember(str(it), v, newGrp)
+                    self._createDataMember(digit.format(it), v, newGrp)
                     it += 1
             else:
                 try:
