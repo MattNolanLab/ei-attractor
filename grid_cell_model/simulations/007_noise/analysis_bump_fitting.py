@@ -21,11 +21,8 @@
 import numpy as np
 from matplotlib.pyplot  import *
 
-from matplotlib.mlab    import detrend_mean, psd, window_hanning
-
 from analysis.spikes    import slidingFiringRateTuple
 from analysis.image     import Position2D, fitGaussianBumpTT
-from analysis.signal    import relativePower, maxPowerFrequency
 from data_storage       import DataStorage
 from plotting.bumps     import bumpPosition, torusFiringRate, flatFiringRate, \
                                EIPlot
