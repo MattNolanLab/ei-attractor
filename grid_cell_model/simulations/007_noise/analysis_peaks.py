@@ -22,6 +22,7 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.signal import correlate
 
 from data_storage           import DataStorage
 from analysis.signal        import splitSigToThetaCycles, globalExtrema
@@ -58,6 +59,12 @@ def peakAmp(stateMon, startT, thetaFreq, fieldStr, extFunc):
 
     return np.array(peaks)
 
+def autocorrelation(sig):
+    return np.correlate(sig, sig, mode=2)[len(sig)-1:]
+
+def downSample(sig, times, factor):
+    idx = np.arange(0, len(sig), 10)
+    return (sig[idx], times[idx])
 
 
 ###############################################################################
@@ -87,6 +94,15 @@ for jobNum in jobNums:
     peaks_mean.append(np.mean(peaks))
     peaks_std.append(np.std(peaks))
     noise_sigma.append(options['noise_sigma'])
+
+    plt.figure()
+    sig = d['stateMonF_e'][0]['events']['I_clamp_GABA_A']
+    times = d['stateMonF_e'][0]['events']['times']
+    sig, times = downSample(sig, times, 10)
+    dt = times[1] - times[0]
+    slice = 1. / (options['theta_freq']*1e-3) / dt
+    plt.plot(times[0:slice], autocorrelation(sig)[0:slice])
+
     
 plt.figure()
 plt.errorbar(noise_sigma, peaks_mean, peaks_std, fmt='o-')
