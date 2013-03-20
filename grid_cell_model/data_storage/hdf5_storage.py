@@ -63,6 +63,11 @@ class HDF5DataStorage(DataStorage):
 
     It is therefore recommended to convert the list to some other data type
     before storing it through this interface.
+
+    Cycles
+    ------
+    Note that in the current version, cycles are not detected in compound
+    objects(dict, list). The user must handle these situations beforhand.
     '''
 
     def __init__(self, fileObj, grp):
