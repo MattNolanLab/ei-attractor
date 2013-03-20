@@ -25,22 +25,8 @@ from matplotlib.pyplot  import plot, xlabel, ylabel, legend, ylim, \
 from matplotlib.ticker  import MaxNLocator, LinearLocator
 from analysis.spikes    import torusPopulationVector
 
+from global_defs        import globalAxesSettings, createColorbar
 
-def globalAxesSettings(ax):
-    ax.tick_params(
-            direction='out'
-    )
-
-def createColorbar(ax, data=None, label=""):
-    if (data is not None):
-        mn = np.min(data.flat)
-        mx = np.max(data.flat)
-        ticks = [mn, mx]
-    else:
-        ticks = None
-    cb = colorbar(ax=ax, ticks=ticks)
-    if (label != ""):
-        cb.set_label(label)
 
 def bumpPosition(spikes, sheetSize, tstart, tend, dt, winLen, units="s"):
     '''
@@ -106,44 +92,5 @@ def flatFiringRate(FR, times, labely=None, labelx=None, units="ms",
     axis('tight')
     createColorbar(mpl.gca(), data=FR, label='Firing rate (Hz)')
     tight_layout()
-
-
-def EIPlot(E, I, labelx=None, labely="", holdVal='on', timeUnits="ms",
-        leg=['middle', 'edge'], nticks=3):
-    '''
-    Plot a double plot of E and I variable.
-
-    *E*
-        A pair (sig, times)
-    *I*
-        A pair (sig, times)
-    *holdVal*
-        value to pass on to the hold() function
-    '''
-
-    hold('on')
-    ax = subplot(211)
-    globalAxesSettings(mpl.gca())
-    mpl.gca().xaxis.set_major_locator(MaxNLocator(4))
-    mpl.gca().yaxis.set_major_locator(MaxNLocator(nticks-1))
-    plot(E[1], E[0])
-    if (labely != ""):
-        ylabel("E cell " + labely)
-    legend(leg)
-
-    subplot(212, sharex=ax)
-    globalAxesSettings(mpl.gca())
-    mpl.gca().xaxis.set_major_locator(MaxNLocator(4))
-    mpl.gca().yaxis.set_major_locator(MaxNLocator(nticks-1))
-    plot(I[1], I[0])
-    if (labely != ""):
-        ylabel("I cell " + labely)
-    if (labelx is None):
-        xlabel('Time (%s)' % timeUnits)
-    elif (labelx != ""):
-        xlabel(labelx)
-    legend(leg)
-
-    tight_layout(w_pad=1.0)
 
 

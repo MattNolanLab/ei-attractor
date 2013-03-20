@@ -24,8 +24,8 @@ from matplotlib.pyplot  import *
 from analysis.spikes    import slidingFiringRateTuple
 from analysis.image     import Position2D, fitGaussianBumpTT
 from data_storage       import DataStorage
-from plotting.bumps     import bumpPosition, torusFiringRate, flatFiringRate, \
-                               EIPlot
+from plotting.bumps     import bumpPosition, torusFiringRate, flatFiringRate
+from plotting.signal    import EIPlot
 
 
 
