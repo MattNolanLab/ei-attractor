@@ -18,6 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import sys
 import numpy as np
 from matplotlib.pyplot  import *
 
@@ -27,11 +28,16 @@ from data_storage       import DataStorage
 from plotting.bumps     import bumpPosition, torusFiringRate, flatFiringRate
 from plotting.signal    import EIPlot
 
+if (len(sys.argv) == 1):
+    job_num = 0
+else:
+    job_num = int(sys.argv[1])
+
+###############################################################################
 
 
 output_dir = 'output_local'
 fileNamePrefix = ''
-job_num = 0
 
 in_fname = "{0}/{1}job{2:05}_output".format(output_dir, fileNamePrefix, job_num)
 output_fname = in_fname
@@ -45,6 +51,9 @@ rcParams['font.size'] = 16
 x_lim = [options['time']-2e3, options['time']]
 
 
+print "#######################################################################"
+print "Processing file " + in_fname
+print "#######################################################################"
 
 ###############################################################################
 
@@ -79,6 +88,8 @@ events_e.append(d['stateMon_e'][1]['events'])
 events_i.append(d['stateMon_i'][0]['events'])
 events_i.append(d['stateMon_i'][1]['events'])
 
+
+###############################################################################
 
 
 F_tstart = 0.0
@@ -126,10 +137,10 @@ savefig(output_fname + '_FR_flat.png')
 figure()
 EIPlot(E = (events_e[1]['I_stim'], events_e[1]['times']),
        I = (events_i[1]['I_stim'], events_i[1]['times']),
-       labely = "$V_m$")
+       labely = "$I_{stim}$ (pA)")
 EIPlot(E = (events_e[0]['I_stim'], events_e[0]['times']),
        I = (events_i[0]['I_stim'], events_i[0]['times']),
-       labely = "$I_{stim}$")
+       labely = "$I_{stim}$ (pA)")
 xlim(x_lim)
 savefig(output_fname + '_I_stim.png')
 
@@ -138,10 +149,10 @@ savefig(output_fname + '_I_stim.png')
 figure()
 EIPlot(E = (events_e[1]['V_m'], events_e[1]['times']),
        I = (events_i[1]['V_m'], events_i[1]['times']),
-       labely = "$V_m$")
+       labely = "$V_m$ (mV)")
 EIPlot(E = (events_e[0]['V_m'], events_e[0]['times']),
        I = (events_i[0]['V_m'], events_i[0]['times']),
-       labely = "$V_m$")
+       labely = "$V_m$ (mV)")
 xlim(x_lim)
 savefig(output_fname + '_Vm.png')
 
@@ -150,10 +161,10 @@ savefig(output_fname + '_Vm.png')
 figure()
 EIPlot(E = (events_e[1]['I_clamp_GABA_A'], events_e[1]['times']),
        I = (events_i[1]['I_clamp_AMPA'] + events_i[1]['I_clamp_NMDA'], events_i[1]['times']),
-       labely = "$I_{syn}$")
+       labely = "$I_{syn}$ (pA)")
 EIPlot(E = (events_e[0]['I_clamp_GABA_A'], events_e[0]['times']),
        I = (events_i[0]['I_clamp_AMPA'] + events_i[1]['I_clamp_NMDA'], events_i[0]['times']),
-       labely = "$I_{syn}$")
+       labely = "$I_{syn}$ (pA)")
 xlim(x_lim)
 savefig(output_fname + '_Isyn.png')
 
