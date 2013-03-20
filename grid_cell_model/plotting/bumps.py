@@ -63,7 +63,7 @@ def torusFiringRate(rateMap, labelx, labely=None, titleStr=""):
     ylabel(labely)
     createColorbar(mpl.gca(), data=rateMap, label='Firing rate (Hz)')
     axis('tight')
-    title(titleStr)
+    title(titleStr, va='bottom')
     tight_layout()
 
 
