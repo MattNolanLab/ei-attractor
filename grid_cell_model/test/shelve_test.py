@@ -1,7 +1,7 @@
 #
-#   __init__.py
+#   shelve_test.py
 #
-#   Package initialization file
+#   Test the shelve module.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -18,6 +18,27 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import shelve
+import pickle
+import numpy as np
 
-__all__ = ["custombrian", "datamanip", "gc_net", "gc_net_brian", "gc_net_nest",
-        "parameters", "place_cells", "place_input"]
+filename = "data.shelve"
+d = shelve.open(filename, protocol=pickle.HIGHEST_PROTOCOL)
+d.clear()
+
+d["ahoj"] = np.arange(1000000)
+
+d.sync()
+d.close()
+
+
+del d
+
+d = shelve.open(filename)
+print d.keys()
+
+arr = d['ahoj']
+print arr
+print arr.dtype
+
+d.close()
