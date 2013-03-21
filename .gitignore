@@ -1,6 +1,7 @@
 central_data_store
 *.pyc
 *.o
+*.so
 *.swp
 .DS_Store
 
