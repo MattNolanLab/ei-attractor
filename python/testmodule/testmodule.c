@@ -20,9 +20,11 @@
  */
 
 #include <Python.h>
+//#include <boost/python.hpp>
+
 
 static PyObject *
-test_sum(PyObject *self, PyObject *args)
+_test_sum(PyObject *self, PyObject *args)
 {
     int a1, a2;
 
@@ -36,14 +38,14 @@ test_sum(PyObject *self, PyObject *args)
 
 static PyMethodDef TestMethods[] = {
 
-    {"sum", test_sum, METH_VARARGS, "Sum two integers"},
+    {"sum", _test_sum, METH_VARARGS, "Sum two integers"},
 
     {NULL, NULL, 0, NULL}
 };
 
 
 PyMODINIT_FUNC
-inittest(void)
+init_test(void)
 {
-    (void) Py_InitModule("test", TestMethods);
+    (void) Py_InitModule("_test", TestMethods);
 }
