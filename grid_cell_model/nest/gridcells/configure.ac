@@ -156,7 +156,7 @@ AC_SUBST(MAKE_FLAGS)
 AC_SUBST(INCLTDL)
 AC_SUBST(LIBLTDL)
 
-AM_CONFIG_HEADER(mymodule_config.h:mymodule_config.h.in)
+AC_CONFIG_HEADERS(mymodule_config.h:mymodule_config.h.in)
 AC_CONFIG_FILES(Makefile)
 
 # -----------------------------------------------
