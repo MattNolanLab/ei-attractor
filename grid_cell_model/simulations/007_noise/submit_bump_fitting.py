@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.6
+#! /usr/bin/env python
 #
 #   submit_bump_fitting.py
 #
@@ -55,7 +55,7 @@ startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 simulation_bump_fitting.py'
+programName         = 'python simulation_bump_fitting.py'
 blocking            = True
 
 # Cluster parameters
