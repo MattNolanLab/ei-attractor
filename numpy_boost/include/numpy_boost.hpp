@@ -184,7 +184,7 @@ private:
 
 public:
   /* Construct from an existing Numpy array */
-  numpy_boost(PyObject* obj) throw () :
+  numpy_boost(PyObject* obj) throw (boost::python::error_already_set) :
     super(NULL, std::vector<typename super::index>(NDims, 0)),
     array(NULL)
   {
@@ -200,7 +200,7 @@ public:
   }
 
   /* Copy constructor */
-  numpy_boost(const self_type &other) throw() :
+  numpy_boost(const self_type &other) throw(boost::python::error_already_set) :
     super(NULL, std::vector<typename super::index>(NDims, 0)),
     array(NULL)
   {
