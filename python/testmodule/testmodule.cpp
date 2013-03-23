@@ -19,30 +19,56 @@
  *       along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <exception>
+
 #include <Python.h>
 //#include <boost/python.hpp>
 #include "numpy_boost.hpp"
 
-typedef numpy_boost<int, 1> intArr;
+typedef numpy_boost<double, 1> DoubleVec;
+
+template <typename T>
+T &sum(const T &p1, const T &p2) {
+    size_t len = p1.shape()[0];
+    T *res = new T(p1.shape());
+    for (size_t i = 0; i < len; i++) {
+        (*res)[i] = p1[i] + p2[i];
+    }
+    return *res;
+}
+
 
 static PyObject *
 _test_sum(PyObject *self, PyObject *args)
 {
-    int a1, a2;
+    PyObject *in1;
+    PyObject *in2;
 
-    if (!PyArg_ParseTuple(args, "ii", &a1, &a2)) {
+    if (!PyArg_ParseTuple(args, "OO", &in1, &in2)) {
         return NULL;
     }
 
-    int dims[] = {1};
-    intArr ret(dims);
-    std::cout << Py_REFCNT(ret.py_ptr());
-    ret[0] = a1 + a2;
 
-    Py_INCREF(ret.py_ptr());
-    Py_INCREF(ret.py_ptr());
-    return ret.py_ptr();
+    try {
+        DoubleVec v1(in1);
+        DoubleVec v2(in2);
+
+        if (v1.size() != v2.size()) {
+            PyErr_SetString(PyExc_TypeError, "Vectors must be of the same length!");
+            return NULL;
+        }
+
+        DoubleVec &ret = sum<DoubleVec>(v1, v2);
+
+        Py_INCREF(ret.py_ptr());
+        return ret.py_ptr();
+    } catch (...) {
+        std::cout << "test" << std::endl;
+        return NULL;
+    }
 }
+
+
 
 
 static PyMethodDef TestMethods[] = {
