@@ -1,7 +1,7 @@
 /*
- *   testmodule.c
+ *   test_numpy_boost.cpp
  *
- *   Testing (and learning in fact) interfacing C with Python.
+ *   Test numpy_boost.
  *
  *       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
  *       
@@ -19,33 +19,23 @@
  *       along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Python.h>
-//#include <boost/python.hpp>
 
+#include "numpy_boost.hpp"
 
-static PyObject *
-_test_sum(PyObject *self, PyObject *args)
+typedef numpy_boost<int, 1> intArr;
+
+void func()
 {
-    int a1, a2;
 
-    if (!PyArg_ParseTuple(args, "ii", &a1, &a2)) {
-        return NULL;
-    }
+    int dims[] = {10};
 
-    return Py_BuildValue("i", a1 + a2);
+    numpy_boost<double, 1> ret(dims);
+    ret[0] = 1;
 }
 
-
-static PyMethodDef TestMethods[] = {
-
-    {"sum", _test_sum, METH_VARARGS, "Sum two integers"},
-
-    {NULL, NULL, 0, NULL}
-};
-
-
-PyMODINIT_FUNC
-init_test(void)
+int main(void)
 {
-    (void) Py_InitModule("_test", TestMethods);
+    func();
+
+    return 0;
 }
