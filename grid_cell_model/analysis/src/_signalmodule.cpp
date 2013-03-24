@@ -25,26 +25,35 @@
 #include <numpy/arrayobject.h>
 #include <blitz/array.h>
 
-//#include "signal.h"
+#include "signal.h"
 #include "python_converter.h"
 
 
+typedef blitz::Array<double, 1> DblVector;
+
+
+
 static PyObject *
-_signal_dot(PyObject *self, PyObject *args)
+_signal_correlation_function(PyObject *self, PyObject *args)
 {
     PyObject *in1;
     PyObject *in2;
+    int lag_start;
+    int lag_end;
 
-    if (!PyArg_ParseTuple(args, "OO", &in1, &in2)) {
+
+    if (!PyArg_ParseTuple(args, "OOii", &in1, &in2, &lag_start, &lag_end)) {
         return NULL;
     }
 
-
     try {
-        blitz::Array<double, 1> A1 = convertPyToBlitz<double, 1>(in1);
-        blitz::Array<double, 1> A2 = convertPyToBlitz<double, 1>(in2);
-        std::cout << A1 << A2;
-        std::cout << dot(A1, A2) << std::endl;
+        DblVector v1 = convertPyToBlitz<double, 1>(in1);
+        DblVector v2 = convertPyToBlitz<double, 1>(in2);
+        //std::cout << v1 << v2;
+
+        DblVector c = sig::correlation_function(v1, v2, lag_start, lag_end);
+        return convertBlitzToPy<double, 1>(c);
+
     } catch (python_exception) {
         return NULL;
     }
@@ -57,7 +66,7 @@ _signal_dot(PyObject *self, PyObject *args)
 
 static PyMethodDef SignalMethods[] = {
 
-    {"dot", _signal_dot, METH_VARARGS, "Dot product."},
+    {"correlation_function", _signal_correlation_function, METH_VARARGS, "Correlation function"},
 
     {NULL, NULL, 0, NULL}
 };

@@ -27,26 +27,40 @@
 
 namespace sig {
 
+
 /**
- * 
+ * Lag-restricted correlation function. 
  *
- * 
+ * Compute the correlation function (CF) of two blitz vectors (1D Arrays), with
+ * lags that are user-defined.
+ *
+ * @param v1        First vector
+ * @param v2        Second vector
+ * @param lag_start Starting lag value
+ * @param lag_en    End lag value (included in the CF)
+ * @return A new blitz 1D array with size lag_end - lag_start + 1
+ *
+ * @note It is the responsibility of the user to pass correct values of
+ *       lag_start and lag_end as these are not tested for boundaries.
+ * @note The result for both arrays being empty is undefined.
  */
 template<typename T>
-T *correlation_function(const T &v1, const T &v2, unsigned lag_start, unsigned lag_end) {
-    size_t sz = min(v1.size(), v2.size());
+blitz::Array<T, 1>
+correlation_function(const blitz::Array<T, 1> &v1, const blitz::Array<T, 1>
+        &v2, int lag_start, int lag_end) {
+    size_t sz = std::min(v1.size(), v2.size());
     size_t szRes = lag_end - lag_start + 1;
-    T *res = new T(sz);
+    blitz::Array<T, 1> res(szRes);
 
     int i = 0;
-    for (int lag = lag_start; i <= lag_end; i++) {
-        int s = max(0, -lag);
-        int e = min(sz - lag - 1, sz - 1);
-        res(i) = dot(v1(Range(s, e)), v2(Range(s + lag, e+lag)));
+    for (int lag = lag_start; lag <= lag_end; lag++) {
+        int s = std::max(0, -lag);
+        int e = std::min(sz - lag - 1, sz - 1);
+        res(i) = dot(v1(blitz::Range(s, e)), v2(blitz::Range(s + lag, e+lag)));
         i++;
     }
 
-    return *res;
+    return res;
 }
 
 } // namespace sig
