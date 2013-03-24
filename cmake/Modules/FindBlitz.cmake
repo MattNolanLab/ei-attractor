@@ -22,9 +22,6 @@ if(PKG_CONFIG_blitz_VERSION)
   
   # Resolve Blitz library to a precise path
   set(Blitz_INCLUDE_DIR ${Blitz_INCLUDE_DIRS})
-  set(Blitz_RESOLVED_LIBRARY "")
-  resolve_library(${Blitz_LIBRARIES} "${Blitz_LIBRARY_DIRS}" Blitz_RESOLVED_LIBRARY)
-  set(Blitz_RESOLVED_LIBRARY ${Blitz_RESOLVED_LIBRARY} CACHE INTERNAL "Resolved Blitz library")
 else(PKG_CONFIG_blitz_VERSION)
   find_path(Blitz_INCLUDE_DIR blitz/blitz.h)
 
@@ -36,7 +33,6 @@ else(PKG_CONFIG_blitz_VERSION)
   set(Blitz_FIND_REQUIRED ON)
   find_package_handle_standard_args(Blitz DEFAULT_MSG Blitz_LIBRARY Blitz_INCLUDE_DIR)
 
-  set(Blitz_RESOLVED_LIBRARY ${Blitz_LIBRARY} CACHE INTERNAL "Resolved Blitz library")
   set(Blitz_INCLUDE_DIRS ${Blitz_INCLUDE_DIR})
 endif(PKG_CONFIG_blitz_VERSION)
 
