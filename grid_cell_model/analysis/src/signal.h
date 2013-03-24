@@ -48,15 +48,32 @@ template<typename T>
 blitz::Array<T, 1>
 correlation_function(const blitz::Array<T, 1> &v1, const blitz::Array<T, 1>
         &v2, int lag_start, int lag_end) {
-    size_t sz = std::min(v1.size(), v2.size());
-    size_t szRes = lag_end - lag_start + 1;
+    //int sz = std::min(v1.size(), v2.size());
+    //int szRes = lag_end - lag_start + 1;
+    //blitz::Array<T, 1> res(szRes);
+
+    //int i = 0;
+    //for (int lag = lag_start; lag < 0; lag++) {
+    //    int s = std::max(0, -lag);
+    //    int e = std::min(sz - lag - 1, sz - 1);
+    //    res(i) = dot(v1(blitz::Range(s, e)), v2(blitz::Range(s + lag, e + lag)));
+    //    i++;
+    //}
+
+
+    int sz1 = v1.size();
+    int sz2 = v2.size();
+    int szRes = lag_end - lag_start + 1;
+    if (lag_start <= -sz1 || lag_end >= sz2) {
+        throw std::exception();
+    }
     blitz::Array<T, 1> res(szRes);
 
     int i = 0;
     for (int lag = lag_start; lag <= lag_end; lag++) {
-        int s = std::max(0, -lag);
-        int e = std::min(sz - lag - 1, sz - 1);
-        res(i) = dot(v1(blitz::Range(s, e)), v2(blitz::Range(s + lag, e+lag)));
+        int s1 = std::max(0, -lag);
+        int e1 = std::min(sz1 - 1, sz2 - lag - 1);
+        res(i) = dot(v1(blitz::Range(s1, e1)), v2(blitz::Range(s1 + lag, e1 + lag)));
         i++;
     }
 

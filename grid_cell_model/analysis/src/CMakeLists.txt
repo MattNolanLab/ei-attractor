@@ -12,7 +12,8 @@ link_directories(
     ${Blitz_LIBRARY}
 )
 
-SET(CMAKE_CXX_FLAGS "-Wall -g -DBZ_DEBUG ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-Wall -g -O3 -DBZ_DEBUG ${CMAKE_CXX_FLAGS}")
+#SET(CMAKE_CXX_FLAGS "-Wall -O3 ${CMAKE_CXX_FLAGS}")
 
 add_library(_signalmodule SHARED _signalmodule.cpp)
 
