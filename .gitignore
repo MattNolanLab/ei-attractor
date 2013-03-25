@@ -1,5 +1,13 @@
-central_data_store
+/central_data_store
 *.pyc
 *.o
+*.so
 *.swp
 .DS_Store
+
+/INSTALL.html
+/README.html
+/VERSIONING.html
+
+# Building
+/build

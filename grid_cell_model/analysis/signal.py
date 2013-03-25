@@ -19,14 +19,13 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-import scipy
-from scipy.signal import *
+import scipy.signal
+
 from numpy.fft.fftpack import fft
 from Wavelets import Morlet
 
-from matplotlib.pyplot import *
+import _signal
 
-from os import system
 
 #__all__ = ['butterHighPass', 'butterBandPass', 'spikePhaseTrialRaster',
 #        'splitSigToThetaCycles', 'getChargeTheta', 'phaseCWT', 'CWT',
@@ -38,8 +37,8 @@ def butterHighPass(sig, dt, f_pass):
     norm_f_pass = f_pass/nyq_f
 
     # Low pass filter
-    b, a = butter(3, norm_f_pass, btype='high')
-    return filtfilt(b, a, sig)
+    b, a = scipy.signal.butter(3, norm_f_pass, btype='high')
+    return scipy.signal.filtfilt(b, a, sig)
 
 
 def butterBandPass(sig, dt, f_start, f_stop):
@@ -47,8 +46,8 @@ def butterBandPass(sig, dt, f_start, f_stop):
     nyq_f = 1./dt/2
     norm_f_start = f_start/ nyq_f
     norm_f_stop  = f_stop / nyq_f
-    b, a = butter(3, [norm_f_start, norm_f_stop], btype='band')
-    return filtfilt(b, a, sig)
+    b, a = scipy.signal.butter(3, [norm_f_start, norm_f_stop], btype='band')
+    return scipy.signal.filtfilt(b, a, sig)
 
 
 def spikePhaseTrialRaster(spikeTimes, f, start_t=0):
@@ -149,6 +148,8 @@ def fft_real_freq(sig, dt):
 
 
 
+    
+
 ## Compute power from FFT data in a specified frequency range, relative to the
 # total power.
 #
@@ -204,5 +205,48 @@ def globalExtrema(sig, func):
         return func(sig, axis=1)
     else:
         raise TypeError("signal must be either 1D or a 2D numpy array!")
+
+
+
+def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
+    '''
+    An enhanced correlation function, based on blitz++. This function uses dot
+    product instead of FFT to compute a correlation function with range
+    restricted lags.
+
+    Thus, for a long-range of lags and big arrays it can be slower than the
+    numpy.correlate (which uses fft-based convolution). However, for arrays in
+    which the number of lags << min(a.size, b.size) the computation time might
+    be much shorter than using convolution to calculate the full correlation
+    function and taking a slice of it.
+
+    Parameters
+    ----------
+    a, b : ndarray
+        One dimensional numpy arrays (in the current implementation, they will
+        be converted to dtype=double if not already of that type.
+    mode : str, optional
+        A string indicating the size of the output:
+
+        ``onesided`` : range of lags is [0, 
+        ``twosided`` : 
+        ``range``    :
+    '''
+    sz1 = a.size
+    sz2 = b.size
+    if (sz1 == 0 and sz2 == 0):
+        raise TypeError("Both input arrays must have non-zero size!")
+
+    if (mode == 'onesided'):
+        return _signal.correlation_function(a, b, 0, sz2 - 1)
+    elif (mode == 'twosided'):
+        return _signal.correlation_function(a, b, -(sz1 - 1), sz2 - 1)
+    elif (mode == 'range'):
+        if (lag_start <= -sz1 or lag_end >= sz2):
+            raise ValueError("Lag range must be in the range [%d, %d]" %
+                    -(sz1 - 1) % sz2 - 1)
+        return _signal.correlation_function(a, b, lag_start, lag_end)
+    else:
+        raise ValueError("mode must be one of 'onesided', 'twosided', or 'range'")
 
 
