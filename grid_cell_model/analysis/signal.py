@@ -216,7 +216,7 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
 
     Thus, for a long-range of lags and big arrays it can be slower than the
     numpy.correlate (which uses fft-based convolution). However, for arrays in
-    which the number of lags << min(a.size, b.size) the computation time might
+    which the number of lags << max(a.size, b.size) the computation time might
     be much shorter than using convolution to calculate the full correlation
     function and taking a slice of it.
 
@@ -225,12 +225,19 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
     a, b : ndarray
         One dimensional numpy arrays (in the current implementation, they will
         be converted to dtype=double if not already of that type.
+
     mode : str, optional
         A string indicating the size of the output:
 
-        ``onesided`` : range of lags is [0, 
-        ``twosided`` : 
-        ``range``    :
+        ``onesided`` : range of lags is [0, b.size - 1]
+        ``twosided`` : range of lags is [-(a.size - 1), b.size - 1]
+        ``range``    : range of lags is [-lag_start, lag_end]
+
+    ``lag_start``, ``lag_end`` : int, optional
+        Initial and final lag value. Only used when mode == 'range'
+
+    ``output`` : numpy.ndarray with shape (1, ) and dtype.float
+        A 1D array of size depending on mode
     '''
     sz1 = a.size
     sz2 = b.size
@@ -242,6 +249,8 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
     elif (mode == 'twosided'):
         return _signal.correlation_function(a, b, -(sz1 - 1), sz2 - 1)
     elif (mode == 'range'):
+        lag_start = int(lag_start)
+        lag_end   = int(lag_end)
         if (lag_start <= -sz1 or lag_end >= sz2):
             raise ValueError("Lag range must be in the range [%d, %d]" %
                     -(sz1 - 1) % sz2 - 1)
