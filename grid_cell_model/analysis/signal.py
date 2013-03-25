@@ -186,28 +186,6 @@ def maxPowerFrequency(Pxx, F, Frange=None):
 
     
 
-def globalExtrema(sig, func):
-    '''
-    Return global maximum of a signal.
-    
-    ``sig``
-        A 1D array, in which case a global extremum will be returned as a single
-        value, or a 2D array, for which an array of extrema will be returned,
-        one extremum for **each row**. Numpy arrays accepted only.
-
-    ``func``
-        Numpy extremum function. Must accept the 'axis' parameter
-    '''
-    shpLen = len(sig.shape)
-    if (shpLen == 1):
-        return func(sig)
-    elif (shpLen == 2):
-        return func(sig, axis=1)
-    else:
-        raise TypeError("signal must be either 1D or a 2D numpy array!")
-
-
-
 def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
     '''
     An enhanced correlation function, based on blitz++. This function uses dot
@@ -257,5 +235,34 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
         return _signal.correlation_function(a, b, lag_start, lag_end)
     else:
         raise ValueError("mode must be one of 'onesided', 'twosided', or 'range'")
+
+
+###############################################################################
+#                           Extrema analysis
+###############################################################################
+#def findLocalExtrema
+
+
+
+def globalExtremum(sig, func):
+    '''
+    Return global maximum of a signal.
+    
+    ``sig``
+        A 1D array, in which case a global extremum will be returned as a single
+        value, or a 2D array, for which an array of extrema will be returned,
+        one extremum for **each row**. Numpy arrays accepted only.
+
+    ``func``
+        Numpy extremum function. Must accept the 'axis' parameter
+    '''
+    shpLen = len(sig.shape)
+    if (shpLen == 1):
+        return func(sig)
+    elif (shpLen == 2):
+        return func(sig, axis=1)
+    else:
+        raise TypeError("signal must be either 1D or a 2D numpy array!")
+
 
 
