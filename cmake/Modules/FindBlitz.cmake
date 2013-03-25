@@ -7,6 +7,8 @@
 # also defined, but not for general use are
 #  Blitz_LIBRARY, where to find the Blitz library.
 
+set(MSG_BLITZ_NOT_FOUND  "Blitz++ was not found. It is required for parts of data analysis scripts.")
+
 include(FindPkgConfig)
 
 execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} blitz --silence-errors --modversion OUTPUT_VARIABLE PKG_CONFIG_blitz_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -23,17 +25,24 @@ if(PKG_CONFIG_blitz_VERSION)
   # Resolve Blitz library to a precise path
   set(Blitz_INCLUDE_DIR ${Blitz_INCLUDE_DIRS})
 else(PKG_CONFIG_blitz_VERSION)
-  find_path(Blitz_INCLUDE_DIR blitz/blitz.h)
+    find_path(Blitz_INCLUDE_DIR blitz/blitz.h)
+    if(Blitz_INCLUDE_DIR-NOTFOUND)
+        message(FATAL_ERROR ${MSG_BLITZ_NOT_FOUND})
+    endif(Blitz_INCLUDE_DIR-NOTFOUND)
 
-  find_library(Blitz_LIBRARY NAMES blitz)
+    find_library(Blitz_LIBRARY NAMES blitz)
+    if(Blitz_LIBRARY-NOTFOUND)
+        message(FATAL_ERROR ${MSG_BLITZ_NOT_FOUND})
+    endif(Blitz_LIBRARY-NOTFOUND)
 
-  # handle the QUIETLY and REQUIRED arguments and set Blitz_FOUND to TRUE if 
-  # all listed variables are TRUE
-  include(FindPackageHandleStandardArgs)
-  set(Blitz_FIND_REQUIRED ON)
-  find_package_handle_standard_args(Blitz DEFAULT_MSG Blitz_LIBRARY Blitz_INCLUDE_DIR)
+    # handle the QUIETLY and REQUIRED arguments and set Blitz_FOUND to TRUE if 
+    # all listed variables are TRUE
+    include(FindPackageHandleStandardArgs)
+    set(Blitz_FIND_REQUIRED ON)
+    find_package_handle_standard_args(Blitz DEFAULT_MSG Blitz_LIBRARY Blitz_INCLUDE_DIR)
 
-  set(Blitz_INCLUDE_DIRS ${Blitz_INCLUDE_DIR})
+    set(Blitz_INCLUDE_DIRS ${Blitz_INCLUDE_DIR})
+    set(Blitz_FOUND 1)
 endif(PKG_CONFIG_blitz_VERSION)
 
 if(Blitz_FOUND)
@@ -53,7 +62,7 @@ if(Blitz_FOUND)
 
 else(Blitz_FOUND)
 
-  message(FATAL_ERROR "Blitz++ was not found. Bob requires it for building.")
+  message(FATAL_ERROR ${MSG_BLITZ_NOT_FOUND})
 
 endif(Blitz_FOUND)
 
