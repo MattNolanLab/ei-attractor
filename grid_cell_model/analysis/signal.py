@@ -211,10 +211,10 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
         ``twosided`` : range of lags is [-(a.size - 1), b.size - 1]
         ``range``    : range of lags is [-lag_start, lag_end]
 
-    ``lag_start``, ``lag_end`` : int, optional
+    lag_start, lag_end : int, optional
         Initial and final lag value. Only used when mode == 'range'
 
-    ``output`` : numpy.ndarray with shape (1, ) and dtype.float
+    output : numpy.ndarray with shape (1, ) and dtype.float
         A 1D array of size depending on mode
     '''
     sz1 = a.size
@@ -237,10 +237,36 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
         raise ValueError("mode must be one of 'onesided', 'twosided', or 'range'")
 
 
+
 ###############################################################################
 #                           Extrema analysis
 ###############################################################################
-#def findLocalExtrema
+def localExtrema(sig):
+    '''
+    Find all local extrema using the derivative approach.
+
+    Parameters
+    ----------
+    sig : numpy.ndarray
+        A 1D numpy array
+    
+    output : (numpy.ndarray, numpy.ndarray)
+        A pair (idx, types) containing the positions of local extrema iniside
+        ``sig`` and the type of the extrema:
+            * type > 0 means local maximum
+            * type < 0 is local minimum
+    '''
+    sz = len(sig)
+    szDiff = sz - 1
+    der = np.diff(sig)
+    der0 = (der[0:szDiff - 1] * der[1:szDiff]) < 0.
+    ext_idx = np.nonzero(der0)[0]
+    dder = np.diff(der)[ext_idx] 
+    ext_idx -= 1    # Correction for a peak position
+    ext_t = np.ndarray((dder.size, ), dtype=int)
+    ext_t[dder < 0] = 1
+    ext_t[dder > 0] = -1
+    return (ext_idx, ext_t)
 
 
 
@@ -265,4 +291,24 @@ def globalExtremum(sig, func):
         raise TypeError("signal must be either 1D or a 2D numpy array!")
 
 
+def relativePeakHeight(localExtrema, cmpFun):
+    sz = len(localExtrema)
+    if (sz == 0):
+        raise TypeError("Cannot compute relative peak heights in an empty array.")
+    elif (sz == 1):
+        raise TypeError("Cannot compute relative peak heights in an array with only one element")
+        
+    res = np.ndarray((sz, ))
+    cmp = np.ndarray((2, sz-2))
 
+    hr = np.abs(localExtrema[0:sz-1] - localExtrema[1:])
+    hl = np.abs(localExtrema[1:]     - localExtrema[0:sz-1])
+
+    cmp[0, :] = hr[1:]
+    cmp[1, :] = hl[0:sz-1]
+
+    res[0]  = hr[0]
+    res[-1] = hl[-1]
+    res = cmpFun(cmp, axis=0)
+
+    return res
