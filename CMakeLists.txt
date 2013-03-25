@@ -7,5 +7,5 @@ set(CMAKE_MODULE_PATH
 
 set(NUMPY_BOOST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/numpy_boost/include)
 
-add_subdirectory(python/testmodule)
+#add_subdirectory(python/testmodule)
 add_subdirectory(grid_cell_model/analysis/src)

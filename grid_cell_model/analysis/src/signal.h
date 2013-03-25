@@ -19,14 +19,13 @@
  *       along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SIGNAL_H
-#define _SIGNAL_H
+#ifndef SIGNAL_H
+#define SIGNAL_H
 
 #include <cmath>
 #include <blitz/array.h>
 
 namespace sig {
-
 
 /**
  * Lag-restricted correlation function. 
@@ -82,4 +81,4 @@ correlation_function(const blitz::Array<T, 1> &v1, const blitz::Array<T, 1>
 
 } // namespace sig
 
-#endif // _SIGNAL_H
+#endif // SIGNAL_H

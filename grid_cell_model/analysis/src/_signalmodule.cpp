@@ -28,10 +28,9 @@
 #include "signal.h"
 #include "python_converter.h"
 
+extern "C" {
 
 typedef blitz::Array<double, 1> DblVector;
-
-
 
 static PyObject *
 _signal_correlation_function(PyObject *self, PyObject *args)
@@ -79,3 +78,5 @@ init_signal(void)
 
     import_array();
 }
+
+} // extern "C"

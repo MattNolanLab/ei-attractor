@@ -19,21 +19,35 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import sys
 import numpy as np
 
 from analysis.signal import corr
 from numpy           import correlate
 
 
-def checkBlitzNumpyCorr(a1, a2, printOut=False):
+def checkBlitzNumpyCorr(a1, a2, tolerance, printOut=False):
     c_blitz = corr(a1, a2, mode='twosided')
     c_np    = correlate(a1, a2, mode='full')[::-1]
     
     if (printOut):
         print c_blitz
         print c_np
-    if (np.any(c_blitz != c_np)):
+
+    neq = c_blitz != c_np
+    if (np.any(neq) and np.any(np.abs(c_blitz - c_np) > tolerance)):
+        print c_blitz
+        print c_np
+        print c_blitz != c_np
+        print c_blitz - c_np
         raise Exception("Arange: c_blitz != v_np!!")
+###############################################################################
+
+if (len(sys.argv) > 1):
+    tolerance = float(sys.argv[1])
+    print "Using tolerance= " + str(tolerance)
+else:
+    tolerance = .0
 
 ###############################################################################
 
@@ -42,12 +56,15 @@ N2 = 6
 a1 = np.arange(N1) * 1.0
 a2 = np.arange(N2) * 1.0
 
-checkBlitzNumpyCorr(a1, a2)
+checkBlitzNumpyCorr(a1, a2, tolerance)
 
 ###############################################################################
 maxN = 1000
+maxLoops = 10000
+#maxLoops = np.infty
 
-while (True):
+loop_it = 0
+while (loop_it < maxLoops):
     N1 = np.random.randint(maxN) + 1
     N2 = np.random.randint(maxN) + 1
     if (N1 == 0 and N2 == 0):
@@ -58,5 +75,7 @@ while (True):
     a1 = np.random.rand(N1)
     a2 = np.random.rand(N2)
     
-    checkBlitzNumpyCorr(a1, a2)
+    checkBlitzNumpyCorr(a1, a2, tolerance)
+
+    loop_it += 1
 
