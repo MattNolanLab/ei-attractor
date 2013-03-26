@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 #
 #   test_relativePeakHeight.py
 #
@@ -19,9 +20,50 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from analysis.signal import localExtrema, relativePeakHeight
+from analysis.signal import localExtrema, relativePeakHeight, autoCorrelation,\
+        butterBandPass
 
 from matplotlib.pyplot import *
 
 
-t = np.
+def readTxtFile(fileName):
+    res = []
+    f = open(dFile, 'r')
+    for line in f:
+        res.append(float(line))
+    return np.array(res)
+
+
+def processPeaks(sig, plotPeaks = False, plotHeights=False):
+    ext_idx, ext_t = localExtrema(sig)
+    ext = sig[ext_idx]
+    times = np.arange(sig.size)
+    heights = relativePeakHeight(ext, np.min)
+
+    if (plotPeaks):
+        figure()
+        plot(times, sig)
+        hold('on')
+        plot(times[ext_idx], sig[ext_idx], '.')
+        ylim([-1, 1])
+
+    if (plotHeights):
+        # plot the heights as lines
+        for h_idx in range(len(heights)):
+            h = heights[h_idx]
+            d = sig[ext_idx[h_idx]]
+            plot([times[ext_idx[h_idx]]] * 2, [d, d - h*ext_t[h_idx]])
+
+    return (ext_idx, ext_t, heights)
+
+
+dFile = 'auto_correlation.txt'
+data = readTxtFile(dFile)
+
+
+ext_idx, ext_t, heights = processPeaks(data, plotPeaks=True, plotHeights=True)
+ylabel('Normalized autocorrelation')
+xlabel('Time (ms)')
+title('Peak finding and height detection')
+
+show()

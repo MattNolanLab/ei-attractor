@@ -188,9 +188,10 @@ def maxPowerFrequency(Pxx, F, Frange=None):
 
 def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
     '''
-    An enhanced correlation function, based on blitz++. This function uses dot
-    product instead of FFT to compute a correlation function with range
-    restricted lags.
+    An enhanced correlation function of real signal, based on blitz++.
+    
+    This function uses dot product instead of FFT to compute a correlation
+    function with range restricted lags.
 
     Thus, for a long-range of lags and big arrays it can be slower than the
     numpy.correlate (which uses fft-based convolution). However, for arrays in
@@ -238,6 +239,47 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
 
 
 
+def autoCorrelation(sig, max_lag=None, norm=False, mode='onesided'):
+    '''
+    Compute an autocorrelation function of a real signal.
+
+    Parameters
+    ----------
+    sig : numpy.ndarray
+        The signal, 1D vector, to compute an autocorrelation of.
+
+    max_lag : int, optional
+        Maximal number of lags. If mode == 'onesided', the range of lags will
+        be [0, max_lag], i.e. the size of the output will be (max_lag+1). If mode ==
+        'twosided', the lags will be in the range [-max_lag, max_lag], and so the size
+        of the output will be 2*max_lag + 1.
+
+        If max_lag is None, then max_lag will be set to len(sig)-1
+
+    norm : bool, optional
+        Whether to normalize the auto correlation result, so that res(0) = 1
+
+    mode : string, optional
+        ``onesided`` or ``twosided``. See description of max_lag
+
+    output : numpy.ndarray
+        A 1D array, size depends on ``max_lag`` and ``mode`` parameters.
+    '''
+    if (mode == 'onesided'):
+        c = corr(sig, sig, mode='range', lag_start=0, lag_end=max_lag)
+    elif (mode == 'twosided'):
+        c = corr(sig, sig, mode='range', lag_start=-max_lag, lag_end=max_lag)
+    else:
+        raise ValueError("mode can be either 'onesided' or 'twosided'!")
+
+    if (norm):
+        c /= max(c)
+
+    return c
+
+
+
+
 ###############################################################################
 #                           Extrema analysis
 ###############################################################################
@@ -262,7 +304,7 @@ def localExtrema(sig):
     der0 = (der[0:szDiff - 1] * der[1:szDiff]) < 0.
     ext_idx = np.nonzero(der0)[0]
     dder = np.diff(der)[ext_idx] 
-    ext_idx -= 1    # Correction for a peak position
+    ext_idx += 1    # Correction for a peak position
     ext_t = np.ndarray((dder.size, ), dtype=int)
     ext_t[dder < 0] = 1
     ext_t[dder > 0] = -1
@@ -304,11 +346,14 @@ def relativePeakHeight(localExtrema, cmpFun):
     hr = np.abs(localExtrema[0:sz-1] - localExtrema[1:])
     hl = np.abs(localExtrema[1:]     - localExtrema[0:sz-1])
 
+
     cmp[0, :] = hr[1:]
-    cmp[1, :] = hl[0:sz-1]
+    cmp[1, :] = hl[0:hl.size - 1]
 
     res[0]  = hr[0]
     res[-1] = hl[-1]
-    res = cmpFun(cmp, axis=0)
+    res[1:sz-1] = cmpFun(cmp, axis=0)
+    
+    #import pdb; pdb.set_trace()
 
     return res
