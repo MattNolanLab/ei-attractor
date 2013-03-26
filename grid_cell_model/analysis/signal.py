@@ -357,3 +357,40 @@ def relativePeakHeight(localExtrema, cmpFun):
     #import pdb; pdb.set_trace()
 
     return res
+
+
+
+###############################################################################
+#                         (Re-)Sampling signals
+###############################################################################
+
+def downSample(sig, factor, X=None):
+    '''
+    Downsample a signal by a specified factor.
+
+    Parameters
+    ----------
+    sig : numpy.ndarray
+        Signal to down-sample.
+
+    factor : int
+        Down-sampling factor. If the factor is not int, it will be converted to
+        int.
+
+    X : numpy.ndarray, optional
+        Optional X value of the signal (i.e. time, space) that will be
+        downsampled as well. If ``None``, [0, len(sig)-1] will be used.
+
+    output : numpy.ndarray
+        A tuple (sig_d, X_d), where
+        sig_d is the downsampled signal and X_d is the down-sampled X
+        coordinate of the signal. The size of the output will depend on whether
+        the size of ``sig`` is an integer multiple of ``factor``.
+    '''
+    if (X is None):
+        X = np.arange(len(sig))
+    idx = np.arange(0, len(sig), 10)
+    return (sig[idx], X[idx])
+
+
+
