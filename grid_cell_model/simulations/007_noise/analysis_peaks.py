@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 #   analysis_peaks.py
 #
@@ -25,13 +26,17 @@ import matplotlib.pyplot as plt
 from scipy.signal import correlate
 
 from data_storage           import DataStorage
-from analysis.signal        import splitSigToThetaCycles, globalExtrema
+from analysis.signal        import splitSigToThetaCycles, globalExtremum, corr,\
+        localExtrema, butterBandPass, autoCorrelation, downSample
 from plotting.global_defs   import globalAxesSettings
+
+import matplotlib
+print matplotlib.__version__, matplotlib.__path__
 
 
 # Other
-figSize = (12,8)
-plt.rcParams['font.size'] = 16
+figSize = (9,6)
+plt.rcParams['font.size'] = 12
 
 
 ###############################################################################
@@ -55,19 +60,54 @@ def peakAmp(stateMon, startT, thetaFreq, fieldStr, extFunc):
         sig = stateMon[n_id]['events'][fieldStr]
         dt = stateMon[n_id]['interval'] # sec
         sig_split = splitSigToThetaCycles(sig[startT/dt:], thetaT, dt)
-        peaks.append(globalExtrema(sig_split, extFunc))
+        peaks.append(globalExtremum(sig_split, extFunc))
 
     return np.array(peaks)
 
-def autocorrelation(sig, norm=False):
-    c = np.correlate(sig, sig, mode=2)[len(sig)-1:]
-    if (norm):
-        c /= max(c)
-    return c
+def writeArrayTxt(fileName, arr):
+    f = open(fileName, 'w')
+    for val in arr:
+        f.write('{0:f}\n'.format(val))
+    f.close()
 
-def downSample(sig, times, factor):
-    idx = np.arange(0, len(sig), 10)
-    return (sig[idx], times[idx])
+
+def findFreq(ac, dt, ext_idx, ext_t):
+    max_idx = np.nonzero(ext_t > 0)[0]
+    if (len(max_idx) == 0):
+        raise ValueError("Autocorrelation must contain at leas one local maximum")
+    
+    # First local maximum ac[0] excluded
+    max1_idx = ext_idx[max_idx[0]]
+    max1_t   = max1_idx * dt
+    max1     = ac[max1_idx]
+
+    return (1./max1_t, max1)
+
+
+def plotNoiseSigma(noise_sigma, res_means, res_stds, newFigure=True, ylabel="",
+        xlabel=None, title=""):
+    if (newFigure):
+        plt.figure()
+    ax = plt.gca()
+
+    plt.errorbar(noise_sigma, res_means, res_stds, fmt='o-')
+    globalAxesSettings(plt.gca())
+    plt.margins(0.05)
+    plt.gca().xaxis.set_ticks(noise_sigma)
+    if (xlabel is None):
+        plt.xlabel('$\sigma_{noise}$ (pA)')
+    elif (xlabel != ""):
+        plt.xlabel(xlabel)
+
+    if (ylabel != ""):
+        ax.set_ylabel(ylabel)
+
+    if (title != ""):
+        plt.title(title, x=-0.3, y=1.1, ha='left', va='bottom', weight='bold',
+                size='x-large')
+
+    plt.gca().xaxis.set_ticks_position('bottom')
+    plt.gca().yaxis.set_ticks_position('left')
 
 
 ###############################################################################
@@ -76,16 +116,22 @@ def downSample(sig, times, factor):
 output_dir = 'output_local'
 fileNamePrefix = ''
 
-peaks_mean = []
-peaks_std  = []
+peaks_mean  = []
+peaks_std   = []
 noise_sigma = []
+freq_mean   = []
+freq_std    = []
+acval_mean  = []
+acval_std   = []
 
 for jobNum in jobNums:
+    print "jobNum: ", jobNum
     in_fname = "{0}/{1}job{2:05}_output".format(output_dir, fileNamePrefix, jobNum)
     output_fname = in_fname
     d = DataStorage.open(in_fname + ".h5", 'r')
-    options = d['options']
-    ei_net  = d['ei_net']
+    options     = d['options']
+    ei_net      = d['ei_net']
+    stateMonF_e = d['stateMonF_e']
     
     
     peaks = peakAmp(
@@ -98,21 +144,61 @@ for jobNum in jobNums:
     peaks_std.append(np.std(peaks))
     noise_sigma.append(options['noise_sigma'])
 
-    plt.figure()
-    sig = d['stateMonF_e'][0]['events']['I_clamp_GABA_A']
-    times = d['stateMonF_e'][0]['events']['times']
-    sig, times = downSample(sig, times, 10)
-    dt = times[1] - times[0]
-    slice = 2. / (options['theta_freq'] * 1e-3) / dt
-    ac = autocorrelation(sig - np.mean(sig), norm=True)
-    plt.plot(times[0:slice], ac[0:slice])
+    freq   = [] # Frequency of input signal
+    acval  = [] # Auto-correlation at the corresponding frequency
+    for n_id in range(len(stateMonF_e)):
+    #for n_id in range(5):
+        print "n_id: ", n_id
+        sig = stateMonF_e[n_id]['events']['I_clamp_GABA_A']
+        times = stateMonF_e[n_id]['events']['times']
+        sig, times = downSample(sig, 10, times)
+        dt = times[1] - times[0]
+        sig = butterBandPass(sig, dt*1e-3, 20, 200)
+        slice = 2. / (options['theta_freq'] * 1e-3) / dt
+        ac = autoCorrelation(sig - np.mean(sig), max_lag=slice-1, norm=True)
+        ext_idx, ext_t = localExtrema(ac)
+
+        #plt.figure()
+        #plt.plot(times[0:slice], ac[0:slice])
+        #plt.hold('on')
+        #plt.plot(times[ext_idx], ac[ext_idx], '.')
+        #plt.ylim([-1, 1])
+        #plt.savefig(output_fname + "_peaks_ac_extrema_%d.pdf" % n_id)
+        #plt.close()
+
+        f, a = findFreq(ac, dt*1e-3, ext_idx, ext_t)
+        freq.append(f)
+        acval.append(a)
+
+    freq_mean.append(np.mean(freq))
+    freq_std.append(np.std(freq))
+    acval_mean.append(np.mean(acval))
+    acval_std.append(np.std(acval))
 
     
-plt.figure()
-plt.errorbar(noise_sigma, peaks_mean, peaks_std, fmt='o-')
-globalAxesSettings(plt.gca())
-plt.margins(0.05)
-plt.gca().xaxis.set_ticks(noise_sigma)
-plt.ion()
-plt.show()
+plt.figure(figsize=figSize)
 
+plt.subplot2grid((2, 2), (0, 0))
+plotNoiseSigma(noise_sigma, peaks_mean, peaks_std,
+        xlabel = "",
+        ylabel="E cell max. $I_{syn}$ / $\\theta$ cycle\n (pA)",
+        title="A",
+        newFigure=False)
+plt.gca().set_xticklabels([])
+
+plt.subplot2grid((2, 2), (1, 0))
+plotNoiseSigma(noise_sigma, freq_mean, freq_std,
+        ylabel="Frequency (Hz)",
+        title="B",
+        newFigure=False)
+
+plt.subplot2grid((2, 2), (1, 1))
+plotNoiseSigma(noise_sigma, acval_mean, acval_std, 
+        ylabel="Mean auto-correlation",
+        title="C",
+        newFigure=False)
+plt.tight_layout(w_pad=2.0, h_pad=2.5)
+
+plt.savefig(output_dir + "/peak_analysis.pdf")
+
+plt.show()
