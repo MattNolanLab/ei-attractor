@@ -35,7 +35,7 @@ print matplotlib.__version__, matplotlib.__path__
 
 
 # Other
-figSize = (9,6)
+figSize = (7,5)
 plt.rcParams['font.size'] = 12
 
 
@@ -90,24 +90,26 @@ def plotNoiseSigma(noise_sigma, res_means, res_stds, newFigure=True, ylabel="",
         plt.figure()
     ax = plt.gca()
 
-    plt.errorbar(noise_sigma, res_means, res_stds, fmt='o-')
-    globalAxesSettings(plt.gca())
+    X = np.arange(len(noise_sigma))
+    plt.errorbar(X, res_means, res_stds, fmt='o-')
+    ax.xaxis.set_ticks(X)
+    ax.xaxis.set_ticklabels(np.array(noise_sigma, dtype=int))
+    globalAxesSettings(ax)
     plt.margins(0.05)
-    plt.gca().xaxis.set_ticks(noise_sigma)
     if (xlabel is None):
         plt.xlabel('$\sigma_{noise}$ (pA)')
     elif (xlabel != ""):
         plt.xlabel(xlabel)
 
     if (ylabel != ""):
-        ax.set_ylabel(ylabel)
+        ax.set_ylabel(ylabel, multialignment='center')
 
     if (title != ""):
-        plt.title(title, x=-0.3, y=1.1, ha='left', va='bottom', weight='bold',
+        plt.title(title, x=-0.5, y=1.1, ha='left', va='bottom', weight='bold',
                 size='x-large')
 
-    plt.gca().xaxis.set_ticks_position('bottom')
-    plt.gca().yaxis.set_ticks_position('left')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
 
 
 ###############################################################################
@@ -181,7 +183,7 @@ plt.figure(figsize=figSize)
 plt.subplot2grid((2, 2), (0, 0))
 plotNoiseSigma(noise_sigma, peaks_mean, peaks_std,
         xlabel = "",
-        ylabel="E cell max. $I_{syn}$ / $\\theta$ cycle\n (pA)",
+        ylabel="E cell max. $I_{syn}$ / $\\theta$ \n (pA)",
         title="A",
         newFigure=False)
 plt.gca().set_xticklabels([])
@@ -194,10 +196,10 @@ plotNoiseSigma(noise_sigma, freq_mean, freq_std,
 
 plt.subplot2grid((2, 2), (1, 1))
 plotNoiseSigma(noise_sigma, acval_mean, acval_std, 
-        ylabel="Mean auto-correlation",
+        ylabel="Mean\nauto-correlation",
         title="C",
         newFigure=False)
-plt.tight_layout(w_pad=2.0, h_pad=2.5)
+plt.tight_layout(w_pad=0.0, h_pad=2.5)
 
 plt.savefig(output_dir + "/peak_analysis.pdf")
 
