@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 #   submit_param_sweep.py
 #
@@ -30,31 +31,36 @@ import numpy    as np
 lg.basicConfig(level=lg.DEBUG)
 
 
-CLUSTER = True  # if True, submit on a cluster using qsub
+CLUSTER = False  # if True, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
-parameters['output_dir'] = 'output'
+#parameters['time']              = 1199.9e3  # ms
+parameters['time']              = 2e3  # ms
+parameters['nthreads']          = 8
 
-parameters['time']              = 6e3   # ms
-parameters['theta_start_mon_t'] = 1.0e3   # ms
+parameters['output_dir']        = 'output_local'
 
-parameters['prefDirC_e']        = 0
-parameters['prefDirC_i']        = 0
+parameters['Ne']                = 34
+parameters['Ni']                = 34
 
-parameters['theta_noise_sigma'] = 0         # pA
+parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
+parameters['gridSep']           = 70.0      # cm, grid field inter-peak distance
+parameters['N_place_cells']     = 30*30
 
+# Gamma analysis parameters
+parameters['gammaNSample']      = 0.05      # fraction
 
-parameters['noise_sigma']       = 0.0       # mV
-
+parameters['noise_sigma']       = 150.0       # pA
+parameters['delay']             = 0.1
 
 
 startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python2.6 simulation_param_sweep.py'
+programName         = 'python simulation_param_sweep.py'
 blocking            = True
 
 # Cluster parameters
@@ -64,41 +70,42 @@ qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters, printout=True)
 
-# Range of parameters around default values
-# Let's choose a 10% jitter around the default values
-Ndim        = 10     # Number of values for each dimension
-jitter_frac = 0.1    # Fraction
-Iext_e_amp_default = parameters['Iext_e_const'] + parameters['Iext_e_theta']
 
-jitter_frac_arr = np.linspace(1.0-jitter_frac, 1.0+jitter_frac, Ndim)
-
-theta_depth_range = jitter_frac_arr*parameters['Iext_e_const']
-Iext_e_amp_range  = jitter_frac_arr*Iext_e_amp_default
-
-Iext_e_const_arr     = []
-Iext_e_theta_arr     = []
-g_AMPA_total_arr     = []
-g_GABA_total_arr     = []
-g_uni_GABA_total_arr = []
-for theta_depth in theta_depth_range:
-    for Iext_e_amp in Iext_e_amp_range:
-        for E_coupling in jitter_frac_arr:
-            for I_coupling in jitter_frac_arr:
-                Iext_e_const_arr.append(theta_depth)
-                Iext_e_theta_arr.append(Iext_e_amp - theta_depth)
-                g_AMPA_total_arr.append(E_coupling*parameters['g_AMPA_total'])
-                g_GABA_total_arr.append(I_coupling*parameters['g_GABA_total'])
-                g_uni_GABA_total_arr.append(I_coupling*parameters['g_uni_GABA_total'])
-
-
-iterparams = {
-        'Iext_e_const'      : Iext_e_const_arr,
-        'Iext_e_theta'      : Iext_e_theta_arr,
-        'g_AMPA_total'      : g_AMPA_total_arr,
-        'g_GABA_total'      : g_GABA_total_arr,
-        'g_uni_GABA_total'  : g_uni_GABA_total_arr
-}
-ac.insertDict(iterparams, mult=False)
+## Range of parameters around default values
+## Let's choose a 10% jitter around the default values
+#Ndim        = 10     # Number of values for each dimension
+#jitter_frac = 0.1    # Fraction
+#Iext_e_amp_default = parameters['Iext_e_const'] + parameters['Iext_e_theta']
+#
+#jitter_frac_arr = np.linspace(1.0-jitter_frac, 1.0+jitter_frac, Ndim)
+#
+#theta_depth_range = jitter_frac_arr*parameters['Iext_e_const']
+#Iext_e_amp_range  = jitter_frac_arr*Iext_e_amp_default
+#
+#Iext_e_const_arr     = []
+#Iext_e_theta_arr     = []
+#g_AMPA_total_arr     = []
+#g_GABA_total_arr     = []
+#g_uni_GABA_total_arr = []
+#for theta_depth in theta_depth_range:
+#    for Iext_e_amp in Iext_e_amp_range:
+#        for E_coupling in jitter_frac_arr:
+#            for I_coupling in jitter_frac_arr:
+#                Iext_e_const_arr.append(theta_depth)
+#                Iext_e_theta_arr.append(Iext_e_amp - theta_depth)
+#                g_AMPA_total_arr.append(E_coupling*parameters['g_AMPA_total'])
+#                g_GABA_total_arr.append(I_coupling*parameters['g_GABA_total'])
+#                g_uni_GABA_total_arr.append(I_coupling*parameters['g_uni_GABA_total'])
+#
+#
+#iterparams = {
+#        'Iext_e_const'      : Iext_e_const_arr,
+#        'Iext_e_theta'      : Iext_e_theta_arr,
+#        'g_AMPA_total'      : g_AMPA_total_arr,
+#        'g_GABA_total'      : g_GABA_total_arr,
+#        'g_uni_GABA_total'  : g_uni_GABA_total_arr
+#}
+#ac.insertDict(iterparams, mult=False)
 
 
 if CLUSTER:
@@ -107,6 +114,4 @@ else:
     submitter = GenericSubmitter(ac, programName, blocking=blocking)
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)
 
-# Export the iterparams
-savemat(parameters['output_dir'] + '/param_sweep_iterparams.mat', iterparams, oned_as='row')
 
