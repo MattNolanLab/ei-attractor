@@ -579,9 +579,12 @@ class BasicGridCellNetwork(NestGridCellNetwork):
 
     def getMonitors(self):
         if (len(self.PC) != 0):
-            self.pc_spikeMon = self.getGenericSpikeDetector(self.PC, "Place cells")
+            if (self.pc_spikeMon is not None):
+                self.pc_spikeMon = self.getGenericSpikeDetector(self.PC,
+                        "Place cells")
         else:
             self.pc_spikeMon = None
+
         return (
             self.spikeMon_e,
             self.spikeMon_i,
