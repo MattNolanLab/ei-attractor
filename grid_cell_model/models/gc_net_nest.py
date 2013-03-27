@@ -505,7 +505,89 @@ class NestGridCellNetwork(GridCellNetwork):
 
 
 
+class BasicGridCellNetwork(NestGridCellNetwork):
+    '''
+    A grid cell network that generates the common network and creates a basic
+    set of spike monitors and state monitors which are generically usable in
+    most of the simulation setups.
+    '''
+
+    def getDefaultStateMonParams(self):
+        return {
+            'withtime' : True,
+            'interval' : 10.0 * self.no.sim_dt,
+            'record_from' : ['V_m', 'I_clamp_AMPA', 'I_clamp_NMDA',
+                'I_clamp_GABA_A', 'I_stim']
+        }
 
 
+    def fillParams(self, dest, src):
+        for key, value in src:
+            dest[key] = value
+        return dest
+
+
+    def __init__(self, options, simulationOpts=None,
+            nrec_spikes      = (None, None),
+            stateRecord_type = 'middle-center',
+            stateRecParams   = (None, None)):
+        '''
+        TODO
+        '''
+        NestGridCellNetwork.__init__(self, options, simulationOpts)
+
+
+        # Spikes
+        self.nrecSpikes_e = nrec_spikes[0]
+        self.nrecSpikes_i = nrec_spikes[1]
+
+        if (self.nrecSpikes_e is None):
+            self.nrecSpikes_e = self.Ne_x*self.Ne_y
+        if (self.nrecSpikes_i is None):
+            self.nrecSpike_i = self.Ni_x*self.Ni_y
+
+        self.spikeMon_e  = self.getSpikeDetector("E")
+        self.spikeMon_i  = self.getSpikeDetector("I")
+
+
+        # States
+        if (stateRecord_type == 'middle-center'):
+            self.state_record_e = [self.Ne_x/2 -1 , self.Ne_y/2*self.Ne_x +
+                    self.Ne_x/2 - 1]
+            self.state_record_i = [self.Ni_x/2 - 1, self.Ni_y/2*self.Ni_x +
+                    self.Ni_x/2 - 1]
+        else:
+            raise ValueError("Currently stateRecordType must be 'middle-center'")
+        
+        self.stateMonParams_e = self.getDefaultStateMonParams()
+        self.stateMonParams_i = self.getDefaultStateMonParams()
+
+        stRecp_e = stateRecParams[0]
+        stRecp_i = stateRecParams[1]
+        if (stRecp_e is not None):
+            self.fillParams(self.stateMonParams_e, stRecp_e);
+        if (stRecp_i is not None):
+            self.fillParams(self.stateMonParams_i, stRecp_i);
+
+
+        self.stateMon_e  = self.getStateMonitor("E",
+                self.state_record_e,
+                self.stateMonParams_e)
+        self.stateMon_i  = self.getStateMonitor("I",
+                self.state_record_i,
+                self.stateMonParams_i)
+
+    def getMonitors(self):
+        if (len(self.PC) != 0):
+            self.pc_spikeMon = self.getGenericSpikeDetector(self.PC, "Place cells")
+        else:
+            self.pc_spikeMon = None
+        return (
+            self.spikeMon_e,
+            self.spikeMon_i,
+            self.pc_spikeMon,
+            self.stateMon_e,
+            self.stateMon_i
+        )
 
 
