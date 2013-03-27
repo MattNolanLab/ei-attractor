@@ -24,6 +24,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import correlate
+from matplotlib.ticker  import MaxNLocator, LinearLocator
 
 from data_storage           import DataStorage
 from analysis.signal        import splitSigToThetaCycles, globalExtremum, corr,\
@@ -111,6 +112,18 @@ def plotNoiseSigma(noise_sigma, res_means, res_stds, newFigure=True, ylabel="",
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
 
+def computeMinMaxMargin(sig_mean, sig_std=0, margin=0):
+    sm = np.array(sig_mean)
+    ss  = np.array(sig_std)
+    ymin, ymax = np.min(sm - ss), np.max(sm + ss)
+    tot = ymax - ymin
+    return ymin - tot*margin, ymax + tot*margin
+
+
+def absoluteLimits(min, max, margin):
+    tot = max-min
+    return min-margin*tot, max+margin*tot
+
 
 ###############################################################################
 
@@ -148,8 +161,8 @@ for jobNum in jobNums:
 
     freq   = [] # Frequency of input signal
     acval  = [] # Auto-correlation at the corresponding frequency
-    for n_id in range(len(stateMonF_e)):
-    #for n_id in range(5):
+    #for n_id in range(len(stateMonF_e)):
+    for n_id in range(5):
         print "n_id: ", n_id
         sig = stateMonF_e[n_id]['events']['I_clamp_GABA_A']
         times = stateMonF_e[n_id]['events']['times']
@@ -187,12 +200,20 @@ plotNoiseSigma(noise_sigma, peaks_mean, peaks_std,
         title="A",
         newFigure=False)
 plt.gca().set_xticklabels([])
+loc = MaxNLocator(nbins=4)
+plt.gca().yaxis.set_major_locator(loc)
+#ymin,ymax = computeMinMaxMargin(peaks_mean, peaks_std, margin=0.1)
+ymin,ymax = absoluteLimits(0, 11000, margin=0.05)
+plt.ylim([ymin, ymax])
+
 
 plt.subplot2grid((2, 2), (1, 0))
 plotNoiseSigma(noise_sigma, freq_mean, freq_std,
         ylabel="Frequency (Hz)",
         title="B",
         newFigure=False)
+loc = MaxNLocator(nbins=4, steps=[10])
+plt.gca().yaxis.set_major_locator(loc)
 
 plt.subplot2grid((2, 2), (1, 1))
 plotNoiseSigma(noise_sigma, acval_mean, acval_std, 
