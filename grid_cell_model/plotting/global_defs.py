@@ -26,6 +26,9 @@ def globalAxesSettings(ax):
     ax.tick_params(
             direction='out'
     )
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+
 
 def createColorbar(ax, data=None, label=""):
     if (data is not None):
