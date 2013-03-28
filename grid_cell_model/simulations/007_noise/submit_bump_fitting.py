@@ -50,20 +50,20 @@ parameters['noise_sigma']       = 150.0       # pA
 parameters['delay']             = 0.1
 
 
-startJobNum = 0
+startJobNum = 10
 numRepeat = 1
 
 ac = ArgumentCreator(parameters)
 
 iterparams = {
-        'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
-        #'noise_sigma' : [0.0]
+        #'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
+        'noise_sigma' : [0.0]
 }
 ac.insertDict(iterparams, mult=False)
 
 
 # Submitting
-appName = 'simulation_bump_fitting.py'
+appName = 'simulation_stationary.py'
 rtLimit = '00:05:00'
 outputDir = parameters['output_dir']
 blocking  = True

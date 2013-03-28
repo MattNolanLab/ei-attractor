@@ -1,7 +1,8 @@
+#!/usr/bin/env python
 #
-#   simulation_param_sweep.py
+#   simulation_stationary.py
 #
-#   Main simulation run: parameter sweep runs (noise)
+#   Main simulation run: Simulation of a stationary bump that does nothing.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -18,77 +19,48 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import numpy as np
-import logging  as lg
+from numpy.random       import choice
 
-from matplotlib.pyplot  import *
-
-from numpy.random       import choice   # numpy >= 1.7.0
-from optparse           import OptionParser
-
-from models.parameters  import *
+from models.parameters  import getOptParser
 from models.gc_net_nest import BasicGridCellNetwork
-from data_storage       import DataStorage
 
-import time
-import nest
-
-
-lg.basicConfig(level=lg.DEBUG)
 
 parser          = getOptParser()
 parser.add_option("--gammaNSample",   type="float",   help="Fraction of neurons in the network to sample from, for the frequency analysis.")
 
 (options, args) = parser.parse_args()
-options         = setOptionDictionary(parser, options)
 
 
 ################################################################################
-#                              Network setup
-################################################################################
-print "Starting network and connections initialization..."
-start_time=time.time()
-total_start_t = time.time()
 
 ei_net = BasicGridCellNetwork(options, simulationOpts=None)
 
 const_v = [00.0, 0.0]
 ei_net.setConstantVelocityCurrent_e(const_v)
-#ei_net.setVelocityCurrentInput_e()
 
-
-duration=time.time()-start_time
-print "Network setup time:",duration,"seconds"
-#                            End Network setup
-################################################################################
 
 NSample = int(options.gammaNSample * ei_net.net_Ne)
 stateRecF_e = choice(ei_net.E_pop, NSample, replace=False)
 
 stateMonF_params = {
         'withtime' : True,
-        'interval' : 0.1,
+        'interval' : options.sim_dt*10,
         'record_from' : ['I_clamp_GABA_A']
 }
-stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params)
-
+stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params,
+        'stateMonF_e')
 
 
 ################################################################################
-#                              Main cycle
-print "Simulation running..."
-start_time=time.time()
-    
+
 ei_net.simulate(options.time, printTime=True)
-duration=time.time()-start_time
-print "Simulation time:",duration,"seconds"
+ei_net.endSimulation()
 
 
-output_fname = "{0}/{1}job{2:05}_output".format(options.output_dir, options.fileNamePrefix, options.job_num)
-ei_net.saveAll(outputFname, extraData={'spikeMonF_e', spikeMonF_e})
-#                            End main cycle
+output_fname = "{0}/{1}job{2:05}_output.h5".format(options.output_dir,
+        options.fileNamePrefix, options.job_num)
+ei_net.saveAll(output_fname)
+
 ################################################################################
 
-total_time = time.time()-total_start_t
-print "Overall time: ", total_time, " seconds"
-
+ei_net.printTimes()

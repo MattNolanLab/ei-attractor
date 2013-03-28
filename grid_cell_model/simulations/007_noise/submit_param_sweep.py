@@ -60,11 +60,11 @@ startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
-programName         = 'python simulation_param_sweep.py'
+programName         = 'python simulation_stationary.py'
 blocking            = True
 
 # Cluster parameters
-cluster_scriptName  = 'eddie_submit.sh simulation_param_sweep.py'
+cluster_scriptName  = 'eddie_submit.sh simulation_stationary.py'
 qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:15:00"
 qsub_output_dir     = parameters['output_dir']
 
