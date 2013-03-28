@@ -99,7 +99,15 @@ class NestGridCellNetwork(GridCellNetwork):
         self.PC = []
 
         self._initNESTKernel()
+        self._constructNetwork()
+        self._initStates()
+        self._initCellularProperties()
 
+
+
+
+    def _constructNetwork(self):
+        '''Construct the E/I network'''
         self.e_neuron_params = {
                 "V_m"              : self.no.EL_e,
                 "C_m"              : self.no.taum_e * self.no.gL_e,
@@ -178,13 +186,9 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.CopyModel('static_synapse', 'PC_AMPA',
                 params={'receptor_type' : self.e_receptors['AMPA']})
 
-
         # Connect E-->I and I-->E
         self._centerSurroundConnection(self.no.AMPA_gaussian, self.no.pAMPA_mu,
                 self.no.pAMPA_sigma, self.no.pGABA_mu, self.no.pGABA_sigma)
-
-        self._initStates()
-        self._initCellularProperties()
 
 
     def simulate(self, time, printTime=True):
