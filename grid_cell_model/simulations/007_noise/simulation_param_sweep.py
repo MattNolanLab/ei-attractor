@@ -73,12 +73,9 @@ stateMonF_params = {
 stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params)
 
 
-spikeMon_e, spikeMon_i, pc_spikeMon, stateMon_e, stateMon_i = ei_net.getMonitors()
-
 
 ################################################################################
 #                              Main cycle
-################################################################################
 print "Simulation running..."
 start_time=time.time()
     
@@ -88,42 +85,7 @@ print "Simulation time:",duration,"seconds"
 
 
 output_fname = "{0}/{1}job{2:05}_output".format(options.output_dir, options.fileNamePrefix, options.job_num)
-out = DataStorage.open(output_fname + ".h5", 'w')
-
-
-################################################################################
-#                               Save data
-out['options'] = options._einet_optdict
-out['ei_net']  = ei_net.getAttrDictionary()
-
-# Save spikes
-out['spikeMon_e'] = {
-        'status'    : nest.GetStatus(spikeMon_e)[0],
-        'gid_start' : ei_net.E_pop[0]
-    }
-out['spikeMon_i'] = {
-        'status'    : nest.GetStatus(spikeMon_i)[0],
-        'gid_start' : ei_net.I_pop[0]
-    }
-
-if (len(ei_net.PC) != 0):
-    out['pc_spikeMon'] = {
-            'status'    : nest.GetStatus(pc_spikeMon)[0],
-            'gid_start' : ei_net.PC[0]
-        }
-
-#Save state variables
-out['stateMon_e'] = nest.GetStatus(stateMon_e)
-out['stateMon_i'] = nest.GetStatus(stateMon_i)
-out['stateMonF_e']  = nest.GetStatus(stateMonF_e)
-
-out.close()
-#                             End Save data
-################################################################################
-
-
-
-
+ei_net.saveAll(outputFname, extraData={'spikeMonF_e', spikeMonF_e})
 #                            End main cycle
 ################################################################################
 
