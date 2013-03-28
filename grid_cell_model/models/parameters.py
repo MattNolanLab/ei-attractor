@@ -24,9 +24,35 @@
 from optparse import OptionParser
 
 
+class DOptionParser(OptionParser):
+
+    def __init__(self):
+        OptionParser.__init__(self)
+
+
+    def parse_args(self):
+        options, args = OptionParser.parse_args(self)
+        options = self.setOptionDictionary(options)
+        return options, args
+
+
+    def setOptionDictionary(self, options):
+        d = {}
+        attribs =  [x.dest for x in self._get_all_options()[1:]]
+    
+        for attr_name in attribs:
+            a = getattr(options, attr_name)
+            if a is not None:
+                d[attr_name] = a
+    
+        options._einet_optdict = d
+        return options
+
+
+
 def getOptParser():
     # Network parameters definition
-    optParser = OptionParser()
+    optParser = DOptionParser()
     optParser.add_option("--Ne",                   type="int",    help="Number of excitatory neurons")
     optParser.add_option("--Ni",                   type="int",    help="Number of inhibitory neurons")
     optParser.add_option("--ntrials",              type="int",    help="Number of trials for the parameter set")
@@ -150,15 +176,4 @@ def getOptParser():
 
     return optParser
 
-def setOptionDictionary(parser, options):
-    d = {}
-    attribs =  [x.dest for x in parser._get_all_options()[1:]]
-
-    for attr_name in attribs:
-        a = getattr(options, attr_name)
-        if a is not None:
-            d[attr_name] = a
-
-    options._einet_optdict = d
-    return options
 

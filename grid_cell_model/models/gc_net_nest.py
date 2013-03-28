@@ -26,10 +26,11 @@ import logging  as lg
 from scipy              import linspace
 from numpy.random       import rand, randn
 
-from submitting.submitters      import *
-from gc_net      import *
-from place_input import *
-from place_cells import *
+from submitting.submitters  import *
+from gc_net                 import *
+from place_input            import *
+from place_cells            import *
+from data_storage           import DataStorage
 
 import random
 import nest
@@ -188,6 +189,8 @@ class NestGridCellNetwork(GridCellNetwork):
 
     def simulate(self, time, printTime=True):
         '''Run the simulation'''
+        self.endConstruction()
+        self.beginSimulation()
         nest.SetKernelStatus({"print_time": printTime})
         nest.Simulate(time)
 
@@ -592,5 +595,55 @@ class BasicGridCellNetwork(NestGridCellNetwork):
             self.stateMon_e,
             self.stateMon_i
         )
+
+
+    def saveAll(self, fileName, extraData={}):
+        '''
+        Save all the simulated data that has been recorded into a file.
+
+        Parameters
+        ----------
+        fileName : string
+            Path and name of the file
+
+        extraData : dict, optional
+            A dictionary of {nameStr : obj} of extra objects to save
+        '''
+        out = DataStorage.open(fileName, 'w')
+
+        out['options']  = self.no._einet_optdict
+        out['net_attr'] = self.getAttrDictionary()
+        
+        # Save spikes
+        out['spikeMon_e'] = self._getSpikeMonData(self.spikeMon_e)
+
+        #out['spikeMon_e'] = {
+        #        'status'    : nest.GetStatus(spikeMon_e)[0],
+        #        'gid_start' : ei_net.E_pop[0]
+        #    }
+        #out['spikeMon_i'] = {
+        #        'status'    : nest.GetStatus(spikeMon_i)[0],
+        #        'gid_start' : ei_net.I_pop[0]
+        #    }
+        #
+        #if (len(ei_net.PC) != 0):
+        #    out['pc_spikeMon'] = {
+        #            'status'    : nest.GetStatus(pc_spikeMon)[0],
+        #            'gid_start' : ei_net.PC[0]
+        #        }
+        
+        ##Save state variables
+        #out['stateMon_e'] = nest.GetStatus(stateMon_e)
+        #out['stateMon_i'] = nest.GetStatus(stateMon_i)
+        #out['stateMonF_e']  = nest.GetStatus(stateMonF_e)
+
+        out.close()
+
+
+    def _getSpikeMonData(self, mon):
+        '''
+        Generate a dictionary of a spike data from the monitor ``mon``
+        '''
+        return nest.GetStatus(mon)
 
 

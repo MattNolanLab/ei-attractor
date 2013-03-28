@@ -58,17 +58,15 @@
 #     simulation with any kind of spiking model (leaky IaF, Hodgkin-Huxley,
 #     etc.)
 #
-from scipy          import linspace, weave
-from numpy.random   import rand
-from numpy          import sqrt
-
-from submitting.submitters         import *
-from analysis.image import Position2D, remapTwistedTorus
-
 import numpy    as np
 import logging  as lg
 import random
-from exceptions import NotImplementedError
+import time
+
+from submitting.submitters import *
+from analysis.image        import Position2D, remapTwistedTorus
+
+from exceptions            import NotImplementedError, RuntimeError
 
 
 __all__ = ['GridCellNetwork']
@@ -85,6 +83,14 @@ class GridCellNetwork(object):
     '''
 
     def __init__(self, neuronOpts, simulationOpts):
+        # timers
+        self._startT = time.time()
+        self._constrEndT   = None
+        self._simStartT    = None
+        self._simEndT      = None
+        self.beginConstruction()
+
+
         self.no = neuronOpts
         self.so = simulationOpts
 
@@ -102,7 +108,8 @@ class GridCellNetwork(object):
         self.net_Ni = self.Ni_x * self.Ni_y
 
 
-    def simulate(self, time):
+
+    def simulate(self, t):
         raise NotImplementedException("GridCellNetwork.simulate")
 
 
@@ -380,3 +387,58 @@ class GridCellNetwork(object):
         raise NotImplementedError()
 
 
+    ###########################################################################
+    #                           Other
+    ###########################################################################
+    def beginConstruction(self):
+        '''
+        Mark the beginning of network construction.
+        '''
+        self._constrStartT = time.time()
+        print "Starting network construction"
+
+    def endConstruction(self):
+        '''
+        Mark the end of network construction.
+        '''
+        self._constrEndT = time.time()
+        print "Network construction finished."
+
+    def constructionTime(self):
+        '''Compute network construction time'''
+        assert(self._constrStartT is not None)
+        if (self._constrEndT is None):
+            raise RuntimeError("Cannot compute contruction time. End time has not been marked yet.")
+        else:
+            return self._constrEndT - self._constrStartT
+
+    def beginSimulation(self):
+        '''Mark beginning of the simulation'''
+        self._simStartT = time.time()
+        print "Simulation has started..."
+
+    def endSimulation(self):
+        '''Mark end of the simulation'''
+        self._simEndT = time.time();
+        print "Simulation finished"
+
+    def simulationTime(self):
+        '''Compute simulation time'''
+        assert(self._simStartT is not None)
+        if (self._simEndT is None):
+            raise RuntimeError("Cannot compute simulation time. End time has "+
+                "not been marked yet (no simulation has been run?).")
+        else:
+            return self._simEndT - self._simStartT
+
+    def totalTime(self):
+        '''
+        Return elapsed time in seconds, since the network construction start.
+        '''
+        return time.time() - self._startT
+
+    def printTimes(self, constrT=True, simT=True, totalT=True):
+        print "Timer statistics:"
+        print("   Construction: {0} s".format(self.constructionTime()))
+        print("   Simulation  : {0} s".format(self.simulationTime()))
+        print("   Total       : {0} s".format(self.totalTime()))
