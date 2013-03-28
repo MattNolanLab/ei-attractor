@@ -48,6 +48,29 @@ class PosInputs(object):
 
 
 class NestGridCellNetwork(GridCellNetwork):
+    def __init__(self, neuronOpts, simulationOpts):
+        GridCellNetwork.__init__(self, neuronOpts, simulationOpts)
+
+        self.spikeMon_e = None
+        self.spikeMon_i = None
+        self.stateMon_e = None
+        self.stateMon_i = None
+
+        # Extra monitors
+        self._extraSpikeMons = {}   # Extra spike monitors
+        self._extraStateMons = {}   # Extra state monitors
+
+        self._ratVelocitiesLoaded = False
+        self._placeCellsLoaded = False
+
+        self.PC = []
+
+        self._initNESTKernel()
+        self._constructNetwork()
+        self._initStates()
+        self._initCellularProperties()
+
+
     def uniformDistrib(self, mean, spread, N):
         return mean - spread/2.0 * rand(N)
 
@@ -82,27 +105,6 @@ class NestGridCellNetwork(GridCellNetwork):
     #    self._initNESTKernel()
     #    self._initStates()
     #    self._initClocks()
-
-
-
-    def __init__(self, neuronOpts, simulationOpts):
-        GridCellNetwork.__init__(self, neuronOpts, simulationOpts)
-
-        self.spikeMon_e = None
-        self.spikeMon_i = None
-        self.stateMon_e = None
-        self.stateMon_i = None
-
-        self._ratVelocitiesLoaded = False
-        self._placeCellsLoaded = False
-
-        self.PC = []
-
-        self._initNESTKernel()
-        self._constructNetwork()
-        self._initStates()
-        self._initCellularProperties()
-
 
 
 
@@ -231,12 +233,18 @@ class NestGridCellNetwork(GridCellNetwork):
 
 
 
-    def getGenericSpikeDetector(self, gids, label=""):
+    def getGenericSpikeDetector(self, gids, label):
         '''
         NEST specific function to get a spike detector that monitors a
-        population of neurons with global id set to gids
+        population of neurons with global id set to gids.
 
-        gids    A list of global ids of the neurons to monitor
+        Parameters
+        ----------
+        gids : list
+            A list of global ids of the neurons to monitor.  There is one
+            profound limitation of this method: the gids must be a list of
+            increasing integers without gaps. Otherwise the local translation
+            of neuron numbers when saving the data will not work!.
         '''
         mon = nest.Create('spike_detector')
         nest.SetStatus(mon, {
@@ -244,6 +252,8 @@ class NestGridCellNetwork(GridCellNetwork):
             'withtime'  : True,
             'withgid'   : True})
         nest.ConvergentConnect(gids, mon)
+
+        self._extraSpikeMons[label] = (mon, gids[0])
         return mon
 
 
@@ -276,9 +286,10 @@ class NestGridCellNetwork(GridCellNetwork):
     # @param params Parameter of the state monitors
     # @return Global IDs for manipulation in the nest space
     #
-    def getGenericStateMonitor(self, gids, params):
+    def getGenericStateMonitor(self, gids, params, label):
         mon = nest.Create('multimeter', len(gids), params=params)
         nest.Connect(mon, gids)
+        self._extraStateMons[label] = (mon)
         return mon
 
 
@@ -585,23 +596,15 @@ class BasicGridCellNetwork(NestGridCellNetwork):
                 self.stateMonParams_i)
 
     def getMonitors(self):
-        if (len(self.PC) != 0):
-            if (self.pc_spikeMon is not None):
-                self.pc_spikeMon = self.getGenericSpikeDetector(self.PC,
-                        "Place cells")
-        else:
-            self.pc_spikeMon = None
-
         return (
             self.spikeMon_e,
             self.spikeMon_i,
-            self.pc_spikeMon,
             self.stateMon_e,
             self.stateMon_i
         )
 
 
-    def saveAll(self, fileName, extraData={}):
+    def saveAll(self, fileName):
         '''
         Save all the simulated data that has been recorded into a file.
 
@@ -609,9 +612,6 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         ----------
         fileName : string
             Path and name of the file
-
-        extraData : dict, optional
-            A dictionary of {nameStr : obj} of extra objects to save
         '''
         out = DataStorage.open(fileName, 'w')
 
@@ -619,35 +619,34 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         out['net_attr'] = self.getAttrDictionary()
         
         # Save spikes
-        out['spikeMon_e'] = self._getSpikeMonData(self.spikeMon_e)
+        if (self.spikeMon_e is not None):
+            out['spikeMon_e'] = self._getSpikeMonData(self.spikeMon_e,
+                    self.E_pop[0])
+        if (self.spikeMon_i is not None):
+            out['spikeMon_i'] = self._getSpikeMonData(self.spikeMon_i,
+                    self.I_pop[0])
 
-        #out['spikeMon_e'] = {
-        #        'status'    : nest.GetStatus(spikeMon_e)[0],
-        #        'gid_start' : ei_net.E_pop[0]
-        #    }
-        #out['spikeMon_i'] = {
-        #        'status'    : nest.GetStatus(spikeMon_i)[0],
-        #        'gid_start' : ei_net.I_pop[0]
-        #    }
-        #
-        #if (len(ei_net.PC) != 0):
-        #    out['pc_spikeMon'] = {
-        #            'status'    : nest.GetStatus(pc_spikeMon)[0],
-        #            'gid_start' : ei_net.PC[0]
-        #        }
+        for label, vals in self._extraSpikeMons.iteritems():
+            assert(label not in out.keys())
+            out[label] = self._getSpikeMonData(vals[0], vals[1])
+
+
         
-        ##Save state variables
-        #out['stateMon_e'] = nest.GetStatus(stateMon_e)
-        #out['stateMon_i'] = nest.GetStatus(stateMon_i)
-        #out['stateMonF_e']  = nest.GetStatus(stateMonF_e)
+        #Save state variables
+        out['stateMon_e']   = nest.GetStatus(self.stateMon_e)
+        out['stateMon_i']   = nest.GetStatus(self.stateMon_i)
+        for label, val in self._extraStateMons.iteritems():
+            assert(label not in out.keys())
+            out[label] = nest.GetStatus(val)
 
         out.close()
 
 
-    def _getSpikeMonData(self, mon):
+    def _getSpikeMonData(self, mon, gidStart):
         '''
         Generate a dictionary of a spike data from the monitor ``mon``
         '''
-        return nest.GetStatus(mon)
-
+        st = nest.GetStatus(mon)[0]
+        st['events']['senders'] -= gidStart
+        return st
 
