@@ -240,7 +240,6 @@ for jobNum in jobNums:
     output_fname = in_fname
     d = DataStorage.open(in_fname + ".h5", 'r')
     options     = d['options']
-    ei_net      = d['ei_net']
     stateMonF_e = d['stateMonF_e']
     
     
@@ -262,7 +261,7 @@ for jobNum in jobNums:
         print "n_id: ", n_id
         sig = stateMonF_e[n_id]['events']['I_clamp_GABA_A']
         times = stateMonF_e[n_id]['events']['times']
-        sig, times = downSample(sig, 10, times)
+        #sig, times = downSample(sig, 10, times)
         dt = times[1] - times[0]
         sig = butterBandPass(sig, dt*1e-3, 20, 200)
         slice = 2. / (options['theta_freq'] * 1e-3) / dt

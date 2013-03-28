@@ -43,10 +43,11 @@ stateRecF_e = choice(ei_net.E_pop, NSample, replace=False)
 
 stateMonF_params = {
         'withtime' : True,
-        'interval' : 0.1,
+        'interval' : options.sim_dt*10,
         'record_from' : ['I_clamp_GABA_A']
 }
-stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params)
+stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params,
+        'stateMonF_e')
 
 
 ################################################################################
@@ -57,7 +58,7 @@ ei_net.endSimulation()
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(options.output_dir,
         options.fileNamePrefix, options.job_num)
-ei_net.saveAll(output_fname, extraData={'stateMonF_e' : stateMonF_e})
+ei_net.saveAll(output_fname)
 
 ################################################################################
 
