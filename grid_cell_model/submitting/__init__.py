@@ -19,4 +19,4 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__all__ = ["submitters"]
+__all__ = ["python", "submitters", "factory"]

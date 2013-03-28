@@ -20,11 +20,12 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from default_params import defaultParameters
-from submitting.submitters         import *
+from default_params         import defaultParameters
+from submitting.factory     import SubmitterFactory
+from submitting.submitters  import ArgumentCreator
 
 
-CLUSTER = False  # if True, submit on a cluster using qsub
+ENV = 'workstation'
 
 
 parameters = defaultParameters
@@ -54,25 +55,21 @@ parameters['delay']             = 0.1
 startJobNum = 0
 numRepeat = 1
 
-# Workstation parameters
-programName         = 'python simulation_bump_fitting.py'
-blocking            = True
-
-# Cluster parameters
-cluster_scriptName  = 'cluster_submit.sh simulation_bump_fitting.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:05:00 -pe openmpi_smp8_mark2 16"
-qsub_output_dir     = parameters['output_dir']
-
 ac = ArgumentCreator(parameters)
 
-iterparams = {
-        'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
-        #'noise_sigma' : [150.0]
-}
-ac.insertDict(iterparams, mult=False)
+#iterparams = {
+#        'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
+#        #'noise_sigma' : [150.0]
+#}
+#ac.insertDict(iterparams, mult=False)
 
-if CLUSTER:
-    submitter = QsubSubmitter(ac, cluster_scriptName, qsub_params, qsub_output_dir)
-else:
-    submitter = GenericSubmitter(ac, programName, blocking=blocking)
+
+# Submitting
+appName = 'simulation_bump_fitting.py'
+rtLimit = '00:05:00'
+outputDir = parameters['output_dir']
+blocking  = True
+
+submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
+        rtLimit=rtLimit, output_dir=outputDir, blocking=blocking);
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)

@@ -193,7 +193,7 @@ class ProgramSubmitter(object):
 
     def RunProgram(self, args, job_num):
         '''Should be overridden; args: argument string'''
-        raise NotImplementedException("ProgramSubmitter.getProgramCommand")
+        raise NotImplementedError()
 
 
     def submitAll(self, startJobNum, repeat=1, dry_run=False):
@@ -275,7 +275,8 @@ class QsubSubmitter(ProgramSubmitter):
     '''
     Submit jobs on a machine that supports qsub command (cluster)
     '''
-    def __init__(self, argCreator, scriptName, qsub_params, qsub_output_dir):
+    def __init__(self, argCreator, scriptName, qsub_params, qsub_output_dir,
+            blocking=True):
         ProgramSubmitter.__init__(self, argCreator)
         self._scriptName        = scriptName
         self._qsub_params       = qsub_params
@@ -291,4 +292,5 @@ class QsubSubmitter(ProgramSubmitter):
             err = os.system(cmdStr)
             if err != 0:
                 raise SubmitException()
+
 
