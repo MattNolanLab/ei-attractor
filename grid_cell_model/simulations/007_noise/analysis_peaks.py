@@ -36,7 +36,6 @@ print matplotlib.__version__, matplotlib.__path__
 
 
 # Other
-figSize = (7,5)
 plt.rcParams['font.size'] = 12
 
 
@@ -109,8 +108,103 @@ def plotNoiseSigma(noise_sigma, res_means, res_stds, newFigure=True, ylabel="",
         plt.title(title, x=-0.5, y=1.1, ha='left', va='bottom', weight='bold',
                 size='x-large')
 
-    ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('left')
+
+def plotAC(AC, times, NExamples=None, title="", TUnits='ms',
+        ylabel="Correlation"):
+    if (NExamples is None):
+        N = len(AC)
+    elif (NExamples >= 0):
+        N = NExamples
+    else:
+        raise ValueError("NExamples must be None or non-negative.")
+    AC = np.array(AC)
+
+    ax = plt.gca()
+    globalAxesSettings(ax)
+    plt.hold('on')
+
+    ACMean = np.mean(AC, axis=0)
+    ACstd  = np.std(AC, axis=0)
+    plt.fill_between(times, ACMean - ACstd, ACMean + ACstd, alpha=0.1,
+            linewidth=0)
+    plt.plot(times, ACMean)
+    plt.xlabel('Time ({0:s})'.format(TUnits))
+    if (ylabel != ""):
+        plt.ylabel(ylabel)
+        ytickLabel = True
+    else:
+        ytickLabel = False
+
+    m = 0.01
+    ax.yaxis.set_ticks([-1, 0, 1])
+    if (not ytickLabel):
+        ax.yaxis.set_ticklabels([])
+    #plt.margins(m)
+    ymin, ymax = absoluteLimits(-1, 1, m)
+    plt.ylim([ymin, ymax])
+    ax.xaxis.set_major_locator(LinearLocator(3))
+    ax.yaxis.grid(True)
+
+    if (title != ""):
+        plt.title(title)
+
+
+
+def plotACs(AC_all, times, noise_sigma):
+    acFigSize = (6.2, 2.25)
+    plt.figure(figsize=acFigSize)
+    N = len(AC_all)
+    
+    for idx in range(N):
+        if (idx == 0):
+            ylabel = "Correlation"
+        else:
+            ylabel = ""
+        plt.subplot(1, N, idx+1)
+        title = '{0} pA'.format(noise_sigma[idx])
+        plotAC(AC_all[idx], times, ylabel=ylabel, title=title)
+
+    plt.tight_layout()
+    plt.savefig(output_dir + "/peak_analysis_AC.pdf")
+
+
+def plotSigmas(noise_sigma, peaks_mean, peaks_std, freq_mean, freq_std,
+        acval_mean, acval_std):
+    sigmaFigSize = (7,5)
+    plt.figure(figsize=sigmaFigSize)
+    
+    plt.subplot2grid((2, 2), (0, 0))
+    plotNoiseSigma(noise_sigma, peaks_mean, peaks_std,
+            xlabel = "",
+            ylabel="E cell max. $I_{syn}$ / $\\theta$ \n (pA)",
+            title="A",
+            newFigure=False)
+    plt.gca().set_xticklabels([])
+    loc = MaxNLocator(nbins=4)
+    plt.gca().yaxis.set_major_locator(loc)
+    #ymin,ymax = computeMinMaxMargin(peaks_mean, peaks_std, margin=0.1)
+    ymin,ymax = absoluteLimits(0, 11000, margin=0.05)
+    plt.ylim([ymin, ymax])
+    
+    
+    plt.subplot2grid((2, 2), (1, 0))
+    plotNoiseSigma(noise_sigma, freq_mean, freq_std,
+            ylabel="Frequency (Hz)",
+            title="B",
+            newFigure=False)
+    loc = MaxNLocator(nbins=4, steps=[10])
+    plt.gca().yaxis.set_major_locator(loc)
+    
+    plt.subplot2grid((2, 2), (1, 1))
+    plotNoiseSigma(noise_sigma, acval_mean, acval_std, 
+            ylabel="Mean\nauto-correlation",
+            title="C",
+            newFigure=False)
+    plt.tight_layout(w_pad=0.0, h_pad=2.5)
+    
+    plt.savefig(output_dir + "/peak_analysis.pdf")
+
+
 
 def computeMinMaxMargin(sig_mean, sig_std=0, margin=0):
     sm = np.array(sig_mean)
@@ -131,6 +225,7 @@ def absoluteLimits(min, max, margin):
 output_dir = 'output_local'
 fileNamePrefix = ''
 
+AC_all      = []
 peaks_mean  = []
 peaks_std   = []
 noise_sigma = []
@@ -161,8 +256,9 @@ for jobNum in jobNums:
 
     freq   = [] # Frequency of input signal
     acval  = [] # Auto-correlation at the corresponding frequency
-    #for n_id in range(len(stateMonF_e)):
-    for n_id in range(5):
+    acVec  = []
+    for n_id in range(len(stateMonF_e)):
+    #for n_id in range(5):
         print "n_id: ", n_id
         sig = stateMonF_e[n_id]['events']['I_clamp_GABA_A']
         times = stateMonF_e[n_id]['events']['times']
@@ -172,6 +268,7 @@ for jobNum in jobNums:
         slice = 2. / (options['theta_freq'] * 1e-3) / dt
         ac = autoCorrelation(sig - np.mean(sig), max_lag=slice-1, norm=True)
         ext_idx, ext_t = localExtrema(ac)
+        acVec.append(ac)
 
         #plt.figure()
         #plt.plot(times[0:slice], ac[0:slice])
@@ -185,43 +282,20 @@ for jobNum in jobNums:
         freq.append(f)
         acval.append(a)
 
+    AC_all.append(acVec)
     freq_mean.append(np.mean(freq))
     freq_std.append(np.std(freq))
     acval_mean.append(np.mean(acval))
     acval_std.append(np.std(acval))
 
     
-plt.figure(figsize=figSize)
+###############################################################################
+plotSigmas(noise_sigma, peaks_mean, peaks_std, freq_mean, freq_std, acval_mean,
+        acval_std)
 
-plt.subplot2grid((2, 2), (0, 0))
-plotNoiseSigma(noise_sigma, peaks_mean, peaks_std,
-        xlabel = "",
-        ylabel="E cell max. $I_{syn}$ / $\\theta$ \n (pA)",
-        title="A",
-        newFigure=False)
-plt.gca().set_xticklabels([])
-loc = MaxNLocator(nbins=4)
-plt.gca().yaxis.set_major_locator(loc)
-#ymin,ymax = computeMinMaxMargin(peaks_mean, peaks_std, margin=0.1)
-ymin,ymax = absoluteLimits(0, 11000, margin=0.05)
-plt.ylim([ymin, ymax])
+AC_times = np.arange(slice)
+plotACs(AC_all, AC_times, noise_sigma)
 
 
-plt.subplot2grid((2, 2), (1, 0))
-plotNoiseSigma(noise_sigma, freq_mean, freq_std,
-        ylabel="Frequency (Hz)",
-        title="B",
-        newFigure=False)
-loc = MaxNLocator(nbins=4, steps=[10])
-plt.gca().yaxis.set_major_locator(loc)
-
-plt.subplot2grid((2, 2), (1, 1))
-plotNoiseSigma(noise_sigma, acval_mean, acval_std, 
-        ylabel="Mean\nauto-correlation",
-        title="C",
-        newFigure=False)
-plt.tight_layout(w_pad=0.0, h_pad=2.5)
-
-plt.savefig(output_dir + "/peak_analysis.pdf")
-
+###############################################################################
 plt.show()
