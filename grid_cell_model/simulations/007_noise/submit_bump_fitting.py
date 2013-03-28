@@ -31,7 +31,7 @@ ENV = 'workstation'
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 10e3  # ms
+parameters['time']              = 2e3  # ms
 parameters['nthreads']          = 8
 
 parameters['output_dir']        = 'output_local'
@@ -45,23 +45,21 @@ parameters['N_place_cells']     = 30*30
 
 # Gamma analysis parameters
 parameters['gammaNSample']      = 0.05      # fraction
-parameters['gammaRangeLow']     = 50.0      # Hz
-parameters['gammaRangeHigh']    = 100.0     # Hz
 
 parameters['noise_sigma']       = 150.0       # pA
 parameters['delay']             = 0.1
 
 
-startJobNum = 0
+startJobNum = 10
 numRepeat = 1
 
 ac = ArgumentCreator(parameters)
 
-#iterparams = {
-#        'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
-#        #'noise_sigma' : [150.0]
-#}
-#ac.insertDict(iterparams, mult=False)
+iterparams = {
+        #'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
+        'noise_sigma' : [150.0]
+}
+ac.insertDict(iterparams, mult=False)
 
 
 # Submitting
