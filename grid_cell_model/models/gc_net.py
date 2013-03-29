@@ -442,3 +442,27 @@ class GridCellNetwork(object):
         print("   Construction: {0} s".format(self.constructionTime()))
         print("   Simulation  : {0} s".format(self.simulationTime()))
         print("   Total       : {0} s".format(self.totalTime()))
+
+
+    def getPreferredDirection(pos_x, pos_y):
+        '''
+        Get a preferred direction for a neuron.
+
+        Parameters
+        ----------
+        pos_x/y : int
+            Position of neuron in 2d sheet
+        '''
+        pos4_x = pos_x % 2
+        pos2_y = pos_y % 2
+        if pos4_x == 0:
+            if pos2_y == 0:
+                return [-1, 0] # Left
+            else:
+                return [0, -1] # Down
+        else:
+            if pos2_y == 0:
+                return [0, 1] # up
+            else:
+                return [1, 0] # Right
+

@@ -1,5 +1,5 @@
 #
-#   common.py
+#   submitters.py
 #
 #     Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #     
@@ -16,169 +16,11 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-
 import os
-from otherpkg.log import *
-
-
-# Get a preferred direction for a neuron
-def getPreferredDirection(pos_x, pos_y):
-# pos_x/y - position of neuron in 2d sheet
-    pos4_x = pos_x % 2
-    pos2_y = pos_y % 2
-    if pos4_x == 0:
-        if pos2_y == 0:
-            return [-1, 0] # Left
-        else:
-            return [0, -1] # Down
-    else:
-        if pos2_y == 0:
-            return [0, 1] # up
-        else:
-            return [1, 0] # Right
-
-
-
-################################################################################
-#                               Exceptions
-################################################################################
-
-class NotImplementedException(Exception):
-    def __init__(self, method, msg=None):
-        self.method = method
-        self.msg = msg
-
-    def __str__(self):
-        retstr = "Method {0} has not been implemented!".format(self.method)
-        if msg is not None:
-            retstr += "Additional message: " + self.msg
-        return retstr
-
-class DimensionException(Exception):
-    def __init__(self, method, msg=None):
-        self.method = method
-        self.msg = msg
-
-    def __str__(self):
-        retstr = "Wrong dimensions in {0}".format(self.method)
-        if msg is not None:
-            retstr += "Additional message: " + self.msg
-        return retstr
-
-class SubmitException(Exception):
-    pass
-
-################################################################################
-#                      Argument processing and setup -
-#             to submit jobs with multiple parameter sweeps/runs
-################################################################################
-
-class ArgumentCreator(object):
-    '''
-    Receives a dictionary with arguments and extracts a list of argument
-    dictionaries, for submitting batch jobs. Either on a cluster or a general
-    multiprocessor machine.
-
-    The constructor receives a dictionary with default, non-batch changing
-    optioins. After that, one can insert one of the following (see doc for each
-    method)
-    '''
-    
-    def __init__(self, defaultOpts, printout=False):
-        '''
-        defaultOpts should be a dictionary (not a list)
-        '''
-        self._do = defaultOpts
-        self._resList = [defaultOpts]
-        self._printData = []
-        self.printout = printout
-
-        # remove job_num parameter from the list, it should be defined during
-        # job submission
-        try:
-            del self._do["job_num"]
-        except KeyError:
-            pass
-
-    def __str__(self):
-        ret = ''
-        for it in range(len(self._resList)):
-            ret += 'Parameter set no. ' + str(it) + '\n'
-            for key, val in self._resList[it].iteritems():
-                ret += '\t' + key + ': ' + str(val) + '\n'
-
-        return ret
-
-    def insertDict(self, d, mult=True):
-        '''
-        Insert a dictionary with the parameter name and a list of values. If
-        mult==True, then for each parameter value in 'd', copy the parameter set
-        with the value from 'd'. In other words, this allows to create
-        multidimensional parameters batch jobs. If mult==false, then the size of
-        list in d must be the same size as the total number of items in the
-        resulting parameter list.
-        '''
-        if (self.printout):
-            for key, vals in d.iteritems():
-                self._printData.append(key)
-
-        if mult == True:
-            # Create potentially multidim list (but flattened)
-            for key, vals in d.iteritems():
-                newList = []
-                for val in vals:
-                    for oldDict in self._resList:
-                        newDict = dict(oldDict)
-                        newDict[key] = val
-                        newList.append(newDict)
-                self._resList = newList
-        else:
-            # Check if list in d is the same size as _resList and insert
-            if self.listSize() == 1:
-                for it in range(len(d[d.keys()[0]]) - 1):
-                    self._resList.append(dict(self._resList[0]))
-
-            for key, vals in d.iteritems():
-                if len(vals) != self.listSize():
-                    raise DimensionException("ArgumentCreator.insertDict",
-                            "Dictionary list must be the same size as the total number of items in the argument list")
-                for it in range(len(vals)):
-                    self._resList[it][key] = vals[it]
-
-
-    def getOptionDict(self, i):
-        '''
-        Get option dictionary from the batch list, with index i
-        '''
-        return self._resList[i]
-
-    def listSize(self):
-        '''Return the size of the list of option dictionaries'''
-        return len(self._resList)
-
-    def getArgString(self, i, job_num):
-        '''
-        Get the argument string which should be passed on to the submitted
-        program (simulation).
-        '''
-        parStr = ''
-        for key, val in self._resList[i].iteritems():
-            if val is None:
-                parStr += ' --' + str(key)
-            else:
-                parStr += ' --' + str(key) + ' ' + str(val)
-        parStr += ' --job_num ' + str(job_num)
-        return parStr
-
-    def getPrintData(self):
-        return self._printData
-
-    def getPrintArgString(self, it):
-        res = ''
-        for arg in self._printData:
-            res += arg + ' {0:3.3f}'.format(self._resList[it][arg]) + ' '
-        return res
+import errno
+from datetime       import datetime
+from gc_exceptions  import SubmitError
+from otherpkg.log   import log_warn, log_info
 
 
 
@@ -188,8 +30,65 @@ class ProgramSubmitter(object):
     inherit from this class and implement/override the necessary methods.
     '''
 
-    def __init__(self, argCreator):
+    def __init__(self, argCreator, output_dir, label, timePrefix,
+            forceExisting=True):
+        '''
+        Create the submitter object.
+
+        Parameters
+        ----------
+
+        argCreator : ArgumentCreator
+
+        output_dir : string
+            Output directory to save data to. Unrelated to the actual output
+            directory of the program that will run as the submitter cannot know
+            how to force the program to output its data to this directory
+
+        appLabel   : string
+            Simulation run label. Each simulation will have its own directory
+            created that will contain this label
+
+        timePrefix : bool
+            Whether to prefix the label with time before the output directory
+            will be created.
+
+        forceExisting : bool, optional
+            When True, will not raise an error if the output directory already exists.
+        '''
         self._ac = argCreator
+        self._output_dir = output_dir
+        self._label      = label
+        if (label == ''):
+            self._timePrefix = True
+        else:
+            self._timePrefix = timePrefix
+        self._forceExisting = forceExisting
+
+        self._outputDir = self._createOutputDir()
+        try:
+            os.makedirs(self.outputDir())
+        except OSError as e:
+            if (not self._forceExisting):
+                raise e
+            if (e.errno == errno.EEXIST):
+                log_warn("submitters", "Output directory already exists. This"
+                    + " might overwrite files.")
+            else:
+                raise e
+
+
+    def _createOutputDir(self):
+        if (self._timePrefix):
+            nowStr = datetime.now().strftime("%Y-%m-%dT%H-%M-%S_")
+        else:
+            nowStr = ''
+        ret = "{0}/{1}{2}".format(self._output_dir, nowStr, self._label)
+        return ret.replace(" ", "_")
+
+    def outputDir(self):
+        return self._outputDir
+
 
     def RunProgram(self, args, job_num):
         '''Should be overridden; args: argument string'''
@@ -252,8 +151,9 @@ class GenericSubmitter(ProgramSubmitter):
     Submit jobs on a generic multiprocessor machine, either by blocking them, or
     concurrently.
     '''
-    def __init__(self, argCreator, appName, blocking=True):
-        ProgramSubmitter.__init__(self, argCreator)
+    def __init__(self, argCreator, appName, output_dir, label, timePrefix, blocking=True):
+        ProgramSubmitter.__init__(self, argCreator, output_dir, label,
+                timePrefix)
         self._appName = appName
         self._blocking = blocking
 
@@ -268,29 +168,29 @@ class GenericSubmitter(ProgramSubmitter):
         if not dry_run:
             err = os.system(cmdStr)
             if err != 0:
-                raise SubmitException()
+                raise SubmitError()
 
 
 class QsubSubmitter(ProgramSubmitter):
     '''
     Submit jobs on a machine that supports qsub command (cluster)
     '''
-    def __init__(self, argCreator, scriptName, qsub_params, qsub_output_dir,
-            blocking=True):
-        ProgramSubmitter.__init__(self, argCreator)
+    def __init__(self, argCreator, scriptName, qsub_params, output_dir, label,
+            timePrefix, blocking=True):
+        ProgramSubmitter.__init__(self, argCreator, output_dir, label,
+                timePrefix)
         self._scriptName        = scriptName
         self._qsub_params       = qsub_params
-        self._qsub_output_dir   = qsub_output_dir
 
     def RunProgram(self, args, job_num, dry_run):
         cmdStr = 'qsub ' + self._qsub_params + ' ' + \
-                "-o " + self._qsub_output_dir + ' ' + \
+                "-o " + self.outputDir() + ' ' + \
                 "-N job{0:05} ".format(job_num) + \
                 self._scriptName + ' ' + args
         log_info('root.QsubSubmitter', 'Submitting command: \n' + cmdStr)
         if not dry_run:
             err = os.system(cmdStr)
             if err != 0:
-                raise SubmitException()
+                raise SubmitError()
 
 
