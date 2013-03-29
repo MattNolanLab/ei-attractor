@@ -54,7 +54,7 @@ class ClusterSubmitter(QsubSubmitter):
             ignored on a cluster. The commands are always **non-blocking**.
         '''
         self.submitScript = 'cluster_submit.sh '
-        self.default_qsub_params = '-P inf_ndtc -cwd -j y -pe OpenMP 8 ' 
+        self.default_qsub_params = ' ' 
         self.appName = appName
         scriptName = self.submitScript + progName
         self.rtLimit  = rtLimit

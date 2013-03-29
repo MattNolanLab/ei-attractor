@@ -20,11 +20,13 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#$ -P inf_ndtc
+#$ -cwd
+#$ -j y
+#$ -pe OpenMP 4
+
 # Initialise environment module
-
 . /etc/profile.d/modules.sh
-
-# Use python 2.6
 
 module load python/2.6.6
 
@@ -37,4 +39,4 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
 
 
 # Run the program
-python2.6 $* 
+python $* 
