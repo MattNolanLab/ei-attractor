@@ -52,7 +52,7 @@ for trial_idx in range(options.ntrials):
     stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params,
             'stateMonF_e')
     
-    ei_net.simulate(options.time, printTime=True)
+    ei_net.simulate(options.time, printTime=options.printTime)
     ei_net.endSimulation()
     out.append(ei_net.getAllData())
     ei_net.printTimes()

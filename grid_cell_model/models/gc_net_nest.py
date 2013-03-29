@@ -194,7 +194,7 @@ class NestGridCellNetwork(GridCellNetwork):
         '''Run the simulation'''
         self.endConstruction()
         self.beginSimulation()
-        nest.SetKernelStatus({"print_time": printTime})
+        nest.SetKernelStatus({"print_time": bool(printTime)})
         nest.Simulate(time)
 
 

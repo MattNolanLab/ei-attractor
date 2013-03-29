@@ -32,6 +32,7 @@ defaultParameters = {
         "Ni"                    :   34,
         "delay"                 :   0.1,          # ms
         "nthreads"              :   1,
+        "printTime"             :   0,            # This is boolean
 
         "rat_dt"                :   20.0,         # ms
         "ratVelFName"           : '../../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',

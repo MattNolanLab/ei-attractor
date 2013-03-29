@@ -32,10 +32,13 @@ module load python/2.6.6
 
 
 BASE=../../
-export PYTHONPATH="/exports/work/inf_ndtc/s0966762/usr/local/lib/python2.6/site-packages:$BASE"
-
 export LOCAL_DIR=/exports/work/inf_ndtc/lsolanka
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
+export PYTHONPATH=$PYTHONPATH:$LOCAL_DIR/GridCells/grid_cell_model
+export PYTHONUSERBASE=$LOCAL_DIR/usr/local/
+
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib/nest
+export LD_LIBRARY_PATH
 
 
 # Run the program

@@ -58,6 +58,7 @@ def getOptParser():
     optParser.add_option("--ntrials",              type="int",    help="Number of trials for the parameter set")
     optParser.add_option("--delay",                type="float",  help="Synaptic delay (ms)")
     optParser.add_option("--nthreads",             type="int",    help="Number of threads (NEST)")
+    optParser.add_option("--printTime",            type="int",    help="Whether to print time (0=False, 1=True)")
 
     optParser.add_option("--Ivel",                 type="float",  help="Velocity input (In constant velocity currents, pA)")
     optParser.add_option("--bumpCurrentSlope",     type="float",  help="Slope of the bump-current linear relationsip (starts at zero, pA/(cm/s)")

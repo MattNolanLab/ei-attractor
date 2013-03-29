@@ -30,7 +30,7 @@ class ClusterSubmitter(QsubSubmitter):
     directory. This script will be run by the qsub command.
     '''
 
-    def __init__(self, argCreator, appName, rtLimit, outputDir, output_dir,
+    def __init__(self, argCreator, appName, rtLimit, outputDir,
             label, timePrefix, blocking):
         '''
         Initialize.
@@ -56,9 +56,9 @@ class ClusterSubmitter(QsubSubmitter):
         self.submitScript = 'cluster_submit.sh '
         self.default_qsub_params = ' ' 
         self.appName = appName
-        scriptName = self.submitScript + progName
+        scriptName = self.submitScript + appName
         self.rtLimit  = rtLimit
-        qsub_params = self.default_qsub_params + '-l h_rt ' + rtLimit
+        qsub_params = self.default_qsub_params + '-l h_rt=\'' + rtLimit + '\''
         QsubSubmitter.__init__(self, argCreator, scriptName, qsub_params,
                 outputDir, label, timePrefix, blocking)
 
@@ -72,7 +72,7 @@ class WorkstationSubmitter(GenericSubmitter):
     This will submit the python command on a generic processor machine.
     '''
 
-    def __init__(self, argCreator, appName, rtLimit, output_dir, label,
+    def __init__(self, argCreator, appName, rtLimit, outputDir, label,
             timePrefix, blocking):
         '''
         Initialize the submitter.
@@ -97,6 +97,6 @@ class WorkstationSubmitter(GenericSubmitter):
         '''
         self.progName = 'python '
         commandStr = self.progName + appName
-        GenericSubmitter.__init__(self, argCreator, commandStr, output_dir,
+        GenericSubmitter.__init__(self, argCreator, commandStr, outputDir,
                 label, timePrefix, blocking=blocking)
 
