@@ -498,13 +498,12 @@ class NestGridCellNetwork(GridCellNetwork):
     def getAttrDictionary(self):
         d = {}
 
-        d['PC'             ] = self.PC
         d['e_neuron_params'] = self.e_neuron_params
         d['i_neuron_params'] = self.i_neuron_params
         d['B_GABA'         ] = self.B_GABA
-        d['E_pop'          ] = self.E_pop
-        d['I_pop'          ] = self.I_pop
-        d['PC'             ] = self.PC
+        d['E_pop'          ] = np.array(self.E_pop)
+        d['I_pop'          ] = np.array(self.I_pop)
+        d['PC'             ] = np.array(self.PC)
         d['net_Ne'         ] = self.net_Ne
         d['net_Ni'         ] = self.net_Ni
         d['rat_pos_x'      ] = self.rat_pos_x
@@ -603,18 +602,21 @@ class BasicGridCellNetwork(NestGridCellNetwork):
             self.stateMon_i
         )
 
-
-    def saveAll(self, fileName):
+  
+    def _getSpikeMonData(self, mon, gidStart):
         '''
-        Save all the simulated data that has been recorded into a file.
-
-        Parameters
-        ----------
-        fileName : string
-            Path and name of the file
+        Generate a dictionary of a spike data from the monitor ``mon``
         '''
-        out = DataStorage.open(fileName, 'w')
+        st = nest.GetStatus(mon)[0]
+        st['events']['senders'] -= gidStart
+        return st
 
+
+    def getAllData(self):
+        '''
+        Save all the simulated data into a dictionary and return it.
+        '''
+        out = {}
         out['options']  = self.no._einet_optdict
         out['net_attr'] = self.getAttrDictionary()
         
@@ -639,14 +641,23 @@ class BasicGridCellNetwork(NestGridCellNetwork):
             assert(label not in out.keys())
             out[label] = nest.GetStatus(val)
 
+        return out
+
+
+    def saveAll(self, fileName):
+        '''
+        Save all the simulated data that has been recorded into a file.
+
+        Parameters
+        ----------
+        fileName : string
+            Path and name of the file
+        '''
+        out = DataStorage.open(fileName, 'w')
+        d = self.getAllData()
+        for key, val in d.iteritems():
+            out[key] = val
         out.close()
 
 
-    def _getSpikeMonData(self, mon, gidStart):
-        '''
-        Generate a dictionary of a spike data from the monitor ``mon``
-        '''
-        st = nest.GetStatus(mon)[0]
-        st['events']['senders'] -= gidStart
-        return st
 
