@@ -23,16 +23,13 @@
 import numpy    as np
 import logging  as lg
 
-from scipy              import linspace
-from numpy.random       import rand, randn
+from numpy.random import rand, randn
 
-from submitting.submitters  import *
-from gc_net                 import *
-from place_input            import *
-from place_cells            import *
-from data_storage           import DataStorage
+from gc_net       import GridCellNetwork
+from place_input  import PlaceCellInput
+from place_cells  import UniformBoxPlaceCells
+from data_storage import DataStorage
 
-import random
 import nest
 
 
@@ -351,7 +348,7 @@ class NestGridCellNetwork(GridCellNetwork):
             self._prefDirs_mask_e = np.ndarray((len(self.E_pop), 2))
             self._prefDirs_mask_e[:, :] = 1.0
         else:
-            raise NotImplementedException("NestGridCellNetwork.setVelocityCurrentInput_e.prefDirs_mask")
+            raise NotImplementedError()
 
 
         # Load velocities into nest: they are all shared among all iaf_gridcells

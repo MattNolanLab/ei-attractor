@@ -63,10 +63,8 @@ import logging  as lg
 import random
 import time
 
-from submitting.submitters import *
+from gc_exceptions         import NotImplementedException
 from analysis.image        import Position2D, remapTwistedTorus
-
-from exceptions            import NotImplementedError, RuntimeError
 
 
 __all__ = ['GridCellNetwork']
@@ -244,7 +242,7 @@ class GridCellNetwork(object):
                 a.x = x_e_norm
                 a.y = y_e_norm
 
-                pd_e = getPreferredDirection(x, y)
+                pd_e = self.getPreferredDirection(x, y)
                 self.prefDirs_e[it, :] = pd_e
 
                 pd_norm_e.x = 1. * pd_e[0] / self.Ni_x
@@ -285,7 +283,7 @@ class GridCellNetwork(object):
                 a.x = x_i_norm
                 a.y = y_i_norm
 
-                pd_i = getPreferredDirection(x, y)
+                pd_i = self.getPreferredDirection(x, y)
                 self.prefDirs_i[it, :] = pd_i
 
                 pd_norm_i.x = 1. * pd_i[0] / self.Ne_x
@@ -444,7 +442,7 @@ class GridCellNetwork(object):
         print("   Total       : {0} s".format(self.totalTime()))
 
 
-    def getPreferredDirection(pos_x, pos_y):
+    def getPreferredDirection(self, pos_x, pos_y):
         '''
         Get a preferred direction for a neuron.
 

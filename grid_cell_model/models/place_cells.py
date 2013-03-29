@@ -19,7 +19,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from submitting.submitters import NotImplementedException
+from gc_exceptions import NotImplementedException
 
 
 __all__ = ['PlaceCells', 'UniformBoxPlaceCells']
