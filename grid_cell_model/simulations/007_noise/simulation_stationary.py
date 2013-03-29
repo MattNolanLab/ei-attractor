@@ -1,8 +1,7 @@
-#!/usr/bin/env python
 #
-#   simulation_stationary.py
+#   simulation_bump_fitting.py
 #
-#   Main simulation run: Simulation of a stationary bump that does nothing.
+#   Main simulation run: Fitting a Gaussian to the bump and frequency analysis.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -23,6 +22,7 @@ from numpy.random       import choice
 
 from models.parameters  import getOptParser
 from models.gc_net_nest import BasicGridCellNetwork
+from data_storage       import DataStorage
 
 
 parser          = getOptParser()
@@ -31,36 +31,36 @@ parser.add_option("--gammaNSample",   type="float",   help="Fraction of neurons 
 (options, args) = parser.parse_args()
 
 
+out = []
 ################################################################################
-
-ei_net = BasicGridCellNetwork(options, simulationOpts=None)
-
-const_v = [00.0, 0.0]
-ei_net.setConstantVelocityCurrent_e(const_v)
-
-
-NSample = int(options.gammaNSample * ei_net.net_Ne)
-stateRecF_e = choice(ei_net.E_pop, NSample, replace=False)
-
-stateMonF_params = {
-        'withtime' : True,
-        'interval' : options.sim_dt*10,
-        'record_from' : ['I_clamp_GABA_A']
-}
-stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params,
-        'stateMonF_e')
-
-
-################################################################################
-
-ei_net.simulate(options.time, printTime=True)
-ei_net.endSimulation()
-
+for trial_idx in range(options.ntrials):
+    print("\n\t\tStarting trial no. {0}\n".format(trial_idx))
+    ei_net = BasicGridCellNetwork(options, simulationOpts=None)
+    
+    const_v = [00.0, 0.0]
+    ei_net.setConstantVelocityCurrent_e(const_v)
+    
+    
+    NSample = int(options.gammaNSample * ei_net.net_Ne)
+    stateRecF_e = choice(ei_net.E_pop, NSample, replace=False)
+    
+    stateMonF_params = {
+            'withtime' : True,
+            'interval' : options.sim_dt*10,
+            'record_from' : ['I_clamp_GABA_A']
+    }
+    stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params,
+            'stateMonF_e')
+    
+    ei_net.simulate(options.time, printTime=True)
+    ei_net.endSimulation()
+    out.append(ei_net.getAllData())
+    ei_net.printTimes()
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(options.output_dir,
         options.fileNamePrefix, options.job_num)
-ei_net.saveAll(output_fname)
-
+d = DataStorage.open(output_fname, 'w')
+d["trials"] = out
+d.close()
 ################################################################################
 
-ei_net.printTimes()
