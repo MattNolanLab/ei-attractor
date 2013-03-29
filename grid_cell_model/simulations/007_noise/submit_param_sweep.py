@@ -34,24 +34,12 @@ blocking    = True
 timePrefix  = False
 numRepeat   = 1
 
-
 #p['time']              = 1199.9e3  # ms
 p['time']              = 2e3  # ms
 p['nthreads']          = 8
 p['ntrials']           = 2
 
-p['Ne']                = 34
-p['Ni']                = 34
-
-p['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
-p['gridSep']           = 70.0      # cm, grid field inter-peak distance
-p['N_place_cells']     = 30*30
-
-# Gamma analysis parameters
-p['gammaNSample']      = 0.05      # fraction
-
 p['noise_sigma']       = 150.0     # pA
-p['delay']             = 0.1
 
 
 ###############################################################################

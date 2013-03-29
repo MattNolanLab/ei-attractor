@@ -34,37 +34,23 @@ blocking    = True
 timePrefix  = False
 numRepeat = 1
 
-
+###############################################################################
 
 #p['time']              = 1199.9e3  # ms
-p['time']              = 10e3  # ms
-p['ntrials']           = 1
+p['time']              = 2e3  # ms
 p['nthreads']          = 8
+p['ntrials']           = 1
 
-p['Ne']                = 34
-p['Ni']                = 34
-
-p['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
-p['gridSep']           = 70.0      # cm, grid field inter-peak distance
-p['N_place_cells']     = 30*30
-
-# Gamma analysis params
-p['gammaNSample']      = 0.10      # fraction
-
-p['noise_sigma']       = 150.0       # pA
-p['delay']             = 0.1
-
-
-
+p['noise_sigma']       = 150.0     # pA
 
 ###############################################################################
+
 ac = ArgumentCreator(p)
 iterp = {
-        'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
-        #'noise_sigma' : [0.0]
+        #'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
+        'noise_sigma' : [0.0]
 }
 ac.insertDict(iterp, mult=False)
-
 
 ###############################################################################
 submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
