@@ -222,7 +222,7 @@ def absoluteLimits(min, max, margin):
 ###############################################################################
 
 
-output_dir = 'output_local'
+output_dir = 'output_local/tmp_bump_fitting'
 fileNamePrefix = ''
 
 AC_all      = []
@@ -238,7 +238,8 @@ for jobNum in jobNums:
     print "jobNum: ", jobNum
     in_fname = "{0}/{1}job{2:05}_output".format(output_dir, fileNamePrefix, jobNum)
     output_fname = in_fname
-    d = DataStorage.open(in_fname + ".h5", 'r')
+    ds = DataStorage.open(in_fname + ".h5", 'r')
+    d  = ds['trials'][0]
     options     = d['options']
     stateMonF_e = d['stateMonF_e']
     
@@ -261,7 +262,6 @@ for jobNum in jobNums:
         print "n_id: ", n_id
         sig = stateMonF_e[n_id]['events']['I_clamp_GABA_A']
         times = stateMonF_e[n_id]['events']['times']
-        #sig, times = downSample(sig, 10, times)
         dt = times[1] - times[0]
         sig = butterBandPass(sig, dt*1e-3, 20, 200)
         slice = 2. / (options['theta_freq'] * 1e-3) / dt

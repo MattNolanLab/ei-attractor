@@ -19,67 +19,53 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-from default_params import defaultParameters
-from submitting.submitters         import *
-from scipy.io       import savemat
-
-import logging  as lg
-import numpy    as np
+from default_params         import defaultParameters as p
+from submitting.factory     import SubmitterFactory
+from submitting.arguments   import ArgumentCreator
 
 
-lg.basicConfig(level=lg.DEBUG)
+# Submitting
+ENV         = 'workstation'
+simRootDir  =  'output_local'
+simLabel    =  'tmp_param_sweep'
+appName     = 'simulation_stationary.py'
+rtLimit     = '00:05:00'
+blocking    = True
+timePrefix  = False
+numRepeat   = 1
 
 
-CLUSTER = False  # if True, submit on a cluster using qsub
+#p['time']              = 1199.9e3  # ms
+p['time']              = 2e3  # ms
+p['nthreads']          = 8
+p['ntrials']           = 2
 
+p['Ne']                = 34
+p['Ni']                = 34
 
-parameters = defaultParameters
-
-#parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 2e3  # ms
-parameters['nthreads']          = 8
-
-parameters['output_dir']        = 'output_local'
-
-parameters['Ne']                = 34
-parameters['Ni']                = 34
-
-parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
-parameters['gridSep']           = 70.0      # cm, grid field inter-peak distance
-parameters['N_place_cells']     = 30*30
+p['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
+p['gridSep']           = 70.0      # cm, grid field inter-peak distance
+p['N_place_cells']     = 30*30
 
 # Gamma analysis parameters
-parameters['gammaNSample']      = 0.05      # fraction
+p['gammaNSample']      = 0.05      # fraction
 
-parameters['noise_sigma']       = 150.0       # pA
-parameters['delay']             = 0.1
+p['noise_sigma']       = 150.0     # pA
+p['delay']             = 0.1
 
 
-startJobNum = 0
-numRepeat = 1
-
-# Workstation parameters
-programName         = 'python simulation_stationary.py'
-blocking            = True
-
-# Cluster parameters
-cluster_scriptName  = 'eddie_submit.sh simulation_stationary.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=00:15:00"
-qsub_output_dir     = parameters['output_dir']
-
-ac = ArgumentCreator(parameters, printout=True)
-
+###############################################################################
+ac = ArgumentCreator(p, printout=True)
 
 ## Range of parameters around default values
 ## Let's choose a 10% jitter around the default values
 #Ndim        = 10     # Number of values for each dimension
 #jitter_frac = 0.1    # Fraction
-#Iext_e_amp_default = parameters['Iext_e_const'] + parameters['Iext_e_theta']
+#Iext_e_amp_default = p['Iext_e_const'] + p['Iext_e_theta']
 #
 #jitter_frac_arr = np.linspace(1.0-jitter_frac, 1.0+jitter_frac, Ndim)
 #
-#theta_depth_range = jitter_frac_arr*parameters['Iext_e_const']
+#theta_depth_range = jitter_frac_arr*p['Iext_e_const']
 #Iext_e_amp_range  = jitter_frac_arr*Iext_e_amp_default
 #
 #Iext_e_const_arr     = []
@@ -93,9 +79,9 @@ ac = ArgumentCreator(parameters, printout=True)
 #            for I_coupling in jitter_frac_arr:
 #                Iext_e_const_arr.append(theta_depth)
 #                Iext_e_theta_arr.append(Iext_e_amp - theta_depth)
-#                g_AMPA_total_arr.append(E_coupling*parameters['g_AMPA_total'])
-#                g_GABA_total_arr.append(I_coupling*parameters['g_GABA_total'])
-#                g_uni_GABA_total_arr.append(I_coupling*parameters['g_uni_GABA_total'])
+#                g_AMPA_total_arr.append(E_coupling*p['g_AMPA_total'])
+#                g_GABA_total_arr.append(I_coupling*p['g_GABA_total'])
+#                g_uni_GABA_total_arr.append(I_coupling*p['g_uni_GABA_total'])
 #
 #
 #iterparams = {
@@ -108,10 +94,10 @@ ac = ArgumentCreator(parameters, printout=True)
 #ac.insertDict(iterparams, mult=False)
 
 
-if CLUSTER:
-    submitter = QsubSubmitter(ac, cluster_scriptName, qsub_params, qsub_output_dir)
-else:
-    submitter = GenericSubmitter(ac, programName, blocking=blocking)
+###############################################################################
+submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
+        rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
+        blocking=blocking, timePrefix=timePrefix);
+ac.setOption('output_dir', submitter.outputDir())
+startJobNum = 0
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)
-
-

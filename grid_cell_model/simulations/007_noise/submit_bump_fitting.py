@@ -19,55 +19,57 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-from default_params         import defaultParameters
+from default_params         import defaultParameters as p
 from submitting.factory     import SubmitterFactory
-from submitting.submitters  import ArgumentCreator
-
-
-ENV = 'workstation'
-
-
-parameters = defaultParameters
-
-#parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 10e3  # ms
-parameters['nthreads']          = 8
-
-parameters['output_dir']        = 'output_local'
-
-parameters['Ne']                = 34
-parameters['Ni']                = 34
-
-parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
-parameters['gridSep']           = 70.0      # cm, grid field inter-peak distance
-parameters['N_place_cells']     = 30*30
-
-# Gamma analysis parameters
-parameters['gammaNSample']      = 0.05      # fraction
-
-parameters['noise_sigma']       = 150.0       # pA
-parameters['delay']             = 0.1
-
-
-startJobNum = 10
-numRepeat = 1
-
-ac = ArgumentCreator(parameters)
-
-iterparams = {
-        #'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
-        'noise_sigma' : [0.0]
-}
-ac.insertDict(iterparams, mult=False)
+from submitting.arguments   import ArgumentCreator
 
 
 # Submitting
-appName = 'simulation_stationary.py'
-rtLimit = '00:05:00'
-outputDir = parameters['output_dir']
-blocking  = True
+ENV         = 'workstation'
+simLabel    = 'tmp_bump_fitting'
+simRootDir  = 'output_local'
+appName     = 'simulation_stationary.py'
+rtLimit     = '00:05:00'
+blocking    = True
+timePrefix  = False
+numRepeat = 1
 
+
+
+#p['time']              = 1199.9e3  # ms
+p['time']              = 10e3  # ms
+p['ntrials']           = 1
+p['nthreads']          = 8
+
+p['Ne']                = 34
+p['Ni']                = 34
+
+p['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
+p['gridSep']           = 70.0      # cm, grid field inter-peak distance
+p['N_place_cells']     = 30*30
+
+# Gamma analysis params
+p['gammaNSample']      = 0.10      # fraction
+
+p['noise_sigma']       = 150.0       # pA
+p['delay']             = 0.1
+
+
+
+
+###############################################################################
+ac = ArgumentCreator(p)
+iterp = {
+        'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
+        #'noise_sigma' : [0.0]
+}
+ac.insertDict(iterp, mult=False)
+
+
+###############################################################################
 submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
-        rtLimit=rtLimit, output_dir=outputDir, blocking=blocking);
+        rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
+        blocking=blocking, timePrefix=timePrefix);
+ac.setOption('output_dir', submitter.outputDir())
+startJobNum = 0
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)
