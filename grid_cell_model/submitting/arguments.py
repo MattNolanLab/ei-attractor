@@ -106,6 +106,12 @@ class ArgumentCreator(object):
         '''
         return self._resList[i]
 
+
+    def optionList(self):
+        '''Get the list of all options'''
+        return self._resList
+
+
     def listSize(self):
         '''Return the size of the list of option dictionaries'''
         return len(self._resList)

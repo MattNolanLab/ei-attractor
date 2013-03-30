@@ -435,11 +435,17 @@ class GridCellNetwork(object):
         '''
         return time.time() - self._startT
 
+    def _getTimes(self):
+        '''Get simulation times'''
+        return (self.constructionTime(), self.simulationTime(), self.totalTime())
+
     def printTimes(self, constrT=True, simT=True, totalT=True):
+        constrT, simT, totalT = self._getTimes()
         print "Timer statistics:"
-        print("   Construction: {0} s".format(self.constructionTime()))
-        print("   Simulation  : {0} s".format(self.simulationTime()))
-        print("   Total       : {0} s".format(self.totalTime()))
+        print("   Construction: {0} s".format(constrT))
+        print("   Simulation  : {0} s".format(simT))
+        print("   Total       : {0} s".format(totalT))
+        return constrT, simT, totalT
 
 
     def getPreferredDirection(self, pos_x, pos_y):

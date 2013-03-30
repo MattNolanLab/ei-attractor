@@ -21,6 +21,7 @@ import errno
 from datetime       import datetime
 from gc_exceptions  import SubmitError
 from otherpkg.log   import log_warn, log_info
+from data_storage   import DataStorage
 
 
 
@@ -72,7 +73,7 @@ class ProgramSubmitter(object):
             if (not self._forceExisting):
                 raise e
             if (e.errno == errno.EEXIST):
-                log_warn("submitters", "Output directory already exists. This"
+                log_warn("root.submitters", "Output directory already exists. This"
                     + " might overwrite files.")
             else:
                 raise e
@@ -115,6 +116,35 @@ class ProgramSubmitter(object):
             print self._printStr
         else:
             self._printStr = None
+
+
+
+    def saveIterParams(self, iterParams, fileName='iterparams.h5'):
+        '''
+        Save iterated parameters.
+
+        Parameters
+        ----------
+        iterParams : dict
+            A dictionary of iterated parameters. {<name> : np.ndarray}
+
+        fileName : str, optional
+            An output file name, with an extension supported by the data_storage package.
+        '''
+        filePath = self.outputDir() + '/' + fileName
+        log_info('root.submitters', 'Saving parameter iteration data to: {0}'.format(filePath))
+        o = DataStorage.open(filePath, 'w')
+        o['iterParams'] = iterParams
+        o.close()
+
+
+    def _saveAllOptions(self):
+        '''Save the iterated options.'''
+        iterFileName = self.outputDir() + '/iterparams.h5'
+        log_info('root.submitters', 'Saving parameter iteration data: {0}'.format(iterFileName))
+        iterOut = DataStorage.open(iterFileName, 'w')
+        iterOut['items'] = self._ac.optionList()
+        iterOut.close()
 
 
     def submitOne(self, it, startJobNum, repeat=1):
@@ -164,7 +194,7 @@ class GenericSubmitter(ProgramSubmitter):
             postfix = '&'
 
         cmdStr = self._appName + ' ' + args + postfix
-        log_info('root.GenericSubmitter', 'Submitting command: \n' + cmdStr)
+        log_info('root.submitters', 'Submitting command: \n' + cmdStr)
         if not dry_run:
             err = os.system(cmdStr)
             if err != 0:
@@ -187,7 +217,7 @@ class QsubSubmitter(ProgramSubmitter):
                 "-o " + self.outputDir() + ' ' + \
                 "-N job{0:05} ".format(job_num) + \
                 self._scriptName + ' ' + args
-        log_info('root.QsubSubmitter', 'Submitting command: \n' + cmdStr)
+        log_info('root.submitters', 'Submitting command: \n' + cmdStr)
         if not dry_run:
             err = os.system(cmdStr)
             if err != 0:

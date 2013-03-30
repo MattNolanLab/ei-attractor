@@ -32,6 +32,7 @@ parser.add_option("--gammaNSample",   type="float",   help="Fraction of neurons 
 
 
 out = []
+overalT = 0.
 ################################################################################
 for trial_idx in range(options.ntrials):
     print("\n\t\tStarting trial no. {0}\n".format(trial_idx))
@@ -62,12 +63,14 @@ for trial_idx in range(options.ntrials):
     ei_net.simulate(options.time, printTime=options.printTime)
     ei_net.endSimulation()
     out.append(ei_net.getAllData())
-    ei_net.printTimes()
+    constrT, simT, totalT = ei_net.printTimes()
+    overalT += totalT
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(options.output_dir,
         options.fileNamePrefix, options.job_num)
 d = DataStorage.open(output_fname, 'w')
 d["trials"] = out
 d.close()
+print "Script total run time: {0} s".format(overalT)
 ################################################################################
 
