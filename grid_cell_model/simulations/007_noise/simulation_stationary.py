@@ -41,16 +41,23 @@ for trial_idx in range(options.ntrials):
     ei_net.setConstantVelocityCurrent_e(const_v)
     
     
-    NSample = int(options.gammaNSample * ei_net.net_Ne)
-    stateRecF_e = choice(ei_net.E_pop, NSample, replace=False)
+    NSample_e = int(options.gammaNSample * ei_net.net_Ne)
+    NSample_i = int(options.gammaNSample * ei_net.net_Ni)
+    stateRecF_e = choice(ei_net.E_pop, NSample_e, replace=False)
+    stateRecF_i = choice(ei_net.I_pop, NSample_i, replace=False)
     
-    stateMonF_params = {
-            'withtime' : True,
+    stateMonF_e_params = {
+            'withtime' : False,
             'interval' : options.sim_dt*10,
             'record_from' : ['I_clamp_GABA_A']
     }
-    stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e, stateMonF_params,
-            'stateMonF_e')
+    stateMonF_i_params = dict(stateMonF_e_params)
+    stateMonF_i_params['record_from'] = ['I_clamp_AMPA', 'I_clamp_NMDA']
+
+    stateMonF_e = ei_net.getGenericStateMonitor(stateRecF_e,
+            stateMonF_e_params, 'stateMonF_e')
+    stateMonF_i = ei_net.getGenericStateMonitor(stateRecF_i,
+            stateMonF_i_params, 'stateMonF_i')
     
     ei_net.simulate(options.time, printTime=options.printTime)
     ei_net.endSimulation()

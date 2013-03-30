@@ -37,9 +37,9 @@ numRepeat = 1
 ###############################################################################
 
 #p['time']              = 1199.9e3  # ms
-p['time']              = 2e3  # ms
+p['time']              = 10e3  # ms
 p['nthreads']          = 8
-p['ntrials']           = 1
+p['ntrials']           = 10
 
 p['noise_sigma']       = 150.0     # pA
 
