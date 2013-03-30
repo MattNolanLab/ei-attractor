@@ -19,6 +19,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import numpy as np
 from default_params         import defaultParameters as p
 from submitting.factory     import SubmitterFactory
 from submitting.arguments   import ArgumentCreator
@@ -43,44 +44,35 @@ p['noise_sigma']       = 150.0     # pA
 
 
 ###############################################################################
+
 ac = ArgumentCreator(p, printout=True)
 
-## Range of parameters around default values
-## Let's choose a 10% jitter around the default values
-#Ndim        = 10     # Number of values for each dimension
-#jitter_frac = 0.1    # Fraction
-#Iext_e_amp_default = p['Iext_e_const'] + p['Iext_e_theta']
-#
-#jitter_frac_arr = np.linspace(1.0-jitter_frac, 1.0+jitter_frac, Ndim)
-#
-#theta_depth_range = jitter_frac_arr*p['Iext_e_const']
-#Iext_e_amp_range  = jitter_frac_arr*Iext_e_amp_default
-#
-#Iext_e_const_arr     = []
-#Iext_e_theta_arr     = []
-#g_AMPA_total_arr     = []
-#g_GABA_total_arr     = []
-#g_uni_GABA_total_arr = []
-#for theta_depth in theta_depth_range:
-#    for Iext_e_amp in Iext_e_amp_range:
-#        for E_coupling in jitter_frac_arr:
-#            for I_coupling in jitter_frac_arr:
-#                Iext_e_const_arr.append(theta_depth)
-#                Iext_e_theta_arr.append(Iext_e_amp - theta_depth)
-#                g_AMPA_total_arr.append(E_coupling*p['g_AMPA_total'])
-#                g_GABA_total_arr.append(I_coupling*p['g_GABA_total'])
-#                g_uni_GABA_total_arr.append(I_coupling*p['g_uni_GABA_total'])
-#
-#
-#iterparams = {
-#        'Iext_e_const'      : Iext_e_const_arr,
-#        'Iext_e_theta'      : Iext_e_theta_arr,
-#        'g_AMPA_total'      : g_AMPA_total_arr,
-#        'g_GABA_total'      : g_GABA_total_arr,
-#        'g_uni_GABA_total'  : g_uni_GABA_total_arr
-#}
-#ac.insertDict(iterparams, mult=False)
+# Range of parameters around default values
+# Let's choose a 0.5 - 2 range around the default values
+Nvals        = 20     # Number of values for each dimension
+startFrac    = 0.5
+endFrac      = 2.0
 
+
+fracArr = np.linspace(startFrac, endFrac, Nvals)
+print(fracArr)
+
+g_AMPA_total_arr     = []
+g_GABA_total_arr     = []
+g_uni_GABA_total_arr = []
+for E_coupling in fracArr:
+    for I_coupling in fracArr:
+        g_AMPA_total_arr.append(E_coupling*p['g_AMPA_total'])
+        g_GABA_total_arr.append(I_coupling*p['g_GABA_total'])
+        g_uni_GABA_total_arr.append(I_coupling*p['g_uni_GABA_total'])
+
+
+iterparams = {
+    'g_AMPA_total'      : g_AMPA_total_arr,
+    'g_GABA_total'      : g_GABA_total_arr,
+    'g_uni_GABA_total'  : g_uni_GABA_total_arr
+}
+ac.insertDict(iterparams, mult=False)
 
 ###############################################################################
 submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
@@ -88,4 +80,4 @@ submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
         blocking=blocking, timePrefix=timePrefix);
 ac.setOption('output_dir', submitter.outputDir())
 startJobNum = 0
-submitter.submitAll(startJobNum, numRepeat, dry_run=False)
+submitter.submitAll(startJobNum, numRepeat, dry_run=True)
