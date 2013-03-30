@@ -30,7 +30,7 @@ lg.basicConfig(level=lg.DEBUG)
 # Submitting
 ENV         = 'cluster'
 simRootDir  =  'output'
-simLabel    =  'EI_param_sweep_0pA_small_sample'
+simLabel    =  'EI_param_sweep_0pA_full'
 appName     = 'simulation_stationary.py'
 rtLimit     = '00:20:00'
 blocking    = True
@@ -50,7 +50,7 @@ ac = ArgumentCreator(p, printout=True)
 
 # Range of parameters around default values
 # Let's choose a 0.5 - 2 range around the default values
-Nvals        = 2     # Number of values for each dimension
+Nvals        = 20     # Number of values for each dimension
 startFrac    = 0.5
 endFrac      = 2.0
 
