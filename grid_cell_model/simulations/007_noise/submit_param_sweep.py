@@ -23,24 +23,25 @@ import numpy as np
 from default_params         import defaultParameters as p
 from submitting.factory     import SubmitterFactory
 from submitting.arguments   import ArgumentCreator
+import logging as lg
+lg.basicConfig(level=lg.DEBUG)
 
 
 # Submitting
-ENV         = 'workstation'
-simRootDir  =  'output_local'
-simLabel    =  'tmp_param_sweep'
+ENV         = 'cluster'
+simRootDir  =  'output'
+simLabel    =  'EI_param_sweep_0pA_small_sample'
 appName     = 'simulation_stationary.py'
-rtLimit     = '00:05:00'
+rtLimit     = '00:20:00'
 blocking    = True
-timePrefix  = False
+timePrefix  = True
 numRepeat   = 1
 
-#p['time']              = 1199.9e3  # ms
-p['time']              = 2e3  # ms
-p['nthreads']          = 8
-p['ntrials']           = 2
+p['time']              = 10e3  # ms
+p['nthreads']          = 4
+p['ntrials']           = 10
 
-p['noise_sigma']       = 150.0     # pA
+p['noise_sigma']       = 0.0     # pA
 
 
 ###############################################################################
@@ -49,7 +50,7 @@ ac = ArgumentCreator(p, printout=True)
 
 # Range of parameters around default values
 # Let's choose a 0.5 - 2 range around the default values
-Nvals        = 20     # Number of values for each dimension
+Nvals        = 2     # Number of values for each dimension
 startFrac    = 0.5
 endFrac      = 2.0
 
@@ -68,9 +69,9 @@ for E_coupling in fracArr:
 
 
 iterparams = {
-    'g_AMPA_total'      : g_AMPA_total_arr,
-    'g_GABA_total'      : g_GABA_total_arr,
-    'g_uni_GABA_total'  : g_uni_GABA_total_arr
+    'g_AMPA_total'      : np.array(g_AMPA_total_arr),
+    'g_GABA_total'      : np.array(g_GABA_total_arr),
+    'g_uni_GABA_total'  : np.array(g_uni_GABA_total_arr)
 }
 ac.insertDict(iterparams, mult=False)
 
@@ -80,4 +81,5 @@ submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
         blocking=blocking, timePrefix=timePrefix);
 ac.setOption('output_dir', submitter.outputDir())
 startJobNum = 0
-submitter.submitAll(startJobNum, numRepeat, dry_run=True)
+submitter.submitAll(startJobNum, numRepeat, dry_run=False)
+submitter.saveIterParams(iterparams)
