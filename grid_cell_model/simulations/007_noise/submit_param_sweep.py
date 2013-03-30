@@ -30,7 +30,7 @@ lg.basicConfig(level=lg.DEBUG)
 # Submitting
 ENV         = 'cluster'
 simRootDir  =  'output'
-simLabel    =  'EI_param_sweep_150pA_full'
+simLabel    =  'EI_param_sweep_300pA_full'
 appName     = 'simulation_stationary.py'
 rtLimit     = '00:20:00'
 blocking    = True
@@ -41,7 +41,7 @@ p['time']              = 10e3  # ms
 p['nthreads']          = 4
 p['ntrials']           = 10
 
-p['noise_sigma']       = 150.0     # pA
+p['noise_sigma']       = 300.0     # pA
 
 
 ###############################################################################
