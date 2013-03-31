@@ -219,6 +219,92 @@ def absoluteLimits(min, max, margin):
     return min-margin*tot, max+margin*tot
 
 
+
+def extractStateVariable(mon, nIdx, varStr):
+    '''Extract state variable from a monitor.
+    
+    Parameters
+    ----------
+    mon : dict
+        A list of (NEST) monitors, each monitoring one neuron.
+    nIdx : int
+        Neuron index
+    varStr : str
+        Name of the variable
+    output
+        A tuple (data, dt), for the signal
+    '''
+    n = mon[nIdx]
+    return n['events'][varStr], n['interval']
+
+
+def sumAllVariables(mon, nIdx, varList):
+    '''
+    Extract all variables from the list of monitors and sum them
+    '''
+    sigSum = None
+    dtCheck = None
+    for idx in range(len(varList)):
+        sig, dt = extractStateVariable(mon, nIdx, varList[idx])
+        if (idx == 0):
+            sigSum = sig
+            dtCheck = dt
+        else:
+            assert(dtCheck == dt)
+            sigSum += sig
+
+    return sigSum, dt
+
+
+def extractACStat(mon, stateList, maxLag, dtMult=1e-3, norm=True,
+        bandStart=20, bandEnd=200):
+    '''
+    Extrac autocorrelation statistics from a monitor
+
+    Parameters
+    ----------
+    mon : list of dicts
+        A list of (NEST) state monitors' status dictionary
+    stateList : list of strings
+        A list of strings naming the state variables to extract (and sum)
+    maxLag : float
+        Maximal lag to extract (in seconds, NOT timesteps)
+    dtMult : float, optional
+        dt Multiplier to transform dt into seconds
+    norm : bool, optional
+        Whether the autocorrelation function should be normalized
+    bandStart : float, optional
+        Bandpass start frequency
+    bandEnd   : float, optional
+        Bandpass end frequency
+    '''
+    freq   = [] # Frequency of input signal
+    acval  = [] # Auto-correlation at the corresponding frequency
+    acVec  = []
+    #for n_id in range(len(mon)):
+    for n_id in range(5):
+        print "n_id: ", n_id
+        sig, dt = sumAllVariables(mon, n_id, stateList)
+        sig = butterBandPass(sig, dt*dtMult, bandStart, bandEnd)
+        ac = autoCorrelation(sig - np.mean(sig), max_lag=maxLag/dt, norm=norm)
+        ext_idx, ext_t = localExtrema(ac)
+        acVec.append(ac)
+
+        #plt.figure()
+        #plt.plot(times[0:slice], ac[0:slice])
+        #plt.hold('on')
+        #plt.plot(times[ext_idx], ac[ext_idx], '.')
+        #plt.ylim([-1, 1])
+        #plt.savefig(output_fname + "_peaks_ac_extrema_%d.pdf" % n_id)
+        #plt.close()
+
+        f, a = findFreq(ac, dt*1e-3, ext_idx, ext_t)
+        freq.append(f)
+        acval.append(a)
+
+    return freq, acval, acVec
+
+
 ###############################################################################
 
 
@@ -254,32 +340,9 @@ for jobNum in jobNums:
     peaks_std.append(np.std(peaks))
     noise_sigma.append(options['noise_sigma'])
 
-    freq   = [] # Frequency of input signal
-    acval  = [] # Auto-correlation at the corresponding frequency
-    acVec  = []
-    for n_id in range(len(stateMonF_e)):
-    #for n_id in range(5):
-        print "n_id: ", n_id
-        sig = stateMonF_e[n_id]['events']['I_clamp_GABA_A']
-        times = stateMonF_e[n_id]['events']['times']
-        dt = times[1] - times[0]
-        sig = butterBandPass(sig, dt*1e-3, 20, 200)
-        slice = 2. / (options['theta_freq'] * 1e-3) / dt
-        ac = autoCorrelation(sig - np.mean(sig), max_lag=slice-1, norm=True)
-        ext_idx, ext_t = localExtrema(ac)
-        acVec.append(ac)
-
-        #plt.figure()
-        #plt.plot(times[0:slice], ac[0:slice])
-        #plt.hold('on')
-        #plt.plot(times[ext_idx], ac[ext_idx], '.')
-        #plt.ylim([-1, 1])
-        #plt.savefig(output_fname + "_peaks_ac_extrema_%d.pdf" % n_id)
-        #plt.close()
-
-        f, a = findFreq(ac, dt*1e-3, ext_idx, ext_t)
-        freq.append(f)
-        acval.append(a)
+    stateList = ['I_clamp_GABA_A', 'I_clamp_NMDA']
+    maxLag    = 1. / (options['theta_freq'] * 1e-3)
+    freq, acval, acVec = extractACStat(stateMonF_e, stateList, maxLag) 
 
     AC_all.append(acVec)
     freq_mean.append(np.mean(freq))
@@ -292,7 +355,7 @@ for jobNum in jobNums:
 plotSigmas(noise_sigma, peaks_mean, peaks_std, freq_mean, freq_std, acval_mean,
         acval_std)
 
-AC_times = np.arange(slice)
+AC_times = np.arange(len(AC_all[0][0]))
 plotACs(AC_all, AC_times, noise_sigma)
 
 

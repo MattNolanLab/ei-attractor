@@ -39,7 +39,7 @@ numRepeat = 1
 #p['time']              = 1199.9e3  # ms
 p['time']              = 10e3  # ms
 p['nthreads']          = 8
-p['ntrials']           = 10
+p['ntrials']           = 1
 
 p['noise_sigma']       = 150.0     # pA
 
@@ -47,8 +47,8 @@ p['noise_sigma']       = 150.0     # pA
 
 ac = ArgumentCreator(p)
 iterp = {
-        #'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
-        'noise_sigma' : [0.0]
+        'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
+        #'noise_sigma' : [0.0]
 }
 ac.insertDict(iterp, mult=False)
 
