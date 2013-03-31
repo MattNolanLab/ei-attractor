@@ -38,7 +38,7 @@ class DataSet(object):
 
 
 
-class DictDataSet(DataSet)
+class DictDataSet(DataSet):
 
     def __init__(self, dataDict):
         self._d = dataDict

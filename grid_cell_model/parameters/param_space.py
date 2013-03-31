@@ -21,6 +21,7 @@
 from collections    import Sequence
 
 from data_storage   import DataStorage
+from data_sets      import DictDataSet
 
 __all__ = []
 
@@ -45,6 +46,8 @@ class DataSpace(Sequence):
         for val in self._vals:
             val.applyVisitor(visitor)
 
+    def __len__(self):
+        return len(self._vals)
 
 
 
@@ -54,18 +57,24 @@ class TrialSet(DataSpace):
     '''
 
     def __init__(self, fileName):
-        DataSpace.__init__(self, "trials", dataList)
-        self._ds = DataStorage.open(fileName, 'a')
-        self._trials = ds['trials']
+        try:
+            self._ds = DataStorage.open(fileName, 'r')
+            DataSpace.__init__(self, self._ds['trials'], key='trials')
+            print("Opened " + fileName)
+        except IOError:
+            DataSpace.__init__(self, [], key='trials')
 
     def __getitem__(self, key):
-        return DictDataSet(self._trials[i])
+        return DictDataSet(self._vals[key])
 
 
 
 
 class JobTrialSpace2D(DataSpace):
-    def __init__(self, shape, rootDir, fileFormat="job{1:5}_output.h5"):
+    def __init__(self, shape, rootDir, fileFormat="job{0:05}_output.h5"):
+        self._shape = shape
+        self._rootDir = rootDir
+        self._fileFormat = fileFormat
         rows = shape[0]
         cols = shape[1]
         rowData = []
@@ -77,8 +86,10 @@ class JobTrialSpace2D(DataSpace):
                 colData.append(TrialSet(fileName))
                 it += 1
             rowData.append(DataSpace(colData))
-        self._dataSpace = DataSpace(rowData)
+        DataSpace.__init__(self, rowData)
             
                 
+    def __len__(self):
+        return self.shape[0] 
 
 
