@@ -30,7 +30,7 @@ from analysis.visitors    import AutoCorrelationVisitor
 from parameters           import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings, createColorbar
 import logging as lg
-lg.basicConfig(level=lg.WARN)
+lg.basicConfig(level=lg.DEBUG)
 
 
 # Other
@@ -84,7 +84,9 @@ def plot2DTrial(sp, varName, iterList, xlabel="", ylabel="", colorBar=True,
 #rootDir = 'output_local/2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample'
 #shape = (2, 2)
 
-rootDir = 'output_local/2013-03-30T19-34-44_EI_param_sweep_0pA_full'
+#rootDir = 'output_local/2013-03-30T19-34-44_EI_param_sweep_0pA_full'
+#rootDir = 'output_local/2013-03-30T19-47-20_EI_param_sweep_150pA_full'
+rootDir = 'output_local/2013-03-30T19-48-27_EI_param_sweep_300pA_full'
 shape = (20, 20)
 sp = JobTrialSpace2D(shape, rootDir)
 
