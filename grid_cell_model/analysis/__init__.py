@@ -20,4 +20,4 @@
 #
 
 __all__ = ['conversion', 'grid_cells', 'image', 'other', 'signal', 'spikes',
-        'statistics', "Wavelets"]
+        'statistics', "visitors", "Wavelets"]
