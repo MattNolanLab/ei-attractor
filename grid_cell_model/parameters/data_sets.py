@@ -36,6 +36,10 @@ class DataSet(object):
     def parameters(self):
         raise NotImplementedError()
 
+    def visit(self, visitor):
+        raise NotImplementedError()
+
+
 
 
 class DictDataSet(DataSet):
@@ -47,3 +51,7 @@ class DictDataSet(DataSet):
     @property
     def data(self):
         return self._d
+
+
+    def visit(self, v):
+        v.visitDictDataSet(self)
