@@ -18,6 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import numpy as np
 from collections    import Sequence
 from otherpkg.log   import log_warn, log_info
 
@@ -86,13 +87,15 @@ class TrialSet(DataSpace):
 
 class JobTrialSpace2D(DataSpace):
     def __init__(self, shape, rootDir, fileMode='r+',
-            fileFormat="job{0:05}_output.h5", forceWMode=False):
+            fileFormat="job{0:05}_output.h5", forceWMode=False,
+            checkParams=False):
         if (fileMode == 'w' and forceWMode == False):
             raise ValueError("'w' file open mode is not allowed. Use " +
                     "'forceWMode' to override.")
         self._shape = shape
         self._rootDir = rootDir
         self._fileFormat = fileFormat
+        self._checkParams = checkParams
         rows = shape[0]
         cols = shape[1]
         rowData = []
@@ -113,4 +116,35 @@ class JobTrialSpace2D(DataSpace):
 
     def getShape(self):
         return self._shape
+
+
+    def getIteratedParameters(self, nameList):
+        iterFileName = "{0}/iterparams.h5".format(self._rootDir)
+        ds = DataStorage.open(iterFileName, 'r')
+        ret = []
+        for nm in nameList:
+            ret.append(np.reshape(ds['iterParams'][nm], self._shape))
+            if (self._checkParams):
+                self._checkIteratedParameters(nm, ret[-1])
+        ds.close()
+        return ret
+
+
+    def _getParam(self, data, paramStr):
+        return data['options'][paramStr]
+
+    def _checkIteratedParameters(self, paramStr, toCheck):
+        tol  = 1e-9 * np.min(toCheck.flatten())
+        rows = self._shape[0]
+        cols = self._shape[1]
+        msgStr = "Parameter {0}:[{1}][{2}: {3}] does not match."
+        for r in xrange(rows):
+            for c in xrange(cols):
+                trials = self[r][c]
+                for trial_idx in xrange(len(trials)):
+                    pVal = self._getParam(trials[trial_idx].data, paramStr)
+                    err = np.abs(pVal - toCheck[r][c])
+                    if (err > tol):
+                        raise Exception(msgStr.format(paramStr, r, c, err))
+        
 
