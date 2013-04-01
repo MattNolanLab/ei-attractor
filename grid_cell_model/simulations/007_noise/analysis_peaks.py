@@ -71,19 +71,6 @@ def writeArrayTxt(fileName, arr):
     f.close()
 
 
-def findFreq(ac, dt, ext_idx, ext_t):
-    max_idx = np.nonzero(ext_t > 0)[0]
-    if (len(max_idx) == 0):
-        raise ValueError("Autocorrelation must contain at leas one local maximum")
-    
-    # First local maximum ac[0] excluded
-    max1_idx = ext_idx[max_idx[0]]
-    max1_t   = max1_idx * dt
-    max1     = ac[max1_idx]
-
-    return (1./max1_t, max1)
-
-
 def plotNoiseSigma(noise_sigma, res_means, res_stds, newFigure=True, ylabel="",
         xlabel=None, title=""):
     if (newFigure):
@@ -220,89 +207,8 @@ def absoluteLimits(min, max, margin):
 
 
 
-def extractStateVariable(mon, nIdx, varStr):
-    '''Extract state variable from a monitor.
-    
-    Parameters
-    ----------
-    mon : dict
-        A list of (NEST) monitors, each monitoring one neuron.
-    nIdx : int
-        Neuron index
-    varStr : str
-        Name of the variable
-    output
-        A tuple (data, dt), for the signal
-    '''
-    n = mon[nIdx]
-    return n['events'][varStr], n['interval']
 
 
-def sumAllVariables(mon, nIdx, varList):
-    '''
-    Extract all variables from the list of monitors and sum them
-    '''
-    sigSum = None
-    dtCheck = None
-    for idx in range(len(varList)):
-        sig, dt = extractStateVariable(mon, nIdx, varList[idx])
-        if (idx == 0):
-            sigSum = sig
-            dtCheck = dt
-        else:
-            assert(dtCheck == dt)
-            sigSum += sig
-
-    return sigSum, dt
-
-
-def extractACStat(mon, stateList, maxLag, dtMult=1e-3, norm=True,
-        bandStart=20, bandEnd=200):
-    '''
-    Extrac autocorrelation statistics from a monitor
-
-    Parameters
-    ----------
-    mon : list of dicts
-        A list of (NEST) state monitors' status dictionary
-    stateList : list of strings
-        A list of strings naming the state variables to extract (and sum)
-    maxLag : float
-        Maximal lag to extract (in seconds, NOT timesteps)
-    dtMult : float, optional
-        dt Multiplier to transform dt into seconds
-    norm : bool, optional
-        Whether the autocorrelation function should be normalized
-    bandStart : float, optional
-        Bandpass start frequency
-    bandEnd   : float, optional
-        Bandpass end frequency
-    '''
-    freq   = [] # Frequency of input signal
-    acval  = [] # Auto-correlation at the corresponding frequency
-    acVec  = []
-    #for n_id in range(len(mon)):
-    for n_id in range(5):
-        print "n_id: ", n_id
-        sig, dt = sumAllVariables(mon, n_id, stateList)
-        sig = butterBandPass(sig, dt*dtMult, bandStart, bandEnd)
-        ac = autoCorrelation(sig - np.mean(sig), max_lag=maxLag/dt, norm=norm)
-        ext_idx, ext_t = localExtrema(ac)
-        acVec.append(ac)
-
-        #plt.figure()
-        #plt.plot(times[0:slice], ac[0:slice])
-        #plt.hold('on')
-        #plt.plot(times[ext_idx], ac[ext_idx], '.')
-        #plt.ylim([-1, 1])
-        #plt.savefig(output_fname + "_peaks_ac_extrema_%d.pdf" % n_id)
-        #plt.close()
-
-        f, a = findFreq(ac, dt*1e-3, ext_idx, ext_t)
-        freq.append(f)
-        acval.append(a)
-
-    return freq, acval, acVec
 
 
 ###############################################################################
