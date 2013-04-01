@@ -30,11 +30,11 @@ def globalAxesSettings(ax):
     ax.yaxis.set_ticks_position('left')
 
 
-def createColorbar(ax, data=None, label=""):
+def createColorbar(ax, data=None, label="", nticks=2):
     if (data is not None):
         mn = np.min(data.flat)
         mx = np.max(data.flat)
-        ticks = [mn, mx]
+        ticks = np.linspace(mn, mx, nticks)
     else:
         ticks = None
     cb = plt.colorbar(ax=ax, ticks=ticks)
