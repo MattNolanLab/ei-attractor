@@ -26,28 +26,25 @@ from submitting.arguments   import ArgumentCreator
 
 # Submitting
 ENV         = 'workstation'
-simLabel    = 'tmp_bump_fitting'
+simLabel    = 'correlation_1d'
 simRootDir  = 'output_local'
 appName     = 'simulation_stationary.py'
 rtLimit     = '00:05:00'
 blocking    = True
 timePrefix  = False
-numRepeat = 1
+numRepeat   = 1
 
 ###############################################################################
 
-#p['time']              = 1199.9e3  # ms
 p['time']              = 10e3  # ms
 p['nthreads']          = 8
-p['ntrials']           = 1
-
-p['noise_sigma']       = 150.0     # pA
+p['ntrials']           = 5
 
 ###############################################################################
 
 ac = ArgumentCreator(p)
 iterp = {
-        'noise_sigma' : [0.0, 150.0, 200, 250, 300]    # pA
+        'noise_sigma' : [0.0, 150.0, 300]    # pA
         #'noise_sigma' : [0.0]
 }
 ac.insertDict(iterp, mult=False)
@@ -59,3 +56,4 @@ submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
 ac.setOption('output_dir', submitter.outputDir())
 startJobNum = 0
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)
+submitter.saveIterParams(iterp)

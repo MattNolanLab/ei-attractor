@@ -26,28 +26,16 @@ import matplotlib.pyplot as plt
 from scipy.signal import correlate
 from matplotlib.ticker  import MaxNLocator, LinearLocator
 
-from data_storage           import DataStorage
-from analysis.signal        import splitSigToThetaCycles, globalExtremum, corr,\
-        localExtrema, butterBandPass, autoCorrelation, downSample
-from plotting.global_defs   import globalAxesSettings
-
-import matplotlib
-print matplotlib.__version__, matplotlib.__path__
+from plotting.global_defs import globalAxesSettings
+from parameters           import JobTrialSpace2D
+from analysis.visitors    import AutoCorrelationVisitor
+import logging as lg
+lg.basicConfig(level=lg.DEBUG)
 
 
 # Other
-plt.rcParams['font.size'] = 12
+plt.rcParams['font.size'] = 14
 
-
-###############################################################################
-
-
-if (len(sys.argv) == 1):
-    raise Exception("Must specify job numbers as command line parameters!")
-
-jobNums = []
-for jn in sys.argv[1:]:
-    jobNums.append(int(jn))
 
 ###############################################################################
 
@@ -63,12 +51,6 @@ def peakAmp(stateMon, startT, thetaFreq, fieldStr, extFunc):
         peaks.append(globalExtremum(sig_split, extFunc))
 
     return np.array(peaks)
-
-def writeArrayTxt(fileName, arr):
-    f = open(fileName, 'w')
-    for val in arr:
-        f.write('{0:f}\n'.format(val))
-    f.close()
 
 
 def plotNoiseSigma(noise_sigma, res_means, res_stds, newFigure=True, ylabel="",
@@ -92,18 +74,11 @@ def plotNoiseSigma(noise_sigma, res_means, res_stds, newFigure=True, ylabel="",
         ax.set_ylabel(ylabel, multialignment='center')
 
     if (title != ""):
-        plt.title(title, x=-0.5, y=1.1, ha='left', va='bottom', weight='bold',
+        plt.title(title, x=-0.3, y=1.1, ha='left', va='bottom', weight='bold',
                 size='x-large')
 
 
-def plotAC(AC, times, NExamples=None, title="", TUnits='ms',
-        ylabel="Correlation"):
-    if (NExamples is None):
-        N = len(AC)
-    elif (NExamples >= 0):
-        N = NExamples
-    else:
-        raise ValueError("NExamples must be None or non-negative.")
+def plotAC(AC, times, title="", TUnits='ms', ylabel="Correlation"):
     AC = np.array(AC)
 
     ax = plt.gca()
@@ -137,59 +112,64 @@ def plotAC(AC, times, NExamples=None, title="", TUnits='ms',
 
 
 
-def plotACs(AC_all, times, noise_sigma):
+def plotACs(sp):
     acFigSize = (6.2, 2.25)
     plt.figure(figsize=acFigSize)
-    N = len(AC_all)
+    noise_sigma = sp.getIteratedParameters(['noise_sigma'])[0].flat
+    N = len(sp[0])
     
     for idx in range(N):
+        acVec = getAnalysisField(sp, idx, 'acVec')
+        times = np.arange(acVec.shape[1])
         if (idx == 0):
             ylabel = "Correlation"
         else:
             ylabel = ""
         plt.subplot(1, N, idx+1)
         title = '{0} pA'.format(noise_sigma[idx])
-        plotAC(AC_all[idx], times, ylabel=ylabel, title=title)
+        plotAC(acVec, times, ylabel=ylabel, title=title)
 
     plt.tight_layout()
-    plt.savefig(output_dir + "/peak_analysis_AC.pdf")
+    plt.savefig(sp.rootDir + "/peak_analysis_AC.pdf")
 
 
-def plotSigmas(noise_sigma, peaks_mean, peaks_std, freq_mean, freq_std,
-        acval_mean, acval_std):
-    sigmaFigSize = (7,5)
+
+def getAnalysisField(sp, idx, fieldStr, trialIdx=0):
+    return sp[0][idx][trialIdx].data['analysis'][fieldStr]
+
+
+def plotSigmas(sp):
+    sigmaFigSize = (7,2.5)
     plt.figure(figsize=sigmaFigSize)
-    
-    plt.subplot2grid((2, 2), (0, 0))
-    plotNoiseSigma(noise_sigma, peaks_mean, peaks_std,
-            xlabel = "",
-            ylabel="E cell max. $I_{syn}$ / $\\theta$ \n (pA)",
-            title="A",
-            newFigure=False)
-    plt.gca().set_xticklabels([])
-    loc = MaxNLocator(nbins=4)
-    plt.gca().yaxis.set_major_locator(loc)
-    #ymin,ymax = computeMinMaxMargin(peaks_mean, peaks_std, margin=0.1)
-    ymin,ymax = absoluteLimits(0, 11000, margin=0.05)
-    plt.ylim([ymin, ymax])
-    
-    
-    plt.subplot2grid((2, 2), (1, 0))
+
+    noise_sigma = sp.getIteratedParameters(['noise_sigma'])[0].flat
+    N = len(sp[0])
+    freq_mean  = np.ndarray((N, ))
+    freq_std   = np.ndarray((N, ))
+    acval_mean = np.ndarray((N, ))
+    acval_std  = np.ndarray((N, ))
+    for idx in range(N):
+        freq_mean[idx]  = np.mean(getAnalysisField(sp, idx, 'freq'))
+        freq_std[idx]   = np.std(getAnalysisField(sp, idx, 'freq'))
+        acval_mean[idx] = np.mean(getAnalysisField(sp, idx, 'acVal'))
+        acval_std[idx]  = np.std(getAnalysisField(sp, idx, 'acVal'))
+        
+    plt.subplot(1, 2, 1)
     plotNoiseSigma(noise_sigma, freq_mean, freq_std,
             ylabel="Frequency (Hz)",
-            title="B",
+            title="",
             newFigure=False)
     loc = MaxNLocator(nbins=4, steps=[10])
     plt.gca().yaxis.set_major_locator(loc)
     
-    plt.subplot2grid((2, 2), (1, 1))
+    plt.subplot(1, 2, 2)
     plotNoiseSigma(noise_sigma, acval_mean, acval_std, 
             ylabel="Mean\nauto-correlation",
-            title="C",
+            title="",
             newFigure=False)
-    plt.tight_layout(w_pad=0.0, h_pad=2.5)
+    plt.tight_layout(w_pad=1., h_pad=2.5)
     
-    plt.savefig(output_dir + "/peak_analysis.pdf")
+    plt.savefig(sp.rootDir + "/peak_analysis.pdf")
 
 
 
@@ -212,58 +192,22 @@ def absoluteLimits(min, max, margin):
 
 
 ###############################################################################
+rootDir = 'output_local/correlation_1d'
+shape = (1, 3)
+sp = JobTrialSpace2D(shape, rootDir)
 
+monName   = 'stateMonF_e'
+stateList = ['I_clamp_GABA_A']
+iterList  = ['noise_sigma']
+forceUpdate = False
+visitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
+sp.visit(visitor)
 
-output_dir = 'output_local/tmp_bump_fitting'
-fileNamePrefix = ''
+################################################################################
 
-AC_all      = []
-peaks_mean  = []
-peaks_std   = []
-noise_sigma = []
-freq_mean   = []
-freq_std    = []
-acval_mean  = []
-acval_std   = []
+plotSigmas(sp)
 
-for jobNum in jobNums:
-    print "jobNum: ", jobNum
-    in_fname = "{0}/{1}job{2:05}_output".format(output_dir, fileNamePrefix, jobNum)
-    output_fname = in_fname
-    ds = DataStorage.open(in_fname + ".h5", 'r')
-    d  = ds['trials'][0]
-    options     = d['options']
-    stateMonF_e = d['stateMonF_e']
-    
-    
-    peaks = peakAmp(
-            stateMon = d['stateMonF_e'],
-            startT   = options['theta_start_t'],
-            thetaFreq = options['theta_freq'],
-            fieldStr = 'I_clamp_GABA_A',
-            extFunc = np.max).flat
-    peaks_mean.append(np.mean(peaks))
-    peaks_std.append(np.std(peaks))
-    noise_sigma.append(options['noise_sigma'])
+plotACs(sp)
 
-    stateList = ['I_clamp_GABA_A', 'I_clamp_NMDA']
-    maxLag    = 1. / (options['theta_freq'] * 1e-3)
-    freq, acval, acVec = extractACStat(stateMonF_e, stateList, maxLag) 
-
-    AC_all.append(acVec)
-    freq_mean.append(np.mean(freq))
-    freq_std.append(np.std(freq))
-    acval_mean.append(np.mean(acval))
-    acval_std.append(np.std(acval))
-
-    
-###############################################################################
-plotSigmas(noise_sigma, peaks_mean, peaks_std, freq_mean, freq_std, acval_mean,
-        acval_std)
-
-AC_times = np.arange(len(AC_all[0][0]))
-plotACs(AC_all, AC_times, noise_sigma)
-
-
-###############################################################################
-plt.show()
+################################################################################
+#plt.show()
