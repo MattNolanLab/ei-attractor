@@ -111,7 +111,7 @@ class JobTrialSpace2D(DataSpace):
             
                 
     def __len__(self):
-        return self.shape[0] 
+        return self._shape[0] 
 
 
     def getShape(self):
@@ -147,4 +147,8 @@ class JobTrialSpace2D(DataSpace):
                     if (err > tol):
                         raise Exception(msgStr.format(paramStr, r, c, err))
         
+
+    @property
+    def rootDir(self):
+        return self._rootDir
 
