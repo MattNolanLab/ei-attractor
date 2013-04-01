@@ -23,11 +23,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import numpy.ma as ma
+from matplotlib.ticker  import MaxNLocator, LinearLocator
+
 from analysis.visitors    import AutoCorrelationVisitor
 from parameters           import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings, createColorbar
 import logging as lg
-lg.basicConfig(level=lg.DEBUG)
+lg.basicConfig(level=lg.WARN)
 
 
 # Other
@@ -35,31 +38,45 @@ plt.rcParams['font.size'] = 12
 
 ###############################################################################
 
-def plot2DTrial(sp, xlabel="", ylabel="", colorBar=True, title="",
-        clbarNTicks=2):
+def plot2DTrial(sp, varName, iterList, xlabel="", ylabel="", colorBar=True,
+        clBarLabel="", title="", clbarNTicks=2, xticks=True, yticks=True):
+    if (len(iterList) != 2):
+        raise ValueError("iterList must contain exactly 2 elements.")
     shape = sp.getShape()
     rows = shape[0]
     cols = shape[1]
     trialNum = 0
-    acVal = np.ndarray(shape)
+    retVar = np.ndarray(shape)
     for r in xrange(rows):
         for c in xrange(cols):
             if (len(sp[r][c]) == 0):
-                acVal[r][c] = 0
+                retVar[r][c] = np.nan
             else:
                 data = sp[r][c][trialNum].data['analysis']
-                acVal[r][c] = np.mean(data['acVal'])
+                retVar[r][c] = np.mean(data[varName])
+
+    retVar =  ma.MaskedArray(retVar, mask=np.isnan(retVar))
+
 
     ax = plt.gca()
     globalAxesSettings(ax)
-    plt.pcolormesh(acVal)
-    createColorbar(ax, acVal, 'Correlation', nticks=clbarNTicks)
+    Y, X = sp.getIteratedParameters(iterList)
+    plt.pcolormesh(X, Y, retVar)
+    createColorbar(ax, retVar, clBarLabel, nticks=clbarNTicks,
+            orientation='horizontal', pad=0.2)
     if (xlabel != ""):
         plt.xlabel(xlabel)
     if (ylabel != ""):
         plt.ylabel(ylabel)
+    plt.axis('tight')
+    ax.xaxis.set_major_locator(LinearLocator(3))
+    ax.yaxis.set_major_locator(LinearLocator(3))
+    if (not xticks):
+        ax.xaxis.set_ticklabels([])
+    if (not yticks):
+        ax.yaxis.set_ticklabels([])
 
-    return acVal
+    return retVar
 
 
 ###############################################################################
@@ -72,17 +89,32 @@ shape = (20, 20)
 sp = JobTrialSpace2D(shape, rootDir)
 
 
+
 monName   = 'stateMonF_e'
 stateList = ['I_clamp_GABA_A']
+iterList  = ['g_AMPA_total', 'g_GABA_total']
 forceUpdate = False
 visitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
 sp.visit(visitor)
 
 ###############################################################################
+plt.figure(figsize=(7, 4))
+N = 2
+plt.subplot(1, N, 1)
 
-acVal = plot2DTrial(sp,
-        xlabel="E coupling strength (nS) TODO",
-        ylabel='I coupling strength (nS) TODO',
-        clbarNTicks=5)
+acVal = plot2DTrial(sp, 'acVal', iterList,
+        xlabel="I coupling strength (nS)",
+        ylabel='E coupling strength (nS)',
+        clBarLabel = "Correlation",
+        clbarNTicks=3)
 
+###############################################################################
+plt.subplot(1, N, 2)
+freq = plot2DTrial(sp, 'freq', iterList,
+        xlabel="I coupling strength (nS)",
+        clBarLabel = "Frequency (Hz)",
+        clbarNTicks=3,
+        yticks=False)
+###############################################################################
+plt.tight_layout()
 plt.show()
