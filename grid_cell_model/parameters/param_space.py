@@ -130,7 +130,7 @@ class JobTrialSpace2D(DataSpace):
         return ret
 
 
-    def _getParam(self, data, paramStr):
+    def getParam(self, data, paramStr):
         return data['options'][paramStr]
 
     def _checkIteratedParameters(self, paramStr, toCheck):
@@ -142,7 +142,7 @@ class JobTrialSpace2D(DataSpace):
             for c in xrange(cols):
                 trials = self[r][c]
                 for trial_idx in xrange(len(trials)):
-                    pVal = self._getParam(trials[trial_idx].data, paramStr)
+                    pVal = self.getParam(trials[trial_idx].data, paramStr)
                     err = np.abs(pVal - toCheck[r][c])
                     if (err > tol):
                         raise Exception(msgStr.format(paramStr, r, c, err))
