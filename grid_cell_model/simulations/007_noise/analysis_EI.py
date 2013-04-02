@@ -30,11 +30,11 @@ from analysis.visitors    import AutoCorrelationVisitor
 from parameters           import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings, createColorbar
 import logging as lg
-lg.basicConfig(level=lg.DEBUG)
+lg.basicConfig(level=lg.WARN)
 
 
 # Other
-plt.rcParams['font.size'] = 12
+plt.rcParams['font.size'] = 11
 
 ###############################################################################
 
@@ -63,10 +63,11 @@ def plot2DTrial(sp, varName, iterList, xlabel="", ylabel="", colorBar=True,
     Y, X = sp.getIteratedParameters(iterList)
     plt.pcolormesh(X, Y, retVar)
     createColorbar(ax, retVar, clBarLabel, nticks=clbarNTicks,
-            orientation='horizontal', pad=0.2)
+            orientation='horizontal', pad=0.3)
     if (xlabel != ""):
         plt.xlabel(xlabel)
     if (ylabel != ""):
+        #plt.ylabel(ylabel, color='white')
         plt.ylabel(ylabel)
     plt.axis('tight')
     ax.xaxis.set_major_locator(LinearLocator(3))
@@ -81,42 +82,45 @@ def plot2DTrial(sp, varName, iterList, xlabel="", ylabel="", colorBar=True,
 
 ###############################################################################
 
-#rootDir = 'output_local/2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample'
-#shape = (2, 2)
+dirs = {
+    #'output_local/2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample' : (2, 2),
+    #'output_local/2013-03-30T19-34-44_EI_param_sweep_0pA_full'   : (20, 20)
+    'output_local/2013-03-30T19-47-20_EI_param_sweep_150pA_full' : (20, 20),
+    #'output_local/2013-03-30T19-48-27_EI_param_sweep_300pA_full' : (20, 20)
+}
 
-#rootDir = 'output_local/2013-03-30T19-34-44_EI_param_sweep_0pA_full'
-#rootDir = 'output_local/2013-03-30T19-47-20_EI_param_sweep_150pA_full'
-rootDir = 'output_local/2013-03-30T19-48-27_EI_param_sweep_300pA_full'
-shape = (20, 20)
-sp = JobTrialSpace2D(shape, rootDir)
+for rootDir, shape in dirs.iteritems():
+    sp = JobTrialSpace2D(shape, rootDir)
+    
+    monName   = 'stateMonF_e'
+    stateList = ['I_clamp_GABA_A']
+    iterList  = ['g_AMPA_total', 'g_GABA_total']
+    forceUpdate = False
+    visitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
+    sp.visit(visitor)
+    
+    ###############################################################################
+    plt.figure(figsize=(5.1, 2.9))
+    N = 2
+    plt.subplot(1, N, 1)
+    
+    acVal = plot2DTrial(sp, 'acVal', iterList,
+            xlabel="I coupling strength (nS)",
+            ylabel='E coupling strength (nS)',
+            clBarLabel = "Correlation",
+            clbarNTicks=3)
+    
+    ###############################################################################
+    plt.subplot(1, N, 2)
+    freq = plot2DTrial(sp, 'freq', iterList,
+            xlabel="I coupling strength (nS)",
+            clBarLabel = "Frequency (Hz)",
+            clbarNTicks=3,
+            yticks=False)
+    ###############################################################################
+    plt.tight_layout()
+    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+    plt.savefig(sp.rootDir + '/analysis_EI_{0}pA.png'.format(int(noise_sigma)))
 
-
-
-monName   = 'stateMonF_e'
-stateList = ['I_clamp_GABA_A']
-iterList  = ['g_AMPA_total', 'g_GABA_total']
-forceUpdate = False
-visitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
-sp.visit(visitor)
-
-###############################################################################
-plt.figure(figsize=(7, 4))
-N = 2
-plt.subplot(1, N, 1)
-
-acVal = plot2DTrial(sp, 'acVal', iterList,
-        xlabel="I coupling strength (nS)",
-        ylabel='E coupling strength (nS)',
-        clBarLabel = "Correlation",
-        clbarNTicks=3)
-
-###############################################################################
-plt.subplot(1, N, 2)
-freq = plot2DTrial(sp, 'freq', iterList,
-        xlabel="I coupling strength (nS)",
-        clBarLabel = "Frequency (Hz)",
-        clbarNTicks=3,
-        yticks=False)
-###############################################################################
-plt.tight_layout()
 plt.show()
+
