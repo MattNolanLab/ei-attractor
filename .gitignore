@@ -4,6 +4,7 @@
 *.so
 *.swp
 .DS_Store
+output_local
 
 /INSTALL.html
 /README.html
