@@ -29,19 +29,20 @@ lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
 ENV         = 'cluster'
-simRootDir  =  'output'
-simLabel    =  'EI_param_sweep_300pA_full'
+simRootDir  = 'output'
+simLabel    = 'EI_param_sweep_0pA_big'
 appName     = 'simulation_stationary.py'
 rtLimit     = '00:20:00'
 blocking    = True
 timePrefix  = True
 numRepeat   = 1
+dry_run     = False
 
 p['time']              = 10e3  # ms
 p['nthreads']          = 4
-p['ntrials']           = 10
+p['ntrials']           = 5
 
-p['noise_sigma']       = 300.0     # pA
+p['noise_sigma']       = 0.0     # pA
 
 
 ###############################################################################
@@ -50,9 +51,9 @@ ac = ArgumentCreator(p, printout=True)
 
 # Range of parameters around default values
 # Let's choose a 0.5 - 2 range around the default values
-Nvals        = 20     # Number of values for each dimension
-startFrac    = 0.5
-endFrac      = 2.0
+Nvals        = 40     # Number of values for each dimension
+startFrac    = 0.
+endFrac      = 2.8572
 
 
 fracArr = np.linspace(startFrac, endFrac, Nvals)
@@ -81,5 +82,5 @@ submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
         blocking=blocking, timePrefix=timePrefix);
 ac.setOption('output_dir', submitter.outputDir())
 startJobNum = 0
-submitter.submitAll(startJobNum, numRepeat, dry_run=False)
+submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
 submitter.saveIterParams(iterparams)
