@@ -27,3 +27,7 @@ arr = np.array([])
 ds = DataStorage.open('empty.h5', 'w')
 ds['empty'] = arr
 ds.close()
+
+
+ds = DataStorage.open('empty.h5', 'r')
+print("ds['empty']: {0}".format(ds['empty']))
