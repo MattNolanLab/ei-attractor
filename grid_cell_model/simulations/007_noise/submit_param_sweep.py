@@ -26,7 +26,7 @@ from submitting.arguments   import ArgumentCreator
 import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
-p['noise_sigma']       = 150.0     # pA
+p['noise_sigma']       = 300.0     # pA
 
 # Submitting
 ENV         = 'cluster'
