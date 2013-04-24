@@ -109,7 +109,10 @@ class HDF5DataStorage(DataStorage):
                         "parsing the get request. Please check whether your " +
                         "HDF5 file is in correct format")
         else:
-            return val.value
+            if (len(val) == 0):
+                return np.array([], dtype=val.dtype)
+            else:
+                return val.value
 
     def __delitem__(self, key):
         del self._group[key]
@@ -172,9 +175,15 @@ class HDF5DataStorage(DataStorage):
                     it += 1
             else:
                 try:
-                    grp.create_dataset(name=name, data= value, compression="gzip")
+                    grp.create_dataset(name=name, data=value, compression="gzip")
                 except TypeError:
-                    grp.create_dataset(name=name, data= value)
+                    grp.create_dataset(name=name, data=value)
+                except ValueError:
+                    mxShape = tuple([None]*value.ndim)
+                    chunks = tuple([1]*value.ndim)
+                    grp.create_dataset(name=name, shape=value.shape,
+                            data=value, maxshape=mxShape, chunks=chunks,
+                            compression="gzip")
         except TypeError:
             print "Could not create a data member %s" % name
             raise
