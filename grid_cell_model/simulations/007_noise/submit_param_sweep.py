@@ -51,7 +51,7 @@ ac = ArgumentCreator(p, printout=True)
 
 # Range of parameters around default values
 # Let's choose a 0.5 - 2 range around the default values
-Nvals        = 40     # Number of values for each dimension
+Nvals        = 40    # Number of values for each dimension
 startFrac    = 0.
 endFrac      = 2.8572
 
