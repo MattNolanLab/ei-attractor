@@ -26,11 +26,12 @@ from submitting.arguments   import ArgumentCreator
 import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
+p['noise_sigma']       = 150.0     # pA
 
 # Submitting
 ENV         = 'cluster'
 simRootDir  = 'output'
-simLabel    = 'EI_param_sweep_0pA_big'
+simLabel    = 'EI_param_sweep_{0}pA_big'.format(int(p['noise_sigma']))
 appName     = 'simulation_stationary.py'
 rtLimit     = '00:20:00'
 blocking    = True
@@ -42,7 +43,6 @@ p['time']              = 10e3  # ms
 p['nthreads']          = 4
 p['ntrials']           = 5
 
-p['noise_sigma']       = 0.0     # pA
 
 
 ###############################################################################
