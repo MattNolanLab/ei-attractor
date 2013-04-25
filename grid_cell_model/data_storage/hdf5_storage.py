@@ -109,10 +109,13 @@ class HDF5DataStorage(DataStorage):
                         "parsing the get request. Please check whether your " +
                         "HDF5 file is in correct format")
         else:
-            if (len(val) == 0):
-                return np.array([], dtype=val.dtype)
-            else:
+            try:
                 return val.value
+            except ValueError:
+                if (len(val) == 0):
+                    return np.array([], dtype=val.dtype)
+                else:
+                    raise
 
     def __delitem__(self, key):
         del self._group[key]
