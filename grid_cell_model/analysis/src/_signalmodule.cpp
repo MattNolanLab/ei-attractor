@@ -35,8 +35,10 @@ typedef blitz::Array<double, 1> DblVector;
 static PyObject *
 _signal_correlation_function(PyObject *self, PyObject *args)
 {
-    PyObject *in1;
-    PyObject *in2;
+    PyObject *in1 = NULL;
+    PyObject *in2 = NULL;
+    PyArrayObject *arr1 = NULL;
+    PyArrayObject *arr2 = NULL;
     int lag_start;
     int lag_end;
 
@@ -45,18 +47,24 @@ _signal_correlation_function(PyObject *self, PyObject *args)
         return NULL;
     }
 
+
     try {
-        DblVector v1 = convertPyToBlitz<double, 1>(in1);
-        DblVector v2 = convertPyToBlitz<double, 1>(in2);
-        //std::cout << v1 << v2;
-
+        arr1 = convertPyToNumpy<double, 1>(in1);
+        arr2 = convertPyToNumpy<double, 1>(in2);
+        DblVector v1 = convertPyToBlitz<double, 1>(arr1);
+        DblVector v2 = convertPyToBlitz<double, 1>(arr2);
         DblVector c = sig::correlation_function(v1, v2, lag_start, lag_end);
-        return convertBlitzToPy<double, 1>(c);
 
+        PyObject *ret = convertBlitzToPy<double, 1>(c);
+
+        Py_XDECREF(arr1);
+        Py_XDECREF(arr2);
+        return ret;
     } catch (python_exception) {
+        Py_XDECREF(arr1);
+        Py_XDECREF(arr2);
         return NULL;
     }
-
     Py_RETURN_NONE;
 }
 

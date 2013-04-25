@@ -231,8 +231,7 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
         lag_start = int(lag_start)
         lag_end   = int(lag_end)
         if (lag_start <= -sz1 or lag_end >= sz2):
-            raise ValueError("Lag range must be in the range [%d, %d]" %
-                    -(sz1 - 1) % sz2 - 1)
+            raise ValueError("Lag range must be in the range [{0}, {1}]".format(-(sz1 - 1), sz2 - 1))
         return _signal.correlation_function(a, b, lag_start, lag_end)
     else:
         raise ValueError("mode must be one of 'onesided', 'twosided', or 'range'")
