@@ -60,7 +60,8 @@ def extractStateVariable(mon, nIdx, varStr):
 def findFreq(ac, dt, ext_idx, ext_t):
     max_idx = np.nonzero(ext_t > 0)[0]
     if (len(max_idx) == 0):
-        raise ValueError("Autocorrelation must contain at least one local maximum")
+        return (np.nan, np.nan)
+        #raise ValueError("Autocorrelation must contain at least one local maximum")
     
     # First local maximum ac[0] excluded
     max1_idx = ext_idx[max_idx[0]]
