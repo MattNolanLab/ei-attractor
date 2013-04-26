@@ -30,8 +30,8 @@ from analysis.visitors    import AutoCorrelationVisitor
 from parameters           import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings, createColorbar
 import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+lg.basicConfig(level=lg.WARN)
+#lg.basicConfig(level=lg.INFO)
 
 
 # Other
@@ -39,14 +39,14 @@ plt.rcParams['font.size'] = 11
 
 ###############################################################################
 
-def plot2DTrial(sp, varName, iterList, xlabel="", ylabel="", colorBar=True,
-        clBarLabel="", title="", clbarNTicks=2, xticks=True, yticks=True):
+def plot2DTrial(sp, varName, iterList, trialNum=0, xlabel="", ylabel="",
+        colorBar=True, clBarLabel="", title="", clbarNTicks=2, xticks=True,
+        yticks=True):
     if (len(iterList) != 2):
         raise ValueError("iterList must contain exactly 2 elements.")
     shape = sp.getShape()
     rows = shape[0]
     cols = shape[1]
-    trialNum = 0
     retVar = np.ndarray(shape)
     for r in xrange(rows):
         for c in xrange(cols):
@@ -84,10 +84,11 @@ def plot2DTrial(sp, varName, iterList, xlabel="", ylabel="", colorBar=True,
 ###############################################################################
 
 dirs = {
-    './output_local/2013-04-24T15-27-30_EI_param_sweep_0pA_big'   : (40, 40),
-    './output_local/2013-04-24T21-37-47_EI_param_sweep_150pA_big' : (40, 40),
+    #'./output_local/2013-04-24T15-27-30_EI_param_sweep_0pA_big'   : (40, 40),
+    #'./output_local/2013-04-24T21-37-47_EI_param_sweep_150pA_big' : (40, 40),
     'output_local/2013-04-24T21-43-32_EI_param_sweep_300pA_big' : (40, 40)
 }
+NTrials = 5
 
 for rootDir, shape in dirs.iteritems():
     sp = JobTrialSpace2D(shape, rootDir)
@@ -99,30 +100,35 @@ for rootDir, shape in dirs.iteritems():
     visitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
     sp.visit(visitor)
 
-    print "Plotting results..."
-    
-    ###############################################################################
-    plt.figure(figsize=(5.1, 2.9))
-    N = 2
-    plt.subplot(1, N, 1)
-    
-    acVal = plot2DTrial(sp, 'acVal', iterList,
-            xlabel="I coupling strength (nS)",
-            ylabel='E coupling strength (nS)',
-            clBarLabel = "Correlation",
-            clbarNTicks=3)
-    
-    ###############################################################################
-    plt.subplot(1, N, 2)
-    freq = plot2DTrial(sp, 'freq', iterList,
-            xlabel="I coupling strength (nS)",
-            clBarLabel = "Frequency (Hz)",
-            clbarNTicks=3,
-            yticks=False)
-    ###############################################################################
-    plt.tight_layout()
-    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-    plt.savefig(sp.rootDir + '/analysis_EI_{0}pA.png'.format(int(noise_sigma)))
+    for trialNum in xrange(NTrials):
+        print("Plotting results for trial {0}".format(trialNum))
+        
+        ###############################################################################
+        plt.figure(figsize=(5.1, 2.9))
+        N = 2
+        plt.subplot(1, N, 1)
+        
+        acVal = plot2DTrial(sp, 'acVal', iterList,
+                trialNum=trialNum,
+                xlabel="I coupling strength (nS)",
+                ylabel='E coupling strength (nS)',
+                clBarLabel = "Correlation",
+                clbarNTicks=3)
+        
+        ###############################################################################
+        plt.subplot(1, N, 2)
+        freq = plot2DTrial(sp, 'freq', iterList,
+                trialNum=trialNum,
+                xlabel="I coupling strength (nS)",
+                clBarLabel = "Frequency (Hz)",
+                clbarNTicks=3,
+                yticks=False)
+        ###############################################################################
+        plt.tight_layout()
+        noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+        plt.savefig(sp.rootDir +
+                '/analysis_EI_{0}pA_trial{1}.png'.format(int(noise_sigma),
+                    trialNum))
 
 #plt.show()
 
