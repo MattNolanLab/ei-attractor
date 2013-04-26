@@ -64,10 +64,11 @@ class TrialSet(DataSpace):
             self._ds = DataStorage.open(fileName, fileMode)
             DataSpace.__init__(self, self._ds['trials'], key='trials')
             log_info("param_space", "Opened " + fileName)
-        except IOError:
+        except IOError as e:
             self._ds = None
             msg =  "Could not open file {0}. Creating an empty DataSet instead."
             log_warn("param_space", msg.format(fileName))
+            log_warn("param_space", "IOError message: {0}".format(str(e)))
             DataSpace.__init__(self, [], key='trials')
 
     def __del__(self):
