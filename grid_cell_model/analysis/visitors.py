@@ -23,18 +23,33 @@ from otherpkg.log     import log_info
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 
 class Visitor(object):
-    '''Abstract visitor class'''
+    '''
+    An abstract visitor class.
+
+    Normally, the base class of the Visitor design pattern must contain all the
+    methods implemented in the derived classes. Due to duck typing, one does
+    not need to declare the specific implementation methods of the visitor.
+    '''
     def __init__(self):
         raise NotImplementedError()
 
 
 
 class DictDSVisitor(Visitor):
-    '''Dictionary data set visitor'''
+    '''
+    Dictionary data set visitor.
+
+    A visitor that takes a dictionary data set method of any kind and processes
+    it. All the keys in the dictionary must be strings.
+    '''
     def __init__(self):
         raise NotImplementedError()
 
     def visitDictDataSet(self, ds):
+        '''
+        Visit the dictionary data set, 'ds', and perform the specific operations
+        (defined by the derived classes) on this data set.
+        '''
         raise NotImplementedError()
 
 
@@ -45,7 +60,7 @@ def extractStateVariable(mon, nIdx, varStr):
     
     Parameters
     ----------
-    mon : dict
+    mon : list of dicts
         A list of (NEST) monitors, each monitoring one neuron.
     nIdx : int
         Neuron index
@@ -57,11 +72,33 @@ def extractStateVariable(mon, nIdx, varStr):
     n = mon[nIdx]
     return n['events'][varStr], n['interval']
 
+
+
 def findFreq(ac, dt, ext_idx, ext_t):
+    '''
+    Find the first local maximum in an autocorrelation function and extract the
+    frequency and the value of the autocorrelation at the detected frequency.
+
+    Parameters
+    ----------
+    ac : numpy vector
+        A vector containing the autocorrelation function
+    dt : float
+        Sampling rate
+    ext_idx : numpy array
+        An array containig the indexes of local extrema (both maxima and
+        minima) in 'ac'
+    ext_t : numpy array
+        The array of the same size as 'ext_idx', which contains the types of
+        the local extrema ( >0 ... max, <0 ... min)
+    output
+        A tuple containig ('freq', 'corr'), where 'freq' is the frequency at
+        the first local maximum and 'corr' is the value of the autocorrelation
+        function at the same point.
+    '''
     max_idx = np.nonzero(ext_t > 0)[0]
     if (len(max_idx) == 0):
         return (np.nan, np.nan)
-        #raise ValueError("Autocorrelation must contain at least one local maximum")
     
     # First local maximum ac[0] excluded
     max1_idx = ext_idx[max_idx[0]]
@@ -75,7 +112,22 @@ def findFreq(ac, dt, ext_idx, ext_t):
 
 def sumAllVariables(mon, nIdx, varList):
     '''
-    Extract all variables from the list of monitors and sum them
+    Extract all variables from the list of monitors and sum them. The variables
+    must implement the + operator.
+
+    Parameters
+    ----------
+    mon : a list of dicts
+        A list that contains dictionaries of monitors. The list should be
+        compatible with the extractStateVariable function.
+    nIdx : int
+        Neuron index
+    varList : list of strings
+        Contains the list of variables that whould be extracted from the
+        monitor and summed up.
+    output
+        A tuple (sum, dt) that contains the sum of all the variables 'sum' and
+        the sampling rate of the signals ('dt').
     '''
     sigSum = None
     dtCheck = None
@@ -93,8 +145,39 @@ def sumAllVariables(mon, nIdx, varList):
 
 
 class AutoCorrelationVisitor(DictDSVisitor):
+    '''
+    A visitor to compute autocorrelations of state monitor data and extract
+    information from them.
+
+    The autocorrelation visitor takes as an input a state monitor, computes
+    autocorrelations (with specified lag) of the specified synaptic currents
+    and detects the major frequency, and power at that frequency, for all the
+    monitored neurons. The results will be stored to the dictionary where the
+    data came from.
+    '''
     def __init__(self, monName, stateList, dtMult=1e-3, norm=True,
             bandStart=20, bandEnd=200, forceUpdate=False):
+        '''
+        Initialise the visitor.
+
+        Parameters
+        ----------
+        monName : string
+            Name of the monitor; key in the data set dictionary
+        stateList : list of strings
+            A list of strings naming the state variables to extract (and sum)
+        dtMult : float, optional
+            dt Multiplier to transform dt into seconds
+        norm : bool, optional
+            Whether the autocorrelation function should be normalized
+        bandStart : float, optional
+            Bandpass start frequency
+        bandEnd   : float, optional
+            Bandpass end frequency
+        forceUpdate : bool
+            Whether to compute and store all the data even if they already
+            exist in the data set.
+        '''
         self.monName     = monName
         self.stateList   = stateList
         self.maxLag      = None
@@ -105,41 +188,24 @@ class AutoCorrelationVisitor(DictDSVisitor):
         self.forceUpdate = forceUpdate
 
 
-    def visitDictDataSet(self, ds):
-        data = ds.data
-        if (('analysis' not in data.keys()) or self.forceUpdate):
-            log_info("visitors", "Analysing a dataset")
-            o = data['options']
-            self.maxLag = 1. / (o['theta_freq'] * 1e-3)
-            freq, acVal, acVec = self.extractACStat(data[self.monName])
-            data['analysis'] = {
-                    'freq'  : np.array(freq),
-                    'acVal' : np.array(acVal),
-                    'acVec' : np.array(acVec)
-            }
-        else:
-            log_info("visitors", "Data present. Skipping analysis.")
 
     def extractACStat(self, mon):
         '''
-        Extrac autocorrelation statistics from a monitor
+        Extract autocorrelation statistics from a monitor.
+
+        For each monitored neuron, extract the (highest) frequency, value of
+        the autocorrelation at the frequency and the autocorrelation function
+        itself.
     
         Parameters
         ----------
         mon : list of dicts
-            A list of (NEST) state monitors' status dictionary
-        stateList : list of strings
-            A list of strings naming the state variables to extract (and sum)
-        maxLag : float
-            Maximal lag to extract (in seconds, NOT timesteps)
-        dtMult : float, optional
-            dt Multiplier to transform dt into seconds
-        norm : bool, optional
-            Whether the autocorrelation function should be normalized
-        bandStart : float, optional
-            Bandpass start frequency
-        bandEnd   : float, optional
-            Bandpass end frequency
+            A list of (NEST) state monitors' status dictionaries
+        output : tuple
+            A tuple (freq, acval, acVec), containing the arrays of frequencies
+            for the monitored neurons, autocorrelation values at the
+            corresponding frequencies, and autocorrelation functions of all the
+            neurons.
         '''
         freq   = [] # Frequency of input signal
         acval  = [] # Auto-correlation at the corresponding frequency
@@ -155,18 +221,39 @@ class AutoCorrelationVisitor(DictDSVisitor):
             ext_idx, ext_t = localExtrema(ac)
             acVec.append(ac)
     
-            #plt.figure()
-            #plt.plot(times[0:slice], ac[0:slice])
-            #plt.hold('on')
-            #plt.plot(times[ext_idx], ac[ext_idx], '.')
-            #plt.ylim([-1, 1])
-            #plt.savefig(output_fname + "_peaks_ac_extrema_%d.pdf" % n_id)
-            #plt.close()
-    
             f, a = findFreq(ac, dt*1e-3, ext_idx, ext_t)
             freq.append(f)
             acval.append(a)
     
         return freq, acval, acVec
 
+
+    def visitDictDataSet(self, ds):
+        '''
+        Visit the dictionary data set and extract frequency, autocorrelation
+        for the detected frequency, and autocorrelation functions, for all the
+        monitored neurons.  The parameters are defined by the constructor of
+        the object.
+
+        If the analysed data is already present, the analysis and storage of
+        the data will be skipped.
+
+        Parameters
+        ----------
+        ds : a dict-like object
+            A data set to perform analysis on.
+        '''
+        data = ds.data
+        if (('analysis' not in data.keys()) or self.forceUpdate):
+            log_info("visitors", "Analysing a dataset")
+            o = data['options']
+            self.maxLag = 1. / (o['theta_freq'] * 1e-3)
+            freq, acVal, acVec = self.extractACStat(data[self.monName])
+            data['analysis'] = {
+                    'freq'  : np.array(freq),
+                    'acVal' : np.array(acVal),
+                    'acVec' : np.array(acVec)
+            }
+        else:
+            log_info("visitors", "Data present. Skipping analysis.")
 
