@@ -155,7 +155,13 @@ class DictDSVisitor(Visitor):
         '''
         raise NotImplementedError()
 
+    def getOption(self, data, optStr):
+        '''Extract an option from a data dictionary'''
+        return data['options'][optStr]
 
+    def getNetParam(self, data, p):
+        '''Extract a network parameter (p) from the data dictionary'''
+        return data['net_attr'][p]
 
 
 class AutoCorrelationVisitor(DictDSVisitor):
@@ -286,26 +292,24 @@ class BumpFittingVisitor(DictDSVisitor):
     '''
     
     def __init__(self, forceUpdate=False):
-        self.forceUpdate = false
+        self.forceUpdate = forceUpdate
 
         # Population FR parameters
         # All time units in msec
-        self.tstart = 0.0
-        self.tend   = options['time']
         self.dt     = 20.0
         self.winLen = 250.0
 
-    def fitGaussianToMon(self, mon, Nx, Ny):
+    def fitGaussianToMon(self, mon, Nx, Ny, tstart, tend):
         '''
         Fit a Gaussian function to the monitor mon, and return the results.
         '''
         N = Nx * Ny
 
         senders, times = extractSpikes(mon)
-        F, Ft = slidingFiringRateTuple((senders, times), N, self.tstart,
-                self.tend, self.dt, self.winLen)
+        F, Ft = slidingFiringRateTuple((senders, times), N, tstart, tend,
+                self.dt, self.winLen)
             
-        bumpT = self.tend - 2*self.winLen
+        bumpT = tend - 2*self.winLen
         bumpI = bumpT / self.dt
         bump = np.reshape(F[:, bumpI], (Ny, Nx))
         dim = Position2D()
@@ -325,20 +329,27 @@ class BumpFittingVisitor(DictDSVisitor):
             noData = True
         else:
             a = data['analysis']
-            if (('bump' not in a.keys()) or noData or self.forceUpdate):
+            tstart = 0.0
+            tend   = self.getOption(data, 'time')
+            if (('bump_e' not in a.keys()) or noData or self.forceUpdate):
+                log_info("BumpFittingVisitor", "Analysing a dataset")
                 # Fit the Gaussian onto E neurons
-                Nx = ds.getParam(data, 'Ne_x')
-                Ny = ds.getParam(data, 'Ne_y')
+                Nx  = self.getNetParam(data, 'Ne_x')
+                Ny  = self.getNetParam(data, 'Ne_y')
                 mon = data['spikeMon_e']
-                A, mu_x, mu_y, sigma = self.fitGaussianToMon(mon, Nx, Ny)
+                (A, mu_x, mu_y, sigma), err2 = self.fitGaussianToMon(mon, Nx, Ny,
+                        tstart, tend)
                 a['bump_e'] = {
                         'A' : A,
                         'mu_x' : mu_x,
                         'mu_y' : mu_y,
-                        'sigma' : sigma
+                        'sigma' : sigma,
+                        'err2'  : np.sum(err2)
                 }
 
                 # Fit the Gaussian onto I neurons
                 # TODO
+            else:
+                log_info("BumpFittingVisitor", "Data present. Skipping analysis.")
 
 
