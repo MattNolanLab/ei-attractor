@@ -22,38 +22,6 @@ import numpy as np
 from otherpkg.log     import log_info
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 
-class Visitor(object):
-    '''
-    An abstract visitor class.
-
-    Normally, the base class of the Visitor design pattern must contain all the
-    methods implemented in the derived classes. Due to duck typing, one does
-    not need to declare the specific implementation methods of the visitor.
-    '''
-    def __init__(self):
-        raise NotImplementedError()
-
-
-
-class DictDSVisitor(Visitor):
-    '''
-    Dictionary data set visitor.
-
-    A visitor that takes a dictionary data set method of any kind and processes
-    it. All the keys in the dictionary must be strings.
-    '''
-    def __init__(self):
-        raise NotImplementedError()
-
-    def visitDictDataSet(self, ds):
-        '''
-        Visit the dictionary data set, 'ds', and perform the specific operations
-        (defined by the derived classes) on this data set.
-        '''
-        raise NotImplementedError()
-
-
-
 
 def extractStateVariable(mon, nIdx, varStr):
     '''Extract state variable from a monitor.
@@ -72,6 +40,17 @@ def extractStateVariable(mon, nIdx, varStr):
     n = mon[nIdx]
     return n['events'][varStr], n['interval']
 
+
+
+def extractSpikes(mon):
+    '''
+    Extract spikes from a spike monitor (a dict-like object), that contains the
+    relevant fields.
+    
+    Return a tuple (senders, spikeTimes).
+    '''
+    e = mon['events']
+    return (e['senders'], e['times'])
 
 
 def findFreq(ac, dt, ext_idx, ext_t):
@@ -141,6 +120,39 @@ def sumAllVariables(mon, nIdx, varList):
             sigSum += sig
 
     return sigSum, dt
+
+
+
+class Visitor(object):
+    '''
+    An abstract visitor class.
+
+    Normally, the base class of the Visitor design pattern must contain all the
+    methods implemented in the derived classes. Due to duck typing, one does
+    not need to declare the specific implementation methods of the visitor.
+    '''
+    def __init__(self):
+        raise NotImplementedError()
+
+
+
+class DictDSVisitor(Visitor):
+    '''
+    Dictionary data set visitor.
+
+    A visitor that takes a dictionary data set method of any kind and processes
+    it. All the keys in the dictionary must be strings.
+    '''
+    def __init__(self):
+        raise NotImplementedError()
+
+    def visitDictDataSet(self, ds):
+        '''
+        Visit the dictionary data set, 'ds', and perform the specific operations
+        (defined by the derived classes) on this data set.
+        '''
+        raise NotImplementedError()
+
 
 
 
@@ -256,4 +268,27 @@ class AutoCorrelationVisitor(DictDSVisitor):
             }
         else:
             log_info("visitors", "Data present. Skipping analysis.")
+
+
+
+class BumpFittingVisitor(DictDSVisitor):
+    '''
+    The bump fitting visitor takes spikes of the neural population (in the
+    dictionary data set provided) and tries to
+    fit a Gaussian shaped function to the population firing rate map (which is
+    assumed to be a twisted torus). It saves the data under the 'analysis' key
+    into the dataset.
+
+    If the corresponding data is already present the visitor skips the data
+    analysis and saving.
+    '''
+    
+    def __init__(self, forceUpdate=False):
+        self.forceUpdate = false
+
+    def visitDictDataSet(self, ds):
+        '''
+        Apply the bump fitting procedure onto the dataset 'ds' if necessary,
+        and save the data into the dataset.
+        '''
 
