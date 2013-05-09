@@ -21,6 +21,8 @@
 import numpy as np
 from otherpkg.log     import log_info
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
+from analysis.image   import Position2D, fitGaussianBumpTT
+from analysis.spikes  import slidingFiringRateTuple
 
 
 def extractStateVariable(mon, nIdx, varStr):
@@ -286,9 +288,57 @@ class BumpFittingVisitor(DictDSVisitor):
     def __init__(self, forceUpdate=False):
         self.forceUpdate = false
 
+        # Population FR parameters
+        # All time units in msec
+        self.tstart = 0.0
+        self.tend   = options['time']
+        self.dt     = 20.0
+        self.winLen = 250.0
+
+    def fitGaussianToMon(self, mon, Nx, Ny):
+        '''
+        Fit a Gaussian function to the monitor mon, and return the results.
+        '''
+        N = Nx * Ny
+
+        senders, times = extractSpikes(mon)
+        F, Ft = slidingFiringRateTuple((senders, times), N, self.tstart,
+                self.tend, self.dt, self.winLen)
+            
+        bumpT = self.tend - 2*self.winLen
+        bumpI = bumpT / self.dt
+        bump = np.reshape(F[:, bumpI], (Ny, Nx))
+        dim = Position2D()
+        dim.x = Nx
+        dim.y = Ny
+        return fitGaussianBumpTT(bump, dim)
+
     def visitDictDataSet(self, ds):
         '''
         Apply the bump fitting procedure onto the dataset 'ds' if necessary,
         and save the data into the dataset.
         '''
+        noData = False
+        data = ds.data
+        if (('analysis' not in data.keys())):
+            data['analysis'] = {}
+            noData = True
+        else:
+            a = data['analysis']
+            if (('bump' not in a.keys()) or noData or self.forceUpdate):
+                # Fit the Gaussian onto E neurons
+                Nx = ds.getParam(data, 'Ne_x')
+                Ny = ds.getParam(data, 'Ne_y')
+                mon = data['spikeMon_e']
+                A, mu_x, mu_y, sigma = self.fitGaussianToMon(mon, Nx, Ny)
+                a['bump_e'] = {
+                        'A' : A,
+                        'mu_x' : mu_x,
+                        'mu_y' : mu_y,
+                        'sigma' : sigma
+                }
+
+                # Fit the Gaussian onto I neurons
+                # TODO
+
 
