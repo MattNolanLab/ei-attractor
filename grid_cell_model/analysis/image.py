@@ -144,7 +144,7 @@ def fitGaussianTT(sig_f, i, dim):
         a.y = x[2] # mu_y
         dist = remapTwistedTorus(a, others, dim)
         #dist = np.sqrt((others.x - a.x)**2 + (others.y - a.y)**2)
-        #print "C:", x[0], a, "sigma:", x[3]
+        #print "A:", x[0], a, "sigma:", x[3]
         return np.abs(x[0]) * np.exp( -dist**2/2./ x[3]**2 ) - sig_f
 #                       |                            |
 #                       A                          sigma
@@ -152,7 +152,8 @@ def fitGaussianTT(sig_f, i, dim):
     x0 = np.array([i.A0, i.mu0_x, i.mu0_y, i.sigma0])
 
     xest,ierr = scipy.optimize.leastsq(gaussDiff, x0)
-    return xest
+    err = gaussDiff(xest)
+    return xest, err**2
 
 
 
