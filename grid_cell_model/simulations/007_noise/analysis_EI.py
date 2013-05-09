@@ -26,12 +26,12 @@ import matplotlib.pyplot as plt
 import numpy.ma as ma
 from matplotlib.ticker  import MaxNLocator, LinearLocator
 
-from analysis.visitors    import AutoCorrelationVisitor
+from analysis.visitors    import AutoCorrelationVisitor, BumpFittingVisitor
 from parameters           import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings, createColorbar
 import logging as lg
-lg.basicConfig(level=lg.WARN)
-#lg.basicConfig(level=lg.INFO)
+#lg.basicConfig(level=lg.WARN)
+lg.basicConfig(level=lg.INFO)
 
 
 # Other
@@ -84,9 +84,10 @@ def plot2DTrial(sp, varName, iterList, trialNum=0, xlabel="", ylabel="",
 ###############################################################################
 
 dirs = {
-    #'./output_local/2013-04-24T15-27-30_EI_param_sweep_0pA_big'   : (40, 40),
+    #'./output_local/2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample' : (2, 2),
+    './output_local/2013-04-24T15-27-30_EI_param_sweep_0pA_big'   : (40, 40),
     #'./output_local/2013-04-24T21-37-47_EI_param_sweep_150pA_big' : (40, 40),
-    'output_local/2013-04-24T21-43-32_EI_param_sweep_300pA_big' : (40, 40)
+    #'output_local/2013-04-24T21-43-32_EI_param_sweep_300pA_big' : (40, 40)
 }
 NTrials = 5
 
@@ -97,8 +98,11 @@ for rootDir, shape in dirs.iteritems():
     stateList = ['I_clamp_GABA_A']
     iterList  = ['g_AMPA_total', 'g_GABA_total']
     forceUpdate = False
-    visitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
-    sp.visit(visitor)
+    ACVisitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
+    bumpVisitor = BumpFittingVisitor(forceUpdate=forceUpdate)
+
+    #sp.visit(ACVisitor)
+    sp.visit(bumpVisitor)
 
     for trialNum in xrange(NTrials):
         print("Plotting results for trial {0}".format(trialNum))
