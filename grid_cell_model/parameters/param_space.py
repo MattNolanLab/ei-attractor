@@ -51,6 +51,9 @@ class DataSpace(Sequence):
     def __len__(self):
         return len(self._vals)
 
+    def getParam(self, data, paramStr):
+        return data['options'][paramStr]
+
 
 
 class TrialSet(DataSpace):
@@ -130,9 +133,6 @@ class JobTrialSpace2D(DataSpace):
         ds.close()
         return ret
 
-
-    def getParam(self, data, paramStr):
-        return data['options'][paramStr]
 
     def _checkIteratedParameters(self, paramStr, toCheck):
         tol  = 1e-9 * np.min(toCheck.flatten())
