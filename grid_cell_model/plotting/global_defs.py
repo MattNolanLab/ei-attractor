@@ -20,6 +20,7 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator, LinearLocator
 
 
 def globalAxesSettings(ax):
@@ -31,13 +32,13 @@ def globalAxesSettings(ax):
 
 
 def createColorbar(ax, data=None, label="", nticks=2, **kw):
-    if (data is not None):
-        mn = np.min(data.flatten())
-        mx = np.max(data.flatten())
-        ticks = np.linspace(mn, mx, nticks)
-    else:
-        ticks = None
-    cb = plt.colorbar(ax=ax, ticks=ticks, **kw)
+    #if (data is not None):
+    #    mn = np.min(data.flatten())
+    #    mx = np.max(data.flatten())
+    #    ticks = np.linspace(mn, mx, nticks)
+    #else:
+    #    ticks = None
+    cb = plt.colorbar(ax=ax, ticks=MaxNLocator(nticks+1), **kw)
     if (label != ""):
         cb.set_label(label)
 
