@@ -29,7 +29,7 @@ import numpy    as np
 lg.basicConfig(level=lg.DEBUG)
 
 
-EDDIE = True  # if eddie, submit on a cluster using qsub
+EDDIE = False  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
@@ -82,11 +82,11 @@ else:
 
 
 startJobNum = 50
-numRepeat = 20
+numRepeat = 1
 
 # Workstation parameters
 programName         = 'python2.6 -i simulation_fig_model.py'
-blocking            = False
+blocking            = True
 
 # Cluster parameters
 eddie_scriptName    = 'eddie_submit.sh simulation_fig_model.py'
