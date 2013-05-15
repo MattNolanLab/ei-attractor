@@ -39,9 +39,13 @@ plt.rcParams['font.size'] = 11
 
 ###############################################################################
 
-def plot2DTrial(sp, varName, iterList, trialNum=0, xlabel="", ylabel="",
-        colorBar=True, clBarLabel="", title="", clbarNTicks=2, xticks=True,
-        yticks=True):
+def getDictData(d, keyList):
+    ret = d
+    for key in keyList:
+        ret = ret[key]
+    return ret
+
+def aggregate2DTrial(sp, varList, iterList, trialNum):
     if (len(iterList) != 2):
         raise ValueError("iterList must contain exactly 2 elements.")
     shape = sp.getShape()
@@ -54,40 +58,77 @@ def plot2DTrial(sp, varName, iterList, trialNum=0, xlabel="", ylabel="",
                 retVar[r][c] = np.nan
             else:
                 data = sp[r][c][trialNum].data['analysis']
-                retVar[r][c] = np.mean(data[varName])
+                retVar[r][c] = np.mean(getDictData(data, varList))
 
-    retVar =  ma.MaskedArray(retVar, mask=np.isnan(retVar))
+    return retVar
 
+def plot2DTrial(X, Y, C, xlabel="", ylabel="",
+        colorBar=True, clBarLabel="", vmax=None, title="", clbarNTicks=2,
+        xticks=True, yticks=True):
 
     ax = plt.gca()
     globalAxesSettings(ax)
-    Y, X = sp.getIteratedParameters(iterList)
-    plt.pcolormesh(X, Y, retVar)
-    createColorbar(ax, retVar, clBarLabel, nticks=clbarNTicks,
-            orientation='horizontal', pad=0.3)
+    plt.pcolormesh(X, Y, C, vmax=vmax)
+    if (clbarNTicks == None):
+        createColorbar(ax, None, clBarLabel, orientation='horizontal', pad=0.2)
+    else:
+        createColorbar(ax, C, clBarLabel, nticks=clbarNTicks,
+                orientation='horizontal', pad=0.2)
     if (xlabel != ""):
-        plt.xlabel(xlabel)
+        plt.xlabel(xlabel, va='top')
+        ax.xaxis.set_label_coords(0.5, -0.10)
     if (ylabel != ""):
-        #plt.ylabel(ylabel, color='white')
-        plt.ylabel(ylabel)
+        plt.ylabel(ylabel, ha='right')
+        ax.yaxis.set_label_coords(-0.10, 0.5)
     plt.axis('tight')
-    ax.xaxis.set_major_locator(LinearLocator(3))
-    ax.yaxis.set_major_locator(LinearLocator(3))
+    ax.xaxis.set_major_locator(LinearLocator(2))
+    ax.yaxis.set_major_locator(LinearLocator(2))
     if (not xticks):
         ax.xaxis.set_ticklabels([])
     if (not yticks):
         ax.yaxis.set_ticklabels([])
 
-    return retVar
+    return C
+
+
+def plotACTrial(sp, varList, iterList, trialNum=0, xlabel="", ylabel="",
+        colorBar=True, clBarLabel="", vmax=None, title="", clbarNTicks=2,
+        xticks=True, yticks=True):
+    C = aggregate2DTrial(sp, varList, iterList, trialNum)
+    C = ma.MaskedArray(C, mask=np.isnan(C))
+    Y, X = sp.getIteratedParameters(iterList)
+    plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmax, title,
+            clbarNTicks, xticks, yticks)
+
+def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, trialNum=0, xlabel="", ylabel="",
+        colorBar=True, clBarLabel="", vmax=None, title="", clbarNTicks=2,
+        xticks=True, yticks=True):
+    C = aggregate2DTrial(sp, varList, iterList, trialNum)
+    C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
+    Y, X = sp.getIteratedParameters(iterList)
+    return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmax,
+            title, clbarNTicks, xticks, yticks)
+
+def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, mask=None,
+        trialNum=0, xlabel="", ylabel="", colorBar=True, clBarLabel="",
+        vmax=None, title="", clbarNTicks=2, xticks=True, yticks=True):
+    C = np.sqrt(aggregate2DTrial(sp, varList, iterList, trialNum))
+    if mask is None:
+        mask = False
+    C = ma.MaskedArray(C, mask=np.logical_or(np.logical_or(np.isnan(C), C >
+        thr), mask))
+    Y, X = sp.getIteratedParameters(iterList)
+    return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmax,
+            title, clbarNTicks, xticks, yticks)
 
 
 ###############################################################################
 
 dirs = {
     #'./output_local/2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample' : (2, 2),
-    './output_local/2013-04-24T15-27-30_EI_param_sweep_0pA_big'   : (40, 40),
+    #'./output_local/2013-04-24T15-27-30_EI_param_sweep_0pA_big'   : (40, 40),
     #'./output_local/2013-04-24T21-37-47_EI_param_sweep_150pA_big' : (40, 40),
-    #'output_local/2013-04-24T21-43-32_EI_param_sweep_300pA_big' : (40, 40)
+    'output_local/2013-04-24T21-43-32_EI_param_sweep_300pA_big' : (40, 40)
 }
 NTrials = 5
 
@@ -102,7 +143,7 @@ for rootDir, shape in dirs.iteritems():
     bumpVisitor = BumpFittingVisitor(forceUpdate=forceUpdate)
 
     #sp.visit(ACVisitor)
-    sp.visit(bumpVisitor)
+    #sp.visit(bumpVisitor)
 
     for trialNum in xrange(NTrials):
         print("Plotting results for trial {0}".format(trialNum))
@@ -112,18 +153,17 @@ for rootDir, shape in dirs.iteritems():
         N = 2
         plt.subplot(1, N, 1)
         
-        acVal = plot2DTrial(sp, 'acVal', iterList,
+        acVal = plotACTrial(sp, ['acVal'], iterList,
                 trialNum=trialNum,
-                xlabel="I coupling strength (nS)",
-                ylabel='E coupling strength (nS)',
+                xlabel="I (nS)",
+                ylabel='E (nS)',
                 clBarLabel = "Correlation",
                 clbarNTicks=3)
-        
         ###############################################################################
         plt.subplot(1, N, 2)
-        freq = plot2DTrial(sp, 'freq', iterList,
+        freq = plotACTrial(sp, ['freq'], iterList,
                 trialNum=trialNum,
-                xlabel="I coupling strength (nS)",
+                xlabel="I (nS)",
                 clBarLabel = "Frequency (Hz)",
                 clbarNTicks=3,
                 yticks=False)
@@ -132,6 +172,37 @@ for rootDir, shape in dirs.iteritems():
         noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
         plt.savefig(sp.rootDir +
                 '/analysis_EI_{0}pA_trial{1}.png'.format(int(noise_sigma),
+                    trialNum))
+
+        ###############################################################################
+        ###############################################################################
+        plt.figure(figsize=(5.1, 2.9))
+        N = 2
+        plt.subplot(1, N, 1)
+        
+        bumpSigmaThreshold = 50
+        bump_sigma = plotBumpSigmaTrial(sp, ['bump_e', 'sigma'], iterList,
+                thr=bumpSigmaThreshold,
+                trialNum=trialNum,
+                xlabel="I (nS)",
+                ylabel='E (nS)',
+                clBarLabel = "Gaussian $\sigma$ (nrns)",
+                #vmax  = 100,
+                clbarNTicks=4)
+        ###############################################################################
+        plt.subplot(1, N, 2)
+        bump_err2 = plotBumpErrTrial(sp, ['bump_e', 'err2'], iterList,
+                trialNum=trialNum,
+                mask=bump_sigma.mask,
+                xlabel="I (nS)",
+                clBarLabel = "Error of fit (Hz)",
+                clbarNTicks=3,
+                yticks=False)
+        ###############################################################################
+        plt.tight_layout()
+        noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+        plt.savefig(sp.rootDir +
+                '/analysis_EI_{0}pA_bump_trial{1}.png'.format(int(noise_sigma),
                     trialNum))
 
 #plt.show()

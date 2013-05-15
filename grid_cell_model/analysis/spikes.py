@@ -95,6 +95,8 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
     spikes is a tuple(n_id, times), in which n_id is a list/array of neuron id
     and times is a list/array of spike times
 
+    Parameters
+    ----------
     spikes  A pair (n_id, spikes)
     N       Total number of neurons
     tstart  When the firing rate will start (ms)

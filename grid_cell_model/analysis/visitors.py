@@ -343,7 +343,7 @@ class BumpFittingVisitor(DictDSVisitor):
                         'A' : A,
                         'mu_x' : mu_x,
                         'mu_y' : mu_y,
-                        'sigma' : sigma,
+                        'sigma' : np.abs(sigma),
                         'err2'  : np.sum(err2)
                 }
 
