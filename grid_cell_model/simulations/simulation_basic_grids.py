@@ -19,9 +19,6 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-from matplotlib.backends.backend_pdf import PdfPages
-
 from scipy      import linspace
 from scipy.io   import loadmat
 from scipy.io   import savemat
