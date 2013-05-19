@@ -140,7 +140,8 @@ Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
 Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
 
 
-# Plot membrane potentials
+# Plot membrane potentials of a cell in the middle of the sheet and at the
+# bottom-center
 figure()
 ax = subplot(211)
 plot(stateMon_e.times, stateMon_e.values[:, 0:2]/mV)
@@ -154,6 +155,7 @@ tight_layout()
 savefig(output_fname + '_Vm.pdf')
 
 
+# Plot post-synaptic currents of the same cells
 figure()
 ax = subplot(211)
 plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
@@ -167,6 +169,8 @@ xlim(x_lim)
 tight_layout()
 savefig(output_fname + '_Isyn.pdf')
 
+
+# Plot external current input
 figure()
 ax = subplot(211)
 plot(stateMon_Iext_e.times, -stateMon_Iext_e.values[:, 1]/pA)
@@ -179,6 +183,9 @@ xlim(x_lim)
 tight_layout()
 savefig(output_fname + '_Iext.png')
 
+
+# Plot a snapshot of the population firing rate on the twisted torus, E
+# cells
 figure()
 pcolormesh(np.reshape(Fe[:, len(Fe_t)/2], (ei_net.Ne_y, ei_net.Ne_x)))
 xlabel('E neuron #')
@@ -188,6 +195,9 @@ axis('equal')
 tight_layout()
 savefig(output_fname + '_firing_snapshot_e.png')
 
+
+# Plot a snapshot of the population firing rate on the twisted torus, I
+# cells
 figure()
 pcolormesh(np.reshape(Fi[:, len(Fi_t)/2], (ei_net.Ni_y, ei_net.Ni_x)))
 xlabel('I neuron #')
