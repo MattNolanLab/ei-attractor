@@ -137,38 +137,6 @@ def SNFiringRate(spikeTimes, tend, dt, winLen):
     return (r/winLen, times)
 
 
-def motionDirection(pos_x, pos_y, pos_dt, tend, winLen):
-    '''
-    Estimate the direction of motion as an average angle of the
-    directional vector in the windown of winLen.
-    pos_x, pos_y    Tracking data
-    pos_dt          Sampling rate of tracking data
-    tend            End time to consider
-    winLen          Window length (s)
-    '''
-    sz = int(tend/pos_dt) + 1
-    angles = np.ndarray(sz)
-    avg_spd = np.ndarray(sz)
-    times = np.ndarray(sz)
-
-    vel_x = np.diff(pos_x) / pos_dt
-    vel_y = np.diff(pos_y) / pos_dt
-
-    for t_i in xrange(sz):
-        times[t_i] = t_i*pos_dt
-        if t_i < len(vel_x):
-            vel_x_win = np.mean(vel_x[t_i:t_i+winLen/pos_dt])
-            vel_y_win = np.mean(vel_y[t_i:t_i+winLen/pos_dt])
-            angles[t_i] = np.arctan2(vel_y_win, vel_x_win)
-            avg_spd[t_i] = np.sqrt(vel_x_win**2 + vel_y_win**2)
-        else:
-            angles[t_i] = 0.0
-            avg_spd[t_i] = 0.0
-
-    return angles, times, avg_spd
-
-
-
 def cellGridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
     '''
     Compute a cell gridness score by taking the auto correlation of the

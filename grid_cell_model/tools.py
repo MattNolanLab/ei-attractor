@@ -107,28 +107,3 @@ def CWT(sig, dt, maxF, dF=2):
     return np.abs(w.cwt)**2, 1./(w.scales*w.fourierwl*dt)
 
 
-def createIgorSpikeRaster(spikes, yvals=None):
-    '''
-    spikes  row-wise 2d array of spike times
-    '''
-    if yvals is None:
-        yvals = range(len(spikes)) + 1
-
-    raster_x = np.ndarray((0))
-    raster_y = np.ndarray((0))
-    for it in range(len(spikes)):
-        raster_x = np.hstack((raster_x, spikes[it]))
-        raster_y = np.hstack((raster_y, np.zeros((len(spikes[it]))) + yvals[it]))
-
-    return (raster_x, raster_y)
-
-    
-##############################################################################
-#                         Image analysis functions
-##############################################################################
-
-
-
-
-
-
