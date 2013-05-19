@@ -25,12 +25,15 @@ from scipy    import linspace
 from scipy.io import loadmat
 from scipy.io import savemat
 from optparse import OptionParser
+from brian    import *
 
-from parameters              import *
-from grid_cell_network_brian import *
-from custombrian             import *
-from tools                   import *
-from plotting                import *
+from parameters              import getOptParser, setOptionDictionary
+from grid_cell_network_brian import BrianGridCellNetwork
+from custombrian             import ExtendedSpikeMonitor
+from tools                   import butterHighPass, spikePhaseTrialRaster, \
+        phaseCWT
+from plotting                import phaseFigTemplate, rasterPhasePlot, \
+        raster_bin_size
 
 import time
 import numpy as np
@@ -47,7 +50,6 @@ options         = setOptionDictionary(parser, options)
 
 # Other
 figSize = (12,8)
-histFigSize = (6, 4)
 
 
 ################################################################################
@@ -157,58 +159,23 @@ for trial_it in range(ei_net.no.ntrials):
     F_winLen = 0.25
     Fe, Fe_t = spikeMon_e.getFiringRate(F_tstart, F_tend, F_dt, F_winLen) 
     Fi, Fi_t = spikeMon_i.getFiringRate(F_tstart, F_tend, F_dt, F_winLen)
-    Fe_mean = spikeMon_e.getAvgFiringRateMiddleTheta(options.theta_start_mon_t*1e-3, options.theta_freq, options.time*1e-3, .5/options.theta_freq)
-    Fi_mean = spikeMon_i.getAvgFiringRateMiddleTheta(options.theta_start_mon_t*1e-3, options.theta_freq, options.time*1e-3, .5/options.theta_freq)
-
-    # Average firing rate of stellate cells in the middle of each theta cycle
-    figure(figsize=figSize)
-    pcolormesh(np.reshape(Fe_mean, (ei_net.Ne_y, ei_net.Ne_x)))
-    xlabel('E neuron no.')
-    ylabel('E neuron no.')
-    colorbar()
-    axis('equal')
-    savefig(output_fname + '_avg_Fe_theta.png')
-    
-    figure(figsize=histFigSize)
-    hist(Fe_mean, 20)
-    xlabel('E Firing rate (Hz)')
-    ylabel('Count')
-    tight_layout()
-    savefig(output_fname + '_avg_Fe_theta_hist.pdf')
 
 
 
-    # Average firing rate of interneurons in the middle of each theta cycle
-    figure(figsize=figSize)
-    pcolormesh(np.reshape(Fi_mean, (ei_net.Ni_y, ei_net.Ni_x)))
-    xlabel('I neuron no.')
-    ylabel('I neuron no.')
-    colorbar()
-    axis('equal')
-    savefig(output_fname + '_avg_Fi_theta.png')
-
-    figure(figsize=histFigSize)
-    hist(Fi_mean, 20)
-    xlabel('I Firing rate (Hz)')
-    ylabel('Count')
-    tight_layout()
-    savefig(output_fname + '_avg_Fi_theta_hist.pdf')
-
-
-    # plot firing rates
-    figure(figsize=figSize)
-    subplot(211)
-    T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
-    pcolormesh(T, FR, Fe)
-    ylabel('E Neuron no.')
-    colorbar()
-    subplot(212)
-    T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
-    pcolormesh(T, FR, Fi)
-    xlabel('Time (s)')
-    ylabel('I Neuron no.')
-    colorbar()
-    savefig(output_fname + '_firing_rate_e.png')
+    ## plot firing rates
+    #figure(figsize=figSize)
+    #subplot(211)
+    #T, FR = np.meshgrid(Fe_t, np.arange(ei_net.net_Ne))
+    #pcolormesh(T, FR, Fe)
+    #ylabel('E Neuron no.')
+    #colorbar()
+    #subplot(212)
+    #T, FR = np.meshgrid(Fi_t, np.arange(ei_net.net_Ni))
+    #pcolormesh(T, FR, Fi)
+    #xlabel('Time (s)')
+    #ylabel('I Neuron no.')
+    #colorbar()
+    #savefig(output_fname + '_firing_rate_e.png')
 
 
     # Plot membrane potentials
@@ -224,14 +191,6 @@ for trial_it in range(ei_net.no.ntrials):
     savefig(output_fname + '_Vm.pdf')
     
 
-    figure()
-    plot(stateMon_ge_e.times, stateMon_ge_e.values[:, 0:2]/nS)
-    ylabel('E cell ge (nS)')
-    xlabel('Time (s)')
-    xlim(x_lim)
-    savefig(output_fname + '_ge.pdf')
-    
-    
     figure()
     ax = subplot(211)
     plot(stateMon_Iclamp_e.times, stateMon_Iclamp_e.values[:, 0:2]/pA)
@@ -272,56 +231,28 @@ for trial_it in range(ei_net.no.ntrials):
     savefig(output_fname + '_firing_snapshot_i.png')
 
 
-    # Print a plot of bump position
-    F_dt = 0.02
-    F_winLen = 0.25
-    (pos, bumpPos_times) = spikeMon_e.torusPopulationVector([ei_net.Ne_x,
-        ei_net.Ne_y], options.theta_start_t*1e-3, options.time*1e-3, F_dt, F_winLen)
-    figure(figsize=figSize)
-    plot(bumpPos_times, pos)
-    xlabel('Time (s)')
-    ylabel('Bump position (neurons)')
-    ylim([-ei_net.Ne_x/2 -5, ei_net.Ne_y/2 + 5])
-    
-    savefig(output_fname + '_bump_position.pdf')
-
-
     ###################################################################### 
     #                        Wavelet and raster analysiS
     ###################################################################### 
     print "Wavelet analysis..."
-    wavelet_list_e = []
-    wavelet_list_i = []
-    sig_phase_list_e = []
-    sig_phase_list_i = []
     wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_e.pdf')
     high_pass_freq = 40.
     maxF = 200
-    for ei_it in [0, 1]:
+    for ei_it in [0]:
         if ei_it == 0:
             print '  E neurons...'
             wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_e.pdf')
             wavelet_sig_fname = output_fname + '_phase_wavelet_e'
             sig_epochs_fname = output_fname + '_sig_epochs_e'
-            max_fname = output_fname + '_Fmax_scatter_e.pdf'
             tmp_stateMon = theta_stateMon_Iclamp_e
-            #w_Fmax_vec = w_Fmax_e_vec
-            #w_phmax_vec = w_phmax_e_vec
             range_n_it = theta_state_record_e
-            wavelet_list = wavelet_list_e
-            sig_phase_list = sig_phase_list_e
         else:
             print '  I neurons...'
             wavelet_sig_pp = PdfPages(output_fname + '_phase_sig_i.pdf')
             wavelet_sig_fname = output_fname + '_phase_wavelet_i'
             sig_epochs_fname = output_fname + '_sig_epochs_i'
-            max_fname = output_fname + '_Fmax_scatter_i.pdf'
             tmp_stateMon = theta_stateMon_Iclamp_i
-            #w_Fmax_vec = w_Fmax_i_vec
-            #w_phmax_vec = w_phmax_i_vec
             range_n_it = theta_state_record_i
-            wavelet_list = wavelet_list_i
-            sig_phase_list = sig_phase_list_i
     
         w_Fmax = np.ndarray(len(range_n_it))
         w_phmax= np.ndarray(len(range_n_it))
@@ -366,134 +297,48 @@ for trial_it in range(ei_net.no.ntrials):
             savefig(sig_epochs_fname + '{0}.png'.format(n_it),
                     dpi=300)
     
-            # Average signal plot
-            f = phaseFigTemplate()
-            mn = np.mean(sig_ph, 0)
-            st = np.std(sig_ph, 0)
-            gca().fill_between(cwt_phases, mn+st, mn-st, facecolor='black', alpha=0.1, zorder=0)
-            plot(cwt_phases, mn, 'k')
-            ylabel('I (pA)')
-            wavelet_sig_pp.savefig()
-            close()
+            ## Average signal plot
+            #f = phaseFigTemplate()
+            #mn = np.mean(sig_ph, 0)
+            #st = np.std(sig_ph, 0)
+            #gca().fill_between(cwt_phases, mn+st, mn-st, facecolor='black', alpha=0.1, zorder=0)
+            #plot(cwt_phases, mn, 'k')
+            #ylabel('I (pA)')
+            #wavelet_sig_pp.savefig()
+            #close()
 
             # Append everything to lists for export
             wavelet_list.append(sig_cwt)
 
         wavelet_sig_pp.close()
-    
-        ## Insert this to avg and std vectors and make a plot
-        #w_Fmax_vec.append(w_Fmax)
-        #w_phmax_vec.append(w_phmax)
-        #f = phaseFigTemplate()
-        #plot(w_phmax, w_Fmax, 'ko', markersize=10, alpha=0.25)
-        #errorbar(np.mean(w_phmax), np.mean(w_Fmax), np.std(w_Fmax),
-        #        np.std(w_phmax), 'ko', markersize=10)
-        #ylim([50, 120])
-        #savefig(max_fname)
     print "Done"
 
 
     # Raster plots
-    raster_list_e = []
-    raster_list_i = []
-    hist_list_e = []
-    hist_list_i = []
-    hists_mean_e = []
-    hists_mean_i = []
-    hists_std_e = []
-    hists_std_i = []
-    for ei_it in [0, 1]:
+    for ei_it in [0]:
         if ei_it == 0:
             raster_pp = PdfPages(output_fname + '_phase_raster_e.pdf')
-            avg_fname = output_fname + '_phase_pspike_avg_e.pdf'
             range_n_it = theta_state_record_e
             tmp_spikeMon = theta_spikeMon_e
-            middle_it = options.Ne**2 / 2 + options.Ne/2
-            raster_list = raster_list_e
-            hists = hist_list_e
-            hists_mean = hists_mean_e
-            hists_std = hists_std_e
         else:
             raster_pp = PdfPages(output_fname + '_phase_raster_i.pdf')
-            avg_fname = output_fname + '_phase_pspike_avg_i.pdf'
             range_n_it = theta_state_record_i
             tmp_spikeMon = theta_spikeMon_i
-            middle_it = options.Ni**2 / 2 + options.Ni/2
-            raster_list = raster_list_i
-            hists = hist_list_i
-            hists_mean = hists_mean_i
-            hists_std = hists_std_i
 
-        hist_nbins = 1./options.theta_freq/raster_bin_size
-       
         for n_it in range(len(range_n_it)):
             neuron_no = range_n_it[n_it]
             print('Saving rasters for neuron no. ' + str(neuron_no))
             phases, times, trials = spikePhaseTrialRaster(tmp_spikeMon[neuron_no],
                     options.theta_freq, options.theta_start_mon_t*msecond)
-
             phases -= np.pi
 
-            raster_list.append((phases, trials+1))
-        
             # Raster plots (single cell over 'theta' epochs)
             ntrials = np.ceil((options.time - options.theta_start_mon_t) * msecond * options.theta_freq)
             f = rasterPhasePlot(phases, trials, ntrials)
             raster_pp.savefig()
             close()
         
-            ## Histograms
-            #figure(figsize=small_plot_figsize)
-            if (len(phases) != 0):
-                h = hist(phases, hist_nbins, [-np.pi, np.pi],
-                        normed=False)
-                hists.append(h[0]/double(ntrials))
-                hist_ph = h[1][0:len(h[1])-1]
-            else:
-                hists.append([])
-            delaxes(gca())
         raster_pp.close()
-
-        # Average histogram + one neuron
-        f = phaseFigTemplate()
-        hists_mean.append(np.mean(hists, 0))
-        hists_std.append(np.std(hists, 0))
-        plot(hist_ph, hists_mean[0], 'k', linewidth=2., zorder=1)
-        gca().fill_between(hist_ph, hists_mean[0]+hists_std[0],
-                hists_mean[0]-hists_std[0],
-            facecolor='black', alpha=0.1)
-        plot(hist_ph, hists[0], 'k--', dashes=(5, 2.5), zorder=2)
-        ylabel('p(spike)')
-        ylim([-0.01, 0.7])
-        yticks([0, 0.7])
-        savefig(avg_fname)
-        
-        
-
-    #saveMat = False
-    #if saveMat:
-    #    outData = {}
-
-    #    # Save spike times of all neurons
-    #    outData['spikeCell_e']              = theta_spikeMon_e.aspikes
-    #    outData['spikeCell_i']              = theta_spikeMon_i.aspikes
-
-
-    #    outData['times']                    = theta_stateMon_Iclamp_e.times
-    #    # Save theta signal
-    #    outData['theta_signal_e']           = theta_stateMon_Iext_e.values
-
-    #    # Save bandpass filtered inhibition
-    #    bp_f_start = 40
-    #    bp_f_stop  = 200
-    #    outData['gamma_bandpass']           = butterBandPass(theta_stateMon_Iclamp_e.values, simulationClock.dt, bp_f_start, bp_f_stop)
-
-    #    # Save average firing rate
-
-    #    # Other
-    #    outData['options']                  = options._einet_optdict
-
-    #    savemat(output_fname + '_output.mat', outData, do_compression=False)
 
     print "End of trial no. " + str(trial_it) + "..."
     print 
