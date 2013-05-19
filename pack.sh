@@ -27,3 +27,4 @@ rm -f grid_cell_model/output/*
 
 cd ..
 tar -c -z --exclude .git* -f $pack_dir.tar.gz $pack_dir
+zip -x \*.git\* -x \*pack.sh -r $pack_dir $pack_dir
