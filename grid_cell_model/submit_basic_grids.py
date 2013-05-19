@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 #
-#   submit_job.py
+#   submit_basic_grids.py
 #
-#   Submit job(s) to the cluster/workstation
+#   Submit job(s) to the cluster/workstation:
+#     Grid fields with theta input and all the inhibition (for gamma) and place
+#     input.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -30,7 +32,7 @@ lg.basicConfig(level=lg.DEBUG)
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 2e3      # ms
+parameters['time']              = 10e3      # ms
 parameters['ndumps']            = 1
 
 parameters['placeT']            = 10e3      # ms

@@ -3,6 +3,7 @@
 #   submit_fig_model.py
 #
 #   Submit job(s) to the cluster/workstation: basic model figures
+#     Model description figures
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -27,16 +28,15 @@ lg.basicConfig(level=lg.DEBUG)
 
 
 parameters = defaultParameters
-parameters['time']              = 2e3   # ms
-parameters['theta_start_mon_t'] = 1.0e3   # ms
+parameters['time']              = 6e3   # ms
+parameters['theta_start_mon_t'] = 1e3   # ms
 
 
 startJobNum = 100
 numRepeat = 1
 
-
 # Workstation parameters
-programName = 'python -i simulation_fig_model.py'
+programName = 'python simulation_fig_model.py'
 blocking    = True
 ac = ArgumentCreator(parameters)
 submitter = GenericSubmitter(ac, programName, blocking=blocking)
