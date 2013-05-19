@@ -23,15 +23,13 @@ import numpy as np
 from scipy.io           import loadmat
 from scipy.io           import savemat
 from matplotlib.pyplot  import *
-from tables             import *
 from numpy.fft          import fft2
 
 from grid_cell_analysis import *
 
 
-jobRange = [3300, 3309]
-trialNum = 0
-dumpNum = 19
+jobRange = [0, 0]
+dumpNum = 0
 
 jobN = jobRange[1] - jobRange[0] + 1
 
@@ -48,7 +46,7 @@ spikeType = 'excitatory'
 
 dirName = "output/"
 fileNamePrefix = ''
-fileNameTemp = "{0}/{1}job{2:04}_trial{3:04}_dump{4:03}"
+fileNameTemp = "{0}/{1}job{2:04}_dump{3:03}"
 
 gridnessScores = []
 
@@ -57,8 +55,7 @@ for job_it in range(jobN):
     print 'jobNum: ' + str(jobNum)
 
     fileName = fileNameTemp
-    fileName = fileName.format(dirName, fileNamePrefix, jobNum,
-                                trialNum, dumpNum)
+    fileName = fileName.format(dirName, fileNamePrefix, jobNum, dumpNum)
     try:
         data = loadmat(fileName +  '_output.mat')
     except:
@@ -133,32 +130,6 @@ for job_it in range(jobN):
 
     close('all')
 
-
-    h5file = openFile(fileName + '_' + spikeType + '_igor.h5', mode = "w", title =
-            "Bump velocity export figures")
-    
-    neuronPos_x, neuronPos_y, max_i = extractSpikePositions2D(spikes, pos_x, pos_y, rat_dt)
-    h5file.createArray(h5file.root, 'rat_pos_x', pos_x[0:max_i+1])
-    h5file.createArray(h5file.root, 'rat_pos_y', pos_y[0:max_i+1])
-    h5file.createArray(h5file.root, 'neuronPos_x', neuronPos_x)
-    h5file.createArray(h5file.root, 'neuronPos_y', neuronPos_y)
-
-    rateMap[rateMap.mask == 1] = np.nan
-    h5file.createArray(h5file.root, 'rateMap', rateMap)
-    corr[corr.mask==1] = np.nan
-    h5file.createArray(h5file.root, 'corrMap', corr)
-    h5file.createArray(h5file.root, 'PSD_centered', PSD_centered)
-    h5file.createArray(h5file.root, 'FFT_FX', FX)
-    h5file.createArray(h5file.root, 'FFT_FY', FY)
-    h5file.createArray(h5file.root, 'FFT_fxy', fxy_igor)
-
-
-    h5file.close()
-
-
-# Save gridness scores
-savemat('job{0:04}_gridness_scores_'.format(jobRange[0]) + '_' + spikeType + '.mat',
-        {'gridnessScores': gridnessScores})
 
 print "Gridness scores:"
 print gridnessScores

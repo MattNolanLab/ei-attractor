@@ -29,7 +29,7 @@ from scipy.ndimage.interpolation import rotate
 from matplotlib.pyplot           import *
 
 __all__ = ['gaussianFilter', 'extractSpikePositions2D', 'plotSpikes2D', 'SNSpatialRate2D',
-        'SNFiringRate', 'motionDirection', 'SNAutoCorr', 'cellGridnessScore']
+        'SNFiringRate', 'SNAutoCorr', 'cellGridnessScore']
 
 
 def gaussianFilter(X, sigma):

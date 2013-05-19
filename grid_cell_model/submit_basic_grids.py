@@ -21,48 +21,32 @@
 #
 
 from default_params import defaultParameters
-from common         import *
+from common         import GenericSubmitter, ArgumentCreator
 
 import logging as lg
-
-
 lg.basicConfig(level=lg.DEBUG)
-
-
-EDDIE = False  # if eddie, submit on a cluster using qsub
 
 
 parameters = defaultParameters
 
 #parameters['time']              = 1199.9e3  # ms
-parameters['time']              = 10e3  # ms
+parameters['time']              = 2e3      # ms
 parameters['ndumps']            = 1
 
 parameters['placeT']            = 10e3      # ms
 
-parameters['stateMonDur']       = parameters['time']
+parameters['stateMonDur']       = 10e3
 
 parameters['bumpCurrentSlope']  = 1.175     # pA/(cm/s), !! this will depend on prefDirC !!
 parameters['gridSep']           = 60        # cm, grid field inter-peak distance
-
-parameters['output_dir']        = 'output'
 
 startJobNum = 0
 numRepeat = 1
 
 # Workstation parameters
 programName         = 'python simulation_basic_grids.py'
-blocking            = False
-
-# Cluster parameters
-eddie_scriptName    = 'eddie_submit.sh simulation_basic_grids.py'
-qsub_params         = "-P inf_ndtc -cwd -j y -l h_rt=13:00:00 -pe memory-2G 2"
-qsub_output_dir     = parameters['output_dir']
+blocking            = True
 
 ac = ArgumentCreator(parameters)
-
-if EDDIE:
-    submitter = QsubSubmitter(ac, eddie_scriptName, qsub_params, qsub_output_dir)
-else:
-    submitter = GenericSubmitter(ac, programName, blocking=blocking)
+submitter = GenericSubmitter(ac, programName, blocking=blocking)
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)
