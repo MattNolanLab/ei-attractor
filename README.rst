@@ -7,7 +7,7 @@ theta-nested gamma activity and grid firing fields in MEC and the results have
 been published in [PASTOLL2013]_. The code in this archive reproduces parts of
 the figures found in the published article.
 
-For installation and prerequisited necessary to run the model see the
+For installation and prerequisites necessary to run the model see the
 INSTALL.rst file in this directory.
 
 
