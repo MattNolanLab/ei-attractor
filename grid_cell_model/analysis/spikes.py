@@ -220,7 +220,7 @@ class ThetaSpikeAnalysis(PopulationSpikes):
         PopulationSpikes.__init__(self, N, senders, times)
 
 
-    def firingRateMiddleTheta(thetaStartT, thetaFreq, tEnd, winLen):
+    def firingRateMiddleTheta(self, thetaStartT, thetaFreq, tEnd, winLen):
         '''
         Compute firing rate for every neuron in the population. For each
         neuron, return an array of firing rates for every theta cycle.
@@ -236,16 +236,18 @@ class ThetaSpikeAnalysis(PopulationSpikes):
             Theta signal frequency
         tEnd : float (ms)
             Analysis end time
-        winLen : float (ms)
-            Length of the firing rate window. Must be <= 1e3/theta_freq
+        winLen : float
+            Length of the firing rate window as a fraction of the theta cycle
+            time. Will be derived from thetaFreq, and should be in the range
+            (0, 1>.
         '''
-        thetaT = 1. / thetaFreq
+        thetaT = 1e3 / thetaFreq # ms
         spikes = (self._senders, self._times)
         return slidingFiringRateTuple(spikes, self._N, thetaStartT + .5*thetaT,
-                tEnd, thetaT, winlen)
+                tEnd, thetaT, winLen * thetaT)
 
 
-    def avgFiringRateMiddleTheta(thetaStartT, thetaFreq, tEnd, winLen):
+    def avgFiringRateMiddleTheta(self, thetaStartT, thetaFreq, tEnd, winLen):
         '''
         Do the same thing as getFiringRateMiddleTheta, but for each neuron also
         compute its average firing rate from theta_start_t to tend
