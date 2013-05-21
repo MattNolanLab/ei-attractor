@@ -22,7 +22,7 @@ import numpy as np
 from otherpkg.log     import log_info
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 from analysis.image   import Position2D, fitGaussianBumpTT
-from analysis.spikes  import slidingFiringRateTuple
+from analysis.spikes  import slidingFiringRateTuple, ThetaSpikeAnalysis
 
 
 def extractStateVariable(mon, nIdx, varStr):
@@ -164,16 +164,16 @@ class DictDSVisitor(Visitor):
         return data['net_attr'][p]
 
 
-    def checkFolderExists(self, d, nameList):
+    def folderExists(self, d, nameList):
         '''
         Check if the folder at the end of the 'nameList' exists in dictionary
         'd'
         '''
-        for (name in NameList):
-            if (name not in d.keys()):
-                return False
-            else:
+        for name in nameList:
+            if (name in d.keys()):
                 d = d[name]
+            else:
+                return False
         return True
 
     def _checkAttrIsNone(self, attr, pName, data):
@@ -182,7 +182,7 @@ class DictDSVisitor(Visitor):
         'pName', otherwise return attr back.
         '''
         if (attr is None):
-            return self._getNetParam(data, pName)
+            return self.getOption(data, pName)
         else:
             return attr
 
@@ -287,18 +287,20 @@ class AutoCorrelationVisitor(DictDSVisitor):
             A data set to perform analysis on.
         '''
         data = ds.data
-        if (('analysis' not in data.keys()) or self.forceUpdate):
-            log_info("visitors", "Analysing a dataset")
+        if (not self.folderExists(data, ['analysis'])):
+            data['analysis'] = {}
+        a = data['analysis']
+
+        if (('freq' not in a.keys()) or self.forceUpdate):
+            log_info("AutoCorrelationVisitor", "Analysing a dataset")
             o = data['options']
             self.maxLag = 1. / (o['theta_freq'] * 1e-3)
             freq, acVal, acVec = self.extractACStat(data[self.monName])
-            data['analysis'] = {
-                    'freq'  : np.array(freq),
-                    'acVal' : np.array(acVal),
-                    'acVec' : np.array(acVec)
-            }
+            a['freq']  = np.array(freq),
+            a['acVal'] = np.array(acVal),
+            a['acVec'] = np.array(acVec)
         else:
-            log_info("visitors", "Data present. Skipping analysis.")
+            log_info("AutoCorrelationVisitor", "Data present. Skipping analysis.")
 
 
 
@@ -345,35 +347,33 @@ class BumpFittingVisitor(DictDSVisitor):
         Apply the bump fitting procedure onto the dataset 'ds' if necessary,
         and save the data into the dataset.
         '''
-        noData = False
         data = ds.data
         if (('analysis' not in data.keys())):
             data['analysis'] = {}
-            noData = True
-        else:
-            a = data['analysis']
-            tstart = 0.0
-            tend   = self.getOption(data, 'time')
-            if (('bump_e' not in a.keys()) or noData or self.forceUpdate):
-                log_info("BumpFittingVisitor", "Analysing a dataset")
-                # Fit the Gaussian onto E neurons
-                Nx  = self.getNetParam(data, 'Ne_x')
-                Ny  = self.getNetParam(data, 'Ne_y')
-                mon = data['spikeMon_e']
-                (A, mu_x, mu_y, sigma), err2 = self.fitGaussianToMon(mon, Nx, Ny,
-                        tstart, tend)
-                a['bump_e'] = {
-                        'A' : A,
-                        'mu_x' : mu_x,
-                        'mu_y' : mu_y,
-                        'sigma' : np.abs(sigma),
-                        'err2'  : np.sum(err2)
-                }
 
-                # Fit the Gaussian onto I neurons
-                # TODO
-            else:
-                log_info("BumpFittingVisitor", "Data present. Skipping analysis.")
+        a = data['analysis']
+        tstart = 0.0
+        tend   = self.getOption(data, 'time')
+        if (('bump_e' not in a.keys()) or self.forceUpdate):
+            log_info("BumpFittingVisitor", "Analysing a dataset")
+            # Fit the Gaussian onto E neurons
+            Nx  = self.getNetParam(data, 'Ne_x')
+            Ny  = self.getNetParam(data, 'Ne_y')
+            mon = data['spikeMon_e']
+            (A, mu_x, mu_y, sigma), err2 = self.fitGaussianToMon(mon, Nx, Ny,
+                    tstart, tend)
+            a['bump_e'] = {
+                    'A' : A,
+                    'mu_x' : mu_x,
+                    'mu_y' : mu_y,
+                    'sigma' : np.abs(sigma),
+                    'err2'  : np.sum(err2)
+            }
+
+            # Fit the Gaussian onto I neurons
+            # TODO
+        else:
+            log_info("BumpFittingVisitor", "Data present. Skipping analysis.")
 
 
 class FiringRateVisitor(DictDSVisitor):
@@ -385,13 +385,16 @@ class FiringRateVisitor(DictDSVisitor):
     Save the data to the original data set.
     '''
 
-    def __init__(self, winLen, thetaStartT=None, thetaFreq=None, tEnd=None, 
+    def __init__(self, winLen=0.5, thetaStartT=None, thetaFreq=None, tEnd=None, 
             forceUpdate=False):
         '''
         Initialize the visitor.
 
         Parameters
         ----------
+        winLen : float (ms)
+            Length of the firing rate window as a fraction of the theta cycle
+            time (0, 1>.
         thetaStartT : float (ms)
             Start time of the theta signal. The center of the firing rate
             window will be in the middle of the theta signal. Therefore it is
@@ -401,8 +404,8 @@ class FiringRateVisitor(DictDSVisitor):
             Theta signal frequency. If None, extract from the data
         tEnd : float (ms)
             Analysis end time. If None, extract from the data
-        winLen : float (ms)
-            Length of the firing rate window. Must be <= 1e3/theta_freq
+        forceUpdate : boolean, optional
+            Whether to do the data analysis even if the data already exists.
         '''
         self.thetaStartT = thetaStartT
         self.thetaFreq   = thetaFreq
@@ -421,33 +424,33 @@ class FiringRateVisitor(DictDSVisitor):
         return ThetaSpikeAnalysis(N, senders, times)
 
     def visitDictDataSet(self, ds):
-        noData = False
         data = ds.data
-        if (self.checkFolderExists(data, ['analysis'])):
+        if (not self.folderExists(data, ['analysis'])):
             data['analysis'] = {}
-            noData = True
+        a = data['analysis']
+
+        thetaStartT = self._checkAttrIsNone(self.thetaStartT,
+                'theta_start_t', data)
+        thetaFreq = self._checkAttrIsNone(self.thetaFreq, 'theta_freq',
+                data)
+        tEnd = self._checkAttrIsNone(self.tEnd, 'time', data)
+        if (not self.folderExists(a, ['FR_e']) or self.forceUpdate):
+            log_info('FiringRateVisitor', "Analysing...")
+            eSp = self._getSpikeTrain(data, 'spikeMon_e', ['Ne_x', 'Ne_y'])
+            eFR, eTimes = eSp.firingRateMiddleTheta(thetaStartT, thetaFreq,
+                    tEnd, self.winLen)
+            a['FR_e'] = {
+                'middleTheta' : eFR,
+                'middleThetaTimes' : eTimes
+            }
+            iSp = self._getSpikeTrain(data, 'spikeMon_i', ['Ni_x', 'Ni_y'])
+            iFR, iTimes = eSp.firingRateMiddleTheta(thetaStartT, thetaFreq,
+                    tEnd, self.winLen)
+            a['FR_i'] = {
+                'middleTheta' : iFR,
+                'middleThetaTimes' : iTimes
+            }
         else:
-            a = data['analysis']
-            thetaStartT = self._checkAttrIsNone(self.thetaStartT,
-                    'theta_start_t', data)
-            thetaFreq = self._checkAttrIsNone(self.thetaFreq, 'theta_freq',
-                    data)
-            tEnd = self._checkAttrIsNone(self.tEnd, 'time', data)
-            if (not self.checkFolderExists(a, ['FR_e']) or noData or
-                forceUpdate):
-                eSp = self._getSpikeTrain(data, 'spikeMon_e', ['Ne_x', 'Ne_y'])
-                eFR, eTimes = eSp.firingRateMiddleTheta(thetaStartT, thetaFreq,
-                        tEnd, self.winLen)
-                a['FR_e'] = {
-                    'middleTheta' : eFR,
-                    'middleThetaTimes' : eTimes
-                }
-                iSp = self._getSpikeTrain(data, 'spikeMon_i', ['Ni_x', 'Ni_y'])
-                iFR, iTimes = eSp.firingRateMiddleTheta(thetaStartT, thetaFreq,
-                        tEnd, self.winLen)
-                a['FR_i'] = {
-                    'middleTheta' : iFR,
-                    'middleThetaTimes' : iTimes
-                }
+            log_info("FiringRateVisitor", "Data present. Skipping analysis.")
 
 

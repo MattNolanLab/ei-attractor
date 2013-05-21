@@ -26,7 +26,8 @@ import matplotlib.pyplot as plt
 import numpy.ma as ma
 from matplotlib.ticker  import MaxNLocator, LinearLocator
 
-from analysis.visitors    import AutoCorrelationVisitor, BumpFittingVisitor
+from analysis.visitors    import AutoCorrelationVisitor, BumpFittingVisitor, \
+        FiringRateVisitor
 from parameters           import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings, createColorbar
 import logging as lg
@@ -125,10 +126,10 @@ def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, mask=None,
 ###############################################################################
 
 dirs = {
-    #'./output_local/2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample' : (2, 2),
+    './output_local/2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample' : (2, 2),
     #'./output_local/2013-04-24T15-27-30_EI_param_sweep_0pA_big'   : (40, 40),
     #'./output_local/2013-04-24T21-37-47_EI_param_sweep_150pA_big' : (40, 40),
-    'output_local/2013-04-24T21-43-32_EI_param_sweep_300pA_big' : (40, 40)
+    #'output_local/2013-04-24T21-43-32_EI_param_sweep_300pA_big' : (40, 40)
 }
 NTrials = 5
 
@@ -141,9 +142,11 @@ for rootDir, shape in dirs.iteritems():
     forceUpdate = False
     ACVisitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
     bumpVisitor = BumpFittingVisitor(forceUpdate=forceUpdate)
+    FRVisitor = FiringRateVisitor(forceUpdate=forceUpdate)
 
-    #sp.visit(ACVisitor)
-    #sp.visit(bumpVisitor)
+    sp.visit(ACVisitor)
+    sp.visit(bumpVisitor)
+    sp.visit(FRVisitor)
 
     for trialNum in xrange(NTrials):
         print("Plotting results for trial {0}".format(trialNum))
