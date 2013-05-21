@@ -25,7 +25,8 @@ from scipy import weave
 
 __all__ = ['firingRate', 'multipleFiringRate', 'firingRateFromPairs',
         'firingRateSlidingWindow', 'slidingFiringRateTuple',
-        'torusPopulationVector', 'torusPopulationVectorFromRates']
+        'torusPopulationVector', 'torusPopulationVectorFromRates',
+        'SpikeTrain', 'PopulationSpikes', 'ThetaSpikeAnalysis']
 
 
 def firingRate(spikeTrain, tstart, tend):
@@ -159,6 +160,7 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
         
 
 
+
 def torusPopulationVector(spikes, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=1.0):
     N = sheetSize[0]*sheetSize[1]
     F, tsteps = slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen)
@@ -182,4 +184,73 @@ def torusPopulationVectorFromRates(FR, sheetSize):
             P[t_it, 1] = np.dot(F[:, t_it], Y)
 
         return (np.angle(P)/2/np.pi*sheetSize, tsteps)
+
+
+
+
+class SpikeTrain(object):
+    '''
+    A base class for handling spike trains.
+    '''
+    def __init__(self):
+        raise NotImplementedError()
+
+
+
+class PopulationSpikes(SpikeTrain):
+    '''
+    Class to handle a population of spikes and a set of methods to do analysis
+    on the *whole* population.
+    '''
+    def __init__(self, N, senders, times):
+        self._N       = N
+        self._senders = senders
+        self._times   = times
+        if (N < 0):
+            raise ValueError("Number of neurons in the spike train must be " + 
+                    "non-negative! Got {0}.".format(N))
+
+
+
+class ThetaSpikeAnalysis(PopulationSpikes):
+    '''
+    Analyse population spike trains for theta oscillation-related information.
+    '''
+    def __init__(self, N, senders, times):
+        PopulationSpikes.__init__(self, N, senders, times)
+
+
+    def firingRateMiddleTheta(thetaStartT, thetaFreq, tEnd, winLen):
+        '''
+        Compute firing rate for every neuron in the population. For each
+        neuron, return an array of firing rates for every theta cycle.
+
+        Parameters
+        ----------
+        thetaStartT : float (ms)
+            Start time of the theta signal. The center of the firing rate
+            window will be in the middle of the theta signal. Therefore it is
+            up to the user to ensure that the peak of the theta signal is in
+            the middle.
+        thetaFreq : float (Hz)
+            Theta signal frequency
+        tEnd : float (ms)
+            Analysis end time
+        winLen : float (ms)
+            Length of the firing rate window. Must be <= 1e3/theta_freq
+        '''
+        thetaT = 1. / thetaFreq
+        spikes = (self._senders, self._times)
+        return slidingFiringRateTuple(spikes, self._N, thetaStartT + .5*thetaT,
+                tEnd, thetaT, winlen)
+
+
+    def avgFiringRateMiddleTheta(thetaStartT, thetaFreq, tEnd, winLen):
+        '''
+        Do the same thing as getFiringRateMiddleTheta, but for each neuron also
+        compute its average firing rate from theta_start_t to tend
+        '''
+        fr, times = self.firingRateMiddleTheta(theta_start_t, theta_freq, tend, winlen)
+        return np.mean(fr, 1)
+
 

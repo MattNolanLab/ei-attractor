@@ -164,6 +164,29 @@ class DictDSVisitor(Visitor):
         return data['net_attr'][p]
 
 
+    def checkFolderExists(self, d, nameList):
+        '''
+        Check if the folder at the end of the 'nameList' exists in dictionary
+        'd'
+        '''
+        for (name in NameList):
+            if (name not in d.keys()):
+                return False
+            else:
+                d = d[name]
+        return True
+
+    def _checkAttrIsNone(self, attr, pName, data):
+        '''
+        Check if 'attr' is None. If yes, extract it from 'data' under the name
+        'pName', otherwise return attr back.
+        '''
+        if (attr is None):
+            return self._getNetParam(data, pName)
+        else:
+            return attr
+
+
 class AutoCorrelationVisitor(DictDSVisitor):
     '''
     A visitor to compute autocorrelations of state monitor data and extract
@@ -351,5 +374,80 @@ class BumpFittingVisitor(DictDSVisitor):
                 # TODO
             else:
                 log_info("BumpFittingVisitor", "Data present. Skipping analysis.")
+
+
+class FiringRateVisitor(DictDSVisitor):
+    '''
+    Determine various firing rate statistics of a population of neurons on the
+    spiking data dataset:
+        * Average firing rate in the middle of the theta cycle
+
+    Save the data to the original data set.
+    '''
+
+    def __init__(self, winLen, thetaStartT=None, thetaFreq=None, tEnd=None, 
+            forceUpdate=False):
+        '''
+        Initialize the visitor.
+
+        Parameters
+        ----------
+        thetaStartT : float (ms)
+            Start time of the theta signal. The center of the firing rate
+            window will be in the middle of the theta signal. Therefore it is
+            up to the user to ensure that the peak of the theta signal is in
+            the middle. If None, extract from the data when performing analysis
+        thetaFreq : float (Hz)
+            Theta signal frequency. If None, extract from the data
+        tEnd : float (ms)
+            Analysis end time. If None, extract from the data
+        winLen : float (ms)
+            Length of the firing rate window. Must be <= 1e3/theta_freq
+        '''
+        self.thetaStartT = thetaStartT
+        self.thetaFreq   = thetaFreq
+        self.tEnd        = tEnd
+        self.winLen      = winLen
+        self.forceUpdate = forceUpdate
+
+
+    def _getSpikeTrain(self, data, monName, dimList):
+        N = 1
+        for dim in dimList:
+            dimN = self.getNetParam(data, dim)
+            N *= dimN
+        mon = data[monName]
+        senders, times = extractSpikes(mon)
+        return ThetaSpikeAnalysis(N, senders, times)
+
+    def visitDictDataSet(self, ds):
+        noData = False
+        data = ds.data
+        if (self.checkFolderExists(data, ['analysis'])):
+            data['analysis'] = {}
+            noData = True
+        else:
+            a = data['analysis']
+            thetaStartT = self._checkAttrIsNone(self.thetaStartT,
+                    'theta_start_t', data)
+            thetaFreq = self._checkAttrIsNone(self.thetaFreq, 'theta_freq',
+                    data)
+            tEnd = self._checkAttrIsNone(self.tEnd, 'time', data)
+            if (not self.checkFolderExists(a, ['FR_e']) or noData or
+                forceUpdate):
+                eSp = self._getSpikeTrain(data, 'spikeMon_e', ['Ne_x', 'Ne_y'])
+                eFR, eTimes = eSp.firingRateMiddleTheta(thetaStartT, thetaFreq,
+                        tEnd, self.winLen)
+                a['FR_e'] = {
+                    'middleTheta' : eFR,
+                    'middleThetaTimes' : eTimes
+                }
+                iSp = self._getSpikeTrain(data, 'spikeMon_i', ['Ni_x', 'Ni_y'])
+                iFR, iTimes = eSp.firingRateMiddleTheta(thetaStartT, thetaFreq,
+                        tEnd, self.winLen)
+                a['FR_i'] = {
+                    'middleTheta' : iFR,
+                    'middleThetaTimes' : iTimes
+                }
 
 
