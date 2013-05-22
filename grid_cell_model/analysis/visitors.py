@@ -437,19 +437,12 @@ class FiringRateVisitor(DictDSVisitor):
         if (not self.folderExists(a, ['FR_e']) or self.forceUpdate):
             log_info('FiringRateVisitor', "Analysing...")
             eSp = self._getSpikeTrain(data, 'spikeMon_e', ['Ne_x', 'Ne_y'])
-            eFR, eTimes = eSp.firingRateMiddleTheta(thetaStartT, thetaFreq,
-                    tEnd, self.winLen)
-            a['FR_e'] = {
-                'middleTheta' : eFR,
-                'middleThetaTimes' : eTimes
-            }
+            eFR = eSp.avgFiringRate(thetaStartT, tEnd)
+            a['FR_e'] = {'middleTheta' : eFR}
+
             iSp = self._getSpikeTrain(data, 'spikeMon_i', ['Ni_x', 'Ni_y'])
-            iFR, iTimes = eSp.firingRateMiddleTheta(thetaStartT, thetaFreq,
-                    tEnd, self.winLen)
-            a['FR_i'] = {
-                'middleTheta' : iFR,
-                'middleThetaTimes' : iTimes
-            }
+            iFR = iSp.avgFiringRate(thetaStartT, tEnd)
+            a['FR_i'] = {'middleTheta' : iFR}
         else:
             log_info("FiringRateVisitor", "Data present. Skipping analysis.")
 
