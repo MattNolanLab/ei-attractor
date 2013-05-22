@@ -438,11 +438,17 @@ class FiringRateVisitor(DictDSVisitor):
             log_info('FiringRateVisitor', "Analysing...")
             eSp = self._getSpikeTrain(data, 'spikeMon_e', ['Ne_x', 'Ne_y'])
             eFR = eSp.avgFiringRate(thetaStartT, tEnd)
-            a['FR_e'] = {'middleTheta' : eFR}
+            a['FR_e'] = {
+                    'all' : eFR,
+                    'avg' : np.mean(eFR)
+            }
 
             iSp = self._getSpikeTrain(data, 'spikeMon_i', ['Ni_x', 'Ni_y'])
             iFR = iSp.avgFiringRate(thetaStartT, tEnd)
-            a['FR_i'] = {'middleTheta' : iFR}
+            a['FR_i'] = {
+                    'all' : iFR,
+                    'avg' : np.mean(iFR)
+            }
         else:
             log_info("FiringRateVisitor", "Data present. Skipping analysis.")
 

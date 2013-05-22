@@ -226,7 +226,6 @@ class PopulationSpikes(SpikeTrain):
         output : numpy array
             Firing rate in Hz for each neuron in the population.
         '''
-        #import pdb; pdb.set_trace()
         result  = np.zeros((self._N, ))
         times   = self._times
         senders = self._senders
