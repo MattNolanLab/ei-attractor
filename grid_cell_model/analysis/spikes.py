@@ -52,15 +52,15 @@ def multipleFiringRate(spikeTrainArray, tstart, tend):
 
     return result
 
-def firingRateFromPairs(N, N_ids, times, tstart, tend):
-    '''
-    Compute average firing rate for all the neurons in the range <0, N), given
-    two arrays: N_ids (neuron ids) and times of spikes corresponding to N_ids).
-    '''
-    result = np.ndarray((N, ))
-    for n_it in xrange(N):
-        result[n_it] = firingRate(times[N_ids == n_it], tstart, tend)
-    return result
+#def firingRateFromPairs(N, N_ids, times, tstart, tend):
+#    '''
+#    Compute average firing rate for all the neurons in the range <0, N), given
+#    two arrays: N_ids (neuron ids) and times of spikes corresponding to N_ids).
+#    '''
+#    result = np.ndarray((N, ))
+#    for n_it in xrange(N):
+#        result[n_it] = firingRate(times[N_ids == n_it], tstart, tend)
+#    return result
 
 
 
@@ -103,9 +103,9 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
     tstart  When the firing rate will start (ms)
     tend    End time of firing rate (ms)
     dt      Sliding window dt - not related to simulation time (ms)
-    winLen  Length of the sliding window (ms)
+    winLen  Length of the sliding window (ms). Must be >= dt.
 
-    return  a n array of shape (N, int((tend-tstart)/dt)+1
+    return  An array of shape (N, int((tend-tstart)/dt)+1
     '''
     #print "Start sliding firing rate.."
     
@@ -211,6 +211,51 @@ class PopulationSpikes(SpikeTrain):
                     "non-negative! Got {0}.".format(N))
 
 
+    def avgFiringRate(self, tStart, tEnd):
+        '''
+        Compute and average firing rate for all the neurons between 'tstart'
+        and 'tend'. Return an array of firing rates, one item for each neuron
+        in the population.
+
+        Parameters
+        ----------
+        tStart : float (ms)
+            Start time.
+        tEnd   : float (ms)
+            End time.
+        output : numpy array
+            Firing rate in Hz for each neuron in the population.
+        '''
+        #import pdb; pdb.set_trace()
+        result  = np.zeros((self._N, ))
+        times   = self._times
+        senders = self._senders
+        N       = int(self._N)
+        ts      = float(tStart)
+        te      = float(tEnd)
+        code = '''
+            for (int i = 0; i < senders.size(); i++)
+            {
+                int t = times(i);
+                int s = senders(i);
+                if (s >= 0 && s < N && t >= ts && t <= te)
+                    result(s)++; 
+                else if (s < 0 || s >= N)
+                    std::cout << "senders is outside range <0, N)" << 
+                            std::endl;
+            }
+        '''
+
+        err = weave.inline(code,
+                ['N', 'times', 'senders', 'ts', 'te', 'result'],
+                type_converters=weave.converters.blitz,
+                compiler='gcc',
+                extra_compile_args=['-O3'],
+                verbose=2)
+        return 1e3 * result / (tEnd - tStart)
+
+
+
 
 class ThetaSpikeAnalysis(PopulationSpikes):
     '''
@@ -254,5 +299,6 @@ class ThetaSpikeAnalysis(PopulationSpikes):
         '''
         fr, times = self.firingRateMiddleTheta(theta_start_t, theta_freq, tend, winlen)
         return np.mean(fr, 1)
+
 
 
