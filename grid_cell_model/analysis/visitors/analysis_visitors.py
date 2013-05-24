@@ -1,7 +1,7 @@
 #
-#   visitors.py
+#   analysis_visitors.py
 #
-#   Data analysis visitors. 
+#   Visitors that perform data analysis on data.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,10 +19,14 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
+from interface        import DictDSVisitor
 from otherpkg.log     import log_info
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 from analysis.image   import Position2D, fitGaussianBumpTT
 from analysis.spikes  import slidingFiringRateTuple, ThetaSpikeAnalysis
+
+
+__all__ = ['AutoCorrelationVisitor', 'BumpFittingVisitor', 'FiringRateVisitor']
 
 
 def extractStateVariable(mon, nIdx, varStr):
@@ -123,68 +127,6 @@ def sumAllVariables(mon, nIdx, varList):
 
     return sigSum, dt
 
-
-
-class Visitor(object):
-    '''
-    An abstract visitor class.
-
-    Normally, the base class of the Visitor design pattern must contain all the
-    methods implemented in the derived classes. Due to duck typing, one does
-    not need to declare the specific implementation methods of the visitor.
-    '''
-    def __init__(self):
-        raise NotImplementedError()
-
-
-
-class DictDSVisitor(Visitor):
-    '''
-    Dictionary data set visitor.
-
-    A visitor that takes a dictionary data set method of any kind and processes
-    it. All the keys in the dictionary must be strings.
-    '''
-    def __init__(self):
-        raise NotImplementedError()
-
-    def visitDictDataSet(self, ds):
-        '''
-        Visit the dictionary data set, 'ds', and perform the specific operations
-        (defined by the derived classes) on this data set.
-        '''
-        raise NotImplementedError()
-
-    def getOption(self, data, optStr):
-        '''Extract an option from a data dictionary'''
-        return data['options'][optStr]
-
-    def getNetParam(self, data, p):
-        '''Extract a network parameter (p) from the data dictionary'''
-        return data['net_attr'][p]
-
-
-    def folderExists(self, d, nameList):
-        '''
-        Check if the folder at the end of the 'nameList' exists in dictionary
-        'd'
-        '''
-        for name in nameList:
-            if (name in d.keys()):
-                d = d[name]
-            else:
-                return False
-        return True
-
-    def _checkAttrIsNone(self, attr, pName, data):
-        '''
-        Check if 'attr' is None. If yes, extract it from 'data' under the name
-        'pName', otherwise return attr back.
-        '''
-        if (attr is None):
-            return self.getOption(data, pName)
-        else:
-            return attr
 
 
 class AutoCorrelationVisitor(DictDSVisitor):
