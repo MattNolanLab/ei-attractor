@@ -19,7 +19,8 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from interface        import DictDSVisitor
+from interface        import DictDSVisitor, extractStateVariable, \
+        extractSpikes, sumAllVariables
 from otherpkg.log     import log_info
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 from analysis.image   import Position2D, fitGaussianBumpTT
@@ -27,36 +28,6 @@ from analysis.spikes  import slidingFiringRateTuple, ThetaSpikeAnalysis
 
 
 __all__ = ['AutoCorrelationVisitor', 'BumpFittingVisitor', 'FiringRateVisitor']
-
-
-def extractStateVariable(mon, nIdx, varStr):
-    '''Extract state variable from a monitor.
-    
-    Parameters
-    ----------
-    mon : list of dicts
-        A list of (NEST) monitors, each monitoring one neuron.
-    nIdx : int
-        Neuron index
-    varStr : str
-        Name of the variable
-    output
-        A tuple (data, dt), for the signal
-    '''
-    n = mon[nIdx]
-    return n['events'][varStr], n['interval']
-
-
-
-def extractSpikes(mon):
-    '''
-    Extract spikes from a spike monitor (a dict-like object), that contains the
-    relevant fields.
-    
-    Return a tuple (senders, spikeTimes).
-    '''
-    e = mon['events']
-    return (e['senders'], e['times'])
 
 
 def findFreq(ac, dt, ext_idx, ext_t):
@@ -92,40 +63,6 @@ def findFreq(ac, dt, ext_idx, ext_t):
 
     return (1./max1_t, max1)
 
-
-
-
-def sumAllVariables(mon, nIdx, varList):
-    '''
-    Extract all variables from the list of monitors and sum them. The variables
-    must implement the + operator.
-
-    Parameters
-    ----------
-    mon : a list of dicts
-        A list that contains dictionaries of monitors. The list should be
-        compatible with the extractStateVariable function.
-    nIdx : int
-        Neuron index
-    varList : list of strings
-        Contains the list of variables that whould be extracted from the
-        monitor and summed up.
-    output
-        A tuple (sum, dt) that contains the sum of all the variables 'sum' and
-        the sampling rate of the signals ('dt').
-    '''
-    sigSum = None
-    dtCheck = None
-    for idx in range(len(varList)):
-        sig, dt = extractStateVariable(mon, nIdx, varList[idx])
-        if (idx == 0):
-            sigSum = sig
-            dtCheck = dt
-        else:
-            assert(dtCheck == dt)
-            sigSum += sig
-
-    return sigSum, dt
 
 
 
@@ -357,12 +294,8 @@ class FiringRateVisitor(DictDSVisitor):
 
 
     def _getSpikeTrain(self, data, monName, dimList):
-        N = 1
-        for dim in dimList:
-            dimN = self.getNetParam(data, dim)
-            N *= dimN
-        mon = data[monName]
-        senders, times = extractSpikes(mon)
+        senders, times, N = DictDSVisitor._getSpikeTrain(self, data, monName,
+                dimList)
         return ThetaSpikeAnalysis(N, senders, times)
 
     def visitDictDataSet(self, ds):

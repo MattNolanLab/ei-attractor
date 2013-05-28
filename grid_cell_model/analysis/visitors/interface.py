@@ -19,6 +19,71 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+def extractStateVariable(mon, nIdx, varStr):
+    '''Extract state variable from a monitor.
+    
+    Parameters
+    ----------
+    mon : list of dicts
+        A list of (NEST) monitors, each monitoring one neuron.
+    nIdx : int
+        Neuron index
+    varStr : str
+        Name of the variable
+    output
+        A tuple (data, dt), for the signal
+    '''
+    n = mon[nIdx]
+    return n['events'][varStr], n['interval']
+
+
+
+def extractSpikes(mon):
+    '''
+    Extract spikes from a spike monitor (a dict-like object), that contains the
+    relevant fields.
+    
+    Return a tuple (senders, spikeTimes).
+    '''
+    e = mon['events']
+    return (e['senders'], e['times'])
+
+
+def sumAllVariables(mon, nIdx, varList):
+    '''
+    Extract all variables from the list of monitors and sum them. The variables
+    must implement the + operator.
+
+    Parameters
+    ----------
+    mon : a list of dicts
+        A list that contains dictionaries of monitors. The list should be
+        compatible with the extractStateVariable function.
+    nIdx : int
+        Neuron index
+    varList : list of strings
+        Contains the list of variables that whould be extracted from the
+        monitor and summed up.
+    output
+        A tuple (sum, dt) that contains the sum of all the variables 'sum' and
+        the sampling rate of the signals ('dt').
+    '''
+    sigSum = None
+    dtCheck = None
+    for idx in range(len(varList)):
+        sig, dt = extractStateVariable(mon, nIdx, varList[idx])
+        if (idx == 0):
+            sigSum = sig
+            dtCheck = dt
+        else:
+            assert(dtCheck == dt)
+            sigSum += sig
+
+    return sigSum, dt
+
+
+
+
 
 class Visitor(object):
     '''
@@ -80,5 +145,32 @@ class DictDSVisitor(Visitor):
             return self.getOption(data, pName)
         else:
             return attr
+
+
+    def _getSpikeTrain(self, data, monName, dimList):
+        '''
+        Return the senders and spike times from a monitor in the data
+        dictionary
+
+        Parameters
+        ----------
+        data : dict
+            A data dictionary containing monName
+        monName : str
+            The name of the monitor
+        dimList : list of string
+            A  list of dimensions. This will be used to extract the total
+            number of neurons from network parameters.
+        output: tuple
+            A tuple containing (senders, times, N). 'N' is the total number of
+            neurons in the population.
+        '''
+        N = 1
+        for dim in dimList:
+            dimN = self.getNetParam(data, dim)
+            N *= dimN
+        mon = data[monName]
+        senders, times = extractSpikes(mon)
+        return senders, times, N
 
 
