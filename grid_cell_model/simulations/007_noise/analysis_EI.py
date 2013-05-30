@@ -20,243 +20,43 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import numpy as np
-import matplotlib.pyplot as plt
-
-import numpy.ma as ma
-from matplotlib.ticker  import MaxNLocator, LinearLocator
+from optparse import OptionParser
 
 from analysis.visitors    import AutoCorrelationVisitor, BumpFittingVisitor, \
         FiringRateVisitor
 from parameters           import JobTrialSpace2D
-from plotting.global_defs import globalAxesSettings, createColorbar
 import logging as lg
-lg.basicConfig(level=lg.WARN)
-#lg.basicConfig(level=lg.INFO)
+#lg.basicConfig(level=lg.WARN)
+lg.basicConfig(level=lg.INFO)
 
+###############################################################################
+optParser = OptionParser()
+optParser.add_option('--row',         type="int")
+optParser.add_option('--col',         type="int")
+optParser.add_option('--shapeRows',   type="int")
+optParser.add_option('--shapeCols',   type="int")
+optParser.add_option('--forceUpdate', type="int")
+optParser.add_option("--output_dir",  type="string")
+optParser.add_option("--job_num",     type="int") # unused
 
-# Other
-plt.rcParams['font.size'] = 11
+o, args = optParser.parse_args()
 
 ###############################################################################
 
-def getDictData(d, keyList):
-    ret = d
-    for key in keyList:
-        ret = ret[key]
-    return ret
+shape = (o.shapeRows, o.shapeCols)
+dataPoints = [(o.row, o.col)]
+trialNums = None
 
-def aggregate2DTrial(sp, varList, iterList, trialNumList):
-    if (len(iterList) != 2):
-        raise ValueError("iterList must contain exactly 2 elements.")
-    shape = sp.getShape()
-    rows = shape[0]
-    cols = shape[1]
-    retVar = np.zeros(shape)
-    for r in xrange(rows):
-        for c in xrange(cols):
-            if (len(sp[r][c]) == 0):
-                retVar[r][c] = np.nan
-            else:
-                for trialNum in trialNumList:
-                    data = sp[r][c][trialNum].data['analysis']
-                    retVar[r][c] += np.mean(getDictData(data, varList))
+sp = JobTrialSpace2D(shape, o.output_dir, dataPoints=dataPoints)
 
-    return retVar / len(trialNumList)
+monName   = 'stateMonF_e'
+stateList = ['I_clamp_GABA_A']
+iterList  = ['g_AMPA_total', 'g_GABA_total']
+forceUpdate = bool(o.forceUpdate)
+ACVisitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
+bumpVisitor = BumpFittingVisitor(forceUpdate=forceUpdate)
+FRVisitor = FiringRateVisitor(forceUpdate=forceUpdate)
 
-def plot2DTrial(X, Y, C, xlabel="", ylabel="",
-        colorBar=True, clBarLabel="", vmin=None, vmax=None, title="",
-        clbarNTicks=2, xticks=True, yticks=True):
-
-    ax = plt.gca()
-    globalAxesSettings(ax)
-    plt.pcolormesh(X, Y, C, vmin=vmin, vmax=vmax)
-    if (clbarNTicks == None):
-        createColorbar(ax, None, clBarLabel, orientation='horizontal', pad=0.2)
-    else:
-        createColorbar(ax, C, clBarLabel, nticks=clbarNTicks,
-                orientation='horizontal', pad=0.2)
-    if (xlabel != ""):
-        plt.xlabel(xlabel, va='top')
-        ax.xaxis.set_label_coords(0.5, -0.10)
-    if (ylabel != ""):
-        plt.ylabel(ylabel, ha='right')
-        ax.yaxis.set_label_coords(-0.10, 0.5)
-    plt.axis('tight')
-    ax.xaxis.set_major_locator(LinearLocator(2))
-    ax.yaxis.set_major_locator(LinearLocator(2))
-    if (not xticks):
-        ax.xaxis.set_ticklabels([])
-    if (not yticks):
-        ax.yaxis.set_ticklabels([])
-
-    return C
-
-
-def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
-        colorBar=True, clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
-        xticks=True, yticks=True):
-    C = aggregate2DTrial(sp, varList, iterList, trialNumList)
-    C = ma.MaskedArray(C, mask=np.isnan(C))
-    Y, X = sp.getIteratedParameters(iterList)
-    plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
-            title, clbarNTicks, xticks, yticks)
-
-def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, trialNumList=[0],
-        xlabel="", ylabel="", colorBar=True, clBarLabel="", vmin=None,
-        vmax=None, title="", clbarNTicks=2, xticks=True, yticks=True):
-    C = aggregate2DTrial(sp, varList, iterList, trialNumList)
-    C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
-    Y, X = sp.getIteratedParameters(iterList)
-    return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
-
-def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, mask=None,
-        trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
-        vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
-        yticks=True):
-    C = np.sqrt(aggregate2DTrial(sp, varList, iterList, trialNumList))
-    if mask is None:
-        mask = False
-    C = ma.MaskedArray(C, mask=np.logical_or(np.logical_or(np.isnan(C), C >
-        thr), mask))
-    Y, X = sp.getIteratedParameters(iterList)
-    return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
-
-def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
-        trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
-        vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
-        yticks=True):
-    FR = aggregate2DTrial(sp, varList, iterList, trialNumList)
-    if mask is None:
-        mask = False
-    FR = ma.MaskedArray(FR, mask=np.logical_or(FR > thr, mask))
-    Y, X = sp.getIteratedParameters(iterList)
-    return plot2DTrial(X, Y, FR, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
-            
-
-
-###############################################################################
-
-dirs = {
-    #'./output_local/2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample' : (2, 2),
-    './output_local/2013-04-24T15-27-30_EI_param_sweep_0pA_big'   : (40, 40),
-    #'./output_local/2013-04-24T21-37-47_EI_param_sweep_150pA_big' : (40, 40),
-    #'output_local/2013-04-24T21-43-32_EI_param_sweep_300pA_big' : (40, 40)
-}
-NTrials = 5
-
-for rootDir, shape in dirs.iteritems():
-    sp = JobTrialSpace2D(shape, rootDir)
-    
-    monName   = 'stateMonF_e'
-    stateList = ['I_clamp_GABA_A']
-    iterList  = ['g_AMPA_total', 'g_GABA_total']
-    forceUpdate = True
-    ACVisitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
-    bumpVisitor = BumpFittingVisitor(forceUpdate=forceUpdate)
-    FRVisitor = FiringRateVisitor(forceUpdate=forceUpdate)
-
-    #sp.visit(ACVisitor)
-    #sp.visit(bumpVisitor)
-    #sp.visit(FRVisitor)
-
-        
-    ################################################################################
-    plt.figure(figsize=(5.1, 2.9))
-    N = 2
-    plt.subplot(1, N, 1)
-    
-    acVal = plotACTrial(sp, ['acVal'], iterList,
-            trialNumList=range(NTrials),
-            xlabel="I (nS)",
-            ylabel='E (nS)',
-            clBarLabel = "Correlation",
-            clbarNTicks=3,
-            vmin=0,
-            vmax=0.75)
-    ###############################################################################
-    plt.subplot(1, N, 2)
-    freq = plotACTrial(sp, ['freq'], iterList,
-            trialNumList=range(NTrials),
-            xlabel="I (nS)",
-            clBarLabel = "Frequency (Hz)",
-            clbarNTicks=3,
-            yticks=False,
-            vmin=0,
-            vmax=150)
-    ###############################################################################
-    plt.tight_layout()
-    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-    plt.savefig(sp.rootDir +
-            '/../analysis_EI_{0}pA.png'.format(int(noise_sigma)))
-
-    ################################################################################
-    # The following is an average over trials
-    ################################################################################
-    plt.figure(figsize=(5.1, 2.9))
-    N = 2
-    plt.subplot(1, N, 1)
-    
-    bumpSigmaThreshold = 50
-    bump_sigma = plotBumpSigmaTrial(sp, ['bump_e', 'sigma'], iterList,
-            thr=bumpSigmaThreshold,
-            trialNumList=range(NTrials),
-            xlabel="I (nS)",
-            ylabel='E (nS)',
-            clBarLabel = "Gaussian $\sigma$ (nrns)",
-            vmin=0,
-            vmax=bumpSigmaThreshold,
-            clbarNTicks=4)
-    ###############################################################################
-    plt.subplot(1, N, 2)
-    bump_err2 = plotBumpErrTrial(sp, ['bump_e', 'err2'], iterList,
-            trialNumList=range(NTrials),
-            mask=bump_sigma.mask,
-            xlabel="I (nS)",
-            clBarLabel = "Error of fit (Hz)",
-            clbarNTicks=3,
-            yticks=False,
-            vmin=0,
-            vmax=200)
-    ###############################################################################
-    plt.tight_layout()
-    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-    plt.savefig(sp.rootDir +
-            '/../analysis_EI_{0}pA_bump.png'.format(int(noise_sigma)))
-    ###############################################################################
-    ###############################################################################
-    plt.figure(figsize=(5.1, 2.9))
-    N = 2
-    plt.subplot(1, N, 1)
-    
-    FR_e = plotFRTrial(sp, ['FR_e', 'avg'], iterList,
-            trialNumList=range(NTrials),
-            xlabel="I (nS)",
-            ylabel='E (nS)',
-            clBarLabel = "E cell firing rate (Hz)",
-            clbarNTicks=4,
-            vmin=0,
-            vmax=50)
-    ###############################################################################
-    plt.subplot(1, N, 2)
-    FR_threshold=250
-    FR_i = plotFRTrial(sp, ['FR_i', 'avg'], iterList,
-            trialNumList=range(NTrials),
-            thr=FR_threshold,
-            xlabel="I (nS)",
-            clBarLabel = "I cell firing rate (Hz)",
-            clbarNTicks=3,
-            vmin=0,
-            vmax=FR_threshold,
-            yticks=False)
-    ###############################################################################
-    plt.tight_layout()
-    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-    plt.savefig(sp.rootDir +
-        '/../analysis_EI_{0}pA_FR.png'.format(int(noise_sigma)))
-
-#plt.show()
-
+sp.visit(ACVisitor)
+sp.visit(bumpVisitor)
+sp.visit(FRVisitor)
