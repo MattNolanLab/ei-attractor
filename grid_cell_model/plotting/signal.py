@@ -24,8 +24,8 @@ from matplotlib.ticker  import MaxNLocator
 from global_defs import globalAxesSettings
 
 
-def signalPlot(t, sig, ax, labelx=None, labely="", timeUnits="ms",
-        leg=['middle', 'edge'], nticks=3):
+def signalPlot(t, sig, ax, labelx=None, labely="", timeUnits="ms", leg=None,
+        nticks=3):
     '''
     Plot a customized signal plot into an axis.
 
