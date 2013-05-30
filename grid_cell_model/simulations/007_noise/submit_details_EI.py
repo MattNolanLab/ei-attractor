@@ -27,10 +27,11 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'workstation'
-simRootDir  = 'output_local'
+ENV         = 'cluster'
+simRootDir  = 'output'
 appName     = 'details_EI.py'
 rtLimit     = '00:02:30'
+numCPU      = 1
 blocking    = False
 timePrefix  = False
 numRepeat   = 1
@@ -63,7 +64,7 @@ ac.insertDict(iterparams, mult=True)
 ###############################################################################
 submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
         rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-        blocking=blocking, timePrefix=timePrefix);
+        blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
 ac.setOption('output_dir', submitter.outputDir())
 startJobNum = 0
 submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)

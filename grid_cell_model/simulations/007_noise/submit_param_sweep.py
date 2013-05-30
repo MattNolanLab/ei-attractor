@@ -34,6 +34,7 @@ simRootDir  = 'output'
 simLabel    = 'EI_param_sweep_{0}pA_big'.format(int(p['noise_sigma']))
 appName     = 'simulation_stationary.py'
 rtLimit     = '00:20:00'
+numCPU      = 4
 blocking    = True
 timePrefix  = True
 numRepeat   = 1
@@ -79,7 +80,7 @@ ac.insertDict(iterparams, mult=False)
 ###############################################################################
 submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
         rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-        blocking=blocking, timePrefix=timePrefix);
+        blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
 ac.setOption('output_dir', submitter.outputDir())
 startJobNum = 0
 submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)

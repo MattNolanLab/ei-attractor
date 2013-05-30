@@ -31,7 +31,7 @@ class ClusterSubmitter(QsubSubmitter):
     '''
 
     def __init__(self, argCreator, appName, rtLimit, outputDir,
-            label, timePrefix, blocking):
+            label, timePrefix, blocking, numCPU):
         '''
         Initialize.
 
@@ -52,6 +52,9 @@ class ClusterSubmitter(QsubSubmitter):
         blocking : bool
             Whether a running instance should block. Note that this will be
             ignored on a cluster. The commands are always **non-blocking**.
+
+        numCPU : int
+            Number of cores to use for OpenMP programs
         '''
         self.submitScript = 'cluster_submit.sh '
         self.default_qsub_params = ' ' 
@@ -59,6 +62,10 @@ class ClusterSubmitter(QsubSubmitter):
         scriptName = self.submitScript + appName
         self.rtLimit  = rtLimit
         qsub_params = self.default_qsub_params + '-l h_rt=\'' + rtLimit + '\''
+        if numCPU > 1:
+            qsub_params += ' -pe OpenMP {0}'.format(numCPU)
+        elif (numCPU < 1):
+            raise ValueError("numCPU must be >= 1.")
         QsubSubmitter.__init__(self, argCreator, scriptName, qsub_params,
                 outputDir, label, timePrefix, blocking)
 
@@ -73,7 +80,7 @@ class WorkstationSubmitter(GenericSubmitter):
     '''
 
     def __init__(self, argCreator, appName, rtLimit, outputDir, label,
-            timePrefix, blocking):
+            timePrefix, blocking, numCPU):
         '''
         Initialize the submitter.
 
@@ -94,6 +101,10 @@ class WorkstationSubmitter(GenericSubmitter):
 
         blocking : bool
             Whether a running instance should block.
+
+        numCPU : int
+            Number of cores to use for OpenMP programs. This parameter is here
+            only for interface compatibility. It is ignored in this class
         '''
         self.progName = 'python '
         commandStr = self.progName + appName

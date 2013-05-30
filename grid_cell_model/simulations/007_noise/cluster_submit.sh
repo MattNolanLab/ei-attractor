@@ -23,7 +23,6 @@
 #$ -P inf_ndtc
 #$ -cwd
 #$ -j y
-#$ -pe OpenMP 4
 
 # Initialise environment module
 . /etc/profile.d/modules.sh
