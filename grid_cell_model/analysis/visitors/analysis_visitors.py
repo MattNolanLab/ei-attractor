@@ -150,7 +150,7 @@ class AutoCorrelationVisitor(DictDSVisitor):
         return freq, acval, acVec
 
 
-    def visitDictDataSet(self, ds):
+    def visitDictDataSet(self, ds, **kw):
         '''
         Visit the dictionary data set and extract frequency, autocorrelation
         for the detected frequency, and autocorrelation functions, for all the
@@ -221,7 +221,7 @@ class BumpFittingVisitor(DictDSVisitor):
         dim.y = Ny
         return fitGaussianBumpTT(bump, dim)
 
-    def visitDictDataSet(self, ds):
+    def visitDictDataSet(self, ds, **kw):
         '''
         Apply the bump fitting procedure onto the dataset 'ds' if necessary,
         and save the data into the dataset.
@@ -298,7 +298,7 @@ class FiringRateVisitor(DictDSVisitor):
                 dimList)
         return ThetaSpikeAnalysis(N, senders, times)
 
-    def visitDictDataSet(self, ds):
+    def visitDictDataSet(self, ds, **kw):
         data = ds.data
         if (not self.folderExists(data, ['analysis'])):
             data['analysis'] = {}
