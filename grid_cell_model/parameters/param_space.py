@@ -82,15 +82,29 @@ class TrialSet(DataSpace):
     def __getitem__(self, key):
         return DictDataSet(self._vals[key])
 
-    def visit(self, visitor):
-        for val in self:
-            val.visit(visitor)
+    def visit(self, visitor, trialList=None):
+        if (trialList is None):
+            trialList = xrange(len(self))
+        for trialIdx in trialList:
+            trial = self[trialIdx]
+            trial.visit(visitor, trialNum=trialIdx)
 
+
+class DummyTrialSet(DataSpace):
+    '''An empty DataSpace that does nothing.'''
+    def __init__(self):
+        DataSpace.__init__(self, [], key='trials')
+
+    def __getitem__(self, key):
+        raise ValueError("A DummyTrialSet cannot be indexed!")
+
+    def visit(self, visitor, trialList=None):
+        pass
 
 
 
 class JobTrialSpace2D(DataSpace):
-    def __init__(self, shape, rootDir, fileMode='r+',
+    def __init__(self, shape, rootDir, dataPoints=None, fileMode='r+',
             fileFormat="job{0:05}_output.h5", forceWMode=False,
             checkParams=False):
         if (fileMode == 'w' and forceWMode == False):
@@ -98,17 +112,25 @@ class JobTrialSpace2D(DataSpace):
                     "'forceWMode' to override.")
         self._shape = shape
         self._rootDir = rootDir
+        self._dataPoints = dataPoints
         self._fileFormat = fileFormat
         self._checkParams = checkParams
-        rows = shape[0]
-        cols = shape[1]
+        self.rows = shape[0]
+        self.cols = shape[1]
         rowData = []
         it = 0
-        for row in xrange(rows):
+        for row in xrange(self.rows):
             colData = []
-            for col in xrange(cols):
-                fileName = rootDir + '/' + fileFormat.format(it)
-                colData.append(TrialSet(fileName, fileMode))
+            for col in xrange(self.cols):
+                # Here either we have a full data space, or a particular row
+                # and column are present in the list of selected data points.
+                # Otherwise, append an empty list, i.e. this will do nothing
+                if (self._dataPoints is None or
+                        (row, col) in self._dataPoints):
+                    fileName = rootDir + '/' + fileFormat.format(it)
+                    colData.append(TrialSet(fileName, fileMode))
+                else:
+                    colData.append(DummyTrialSet())
                 it += 1
             rowData.append(DataSpace(colData))
         DataSpace.__init__(self, rowData)
@@ -136,17 +158,21 @@ class JobTrialSpace2D(DataSpace):
 
     def _checkIteratedParameters(self, paramStr, toCheck):
         tol  = 1e-9 * np.min(toCheck.flatten())
-        rows = self._shape[0]
-        cols = self._shape[1]
         msgStr = "Parameter {0}:[{1}][{2}: {3}] does not match."
-        for r in xrange(rows):
-            for c in xrange(cols):
+        for r in xrange(self.rows):
+            for c in xrange(self.cols):
                 trials = self[r][c]
                 for trial_idx in xrange(len(trials)):
                     pVal = self.getParam(trials[trial_idx].data, paramStr)
                     err = np.abs(pVal - toCheck[r][c])
                     if (err > tol):
                         raise Exception(msgStr.format(paramStr, r, c, err))
+
+    def visit(self, visitor, trialList=None):
+        for r in xrange(self.rows):
+            for c in xrange(self.cols):
+                self[r][c].visit(visitor, trialList)
+
         
 
     @property

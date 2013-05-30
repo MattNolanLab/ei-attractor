@@ -108,7 +108,7 @@ class DictDSVisitor(Visitor):
     def __init__(self):
         raise NotImplementedError()
 
-    def visitDictDataSet(self, ds):
+    def visitDictDataSet(self, ds, **kw):
         '''
         Visit the dictionary data set, 'ds', and perform the specific operations
         (defined by the derived classes) on this data set.
