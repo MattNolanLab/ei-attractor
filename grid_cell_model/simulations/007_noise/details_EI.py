@@ -19,6 +19,8 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from optparse import OptionParser
+
 from analysis.visitors    import DetailedPlotVisitor
 from parameters           import JobTrialSpace2D
 import logging as lg
@@ -27,25 +29,26 @@ lg.basicConfig(level=lg.INFO)
 
 
 ###############################################################################
+optParser = OptionParser()
+optParser.add_option('--row',   type="int")
+optParser.add_option('--col',   type="int")
+optParser.add_option('--shapeRows',   type="int")
+optParser.add_option('--shapeCols',   type="int")
+optParser.add_option("--output_dir",  type="string")
+optParser.add_option("--job_num",     type="int") # unused
 
-dirs = {
-    './output_local/2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample' : (2, 2),
-    #'./output_local/2013-04-24T15-27-30_EI_param_sweep_0pA_big'   : (40, 40),
-    #'./output_local/2013-04-24T21-37-47_EI_param_sweep_150pA_big' : (40, 40),
-    #'output_local/2013-04-24T21-43-32_EI_param_sweep_300pA_big' : (40, 40)
-}
-NTrials = 5
+o, args = optParser.parse_args()
 
-for rootDir, shape in dirs.iteritems():
-    outRootDir = "{0}/{1}".format(rootDir, "detailed_plots")
-    plotT = .5e3 # ms
-    #dataPoints = [(0, 0)]
-    dataPoints = None
-    #trialNums = [0]
-    trialNums = None
+###############################################################################
 
-    sp = JobTrialSpace2D(shape, rootDir, dataPoints=dataPoints)
-    detailVisitor = DetailedPlotVisitor(outRootDir, plotT)
+outRootDir = "{0}/{1}".format(o.output_dir, "detailed_plots")
+plotT = .5e3 # ms
+shape = (o.shapeRows, o.shapeCols)
+dataPoints = [(o.row, o.col)]
+trialNums = None
+
+sp = JobTrialSpace2D(shape, o.output_dir, dataPoints=dataPoints)
+detailVisitor = DetailedPlotVisitor(outRootDir, plotT)
+
+sp.visit(detailVisitor, trialNums)
     
-    sp.visit(detailVisitor, trialNums)
-        
