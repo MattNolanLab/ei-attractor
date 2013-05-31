@@ -20,7 +20,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 from scipy    import weave
-from matplotlib.pyplot import *
+import matplotlib.pyplot as plt
 
 import numpy as np
 import scipy.optimize
@@ -186,11 +186,11 @@ def remapAndPlot(a, dims):
     others.x = X.flatten()
     others.y = Y.flatten()
     dist = remapTwistedTorus(a, others, dims)
-    figure()
-    pcolormesh(np.reshape(dist, (dims.y, dims.x)))
-    title('a:(x, y): ' + str(a.x) + ', ' + str(a.y) + ', x_dim:' + str(dims.x) +
+    plt.figure()
+    plt.pcolormesh(np.reshape(dist, (dims.y, dims.x)))
+    plt.title('a:(x, y): ' + str(a.x) + ', ' + str(a.y) + ', x_dim:' + str(dims.x) +
             ', y_dim: ' + str(dims.y))
-    axis('equal')
+    plt.axis('equal')
 
 
 if (__name__ == '__main__'):

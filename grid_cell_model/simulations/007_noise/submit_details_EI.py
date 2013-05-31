@@ -37,34 +37,34 @@ timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
-dirs = \
-    ('2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample', (2, 2))
-    #('2013-04-24T15-27-30_EI_param_sweep_0pA_big'         , (40, 40))
-    #('2013-04-24T21-37-47_EI_param_sweep_150pA_big'       , (40, 40))
-    #('2013-04-24T21-43-32_EI_param_sweep_300pA_big'       , (40, 40))
+dirs = [
+    #('2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample', (2, 2)),
+    ('2013-04-24T15-27-30_EI_param_sweep_0pA_big'         , (40, 40)),
+    ('2013-04-24T21-37-47_EI_param_sweep_150pA_big'       , (40, 40)),
+    ('2013-04-24T21-43-32_EI_param_sweep_300pA_big'       , (40, 40))
+]
 
-rowN = dirs[1][0]
-colN = dirs[1][1]
-simLabel = dirs[0]
+for simLabel, (rowN, colN) in dirs:
+    p = {}
+    p['shapeRows'] = rowN
+    p['shapeCols'] = colN
 
-p = {}
-p['shapeRows'] = rowN
-p['shapeCols'] = colN
+    ###############################################################################
 
-###############################################################################
+    ac = ArgumentCreator(p, printout=True)
 
-ac = ArgumentCreator(p, printout=True)
+    iterparams = {
+            'row' : np.arange(rowN),
+            'col' : np.arange(colN)
+            #'row' : np.arange(1),
+            #'col' : np.arange(1)
+    }
+    ac.insertDict(iterparams, mult=True)
 
-iterparams = {
-        'row' : np.arange(rowN),
-        'col' : np.arange(colN)
-}
-ac.insertDict(iterparams, mult=True)
-
-###############################################################################
-submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
-        rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-        blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
-ac.setOption('output_dir', submitter.outputDir())
-startJobNum = 0
-submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
+    ###############################################################################
+    submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
+            rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
+            blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
+    ac.setOption('output_dir', submitter.outputDir())
+    startJobNum = 0
+    submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)

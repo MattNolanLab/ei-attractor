@@ -98,7 +98,7 @@ class DetailedPlotVisitor(DictDSVisitor):
     def visitDictDataSet(self, ds, **kw):
         data = ds.data
         a = data['analysis']
-        fig = figure(figsize=(12, 8))
+        fig = figure(figsize=(14, 8))
         mon_e = data['stateMon_e']
         mon_i = data['stateMon_i']
         simT = self.getOption(data, 'time') # ms
@@ -122,38 +122,44 @@ class DetailedPlotVisitor(DictDSVisitor):
         
         # Plot E Vm
         rows = 4
-        cols = 5
-        ax_Vm = subplot2grid((rows, cols), (1, 0), colspan=2)
+        cols = 8
+        ax_Vm = subplot2grid((rows, cols), (1, 0), colspan=3)
         t, VmMiddle, VmEdge = self._extractStateVars(mon_e, ['V_m'], plotTStart,
                 plotTEnd)
-        signalPlot(t, VmMiddle, ax_Vm, labelx="", labely = 'E cell $V_m$')
-        signalPlot(t, VmEdge, ax_Vm, labelx="", labely = 'E cell $V_m$')
+        signalPlot(t, VmMiddle, ax_Vm, labelx="", labely = 'E cell $V_m$',
+                nThetaTicks=5)
+        signalPlot(t, VmEdge, ax_Vm, labelx="", labely = 'E cell $V_m$',
+                nThetaTicks=5)
         plt.xlim(x_lim)
 
         # Plot I Vm
-        ax_Vm = subplot2grid((rows, cols), (2, 0), colspan=2)
+        ax_Vm = subplot2grid((rows, cols), (2, 0), colspan=3)
         t, VmMiddle, VmEdge = self._extractStateVars(mon_i, ['V_m'], plotTStart,
                 plotTEnd)
-        signalPlot(t, VmMiddle, ax_Vm, labelx='', labely = 'I cell $V_m$')
-        signalPlot(t, VmEdge, ax_Vm, labelx='', labely = 'I cell $V_m$')
+        signalPlot(t, VmMiddle, ax_Vm, labelx='', labely = 'I cell $V_m$',
+                nThetaTicks=5)
+        signalPlot(t, VmEdge, ax_Vm, labelx='', labely = 'I cell $V_m$',
+            nThetaTicks=5)
         plt.xlim(x_lim)
 
         # Plot E Isyn
-        ax_Isyn = subplot2grid((rows, cols), (1, 2), colspan=2)
+        ax_Isyn = subplot2grid((rows, cols), (1, 3), colspan=3)
         t, IsynMiddle, IsynEdge = self._extractStateVars(mon_e, \
                 ['I_clamp_GABA_A'], plotTStart, plotTEnd)
         signalPlot(t, IsynMiddle, ax_Isyn, labelx="", labely =
-                'E cell $I_{\mathrm{syn}}$')
+                'E cell $I_{\mathrm{syn}}$', nThetaTicks=5)
         signalPlot(t, IsynEdge, ax_Isyn, labelx="", labely =
-                'E cell $I_{\mathrm{syn}}$')
+                'E cell $I_{\mathrm{syn}}$', nThetaTicks=5)
         plt.xlim(x_lim)
 
         # Plot I Isyn
-        ax_Isyn = subplot2grid((rows, cols), (2, 2), colspan=2)
+        ax_Isyn = subplot2grid((rows, cols), (2, 3), colspan=3)
         t, IsynMiddle, IsynEdge = self._extractStateVars(mon_i, \
                 ['I_clamp_AMPA', 'I_clamp_NMDA'], plotTStart, plotTEnd)
-        signalPlot(t, IsynMiddle, ax_Isyn, labelx='', labely = 'I cell $I_{syn}$')
-        signalPlot(t, IsynEdge, ax_Isyn, labelx='', labely = 'I cell $I_{syn}$')
+        signalPlot(t, IsynMiddle, ax_Isyn, labelx='',
+                labely = 'I cell $I_{syn}$', nThetaTicks=5)
+        signalPlot(t, IsynEdge, ax_Isyn, labelx='',
+                labely = 'I cell $I_{syn}$', nThetaTicks=5)
         plt.xlim(x_lim)
 
 
@@ -164,7 +170,7 @@ class DetailedPlotVisitor(DictDSVisitor):
             self.bumpTEnd = simT
 
         # Plot E FRs
-        ax_Isyn = subplot2grid((rows, cols), (1, 4))
+        ax_Isyn = subplot2grid((rows, cols), (1, 6), colspan=2)
         sp = self._getSpikeTrain(data, 'spikeMon_e', ['Ne_x', 'Ne_y'])
         Fe = sp.avgFiringRate(self.bumpTStart, self.bumpTEnd)
         Ne_x = self.getNetParam(data, 'Ne_x')
@@ -172,12 +178,12 @@ class DetailedPlotVisitor(DictDSVisitor):
         bump_e = np.reshape(Fe, (Ne_y, Ne_x))
         torusFiringRate(
                 rateMap  = bump_e,
-                labelx   = 'Neuron #',
+                labelx   = '',
                 labely   = 'Neuron #',
                 titleStr = 'E firing rate')
 
         # Plot I FRs
-        ax_Isyn = subplot2grid((rows, cols), (2, 4))
+        ax_Isyn = subplot2grid((rows, cols), (2, 6), colspan=2)
         sp = self._getSpikeTrain(data, 'spikeMon_i', ['Ni_x', 'Ni_y'])
         Fi = sp.avgFiringRate(self.bumpTStart, self.bumpTEnd)
         Ni_x = self.getNetParam(data, 'Ni_x')
@@ -190,7 +196,7 @@ class DetailedPlotVisitor(DictDSVisitor):
                 titleStr = 'I firing rate')
 
         # Plot a sample autocorrelation function
-        ax_AC = subplot2grid((rows, cols), (3, 0), colspan=2)
+        ax_AC = subplot2grid((rows, cols), (3, 0), colspan=3)
         acVec = a['acVec']
         acdt = data['stateMonF_e'][0]['interval']
         acTimes = np.arange(acVec.shape[1]) * acdt
@@ -201,7 +207,7 @@ class DetailedPlotVisitor(DictDSVisitor):
 
 
         # Plot all correlations
-        ax_AC = subplot2grid((rows, cols), (3, 2), colspan=2)
+        ax_AC = subplot2grid((rows, cols), (3, 3), colspan=3)
         acVec = a['acVec']
         acdt = data['stateMonF_e'][0]['interval']
         acTimes = np.arange(acVec.shape[1]) * acdt
@@ -238,19 +244,28 @@ class DetailedPlotVisitor(DictDSVisitor):
         bumpErr   = np.sqrt(self._dictData(a, ['bump_e', 'err2']))
         FRe       = self._dictData(a, ['FR_e', 'avg'])
         FRi       = self._dictData(a, ['FR_i', 'avg'])
-        ax_ann.text(0.2, txt1, "{0:.2f} Hz".format(freq),           va=va, ha=ha)
-        ax_ann.text(0.2, txt2, "{0:.2f} ".format(C),                va=va, ha=ha)
-        ax_ann.text(0.2, txt3, "{0:.2f} neurons".format(bumpSigma), va=va, ha=ha)
-        ax_ann.text(0.2, txt4, "{0:.2f} Hz".format(bumpErr),        va=va, ha=ha)
-        ax_ann.text(0.2, txt5, "{0:.2f} Hz".format(FRe),            va=va, ha=ha)
-        ax_ann.text(0.2, txt6, "{0:.2f} Hz".format(FRi),            va=va, ha=ha)
+        ax_ann.text(0.3, txt1, "{0:.2f} Hz".format(freq),           va=va, ha=ha)
+        ax_ann.text(0.3, txt2, "{0:.2f} ".format(C),                va=va, ha=ha)
+        ax_ann.text(0.3, txt3, "{0:.2f} neurons".format(bumpSigma), va=va, ha=ha)
+        ax_ann.text(0.3, txt4, "{0:.2f} Hz".format(bumpErr),        va=va, ha=ha)
+        ax_ann.text(0.3, txt5, "{0:.2f} Hz".format(FRe),            va=va, ha=ha)
+        ax_ann.text(0.3, txt6, "{0:.2f} Hz".format(FRi),            va=va, ha=ha)
+
+        ax_ann.text(0.5, txt1, 'E total: ', va=va, ha=ha)
+        ax_ann.text(0.5, txt2, 'I total: ', va=va, ha=ha)
+        E_total = self.getOption(data, 'g_AMPA_total')
+        I_total = self.getOption(data, 'g_GABA_total')
+        ax_ann.text(0.6, txt1, "{0:.2f} nS".format(E_total), va=va, ha=ha,
+                weight='bold')
+        ax_ann.text(0.6, txt2, "{0:.2f} nS".format(I_total), va=va, ha=ha,
+                weight='bold')
 
         plt.tight_layout()
 
         jobNum = self.getOption(data, 'job_num')
         fileName = \
-            "{0}/job{1:05}_trial{2:03}_detailPlot.png".format(self.rootDir,
-                    jobNum, trialNum)
+            "{0}/job{1:05}_trial{2:03}_E_{3}_I_{4}_detailPlot.png".format(self.rootDir,
+                    jobNum, trialNum, int(E_total), int(I_total))
         plt.savefig(fileName)
 
 
