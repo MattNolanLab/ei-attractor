@@ -25,7 +25,16 @@ from matplotlib.ticker import MaxNLocator, LinearLocator
 
 def globalAxesSettings(ax):
     ax.tick_params(
-            direction='out'
+            which='major',
+            direction='out',
+            width=1,
+            length=6
+    )
+    ax.tick_params(
+            which='minor',
+            direction='out',
+            width=1,
+            length=4
     )
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')

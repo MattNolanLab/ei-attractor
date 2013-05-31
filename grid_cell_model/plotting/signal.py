@@ -19,13 +19,13 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import matplotlib.pyplot as plt
-from matplotlib.ticker  import MaxNLocator
+from matplotlib.ticker  import MaxNLocator, LinearLocator
 
 from global_defs import globalAxesSettings
 
 
 def signalPlot(t, sig, ax, labelx=None, labely="", timeUnits="ms", leg=None,
-        nticks=3):
+        nticks=3, nThetaTicks=None):
     '''
     Plot a customized signal plot into an axis.
 
@@ -52,7 +52,11 @@ def signalPlot(t, sig, ax, labelx=None, labely="", timeUnits="ms", leg=None,
         labelx = 'Time (%s)' % timeUnits
     plt.hold('on')
     globalAxesSettings(ax)
-    ax.xaxis.set_major_locator(MaxNLocator(4))
+    if nThetaTicks is not None:
+        ax.xaxis.set_major_locator(LinearLocator(nThetaTicks))
+        plt.grid(b=True, which='major', axis='x')
+    else:
+        ax.xaxis.set_major_locator(MaxNLocator(4))
     ax.yaxis.set_major_locator(MaxNLocator(nticks-1))
     plt.plot(t, sig)
     plt.xlabel(labelx)

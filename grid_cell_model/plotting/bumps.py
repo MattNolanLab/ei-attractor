@@ -54,15 +54,18 @@ def torusFiringRate(rateMap, labelx, labely=None, titleStr=""):
     '''Firing rate of cells on the twisted torus'''
     if (labely is None):
         labely = labelx
-    pcolormesh(rateMap)
+    ax = mpl.gca()
+    ax.minorticks_on()
+    pcolormesh(rateMap, vmin=0)
     globalAxesSettings(mpl.gca())
     locx = LinearLocator(2)
     mpl.gca().xaxis.set_ticks([0, len(rateMap[0])])
     mpl.gca().yaxis.set_ticks([0, len(rateMap)])
     xlabel(labelx)
     ylabel(labely)
-    createColorbar(mpl.gca(), data=rateMap, label='Firing rate (Hz)')
-    axis('equal')
+    cb = mpl.colorbar(ticks=MaxNLocator(4))
+    cb.set_label('Firing rate (Hz)')
+    axis('scaled')
     #axis('tight')
     title(titleStr, va='bottom')
     #tight_layout()
