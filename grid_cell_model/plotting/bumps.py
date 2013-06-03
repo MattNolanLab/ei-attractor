@@ -66,9 +66,7 @@ def torusFiringRate(rateMap, labelx, labely=None, titleStr=""):
     cb = mpl.colorbar(ticks=MaxNLocator(4))
     cb.set_label('Firing rate (Hz)')
     axis('scaled')
-    #axis('tight')
     title(titleStr, va='bottom')
-    #tight_layout()
 
 
 def flatFiringRate(FR, times, labely=None, labelx=None, units="ms",
