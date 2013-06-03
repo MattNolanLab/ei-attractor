@@ -26,13 +26,13 @@ matplotlib.use('cairo')
 import matplotlib.pyplot as plt
 
 import numpy.ma as ma
-from matplotlib.ticker  import MaxNLocator, LinearLocator
+from matplotlib.ticker  import MaxNLocator, LinearLocator, AutoMinorLocator
 
 from parameters           import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings, createColorbar
 import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+lg.basicConfig(level=lg.WARN)
+#lg.basicConfig(level=lg.INFO)
 
 
 # Other
@@ -70,6 +70,7 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="",
 
     ax = plt.gca()
     globalAxesSettings(ax)
+    ax.minorticks_on()
     plt.pcolormesh(X, Y, C, vmin=vmin, vmax=vmax)
     if (clbarNTicks == None):
         createColorbar(ax, None, clBarLabel, orientation='horizontal', pad=0.2)
@@ -78,13 +79,15 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="",
                 orientation='horizontal', pad=0.2)
     if (xlabel != ""):
         plt.xlabel(xlabel, va='top')
-        ax.xaxis.set_label_coords(0.5, -0.10)
+        ax.xaxis.set_label_coords(0.5, -0.15)
     if (ylabel != ""):
         plt.ylabel(ylabel, ha='right')
         ax.yaxis.set_label_coords(-0.10, 0.5)
-    plt.axis('tight')
-    ax.xaxis.set_major_locator(LinearLocator(2))
-    ax.yaxis.set_major_locator(LinearLocator(2))
+    ax.xaxis.set_ticks([0, 6000])
+    ax.yaxis.set_ticks([0, 4000])
+    ax.xaxis.set_minor_locator(AutoMinorLocator(6))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(4))
+    plt.axis('scaled')
     if (not xticks):
         ax.xaxis.set_ticklabels([])
     if (not yticks):
@@ -141,13 +144,13 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
 ###############################################################################
 
 dirs = \
-    ('./output/2013-04-24T15-27-30_EI_param_sweep_0pA_big',    (40, 40))
-    #('./output/2013-04-24T21-37-47_EI_param_sweep_150pA_big',  (40, 40))
-    #('./output/2013-04-24T21-43-32_EI_param_sweep_300pA_big',    (40, 40))
-    #('./output/2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample', (2, 2))
+    ('2013-04-24T21-43-32_EI_param_sweep_300pA_big',    (40, 40))
+    #('2013-04-24T21-37-47_EI_param_sweep_150pA_big',  (40, 40))
+    #('2013-04-24T15-27-30_EI_param_sweep_0pA_big',    (40, 40))
+    #('2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample', (2, 2))
 
 NTrials = 5
-rootDir = dirs[0]
+rootDir = "output_local/{0}".format(dirs[0])
 shape   = dirs[1]
 
 sp = JobTrialSpace2D(shape, rootDir)
