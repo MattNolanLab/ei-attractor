@@ -52,8 +52,13 @@ class DataSpace(Sequence):
     def __len__(self):
         return len(self._vals)
 
-    def getParam(self, data, paramStr):
+    @staticmethod 
+    def getParam(data, paramStr):
         return data['options'][paramStr]
+
+    @staticmethod
+    def getNetParam(data, p):
+        return data['net_attr'][p]
 
 
 
@@ -226,8 +231,6 @@ class JobTrialSpace2D(DataSpace):
                             varList))
 
         return retVar
-        
-
         
 
     @property

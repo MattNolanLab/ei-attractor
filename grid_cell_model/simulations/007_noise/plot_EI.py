@@ -28,11 +28,11 @@ import matplotlib.pyplot as plt
 import numpy.ma as ma
 from matplotlib.ticker  import MaxNLocator, LinearLocator, AutoMinorLocator
 
-from parameters           import JobTrialSpace2D
+from parameters           import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings, createColorbar
 import logging as lg
-#g.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+lg.basicConfig(level=lg.WARN)
+#lg.basicConfig(level=lg.INFO)
 
 
 # Other
@@ -64,11 +64,11 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="",
         ax.xaxis.set_label_coords(0.5, -0.15)
     if (ylabel != ""):
         plt.ylabel(ylabel, ha='right')
-        ax.yaxis.set_label_coords(-0.10, 0.5)
-    ax.xaxis.set_ticks([0, 6000])
-    ax.yaxis.set_ticks([0, 4000])
+        ax.yaxis.set_label_coords(-0.125, 0.5)
+    ax.xaxis.set_ticks([0, 6])
+    ax.yaxis.set_ticks([0, 3])
     ax.xaxis.set_minor_locator(AutoMinorLocator(6))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(4))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(3))
     plt.axis('scaled')
     if (not xticks):
         ax.xaxis.set_ticklabels([])
@@ -78,12 +78,18 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="",
     return C
 
 
+def computeYX(sp, iterList):
+    E, I = sp.getIteratedParameters(iterList)
+    Ne = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ne')
+    Ni = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ni')
+    return E/Ne, I/Ni
+
 def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
         colorBar=True, clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
         xticks=True, yticks=True):
     C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.isnan(C))
-    Y, X = sp.getIteratedParameters(iterList)
+    Y, X = computeYX(sp, iterList)
     plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
             title, clbarNTicks, xticks, yticks)
 
@@ -92,7 +98,7 @@ def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, trialNumList=[0],
         vmax=None, title="", clbarNTicks=2, xticks=True, yticks=True):
     C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
-    Y, X = sp.getIteratedParameters(iterList)
+    Y, X = computeYX(sp, iterList)
     return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
 
@@ -105,7 +111,7 @@ def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, mask=None,
         mask = False
     C = ma.MaskedArray(C, mask=np.logical_or(np.logical_or(np.isnan(C), C >
         thr), mask))
-    Y, X = sp.getIteratedParameters(iterList)
+    Y, X = computeYX(sp, iterList)
     return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
 
@@ -117,7 +123,7 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
     if mask is None:
         mask = False
     FR = ma.MaskedArray(FR, mask=np.logical_or(FR > thr, mask))
-    Y, X = sp.getIteratedParameters(iterList)
+    Y, X = computeYX(sp, iterList)
     return plot2DTrial(X, Y, FR, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
             
