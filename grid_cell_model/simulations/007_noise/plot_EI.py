@@ -31,8 +31,8 @@ from matplotlib.ticker  import MaxNLocator, LinearLocator, AutoMinorLocator
 from parameters           import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings, createColorbar
 import logging as lg
-lg.basicConfig(level=lg.WARN)
-#lg.basicConfig(level=lg.INFO)
+#g.basicConfig(level=lg.WARN)
+lg.basicConfig(level=lg.INFO)
 
 
 # Other
@@ -40,29 +40,11 @@ plt.rcParams['font.size'] = 11
 
 ###############################################################################
 
-def getDictData(d, keyList):
-    ret = d
-    for key in keyList:
-        ret = ret[key]
-    return ret
+def aggregate2DTrial(sp, varList, trialNumList):
+    varList = ['analysis'] + varList
+    retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean)
+    return np.mean(retVar, 2)
 
-def aggregate2DTrial(sp, varList, iterList, trialNumList):
-    if (len(iterList) != 2):
-        raise ValueError("iterList must contain exactly 2 elements.")
-    shape = sp.getShape()
-    rows = shape[0]
-    cols = shape[1]
-    retVar = np.zeros(shape)
-    for r in xrange(rows):
-        for c in xrange(cols):
-            if (len(sp[r][c]) == 0):
-                retVar[r][c] = np.nan
-            else:
-                for trialNum in trialNumList:
-                    data = sp[r][c][trialNum].data['analysis']
-                    retVar[r][c] += np.mean(getDictData(data, varList))
-
-    return retVar / len(trialNumList)
 
 def plot2DTrial(X, Y, C, xlabel="", ylabel="",
         colorBar=True, clBarLabel="", vmin=None, vmax=None, title="",
@@ -99,7 +81,7 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="",
 def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
         colorBar=True, clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
         xticks=True, yticks=True):
-    C = aggregate2DTrial(sp, varList, iterList, trialNumList)
+    C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.isnan(C))
     Y, X = sp.getIteratedParameters(iterList)
     plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
@@ -108,7 +90,7 @@ def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
 def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, trialNumList=[0],
         xlabel="", ylabel="", colorBar=True, clBarLabel="", vmin=None,
         vmax=None, title="", clbarNTicks=2, xticks=True, yticks=True):
-    C = aggregate2DTrial(sp, varList, iterList, trialNumList)
+    C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
     Y, X = sp.getIteratedParameters(iterList)
     return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
@@ -118,7 +100,7 @@ def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, mask=None,
         trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
         vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
         yticks=True):
-    C = np.sqrt(aggregate2DTrial(sp, varList, iterList, trialNumList))
+    C = np.sqrt(aggregate2DTrial(sp, varList, trialNumList))
     if mask is None:
         mask = False
     C = ma.MaskedArray(C, mask=np.logical_or(np.logical_or(np.isnan(C), C >
@@ -131,7 +113,7 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
         trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
         vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
         yticks=True):
-    FR = aggregate2DTrial(sp, varList, iterList, trialNumList)
+    FR = aggregate2DTrial(sp, varList, trialNumList)
     if mask is None:
         mask = False
     FR = ma.MaskedArray(FR, mask=np.logical_or(FR > thr, mask))
@@ -144,10 +126,10 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
 ###############################################################################
 
 dirs = \
-    ('2013-04-24T21-43-32_EI_param_sweep_300pA_big',    (40, 40))
-    #('2013-04-24T21-37-47_EI_param_sweep_150pA_big',  (40, 40))
-    #('2013-04-24T15-27-30_EI_param_sweep_0pA_big',    (40, 40))
+    ('2013-04-24T15-27-30_EI_param_sweep_0pA_big',    (40, 40))
     #('2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample', (2, 2))
+    #('2013-04-24T21-43-32_EI_param_sweep_300pA_big',    (40, 40))
+    #('2013-04-24T21-37-47_EI_param_sweep_150pA_big',  (40, 40))
 
 NTrials = 5
 rootDir = "output_local/{0}".format(dirs[0])

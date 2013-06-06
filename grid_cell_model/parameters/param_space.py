@@ -22,8 +22,9 @@ import numpy as np
 from collections    import Sequence
 from otherpkg.log   import log_warn, log_info
 
-from data_storage   import DataStorage
-from data_sets      import DictDataSet
+from data_storage       import DataStorage
+from data_storage.dict  import getDictData
+from data_sets          import DictDataSet
 
 __all__ = []
 
@@ -113,6 +114,10 @@ class JobTrialSpace2D(DataSpace):
         self._shape = shape
         self._rootDir = rootDir
         self._dataPoints = dataPoints
+        if (self._dataPoints is not None):
+            self._partial = True
+        else:
+            self._partial = False
         self._fileFormat = fileFormat
         self._checkParams = checkParams
         self.rows = shape[0]
@@ -145,6 +150,8 @@ class JobTrialSpace2D(DataSpace):
 
 
     def getIteratedParameters(self, nameList):
+        if (len(nameList) != 2):
+            raise ValueError("nameList must contain exactly 2 elements.")
         iterFileName = "{0}/iterparams.h5".format(self._rootDir)
         ds = DataStorage.open(iterFileName, 'r')
         ret = []
@@ -172,6 +179,54 @@ class JobTrialSpace2D(DataSpace):
         for r in xrange(self.rows):
             for c in xrange(self.cols):
                 self[r][c].visit(visitor, trialList)
+
+
+    def aggregateData(self, varList, trialNumList, funReduce=None):
+        '''
+        Aggregate the data from each trial into a 2D object array of the shape
+        (row, col), each item containing a list of values, one value for each
+        trial.
+
+        Parameters
+        ----------
+        do : dict-like object, or None
+            Dictionary output. If None, return the result only
+        name : string
+            A key under which to store the object. If 'do' is None, this can be
+            None as well
+        varList : list of strings
+            A path to the hierarchical dictionary
+        trialNumList : list of ints
+            A list of trials to aggregate
+        funReduce : a function f(x), or None
+            A function to apply to each data point for each trial. Must take
+            exactly one parameter. If None, no function will be applied.
+        output : a 3D numpy array
+            All the aggregated data
+        '''
+        if (self._partial):
+            # Cannot do aggregation on a restricted data set
+            raise NotImplementedError("Data aggregation on a partial data " +
+                    "space has not been implemented yet.")
+        shape = self.getShape()
+        rows = shape[0]
+        cols = shape[1]
+        nTrials = len(trialNumList)
+        retVar = np.ndarray((rows, cols, nTrials))
+        if (funReduce is None):
+            funReduce = lambda x: x
+        for r in xrange(rows):
+            for c in xrange(cols):
+                if (len(self[r][c]) == 0):
+                    retVar[r, c, :] = np.nan
+                else:
+                    for trialNum in trialNumList:
+                        data = self[r][c][trialNum].data
+                        retVar[r][c][trialNum] = funReduce(getDictData(data,
+                            varList))
+
+        return retVar
+        
 
         
 
