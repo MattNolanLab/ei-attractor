@@ -25,6 +25,12 @@ from matplotlib.ticker import MaxNLocator
 
 from plotting.global_defs import globalAxesSettings
 
+#from matplotlib import rc
+#rc('font',**{'family':'sans-serif','sans-serif':['Bitstream Vera Sans']})
+## for Palatino and other serif fonts use:
+#rc('font',**{'family':'serif','serif':['Palatino']})
+#rc('text', usetex=True)
+
 outputDir = "."
 figSize = (12, 8)
 
@@ -70,11 +76,25 @@ def plotThetaSignal(ax, noise_sigma):
     t, theta = getThetaSignal(noise_sigma)
     ax.fill_between(t, theta, color="grey")
     ax.set_ylim([0, np.max(theta)])
+    txt = '$\sigma = ' + str(noise_sigma) + '\ \mathrm{pA}$'
+    ax.text(0.5, 1.5, txt,
+            verticalalignment='bottom', horizontalalignment='center',
+            transform=ax.transAxes,
+            fontsize=17, fontweight='bold')
     
 
+def plotBump(ax, rateMap):
+    rateMap = np.zeros((10, 10))
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
+    ax.pcolormesh(rateMap)
+    axis("scaled")
+
+def plotSpikes(ax, t, trajectory, spikeTimes):
+    pass
 
 
-def drawSignals(gs, data, colStart, yLabelOn=True, noise_sigma=0):
+def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
     if (yLabelOn):
         VmText = "V (mV)"
         IsynText = "I (pA)"
@@ -99,19 +119,59 @@ def drawSignals(gs, data, colStart, yLabelOn=True, noise_sigma=0):
     ax4 = subplot(gs[4, colStart:colStart+ncols])
     plotStateSignal(ax4, None, None, labely=IsynText)
 
+    ax5 = subplot(gs[5, colStart])
+    plotBump(ax5, None)
+
+    ax6 = subplot(gs[5, colStart+1])
+    plotBump(ax6, None)
+
+    ax7 = subplot(gs[5, colStart+2])
+    plotBump(ax7, None)
+
+    ax8 = subplot(gs[5, colStart+3])
+    plotBump(ax8, None)
+
+    if (yLabelOn):
+        ax1.text(-0.3, -0.05, "Excitatory layer",
+                verticalalignment='center', horizontalalignment='right',
+                transform=ax1.transAxes,
+                rotation=90,
+                fontsize=16)
+
+        ax3.text(-0.3, -0.05, "Inhibitory layer",
+                verticalalignment='center', horizontalalignment='right',
+                transform=ax3.transAxes,
+                rotation=90,
+                fontsize=16)
+
+
 
 fig = figure(figsize=figSize)
 
-hr = 3
-gs = GridSpec(6, 12, height_ratios=[1, hr, hr, hr, hr, hr])
-drawSignals(gs, None, colStart=0)
-gs.tight_layout(fig, h_pad=1.0)
+hr = 1
+top = 0.92
+bottom = 0.05
+margin = 0.05
+div = 0.06
+width = 0.25
+gs = GridSpec(6, 4, height_ratios=[0.3, hr, hr, hr, hr, 0.75])
+left = div+margin
+right = left + width
+gs.update(left=left, right=right, bottom=bottom, top=top)
+drawSignals(gs, None, colStart=0, noise_sigma=0)
 
-drawSignals(gs, None, colStart=4, yLabelOn=False)
-gs.tight_layout(fig, h_pad=1.0)
+gs = GridSpec(6, 4, height_ratios=[0.3, hr, hr, hr, hr, 0.75])
+left = right + div
+right = left + width
+gs.update(left=left, right=right, bottom=bottom, top=top)
+drawSignals(gs, None, colStart=0, yLabelOn=False, noise_sigma=150)
 
-drawSignals(gs, None, colStart=8, yLabelOn=False)
-gs.tight_layout(fig, h_pad=1.0)
+gs = GridSpec(6, 4, height_ratios=[0.3, hr, hr, hr, hr, 0.75])
+left = right + div
+right = left + width
+gs.update(left=left, right=right, bottom=bottom, top=top)
+drawSignals(gs, None, colStart=0, yLabelOn=False, noise_sigma=300)
+#gs.tight_layout(fig, h_pad=1.0)
 
-savefig(outputDir + "/figure1.pdf")
+savefig(outputDir + "/figure1.png")
 
