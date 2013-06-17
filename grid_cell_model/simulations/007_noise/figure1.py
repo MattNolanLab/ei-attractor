@@ -32,13 +32,15 @@ from plotting.global_defs import globalAxesSettings
 #rc('text', usetex=True)
 
 outputDir = "."
-figSize = (12, 8)
+figSize = (13, 8)
 
 theta_T = 250.0 # ms
 theta_dt = 1.0 # ms
 theta_f = 8.0  # Hz
 theta_DC = 300.0 # pA
-theta_A  = 300.0 # pA
+theta_A  = 375.0 # pA
+theta_max = 1500
+theta_min = -500
 
 ##############################################################################
 
@@ -47,7 +49,8 @@ def getThetaSignal(noise_sigma):
     t = np.arange(0, theta_T, theta_dt) * 1e-3
     phase = np.pi
     normSig = 0.5*(1. + np.cos(2*np.pi*theta_f*t + phase))
-    return t, theta_DC + theta_A*normSig
+    noise = noise_sigma * np.random.randn(len(t))
+    return t, theta_DC + theta_A*normSig + noise
 
 
 def setSignalAxes(ax, leftSpineOn):
@@ -71,16 +74,19 @@ def plotStateSignal(ax, t, sig, leftSpineOn=True, labely=""):
     ax.set_ylabel(labely)
 
 
-def plotThetaSignal(ax, noise_sigma):
+def plotThetaSignal(ax, noise_sigma, yLabelOn):
     setSignalAxes(ax, leftSpineOn=False)
     t, theta = getThetaSignal(noise_sigma)
-    ax.fill_between(t, theta, color="grey")
-    ax.set_ylim([0, np.max(theta)])
+    ax.plot(t, theta, color="grey")
+    ax.set_ylim([theta_min, theta_max])
     txt = '$\sigma = ' + str(noise_sigma) + '\ \mathrm{pA}$'
-    ax.text(0.5, 1.5, txt,
+    ax.text(0.5, 1.1, txt,
             verticalalignment='bottom', horizontalalignment='center',
             transform=ax.transAxes,
             fontsize=17, fontweight='bold')
+    ax.axhline(0.0, color='grey', linestyle=':', linewidth=0.5)
+    if (yLabelOn):
+        ax.text(theta_T*1e-3 - 0.01, -50, "0 pA", ha="right", va='top', fontsize='small')
     
 
 def plotBump(ax, rateMap):
@@ -94,7 +100,8 @@ def plotSpikes(ax, t, trajectory, spikeTimes):
     pass
 
 
-def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
+def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
+        letterPos=None):
     if (yLabelOn):
         VmText = "V (mV)"
         IsynText = "I (pA)"
@@ -105,7 +112,14 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
     ncols = 4
 
     ax0 = subplot(gs[0, colStart:colStart+ncols])
-    plotThetaSignal(ax0, noise_sigma)
+    plotThetaSignal(ax0, noise_sigma, yLabelOn)
+
+    if (letterPos is None):
+        letterPos = -0.35
+    ax0.text(letterPos, 1.4, letter,
+            verticalalignment='bottom', horizontalalignment='center',
+            transform=ax0.transAxes,
+            fontsize=19, fontweight='bold')
 
     ax1 = subplot(gs[1, colStart:colStart+ncols])
     plotStateSignal(ax1, None, None, labely=VmText)
@@ -137,7 +151,6 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
                 transform=ax1.transAxes,
                 rotation=90,
                 fontsize=16)
-
         ax3.text(-0.3, -0.05, "Inhibitory layer",
                 verticalalignment='center', horizontalalignment='right',
                 transform=ax3.transAxes,
@@ -149,28 +162,31 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
 fig = figure(figsize=figSize)
 
 hr = 1
+th = 0.75 # top plot height
 top = 0.92
 bottom = 0.05
-margin = 0.05
-div = 0.06
-width = 0.25
-gs = GridSpec(6, 4, height_ratios=[0.3, hr, hr, hr, hr, 0.75])
-left = div+margin
+margin = 0.1
+div = 0.085
+width = 0.23
+gs = GridSpec(6, 4, height_ratios=[th, hr, hr, hr, hr, 0.75])
+left = margin
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, None, colStart=0, noise_sigma=0)
+drawSignals(gs, None, colStart=0, noise_sigma=0, letter="A")
 
-gs = GridSpec(6, 4, height_ratios=[0.3, hr, hr, hr, hr, 0.75])
+gs = GridSpec(6, 4, height_ratios=[th, hr, hr, hr, hr, 0.75])
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, None, colStart=0, yLabelOn=False, noise_sigma=150)
+drawSignals(gs, None, colStart=0, yLabelOn=False, noise_sigma=150, letter="B",
+        letterPos=-0.2)
 
-gs = GridSpec(6, 4, height_ratios=[0.3, hr, hr, hr, hr, 0.75])
+gs = GridSpec(6, 4, height_ratios=[th, hr, hr, hr, hr, 0.75])
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, None, colStart=0, yLabelOn=False, noise_sigma=300)
+drawSignals(gs, None, colStart=0, yLabelOn=False, noise_sigma=300, letter="C",
+        letterPos=-0.2)
 #gs.tight_layout(fig, h_pad=1.0)
 
 savefig(outputDir + "/figure1.png")
