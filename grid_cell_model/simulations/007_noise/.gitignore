@@ -1,3 +1,6 @@
 /output_local
 /*.pdf
 /*.png
+/*.eps
+/*.svg
+/figures/*.pdf

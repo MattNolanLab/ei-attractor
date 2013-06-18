@@ -24,12 +24,16 @@ from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import MaxNLocator
 
 from plotting.global_defs import globalAxesSettings
+from figures.fig_conn_func import plotWeights
+from analysis.visitors.interface import extractStateVariable, sumAllVariables
+from data_storage import DataStorage
 
-#from matplotlib import rc
-#rc('font',**{'family':'sans-serif','sans-serif':['Bitstream Vera Sans']})
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 ## for Palatino and other serif fonts use:
 #rc('font',**{'family':'serif','serif':['Palatino']})
 #rc('text', usetex=True)
+rc('pdf', fonttype=42)
 
 outputDir = "."
 figSize = (13, 8)
@@ -42,7 +46,20 @@ theta_A  = 375.0 # pA
 theta_max = 1500
 theta_min = -500
 
+trialNum = 0
+jobNum = 573
+dataRootDir = 'output_local'
+root0   = "{0}/2013-04-24T15-27-30_EI_param_sweep_0pA_big".format(dataRootDir)
+root150 = "{0}/2013-04-24T21-37-47_EI_param_sweep_150pA_big".format(dataRootDir)
+root300 = "{0}/2013-04-24T21-43-32_EI_param_sweep_300pA_big".format(dataRootDir)
+fileTemplate = "job{0:05}_output.h5"
+
 ##############################################################################
+
+def openJob(rootDir, jobNum, trialNum):
+    fileTemplate = "job{0:05}_output.h5"
+    fileName = rootDir + '/' + fileTemplate.format(jobNum)
+    return DataStorage.open(fileName, 'r')['trials'][trialNum]
 
 
 def getThetaSignal(noise_sigma):
@@ -65,13 +82,17 @@ def setSignalAxes(ax, leftSpineOn):
 
     ax.yaxis.set_major_locator(MaxNLocator(2))
 
-def plotStateSignal(ax, t, sig, leftSpineOn=True, labely=""):
+def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", color='black'):
     setSignalAxes(ax, leftSpineOn)
 
     if (sig is not None):
-        ax.plot(t, sig)
+        ax.plot(t, sig, color=color)
 
-    ax.set_ylabel(labely)
+    #ax.set_ylabel(labely)
+    ax.text(-0.22, 0.5, labely,
+        verticalalignment='center', horizontalalignment='right',
+        transform=ax.transAxes,
+        rotation=90)
 
 
 def plotThetaSignal(ax, noise_sigma, yLabelOn):
@@ -100,6 +121,27 @@ def plotSpikes(ax, t, trajectory, spikeTimes):
     pass
 
 
+
+def sliceSignal(t, sig, tStart, tEnd):
+    idx = np.logical_and(t >= tStart, t <= tEnd)
+    return t[idx], sig[idx], idx
+
+def extractStateVars(mon, varName, plotTStart, plotTEnd):
+    '''
+    Extract state variables from a pair of monitors. One in the centre, the
+    other one at the edge of the neural sheet.
+    '''
+    nIdxMiddle = 0
+    nIdxEdge = 1
+
+    t, dt = extractStateVariable(mon, nIdxMiddle, 'times')
+    sig, dt = sumAllVariables(mon, nIdxMiddle, varName)
+    t, sigMiddle, idx = sliceSignal(t, sig, plotTStart, plotTEnd)
+    sig, dt = sumAllVariables(mon, nIdxEdge, varName)
+    sigEdge = sig[idx]
+    return t, sigMiddle, sigEdge
+
+
 def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
         letterPos=None):
     if (yLabelOn):
@@ -110,6 +152,8 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
         IsynText = ""
 
     ncols = 4
+    plotTStart = 5e3
+    plotTEnd   = 5.25e3
 
     ax0 = subplot(gs[0, colStart:colStart+ncols])
     plotThetaSignal(ax0, noise_sigma, yLabelOn)
@@ -121,37 +165,52 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
             transform=ax0.transAxes,
             fontsize=19, fontweight='bold')
 
+    mon_e = data['stateMon_e']
+    mon_i = data['stateMon_i']
+
+    # E cell Vm
     ax1 = subplot(gs[1, colStart:colStart+ncols])
-    plotStateSignal(ax1, None, None, labely=VmText)
+    t, VmMiddle, VmEdge = extractStateVars(mon_e, ['V_m'], plotTStart,
+            plotTEnd)
+    plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='red')
 
+    # E cell Isyn
     ax2 = subplot(gs[2, colStart:colStart+ncols])
-    plotStateSignal(ax2, None, None, labely=IsynText)
+    t, IsynMiddle, IsynEdge = extractStateVars(mon_e, ['I_clamp_GABA_A'],
+            plotTStart, plotTEnd)
+    plotStateSignal(ax2, t, IsynMiddle, labely=IsynText, color='blue')
 
+    # I cell Vm
     ax3 = subplot(gs[3, colStart:colStart+ncols])
-    plotStateSignal(ax3, None, None, labely=VmText)
+    t, VmMiddle, VmEdge = extractStateVars(mon_i, ['V_m'], plotTStart,
+            plotTEnd)
+    plotStateSignal(ax3, t, VmMiddle, labely=VmText, color='red')
 
+    # I cell Isyn
     ax4 = subplot(gs[4, colStart:colStart+ncols])
-    plotStateSignal(ax4, None, None, labely=IsynText)
+    t, IsynMiddle, IsynEdge = extractStateVars(mon_i, ['I_clamp_AMPA',
+        'I_clamp_NMDA'], plotTStart, plotTEnd)
+    plotStateSignal(ax4, t, IsynMiddle, labely=IsynText, color='blue')
 
-    ax5 = subplot(gs[5, colStart])
-    plotBump(ax5, None)
+    #ax5 = subplot(gs[5, colStart])
+    #plotBump(ax5, None)
 
-    ax6 = subplot(gs[5, colStart+1])
-    plotBump(ax6, None)
+    #ax6 = subplot(gs[5, colStart+1])
+    #plotBump(ax6, None)
 
-    ax7 = subplot(gs[5, colStart+2])
-    plotBump(ax7, None)
+    #ax7 = subplot(gs[5, colStart+2])
+    #plotBump(ax7, None)
 
-    ax8 = subplot(gs[5, colStart+3])
-    plotBump(ax8, None)
+    #ax8 = subplot(gs[5, colStart+3])
+    #plotBump(ax8, None)
 
     if (yLabelOn):
-        ax1.text(-0.3, -0.05, "Excitatory layer",
+        ax1.text(-0.32, -0.15, "Excitatory layer",
                 verticalalignment='center', horizontalalignment='right',
                 transform=ax1.transAxes,
                 rotation=90,
                 fontsize=16)
-        ax3.text(-0.3, -0.05, "Inhibitory layer",
+        ax3.text(-0.32, -0.15, "Inhibitory layer",
                 verticalalignment='center', horizontalalignment='right',
                 transform=ax3.transAxes,
                 rotation=90,
@@ -163,31 +222,66 @@ fig = figure(figsize=figSize)
 
 hr = 1
 th = 0.75 # top plot height
-top = 0.92
-bottom = 0.05
+top = 0.6
+bottom = 0.02
 margin = 0.1
 div = 0.085
 width = 0.23
-gs = GridSpec(6, 4, height_ratios=[th, hr, hr, hr, hr, 0.75])
+hspace = 0.3
+
+# Model schematic
+gs = GridSpec(1, 4)
+top_margin = 0.15
+top_top = 0.9
+top_letter_pos = 1.5
 left = margin
 right = left + width
-gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, None, colStart=0, noise_sigma=0, letter="A")
+gs.update(left=left, right=right, bottom=top+top_margin, top=top_top)
+ax_sch = subplot(gs[0, :])
+ax_sch.axison = False
+ax_sch.text(-0.35, top_letter_pos, 'A',
+        verticalalignment='top', horizontalalignment='center',
+        transform=ax_sch.transAxes,
+        fontsize=19, fontweight='bold')
 
-gs = GridSpec(6, 4, height_ratios=[th, hr, hr, hr, hr, 0.75])
+# noise_sigm = 0 pA
+ds = openJob(root0, jobNum, trialNum)
+gs = GridSpec(5, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace)
+# do not update left and right
+gs.update(left=left, right=right, bottom=bottom, top=top)
+drawSignals(gs, ds, colStart=0, noise_sigma=0, letter="C")
+
+
+# noise_sigma = 150 pA
+ds = openJob(root150, jobNum, trialNum)
+gs = GridSpec(5, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace)
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, None, colStart=0, yLabelOn=False, noise_sigma=150, letter="B",
+drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150, letter="D",
         letterPos=-0.2)
 
-gs = GridSpec(6, 4, height_ratios=[th, hr, hr, hr, hr, 0.75])
+
+# Connection weights
+gs = GridSpec(1, 4)
+gs.update(left=left-0.3*width, right=right-0.3*width, bottom=top+top_margin, top=top_top)
+ax_sch = subplot(gs[0, :])
+ax_sch.text(-0.2, top_letter_pos, 'B',
+        verticalalignment='top', horizontalalignment='center',
+        transform=ax_sch.transAxes,
+        fontsize=19, fontweight='bold')
+plotWeights(ax_sch)
+
+
+# noise_sigma = 300 pA
+ds = openJob(root300, jobNum, trialNum)
+gs = GridSpec(5, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace)
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, None, colStart=0, yLabelOn=False, noise_sigma=300, letter="C",
+drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300, letter="E",
         letterPos=-0.2)
 #gs.tight_layout(fig, h_pad=1.0)
 
-savefig(outputDir + "/figure1.png")
+savefig(outputDir + "/figure1.pdf")
 
