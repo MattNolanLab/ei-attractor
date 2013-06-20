@@ -51,36 +51,6 @@
 	</g>
 </g>
 <g>
-	<g>
-		<line x1="143.587" y1="270.966" x2="205.964" y2="270.966"/>
-		<polygon points="205.235,273.467 209.553,270.974 205.235,268.48 		"/>
-	</g>
-	<g>
-		<line fill="none" stroke="#000000" stroke-width="1.5" x1="143.587" y1="270.966" x2="205.964" y2="270.966"/>
-		<polygon points="204.87,274.717 211.347,270.978 204.87,267.238 		"/>
-	</g>
-</g>
-<g>
-	<circle fill="#FFFFFF" stroke="#ED1C24" stroke-width="2" cx="122.504" cy="281.836" r="23.722"/>
-	
-		<text transform="matrix(1 0 0 1 117.165 287.7061)" fill="#ED1C24" stroke="#ED1C24" font-family="'MyriadPro-Bold'" font-size="20">E</text>
-</g>
-<g>
-	<circle fill="#FFFFFF" stroke="#2E3192" stroke-width="2" cx="232.755" cy="281.835" r="23.722"/>
-	
-		<text transform="matrix(1 0 0 1 229.9053 287.7051)" fill="#2E3192" stroke="#2E3192" font-family="'MyriadPro-Bold'" font-size="20">I</text>
-</g>
-<g>
-	<g>
-		<line x1="210.807" y1="292.667" x2="147.79" y2="292.705"/>
-		<circle cx="147.79" cy="292.705" r="2.444"/>
-	</g>
-	<g>
-		<line fill="none" stroke="#000000" stroke-width="1.5" x1="210.807" y1="292.667" x2="147.79" y2="292.705"/>
-		<circle cx="147.79" cy="292.705" r="3.666"/>
-	</g>
-</g>
-<g>
 	<rect x="109.671" y="185.023" fill="#FFFFFF" stroke="#000000" stroke-width="2" width="25.667" height="26.667"/>
 	<g>
 		<text transform="matrix(1 0 0 1 114.8647 204.2266)" font-family="'MyriadPro-Regular'" font-size="20">I</text>
