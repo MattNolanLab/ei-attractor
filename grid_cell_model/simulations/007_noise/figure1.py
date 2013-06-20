@@ -22,6 +22,7 @@
 from matplotlib.pyplot import *
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import MaxNLocator
+import svgutils.transform as sg
 
 from plotting.global_defs import globalAxesSettings
 from figures.fig_conn_func import plotWeights
@@ -158,13 +159,6 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     ax0 = subplot(gs[0, colStart:colStart+ncols])
     plotThetaSignal(ax0, noise_sigma, yLabelOn)
 
-    if (letterPos is None):
-        letterPos = -0.35
-    ax0.text(letterPos, 1.4, letter,
-            verticalalignment='bottom', horizontalalignment='center',
-            transform=ax0.transAxes,
-            fontsize=19, fontweight='bold')
-
     mon_e = data['stateMon_e']
     mon_i = data['stateMon_i']
 
@@ -229,27 +223,31 @@ div = 0.085
 width = 0.23
 hspace = 0.3
 
+letter_top=0.97
+letter_div = 0.05
+letter_left=0.01
+letter_va='top'
+letter_ha='left'
+
 # Model schematic
 gs = GridSpec(1, 4)
 top_margin = 0.15
-top_top = 0.9
+top_top = 0.92
 top_letter_pos = 1.5
-left = margin
-right = left + width
-gs.update(left=left, right=right, bottom=top+top_margin, top=top_top)
-ax_sch = subplot(gs[0, :])
-ax_sch.axison = False
-ax_sch.text(-0.35, top_letter_pos, 'A',
-        verticalalignment='top', horizontalalignment='center',
-        transform=ax_sch.transAxes,
-        fontsize=19, fontweight='bold')
+fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
+        fontweight='bold')
+
 
 # noise_sigm = 0 pA
+left = margin
+right = left + width
 ds = openJob(root0, jobNum, trialNum)
 gs = GridSpec(5, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace)
 # do not update left and right
 gs.update(left=left, right=right, bottom=bottom, top=top)
 drawSignals(gs, ds, colStart=0, noise_sigma=0, letter="C")
+fig.text(letter_left, top+letter_div, "C", va=letter_va, ha=letter_ha,
+        fontsize=19, fontweight='bold')
 
 
 # noise_sigma = 150 pA
@@ -260,17 +258,21 @@ right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
 drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150, letter="D",
         letterPos=-0.2)
+fig.text(letter_left+margin+width+0.5*div, top+letter_div, "D", va=letter_va,
+        ha=letter_ha, fontsize=19, fontweight='bold')
 
 
 # Connection weights
 gs = GridSpec(1, 4)
-gs.update(left=left-0.3*width, right=right-0.3*width, bottom=top+top_margin, top=top_top)
+w_shift = 0.4*width + div
+w_left  = left - w_shift
+w_right = w_left + 0.15
+gs.update(left=w_left, right=w_right, bottom=top+top_margin, top=top_top)
 ax_sch = subplot(gs[0, :])
-ax_sch.text(-0.2, top_letter_pos, 'B',
-        verticalalignment='top', horizontalalignment='center',
-        transform=ax_sch.transAxes,
-        fontsize=19, fontweight='bold')
 plotWeights(ax_sch)
+fig.text(w_left-0.5*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
+        fontweight='bold')
+#gs.tight_layout(fig, rect=[w_left-0.5*div, top+top_margin, w_right, top_top])
 
 
 # noise_sigma = 300 pA
@@ -281,7 +283,16 @@ right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
 drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300, letter="E",
         letterPos=-0.2)
-#gs.tight_layout(fig, h_pad=1.0)
+fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "E", va=letter_va,
+        ha=letter_ha, fontsize=19, fontweight='bold')
 
-savefig(outputDir + "/figure1.pdf")
+fname = outputDir + "/figure1.pdf"
+savefig(fname)
 
+## Paste-in model schematic
+#fig_final = sg.fromfile(fname)
+#fig_sch = sg.fromfile('figures/model_schematic.svg')
+#
+#plot = fig_sch.getroot()
+#fig_final.append(plot)
+#fig_final.save(fname)

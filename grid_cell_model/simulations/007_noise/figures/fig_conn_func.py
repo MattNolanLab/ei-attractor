@@ -57,16 +57,18 @@ IS_inh_profile         = (1-pGABA_const)*np.exp(-(d - pGABA_mu)**2/2/pGABA_sigma
 def plotWeights(ax):
     hold('on')
     globalAxesSettings(gca())
+    #gca().spines['top'].set_visible(False)
+    #gca().spines['right'].set_visible(False)
     plot(d, ES_exc_profile, linewidth=linewidth, color='red', label="E")
-    plot(d, [pGABA_const]*len(d), ':', color='green')
+    plot(d, [pGABA_const]*len(d), ':', color='red')
     plot(d, ES_inh_profile, linewidth=linewidth, color='blue', label="I")
     xlabel('Distance')
     ylabel('G/G$_\mathrm{max}$')
     gca().yaxis.set_ticks([0, 1])
     gca().xaxis.set_ticks([x0, 0, x1])
-    legend(bbox_to_anchor=(0., 1.05, 1., 1.05), ncol=2, loc=3, mode='expand', borderaxespad=0.)
-    setp(gca().get_legend().get_texts(), fontsize='small')
-    #xlim([x0, x1])
+    #legend(bbox_to_anchor=(0., 1.05, 1., 1.05), ncol=2, loc=3, mode='expand', borderaxespad=0.)
+    #setp(gca().get_legend().get_texts(), fontsize='small')
+    xlim([x0, x1])
 
     arrow_clr='grey'
     arrowprops = dict(

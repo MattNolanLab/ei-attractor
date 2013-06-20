@@ -5,76 +5,112 @@
 	 width="595.28px" height="841.89px" viewBox="0 0 595.28 841.89" enable-background="new 0 0 595.28 841.89" xml:space="preserve">
 <g>
 	<g>
-		<line x1="143.587" y1="270.966" x2="205.964" y2="270.966"/>
-		<polygon points="205.235,273.467 209.553,270.974 205.235,268.48 		"/>
+		<line fill="none" x1="130.998" y1="247.099" x2="175.848" y2="247.099"/>
+		<polygon points="175.119,249.6 179.437,247.106 175.119,244.613 		"/>
 	</g>
 	<g>
-		<line fill="none" stroke="#000000" stroke-width="1.5" x1="143.587" y1="270.966" x2="205.964" y2="270.966"/>
-		<polygon points="204.87,274.717 211.347,270.978 204.87,267.238 		"/>
+		<line fill="none" stroke="#000000" x1="130.998" y1="247.099" x2="175.848" y2="247.099"/>
+		<polygon points="175.119,249.6 179.437,247.106 175.119,244.613 		"/>
 	</g>
 </g>
 <g>
-	<circle fill="#FFFFFF" stroke="#ED1C24" stroke-width="2" cx="122.504" cy="281.836" r="23.722"/>
+	<circle fill="#FFFFFF" stroke="#ED1C24" stroke-width="1.5" cx="115.839" cy="254.914" r="17.057"/>
+	<text transform="matrix(1 0 0 1 111.9993 259.1343)" fill="#ED1C24" font-family="'MyriadPro-Bold'" font-size="14.3804">E</text>
 	
-		<text transform="matrix(1 0 0 1 117.165 287.7061)" fill="#ED1C24" stroke="#ED1C24" font-family="'MyriadPro-Bold'" font-size="20">E</text>
+		<text transform="matrix(1 0 0 1 111.9993 259.1343)" fill="none" stroke="#ED1C24" font-family="'MyriadPro-Bold'" font-size="14.3804">E</text>
 </g>
 <g>
-	<circle fill="#FFFFFF" stroke="#2E3192" stroke-width="2" cx="232.755" cy="281.835" r="23.722"/>
+	<circle fill="#FFFFFF" stroke="#2E3192" stroke-width="1.5" cx="195.111" cy="254.914" r="17.057"/>
+	<text transform="matrix(1 0 0 1 193.0618 259.1343)" fill="#2E3192" font-family="'MyriadPro-Bold'" font-size="14.3804">I</text>
 	
-		<text transform="matrix(1 0 0 1 229.9053 287.7051)" fill="#2E3192" stroke="#2E3192" font-family="'MyriadPro-Bold'" font-size="20">I</text>
+		<text transform="matrix(1 0 0 1 193.0618 259.1343)" fill="none" stroke="#2E3192" font-family="'MyriadPro-Bold'" font-size="14.3804">I</text>
 </g>
 <g>
 	<g>
-		<line x1="210.807" y1="292.667" x2="147.79" y2="292.705"/>
-		<circle cx="147.79" cy="292.705" r="1.88"/>
+		<line fill="none" x1="179.33" y1="262.702" x2="134.02" y2="262.729"/>
+		<circle cx="134.02" cy="262.729" r="1.88"/>
 	</g>
 	<g>
-		<line fill="none" stroke="#000000" stroke-width="1.5" x1="210.807" y1="292.667" x2="147.79" y2="292.705"/>
-		<circle cx="147.79" cy="292.705" r="2.82"/>
-	</g>
-</g>
-<g>
-	<rect x="163.328" y="185.082" fill="#FFFFFF" stroke="#000000" stroke-width="2" width="25.667" height="26.667"/>
-	<g>
-		<text transform="matrix(1 0 0 1 172.9434 204.2266)" font-family="'MyriadPro-Regular'" font-size="20">I</text>
-		<text transform="matrix(0.583 0 0 0.583 177.3633 206.3174)" font-family="'Symbol'" font-size="14">q</text>
+		<line fill="none" stroke="#000000" x1="179.33" y1="262.702" x2="134.02" y2="262.729"/>
+		<circle stroke="#000000" stroke-width="2" cx="134.02" cy="262.729" r="1.88"/>
 	</g>
 </g>
 <g>
+	<rect x="145.192" y="186.065" fill="#FFFFFF" stroke="#000000" width="18.455" height="19.174"/>
 	<g>
-		<line x1="174.775" y1="212.749" x2="131.572" y2="254.25"/>
-		<polygon points="130.366,251.941 128.979,256.73 133.82,255.537 		"/>
-	</g>
-	<g>
-		<line fill="none" stroke="#000000" stroke-width="1.5" x1="174.775" y1="212.749" x2="131.572" y2="254.25"/>
-		<polygon points="129.763,250.787 127.683,257.97 134.944,256.18 		"/>
-	</g>
-</g>
-<g>
-	<rect x="109.671" y="185.023" fill="#FFFFFF" stroke="#000000" stroke-width="2" width="25.667" height="26.667"/>
-	<g>
-		<text transform="matrix(1 0 0 1 114.8647 204.2266)" font-family="'MyriadPro-Regular'" font-size="20">I</text>
-		<text transform="matrix(0.583 0 0 0.583 120.2847 206.3174)" font-family="'MyriadPro-Regular'" font-size="14">vel</text>
+		<text transform="matrix(1 0 0 1 152.1052 199.8306)" font-family="'MyriadPro-Regular'" font-size="16">I</text>
+		<text transform="matrix(1 0 0 1 155.2834 201.9771)" font-family="'Symbol'" font-size="6.996">q</text>
 	</g>
 </g>
 <g>
 	<g>
-		<line x1="122.504" y1="211.749" x2="122.504" y2="252"/>
-		<polygon points="120.004,251.271 122.497,255.588 124.989,251.271 		"/>
+		<line fill="none" x1="153.423" y1="205.958" x2="122.359" y2="235.798"/>
+		<polygon points="121.152,233.49 119.766,238.279 124.606,237.085 		"/>
 	</g>
 	<g>
-		<line fill="none" stroke="#000000" stroke-width="1.5" x1="122.504" y1="211.749" x2="122.504" y2="252"/>
-		<polygon points="118.753,250.906 122.493,257.383 126.232,250.906 		"/>
+		<line fill="none" stroke="#000000" x1="153.423" y1="205.958" x2="122.359" y2="235.798"/>
+		<polygon points="121.152,233.49 119.766,238.279 124.606,237.085 		"/>
+	</g>
+</g>
+<g>
+	<rect x="106.612" y="186.023" fill="#FFFFFF" stroke="#000000" width="18.455" height="19.174"/>
+	<g>
+		<text transform="matrix(1 0 0 1 110.3455 199.8306)" font-family="'MyriadPro-Regular'" font-size="16">I</text>
+		<text transform="matrix(1 0 0 1 114.2419 201.9771)" font-family="'MyriadPro-Regular'" font-size="6.996">vel</text>
 	</g>
 </g>
 <g>
 	<g>
-		<line x1="175.312" y1="212.998" x2="221.5" y2="254.499"/>
-		<polygon points="219.286,255.872 224.164,256.903 222.618,252.163 		"/>
+		<line fill="none" x1="115.839" y1="205.239" x2="115.839" y2="234.181"/>
+		<polygon points="113.338,233.451 115.831,237.769 118.324,233.451 		"/>
 	</g>
 	<g>
-		<line fill="none" stroke="#000000" stroke-width="1.5" x1="175.312" y1="212.998" x2="221.5" y2="254.499"/>
-		<polygon points="218.179,256.558 225.496,258.105 223.178,250.995 		"/>
+		<line fill="none" stroke="#000000" x1="115.839" y1="205.239" x2="115.839" y2="234.181"/>
+		<polygon points="113.338,233.451 115.831,237.769 118.324,233.451 		"/>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" x1="153.808" y1="206.137" x2="187.019" y2="235.978"/>
+		<polygon points="184.805,237.35 189.683,238.382 188.137,233.642 		"/>
+	</g>
+	<g>
+		<line fill="none" stroke="#000000" x1="153.808" y1="206.137" x2="187.019" y2="235.978"/>
+		<polygon points="184.805,237.35 189.683,238.382 188.137,233.642 		"/>
+	</g>
+</g>
+<g>
+	<rect x="130.637" y="303.27" fill="#FFFFFF" stroke="#000000" width="22.591" height="19.174"/>
+	<g>
+		<text transform="matrix(1 0 0 1 132.5256 317.0347)" font-family="'MyriadPro-Regular'" font-size="16">I</text>
+		<text transform="matrix(1 0 0 1 135.7034 319.1821)" font-family="'MyriadPro-Regular'" font-size="6.996">noise</text>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" x1="154.108" y1="303.57" x2="123.044" y2="273.73"/>
+		<polygon points="125.302,272.433 120.461,271.239 121.849,276.028 		"/>
+	</g>
+	<g>
+		<line fill="none" stroke="#000000" x1="143.521" y1="303.57" x2="123.044" y2="273.73"/>
+		<polygon points="125.302,272.433 120.461,271.239 121.849,276.028 		"/>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" x1="154.494" y1="303.392" x2="187.704" y2="273.551"/>
+		<polygon points="188.833,275.899 190.378,271.159 185.5,272.19 		"/>
+	</g>
+	<g>
+		<line fill="none" stroke="#000000" x1="168.932" y1="303.392" x2="187.704" y2="273.551"/>
+		<polygon points="188.833,275.899 190.378,271.159 185.5,272.19 		"/>
+	</g>
+</g>
+<g>
+	<rect x="157.637" y="303.27" fill="#FFFFFF" stroke="#000000" width="22.591" height="19.174"/>
+	<g>
+		<text transform="matrix(1 0 0 1 159.5256 317.0347)" font-family="'MyriadPro-Regular'" font-size="16">I</text>
+		<text transform="matrix(1 0 0 1 162.7034 319.1821)" font-family="'MyriadPro-Regular'" font-size="6.996">noise</text>
 	</g>
 </g>
 </svg>
