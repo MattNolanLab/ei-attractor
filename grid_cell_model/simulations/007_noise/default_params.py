@@ -122,7 +122,7 @@ defaultParameters = {
         "bumpCurrentSlope"      :   3.175,        # pA/(cm/s), !! this will depend on prefDirC !!
 
         "noise_sigma"           :   150.0,        # pA            
-        "gammaNSample"          :   0.025,        # fraction
+        "gammaNSample"          :   25,           # No. of neurons
         
         "sim_dt"                :   0.1,          # ms
         "Vclamp"                :   -50,          # mV
