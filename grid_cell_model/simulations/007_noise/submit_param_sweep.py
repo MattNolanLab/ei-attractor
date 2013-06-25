@@ -26,23 +26,26 @@ from submitting.arguments   import ArgumentCreator
 import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
-p['noise_sigma']       = 300.0     # pA
+p['noise_sigma']       = 150.0     # pA
 
 # Submitting
-ENV         = 'cluster'
-simRootDir  = 'output'
+ENV         = 'workstation'
+simRootDir  = 'output_local/velocity'
 simLabel    = 'EI_param_sweep_{0}pA_big'.format(int(p['noise_sigma']))
-appName     = 'simulation_stationary.py'
+appName     = 'simulation_velocity.py'
 rtLimit     = '00:20:00'
 numCPU      = 4
 blocking    = True
-timePrefix  = True
+timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
-p['time']              = 10e3  # ms
-p['nthreads']          = 4
-p['ntrials']           = 5
+p['time']       = 10e3  # ms
+p['nthreads']   = 4
+p['ntrials']    = 10
+
+p['IvelMax']    = 150
+p['dIvel']      = 10
 
 
 
@@ -57,7 +60,8 @@ startFrac    = 0.
 endFrac      = 2.8572
 
 
-fracArr = np.linspace(startFrac, endFrac, Nvals)
+#fracArr = np.linspace(startFrac, endFrac, Nvals)
+fracArr = [1.0]
 print(fracArr)
 
 g_AMPA_total_arr     = []

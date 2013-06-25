@@ -658,3 +658,31 @@ class BasicGridCellNetwork(NestGridCellNetwork):
 
 
 
+class ConstantVelocityNetwork(BasicGridCellNetwork):
+    '''
+    A grid cell network that simulates a constant velocity in a specified
+    direction.
+    '''
+
+    def __init__(self, options, simulationOpts=None,
+            vel              = [0.0, 0.0],
+            nrec_spikes      = (None, None),
+            stateRecord_type = 'middle-center',
+            stateRecParams   = (None, None)):
+        '''
+        Generate the network.
+
+        Parameters
+        ----------
+        vel : a pair [x, y]
+            Velocity input vector, i.e. it specifies the direction and
+            magnitude of the velocity current.
+        '''
+        BasicGridCellNetwork.__init__(self,
+                options, simulationOpts,
+                nrec_spikes,
+                stateRecord_type,
+                stateRecParams)
+
+        self.setConstantVelocityCurrent_e(vel)
+
