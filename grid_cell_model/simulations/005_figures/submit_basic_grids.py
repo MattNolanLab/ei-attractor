@@ -53,7 +53,7 @@ parameters['bumpCurrentSlope']  = 0.53      # pA/(cm/s), !! this will depend on 
 #parameters['pc_max_rate']       = 100.0     # Hz
 
 parameters['output_dir']        = 'output'
-parameters['nthreads']          = 8
+parameters['nthreads']          = 4
 parameters['ndumps']            = 1
 
 startJobNum = 2000
@@ -65,7 +65,7 @@ blocking            = False
 
 # Cluster parameters
 cluster_scriptName  = 'cluster_submit.sh simulation_basic_grids.py'
-qsub_params         = "-R y -P inf_ndtc -cwd -j y -l h_rt=01:30:00 -pe OpenMP 8"
+qsub_params         = "-R y -P inf_ndtc -cwd -j y -l h_rt=02:00:00 -pe OpenMP 4"
 qsub_output_dir     = parameters['output_dir']
 
 ac = ArgumentCreator(parameters, printout=True)
