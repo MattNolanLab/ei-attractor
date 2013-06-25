@@ -26,7 +26,7 @@ from data_storage       import DataStorage
 
 
 parser          = getOptParser()
-parser.add_option("--gammaNSample",   type="float",   help="Fraction of neurons in the network to sample from, for the frequency analysis.")
+parser.add_option("--gammaNSample",   type="int",   help="Fraction of neurons in the network to sample from, for the frequency analysis.")
 
 (options, args) = parser.parse_args()
 
@@ -42,10 +42,8 @@ for trial_idx in range(options.ntrials):
     ei_net.setConstantVelocityCurrent_e(const_v)
     
     
-    NSample_e = int(options.gammaNSample * ei_net.net_Ne)
-    NSample_i = int(options.gammaNSample * ei_net.net_Ni)
-    stateRecF_e = choice(ei_net.E_pop, NSample_e, replace=False)
-    stateRecF_i = choice(ei_net.I_pop, NSample_i, replace=False)
+    stateRecF_e = choice(ei_net.E_pop, options.gammaNSample, replace=False)
+    stateRecF_i = choice(ei_net.I_pop, options.gammaNSample, replace=False)
     
     stateMonF_e_params = {
             'withtime' : False,
