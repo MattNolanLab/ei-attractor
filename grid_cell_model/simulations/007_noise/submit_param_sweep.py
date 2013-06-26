@@ -29,22 +29,22 @@ lg.basicConfig(level=lg.DEBUG)
 p['noise_sigma']       = 150.0     # pA
 
 # Submitting
-ENV         = 'workstation'
-simRootDir  = 'output_local/velocity'
+ENV         = 'cluster'
+simRootDir  = 'output/velocity_sample'
 simLabel    = 'EI_param_sweep_{0}pA_big'.format(int(p['noise_sigma']))
 appName     = 'simulation_velocity.py'
-rtLimit     = '00:20:00'
+rtLimit     = '01:00:00'
 numCPU      = 4
-blocking    = True
+blocking    = False
 timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
 p['time']       = 10e3  # ms
 p['nthreads']   = 4
-p['ntrials']    = 10
+p['ntrials']    = 5
 
-p['IvelMax']    = 150
+p['IvelMax']    = 100
 p['dIvel']      = 10
 
 

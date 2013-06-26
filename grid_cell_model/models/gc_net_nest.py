@@ -600,13 +600,34 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         )
 
   
-    def _getSpikeMonData(self, mon, gidStart):
+    def getSpikeMonData(self, mon, gidStart):
         '''
         Generate a dictionary of a spike data from the monitor ``mon``
         '''
         st = nest.GetStatus(mon)[0]
         st['events']['senders'] -= gidStart
         return st
+
+
+    def getSpikes(self):
+        '''
+        Return a dictionary of spike monitor data.
+        '''
+        out = {}
+
+        if (self.spikeMon_e is not None):
+            out['spikeMon_e'] = self.getSpikeMonData(self.spikeMon_e,
+                    self.E_pop[0])
+        if (self.spikeMon_i is not None):
+            out['spikeMon_i'] = self.getSpikeMonData(self.spikeMon_i,
+                    self.I_pop[0])
+
+        for label, vals in self._extraSpikeMons.iteritems():
+            assert(label not in out.keys())
+            out[label] = self.getSpikeMonData(vals[0], vals[1])
+
+        return out
+
 
 
     def getAllData(self):
@@ -616,20 +637,9 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         out = {}
         out['options']  = self.no._einet_optdict
         out['net_attr'] = self.getAttrDictionary()
-        
-        # Save spikes
-        if (self.spikeMon_e is not None):
-            out['spikeMon_e'] = self._getSpikeMonData(self.spikeMon_e,
-                    self.E_pop[0])
-        if (self.spikeMon_i is not None):
-            out['spikeMon_i'] = self._getSpikeMonData(self.spikeMon_i,
-                    self.I_pop[0])
 
-        for label, vals in self._extraSpikeMons.iteritems():
-            assert(label not in out.keys())
-            out[label] = self._getSpikeMonData(vals[0], vals[1])
-
-
+        # Spike monitors
+        out.update(self.getSpikes())
         
         #Save state variables
         out['stateMon_e']   = nest.GetStatus(self.stateMon_e)
@@ -639,6 +649,20 @@ class BasicGridCellNetwork(NestGridCellNetwork):
             out[label] = nest.GetStatus(val)
 
         return out
+
+
+    def saveSpikes(self, fileName):
+        '''
+        Save all the simulated spikes that have been recorded into a file.
+
+        Parameters
+        ----------
+        fileName : string
+            Path and name of the file
+        '''
+        out = DataStorage.open(fileName, 'w')
+        d = self.getSpikes()
+        out.close()
 
 
     def saveAll(self, fileName):
@@ -685,4 +709,14 @@ class ConstantVelocityNetwork(BasicGridCellNetwork):
                 stateRecParams)
 
         self.setConstantVelocityCurrent_e(vel)
+
+    def getSpikes(self):
+        '''
+        Return a dictionary of spike monitor data.
+        '''
+        out = {}
+        out['spikeMon_e'] = self.getSpikeMonData(self.spikeMon_e,
+                self.E_pop[0])
+        return out
+
 

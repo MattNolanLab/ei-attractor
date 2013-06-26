@@ -48,7 +48,7 @@ for trial_idx in range(options.ntrials):
 
         ei_net.simulate(options.time, printTime=options.printTime)
         ei_net.endSimulation()
-        trialOut['IvelData'].append(ei_net.getAllData())
+        trialOut['IvelData'].append(ei_net.getSpikes())
         constrT, simT, totalT = ei_net.printTimes()
         overalT += totalT
     out.append(trialOut)
