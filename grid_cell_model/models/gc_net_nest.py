@@ -628,15 +628,19 @@ class BasicGridCellNetwork(NestGridCellNetwork):
 
         return out
 
+    
+    def getNetParams(self):
+        out = {}
+        out['options']  = self.no._einet_optdict
+        out['net_attr'] = self.getAttrDictionary()
+        return out
 
 
     def getAllData(self):
         '''
         Save all the simulated data into a dictionary and return it.
         '''
-        out = {}
-        out['options']  = self.no._einet_optdict
-        out['net_attr'] = self.getAttrDictionary()
+        out = self.getNetparams()
 
         # Spike monitors
         out.update(self.getSpikes())
@@ -718,5 +722,12 @@ class ConstantVelocityNetwork(BasicGridCellNetwork):
         out['spikeMon_e'] = self.getSpikeMonData(self.spikeMon_e,
                 self.E_pop[0])
         return out
+
+
+    def getMinimalSaveData(self):
+        out = self.getNetParams()
+        out.update(self.getSpikes())
+        return out
+
 
 

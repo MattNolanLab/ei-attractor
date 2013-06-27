@@ -26,8 +26,8 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'cluster'
-simRootDir  = 'output'
+ENV         = 'workstation'
+simRootDir  = 'output/velocity_sample'
 appName     = 'analysis_EI.py'
 rtLimit     = '00:02:30'
 numCPU      = 1
@@ -37,10 +37,11 @@ numRepeat   = 1
 dry_run     = False
 
 dirs = \
-    ('2013-04-24T21-43-32_EI_param_sweep_300pA_big'       , (40, 40))
-    #('2013-04-24T15-27-30_EI_param_sweep_0pA_big',         (40, 40))
-    #('2013-04-24T21-37-47_EI_param_sweep_150pA_big'       , (40, 40))
-    #('2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample', (2, 2))
+    ('EI_param_sweep_150pA'            , (1, 1))
+    #('EI_param_sweep_300pA_big'       , (40, 40))
+    #('EI_param_sweep_0pA_big',         (40, 40))
+    #('EI_param_sweep_150pA_big'       , (40, 40))
+    #('EI_param_sweep_0pA_small_sample', (2, 2))
 
 rowN = dirs[1][0]
 colN = dirs[1][1]

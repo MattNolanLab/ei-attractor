@@ -23,7 +23,7 @@
 from optparse import OptionParser
 
 from analysis.visitors    import AutoCorrelationVisitor, BumpFittingVisitor, \
-        FiringRateVisitor
+        FiringRateVisitor, BumpVelocityVisitor
 from parameters           import JobTrialSpace2D
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -56,7 +56,9 @@ forceUpdate = bool(o.forceUpdate)
 ACVisitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
 bumpVisitor = BumpFittingVisitor(forceUpdate=forceUpdate)
 FRVisitor = FiringRateVisitor(forceUpdate=forceUpdate)
+VelVisitor = BumpVelocityVisitor(forceUpdate=forceUpdate)
 
-sp.visit(ACVisitor)
-sp.visit(bumpVisitor)
-sp.visit(FRVisitor)
+#sp.visit(ACVisitor)
+#sp.visit(bumpVisitor)
+#sp.visit(FRVisitor)
+sp.visit(VelVisitor, trialList='all-at-once')

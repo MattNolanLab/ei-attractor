@@ -19,15 +19,19 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
+from scipy.optimize import leastsq
+
 from interface        import DictDSVisitor, extractStateVariable, \
         extractSpikes, sumAllVariables
 from otherpkg.log     import log_info
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 from analysis.image   import Position2D, fitGaussianBumpTT
-from analysis.spikes  import slidingFiringRateTuple, ThetaSpikeAnalysis
+from analysis.spikes  import slidingFiringRateTuple, ThetaSpikeAnalysis, \
+        TorusPopulationSpikes
 
 
-__all__ = ['AutoCorrelationVisitor', 'BumpFittingVisitor', 'FiringRateVisitor']
+__all__ = ['AutoCorrelationVisitor', 'BumpFittingVisitor', 'FiringRateVisitor',
+        'BumpVelocityVisitor']
 
 
 def findFreq(ac, dt, ext_idx, ext_t):
@@ -35,7 +39,7 @@ def findFreq(ac, dt, ext_idx, ext_t):
     Find the first local maximum in an autocorrelation function and extract the
     frequency and the value of the autocorrelation at the detected frequency.
 
-    Parameters
+    Parameter, 'BumpVelocityVisitor']
     ----------
     ac : numpy vector
         A vector containing the autocorrelation function
@@ -326,5 +330,102 @@ class FiringRateVisitor(DictDSVisitor):
             }
         else:
             log_info("FiringRateVisitor", "Data present. Skipping analysis.")
+
+
+###############################################################################
+
+
+def fitCircularSlope(bumpPos, times, normFac):
+    '''
+    Fit a (circular) slope line onto velocity response of the bump and extract
+    the slope (velocity), in neurons/s
+
+    Parameters
+    ----------
+    bumpPos : numpy array
+        An array of bump positions
+    times : numpy array
+        A corresponding vector of times, of the same size as bumpPos
+    normFac : float
+        Normalizing factor for the positional vector. In fact this is the size
+        of the toroidal sheet (X direction).
+    output : float
+        Estimated bump speed (neurons/time unit).
+    '''
+    t = np.array(times) - times[0]
+    bumpPos_norm = np.unwrap(1.0 * bumpPos / normFac * 2 * np.pi) # normalise to 2*Pi
+    func = lambda X: X[0]*t - bumpPos_norm
+    x0 = np.array([0.0])  # slope
+    x = leastsq(func, x0)
+    return x[0][0] / 2. / np.pi * normFac
+    
+
+def getLineFit(Y):
+    '''
+    Fit a line to data
+    '''
+    X = np.arange(len(Y))
+    
+    func = lambda P: P[0]*X  - Y
+    P0 = np.array([0.0]) # slope
+    P = leastsq(func, P0)
+    return P[0][0]*X, P[0][0]
+
+
+class BumpVelocityVisitor(DictDSVisitor):
+    '''
+    A visitor that estimates the relationship between injected velocity current
+    and bump speed.
+    '''
+
+    def __init__(self, win_dt=20.0, winLen=250.0, forceUpdate=False):
+        self.win_dt = win_dt
+        self.winLen = winLen
+        self.forceUpdate = forceUpdate
+
+    def _getSpikeTrain(self, data, monName, dimList):
+        N_x = self.getNetParam(data, dimList[0])
+        N_y = self.getNetParam(data, dimList[1])
+        senders, times = extractSpikes(data[monName])
+        return senders, times, (N_x, N_y)
+
+
+    def visitDictDataSet(self, ds, **kw):
+        '''
+        Visit a data set that contains all the trials and Ivel simulations.
+        '''
+        data = ds.data
+        trials = data['trials']
+
+        slopes = []
+        for trialNum in xrange(len(trials)):
+            log_info('BumpVelocityVisitor', "Trial no. {0}.".format(trialNum))
+            slopes.append([])
+            IvelVec = trials[trialNum]['IvelVec']
+            for IvelIdx in xrange(len(IvelVec)):
+                iData = trials[trialNum]['IvelData'][IvelIdx]
+                #if 'analysis' in iData.keys() and not self.forceUpdate:
+                #    log_info('BumpVelocityVisitor', "Data present. Skipping analysis.")
+                #    continue
+
+                senders, times, sheetSize =  self._getSpikeTrain(iData,
+                        'spikeMon_e', ['Ne_x', 'Ne_y'])
+                pop = TorusPopulationSpikes(senders, times, sheetSize)
+                tStart = self.getOption(iData, 'theta_start_t')
+                tEnd   = self.getOption(iData, 'time')
+                bumpPos, bumpPos_t = pop.populationVector(tStart, tEnd,
+                        self.win_dt, self.winLen)
+                slope = fitCircularSlope(bumpPos[:, 0], bumpPos_t,
+                        sheetSize[0]/2.0)*1e3
+                slopes[trialNum].append(slope)
+                iData['analysis'] = {
+                        'bumpPos'   : bumpPos,
+                        'bumpPos_t' : bumpPos_t,
+                        'slope'     : slope
+                }
+
+
+        slopes = np.array(slopes)
+        data['analysis'] = {'bumpVelAll' : slopes}
 
 

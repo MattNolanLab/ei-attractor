@@ -30,22 +30,22 @@ p['noise_sigma']       = 150.0     # pA
 
 # Submitting
 ENV         = 'cluster'
-simRootDir  = 'output/velocity_sample'
-simLabel    = 'EI_param_sweep_{0}pA_big'.format(int(p['noise_sigma']))
+simRootDir  = 'output/velocity'
+simLabel    = 'EI_param_sweep_{0}pA'.format(int(p['noise_sigma']))
 appName     = 'simulation_velocity.py'
-rtLimit     = '01:00:00'
+rtLimit     = '02:00:00'
 numCPU      = 4
-blocking    = False
+blocking    = True
 timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
-p['time']       = 10e3  # ms
-p['nthreads']   = 4
-p['ntrials']    = 5
+p['time']     = 10e3  # ms
+p['nthreads'] = 4
+p['ntrials']  = 10
 
-p['IvelMax']    = 100
-p['dIvel']      = 10
+p['IvelMax']  = 100
+p['dIvel']    = 10
 
 
 
@@ -55,13 +55,13 @@ ac = ArgumentCreator(p, printout=True)
 
 # Range of parameters around default values
 # Let's choose a 0.5 - 2 range around the default values
-Nvals        = 40    # Number of values for each dimension
+Nvals        = 30    # Number of values for each dimension
 startFrac    = 0.
 endFrac      = 2.8572
 
 
-#fracArr = np.linspace(startFrac, endFrac, Nvals)
-fracArr = [1.0]
+fracArr = np.linspace(startFrac, endFrac, Nvals)
+#fracArr = [1.0]
 print(fracArr)
 
 g_AMPA_total_arr     = []

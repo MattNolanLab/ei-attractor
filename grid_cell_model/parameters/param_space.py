@@ -88,12 +88,35 @@ class TrialSet(DataSpace):
     def __getitem__(self, key):
         return DictDataSet(self._vals[key])
 
+    def getAllTrialsAsDataSet(self):
+        return DictDataSet(self._ds)
+
     def visit(self, visitor, trialList=None):
-        if (trialList is None):
-            trialList = xrange(len(self))
-        for trialIdx in trialList:
-            trial = self[trialIdx]
-            trial.visit(visitor, trialNum=trialIdx)
+        '''
+        Apply a visitor to the trials set. There are two modes: Apply the
+        visitor to trials separately, or pass the raw DictDataset to the
+        visitor so it can apply some reduction operation onto the data set. See
+        the description of the trialList parameter.
+
+        Parameters
+        ----------
+        visitor : a DictDataSetVisitor object
+            The visitor to apply on this data space.
+        trialList : list, or None, or string
+            If trialList is None, apply the visitor to all the trials
+            separately. If trialList == 'all-at-once', pass on all the trials
+            in one DataSet object to the visitor. Otherwise trialList must be a
+            list of trials to pass on to the visitor (separately).
+        '''
+        if (trialList == 'all-at-once'):
+            self.getAllTrialsAsDataSet().visit(visitor)
+        else:
+            if (trialList is None):
+                trialList = xrange(len(self))
+
+            for trialIdx in trialList:
+                trial = self[trialIdx]
+                trial.visit(visitor, trialNum=trialIdx)
 
 
 class DummyTrialSet(DataSpace):

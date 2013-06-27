@@ -19,6 +19,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
+from os.path import exists
 from numpy.random       import choice
 
 from models.parameters  import getOptParser
@@ -32,6 +33,15 @@ parser.add_option("--dIvel",        type="float", help="Constant velocity curren
 
 (options, args) = parser.parse_args()
 
+
+output_fname = "{0}/{1}job{2:05}_output.h5".format(options.output_dir,
+        options.fileNamePrefix, options.job_num)
+if (exists(output_fname)):
+    print('Output file exists, doing nothing')
+    exit(0)
+
+# Run the simulation
+d = DataStorage.open(output_fname, 'w')
 
 out = []
 overalT = 0.
@@ -48,14 +58,11 @@ for trial_idx in range(options.ntrials):
 
         ei_net.simulate(options.time, printTime=options.printTime)
         ei_net.endSimulation()
-        trialOut['IvelData'].append(ei_net.getSpikes())
+        trialOut['IvelData'].append(ei_net.getMinimalSaveData())
         constrT, simT, totalT = ei_net.printTimes()
         overalT += totalT
     out.append(trialOut)
 
-output_fname = "{0}/{1}job{2:05}_output.h5".format(options.output_dir,
-        options.fileNamePrefix, options.job_num)
-d = DataStorage.open(output_fname, 'w')
 d["trials"] = out
 d.close()
 print "Script total run time: {0} s".format(overalT)
