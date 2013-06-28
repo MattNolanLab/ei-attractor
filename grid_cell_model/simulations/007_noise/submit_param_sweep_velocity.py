@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 #
-#   submit_param_sweep.py
+#   submit_param_sweep_velocity.py
 #
-#   Submit job(s) to the cluster/workstation: parameter sweep (noise)
+#   Submit job(s) to the cluster/workstation: velocity estimation parameter
+#   sweeps (noise)
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -25,28 +26,33 @@ import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
 
-p['noise_sigma']       = 300.0     # pA
+
+p['noise_sigma']       = 150.0     # pA
 
 # Submitting
 ENV         = 'cluster'
-simRootDir  = 'output/one_to_one'
-simLabel    = 'EI_param_sweep_{0}pA_big'.format(int(p['noise_sigma']))
-appName     = 'simulation_stationary.py'
-rtLimit     = '00:20:00'
+simRootDir  = 'output/velocity'
+simLabel    = 'EI_param_sweep_{0}pA'.format(int(p['noise_sigma']))
+appName     = 'simulation_velocity.py'
+rtLimit     = '02:00:00'
 numCPU      = 4
 blocking    = True
 timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
-p['time']              = 10e3  # ms
-p['nthreads']          = 4
-p['ntrials']           = 5
+
+p['time']     = 10e3  # ms
+p['nthreads'] = 4
+p['ntrials']  = 10
+
+p['IvelMax']  = 100
+p['dIvel']    = 10
 
 
 # Range of parameters around default values
 # Let's choose a 0.5 - 2 range around the default values
-Nvals        = 40    # Number of values for each dimension
+Nvals        = 30    # Number of values for each dimension
 startFrac    = 0.
 endFrac      = 2.8572
 

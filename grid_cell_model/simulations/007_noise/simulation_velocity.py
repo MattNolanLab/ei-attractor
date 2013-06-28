@@ -1,7 +1,7 @@
 #
-#   simulation_bump_fitting.py
+#   simulation_velocity.py
 #
-#   Main simulation run: Fitting a Gaussian to the bump and frequency analysis.
+#   Main simulation run: Bump velocity estimation.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
