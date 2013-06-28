@@ -27,7 +27,6 @@ lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
 ENV         = 'workstation'
-simRootDir  = 'output/velocity_sample'
 appName     = 'analysis_EI.py'
 rtLimit     = '00:02:30'
 numCPU      = 1
@@ -36,18 +35,27 @@ timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
-dirs = \
-    ('EI_param_sweep_150pA'            , (1, 1))
-    #('EI_param_sweep_300pA_big'       , (40, 40))
-    #('EI_param_sweep_0pA_big',         (40, 40))
-    #('EI_param_sweep_150pA_big'       , (40, 40))
-    #('EI_param_sweep_0pA_small_sample', (2, 2))
 
-rowN = dirs[1][0]
-colN = dirs[1][1]
-simLabel = dirs[0]
+gammaBumpType = 'gamma-bump'
+velocityType = 'velocity'
+
+dirs = \
+    ('output/velocity',   velocityType,  'EI_param_sweep_150pA', (1, 1))
+    #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_150pA',     (1, 1))
+    #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_300pA_big', (40, 40))
+    #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_0pA_big',   (40, 40))
+    #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_150pA_big', (40, 40))
+    #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_0pA_small_sample', (2, 2))
+    #('output/velocity',   velocityType,  'EI_param_sweep_0pA',   (30, 30))
+    #('output/velocity',   velocityType,  'EI_param_sweep_300pA', (30, 30))
 
 p = {}
+simRootDir = dirs[0]
+p['type']  = dirs[1]
+simLabel   = dirs[2]
+rowN       = dirs[3][0]
+colN       = dirs[3][1]
+
 p['shapeRows'] = rowN
 p['shapeCols'] = colN
 p['forceUpdate'] = 0

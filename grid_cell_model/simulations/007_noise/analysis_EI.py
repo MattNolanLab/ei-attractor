@@ -38,6 +38,8 @@ optParser.add_option('--shapeCols',   type="int")
 optParser.add_option('--forceUpdate', type="int")
 optParser.add_option("--output_dir",  type="string")
 optParser.add_option("--job_num",     type="int") # unused
+optParser.add_option("--type",        type="choice", choices=['gamma-bump',
+    'velocity'])
 
 o, args = optParser.parse_args()
 
@@ -48,17 +50,21 @@ dataPoints = [(o.row, o.col)]
 trialNums = None
 
 sp = JobTrialSpace2D(shape, o.output_dir, dataPoints=dataPoints)
-
-monName   = 'stateMonF_e'
-stateList = ['I_clamp_GABA_A']
-iterList  = ['g_AMPA_total', 'g_GABA_total']
 forceUpdate = bool(o.forceUpdate)
-ACVisitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
-bumpVisitor = BumpFittingVisitor(forceUpdate=forceUpdate)
-FRVisitor = FiringRateVisitor(forceUpdate=forceUpdate)
-VelVisitor = BumpVelocityVisitor(forceUpdate=forceUpdate)
 
-#sp.visit(ACVisitor)
-#sp.visit(bumpVisitor)
-#sp.visit(FRVisitor)
-sp.visit(VelVisitor, trialList='all-at-once')
+if (o.type == "gamma-bump"):
+    monName   = 'stateMonF_e'
+    stateList = ['I_clamp_GABA_A']
+    iterList  = ['g_AMPA_total', 'g_GABA_total']
+    ACVisitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
+    bumpVisitor = BumpFittingVisitor(forceUpdate=forceUpdate)
+    FRVisitor = FiringRateVisitor(forceUpdate=forceUpdate)
+
+    sp.visit(ACVisitor)
+    sp.visit(bumpVisitor)
+    sp.visit(FRVisitor)
+elif (o.type == "velocity"):
+    VelVisitor = BumpVelocityVisitor(forceUpdate=forceUpdate)
+    sp.visit(VelVisitor, trialList='all-at-once')
+else:
+    raise ValueError("Unknown analysis type option: {0}".format(o.type))
