@@ -20,6 +20,7 @@
 #
 import numpy as np
 from scipy.optimize import leastsq
+from os.path        import splitext
 
 from interface        import DictDSVisitor, extractStateVariable, \
         extractSpikes, sumAllVariables
@@ -378,10 +379,13 @@ class BumpVelocityVisitor(DictDSVisitor):
     and bump speed.
     '''
 
-    def __init__(self, win_dt=20.0, winLen=250.0, forceUpdate=False):
+    def __init__(self, win_dt=20.0, winLen=250.0, forceUpdate=False,
+            printSlope=False):
         self.win_dt = win_dt
         self.winLen = winLen
         self.forceUpdate = forceUpdate
+        self.printSlope = printSlope
+
 
     def _getSpikeTrain(self, data, monName, dimList):
         N_x = self.getNetParam(data, dimList[0])
@@ -423,9 +427,46 @@ class BumpVelocityVisitor(DictDSVisitor):
                         'bumpPos_t' : bumpPos_t,
                         'slope'     : slope
                 }
-
-
         slopes = np.array(slopes)
-        data['analysis'] = {'bumpVelAll' : slopes}
+
+        analysisTop = {'bumpVelAll' : slopes}
 
 
+        if (self.printSlope and 'fileName' not in kw.keys()):
+            msg = 'printSlope requested, but did not receive the fileName ' + \
+                    'as a keyword argument.'
+            log_warn('BumpVelocityVisitor', msg)
+            return
+        elif (self.printSlope):
+            if (len(trials) == 0):
+                msg = 'Something wrong: len(trials) == 0'
+                log_warn('BumpVelocityVisitor', msg)
+                return
+
+
+            from matplotlib.pyplot import figure, errorbar, xlabel, ylabel, \
+                    plot, title, savefig
+            figure()
+            IvelVec = trials[0]['IvelVec'] # All the same
+            avgSlope = np.mean(slopes, axis=0)
+            stdErrSlope = np.std(slopes, axis=0) / np.sqrt(len(trials))
+            errorbar(IvelVec, avgSlope, stdErrSlope, fmt='o-')
+            xlabel('Velocity current (pA)')
+            ylabel('Bump velocity (neurons/s)')
+
+            line, slope = getLineFit(avgSlope)
+            lineFitErr = np.abs(line - avgSlope)
+            slope = slope/(IvelVec[1] - IvelVec[0])
+            plot(IvelVec, line)
+            title("Line fit slope: " + str(slope*1e3) + ' nrns/s/pA')
+            
+            fileName = splitext(kw['fileName'])[0] + '.pdf'
+            savefig(fileName)
+
+            analysisTop.update({
+                'lineFitLine'  : line,
+                'lineFitSlope' : slope,
+                'lineFitErr'   : lineFitErr
+            })
+
+        data['analysis'] = analysisTop

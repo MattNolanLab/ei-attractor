@@ -21,6 +21,8 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 from optparse import OptionParser
+import matplotlib
+matplotlib.use('cairo')
 
 from analysis.visitors    import AutoCorrelationVisitor, BumpFittingVisitor, \
         FiringRateVisitor, BumpVelocityVisitor
@@ -64,7 +66,7 @@ if (o.type == "gamma-bump"):
     sp.visit(bumpVisitor)
     sp.visit(FRVisitor)
 elif (o.type == "velocity"):
-    VelVisitor = BumpVelocityVisitor(forceUpdate=forceUpdate)
+    VelVisitor = BumpVelocityVisitor(forceUpdate=forceUpdate, printSlope=True)
     sp.visit(VelVisitor, trialList='all-at-once')
 else:
     raise ValueError("Unknown analysis type option: {0}".format(o.type))
