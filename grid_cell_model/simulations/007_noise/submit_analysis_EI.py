@@ -26,9 +26,9 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'workstation'
+ENV         = 'cluster'
 appName     = 'analysis_EI.py'
-rtLimit     = '00:02:30'
+rtLimit     = '00:05:00'
 numCPU      = 1
 blocking    = False
 timePrefix  = False
@@ -40,7 +40,7 @@ gammaBumpType = 'gamma-bump'
 velocityType = 'velocity'
 
 dirs = \
-    ('output/velocity',   velocityType,  'EI_param_sweep_150pA', (1, 1))
+    ('output/velocity',   velocityType,  'EI_param_sweep_150pA', (30, 30))
     #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_150pA',     (1, 1))
     #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_300pA_big', (40, 40))
     #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_0pA_big',   (40, 40))
