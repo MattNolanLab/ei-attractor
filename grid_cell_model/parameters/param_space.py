@@ -109,14 +109,14 @@ class TrialSet(DataSpace):
             list of trials to pass on to the visitor (separately).
         '''
         if (trialList == 'all-at-once'):
-            self.getAllTrialsAsDataSet().visit(visitor)
+            self.getAllTrialsAsDataSet().visit(visitor, fileName=self._fileName)
         else:
             if (trialList is None):
                 trialList = xrange(len(self))
 
             for trialIdx in trialList:
                 trial = self[trialIdx]
-                trial.visit(visitor, trialNum=trialIdx)
+                trial.visit(visitor, fileName=self._fileName, trialNum=trialIdx)
 
 
 class DummyTrialSet(DataSpace):
