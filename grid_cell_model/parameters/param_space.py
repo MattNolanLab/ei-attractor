@@ -224,12 +224,15 @@ class JobTrialSpace2D(DataSpace):
             None as well
         varList : list of strings
             A path to the hierarchical dictionary
-        trialNumList : list of ints
-            A list of trials to aggregate
+        trialNumList : list of ints or string
+            A list of trials to aggregate. If string and the value is
+            'all-at-once', aggregate the variable from the top level hierarchy
+            of data.
         funReduce : a function f(x), or None
             A function to apply to each data point for each trial. Must take
             exactly one parameter. If None, no function will be applied.
-        output : a 3D numpy array
+        output : A 3D numpy array if trialNumList is a list, or a 2D array
+                 otherwise
             All the aggregated data
         '''
         if (self._partial):
@@ -239,19 +242,28 @@ class JobTrialSpace2D(DataSpace):
         shape = self.getShape()
         rows = shape[0]
         cols = shape[1]
-        nTrials = len(trialNumList)
-        retVar = np.ndarray((rows, cols, nTrials))
+        retVar = None
+        if (trialNumList == 'all-at-once'):
+            retVar = np.ndarray((rows, cols))
+        else:
+            nTrials = len(trialNumList)
+            retVar = np.ndarray((rows, cols, nTrials))
+
         if (funReduce is None):
             funReduce = lambda x: x
         for r in xrange(rows):
             for c in xrange(cols):
-                if (len(self[r][c]) == 0):
-                    retVar[r, c, :] = np.nan
+                if (trialNumList == 'all-at-once'):
+                    data = self[r][c].getAllTrialsAsDataSet().data
+                    retVar[r][c] = funReduce(getDictData(data, varList))
                 else:
-                    for trialNum in trialNumList:
-                        data = self[r][c][trialNum].data
-                        retVar[r][c][trialNum] = funReduce(getDictData(data,
-                            varList))
+                    if (len(self[r][c]) == 0):
+                        retVar[r, c, :] = np.nan
+                    else:
+                        for trialNum in trialNumList:
+                            data = self[r][c][trialNum].data
+                            retVar[r][c][trialNum] = funReduce(getDictData(data,
+                                varList))
 
         return retVar
         
