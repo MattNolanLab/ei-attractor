@@ -100,8 +100,8 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
 ###############################################################################
 
 dirs = \
-    ('EI_param_sweep_0pA_small_sample', (2, 2))
-    #('EI_param_sweep_0pA',    (40, 40))
+    ('EI_param_sweep_0pA',    (40, 40))
+    #('EI_param_sweep_0pA_small_sample', (2, 2))
     #('EI_param_sweep_150pA',  (40, 40))
     #('EI_param_sweep_300pA',  (40, 40))
 

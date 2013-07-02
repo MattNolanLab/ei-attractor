@@ -290,8 +290,7 @@ class JobTrialSpace2D(DataSpace):
 
         # Try to load data
         nm = '{0}/{1}'.format(self._rootDir, saveDataFileName)
-        msg_err = 'Could not load data from file: {0}, var: {1}. ' +\
-                'Performing the reduction.'
+
         try:
             msg = 'Loading aggregated data from file: {0}, var: {1}'
             log_info('JobTrialSpace2D', msg.format(nm, varList[-1]))
@@ -300,11 +299,11 @@ class JobTrialSpace2D(DataSpace):
             inData.close()
             return retVar
         except IOError as e:
-            log_info('JobTrialSpace2D', msg_err.format(nm, varList[-1]))
-            log_info('JobTrialSpace2D', "Error message: {0}".format(str(e)))
+            io_err = 'Could not open file: {0}. Performing the reduction.'
+            log_info('JobTrialSpace2D', io_err.format(nm))
         except KeyError as e:
-            log_info('JobTrialSpace2D', msg_err.format(nm, varList[-1]))
-            log_info('JobTrialSpace2D', "Error message: {0}".format(str(e)))
+            io_err = 'Could not load var: {0}. Performing the reduction.'
+            log_info('JobTrialSpace2D', msg_err.format(varList[-1]))
             inData.close()
 
 
