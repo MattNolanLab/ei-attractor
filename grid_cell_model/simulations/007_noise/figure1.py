@@ -21,7 +21,7 @@
 #
 from matplotlib.pyplot import *
 from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import MaxNLocator, AutoMinorLocator
 import svgutils.transform as sg
 
 from plotting.global_defs import globalAxesSettings
@@ -57,6 +57,10 @@ fileTemplate = "job{0:05}_output.h5"
 
 ##############################################################################
 
+def getOption(data, optStr):
+    return data['options'][optStr]
+
+
 def openJob(rootDir, jobNum, trialNum):
     fileTemplate = "job{0:05}_output.h5"
     fileName = rootDir + '/' + fileTemplate.format(jobNum)
@@ -83,14 +87,15 @@ def setSignalAxes(ax, leftSpineOn):
 
     ax.yaxis.set_major_locator(MaxNLocator(2))
 
-def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", color='black'):
+def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
+        color='black'):
     setSignalAxes(ax, leftSpineOn)
 
     if (sig is not None):
         ax.plot(t, sig, color=color)
 
     #ax.set_ylabel(labely)
-    ax.text(-0.2, 0.5, labely,
+    ax.text(labelyPos, 0.5, labely,
         verticalalignment='center', horizontalalignment='right',
         transform=ax.transAxes,
         rotation=90)
@@ -110,6 +115,32 @@ def plotThetaSignal(ax, noise_sigma, yLabelOn):
     if (yLabelOn):
         ax.text(theta_T*1e-3 - 0.01, -50, "0 pA", ha="right", va='top', fontsize='small')
     
+
+def plotHistogram(ax, sig, color='black', labelx="", labely="",
+        labelyPos=-0.475):
+    hist(sig, bins=100, histtype='step', align='mid', color=color)
+
+    # y label manually
+    if (labely is None):
+        labely = 'Count'
+    ax.text(labelyPos, 0.5, labely,
+        verticalalignment='center', horizontalalignment='right',
+        transform=ax.transAxes,
+        rotation=90)
+    xlabel(labelx)
+    
+    ax.minorticks_on()
+    ax.xaxis.set_major_locator(MaxNLocator(3))
+    ax.yaxis.set_major_locator(MaxNLocator(3))
+    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.tick_params(
+            which='both',
+            direction='out'
+    )
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+
 
 def plotBump(ax, rateMap):
     rateMap = np.zeros((10, 10))
@@ -148,13 +179,19 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     if (yLabelOn):
         VmText = "V (mV)"
         IsynText = "I (nA)"
+        countText = None
     else:
         VmText = ""
         IsynText = ""
+        countText = ""
+    histLabelX = "V (mV)"
 
     ncols = 4
     plotTStart = 5e3
     plotTEnd   = 5.25e3
+
+    theta_start_t = getOption(data, 'theta_start_t')
+    simTime = getOption(data, 'time')
 
     ax0 = subplot(gs[0, colStart:colStart+ncols])
     plotThetaSignal(ax0, noise_sigma, yLabelOn)
@@ -168,45 +205,34 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
             plotTEnd)
     plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='red')
 
-    # E cell Isyn
-    ax2 = subplot(gs[2, colStart:colStart+ncols])
-    t, IsynMiddle, IsynEdge = extractStateVars(mon_e, ['I_clamp_GABA_A'],
-            plotTStart, plotTEnd)
-    plotStateSignal(ax2, t, IsynMiddle*1e-3, labely=IsynText, color='blue')
-
     # I cell Vm
-    ax3 = subplot(gs[3, colStart:colStart+ncols])
+    ax2 = subplot(gs[2, colStart:colStart+ncols])
     t, VmMiddle, VmEdge = extractStateVars(mon_i, ['V_m'], plotTStart,
             plotTEnd)
-    plotStateSignal(ax3, t, VmMiddle, labely=VmText, color='red')
+    plotStateSignal(ax2, t, VmMiddle, labely=VmText, color='blue')
 
-    # I cell Isyn
-    ax4 = subplot(gs[4, colStart:colStart+ncols])
-    t, IsynMiddle, IsynEdge = extractStateVars(mon_i, ['I_clamp_AMPA',
-        'I_clamp_NMDA'], plotTStart, plotTEnd)
-    plotStateSignal(ax4, t, IsynMiddle*1e-3, labely=IsynText, color='blue')
+    # E cell Vm histogram
+    ax3 = subplot(gs[3, colStart:colStart+2])
+    t, VmMiddle, VmEdge = extractStateVars(mon_e, ['V_m'], theta_start_t,
+            simTime)
+    plotHistogram(ax3, VmMiddle, labelx = histLabelX, labely=countText, color='red')
 
-    #ax5 = subplot(gs[5, colStart])
-    #plotBump(ax5, None)
+    # I cell Vm histogram
+    ax4 = subplot(gs[3, colStart+2:colStart+4])
+    t, VmMiddle, VmEdge = extractStateVars(mon_i, ['V_m'], theta_start_t,
+            simTime)
+    plotHistogram(ax4, VmMiddle, labelx = histLabelX, labely="", color='blue')
 
-    #ax6 = subplot(gs[5, colStart+1])
-    #plotBump(ax6, None)
-
-    #ax7 = subplot(gs[5, colStart+2])
-    #plotBump(ax7, None)
-
-    #ax8 = subplot(gs[5, colStart+3])
-    #plotBump(ax8, None)
 
     if (yLabelOn):
-        ax1.text(-0.32, -0.15, "Excitatory layer",
+        ax1.text(-0.32, 0.5, "E cell",
                 verticalalignment='center', horizontalalignment='right',
                 transform=ax1.transAxes,
                 rotation=90,
                 fontsize=16)
-        ax3.text(-0.32, -0.15, "Inhibitory layer",
+        ax2.text(-0.32, 0.5, "I cell",
                 verticalalignment='center', horizontalalignment='right',
-                transform=ax3.transAxes,
+                transform=ax2.transAxes,
                 rotation=90,
                 fontsize=16)
 
@@ -222,11 +248,12 @@ margin = 0.1
 div = 0.085
 width = 0.23
 hspace = 0.3
+wspace = 1.0
 
 letter_top=0.97
 letter_div = 0.05
 letter_left=0.01
-letter_va='top'
+letter_va='bottom'
 letter_ha='left'
 
 # Model schematic
@@ -242,7 +269,8 @@ fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
 left = margin
 right = left + width
 ds = openJob(root0, jobNum, trialNum)
-gs = GridSpec(5, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace)
+gs = GridSpec(4, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace,
+        wspace=wspace)
 # do not update left and right
 gs.update(left=left, right=right, bottom=bottom, top=top)
 drawSignals(gs, ds, colStart=0, noise_sigma=0, letter="C")
@@ -252,7 +280,8 @@ fig.text(letter_left, top+letter_div, "C", va=letter_va, ha=letter_ha,
 
 # noise_sigma = 150 pA
 ds = openJob(root150, jobNum, trialNum)
-gs = GridSpec(5, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace)
+gs = GridSpec(4, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace,
+        wspace=wspace)
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
@@ -277,7 +306,8 @@ fig.text(w_left-0.5*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=1
 
 # noise_sigma = 300 pA
 ds = openJob(root300, jobNum, trialNum)
-gs = GridSpec(5, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace)
+gs = GridSpec(4, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace,
+        wspace=wspace)
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
