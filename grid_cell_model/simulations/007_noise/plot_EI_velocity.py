@@ -62,7 +62,7 @@ dirs = \
     ('EI_param_sweep_0pA', (30, 30))
     #('EI_param_sweep_150pA', (30, 30))
 
-rootDir = "output/velocity/{1}".format(os.getcwd(), dirs[0])
+rootDir = "output/velocity/{0}".format(dirs[0])
 shape   = dirs[1]
 
 sp = JobTrialSpace2D(shape, rootDir)

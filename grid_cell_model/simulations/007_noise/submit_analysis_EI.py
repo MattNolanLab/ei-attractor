@@ -40,13 +40,13 @@ gammaBumpType = 'gamma-bump'
 velocityType = 'velocity'
 
 dirs = \
-    ('output/velocity',   velocityType,  'EI_param_sweep_150pA', (30, 30))
-    #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_150pA',     (1, 1))
-    #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_300pA_big', (40, 40))
-    #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_0pA_big',   (40, 40))
-    #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_150pA_big', (40, 40))
-    #('output/one_to_one', gammaBumpTyme, 'EI_param_sweep_0pA_small_sample', (2, 2))
-    #('output/velocity',   velocityType,  'EI_param_sweep_0pA',   (30, 30))
+    ('output/velocity',   velocityType,  'EI_param_sweep_0pA',   (30, 30))
+    #('output/velocity',   velocityType,  'EI_param_sweep_150pA', (30, 30))
+    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_150pA',     (1, 1))
+    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_300pA_big', (40, 40))
+    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_0pA_big',   (40, 40))
+    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_150pA_big', (40, 40))
+    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_0pA_small_sample', (2, 2))
     #('output/velocity',   velocityType,  'EI_param_sweep_300pA', (30, 30))
 
 p = {}
