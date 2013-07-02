@@ -30,8 +30,8 @@ import numpy.ma as ma
 from parameters  import JobTrialSpace2D, DataSpace
 from EI_plotting import plot2DTrial
 import logging as lg
-lg.basicConfig(level=lg.WARN)
-#lg.basicConfig(level=lg.INFO)
+#lg.basicConfig(level=lg.WARN)
+lg.basicConfig(level=lg.INFO)
 
 
 # Other
@@ -41,7 +41,8 @@ plt.rcParams['font.size'] = 11
 
 def aggregate2DTrial(sp, varList, trialNumList):
     varList = ['analysis'] + varList
-    retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean)
+    retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean,
+            saveData=True)
     return np.mean(retVar, 2)
 
 
@@ -99,13 +100,13 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
 ###############################################################################
 
 dirs = \
-    ('2013-04-24T15-27-30_EI_param_sweep_0pA_big',    (40, 40))
-    #('2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample', (2, 2))
-    #('2013-04-24T21-43-32_EI_param_sweep_300pA_big',    (40, 40))
-    #('2013-04-24T21-37-47_EI_param_sweep_150pA_big',  (40, 40))
+    ('EI_param_sweep_0pA_small_sample', (2, 2))
+    #('EI_param_sweep_0pA',    (40, 40))
+    #('EI_param_sweep_150pA',  (40, 40))
+    #('EI_param_sweep_300pA',  (40, 40))
 
 NTrials = 5
-rootDir = "output_local/{0}".format(dirs[0])
+rootDir = "output/one_to_one/{0}".format(dirs[0])
 shape   = dirs[1]
 
 sp = JobTrialSpace2D(shape, rootDir)
