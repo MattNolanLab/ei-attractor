@@ -20,6 +20,9 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker  import MaxNLocator, LinearLocator, AutoMinorLocator
+
+from plotting.global_defs import globalAxesSettings, createColorbar
 
 def plot2DTrial(X, Y, C, xlabel="", ylabel="",
         colorBar=True, clBarLabel="", vmin=None, vmax=None, title="",

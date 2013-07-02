@@ -26,10 +26,9 @@ matplotlib.use('cairo')
 import matplotlib.pyplot as plt
 
 import numpy.ma as ma
-from matplotlib.ticker  import MaxNLocator, LinearLocator, AutoMinorLocator
 
-from parameters           import JobTrialSpace2D, DataSpace
-from plotting.global_defs import globalAxesSettings, createColorbar
+from parameters  import JobTrialSpace2D, DataSpace
+from EI_plotting import plot2DTrial
 import logging as lg
 lg.basicConfig(level=lg.WARN)
 #lg.basicConfig(level=lg.INFO)

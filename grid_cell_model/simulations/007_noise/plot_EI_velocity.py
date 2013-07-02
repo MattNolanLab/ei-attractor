@@ -19,12 +19,14 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import os
 import numpy as np
 import matplotlib
 matplotlib.use('cairo')
 import matplotlib.pyplot as plt
+import numpy.ma          as ma
 
-from plotting import plot2DTrial
+from EI_plotting import plot2DTrial
 from parameters.param_space import JobTrialSpace2D, DataSpace
 
 import logging as lg
@@ -32,50 +34,60 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 
-def aggregate2D(sp, varList):
+def aggregate2D(sp, varList, funReduce=None):
     varList = ['analysis'] + varList
-    return sp.aggregateData(varList, trialNumList='all-at-once', saveData=True)
+    return sp.aggregateData(varList, funReduce=funReduce,
+            trialNumList='all-at-once', saveData=True)
 
 
 def computeYX(sp, iterList):
     E, I = sp.getIteratedParameters(iterList)
-    Ne = DataSpace.getNetParam(sp[0][0][0].data['IvelData'], 'net_Ne')
-    Ni = DataSpace.getNetParam(sp[0][0][0].data['IvelData'], 'net_Ni')
+    Ne = DataSpace.getNetParam(sp[0][0][0].data['IvelData'][0], 'net_Ne')
+    Ni = DataSpace.getNetParam(sp[0][0][0].data['IvelData'][0], 'net_Ni')
     return E/Ne, I/Ni
 
 
 def plotVelSlope(sp, varList, iterList, xlabel="", ylabel="", colorBar=True,
         clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
         xticks=True, yticks=True):
-    slopes = aggregate2D(sp, varList)
+    slopes = np.abs(aggregate2D(sp, varList, funReduce=np.sum))
+    slopes = ma.MaskedArray(slopes, mask=np.isnan(slopes))
     Y, X = computeYX(sp, iterList)
-    return plot2DTrial(X, Y, FR, xlabel, ylabel, colorBar, clBarLabel, vmin,
+    return plot2DTrial(X, Y, slopes, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
             
 ###############################################################################
 
 dirs = \
-    ('EI_param_sweep_150pA', (30, 30))
+    ('EI_param_sweep_0pA', (30, 30))
+    #('EI_param_sweep_150pA', (30, 30))
 
-rootDir = "output/velocity/{0}".format(dirs[0])
+rootDir = "output/velocity/{1}".format(os.getcwd(), dirs[0])
 shape   = dirs[1]
 
 sp = JobTrialSpace2D(shape, rootDir)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
+
     
 ################################################################################
 plt.figure(figsize=(5.1, 2.9))
 N = 2
 plt.subplot(1, N, 1)
-
 slope = plotVelSlope(sp, ['lineFitSlope'], iterList,
         xlabel="I (nS)",
         ylabel='E (nS)',
-        clBarLabel = "Correlation",
+        clBarLabel = "Slope",
+        clbarNTicks=3)
+
+plt.subplot(1, N, 2)
+lineFitErr = plotVelSlope(sp, ['lineFitErr'], iterList,
+        xlabel="I (nS)",
+        ylabel='E (nS)',
+        clBarLabel = "Line fit error",
         clbarNTicks=3)
 ###############################################################################
 plt.tight_layout()
-noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+noise_sigma = sp.getParam(sp[0][0][0].data['IvelData'][0], 'noise_sigma')
 plt.savefig(sp.rootDir +
     '/../analysis_EI_{0}pA_vel.png'.format(int(noise_sigma)))
 
