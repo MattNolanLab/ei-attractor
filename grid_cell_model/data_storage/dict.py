@@ -1,7 +1,7 @@
 #
-#   __init__.py
+#   dict.py
 #
-#   Package initialization.
+#   Dictionary manipulation routines.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -18,7 +18,16 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from param_space import JobTrialSpace2D, DataSpace
-from data_sets   import DictDataSet
 
-__all__ = ['data_sets', 'param_space']
+__all__ = ['getDictData']
+
+
+def getDictData(d, keyList):
+    '''
+    Return a data in dictionary 'd', using a list of keys hierarchically.
+    '''
+    ret = d
+    for key in keyList:
+        ret = ret[key]
+    return ret
+

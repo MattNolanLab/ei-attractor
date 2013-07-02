@@ -26,13 +26,12 @@ matplotlib.use('cairo')
 import matplotlib.pyplot as plt
 
 import numpy.ma as ma
-from matplotlib.ticker  import MaxNLocator, LinearLocator, AutoMinorLocator
 
-from parameters           import JobTrialSpace2D
-from plotting.global_defs import globalAxesSettings, createColorbar
+from parameters  import JobTrialSpace2D, DataSpace
+from EI_plotting import plot2DTrial
 import logging as lg
-lg.basicConfig(level=lg.WARN)
-#lg.basicConfig(level=lg.INFO)
+#lg.basicConfig(level=lg.WARN)
+lg.basicConfig(level=lg.INFO)
 
 
 # Other
@@ -40,77 +39,35 @@ plt.rcParams['font.size'] = 11
 
 ###############################################################################
 
-def getDictData(d, keyList):
-    ret = d
-    for key in keyList:
-        ret = ret[key]
-    return ret
+def aggregate2DTrial(sp, varList, trialNumList):
+    varList = ['analysis'] + varList
+    retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean,
+            saveData=True)
+    return np.mean(retVar, 2)
 
-def aggregate2DTrial(sp, varList, iterList, trialNumList):
-    if (len(iterList) != 2):
-        raise ValueError("iterList must contain exactly 2 elements.")
-    shape = sp.getShape()
-    rows = shape[0]
-    cols = shape[1]
-    retVar = np.zeros(shape)
-    for r in xrange(rows):
-        for c in xrange(cols):
-            if (len(sp[r][c]) == 0):
-                retVar[r][c] = np.nan
-            else:
-                for trialNum in trialNumList:
-                    data = sp[r][c][trialNum].data['analysis']
-                    retVar[r][c] += np.mean(getDictData(data, varList))
 
-    return retVar / len(trialNumList)
 
-def plot2DTrial(X, Y, C, xlabel="", ylabel="",
-        colorBar=True, clBarLabel="", vmin=None, vmax=None, title="",
-        clbarNTicks=2, xticks=True, yticks=True):
-
-    ax = plt.gca()
-    globalAxesSettings(ax)
-    ax.minorticks_on()
-    plt.pcolormesh(X, Y, C, vmin=vmin, vmax=vmax)
-    if (clbarNTicks == None):
-        createColorbar(ax, None, clBarLabel, orientation='horizontal', pad=0.2)
-    else:
-        createColorbar(ax, C, clBarLabel, nticks=clbarNTicks,
-                orientation='horizontal', pad=0.2)
-    if (xlabel != ""):
-        plt.xlabel(xlabel, va='top')
-        ax.xaxis.set_label_coords(0.5, -0.15)
-    if (ylabel != ""):
-        plt.ylabel(ylabel, ha='right')
-        ax.yaxis.set_label_coords(-0.10, 0.5)
-    ax.xaxis.set_ticks([0, 6000])
-    ax.yaxis.set_ticks([0, 4000])
-    ax.xaxis.set_minor_locator(AutoMinorLocator(6))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(4))
-    plt.axis('scaled')
-    if (not xticks):
-        ax.xaxis.set_ticklabels([])
-    if (not yticks):
-        ax.yaxis.set_ticklabels([])
-
-    return C
-
+def computeYX(sp, iterList):
+    E, I = sp.getIteratedParameters(iterList)
+    Ne = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ne')
+    Ni = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ni')
+    return E/Ne, I/Ni
 
 def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
         colorBar=True, clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
         xticks=True, yticks=True):
-    C = aggregate2DTrial(sp, varList, iterList, trialNumList)
+    C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.isnan(C))
-    Y, X = sp.getIteratedParameters(iterList)
+    Y, X = computeYX(sp, iterList)
     plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
             title, clbarNTicks, xticks, yticks)
 
 def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, trialNumList=[0],
         xlabel="", ylabel="", colorBar=True, clBarLabel="", vmin=None,
         vmax=None, title="", clbarNTicks=2, xticks=True, yticks=True):
-    C = aggregate2DTrial(sp, varList, iterList, trialNumList)
+    C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
-    Y, X = sp.getIteratedParameters(iterList)
+    Y, X = computeYX(sp, iterList)
     return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
 
@@ -118,12 +75,12 @@ def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, mask=None,
         trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
         vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
         yticks=True):
-    C = np.sqrt(aggregate2DTrial(sp, varList, iterList, trialNumList))
+    C = np.sqrt(aggregate2DTrial(sp, varList, trialNumList))
     if mask is None:
         mask = False
     C = ma.MaskedArray(C, mask=np.logical_or(np.logical_or(np.isnan(C), C >
         thr), mask))
-    Y, X = sp.getIteratedParameters(iterList)
+    Y, X = computeYX(sp, iterList)
     return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
 
@@ -131,26 +88,25 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
         trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
         vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
         yticks=True):
-    FR = aggregate2DTrial(sp, varList, iterList, trialNumList)
+    FR = aggregate2DTrial(sp, varList, trialNumList)
     if mask is None:
         mask = False
     FR = ma.MaskedArray(FR, mask=np.logical_or(FR > thr, mask))
-    Y, X = sp.getIteratedParameters(iterList)
+    Y, X = computeYX(sp, iterList)
     return plot2DTrial(X, Y, FR, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
             
 
-
 ###############################################################################
 
 dirs = \
-    ('2013-04-24T21-43-32_EI_param_sweep_300pA_big',    (40, 40))
-    #('2013-04-24T21-37-47_EI_param_sweep_150pA_big',  (40, 40))
-    #('2013-04-24T15-27-30_EI_param_sweep_0pA_big',    (40, 40))
-    #('2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample', (2, 2))
+    ('EI_param_sweep_0pA',    (40, 40))
+    #('EI_param_sweep_0pA_small_sample', (2, 2))
+    #('EI_param_sweep_150pA',  (40, 40))
+    #('EI_param_sweep_300pA',  (40, 40))
 
 NTrials = 5
-rootDir = "output_local/{0}".format(dirs[0])
+rootDir = "output/one_to_one/{0}".format(dirs[0])
 shape   = dirs[1]
 
 sp = JobTrialSpace2D(shape, rootDir)

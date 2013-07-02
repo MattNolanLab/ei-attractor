@@ -23,6 +23,8 @@ import scipy
 
 from scipy import weave
 
+from otherpkg.log import log_warn
+
 __all__ = ['firingRate', 'multipleFiringRate', 'firingRateFromPairs',
         'firingRateSlidingWindow', 'slidingFiringRateTuple',
         'torusPopulationVector', 'torusPopulationVectorFromRates',
@@ -162,29 +164,14 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
 
 
 def torusPopulationVector(spikes, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=1.0):
+    '''
+    This function is deprecated. Use the OO version instead
+    '''
+    log_warn('This function is deprecated')
     N = sheetSize[0]*sheetSize[1]
     F, tsteps = slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen)
 
     return torusPopulationVectorFromRates((F, tsteps), sheetSize)
-
-
-def torusPopulationVectorFromRates(FR, sheetSize):
-        F = FR[0]
-        tsteps = FR[1]
-
-        sheetSize_x = sheetSize[0]
-        sheetSize_y = sheetSize[1]
-        
-        P = np.ndarray((len(tsteps), 2), dtype=complex)
-        X, Y = np.meshgrid(np.arange(sheetSize_x), np.arange(sheetSize_y))
-        X = np.exp(1j*(X - sheetSize_x/2)/sheetSize_x*2*np.pi).ravel()
-        Y = np.exp(1j*(Y - sheetSize_y/2)/sheetSize_y*2*np.pi).ravel()
-        for t_it in xrange(len(tsteps)):
-            P[t_it, 0] = np.dot(F[:, t_it], X)
-            P[t_it, 1] = np.dot(F[:, t_it], Y)
-
-        return (np.angle(P)/2/np.pi*sheetSize, tsteps)
-
 
 
 
@@ -252,6 +239,82 @@ class PopulationSpikes(SpikeTrain):
                 extra_compile_args=['-O3'],
                 verbose=2)
         return 1e3 * result / (tEnd - tStart)
+
+
+    def slidingFiringRate(self, tStart, tEnd, dt, winLen):
+        '''
+        Compute a sliding firing rate over the population of spikes, by taking
+        a rectangular window of specified length.
+
+        Parameters
+        ----------
+        tStart : float
+            Start time of the firing rate analysis.
+        tEnd : float
+            End time of the analysis
+        dt : float
+            Firing rate window time step
+        winLen : float
+            Lengths of the windowing function (rectangle)
+        output : a tuple
+            A pair (F, t), specifying the vector of firing rates and
+            corresponding times.
+        '''
+        spikes = (self._senders, self._times)
+        return slidingFiringRateTuple(spikes, self._N, tStart, tEnd, dt,
+                winLen)
+
+
+
+class TorusPopulationSpikes(PopulationSpikes):
+    '''
+    Spikes of a population of neurons on a twisted torus.
+    '''
+
+    def __init__(self, senders, times, sheetSize):
+        self._sheetSize = sheetSize
+        N = sheetSize[0]*sheetSize[1]
+        PopulationSpikes.__init__(self, N, senders, times)
+
+    
+    def populationVector(self, tStart, tEnd, dt, winLen):
+        '''
+        Compute the population vector on a torus, from the spikes present. Note
+        that this method will have a limited functionality on a twisted torus,
+        but can be used if the population activity translates in the X
+        dimension only.
+
+        Parameters
+        ----------
+        tStart : float
+            Start time of analysis
+        tEnd : float
+            End time of analysis
+        dt : float
+            Time step of the (rectangular) windowing function
+        winLen : float
+            Length of the windowing function
+        output : tuple
+            A pair (r, t) in which r is a 2D vector of shape
+            (int((tEnd-tStart)/dt)+1), 2), corresponding to the population
+            vector for each time step of the windowing function, and t is a
+            vector of times, of length the first dimension of r.
+        '''
+        sheetSize_x = self._sheetSize[0]
+        sheetSize_y = self._sheetSize[1]
+        N = sheetSize_x*sheetSize_y
+        
+        F, tsteps = self.slidingFiringRate(tStart, tEnd, dt, winLen)
+        P = np.ndarray((len(tsteps), 2), dtype=complex)
+        X, Y = np.meshgrid(np.arange(sheetSize_x), np.arange(sheetSize_y))
+        X = np.exp(1j*(X - sheetSize_x/2)/sheetSize_x*2*np.pi).ravel()
+        Y = np.exp(1j*(Y - sheetSize_y/2)/sheetSize_y*2*np.pi).ravel()
+        for t_it in xrange(len(tsteps)):
+            P[t_it, 0] = np.dot(F[:, t_it], X)
+            P[t_it, 1] = np.dot(F[:, t_it], Y)
+
+        return (np.angle(P)/2/np.pi*self._sheetSize, tsteps)
+
 
 
 

@@ -175,6 +175,7 @@ def getOptParser():
     # Other parameters
     optParser.add_option("--stim_spread",       type="float",  help="Stimulation spread; normalised to 1. This the sigma of a Gaussian function that defines the gain of stimulation to each neuron")
 
+    optParser.add_option("--gammaNSample",      type="int",    help="Fraction of neurons in the network to sample from, for the frequency analysis.")
     return optParser
 
 
