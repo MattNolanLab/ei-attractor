@@ -15,3 +15,5 @@ f2 = h5py.File(nm, 'r')
 
 f3 = h5py.File(nm, 'a')
 f3.close()
+
+f2.close()
