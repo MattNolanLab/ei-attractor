@@ -302,8 +302,8 @@ class JobTrialSpace2D(DataSpace):
             io_err = 'Could not open file: {0}. Performing the reduction.'
             log_info('JobTrialSpace2D', io_err.format(nm))
         except KeyError as e:
-            io_err = 'Could not load var: {0}. Performing the reduction.'
-            log_info('JobTrialSpace2D', msg_err.format(varList[-1]))
+            key_err = 'Could not load var: {0}. Performing the reduction.'
+            log_info('JobTrialSpace2D', key_err.format(varList[-1]))
             inData.close()
 
 
