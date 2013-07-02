@@ -91,6 +91,11 @@ class TrialSet(DataSpace):
         self._dataLoaded = True
 
 
+    def __len__(self):
+        self._loadData()
+        return DataSpace.__len__(self)
+
+
     def __del__(self):
         if (self._dataLoaded):
             if (self._ds is not None):
@@ -200,9 +205,6 @@ class JobTrialSpace2D(DataSpace):
         DataSpace.__init__(self, rowData)
 
 
-    #def __getitem__(self):
-
-                
     def __len__(self):
         return self._shape[0] 
 
@@ -226,7 +228,6 @@ class JobTrialSpace2D(DataSpace):
 
 
     def _checkIteratedParameters(self, paramStr, toCheck):
-        self._loadTrials()
         tol  = 1e-9 * np.min(toCheck.flatten())
         msgStr = "Parameter {0}:[{1}][{2}: {3}] does not match."
         for r in xrange(self.rows):
@@ -239,7 +240,6 @@ class JobTrialSpace2D(DataSpace):
                         raise Exception(msgStr.format(paramStr, r, c, err))
 
     def visit(self, visitor, trialList=None):
-        self._loadTrials()
         for r in xrange(self.rows):
             for c in xrange(self.cols):
                 self[r][c].visit(visitor, trialList)
@@ -310,7 +310,6 @@ class JobTrialSpace2D(DataSpace):
 
 
         # Data not loaded, do the reduction
-        self._loadTrials()
         shape = self.getShape()
         rows = shape[0]
         cols = shape[1]
