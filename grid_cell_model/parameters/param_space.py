@@ -20,6 +20,7 @@
 #
 import numpy as np
 from collections    import Sequence
+from os.path        import exists
 from otherpkg.log   import log_warn, log_info
 
 from data_storage       import DataStorage
@@ -69,26 +70,39 @@ class TrialSet(DataSpace):
 
     def __init__(self, fileName, fileMode):
         self._fileName = fileName
+        self._fileMode = fileMode
+        self._dataLoaded = False
+        DataSpace.__init__(self, None, key='trials')
+
+
+    def _loadData(self):
+        if (self._dataLoaded):
+            return
         try:
-            self._ds = DataStorage.open(fileName, fileMode)
+            self._ds = DataStorage.open(self._fileName, self._fileMode)
             DataSpace.__init__(self, self._ds['trials'], key='trials')
-            log_info("param_space", "Opened " + fileName)
+            log_info("param_space", "Opened " + self._fileName)
         except (IOError, KeyError) as e:
             self._ds = None
             msg =  "Could not open file {0}. Creating an empty DataSet instead."
-            log_warn("param_space", msg.format(fileName))
+            log_warn("param_space", msg.format(self._fileName))
             log_warn("param_space", "Error message: {0}".format(str(e)))
             DataSpace.__init__(self, [], key='trials')
+        self._dataLoaded = True
+
 
     def __del__(self):
-        if (self._ds is not None):
-            log_info("param_space", "Closing: " + self._fileName)
-            self._ds.close()
+        if (self._dataLoaded):
+            if (self._ds is not None):
+                log_info("param_space", "Closing: " + self._fileName)
+                self._ds.close()
 
     def __getitem__(self, key):
+        self._loadData()
         return DictDataSet(self._vals[key])
 
     def getAllTrialsAsDataSet(self):
+        self._loadData()
         return DictDataSet(self._ds)
 
     def visit(self, visitor, trialList=None):
@@ -147,6 +161,7 @@ class JobTrialSpace2D(DataSpace):
         if (fileMode == 'w' and forceWMode == False):
             raise ValueError("'w' file open mode is not allowed. Use " +
                     "'forceWMode' to override.")
+        self._fileMode = fileMode
         self._shape = shape
         self._rootDir = rootDir
         self._dataPoints = dataPoints
@@ -158,9 +173,7 @@ class JobTrialSpace2D(DataSpace):
         self._checkParams = checkParams
         self.rows = shape[0]
         self.cols = shape[1]
-        self._trialsLoaded = False
-
-        #self.loadTrials()
+        self._loadTrials()
             
 
     def _loadTrials(self):
@@ -168,10 +181,6 @@ class JobTrialSpace2D(DataSpace):
         Initialize the data space fully. Opening all the data files as
         specified in the constructor.
         '''
-        if (self._trialsLoaded):
-            log_info('JobTrialSpace2D', '_loadTrials() called more than once.')
-            return
-
         rowData = []
         it = 0
         for row in xrange(self.rows):
@@ -182,14 +191,16 @@ class JobTrialSpace2D(DataSpace):
                 # Otherwise, append an empty list, i.e. this will do nothing
                 if (self._dataPoints is None or
                         (row, col) in self._dataPoints):
-                    fileName = rootDir + '/' + fileFormat.format(it)
-                    colData.append(TrialSet(fileName, fileMode))
+                    fileName = self._rootDir + '/' + self._fileFormat.format(it)
+                    colData.append(TrialSet(fileName, self._fileMode))
                 else:
                     colData.append(DummyTrialSet())
                 it += 1
             rowData.append(DataSpace(colData))
         DataSpace.__init__(self, rowData)
-        self._trialsLoaded = True
+
+
+    #def __getitem__(self):
 
                 
     def __len__(self):
@@ -278,19 +289,24 @@ class JobTrialSpace2D(DataSpace):
                     "space has not been implemented yet.")
 
         # Try to load data
+        nm = '{0}/{1}'.format(self._rootDir, saveDataFileName)
+        msg = 'Could not load data from file: {0}, var: {1}. ' +\
+                'Performing the reduction.'
         try:
-            nm = '{0}/{1}'.format(self._rootDir, saveDataFileName)
-            msg = 'Loading aggregated data from file: {0}, var: ' + \
-                '{1}'.format(nm, varList[-1])
-            log_info('JobTrialSpace2D', msg)
-            inData = DataStorage.open(outFileName, 'r')
+            msg = 'Loading aggregated data from file: {0}, var: {1}'
+            log_info('JobTrialSpace2D', msg.format(nm, varList[-1]))
+            inData = DataStorage.open(nm, 'r')
             retVar = inData[varList[-1]]
             inData.close()
             return retVar
-        except:
-            msg = 'Could not load data from file: {0}, var: ' + \
-                '{1}. Performing the reduction.'.format(nm, varList[-1])
-            log_info('JobTrialSpace2D', msg)
+        except IOError as e:
+            log_info('JobTrialSpace2D', msg.format(nm, varList[-1]))
+            log_info('JobTrialSpace2D', "Error message: {0}".format(str(e)))
+        except KeyError as e:
+            log_info('JobTrialSpace2D', msg.format(nm, varList[-1]))
+            log_info('JobTrialSpace2D', "Error message: {0}".format(str(e)))
+            inData.close()
+
 
 
         # Data not loaded, do the reduction
@@ -316,10 +332,11 @@ class JobTrialSpace2D(DataSpace):
                     else:
                         try:
                             retVar[r, c] = funReduce(getDictData(data, varList))
-                        except:
+                        except (IOError, KeyError) as e:
                             msg = 'Reduction step failed at (r, c) == ({0}, '+\
-                                '{1}). Setting value as NaN.'.format(r, c)
-                            log_warn('JobTrialSpace2D', msg)
+                                '{1}). Setting value as NaN.'
+                            log_warn('JobTrialSpace2D', msg.format(r, c))
+                            log_warn("JobTrialSpace2D", "Error message: {0}".format(str(e)))
                 else:
                     if (len(self[r][c]) == 0):
                         retVar[r, c, :] = np.nan
@@ -329,15 +346,16 @@ class JobTrialSpace2D(DataSpace):
                                 data = self[r][c][trialNum].data
                                 retVar[r][c][trialNum] = funReduce(getDictData(data,
                                     varList))
-                            except:
+                            except (IOError, KeyError) as e:
                                 msg = 'Reduction step failed at (r, c) == ({0}, '+\
                                     '{1}). Setting value as NaN.'.format(r, c)
                                 log_warn('JobTrialSpace2D', msg)
+                                log_warn("JobTrialSpace2D", "Error message: {0}".format(str(e)))
 
         if (saveData):
-            msg = 'Saving aggregated data into: {0}'.format(varList[-1])
-            log_info('JobTrialSpace2D', msg)
             outFileName = '{0}/{1}'.format(self._rootDir, saveDataFileName)
+            msg = 'Saving aggregated data into file: {0}, var: {1}'
+            log_info('JobTrialSpace2D', msg.format(outFileName, varList[-1]))
             out = DataStorage.open(outFileName, 'a')
             out[varList[-1]] = retVar
             out.close()
