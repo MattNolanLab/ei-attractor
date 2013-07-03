@@ -21,14 +21,12 @@
 #
 from matplotlib.pyplot import *
 from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import MaxNLocator, AutoMinorLocator, \
-        FormatStrFormatter, ScalarFormatter
-import svgutils.transform as sg
+from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 
-from plotting.global_defs import globalAxesSettings
 from figures.fig_conn_func import plotWeights
-from analysis.visitors.interface import extractStateVariable, sumAllVariables
 from data_storage import DataStorage
+from figures_shared import plotStateSignal, plotThetaSignal, extractStateVars,\
+        getOption, thetaLim
 
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -40,14 +38,6 @@ rc('pdf', fonttype=42)
 outputDir = "."
 figSize = (13, 8)
 
-theta_T = 250.0 # ms
-theta_dt = 1.0 # ms
-theta_f = 8.0  # Hz
-theta_DC = 300.0 # pA
-theta_A  = 375.0 # pA
-theta_max = 1500
-theta_min = -500
-
 trialNum = 0
 jobNum = 573
 dataRootDir = 'output_local'
@@ -58,64 +48,10 @@ fileTemplate = "noise_sigma{0}_output.h5"
 
 ##############################################################################
 
-def getOption(data, optStr):
-    return data['options'][optStr]
-
-
 def openJob(rootDir, noise_sigma):
     fileName = rootDir + '/' + fileTemplate.format(noise_sigma)
     return DataStorage.open(fileName, 'r')
 
-
-def getThetaSignal(noise_sigma):
-    t = np.arange(0, theta_T, theta_dt) * 1e-3
-    phase = np.pi
-    normSig = 0.5*(1. + np.cos(2*np.pi*theta_f*t + phase))
-    noise = noise_sigma * np.random.randn(len(t))
-    return t, theta_DC + theta_A*normSig + noise
-
-
-def setSignalAxes(ax, leftSpineOn):
-    globalAxesSettings(ax)
-    ax.minorticks_on()
-    ax.xaxis.set_visible(False)
-    ax.spines['top'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    if (leftSpineOn == False):
-        ax.spines['left'].set_visible(False)
-        ax.yaxis.set_visible(False)
-
-    ax.yaxis.set_major_locator(MaxNLocator(2))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
-
-def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
-        color='black'):
-    setSignalAxes(ax, leftSpineOn)
-
-    if (sig is not None):
-        ax.plot(t, sig, color=color)
-
-    #ax.set_ylabel(labely)
-    ax.text(labelyPos, 0.5, labely,
-        verticalalignment='center', horizontalalignment='right',
-        transform=ax.transAxes,
-        rotation=90)
-
-
-def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn):
-    setSignalAxes(ax, leftSpineOn=False)
-    ax.plot(t, theta, color="grey")
-    ax.set_ylim([theta_min, theta_max])
-    txt = '$\sigma = ' + str(noise_sigma) + '\ \mathrm{pA}$'
-    ax.text(0.5, 1.1, txt,
-            verticalalignment='bottom', horizontalalignment='center',
-            transform=ax.transAxes,
-            fontsize=17, fontweight='bold')
-    ax.axhline(0.0, color='grey', linestyle=':', linewidth=0.5)
-    if (yLabelOn):
-        ax.text(t[-1] - 10, -50, "0 pA", ha="right", va='top', fontsize='small')
-    
 
 def plotHistogram(ax, sig, color='black', labelx="", labely="",
         labelyPos=-0.5, powerLimits=(0, 3)):
@@ -147,34 +83,6 @@ def plotHistogram(ax, sig, color='black', labelx="", labely="",
     ax.yaxis.set_ticks_position('left')
 
 
-def plotBump(ax, rateMap):
-    rateMap = np.zeros((10, 10))
-    ax.xaxis.set_visible(False)
-    ax.yaxis.set_visible(False)
-    ax.pcolormesh(rateMap)
-    axis("scaled")
-
-def plotSpikes(ax, t, trajectory, spikeTimes):
-    pass
-
-
-
-def sliceSignal(t, sig, tStart, tEnd):
-    idx = np.logical_and(t >= tStart, t <= tEnd)
-    return t[idx], sig[idx], idx
-
-def extractStateVars(mon, varName, plotTStart, plotTEnd):
-    '''
-    Extract state variables from a pair of monitors. One in the centre, the
-    other one at the edge of the neural sheet.
-    '''
-    nIdxMiddle = 0
-
-    t, dt = extractStateVariable(mon, nIdxMiddle, 'times')
-    sig, dt = sumAllVariables(mon, nIdxMiddle, varName)
-    t, sigMiddle, idx = sliceSignal(t, sig, plotTStart, plotTEnd)
-    return t, sigMiddle
-
 
 def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
         letterPos=None):
@@ -202,7 +110,7 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     ax0 = subplot(gs[0, colStart:colStart+ncols])
     t, IStim = extractStateVars(mon_e, ['I_stim'], plotTStart,
             plotTEnd)
-    plotThetaSignal(ax0, t, IStim, noise_sigma, yLabelOn)
+    plotThetaSignal(ax0, t, IStim, noise_sigma, yLabelOn, thetaLim)
 
     # E cell Vm
     ax1 = subplot(gs[1, colStart:colStart+ncols])
