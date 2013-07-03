@@ -25,6 +25,7 @@ import logging  as lg
 
 from numpy.random import rand, randn
 
+import gc_neurons
 from gc_net       import GridCellNetwork
 from place_input  import PlaceCellInput
 from place_cells  import UniformBoxPlaceCells
@@ -107,64 +108,8 @@ class NestGridCellNetwork(GridCellNetwork):
 
     def _constructNetwork(self):
         '''Construct the E/I network'''
-        self.e_neuron_params = {
-                "V_m"              : self.no.EL_e,
-                "C_m"              : self.no.taum_e * self.no.gL_e,
-                "t_ref"            : self.no.t_ref_e,
-                "V_peak"           : self.no.V_peak_e,
-                "V_reset"          : self.no.Vr_e,
-                "E_L"              : self.no.EL_e,
-                "g_L"              : self.no.gL_e,
-                "Delta_T"          : self.no.deltaT_e,
-                "V_th"             : self.no.Vt_e,
-                "E_AMPA"           : self.no.E_AMPA,
-                "E_GABA_A"         : self.no.E_GABA_A,
-                "tau_AMPA_fall"    : self.no.tau_AMPA,
-                "tau_NMDA_fall"    : self.no.tau_NMDA_fall,
-                "tau_GABA_A_fall"  : self.no.tau_GABA_A_fall,
-                "tau_AHP"          : self.no.tau_AHP_e,
-                "E_AHP"            : self.no.E_AHP_e,
-                "g_AHP_max"        : self.no.g_AHP_e_max,
-                "g_AHP_ad"         : False,
-                "I_const"          : self.no.Iext_e_const,
-                "I_ac_amp"         : self.no.Iext_e_theta,
-                "I_ac_freq"        : self.no.theta_freq,
-                "I_ac_phase"       : -np.pi/2,
-                "I_ac_start_t"     : self.no.theta_start_t,
-                "I_noise_std"      : self.no.noise_sigma,
-                "V_clamp"          : self.no.Vclamp,
-                "rat_pos_x"        : [],
-                "rat_pos_y"        : []}
-
-        self.i_neuron_params = {
-                "V_m"              : self.no.EL_i,
-                "C_m"              : self.no.taum_i * self.no.gL_i,
-                "t_ref"            : self.no.t_ref_i,
-                "V_peak"           : self.no.V_peak_i,
-                "V_reset"          : self.no.Vr_i,
-                "E_L"              : self.no.EL_i,
-                "g_L"              : self.no.gL_i,
-                "Delta_T"          : self.no.deltaT_i,
-                "V_th"             : self.no.Vt_i,
-                "E_AMPA"           : self.no.E_AMPA,
-                "E_GABA_A"         : self.no.E_GABA_A,
-                "tau_AMPA_fall"    : self.no.tau_AMPA,
-                "tau_NMDA_fall"    : self.no.tau_NMDA_fall,
-                "tau_GABA_A_fall"  : self.no.tau_GABA_A_fall,
-                "tau_AHP"          : self.no.ad_tau_i_mean,
-                "E_AHP"            : self.no.EL_i,  # AHP has a role of adaptation here 
-                "g_AHP_max"        : self.no.ad_i_g_inc,
-                "g_AHP_ad"         : True,
-                "I_const"          : self.no.Iext_i_const,
-                "I_ac_amp"         : self.no.Iext_i_theta,
-                "I_ac_freq"        : self.no.theta_freq,
-                "I_ac_phase"       : -np.pi/2,
-                "I_ac_start_t"     : self.no.theta_start_t,
-                "I_noise_std"      : self.no.noise_sigma,
-                "V_clamp"          : self.no.Vclamp,
-                "g_NMDA_fraction"  : self.no.NMDA_amount,
-                "rat_pos_x"        : [],
-                "rat_pos_y"        : []}
+        self.e_neuron_params = gc_neurons.getENeuronParams(self.no)
+        self.i_neuron_params = gc_neurons.getINeuronParams(self.no)
 
 
         self.B_GABA = 1.0   # Must be here for compatibility with brian code
@@ -640,7 +585,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         '''
         Save all the simulated data into a dictionary and return it.
         '''
-        out = self.getNetparams()
+        out = self.getNetParams()
 
         # Spike monitors
         out.update(self.getSpikes())
