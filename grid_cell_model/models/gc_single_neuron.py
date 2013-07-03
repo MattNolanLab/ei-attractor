@@ -67,7 +67,7 @@ class OneNeuronNetwork(GridCellNetwork):
     def getDefaultStateMonParams(self):
         return {
             'withtime' : True,
-            'interval' : 10.0 * self.no.sim_dt,
+            'interval' : self.no.sim_dt,
             'record_from' : ['V_m', 'I_clamp_AMPA', 'I_clamp_NMDA',
                 'I_clamp_GABA_A', 'I_stim']
         }
@@ -145,11 +145,35 @@ class OneNeuronNetwork(GridCellNetwork):
             return self.stateMon_i
 
 
+    def getAttrDictionary(self):
+        d = {}
+
+        d['e_neuron_params'] = self.e_neuron_params
+        d['i_neuron_params'] = self.i_neuron_params
+        d['E_pop'          ] = np.array(self.E_pop)
+        d['I_pop'          ] = np.array(self.I_pop)
+        d['net_Ne'         ] = self.net_Ne
+        d['net_Ni'         ] = self.net_Ni
+        d['Ne_x'           ] = self.Ne_x
+        d['Ne_y'           ] = self.Ne_y
+        d['Ni_x'           ] = self.Ni_x
+        d['Ni_y'           ] = self.Ni_y
+
+        return d
+            
+
+    def getNetParams(self):
+        out = {}
+        out['options']  = self.no._einet_optdict
+        out['net_attr'] = self.getAttrDictionary()
+        return out
+
+
     def saveData(self):
         output_fname = "{0}/{1}noise_sigma{2}_output.h5".format(self.no.output_dir,
                 self.no.fileNamePrefix, int(self.no.noise_sigma))
 
-        out = {}
+        out = self.getNetParams()
         out['stateMon_e']   = nest.GetStatus(self.stateMon_e)
         out['stateMon_i']   = nest.GetStatus(self.stateMon_i)
 

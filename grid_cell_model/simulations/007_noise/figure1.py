@@ -21,7 +21,8 @@
 #
 from matplotlib.pyplot import *
 from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import MaxNLocator, AutoMinorLocator
+from matplotlib.ticker import MaxNLocator, AutoMinorLocator, \
+        FormatStrFormatter, ScalarFormatter
 import svgutils.transform as sg
 
 from plotting.global_defs import globalAxesSettings
@@ -50,10 +51,10 @@ theta_min = -500
 trialNum = 0
 jobNum = 573
 dataRootDir = 'output_local'
-root0   = "{0}/2013-04-24T15-27-30_EI_param_sweep_0pA_big".format(dataRootDir)
-root150 = "{0}/2013-04-24T21-37-47_EI_param_sweep_150pA_big".format(dataRootDir)
-root300 = "{0}/2013-04-24T21-43-32_EI_param_sweep_300pA_big".format(dataRootDir)
-fileTemplate = "job{0:05}_output.h5"
+root0   = "{0}/single_neuron".format(dataRootDir)
+root150 = "{0}/single_neuron".format(dataRootDir)
+root300 = "{0}/single_neuron".format(dataRootDir)
+fileTemplate = "noise_sigma{0}_output.h5"
 
 ##############################################################################
 
@@ -61,10 +62,9 @@ def getOption(data, optStr):
     return data['options'][optStr]
 
 
-def openJob(rootDir, jobNum, trialNum):
-    fileTemplate = "job{0:05}_output.h5"
-    fileName = rootDir + '/' + fileTemplate.format(jobNum)
-    return DataStorage.open(fileName, 'r')['trials'][trialNum]
+def openJob(rootDir, noise_sigma):
+    fileName = rootDir + '/' + fileTemplate.format(noise_sigma)
+    return DataStorage.open(fileName, 'r')
 
 
 def getThetaSignal(noise_sigma):
@@ -77,6 +77,7 @@ def getThetaSignal(noise_sigma):
 
 def setSignalAxes(ax, leftSpineOn):
     globalAxesSettings(ax)
+    ax.minorticks_on()
     ax.xaxis.set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
@@ -86,6 +87,7 @@ def setSignalAxes(ax, leftSpineOn):
         ax.yaxis.set_visible(False)
 
     ax.yaxis.set_major_locator(MaxNLocator(2))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
 
 def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
         color='black'):
@@ -101,9 +103,8 @@ def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
         rotation=90)
 
 
-def plotThetaSignal(ax, noise_sigma, yLabelOn):
+def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn):
     setSignalAxes(ax, leftSpineOn=False)
-    t, theta = getThetaSignal(noise_sigma)
     ax.plot(t, theta, color="grey")
     ax.set_ylim([theta_min, theta_max])
     txt = '$\sigma = ' + str(noise_sigma) + '\ \mathrm{pA}$'
@@ -113,12 +114,12 @@ def plotThetaSignal(ax, noise_sigma, yLabelOn):
             fontsize=17, fontweight='bold')
     ax.axhline(0.0, color='grey', linestyle=':', linewidth=0.5)
     if (yLabelOn):
-        ax.text(theta_T*1e-3 - 0.01, -50, "0 pA", ha="right", va='top', fontsize='small')
+        ax.text(t[-1] - 10, -50, "0 pA", ha="right", va='top', fontsize='small')
     
 
 def plotHistogram(ax, sig, color='black', labelx="", labely="",
-        labelyPos=-0.475):
-    hist(sig, bins=100, histtype='step', align='mid', color=color)
+        labelyPos=-0.5, powerLimits=(0, 3)):
+    hist(sig, bins=100, normed=True, histtype='step', align='mid', color=color)
 
     # y label manually
     if (labely is None):
@@ -130,10 +131,14 @@ def plotHistogram(ax, sig, color='black', labelx="", labely="",
     xlabel(labelx)
     
     ax.minorticks_on()
-    ax.xaxis.set_major_locator(MaxNLocator(3))
-    ax.yaxis.set_major_locator(MaxNLocator(3))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.xaxis.set_major_locator(LinearLocator(2))
+    ax.yaxis.set_major_locator(LinearLocator(2))
+    ax.xaxis.set_minor_locator(AutoMinorLocator(4))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(4))
+    f = ScalarFormatter(useMathText=True)
+    f.set_scientific(True)
+    f.set_powerlimits(powerLimits)
+    ax.yaxis.set_major_formatter(f)
     ax.tick_params(
             which='both',
             direction='out'
@@ -164,14 +169,11 @@ def extractStateVars(mon, varName, plotTStart, plotTEnd):
     other one at the edge of the neural sheet.
     '''
     nIdxMiddle = 0
-    nIdxEdge = 1
 
     t, dt = extractStateVariable(mon, nIdxMiddle, 'times')
     sig, dt = sumAllVariables(mon, nIdxMiddle, varName)
     t, sigMiddle, idx = sliceSignal(t, sig, plotTStart, plotTEnd)
-    sig, dt = sumAllVariables(mon, nIdxEdge, varName)
-    sigEdge = sig[idx]
-    return t, sigMiddle, sigEdge
+    return t, sigMiddle
 
 
 def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
@@ -191,35 +193,38 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     plotTEnd   = 5.25e3
 
     theta_start_t = getOption(data, 'theta_start_t')
+    #theta_start_t = 1e3
     simTime = getOption(data, 'time')
-
-    ax0 = subplot(gs[0, colStart:colStart+ncols])
-    plotThetaSignal(ax0, noise_sigma, yLabelOn)
 
     mon_e = data['stateMon_e']
     mon_i = data['stateMon_i']
 
+    ax0 = subplot(gs[0, colStart:colStart+ncols])
+    t, IStim = extractStateVars(mon_e, ['I_stim'], plotTStart,
+            plotTEnd)
+    plotThetaSignal(ax0, t, IStim, noise_sigma, yLabelOn)
+
     # E cell Vm
     ax1 = subplot(gs[1, colStart:colStart+ncols])
-    t, VmMiddle, VmEdge = extractStateVars(mon_e, ['V_m'], plotTStart,
+    t, VmMiddle = extractStateVars(mon_e, ['V_m'], plotTStart,
             plotTEnd)
     plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='red')
 
     # I cell Vm
     ax2 = subplot(gs[2, colStart:colStart+ncols])
-    t, VmMiddle, VmEdge = extractStateVars(mon_i, ['V_m'], plotTStart,
+    t, VmMiddle = extractStateVars(mon_i, ['V_m'], plotTStart,
             plotTEnd)
     plotStateSignal(ax2, t, VmMiddle, labely=VmText, color='blue')
 
     # E cell Vm histogram
     ax3 = subplot(gs[3, colStart:colStart+2])
-    t, VmMiddle, VmEdge = extractStateVars(mon_e, ['V_m'], theta_start_t,
+    t, VmMiddle = extractStateVars(mon_e, ['V_m'], theta_start_t,
             simTime)
     plotHistogram(ax3, VmMiddle, labelx = histLabelX, labely=countText, color='red')
 
     # I cell Vm histogram
     ax4 = subplot(gs[3, colStart+2:colStart+4])
-    t, VmMiddle, VmEdge = extractStateVars(mon_i, ['V_m'], theta_start_t,
+    t, VmMiddle = extractStateVars(mon_i, ['V_m'], theta_start_t,
             simTime)
     plotHistogram(ax4, VmMiddle, labelx = histLabelX, labely="", color='blue')
 
@@ -248,7 +253,7 @@ margin = 0.1
 div = 0.085
 width = 0.23
 hspace = 0.3
-wspace = 1.0
+wspace = 1.2
 
 letter_top=0.97
 letter_div = 0.05
@@ -268,7 +273,7 @@ fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
 # noise_sigm = 0 pA
 left = margin
 right = left + width
-ds = openJob(root0, jobNum, trialNum)
+ds = openJob(root0, noise_sigma=0)
 gs = GridSpec(4, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace,
         wspace=wspace)
 # do not update left and right
@@ -279,7 +284,7 @@ fig.text(letter_left, top+letter_div, "C", va=letter_va, ha=letter_ha,
 
 
 # noise_sigma = 150 pA
-ds = openJob(root150, jobNum, trialNum)
+ds = openJob(root150, noise_sigma=150)
 gs = GridSpec(4, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace,
         wspace=wspace)
 left = right + div
@@ -305,7 +310,7 @@ fig.text(w_left-0.5*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=1
 
 
 # noise_sigma = 300 pA
-ds = openJob(root300, jobNum, trialNum)
+ds = openJob(root300, noise_sigma=300)
 gs = GridSpec(4, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace,
         wspace=wspace)
 left = right + div
