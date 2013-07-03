@@ -24,7 +24,7 @@ from matplotlib.gridspec import GridSpec
 
 from data_storage          import DataStorage
 from figures_shared        import plotThetaSignal, thetaLim, extractStateVars,\
-        plotStateSignal
+        plotStateSignal, plotEIRaster
 
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -61,23 +61,20 @@ def plotBump(ax, rateMap):
     ax.pcolormesh(rateMap)
     axis("scaled")
 
-def plotSpikes(ax, t, trajectory, spikeTimes):
-    pass
 
-
-
-def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
-        letterPos=None):
+def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
     if (yLabelOn):
         VmText = "V (mV)"
         IsynText = "I (nA)"
+        rasterText = "neuron #"
     else:
         VmText = ""
         IsynText = ""
+        rasterText = ""
 
     ncols = 4
-    plotTStart = 5e3
-    plotTEnd   = 5.25e3
+    plotTStart = 2e3
+    plotTEnd   = 2.25e3
 
     mon_e = data['stateMon_e']
     mon_i = data['stateMon_i']
@@ -111,6 +108,11 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
         'I_clamp_NMDA'], plotTStart, plotTEnd)
     plotStateSignal(ax4, t, IsynMiddle*1e-3, labely=IsynText, color='blue')
 
+    ax5 = subplot(gs[5, colStart:colStart+ncols])
+    plotEIRaster(ax5, data, 'spikeMon_e', 'spikeMon_i', (plotTStart, plotTEnd),
+            labely=rasterText)
+
+
     #ax5 = subplot(gs[5, colStart])
     #plotBump(ax5, None)
 
@@ -141,56 +143,58 @@ fig = figure(figsize=figSize)
 
 hr = 1
 th = 0.75 # top plot height
-top = 0.6
+rr = 1.5  # raster height
+top = 0.93
 bottom = 0.02
 margin = 0.1
 div = 0.085
 width = 0.23
 hspace = 0.3
+gsHeightRatios = [th, hr, hr, hr, hr, rr]
 
 letter_top=0.97
-letter_div = 0.05
+letter_div = 0.02
 letter_left=0.01
-letter_va='top'
+letter_va='bottom'
 letter_ha='left'
 
+gsRows = 6
+gsCols = 4
 
 # noise_sigm = 0 pA
 left = margin
 right = left + width
 ds = openJob(root0, jobNum, trialNum)
-gs = GridSpec(5, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace)
+gs = GridSpec(gsRows, gsCols, height_ratios=gsHeightRatios, hspace=hspace)
 # do not update left and right
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, ds, colStart=0, noise_sigma=0, letter="C")
-fig.text(letter_left, top+letter_div, "C", va=letter_va, ha=letter_ha,
+drawSignals(gs, ds, colStart=0, noise_sigma=0)
+fig.text(letter_left, top+letter_div, "A", va=letter_va, ha=letter_ha,
         fontsize=19, fontweight='bold')
 
 
 # noise_sigma = 150 pA
 ds = openJob(root150, jobNum, trialNum)
-gs = GridSpec(5, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace)
+gs = GridSpec(gsRows, gsCols, height_ratios=gsHeightRatios, hspace=hspace)
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150, letter="D",
-        letterPos=-0.2)
-fig.text(letter_left+margin+width+0.5*div, top+letter_div, "D", va=letter_va,
+drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150)
+fig.text(letter_left+margin+width+0.5*div, top+letter_div, "B", va=letter_va,
         ha=letter_ha, fontsize=19, fontweight='bold')
 
 
 
 # noise_sigma = 300 pA
 ds = openJob(root300, jobNum, trialNum)
-gs = GridSpec(5, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace)
+gs = GridSpec(gsRows, gsCols, height_ratios=gsHeightRatios, hspace=hspace)
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300, letter="E",
-        letterPos=-0.2)
-fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "E", va=letter_va,
+drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300)
+fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "C", va=letter_va,
         ha=letter_ha, fontsize=19, fontweight='bold')
 
-fname = outputDir + "/figure2.pdf"
+fname = outputDir + "/figure2.png"
 savefig(fname)
 
