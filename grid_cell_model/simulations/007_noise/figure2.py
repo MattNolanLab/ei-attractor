@@ -100,13 +100,13 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
     ax3 = subplot(gs[3, colStart:colStart+ncols])
     t, VmMiddle = extractStateVars(mon_i, ['V_m'], plotTStart,
             plotTEnd)
-    plotStateSignal(ax3, t, VmMiddle, labely=VmText, color='red')
+    plotStateSignal(ax3, t, VmMiddle, labely=VmText, color='blue')
 
     # I cell Isyn
     ax4 = subplot(gs[4, colStart:colStart+ncols])
     t, IsynMiddle = extractStateVars(mon_i, ['I_clamp_AMPA',
         'I_clamp_NMDA'], plotTStart, plotTEnd)
-    plotStateSignal(ax4, t, IsynMiddle*1e-3, labely=IsynText, color='blue')
+    plotStateSignal(ax4, t, IsynMiddle*1e-3, labely=IsynText, color='red')
 
     ax5 = subplot(gs[5, colStart:colStart+ncols])
     plotEIRaster(ax5, data, 'spikeMon_e', 'spikeMon_i', (plotTStart, plotTEnd),
@@ -195,6 +195,6 @@ drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300)
 fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "C", va=letter_va,
         ha=letter_ha, fontsize=19, fontweight='bold')
 
-fname = outputDir + "/figure2.png"
+fname = outputDir + "/figure2.pdf"
 savefig(fname)
 
