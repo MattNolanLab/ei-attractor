@@ -36,7 +36,6 @@ rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 rc('pdf', fonttype=42)
 
 outputDir = "."
-figSize = (13, 8)
 
 trialNum = 0
 jobNum = 573
@@ -139,35 +138,26 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     if (yLabelOn):
         ax1.legend(['E cell', 'I cell'], fontsize='small', frameon=False,
                 loc=[0.0, 1.1], ncol=2)
-    #    ax1.text(-0.32, 0.5, "E cell",
-    #            verticalalignment='center', horizontalalignment='right',
-    #            transform=ax1.transAxes,
-    #            rotation=90,
-    #            fontsize=16)
-    #    ax2.text(-0.32, 0.5, "I cell",
-    #            verticalalignment='center', horizontalalignment='right',
-    #            transform=ax2.transAxes,
-    #            rotation=90,
-    #            fontsize=16)
 
 
 
+figSize = (10, 6)
 fig = figure(figsize=figSize)
 
-hr = 1
+hr = 0.75
 vh = 1.  # Vm height
 th = 0.75 # top plot height
-height_ratios = [th, vh, hr, hr]
+height_ratios = [th, vh, hr]
 
-top = 0.6
-bottom = 0.02
-margin = 0.1
+top = 0.58
+bottom = 0.08
+margin = 0.075
 div = 0.06
-width = 0.23
+width = 0.26
 hspace = 0.3
 wspace = 1.2
 
-letter_top=0.97
+letter_top=0.95
 letter_div = 0.05
 letter_left=0.01
 letter_va='bottom'
@@ -175,7 +165,7 @@ letter_ha='left'
 
 # Model schematic
 gs = GridSpec(1, 4)
-top_margin = 0.15
+top_margin = 0.17
 top_top = 0.92
 top_letter_pos = 1.5
 fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
@@ -186,7 +176,7 @@ fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
 left = margin
 right = left + width
 ds = openJob(root0, noise_sigma=0)
-gs = GridSpec(4, 4, height_ratios=height_ratios, hspace=hspace,
+gs = GridSpec(3, 4, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 # do not update left and right
 gs.update(left=left, right=right, bottom=bottom, top=top)
@@ -197,7 +187,7 @@ fig.text(letter_left, top+letter_div, "C", va=letter_va, ha=letter_ha,
 
 # noise_sigma = 150 pA
 ds = openJob(root150, noise_sigma=150)
-gs = GridSpec(4, 4, height_ratios=height_ratios, hspace=hspace,
+gs = GridSpec(3, 4, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 left = right + div
 right = left + width
@@ -223,7 +213,7 @@ fig.text(w_left-0.5*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=1
 
 # noise_sigma = 300 pA
 ds = openJob(root300, noise_sigma=300)
-gs = GridSpec(4, 4, height_ratios=height_ratios, hspace=hspace,
+gs = GridSpec(3, 4, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 left = right + div
 right = left + width
