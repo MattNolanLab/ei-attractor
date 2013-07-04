@@ -116,8 +116,9 @@ def plotHistograms(sp, varList, iterList):
 ###############################################################################
 
 dirs = \
-    ('EI_param_sweep_150pA', (30, 30))
+    ('EI_param_sweep_300pA', (30, 30))
     #('EI_param_sweep_0pA', (30, 30))
+    #('EI_param_sweep_150pA', (30, 30))
 
 rootDir = "output/velocity/{0}".format(dirs[0])
 shape   = dirs[1]
