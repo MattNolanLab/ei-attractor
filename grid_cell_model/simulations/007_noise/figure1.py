@@ -119,46 +119,50 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='red')
 
     # I cell Vm
-    ax2 = subplot(gs[2, colStart:colStart+ncols])
     t, VmMiddle = extractStateVars(mon_i, ['V_m'], plotTStart,
             plotTEnd)
-    plotStateSignal(ax2, t, VmMiddle, labely=VmText, color='blue')
+    plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='blue')
 
     # E cell Vm histogram
-    ax3 = subplot(gs[3, colStart:colStart+2])
+    ax3 = subplot(gs[2, colStart:colStart+2])
     t, VmMiddle = extractStateVars(mon_e, ['V_m'], theta_start_t,
             simTime)
     plotHistogram(ax3, VmMiddle, labelx = histLabelX, labely=countText, color='red')
 
     # I cell Vm histogram
-    ax4 = subplot(gs[3, colStart+2:colStart+4])
+    ax4 = subplot(gs[2, colStart+2:colStart+4])
     t, VmMiddle = extractStateVars(mon_i, ['V_m'], theta_start_t,
             simTime)
     plotHistogram(ax4, VmMiddle, labelx = histLabelX, labely="", color='blue')
 
 
     if (yLabelOn):
-        ax1.text(-0.32, 0.5, "E cell",
-                verticalalignment='center', horizontalalignment='right',
-                transform=ax1.transAxes,
-                rotation=90,
-                fontsize=16)
-        ax2.text(-0.32, 0.5, "I cell",
-                verticalalignment='center', horizontalalignment='right',
-                transform=ax2.transAxes,
-                rotation=90,
-                fontsize=16)
+        ax1.legend(['E cell', 'I cell'], fontsize='small', frameon=False,
+                loc=[0.0, 1.1], ncol=2)
+    #    ax1.text(-0.32, 0.5, "E cell",
+    #            verticalalignment='center', horizontalalignment='right',
+    #            transform=ax1.transAxes,
+    #            rotation=90,
+    #            fontsize=16)
+    #    ax2.text(-0.32, 0.5, "I cell",
+    #            verticalalignment='center', horizontalalignment='right',
+    #            transform=ax2.transAxes,
+    #            rotation=90,
+    #            fontsize=16)
 
 
 
 fig = figure(figsize=figSize)
 
 hr = 1
+vh = 1.  # Vm height
 th = 0.75 # top plot height
+height_ratios = [th, vh, hr, hr]
+
 top = 0.6
 bottom = 0.02
 margin = 0.1
-div = 0.085
+div = 0.06
 width = 0.23
 hspace = 0.3
 wspace = 1.2
@@ -182,7 +186,7 @@ fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
 left = margin
 right = left + width
 ds = openJob(root0, noise_sigma=0)
-gs = GridSpec(4, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace,
+gs = GridSpec(4, 4, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 # do not update left and right
 gs.update(left=left, right=right, bottom=bottom, top=top)
@@ -193,7 +197,7 @@ fig.text(letter_left, top+letter_div, "C", va=letter_va, ha=letter_ha,
 
 # noise_sigma = 150 pA
 ds = openJob(root150, noise_sigma=150)
-gs = GridSpec(4, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace,
+gs = GridSpec(4, 4, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 left = right + div
 right = left + width
@@ -219,7 +223,7 @@ fig.text(w_left-0.5*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=1
 
 # noise_sigma = 300 pA
 ds = openJob(root300, noise_sigma=300)
-gs = GridSpec(4, 4, height_ratios=[th, hr, hr, hr, hr], hspace=hspace,
+gs = GridSpec(4, 4, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 left = right + div
 right = left + width
