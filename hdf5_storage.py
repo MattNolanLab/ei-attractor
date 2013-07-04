@@ -43,13 +43,26 @@ class HDF5DataStorage(DataStorage):
     group is created (with a corresponding name).
 
     Note that, while the interface is the same as that of a dictionary, in the
-    current implementation, the semantics of a **[]** operator (__getitem__) is
-    that of a **copy** of the object from the file. Therefore the following
-    construct does not work::
+    current implementation, the semantics of the **[]** operator (__getitem__)
+    for list is that of a **shallow copy** of the object from the file.
+    Therefore the following construct does not work::
 
-        >>> d[key'][0] = 10
-
+        >>> d['listKey'][0] = 10
     This will change only the copy of the object stored in the file.
+
+    Also, the following might have unexpected results, if the list stored in
+    the HDF5 file is a compound list::
+        
+        1. >>> tmp = d['listKey']  # tmp now contains a shallow copy of the list
+        3. >>> d['anotherKey'] = tmp
+
+    The reason for this is that tmp contains only the first level shallow copy
+    of the listKey list, for the sake of efficiency. However, compound objects
+    like dictionaries will be returned as references, which will not be
+    processed correctly. This implies that replacing a list somewhere in the
+    data hierarchy with a shallow copy of the list (or another compound
+    structure) will fail miserably.
+
 
     List performance
     ----------------
@@ -95,6 +108,7 @@ class HDF5DataStorage(DataStorage):
         self._createDataMember(key, value, self._group)
 
     def __getitem__(self, key):
+        print("__getitem__({0}), group: {1}".format(key, self._group.name))
         val = self._group[key]
         if (isinstance(val, h5py.Group)):
             if (val.attrs['type'] == 'dict'):
