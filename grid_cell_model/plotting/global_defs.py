@@ -28,13 +28,13 @@ def globalAxesSettings(ax, setTickPos=True):
             which='major',
             direction='out',
             width=1,
-            length=6
+            length=10
     )
     ax.tick_params(
             which='minor',
             direction='out',
             width=1,
-            length=4
+            length=6
     )
     if (setTickPos):
         ax.xaxis.set_ticks_position('bottom')

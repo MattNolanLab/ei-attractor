@@ -32,17 +32,19 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="",
     globalAxesSettings(ax)
     ax.minorticks_on()
     plt.pcolormesh(X, Y, C, vmin=vmin, vmax=vmax)
-    if (clbarNTicks == None):
-        createColorbar(ax, None, clBarLabel, orientation='horizontal', pad=0.2)
-    else:
-        createColorbar(ax, C, clBarLabel, nticks=clbarNTicks,
-                orientation='horizontal', pad=0.2)
+    if (colorBar):
+        if (clbarNTicks == None):
+            createColorbar(ax, None, clBarLabel, orientation='horizontal',
+                    pad=0.2)
+        else:
+            createColorbar(ax, C, clBarLabel, nticks=clbarNTicks,
+                    orientation='horizontal', pad=0.2)
     if (xlabel != ""):
         plt.xlabel(xlabel, va='top')
-        ax.xaxis.set_label_coords(0.5, -0.15)
+        ax.xaxis.set_label_coords(0.5, -0.2)
     if (ylabel != ""):
         plt.ylabel(ylabel, ha='right')
-        ax.yaxis.set_label_coords(-0.125, 0.5)
+        ax.yaxis.set_label_coords(-0.2, 0.5)
     ax.xaxis.set_ticks([0, 6])
     ax.yaxis.set_ticks([0, 3])
     ax.xaxis.set_minor_locator(AutoMinorLocator(6))
