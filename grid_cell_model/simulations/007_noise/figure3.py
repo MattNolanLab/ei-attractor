@@ -25,7 +25,8 @@ import matplotlib
 #matplotlib.use('cairo')
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import AutoMinorLocator, LinearLocator, MaxNLocator
+from matplotlib.ticker import AutoMinorLocator, LinearLocator, MaxNLocator, \
+        ScalarFormatter
 
 import numpy.ma as ma
 
@@ -46,6 +47,10 @@ from matplotlib import rc
 rc('pdf', fonttype=42)
 
 plt.rcParams['font.size'] = 25
+
+###############################################################################
+cFreq = 'blue'
+cAC = 'green'
 
 ###############################################################################
 
@@ -137,7 +142,6 @@ def plot2DNoiseACFreq(spList, iterList, trialNumList=[0]):
 
 
 
-
 def extractACExample(sp, r, c, trialNum):
     data = sp[r][c][trialNum].data
     ac = data['analysis']['acVec'][0]
@@ -146,6 +150,7 @@ def extractACExample(sp, r, c, trialNum):
     acVal = data['analysis']['acVal'][0]
     noise_sigma = data['options']['noise_sigma']
     return ac, dt, freq, acVal, noise_sigma
+
 
 def plotACExamples(spList, r, c, trialNum=0):
     gs = GridSpec(len(spList), 1, hspace=0.2)
@@ -215,8 +220,6 @@ def plotFreqACStat(spList, r, c, trialNum=0):
         acStd.append(np.std(acVal))
         nsa.append(noise_sigma)
 
-    cFreq = 'blue'
-    cAC = 'green'
     pFreq = ax_freq.errorbar(nsa, freqAvg, yerr=freqStd, fmt='-o', color=cFreq)
     ax_ac.errorbar(nsa, acAvg, yerr=acStd, fmt='-o', color=cAC)
 
@@ -236,6 +239,65 @@ def plotFreqACStat(spList, r, c, trialNum=0):
 
     plt.gcf().tight_layout()
         
+
+def plotAggregateBar(spList, trialNumList):
+    N = len(spList)
+    idxVec = np.arange(N)
+    w = 0.3
+    freqMean = []
+    freqStd = []
+    ACMean = []
+    ACStd = []
+    noise_sigma = []
+    for idx in idxVec:
+        freq = aggregate2DTrial(spList[idx], ['freq'], trialNumList).flatten()
+        AC = aggregate2DTrial(spList[idx], ['acVal'], trialNumList).flatten()
+        freq[np.isnan(freq)] = []
+        AC[np.isnan(AC)] = []
+        freqMean.append(np.mean(freq))
+        freqStd.append(np.std(freq))
+        ACMean.append(np.mean(AC))
+        ACStd.append(np.std(AC))
+        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
+
+    err_kw = {
+            'capsize' : 5,
+            'capthick': 2,
+            'lw' : 2
+    }
+
+    ax_ac = plt.gca()
+    ax_freq = ax_ac.twinx()
+    globalAxesSettings(ax_ac)
+    globalAxesSettings(ax_freq, setTickPos=False)
+    err_kw['ecolor'] = cAC
+    ax_ac.bar(idxVec, ACMean, width=w, yerr=ACStd, ec='none', color=cAC,
+            ecolor=cAC, error_kw=err_kw)
+    err_kw['ecolor'] = cFreq
+    ax_freq.bar(idxVec+w, freqMean, width=w, yerr=freqStd, ec='none',
+            color=cFreq, ecolor=cFreq, error_kw=err_kw)
+    ax_ac.set_xticks(idxVec+w)
+    ax_ac.set_xlim([idxVec[0] - w, idxVec[-1]+3*w])
+
+    ax_ac.yaxis.set_major_locator(LinearLocator(2))
+    ax_ac.yaxis.set_minor_locator(AutoMinorLocator(6))
+    f = ScalarFormatter(useMathText=True)
+    f.set_scientific(True)
+    f.set_powerlimits([0, 3])
+    ax_ac.yaxis.set_major_formatter(f)
+    ax_ac.yaxis.get_label().set_color(cAC)
+    ax_ac.set_ylabel('Correlation')
+    ax_ac.xaxis.set_ticklabels(np.array(noise_sigma, dtype=int))
+    ax_ac.set_xlabel('$\sigma$ (pA)')
+    ax_ac.tick_params(axis='x', pad=plt.rcParams['xtick.major.pad']+2)
+
+    ax_freq.yaxis.set_major_locator(MaxNLocator(3))
+    ax_freq.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax_freq.tick_params(axis='y', pad=plt.rcParams['ytick.major.pad'])
+    ax_freq.yaxis.get_label().set_color(cFreq)
+    ax_freq.set_ylabel('$\gamma$ frequency (Hz)')
+    
+
             
 
 ###############################################################################
@@ -261,11 +323,11 @@ for (dir, shape) in dirs:
 #################################################################################
 plt.figure(figsize=(7, 5))
 plotACExamples(dataSpaces, r, c)
-plt.savefig('{0}/analysis_AC_Examples.pdf'.format(baseDir))
+plt.savefig('{0}/analysis_AC_Examples.pdf'.format(baseDir), transparent=True)
 #################################################################################
 plt.figure(figsize=(7, 5))
 plotFreqACStat(dataSpaces, r, c)
-plt.savefig('{0}/analysis_Freq_AC_stat.pdf'.format(baseDir))
+plt.savefig('{0}/analysis_Freq_AC_stat.pdf'.format(baseDir), transparent=True)
 
 
 #################################################################################
@@ -273,4 +335,10 @@ plt.figure(figsize=(6.5, 8))
 plot2DNoiseACFreq(dataSpaces, iterList)
 #plt.tight_layout()
 plt.savefig('{0}/aggregated_AC_Freq.png'.format(baseDir), transparent=True,
+        dpi=300)
+################################################################################
+plt.figure(figsize=(5.5, 5))
+plotAggregateBar(dataSpaces, range(NTrials))
+plt.tight_layout()
+plt.savefig('{0}/aggregateBar.pdf'.format(baseDir), transparent=True,
         dpi=300)
