@@ -458,7 +458,7 @@ class BumpVelocityVisitor(DictDSVisitor):
             lineFitErr = np.abs(line - avgSlope)
             slope = slope/(IvelVec[1] - IvelVec[0])
             plot(IvelVec, line)
-            title("Line fit slope: " + str(slope*1e3) + ' nrns/s/pA')
+            title("Line fit slope: " + str(slope) + ' nrns/s/pA')
             
             fileName = splitext(kw['fileName'])[0] + '.pdf'
             savefig(fileName)
