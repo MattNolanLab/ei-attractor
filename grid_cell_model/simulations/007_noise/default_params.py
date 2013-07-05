@@ -119,7 +119,7 @@ defaultParameters = {
         "pc_max_rate"           :   100.0,        # Hz
         "pc_field_std"          :   20.0,         # cm
         "pc_conn_weight"        :   5.,           # nS
-        "bumpCurrentSlope"      :   3.175,        # pA/(cm/s), !! this will depend on prefDirC !!
+        "bumpCurrentSlope"      :   0.53,         # neurons/s/pA, !! this will depend on prefDirC !!
 
         "noise_sigma"           :   150.0,        # pA            
         "gammaNSample"          :   25,           # No. of neurons

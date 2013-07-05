@@ -274,7 +274,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
         # Map velocities to currents: we use the slope of bump speed vs. rat speed and
         # inter-peak grid field distance to remap
-        # Bump current slope must be estimated
+        # Bump speed-current slope must be estimated
         self.velC = self.Ne_x / self.no.gridSep / self.no.bumpCurrentSlope
 
         self._ratVelocitiesLoaded = True
