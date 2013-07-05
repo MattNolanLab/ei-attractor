@@ -22,10 +22,10 @@
 #
 import numpy as np
 import matplotlib
-matplotlib.use('cairo')
+#matplotlib.use('cairo')
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import AutoMinorLocator, LinearLocator
+from matplotlib.ticker import AutoMinorLocator, LinearLocator, MaxNLocator
 
 import numpy.ma as ma
 
@@ -39,7 +39,7 @@ lg.basicConfig(level=lg.INFO)
 
 # Other
 from matplotlib import rc
-rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+#rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 ## for Palatino and other serif fonts use:
 #rc('font',**{'family':'serif','serif':['Palatino']})
 #rc('text', usetex=True)
@@ -72,6 +72,70 @@ def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
     Y, X = computeYX(sp, iterList)
     plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
             title, clbarNTicks, xticks, yticks)
+
+ 
+def drawColorbar(drawAx, label):
+    pos = drawAx.get_position()
+    pos.y0 -= 0.12
+    pos.y1 -= 0.12
+    pos.y1 = pos.y0 + 0.1*(pos.y1 - pos.y0)
+    w = pos.x1 - pos.x0
+    pos.x0 += 0.1*w
+    pos.x1 -= 0.1*w
+    clba = plt.gcf().add_axes(pos)
+    globalAxesSettings(clba)
+    clba.minorticks_on()
+    cb = plt.colorbar(cax=clba, orientation='horizontal',
+            ticks=LinearLocator(2))
+    cb.set_label(label)
+
+
+def plot2DNoiseACFreq(spList, iterList, trialNumList=[0]):
+    NSp = len(spList)
+    Sz2D = 1.
+    clBarSz = 0.1
+    hr = [Sz2D]*NSp + [clBarSz]
+    gs = GridSpec(len(spList), 2, wspace=0.15, hspace=0.15, height_ratios=hr,
+            bottom=0.22)
+    for spIdx in range(NSp):
+        if (spIdx == NSp - 1):
+            xlabel = "I (nS)"
+            xticks = True
+            clbar = True
+        else:
+            xlabel = ""
+            xticks = False
+            clbar = False
+
+        ax_AC = plt.subplot(gs[spIdx, 0])
+        acVal = plotACTrial(spList[spIdx], ['acVal'], iterList,
+                trialNumList=trialNumList,
+                xlabel=xlabel,
+                ylabel='E (nS)',
+                colorBar=False,
+                clBarLabel = "Correlation",
+                clbarNTicks=3,
+                xticks=xticks,
+                vmin=0,
+                vmax=0.7)
+        if (clbar):
+            drawColorbar(ax_AC, 'Correlation')
+
+        ax_Freq = plt.subplot(gs[spIdx, 1])
+        freq = plotACTrial(spList[spIdx], ['freq'], iterList,
+                trialNumList=range(NTrials),
+                xlabel=xlabel,
+                colorBar=False,
+                clBarLabel = "Frequency (Hz)",
+                clbarNTicks=3,
+                xticks=xticks,
+                yticks=False,
+                vmin=0,
+                vmax=150)
+        if (clbar):
+            drawColorbar(ax_Freq, 'Frequency (Hz)')
+
+
 
 
 def extractACExample(sp, r, c, trialNum):
@@ -205,31 +269,8 @@ plt.savefig('{0}/analysis_Freq_AC_stat.pdf'.format(baseDir))
 
 
 #################################################################################
-#plt.figure(figsize=(5.1, 2.9))
-#N = 2
-#plt.subplot(1, N, 1)
-#
-#acVal = plotACTrial(sp, ['acVal'], iterList,
-#        trialNumList=range(NTrials),
-#        xlabel="I (nS)",
-#        ylabel='E (nS)',
-#        clBarLabel = "Correlation",
-#        clbarNTicks=3,
-#        vmin=0,
-#        vmax=0.75)
-################################################################################
-#plt.subplot(1, N, 2)
-#freq = plotACTrial(sp, ['freq'], iterList,
-#        trialNumList=range(NTrials),
-#        xlabel="I (nS)",
-#        clBarLabel = "Frequency (Hz)",
-#        clbarNTicks=3,
-#        yticks=False,
-#        vmin=0,
-#        vmax=150)
-################################################################################
+plt.figure(figsize=(6.5, 8))
+plot2DNoiseACFreq(dataSpaces, iterList)
 #plt.tight_layout()
-#noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-#plt.savefig(sp.rootDir +
-#        '/../analysis_EI_{0}pA.png'.format(int(noise_sigma)))
-
+plt.savefig('{0}/aggregated_AC_Freq.png'.format(baseDir), transparent=True,
+        dpi=300)
