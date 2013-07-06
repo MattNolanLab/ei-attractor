@@ -240,64 +240,127 @@ def plotFreqACStat(spList, r, c, trialNum=0):
     plt.gcf().tight_layout()
         
 
-def plotAggregateBar(spList, trialNumList):
-    N = len(spList)
+def plot2AxisBar(X, Y, err, xlabel, ylabels, colors):
+    N = len(X)
     idxVec = np.arange(N)
     w = 0.3
-    freqMean = []
-    freqStd = []
-    ACMean = []
-    ACStd = []
-    noise_sigma = []
-    for idx in idxVec:
-        freq = aggregate2DTrial(spList[idx], ['freq'], trialNumList).flatten()
-        AC = aggregate2DTrial(spList[idx], ['acVal'], trialNumList).flatten()
-        freq[np.isnan(freq)] = []
-        AC[np.isnan(AC)] = []
-        freqMean.append(np.mean(freq))
-        freqStd.append(np.std(freq))
-        ACMean.append(np.mean(AC))
-        ACStd.append(np.std(AC))
-        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
-
     err_kw = {
             'capsize' : 5,
             'capthick': 2,
             'lw' : 2
     }
 
-    ax_ac = plt.gca()
-    ax_freq = ax_ac.twinx()
-    globalAxesSettings(ax_ac)
-    globalAxesSettings(ax_freq, setTickPos=False)
-    err_kw['ecolor'] = cAC
-    ax_ac.bar(idxVec, ACMean, width=w, yerr=ACStd, ec='none', color=cAC,
-            ecolor=cAC, error_kw=err_kw)
-    err_kw['ecolor'] = cFreq
-    ax_freq.bar(idxVec+w, freqMean, width=w, yerr=freqStd, ec='none',
-            color=cFreq, ecolor=cFreq, error_kw=err_kw)
-    ax_ac.set_xticks(idxVec+w)
-    ax_ac.set_xlim([idxVec[0] - w, idxVec[-1]+3*w])
+    err0 = [0.1*np.array(err[0]), err[0]]
+    err1 = [0.1*np.array(err[1]), err[1]]
 
-    ax_ac.yaxis.set_major_locator(LinearLocator(2))
-    ax_ac.yaxis.set_minor_locator(AutoMinorLocator(6))
+    ax0 = plt.gca()
+    ax1 = ax0.twinx()
+    globalAxesSettings(ax0)
+    globalAxesSettings(ax1, setTickPos=False)
+    err_kw['ecolor'] = colors[0]
+    ax0.bar(idxVec, Y[0], width=w, yerr=err0, ec='none', color=colors[0],
+            ecolor=colors[0], error_kw=err_kw)
+    err_kw['ecolor'] = colors[1]
+    ax1.bar(idxVec+w, Y[1], width=w, yerr=err1, ec='none',
+            color=colors[1], ecolor=colors[1], error_kw=err_kw)
+    ax0.set_xticks(idxVec+w)
+    ax0.xaxis.set_ticklabels(X)
+    ax0.set_xlim([idxVec[0] - w, idxVec[-1]+3*w])
+
+    ax0.yaxis.set_major_locator(LinearLocator(2))
+    ax0.yaxis.set_minor_locator(AutoMinorLocator(6))
     f = ScalarFormatter(useMathText=True)
     f.set_scientific(True)
     f.set_powerlimits([0, 3])
-    ax_ac.yaxis.set_major_formatter(f)
-    ax_ac.yaxis.get_label().set_color(cAC)
-    ax_ac.set_ylabel('Correlation')
-    ax_ac.xaxis.set_ticklabels(np.array(noise_sigma, dtype=int))
-    ax_ac.set_xlabel('$\sigma$ (pA)')
-    ax_ac.tick_params(axis='x', pad=plt.rcParams['xtick.major.pad']+2)
+    ax0.yaxis.set_major_formatter(f)
+    ax0.yaxis.get_label().set_color(colors[0])
+    ax0.set_ylabel(ylabels[0])
+    ax0.set_xlabel(xlabel)
+    ax0.tick_params(axis='x', pad=plt.rcParams['xtick.major.pad']+2)
 
-    ax_freq.yaxis.set_major_locator(MaxNLocator(3))
-    ax_freq.yaxis.set_minor_locator(AutoMinorLocator(2))
-    ax_freq.tick_params(axis='y', pad=plt.rcParams['ytick.major.pad'])
-    ax_freq.yaxis.get_label().set_color(cFreq)
-    ax_freq.set_ylabel('$\gamma$ frequency (Hz)')
+    ax1.yaxis.set_major_locator(MaxNLocator(3))
+    ax1.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax1.tick_params(axis='y', pad=plt.rcParams['ytick.major.pad'])
+    ax1.yaxis.get_label().set_color(colors[1])
+    ax1.set_ylabel(ylabels[1])
     
 
+def aggregateBar2(spList, varLists, trialNumList, thresholds=(np.infty, \
+        np.infty), func=(None, None)):
+    means = ([], [])
+    errs  = ([], [])
+    noise_sigma = []
+    for idx in xrange(len(spList)):
+        for varIdx in range(len(varLists)):
+            f = func[varIdx]
+            if f is None:
+                f = lambda x: x
+            var = f(aggregate2DTrial(spList[idx], varLists[varIdx],
+                trialNumList).flatten())
+            var[np.isnan(var)] = []
+            var[var > thresholds[varIdx]] = []
+            means[varIdx].append(np.mean(var))
+            errs[varIdx].append(np.std(var))
+        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
+
+    noise_sigma = np.array(noise_sigma, dtype=int)
+    return means, errs, noise_sigma
+
+
+
+def plotAggregateBar(spList, varLists, trialNumList, ylabels):
+    (ACMean, freqMean), (ACStd, freqStd), noise_sigma = \
+            aggregateBar2(spList, varLists, trialNumList)
+
+    plot2AxisBar(noise_sigma,
+            (ACMean, freqMean),
+            (ACStd,  freqStd),
+            xlabel='$\sigma$ (pA)',
+            ylabels=ylabels,
+            colors=(cAC, cFreq))
+
+################################################################################
+#def aggregateBar2(spList, varLists, trialNumList, thresholds=(np.infty, \
+#        np.infty), func=(None, None)):
+#    # asusming sigma is first, err2 is second
+#    means = ([], [])
+#    errs  = ([], [])
+#    noise_sigma = []
+#    for idx in xrange(len(spList)):
+#        for varIdx in range(len(varLists)):
+#            f = func[varIdx]
+#            if f is None:
+#                f = lambda x: x
+#            var = f(aggregate2DTrial(spList[idx], varLists[varIdx],
+#                trialNumList).flatten())
+#            var[np.isnan(var)] = []
+#            var[var > thresholds[varIdx]] = []
+#            means[varIdx].append(np.mean(var))
+#            errs[varIdx].append(np.std(var))
+#        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
+#
+#    noise_sigma = np.array(noise_sigma, dtype=int)
+#    return means, errs, noise_sigma
+
+
+
+def plotAggregateBarBumps(spList, trialNumList, ylabels, sigmaTh=20,
+        errTh=np.infty):
+    varLists = [['bump_e', 'sigma'], ['bump_e', 'err2']]
+    (sigmaMean, err2Mean), (sigmaStd, err2Std), noise_sigma = \
+            aggregateBar2(spList, varLists, trialNumList, thresholds=(sigmaTh,
+                errTh), func=(None, np.sqrt))
+    
+
+    print sigmaMean, err2Mean
+
+    plot2AxisBar(noise_sigma,
+            (sigmaMean, err2Mean),
+            (sigmaStd,  err2Std),
+            xlabel='$\sigma$ (pA)',
+            ylabels=ylabels,
+            colors=(cAC, cFreq))
+###############################################################################
             
 
 ###############################################################################
@@ -320,25 +383,36 @@ for (dir, shape) in dirs:
     dataSpaces.append(JobTrialSpace2D(shape, rootDir))
     
 
-#################################################################################
-plt.figure(figsize=(7, 5))
-plotACExamples(dataSpaces, r, c)
-plt.savefig('{0}/analysis_AC_Examples.pdf'.format(baseDir), transparent=True)
-#################################################################################
-plt.figure(figsize=(7, 5))
-plotFreqACStat(dataSpaces, r, c)
-plt.savefig('{0}/analysis_Freq_AC_stat.pdf'.format(baseDir), transparent=True)
-
-
-#################################################################################
-plt.figure(figsize=(6.5, 8))
-plot2DNoiseACFreq(dataSpaces, iterList)
-#plt.tight_layout()
-plt.savefig('{0}/aggregated_AC_Freq.png'.format(baseDir), transparent=True,
+##################################################################################
+#plt.figure(figsize=(7, 5))
+#plotACExamples(dataSpaces, r, c)
+#plt.savefig('{0}/analysis_AC_Examples.pdf'.format(baseDir), transparent=True)
+##################################################################################
+#plt.figure(figsize=(7, 5))
+#plotFreqACStat(dataSpaces, r, c)
+#plt.savefig('{0}/analysis_Freq_AC_stat.pdf'.format(baseDir), transparent=True)
+#
+#
+##################################################################################
+#plt.figure(figsize=(6.5, 8))
+#plot2DNoiseACFreq(dataSpaces, iterList)
+##plt.tight_layout()
+#plt.savefig('{0}/aggregated_AC_Freq.png'.format(baseDir), transparent=True,
+#        dpi=300)
+################################################################################
+plt.figure(figsize=(5.5, 5))
+plotAggregateBar(dataSpaces,
+        varLists = [['acVal'], ['freq']],
+        trialNumList= range(NTrials),
+        ylabels=('Correlation', '$\gamma$ frequency (Hz)'))
+plt.tight_layout()
+plt.savefig('{0}/aggregateBar_AC_freq.pdf'.format(baseDir), transparent=True,
         dpi=300)
 ################################################################################
 plt.figure(figsize=(5.5, 5))
-plotAggregateBar(dataSpaces, range(NTrials))
+plotAggregateBarBumps(dataSpaces,
+        trialNumList= range(NTrials),
+        ylabels=('Bump $\sigma$ (neurons)', 'Error of fit (Hz)'))
 plt.tight_layout()
-plt.savefig('{0}/aggregateBar.pdf'.format(baseDir), transparent=True,
+plt.savefig('{0}/aggregateBar_bump.pdf'.format(baseDir), transparent=True,
         dpi=300)
