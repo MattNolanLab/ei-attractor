@@ -62,7 +62,7 @@ def setSignalAxes(ax, leftSpineOn):
     ax.yaxis.set_major_locator(MaxNLocator(2))
     ax.yaxis.set_minor_locator(AutoMinorLocator(2))
 
-def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
+def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.3,
         color='black'):
     setSignalAxes(ax, leftSpineOn)
 
@@ -84,7 +84,7 @@ def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn, thetaLim):
     ax.text(0.5, 1.1, txt,
             verticalalignment='bottom', horizontalalignment='center',
             transform=ax.transAxes,
-            fontsize=17, fontweight='bold')
+            fontsize='large', fontweight='bold')
     ax.axhline(0.0, color='grey', linestyle=':', linewidth=0.5)
     if (yLabelOn):
         ax.text(t[-1] - 10, -50, "0 pA", ha="right", va='top', fontsize='small')
@@ -147,7 +147,7 @@ def _getSpikeTrain(data, mon, NParam, tLimits):
     return senders, times, N
 
 
-def plotEIRaster(ax, data, mon_e, mon_i, tLimits, labely='', labelyPos=-0.2):
+def plotEIRaster(ax, data, mon_e, mon_i, tLimits, labely='', labelyPos=-0.3):
     ESenders, ETimes, EN = _getSpikeTrain(data, mon_e, 'net_Ne', tLimits)
     ISenders, ITimes, IN = _getSpikeTrain(data, mon_i, 'net_Ni', tLimits)
     ISenders += EN

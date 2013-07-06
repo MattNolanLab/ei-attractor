@@ -19,6 +19,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import matplotlib.pyplot as plt
 from matplotlib.pyplot   import figure, subplot, savefig
 from matplotlib.gridspec import GridSpec
 
@@ -33,16 +34,18 @@ rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 #rc('text', usetex=True)
 rc('pdf', fonttype=42)
 
+plt.rcParams['font.size'] = 20
+
 outputDir = "."
 figSize = (13, 8)
 
 
 trialNum = 0
 jobNum = 573
-dataRootDir = 'output_local'
-root0   = "{0}/2013-04-24T15-27-30_EI_param_sweep_0pA_big".format(dataRootDir)
-root150 = "{0}/2013-04-24T21-37-47_EI_param_sweep_150pA_big".format(dataRootDir)
-root300 = "{0}/2013-04-24T21-43-32_EI_param_sweep_300pA_big".format(dataRootDir)
+dataRootDir = 'output_local/one_to_one'
+root0   = "{0}/EI_param_sweep_0pA".format(dataRootDir)
+root150 = "{0}/EI_param_sweep_150pA".format(dataRootDir)
+root300 = "{0}/EI_param_sweep_300pA".format(dataRootDir)
 fileTemplate = "job{0:05}_output.h5"
 
 ##############################################################################
@@ -73,8 +76,8 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
         rasterText = ""
 
     ncols = 4
-    plotTStart = 2e3
-    plotTEnd   = 2.25e3
+    plotTStart = 1e3
+    plotTEnd   = 1.25e3
 
     mon_e = data['stateMon_e']
     mon_i = data['stateMon_i']
@@ -113,29 +116,18 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
             labely=rasterText)
 
 
-    #ax5 = subplot(gs[5, colStart])
-    #plotBump(ax5, None)
-
-    #ax6 = subplot(gs[5, colStart+1])
-    #plotBump(ax6, None)
-
-    #ax7 = subplot(gs[5, colStart+2])
-    #plotBump(ax7, None)
-
-    #ax8 = subplot(gs[5, colStart+3])
-    #plotBump(ax8, None)
-
     if (yLabelOn):
-        ax1.text(-0.32, -0.15, "Excitatory layer",
+        labelPos = -0.5
+        ax1.text(labelPos, -0.15, "Excitatory layer",
                 verticalalignment='center', horizontalalignment='right',
                 transform=ax1.transAxes,
                 rotation=90,
-                fontsize=16)
-        ax3.text(-0.32, -0.15, "Inhibitory layer",
+                fontsize='large')
+        ax3.text(labelPos, -0.15, "Inhibitory layer",
                 verticalalignment='center', horizontalalignment='right',
                 transform=ax3.transAxes,
                 rotation=90,
-                fontsize=16)
+                fontsize='large')
 
 
 
@@ -146,9 +138,9 @@ th = 0.75 # top plot height
 rr = 1.5  # raster height
 top = 0.93
 bottom = 0.02
-margin = 0.1
+margin = 0.15
 div = 0.085
-width = 0.23
+width = 0.22
 hspace = 0.3
 gsHeightRatios = [th, hr, hr, hr, hr, rr]
 
@@ -169,8 +161,8 @@ gs = GridSpec(gsRows, gsCols, height_ratios=gsHeightRatios, hspace=hspace)
 # do not update left and right
 gs.update(left=left, right=right, bottom=bottom, top=top)
 drawSignals(gs, ds, colStart=0, noise_sigma=0)
-fig.text(letter_left, top+letter_div, "A", va=letter_va, ha=letter_ha,
-        fontsize=19, fontweight='bold')
+#fig.text(letter_left, top+letter_div, "A", va=letter_va, ha=letter_ha,
+#        fontsize=19, fontweight='bold')
 
 
 # noise_sigma = 150 pA
@@ -180,8 +172,8 @@ left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
 drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150)
-fig.text(letter_left+margin+width+0.5*div, top+letter_div, "B", va=letter_va,
-        ha=letter_ha, fontsize=19, fontweight='bold')
+#fig.text(letter_left+margin+width+0.5*div, top+letter_div, "B", va=letter_va,
+#        ha=letter_ha, fontsize=19, fontweight='bold')
 
 
 
@@ -192,9 +184,9 @@ left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
 drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300)
-fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "C", va=letter_va,
-        ha=letter_ha, fontsize=19, fontweight='bold')
+#fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "C", va=letter_va,
+#        ha=letter_ha, fontsize=19, fontweight='bold')
 
-fname = outputDir + "/figure2.pdf"
-savefig(fname)
+fname = outputDir + "/figure2.png"
+savefig(fname, dpi=300)
 
