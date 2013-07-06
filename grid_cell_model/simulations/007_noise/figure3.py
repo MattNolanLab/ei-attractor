@@ -267,8 +267,8 @@ def plot2AxisBar(X, Y, err, xlabel, ylabels, colors):
     ax0.xaxis.set_ticklabels(X)
     ax0.set_xlim([idxVec[0] - w, idxVec[-1]+3*w])
 
-    ax0.yaxis.set_major_locator(LinearLocator(2))
-    ax0.yaxis.set_minor_locator(AutoMinorLocator(6))
+    ax0.yaxis.set_major_locator(MaxNLocator(4))
+    ax0.yaxis.set_minor_locator(AutoMinorLocator(2))
     f = ScalarFormatter(useMathText=True)
     f.set_scientific(True)
     f.set_powerlimits([0, 3])
@@ -319,28 +319,32 @@ def plotAggregateBar(spList, varLists, trialNumList, ylabels):
             ylabels=ylabels,
             colors=(cAC, cFreq))
 
-################################################################################
-#def aggregateBar2(spList, varLists, trialNumList, thresholds=(np.infty, \
-#        np.infty), func=(None, None)):
-#    # asusming sigma is first, err2 is second
-#    means = ([], [])
-#    errs  = ([], [])
-#    noise_sigma = []
-#    for idx in xrange(len(spList)):
-#        for varIdx in range(len(varLists)):
-#            f = func[varIdx]
-#            if f is None:
-#                f = lambda x: x
-#            var = f(aggregate2DTrial(spList[idx], varLists[varIdx],
-#                trialNumList).flatten())
-#            var[np.isnan(var)] = []
-#            var[var > thresholds[varIdx]] = []
-#            means[varIdx].append(np.mean(var))
-#            errs[varIdx].append(np.std(var))
-#        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
-#
-#    noise_sigma = np.array(noise_sigma, dtype=int)
-#    return means, errs, noise_sigma
+
+###############################################################################
+def aggregateBarBumps(spList, varLists, trialNumList, thresholds=(np.infty, \
+        np.infty), func=(None, None)):
+    # Ugly hack!!!
+    # asusming sigma is first, err2 is second
+    means = ([], [])
+    errs  = ([], [])
+    noise_sigma = []
+    for idx in xrange(len(spList)):
+        mask = False
+        for varIdx in range(len(varLists)):
+            f = func[varIdx]
+            if f is None:
+                f = lambda x: x
+            var = f(aggregate2DTrial(spList[idx], varLists[varIdx],
+                trialNumList).flatten())
+            mask = np.logical_or(np.logical_or(np.isnan(var), var >
+                thresholds[varIdx]), mask)
+            var = ma.MaskedArray(var, mask=mask)
+            means[varIdx].append(np.mean(var))
+            errs[varIdx].append(np.std(var))
+        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
+
+    noise_sigma = np.array(noise_sigma, dtype=int)
+    return means, errs, noise_sigma
 
 
 
@@ -348,7 +352,7 @@ def plotAggregateBarBumps(spList, trialNumList, ylabels, sigmaTh=20,
         errTh=np.infty):
     varLists = [['bump_e', 'sigma'], ['bump_e', 'err2']]
     (sigmaMean, err2Mean), (sigmaStd, err2Std), noise_sigma = \
-            aggregateBar2(spList, varLists, trialNumList, thresholds=(sigmaTh,
+            aggregateBarBumps(spList, varLists, trialNumList, thresholds=(sigmaTh,
                 errTh), func=(None, np.sqrt))
     
 
