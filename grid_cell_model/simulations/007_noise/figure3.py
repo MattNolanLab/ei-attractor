@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#   analysis_EI.py
+#   figure3.py
 #
 #   Theta/gamma analysis using a custom "peak" method - E/I coupling parameter
 #   sweep.
@@ -320,103 +320,49 @@ def plotAggregateBar(spList, varLists, trialNumList, ylabels):
             colors=(cAC, cFreq))
 
 
-###############################################################################
-def aggregateBarBumps(spList, varLists, trialNumList, thresholds=(np.infty, \
-        np.infty), func=(None, None)):
-    # Ugly hack!!!
-    # asusming sigma is first, err2 is second
-    means = ([], [])
-    errs  = ([], [])
-    noise_sigma = []
-    for idx in xrange(len(spList)):
-        mask = False
-        for varIdx in range(len(varLists)):
-            f = func[varIdx]
-            if f is None:
-                f = lambda x: x
-            var = f(aggregate2DTrial(spList[idx], varLists[varIdx],
-                trialNumList).flatten())
-            mask = np.logical_or(np.logical_or(np.isnan(var), var >
-                thresholds[varIdx]), mask)
-            var = ma.MaskedArray(var, mask=mask)
-            means[varIdx].append(np.mean(var))
-            errs[varIdx].append(np.std(var))
-        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
-
-    noise_sigma = np.array(noise_sigma, dtype=int)
-    return means, errs, noise_sigma
-
-
-
-def plotAggregateBarBumps(spList, trialNumList, ylabels, sigmaTh=20,
-        errTh=np.infty):
-    varLists = [['bump_e', 'sigma'], ['bump_e', 'err2']]
-    (sigmaMean, err2Mean), (sigmaStd, err2Std), noise_sigma = \
-            aggregateBarBumps(spList, varLists, trialNumList, thresholds=(sigmaTh,
-                errTh), func=(None, np.sqrt))
-    
-
-    print sigmaMean, err2Mean
-
-    plot2AxisBar(noise_sigma,
-            (sigmaMean, err2Mean),
-            (sigmaStd,  err2Std),
-            xlabel='$\sigma$ (pA)',
-            ylabels=ylabels,
-            colors=(cAC, cFreq))
-###############################################################################
-            
 
 ###############################################################################
+if (__name__ == '__main__'):
+    NTrials = 5
+    iterList  = ['g_AMPA_total', 'g_GABA_total']
+    r = 14
+    c = 13
 
-NTrials = 5
-iterList  = ['g_AMPA_total', 'g_GABA_total']
-r = 14
-c = 13
+    baseDir = 'output_local/one_to_one'
+    dirs = [ \
+        ('EI_param_sweep_0pA',    (40, 40)),
+        ('EI_param_sweep_150pA',  (40, 40)),
+        ('EI_param_sweep_300pA',  (40, 40))
+    ]
 
-baseDir = 'output_local/one_to_one'
-dirs = [ \
-    ('EI_param_sweep_0pA',    (40, 40)),
-    ('EI_param_sweep_150pA',  (40, 40)),
-    ('EI_param_sweep_300pA',  (40, 40))
-]
+    dataSpaces = []
+    for (dir, shape) in dirs:
+        rootDir = "{0}/{1}".format(baseDir, dir)
+        dataSpaces.append(JobTrialSpace2D(shape, rootDir))
+        
 
-dataSpaces = []
-for (dir, shape) in dirs:
-    rootDir = "{0}/{1}".format(baseDir, dir)
-    dataSpaces.append(JobTrialSpace2D(shape, rootDir))
-    
-
-##################################################################################
-#plt.figure(figsize=(7, 5))
-#plotACExamples(dataSpaces, r, c)
-#plt.savefig('{0}/analysis_AC_Examples.pdf'.format(baseDir), transparent=True)
-##################################################################################
-#plt.figure(figsize=(7, 5))
-#plotFreqACStat(dataSpaces, r, c)
-#plt.savefig('{0}/analysis_Freq_AC_stat.pdf'.format(baseDir), transparent=True)
-#
-#
-##################################################################################
-#plt.figure(figsize=(6.5, 8))
-#plot2DNoiseACFreq(dataSpaces, iterList)
-##plt.tight_layout()
-#plt.savefig('{0}/aggregated_AC_Freq.png'.format(baseDir), transparent=True,
-#        dpi=300)
-################################################################################
-plt.figure(figsize=(5.5, 5))
-plotAggregateBar(dataSpaces,
-        varLists = [['acVal'], ['freq']],
-        trialNumList= range(NTrials),
-        ylabels=('Correlation', '$\gamma$ frequency (Hz)'))
-plt.tight_layout()
-plt.savefig('{0}/aggregateBar_AC_freq.pdf'.format(baseDir), transparent=True,
-        dpi=300)
-################################################################################
-plt.figure(figsize=(5.5, 5))
-plotAggregateBarBumps(dataSpaces,
-        trialNumList= range(NTrials),
-        ylabels=('Bump $\sigma$ (neurons)', 'Error of fit (Hz)'))
-plt.tight_layout()
-plt.savefig('{0}/aggregateBar_bump.pdf'.format(baseDir), transparent=True,
-        dpi=300)
+    ##################################################################################
+    #plt.figure(figsize=(7, 5))
+    #plotACExamples(dataSpaces, r, c)
+    #plt.savefig('{0}/analysis_AC_Examples.pdf'.format(baseDir), transparent=True)
+    ##################################################################################
+    #plt.figure(figsize=(7, 5))
+    #plotFreqACStat(dataSpaces, r, c)
+    #plt.savefig('{0}/analysis_Freq_AC_stat.pdf'.format(baseDir), transparent=True)
+    #
+    #
+    ##################################################################################
+    #plt.figure(figsize=(6.5, 8))
+    #plot2DNoiseACFreq(dataSpaces, iterList)
+    ##plt.tight_layout()
+    #plt.savefig('{0}/aggregated_AC_Freq.png'.format(baseDir), transparent=True,
+    #        dpi=300)
+    ################################################################################
+    plt.figure(figsize=(5.5, 5))
+    plotAggregateBar(dataSpaces,
+            varLists = [['acVal'], ['freq']],
+            trialNumList= range(NTrials),
+            ylabels=('Correlation', '$\gamma$ frequency (Hz)'))
+    plt.tight_layout()
+    plt.savefig('{0}/aggregateBar_AC_freq.pdf'.format(baseDir), transparent=True,
+            dpi=300)

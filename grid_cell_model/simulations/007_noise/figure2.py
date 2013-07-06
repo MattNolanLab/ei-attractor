@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
-#   figure1.py
+#   figure2.py
 #
-#   Noise publication Figure 1.
+#   Noise publication Figure 2.
 #
 #       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
