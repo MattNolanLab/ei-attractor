@@ -37,7 +37,7 @@ rc('pdf', fonttype=42)
 plt.rcParams['font.size'] = 20
 
 outputDir = "."
-figSize = (13, 8)
+figSize = (12, 8)
 
 
 trialNum = 0
@@ -55,14 +55,6 @@ def openJob(rootDir, jobNum, trialNum):
     fileName = rootDir + '/' + fileTemplate.format(jobNum)
     return DataStorage.open(fileName, 'r')['trials'][trialNum]
 
-
-
-def plotBump(ax, rateMap):
-    rateMap = np.zeros((10, 10))
-    ax.xaxis.set_visible(False)
-    ax.yaxis.set_visible(False)
-    ax.pcolormesh(rateMap)
-    axis("scaled")
 
 
 def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
@@ -97,7 +89,7 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
     ax2 = subplot(gs[2, colStart:colStart+ncols])
     t, IsynMiddle = extractStateVars(mon_e, ['I_clamp_GABA_A'],
             plotTStart, plotTEnd)
-    plotStateSignal(ax2, t, IsynMiddle*1e-3, labely=IsynText, color='blue')
+    plotStateSignal(ax2, t, IsynMiddle*1e-3, labely=IsynText, color='red')
 
     # I cell Vm
     ax3 = subplot(gs[3, colStart:colStart+ncols])
@@ -109,7 +101,7 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
     ax4 = subplot(gs[4, colStart:colStart+ncols])
     t, IsynMiddle = extractStateVars(mon_i, ['I_clamp_AMPA',
         'I_clamp_NMDA'], plotTStart, plotTEnd)
-    plotStateSignal(ax4, t, IsynMiddle*1e-3, labely=IsynText, color='red')
+    plotStateSignal(ax4, t, IsynMiddle*1e-3, labely=IsynText, color='blue')
 
     ax5 = subplot(gs[5, colStart:colStart+ncols])
     plotEIRaster(ax5, data, 'spikeMon_e', 'spikeMon_i', (plotTStart, plotTEnd),
@@ -118,12 +110,12 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
 
     if (yLabelOn):
         labelPos = -0.5
-        ax1.text(labelPos, -0.15, "Excitatory layer",
+        ax1.text(labelPos, -0.22, "Excitatory cell",
                 verticalalignment='center', horizontalalignment='right',
                 transform=ax1.transAxes,
                 rotation=90,
                 fontsize='large')
-        ax3.text(labelPos, -0.15, "Inhibitory layer",
+        ax3.text(labelPos, -0.3, "Inhibitory cell",
                 verticalalignment='center', horizontalalignment='right',
                 transform=ax3.transAxes,
                 rotation=90,
@@ -141,7 +133,7 @@ bottom = 0.02
 margin = 0.15
 div = 0.085
 width = 0.22
-hspace = 0.3
+hspace = 0.4
 gsHeightRatios = [th, hr, hr, hr, hr, rr]
 
 letter_top=0.97

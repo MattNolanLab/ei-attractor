@@ -24,16 +24,19 @@ import matplotlib
 #matplotlib.use('cairo')
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import LinearLocator
+from matplotlib.ticker import LinearLocator, NullLocator
 
 import numpy.ma as ma
 
-from parameters  import JobTrialSpace2D, DataSpace
-from EI_plotting import plot2DTrial
+from parameters      import JobTrialSpace2D, DataSpace
+from analysis.visitors.interface import EmptyDSVisitor
+from analysis.spikes import PopulationSpikes
+from EI_plotting     import plot2DTrial
 from plotting.global_defs import globalAxesSettings
-
-from plot_EI import plotBumpSigmaTrial, plotBumpErrTrial
-from figure3 import plot2AxisBar
+from plotting.bumps  import torusFiringRate
+from plot_EI         import plotBumpSigmaTrial, plotBumpErrTrial
+from figures_shared  import _getSpikeTrain
+from figure3         import plot2AxisBar
 
 
 import logging as lg
@@ -183,6 +186,59 @@ def plotAggregateBarBumps(spList, trialNumList, ylabels, sigmaTh=20,
             xlabel='$\sigma$ (pA)',
             ylabels=ylabels,
             colors=(cAC, cFreq))
+
+
+def drawBumpColorbar(drawAx):
+    pos = drawAx.get_position()
+    pos.x0 += 0.05
+    pos.x1 += 0.05
+    pos.x0 = pos.x1 - 0.1*(pos.x1 - pos.x0)
+    h = pos.y1 - pos.y0
+    pos.y0 += 0.1*h
+    pos.y1 -= 0.1*h
+    clba = plt.gcf().add_axes(pos)
+    globalAxesSettings(clba)
+    cb = plt.colorbar(cax=clba, orientation='vertical',
+            ticks=NullLocator())
+    #clba.yaxis.set_ticklabels(['min'], ['max'])
+    cb.set_label('F (Hz)', fontsize='small')
+
+def plotBumps(spList, r, c, trialNum=0):
+    N = len(spList)
+    gs = GridSpec(1, len(spList), wspace=0.15, left=0.01, right=0.85,
+            bottom=0.01, top=0.99)
+    for spIdx in range(len(spList)):
+        ax = plt.subplot(gs[0, spIdx])
+        data = spList[spIdx][r][c][trialNum].data
+        v = EmptyDSVisitor()
+        tStart = v.getOption(data, 'theta_start_t')
+        tEnd   = v.getOption(data, 'time')
+        ESenders, ETimes, EN = v._getSpikeTrain(data, 'spikeMon_e', ('Ne_x',
+            'Ne_y'))
+        s = PopulationSpikes(EN, ESenders, ETimes)
+        Fe = s.avgFiringRate(tStart, tEnd)
+        Ne_x = v.getNetParam(data, 'Ne_x')
+        Ne_y = v.getNetParam(data, 'Ne_y')
+        bump_e = np.reshape(Fe, (Ne_y, Ne_x))
+
+        if (spIdx == 0):
+            yTickLabels = True
+        else:
+            yTickLabels = False
+        torusFiringRate(
+                rateMap  = bump_e,
+                labelx   = '',
+                labely   = '',
+                titleStr = '',
+                clbar    = False,
+                xTicks   = False,
+                yTicks   = False,
+                xTickLabels = False,
+                yTickLabels = False)
+
+    drawBumpColorbar(ax)
+
+
 ###############################################################################
             
 if (__name__ == '__main__'):
@@ -220,3 +276,16 @@ if (__name__ == '__main__'):
     plt.savefig('{0}/aggregateBar_bump.pdf'.format(baseDir), transparent=True,
             dpi=300)
     ################################################################################
+    plt.figure(figsize=(5, 1.5))
+    plotBumps(dataSpaces, r, c)
+    plt.savefig('{0}/bumps_example.png'.format(baseDir), transparent=False,
+            dpi=300)
+    #################################################################################
+    rc('text', usetex=True)
+    fig = plt.figure(figsize=(5.5, 1.5))
+    fig.text(0.5, 0.5,
+            '$G(x, y) = A \exp\left(\\frac{(x - \mu_x)^2 + (y - ' +
+            ' \mu_y)^2}{2\sigma^2}\\right)$',
+            ha='center', va='center', fontsize=plt.rcParams['font.size'] + 3)
+    plt.savefig('{0}/gaussian_equation.pdf'.format(baseDir), transparent=True)
+
