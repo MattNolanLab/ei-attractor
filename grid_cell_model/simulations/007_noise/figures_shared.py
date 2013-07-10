@@ -21,6 +21,7 @@
 import numpy as np
 #from matplotlib.pyplot import plot,
 from matplotlib.ticker import MaxNLocator, AutoMinorLocator, LinearLocator
+import matplotlib.transforms as transforms
 
 from analysis.visitors.interface import extractStateVariable, sumAllVariables,\
         extractSpikes
@@ -63,7 +64,7 @@ def setSignalAxes(ax, leftSpineOn):
     ax.yaxis.set_minor_locator(AutoMinorLocator(2))
 
 def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.3,
-        color='black'):
+        color='black', scaleBar=None):
     setSignalAxes(ax, leftSpineOn)
 
     if (sig is not None):
@@ -74,6 +75,25 @@ def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.3,
         verticalalignment='center', horizontalalignment='right',
         transform=ax.transAxes,
         rotation=90)
+    ax.set_xlim([t[0], t[-1]])
+
+    if (scaleBar is not None):
+        scaleHeight = 0.05  # axis coords
+        scaleBottom = 0.05 # data coords
+        scaleOffset = 20
+        scaleCenter = t[-1] - 0.5*scaleBar - scaleOffset
+        ax.axvspan(
+                xmin = t[-1] - scaleBar - scaleOffset,
+                xmax = t[-1] - scaleOffset,
+                ymin = scaleBottom,
+                ymax = scaleBottom + scaleHeight,
+                color = 'black')
+        trans = transforms.blended_transform_factory(ax.transData,
+                ax.transAxes)
+        ax.text(scaleCenter, scaleBottom - 0.05,
+                "{0} ms".format(scaleBar),
+                va='top', ha='center', transform=trans)
+
 
 
 def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn, thetaLim):

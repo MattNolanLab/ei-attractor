@@ -31,7 +31,7 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="",
     ax = plt.gca()
     globalAxesSettings(ax)
     ax.minorticks_on()
-    plt.pcolormesh(X, Y, C, vmin=vmin, vmax=vmax)
+    plt.pcolor(X, Y, C, vmin=vmin, vmax=vmax)
     if (colorBar):
         if (clbarNTicks == None):
             createColorbar(ax, None, clBarLabel, orientation='horizontal',

@@ -21,8 +21,6 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-import matplotlib
-#matplotlib.use('cairo')
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import AutoMinorLocator, LinearLocator, MaxNLocator, \
@@ -405,7 +403,7 @@ if (__name__ == '__main__'):
     plot2DNoiseACFreq(dataSpaces, iterList)
     #plt.tight_layout()
     plt.savefig('{0}/aggregated_AC_Freq.png'.format(baseDir), transparent=True,
-            dpi=300)
+            dpi=400)
     ###############################################################################
     plt.figure(figsize=(5, 6))
     plotAggregateBar(dataSpaces,

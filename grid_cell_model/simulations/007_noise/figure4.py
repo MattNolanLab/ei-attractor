@@ -20,8 +20,6 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-import matplotlib
-#matplotlib.use('cairo')
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import LinearLocator, NullLocator
@@ -276,7 +274,7 @@ if (__name__ == '__main__'):
     plt.figure(figsize=(6.5, 8))
     plot2DNoiseBumps(dataSpaces, iterList)
     #plt.tight_layout()
-    plt.savefig('{0}/noise_bumps_2d.png'.format(baseDir), transparent=True,
+    plt.savefig('{0}/noise_bumps_2d.pdf'.format(baseDir), transparent=True,
             dpi=300)
     ##########################################################################
     plt.figure(figsize=(5.5, 6))
@@ -289,7 +287,7 @@ if (__name__ == '__main__'):
     ##########################################################################
     plt.figure(figsize=(5, 1.5))
     plotBumps(dataSpaces, r, c)
-    plt.savefig('{0}/bumps_example.png'.format(baseDir), transparent=False,
+    plt.savefig('{0}/bumps_example.pdf'.format(baseDir), transparent=False,
             dpi=300)
     ##########################################################################
     rc('text', usetex=True)

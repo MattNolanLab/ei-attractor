@@ -21,9 +21,6 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-import matplotlib
-matplotlib.use('cairo')
-import matplotlib.pyplot as plt
 
 import numpy.ma as ma
 
@@ -34,8 +31,6 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 
-# Other
-plt.rcParams['font.size'] = 11
 
 ###############################################################################
 
@@ -100,6 +95,11 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
 ###############################################################################
 
 if (__name__ == '__main__'):
+    import matplotlib
+    matplotlib.use('cairo')
+    import matplotlib.pyplot as plt
+    # Other
+    plt.rcParams['font.size'] = 11
 
     dirs = \
         ('EI_param_sweep_0pA',    (40, 40))

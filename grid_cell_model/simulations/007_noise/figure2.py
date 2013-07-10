@@ -57,7 +57,7 @@ def openJob(rootDir, jobNum, trialNum):
 
 
 
-def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
+def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, scaleBar=None):
     if (yLabelOn):
         VmText = "V (mV)"
         IsynText = "I (nA)"
@@ -83,7 +83,8 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True):
     ax1 = subplot(gs[1, colStart:colStart+ncols])
     t, VmMiddle = extractStateVars(mon_e, ['V_m'], plotTStart,
             plotTEnd)
-    plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='red')
+    plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='red',
+            scaleBar=scaleBar)
 
     # E cell Isyn
     ax2 = subplot(gs[2, colStart:colStart+ncols])
@@ -175,10 +176,10 @@ gs = GridSpec(gsRows, gsCols, height_ratios=gsHeightRatios, hspace=hspace)
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300)
+drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300, scaleBar=50)
 #fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "C", va=letter_va,
 #        ha=letter_ha, fontsize=19, fontweight='bold')
 
-fname = outputDir + "/figure2.png"
+fname = outputDir + "/figure2.pdf"
 savefig(fname, dpi=300)
 
