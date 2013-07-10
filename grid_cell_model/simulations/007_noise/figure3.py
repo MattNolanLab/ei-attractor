@@ -51,6 +51,7 @@ plt.rcParams['font.size'] = 25
 ###############################################################################
 cFreq = 'blue'
 cAC = 'green'
+cCount = 'red'
 
 ###############################################################################
 
@@ -227,8 +228,9 @@ def plotFreqACStat(spList, r, c, trialNum=0):
 
 def plot2AxisBar(X, Y, err, xlabel, ylabels, colors):
     N = len(X)
+    NBars = len(Y)
     idxVec = np.arange(N)
-    w = 0.3
+    w = 0.6 / NBars
     err_kw = {
             'capsize' : 5,
             'capthick': 2,
@@ -248,6 +250,7 @@ def plot2AxisBar(X, Y, err, xlabel, ylabels, colors):
     err_kw['ecolor'] = colors[1]
     ax1.bar(idxVec+w, Y[1], width=w, yerr=err1, ec='none',
             color=colors[1], ecolor=colors[1], error_kw=err_kw)
+
     ax0.set_xticks(idxVec+w)
     ax0.xaxis.set_ticklabels(X)
     ax0.set_xlim([idxVec[0] - w, idxVec[-1]+3*w])
@@ -268,35 +271,95 @@ def plot2AxisBar(X, Y, err, xlabel, ylabels, colors):
     ax1.tick_params(axis='y', pad=plt.rcParams['ytick.major.pad'])
     ax1.yaxis.get_label().set_color(colors[1])
     ax1.set_ylabel(ylabels[1])
-    
 
-def aggregateBar2(spList, varLists, trialNumList, thresholds=(np.infty, \
-        np.infty), func=(None, None)):
-    means = ([], [])
-    errs  = ([], [])
+def plot1AxisBar(X, Y, err, xlabel, ylabel, color, xTickLabels=True):
+    N = len(X)
+    idxVec = np.arange(N)
+    w = 0.6
+    err_kw = {
+            'capsize' : 5,
+            'capthick': 2,
+            'lw' : 2,
+            'ecolor' : color
+    }
+
+    err = [0.1*np.array(err), err]
+
+    ax = plt.gca()
+    globalAxesSettings(ax)
+    ax.bar(idxVec, Y, width=w, yerr=err, align='center', ec='none',
+            color=color, ecolor=color, error_kw=err_kw)
+
+    ax.set_xticks(idxVec)
+    if (xTickLabels):
+        ax.xaxis.set_ticklabels(X)
+    else:
+        ax.xaxis.set_ticklabels([])
+    ax.set_xlim([idxVec[0] - w, idxVec[-1]+w])
+
+    ax.set_ylim([0, 1])
+    ax.yaxis.set_major_locator(LinearLocator(3))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    #f = ScalarFormatter(useMathText=True)
+    #f.set_scientific(True)
+    #f.set_powerlimits([0, 3])
+    #ax.yaxis.set_major_formatter(f)
+    #ax.yaxis.get_label().set_color(color)
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+    ax.tick_params(axis='x', pad=plt.rcParams['xtick.major.pad']+2)
+
+
+
+def aggregateBar2(spList, varLists, trialNumList, func=(None, None)):
+    vars = ([], [])
     noise_sigma = []
     for idx in xrange(len(spList)):
         for varIdx in range(len(varLists)):
             f = func[varIdx]
             if f is None:
                 f = lambda x: x
-            var = f(aggregate2DTrial(spList[idx], varLists[varIdx],
-                trialNumList).flatten())
-            var[np.isnan(var)] = []
-            var[var > thresholds[varIdx]] = []
-            means[varIdx].append(np.mean(var))
-            errs[varIdx].append(np.std(var))
+            vars[varIdx].append(f(aggregate2DTrial(spList[idx], varLists[varIdx],
+                trialNumList).flatten()))
         noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
 
     noise_sigma = np.array(noise_sigma, dtype=int)
-    return means, errs, noise_sigma
+    return vars, noise_sigma
 
 
 
-def plotAggregateBar(spList, varLists, trialNumList, ylabels):
-    (ACMean, freqMean), (ACStd, freqStd), noise_sigma = \
-            aggregateBar2(spList, varLists, trialNumList)
+def plotAggregateBar(spList, trialNumList, ACThr=0.2):
+    varLists = [['acVal'], ['freq']]
+    ylabels=('Correlation', '$\gamma$ frequency (Hz)')
+    vars, noise_sigma = aggregateBar2(spList, varLists, trialNumList)
+    AC = vars[0]
+    freq = vars[1]
+    ACMean   = []
+    freqMean = []
+    ACStd    = []
+    freqStd  = []
+    thrCount = []
+    for spIdx in range(len(spList)):
+        thrIdx = np.logical_and(AC[spIdx] >= ACThr,
+                np.logical_not(np.isnan(AC[spIdx])))
+        ac_filt = AC[spIdx][thrIdx]
+        ACMean.append(np.mean(ac_filt))
+        ACStd.append(np.std(ac_filt))
+        freq_filt = freq[spIdx][thrIdx]
+        freqMean.append(np.mean(freq_filt))
+        freqStd.append(np.std(freq_filt))
+        thrCount.append(float(len(AC[spIdx][thrIdx])) / len (AC[spIdx]))
 
+    print thrCount
+
+    ax_thr = plt.subplot(2, 1, 1)
+    plot1AxisBar(noise_sigma, thrCount, [np.nan]*len(thrCount),
+            xlabel='', ylabel = 'Count', color=cCount,
+            xTickLabels=False)
+
+
+
+    ax_ac_freq = plt.subplot(2, 1, 2)
     plot2AxisBar(noise_sigma,
             (ACMean, freqMean),
             (ACStd,  freqStd),
@@ -344,11 +407,9 @@ if (__name__ == '__main__'):
     plt.savefig('{0}/aggregated_AC_Freq.png'.format(baseDir), transparent=True,
             dpi=300)
     ###############################################################################
-    plt.figure(figsize=(5.5, 5))
+    plt.figure(figsize=(5, 6))
     plotAggregateBar(dataSpaces,
-            varLists = [['acVal'], ['freq']],
-            trialNumList= range(NTrials),
-            ylabels=('Correlation', '$\gamma$ frequency (Hz)'))
+            trialNumList= range(NTrials))
     plt.tight_layout()
     plt.savefig('{0}/aggregateBar_AC_freq.pdf'.format(baseDir), transparent=True,
             dpi=300)

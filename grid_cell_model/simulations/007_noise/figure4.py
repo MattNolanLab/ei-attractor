@@ -36,7 +36,7 @@ from plotting.global_defs import globalAxesSettings
 from plotting.bumps  import torusFiringRate
 from plot_EI         import plotBumpSigmaTrial, plotBumpErrTrial
 from figures_shared  import _getSpikeTrain
-from figure3         import plot2AxisBar
+from figure3         import plot2AxisBar, plot1AxisBar
 
 
 import logging as lg
@@ -57,6 +57,7 @@ plt.rcParams['font.size'] = 25
 ###############################################################################
 cFreq = 'blue'
 cAC = 'green'
+cCount = 'red'
 
 ###############################################################################
 
@@ -110,7 +111,7 @@ def plot2DNoiseBumps(spList, iterList, trialNumList=[0]):
             clbar = False
 
 
-        bumpSigmaThreshold = 20
+        bumpSigmaThreshold = 10
         ax_sigma = plt.subplot(gs[spIdx, 0])
         bump_sigma = plotBumpSigmaTrial(spList[spIdx], ['bump_e', 'sigma'], iterList,
                 thr=bumpSigmaThreshold,
@@ -150,6 +151,7 @@ def aggregateBarBumps(spList, varLists, trialNumList, thresholds=(np.infty, \
     means = ([], [])
     errs  = ([], [])
     noise_sigma = []
+    counts = ([], [])
     for idx in xrange(len(spList)):
         mask = False
         for varIdx in range(len(varLists)):
@@ -163,23 +165,32 @@ def aggregateBarBumps(spList, varLists, trialNumList, thresholds=(np.infty, \
             var = ma.MaskedArray(var, mask=mask)
             means[varIdx].append(np.mean(var))
             errs[varIdx].append(np.std(var))
+            counts[varIdx].append(1. * np.sum(np.logical_not(mask)) / len(var))
+
         noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
 
     noise_sigma = np.array(noise_sigma, dtype=int)
-    return means, errs, noise_sigma
+    return means, errs, noise_sigma, counts
 
 
 
-def plotAggregateBarBumps(spList, trialNumList, ylabels, sigmaTh=20,
+def plotAggregateBarBumps(spList, trialNumList, ylabels, sigmaTh=10,
         errTh=np.infty):
     varLists = [['bump_e', 'sigma'], ['bump_e', 'err2']]
-    (sigmaMean, err2Mean), (sigmaStd, err2Std), noise_sigma = \
+    (sigmaMean, err2Mean), (sigmaStd, err2Std), noise_sigma, (sigmaCnt,
+            err2Cnt) = \
             aggregateBarBumps(spList, varLists, trialNumList, thresholds=(sigmaTh,
                 errTh), func=(None, np.sqrt))
     
 
     print sigmaMean, err2Mean
 
+    ax_thr = plt.subplot(2, 1, 1)
+    plot1AxisBar(noise_sigma, sigmaCnt, [np.nan]*len(sigmaCnt),
+            xlabel='', ylabel = 'Count', color=cCount,
+            xTickLabels=False)
+
+    ax_bumps = plt.subplot(2, 1, 2)
     plot2AxisBar(noise_sigma,
             (sigmaMean, err2Mean),
             (sigmaStd,  err2Std),
@@ -261,26 +272,26 @@ if (__name__ == '__main__'):
         dataSpaces.append(JobTrialSpace2D(shape, rootDir))
         
 
-    ###############################################################################
+    ##########################################################################
     plt.figure(figsize=(6.5, 8))
     plot2DNoiseBumps(dataSpaces, iterList)
     #plt.tight_layout()
     plt.savefig('{0}/noise_bumps_2d.png'.format(baseDir), transparent=True,
             dpi=300)
-    ###############################################################################
-    plt.figure(figsize=(5.5, 5))
+    ##########################################################################
+    plt.figure(figsize=(5.5, 6))
     plotAggregateBarBumps(dataSpaces,
             trialNumList= range(NTrials),
-            ylabels=('Bump $\sigma$ (neurons)', 'Error of fit (Hz)'))
+            ylabels=('Bump $\sigma$\n(neurons)', 'Error of fit (Hz)'))
     plt.tight_layout()
     plt.savefig('{0}/aggregateBar_bump.pdf'.format(baseDir), transparent=True,
             dpi=300)
-    ################################################################################
+    ##########################################################################
     plt.figure(figsize=(5, 1.5))
     plotBumps(dataSpaces, r, c)
     plt.savefig('{0}/bumps_example.png'.format(baseDir), transparent=False,
             dpi=300)
-    #################################################################################
+    ##########################################################################
     rc('text', usetex=True)
     fig = plt.figure(figsize=(5.5, 1.5))
     fig.text(0.5, 0.5,
