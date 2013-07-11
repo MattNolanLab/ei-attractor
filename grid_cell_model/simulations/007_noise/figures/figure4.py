@@ -32,7 +32,7 @@ from analysis.spikes import PopulationSpikes
 from EI_plotting     import plot2DTrial
 from plotting.global_defs import globalAxesSettings
 from plotting.bumps  import torusFiringRate
-from plot_EI         import plotBumpSigmaTrial, plotBumpErrTrial
+from EI_plotting     import plotBumpSigmaTrial, plotBumpErrTrial
 from figures_shared  import _getSpikeTrain
 from figure3         import plot2AxisBar, plot1AxisBar
 

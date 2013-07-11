@@ -20,77 +20,14 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import numpy as np
-
-import numpy.ma as ma
-
-from parameters  import JobTrialSpace2D, DataSpace
-from EI_plotting import plot2DTrial
+from parameters  import JobTrialSpace2D
+from figures.EI_plotting import plotACTrial, plotBumpSigmaTrial, \
+        plotBumpErrTrial, plotFRTrial
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)
 
 
-
-###############################################################################
-
-def aggregate2DTrial(sp, varList, trialNumList):
-    varList = ['analysis'] + varList
-    retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean,
-            saveData=True)
-    return np.mean(retVar, 2)
-
-
-
-def computeYX(sp, iterList):
-    E, I = sp.getIteratedParameters(iterList)
-    Ne = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ne')
-    Ni = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ni')
-    return E/Ne, I/Ni
-
-def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
-        colorBar=True, clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
-        xticks=True, yticks=True):
-    C = aggregate2DTrial(sp, varList, trialNumList)
-    C = ma.MaskedArray(C, mask=np.isnan(C))
-    Y, X = computeYX(sp, iterList)
-    plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
-            title, clbarNTicks, xticks, yticks)
-
-def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, trialNumList=[0],
-        xlabel="", ylabel="", colorBar=True, clBarLabel="", vmin=None,
-        vmax=None, title="", clbarNTicks=2, xticks=True, yticks=True):
-    C = aggregate2DTrial(sp, varList, trialNumList)
-    C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
-    Y, X = computeYX(sp, iterList)
-    return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
-
-def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, mask=None,
-        trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
-        vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
-        yticks=True):
-    C = np.sqrt(aggregate2DTrial(sp, varList, trialNumList))
-    if mask is None:
-        mask = False
-    C = ma.MaskedArray(C, mask=np.logical_or(np.logical_or(np.isnan(C), C >
-        thr), mask))
-    Y, X = computeYX(sp, iterList)
-    return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
-
-def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
-        trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
-        vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
-        yticks=True):
-    FR = aggregate2DTrial(sp, varList, trialNumList)
-    if mask is None:
-        mask = False
-    FR = ma.MaskedArray(FR, mask=np.logical_or(FR > thr, mask))
-    Y, X = computeYX(sp, iterList)
-    return plot2DTrial(X, Y, FR, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
-            
 
 ###############################################################################
 
@@ -108,7 +45,7 @@ if (__name__ == '__main__'):
         #('EI_param_sweep_300pA',  (40, 40))
 
     NTrials = 5
-    rootDir = "output/one_to_one/{0}".format(dirs[0])
+    rootDir = "output_local/one_to_one/{0}".format(dirs[0])
     shape   = dirs[1]
 
     sp = JobTrialSpace2D(shape, rootDir)

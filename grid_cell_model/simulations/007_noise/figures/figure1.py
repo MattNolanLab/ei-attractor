@@ -23,7 +23,7 @@ from matplotlib.pyplot import *
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 
-from figures.fig_conn_func import plotWeights
+from fig_conn_func import plotWeights
 from data_storage import DataStorage
 from figures_shared import plotStateSignal, plotThetaSignal, extractStateVars,\
         getOption, thetaLim

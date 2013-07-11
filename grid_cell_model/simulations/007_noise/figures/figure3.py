@@ -29,7 +29,7 @@ from matplotlib.ticker import AutoMinorLocator, LinearLocator, MaxNLocator, \
 import numpy.ma as ma
 
 from parameters  import JobTrialSpace2D, DataSpace
-from EI_plotting import plot2DTrial
+from EI_plotting import plot2DTrial, plotACTrial
 from plotting.global_defs import globalAxesSettings
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -68,16 +68,6 @@ def computeYX(sp, iterList):
     return E/Ne, I/Ni
 
 
-def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
-        colorBar=True, clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
-        xticks=True, yticks=True):
-    C = aggregate2DTrial(sp, varList, trialNumList)
-    C = ma.MaskedArray(C, mask=np.isnan(C))
-    Y, X = computeYX(sp, iterList)
-    plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
-            title, clbarNTicks, xticks, yticks)
-
- 
 def drawColorbar(drawAx, label):
     pos = drawAx.get_position()
     pos.y0 -= 0.12
