@@ -174,3 +174,10 @@ class DictDSVisitor(Visitor):
         return senders, times, N
 
 
+class EmptyDSVisitor(DictDSVisitor):
+    '''
+    A Dictionary date set visitor that will do nothing.
+    '''
+    def __init__(self):
+        pass
+    

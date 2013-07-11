@@ -31,12 +31,14 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="",
     ax = plt.gca()
     globalAxesSettings(ax)
     ax.minorticks_on()
-    plt.pcolormesh(X, Y, C, vmin=vmin, vmax=vmax)
-    if (clbarNTicks == None):
-        createColorbar(ax, None, clBarLabel, orientation='horizontal', pad=0.2)
-    else:
-        createColorbar(ax, C, clBarLabel, nticks=clbarNTicks,
-                orientation='horizontal', pad=0.2)
+    plt.pcolor(X, Y, C, vmin=vmin, vmax=vmax)
+    if (colorBar):
+        if (clbarNTicks == None):
+            createColorbar(ax, None, clBarLabel, orientation='horizontal',
+                    pad=0.2)
+        else:
+            createColorbar(ax, C, clBarLabel, nticks=clbarNTicks,
+                    orientation='horizontal', pad=0.2)
     if (xlabel != ""):
         plt.xlabel(xlabel, va='top')
         ax.xaxis.set_label_coords(0.5, -0.15)

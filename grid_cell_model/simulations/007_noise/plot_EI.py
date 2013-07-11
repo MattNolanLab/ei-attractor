@@ -21,9 +21,6 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-import matplotlib
-matplotlib.use('cairo')
-import matplotlib.pyplot as plt
 
 import numpy.ma as ma
 
@@ -34,8 +31,6 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 
-# Other
-plt.rcParams['font.size'] = 11
 
 ###############################################################################
 
@@ -99,110 +94,117 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
 
 ###############################################################################
 
-dirs = \
-    ('EI_param_sweep_0pA',    (40, 40))
-    #('EI_param_sweep_0pA_small_sample', (2, 2))
-    #('EI_param_sweep_150pA',  (40, 40))
-    #('EI_param_sweep_300pA',  (40, 40))
+if (__name__ == '__main__'):
+    import matplotlib
+    matplotlib.use('cairo')
+    import matplotlib.pyplot as plt
+    # Other
+    plt.rcParams['font.size'] = 11
 
-NTrials = 5
-rootDir = "output/one_to_one/{0}".format(dirs[0])
-shape   = dirs[1]
+    dirs = \
+        ('EI_param_sweep_0pA',    (40, 40))
+        #('EI_param_sweep_0pA_small_sample', (2, 2))
+        #('EI_param_sweep_150pA',  (40, 40))
+        #('EI_param_sweep_300pA',  (40, 40))
 
-sp = JobTrialSpace2D(shape, rootDir)
-iterList  = ['g_AMPA_total', 'g_GABA_total']
-    
-################################################################################
-plt.figure(figsize=(5.1, 2.9))
-N = 2
-plt.subplot(1, N, 1)
+    NTrials = 5
+    rootDir = "output/one_to_one/{0}".format(dirs[0])
+    shape   = dirs[1]
 
-acVal = plotACTrial(sp, ['acVal'], iterList,
-        trialNumList=range(NTrials),
-        xlabel="I (nS)",
-        ylabel='E (nS)',
-        clBarLabel = "Correlation",
-        clbarNTicks=3,
-        vmin=0,
-        vmax=0.75)
-###############################################################################
-plt.subplot(1, N, 2)
-freq = plotACTrial(sp, ['freq'], iterList,
-        trialNumList=range(NTrials),
-        xlabel="I (nS)",
-        clBarLabel = "Frequency (Hz)",
-        clbarNTicks=3,
-        yticks=False,
-        vmin=0,
-        vmax=150)
-###############################################################################
-plt.tight_layout()
-noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-plt.savefig(sp.rootDir +
-        '/../analysis_EI_{0}pA.png'.format(int(noise_sigma)))
+    sp = JobTrialSpace2D(shape, rootDir)
+    iterList  = ['g_AMPA_total', 'g_GABA_total']
+        
+    ################################################################################
+    plt.figure(figsize=(5.1, 2.9))
+    N = 2
+    plt.subplot(1, N, 1)
 
-################################################################################
-# The following is an average over trials
-################################################################################
-plt.figure(figsize=(5.1, 2.9))
-N = 2
-plt.subplot(1, N, 1)
+    acVal = plotACTrial(sp, ['acVal'], iterList,
+            trialNumList=range(NTrials),
+            xlabel="I (nS)",
+            ylabel='E (nS)',
+            clBarLabel = "Correlation",
+            clbarNTicks=3,
+            vmin=0,
+            vmax=0.75)
+    ###############################################################################
+    plt.subplot(1, N, 2)
+    freq = plotACTrial(sp, ['freq'], iterList,
+            trialNumList=range(NTrials),
+            xlabel="I (nS)",
+            clBarLabel = "Frequency (Hz)",
+            clbarNTicks=3,
+            yticks=False,
+            vmin=0,
+            vmax=150)
+    ###############################################################################
+    plt.tight_layout()
+    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+    plt.savefig(sp.rootDir +
+            '/../analysis_EI_{0}pA.png'.format(int(noise_sigma)))
 
-bumpSigmaThreshold = 50
-bump_sigma = plotBumpSigmaTrial(sp, ['bump_e', 'sigma'], iterList,
-        thr=bumpSigmaThreshold,
-        trialNumList=range(NTrials),
-        xlabel="I (nS)",
-        ylabel='E (nS)',
-        clBarLabel = "Gaussian $\sigma$ (nrns)",
-        vmin=0,
-        vmax=bumpSigmaThreshold,
-        clbarNTicks=4)
-###############################################################################
-plt.subplot(1, N, 2)
-bump_err2 = plotBumpErrTrial(sp, ['bump_e', 'err2'], iterList,
-        trialNumList=range(NTrials),
-        mask=bump_sigma.mask,
-        xlabel="I (nS)",
-        clBarLabel = "Error of fit (Hz)",
-        clbarNTicks=3,
-        yticks=False,
-        vmin=0,
-        vmax=200)
-###############################################################################
-plt.tight_layout()
-noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-plt.savefig(sp.rootDir +
-        '/../analysis_EI_{0}pA_bump.png'.format(int(noise_sigma)))
-###############################################################################
-###############################################################################
-plt.figure(figsize=(5.1, 2.9))
-N = 2
-plt.subplot(1, N, 1)
+    ################################################################################
+    # The following is an average over trials
+    ################################################################################
+    plt.figure(figsize=(5.1, 2.9))
+    N = 2
+    plt.subplot(1, N, 1)
 
-FR_e = plotFRTrial(sp, ['FR_e', 'avg'], iterList,
-        trialNumList=range(NTrials),
-        xlabel="I (nS)",
-        ylabel='E (nS)',
-        clBarLabel = "E cell firing rate (Hz)",
-        clbarNTicks=4,
-        vmin=0,
-        vmax=50)
-###############################################################################
-plt.subplot(1, N, 2)
-FR_threshold=250
-FR_i = plotFRTrial(sp, ['FR_i', 'avg'], iterList,
-        trialNumList=range(NTrials),
-        thr=FR_threshold,
-        xlabel="I (nS)",
-        clBarLabel = "I cell firing rate (Hz)",
-        clbarNTicks=3,
-        vmin=0,
-        vmax=FR_threshold,
-        yticks=False)
-###############################################################################
-plt.tight_layout()
-noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-plt.savefig(sp.rootDir +
-    '/../analysis_EI_{0}pA_FR.png'.format(int(noise_sigma)))
+    bumpSigmaThreshold = 50
+    bump_sigma = plotBumpSigmaTrial(sp, ['bump_e', 'sigma'], iterList,
+            thr=bumpSigmaThreshold,
+            trialNumList=range(NTrials),
+            xlabel="I (nS)",
+            ylabel='E (nS)',
+            clBarLabel = "Gaussian $\sigma$ (nrns)",
+            vmin=0,
+            vmax=bumpSigmaThreshold,
+            clbarNTicks=4)
+    ###############################################################################
+    plt.subplot(1, N, 2)
+    bump_err2 = plotBumpErrTrial(sp, ['bump_e', 'err2'], iterList,
+            trialNumList=range(NTrials),
+            mask=bump_sigma.mask,
+            xlabel="I (nS)",
+            clBarLabel = "Error of fit (Hz)",
+            clbarNTicks=3,
+            yticks=False,
+            vmin=0,
+            vmax=200)
+    ###############################################################################
+    plt.tight_layout()
+    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+    plt.savefig(sp.rootDir +
+            '/../analysis_EI_{0}pA_bump.png'.format(int(noise_sigma)))
+    ###############################################################################
+    ###############################################################################
+    plt.figure(figsize=(5.1, 2.9))
+    N = 2
+    plt.subplot(1, N, 1)
+
+    FR_e = plotFRTrial(sp, ['FR_e', 'avg'], iterList,
+            trialNumList=range(NTrials),
+            xlabel="I (nS)",
+            ylabel='E (nS)',
+            clBarLabel = "E cell firing rate (Hz)",
+            clbarNTicks=4,
+            vmin=0,
+            vmax=50)
+    ###############################################################################
+    plt.subplot(1, N, 2)
+    FR_threshold=250
+    FR_i = plotFRTrial(sp, ['FR_i', 'avg'], iterList,
+            trialNumList=range(NTrials),
+            thr=FR_threshold,
+            xlabel="I (nS)",
+            clBarLabel = "I cell firing rate (Hz)",
+            clbarNTicks=3,
+            vmin=0,
+            vmax=FR_threshold,
+            yticks=False)
+    ###############################################################################
+    plt.tight_layout()
+    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+    plt.savefig(sp.rootDir +
+        '/../analysis_EI_{0}pA_FR.png'.format(int(noise_sigma)))
 

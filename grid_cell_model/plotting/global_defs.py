@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator, LinearLocator
 
 
-def globalAxesSettings(ax):
+def globalAxesSettings(ax, setTickPos=True):
     ax.tick_params(
             which='major',
             direction='out',
@@ -36,8 +36,9 @@ def globalAxesSettings(ax):
             width=1,
             length=4
     )
-    ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('left')
+    if (setTickPos):
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
 
 
 def createColorbar(ax, data=None, label="", nticks=2, **kw):
