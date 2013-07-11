@@ -20,189 +20,128 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import numpy as np
-import matplotlib
-matplotlib.use('cairo')
-import matplotlib.pyplot as plt
-
-import numpy.ma as ma
-
-from parameters  import JobTrialSpace2D, DataSpace
-from EI_plotting import plot2DTrial
+from parameters  import JobTrialSpace2D
+from figures.EI_plotting import plotACTrial, plotBumpSigmaTrial, \
+        plotBumpErrTrial, plotFRTrial
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)
 
 
-# Other
-plt.rcParams['font.size'] = 11
 
 ###############################################################################
 
-def aggregate2DTrial(sp, varList, trialNumList):
-    varList = ['analysis'] + varList
-    retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean,
-            saveData=True)
-    return np.mean(retVar, 2)
+if (__name__ == '__main__'):
+    import matplotlib
+    matplotlib.use('cairo')
+    import matplotlib.pyplot as plt
+    # Other
+    plt.rcParams['font.size'] = 11
 
+    dirs = \
+        ('EI_param_sweep_0pA',    (40, 40))
+        #('EI_param_sweep_0pA_small_sample', (2, 2))
+        #('EI_param_sweep_150pA',  (40, 40))
+        #('EI_param_sweep_300pA',  (40, 40))
 
+    NTrials = 5
+    rootDir = "output_local/one_to_one/{0}".format(dirs[0])
+    shape   = dirs[1]
 
-def computeYX(sp, iterList):
-    E, I = sp.getIteratedParameters(iterList)
-    Ne = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ne')
-    Ni = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ni')
-    return E/Ne, I/Ni
+    sp = JobTrialSpace2D(shape, rootDir)
+    iterList  = ['g_AMPA_total', 'g_GABA_total']
+        
+    ################################################################################
+    plt.figure(figsize=(5.1, 2.9))
+    N = 2
+    plt.subplot(1, N, 1)
 
-def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
-        colorBar=True, clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
-        xticks=True, yticks=True):
-    C = aggregate2DTrial(sp, varList, trialNumList)
-    C = ma.MaskedArray(C, mask=np.isnan(C))
-    Y, X = computeYX(sp, iterList)
-    plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
-            title, clbarNTicks, xticks, yticks)
+    acVal = plotACTrial(sp, ['acVal'], iterList,
+            trialNumList=range(NTrials),
+            xlabel="I (nS)",
+            ylabel='E (nS)',
+            clBarLabel = "Correlation",
+            clbarNTicks=3,
+            vmin=0,
+            vmax=0.75)
+    ###############################################################################
+    plt.subplot(1, N, 2)
+    freq = plotACTrial(sp, ['freq'], iterList,
+            trialNumList=range(NTrials),
+            xlabel="I (nS)",
+            clBarLabel = "Frequency (Hz)",
+            clbarNTicks=3,
+            yticks=False,
+            vmin=0,
+            vmax=150)
+    ###############################################################################
+    plt.tight_layout()
+    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+    plt.savefig(sp.rootDir +
+            '/../analysis_EI_{0}pA.png'.format(int(noise_sigma)))
 
-def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, trialNumList=[0],
-        xlabel="", ylabel="", colorBar=True, clBarLabel="", vmin=None,
-        vmax=None, title="", clbarNTicks=2, xticks=True, yticks=True):
-    C = aggregate2DTrial(sp, varList, trialNumList)
-    C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
-    Y, X = computeYX(sp, iterList)
-    return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
+    ################################################################################
+    # The following is an average over trials
+    ################################################################################
+    plt.figure(figsize=(5.1, 2.9))
+    N = 2
+    plt.subplot(1, N, 1)
 
-def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, mask=None,
-        trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
-        vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
-        yticks=True):
-    C = np.sqrt(aggregate2DTrial(sp, varList, trialNumList))
-    if mask is None:
-        mask = False
-    C = ma.MaskedArray(C, mask=np.logical_or(np.logical_or(np.isnan(C), C >
-        thr), mask))
-    Y, X = computeYX(sp, iterList)
-    return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
+    bumpSigmaThreshold = 50
+    bump_sigma = plotBumpSigmaTrial(sp, ['bump_e', 'sigma'], iterList,
+            thr=bumpSigmaThreshold,
+            trialNumList=range(NTrials),
+            xlabel="I (nS)",
+            ylabel='E (nS)',
+            clBarLabel = "Gaussian $\sigma$ (nrns)",
+            vmin=0,
+            vmax=bumpSigmaThreshold,
+            clbarNTicks=4)
+    ###############################################################################
+    plt.subplot(1, N, 2)
+    bump_err2 = plotBumpErrTrial(sp, ['bump_e', 'err2'], iterList,
+            trialNumList=range(NTrials),
+            mask=bump_sigma.mask,
+            xlabel="I (nS)",
+            clBarLabel = "Error of fit (Hz)",
+            clbarNTicks=3,
+            yticks=False,
+            vmin=0,
+            vmax=200)
+    ###############################################################################
+    plt.tight_layout()
+    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+    plt.savefig(sp.rootDir +
+            '/../analysis_EI_{0}pA_bump.png'.format(int(noise_sigma)))
+    ###############################################################################
+    ###############################################################################
+    plt.figure(figsize=(5.1, 2.9))
+    N = 2
+    plt.subplot(1, N, 1)
 
-def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
-        trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
-        vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
-        yticks=True):
-    FR = aggregate2DTrial(sp, varList, trialNumList)
-    if mask is None:
-        mask = False
-    FR = ma.MaskedArray(FR, mask=np.logical_or(FR > thr, mask))
-    Y, X = computeYX(sp, iterList)
-    return plot2DTrial(X, Y, FR, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
-            
-
-###############################################################################
-
-dirs = \
-    ('EI_param_sweep_0pA',    (40, 40))
-    #('EI_param_sweep_0pA_small_sample', (2, 2))
-    #('EI_param_sweep_150pA',  (40, 40))
-    #('EI_param_sweep_300pA',  (40, 40))
-
-NTrials = 5
-rootDir = "output/one_to_one/{0}".format(dirs[0])
-shape   = dirs[1]
-
-sp = JobTrialSpace2D(shape, rootDir)
-iterList  = ['g_AMPA_total', 'g_GABA_total']
-    
-################################################################################
-plt.figure(figsize=(5.1, 2.9))
-N = 2
-plt.subplot(1, N, 1)
-
-acVal = plotACTrial(sp, ['acVal'], iterList,
-        trialNumList=range(NTrials),
-        xlabel="I (nS)",
-        ylabel='E (nS)',
-        clBarLabel = "Correlation",
-        clbarNTicks=3,
-        vmin=0,
-        vmax=0.75)
-###############################################################################
-plt.subplot(1, N, 2)
-freq = plotACTrial(sp, ['freq'], iterList,
-        trialNumList=range(NTrials),
-        xlabel="I (nS)",
-        clBarLabel = "Frequency (Hz)",
-        clbarNTicks=3,
-        yticks=False,
-        vmin=0,
-        vmax=150)
-###############################################################################
-plt.tight_layout()
-noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-plt.savefig(sp.rootDir +
-        '/../analysis_EI_{0}pA.png'.format(int(noise_sigma)))
-
-################################################################################
-# The following is an average over trials
-################################################################################
-plt.figure(figsize=(5.1, 2.9))
-N = 2
-plt.subplot(1, N, 1)
-
-bumpSigmaThreshold = 50
-bump_sigma = plotBumpSigmaTrial(sp, ['bump_e', 'sigma'], iterList,
-        thr=bumpSigmaThreshold,
-        trialNumList=range(NTrials),
-        xlabel="I (nS)",
-        ylabel='E (nS)',
-        clBarLabel = "Gaussian $\sigma$ (nrns)",
-        vmin=0,
-        vmax=bumpSigmaThreshold,
-        clbarNTicks=4)
-###############################################################################
-plt.subplot(1, N, 2)
-bump_err2 = plotBumpErrTrial(sp, ['bump_e', 'err2'], iterList,
-        trialNumList=range(NTrials),
-        mask=bump_sigma.mask,
-        xlabel="I (nS)",
-        clBarLabel = "Error of fit (Hz)",
-        clbarNTicks=3,
-        yticks=False,
-        vmin=0,
-        vmax=200)
-###############################################################################
-plt.tight_layout()
-noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-plt.savefig(sp.rootDir +
-        '/../analysis_EI_{0}pA_bump.png'.format(int(noise_sigma)))
-###############################################################################
-###############################################################################
-plt.figure(figsize=(5.1, 2.9))
-N = 2
-plt.subplot(1, N, 1)
-
-FR_e = plotFRTrial(sp, ['FR_e', 'avg'], iterList,
-        trialNumList=range(NTrials),
-        xlabel="I (nS)",
-        ylabel='E (nS)',
-        clBarLabel = "E cell firing rate (Hz)",
-        clbarNTicks=4,
-        vmin=0,
-        vmax=50)
-###############################################################################
-plt.subplot(1, N, 2)
-FR_threshold=250
-FR_i = plotFRTrial(sp, ['FR_i', 'avg'], iterList,
-        trialNumList=range(NTrials),
-        thr=FR_threshold,
-        xlabel="I (nS)",
-        clBarLabel = "I cell firing rate (Hz)",
-        clbarNTicks=3,
-        vmin=0,
-        vmax=FR_threshold,
-        yticks=False)
-###############################################################################
-plt.tight_layout()
-noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-plt.savefig(sp.rootDir +
-    '/../analysis_EI_{0}pA_FR.png'.format(int(noise_sigma)))
+    FR_e = plotFRTrial(sp, ['FR_e', 'avg'], iterList,
+            trialNumList=range(NTrials),
+            xlabel="I (nS)",
+            ylabel='E (nS)',
+            clBarLabel = "E cell firing rate (Hz)",
+            clbarNTicks=4,
+            vmin=0,
+            vmax=50)
+    ###############################################################################
+    plt.subplot(1, N, 2)
+    FR_threshold=250
+    FR_i = plotFRTrial(sp, ['FR_i', 'avg'], iterList,
+            trialNumList=range(NTrials),
+            thr=FR_threshold,
+            xlabel="I (nS)",
+            clBarLabel = "I cell firing rate (Hz)",
+            clbarNTicks=3,
+            vmin=0,
+            vmax=FR_threshold,
+            yticks=False)
+    ###############################################################################
+    plt.tight_layout()
+    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+    plt.savefig(sp.rootDir +
+        '/../analysis_EI_{0}pA_FR.png'.format(int(noise_sigma)))
 

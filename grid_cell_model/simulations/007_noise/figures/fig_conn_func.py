@@ -78,20 +78,21 @@ def plotWeights(ax):
         connectionstyle = "angle,angleA=0,angleB=90,rad=10")
     
     rnd_x, rnd_y = 0., pGABA_const
-    annotate('Random\nuniform',
-                (rnd_x, rnd_y), xytext=(1.05, 0.3), textcoords='axes fraction',
-                arrowprops=arrowprops, ha='left', size='small', color=arrow_clr,
-                zorder=-1)
+    annotate('Random uniform',
+                (rnd_x, rnd_y), xytext=(0.4, 1.2), textcoords='axes fraction',
+                arrowprops=arrowprops, ha='left', va='center',  size='small',
+                color=arrow_clr, zorder=-1)
     
 
 
 if (__name__ == "__main__"):
-    rcParams['font.size'] = 11
-    figSize = (3, 2)
-    figure(figsize=figSize)
+    rcParams['font.size'] = 25
+    figSize = (5, 4)
+    fig = figure(figsize=figSize)
     ax = subplot(111)
+    fig.subplots_adjust(left=0.2, top=0.8, bottom=0.25, right=0.85)
     plotWeights(ax)
-    tight_layout(rect=(0., 0., 0.825, 0.9))
+    #tight_layout(rect=(0., 0., 0.99, 0.9))
     
     
     if (len(sys.argv) > 1):
@@ -99,5 +100,5 @@ if (__name__ == "__main__"):
     else:
         fileBase = os.path.splitext(os.path.basename(sys.argv[0]))[0]
         fileName = fileBase + ".pdf"
-    savefig(fileName)
+    savefig(fileName, transparent=True)
     

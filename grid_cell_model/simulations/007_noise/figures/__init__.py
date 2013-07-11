@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
-#   submit_fig_model.py
+#   __init__.py
 #
-#   Submit job(s) to the cluster/workstation: basic model figures
+#   Package initialisation script
 #
 #       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
