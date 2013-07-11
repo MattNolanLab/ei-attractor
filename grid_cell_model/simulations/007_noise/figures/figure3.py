@@ -23,7 +23,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import AutoMinorLocator, LinearLocator, MaxNLocator, \
+from matplotlib.ticker import MultipleLocator, AutoMinorLocator, LinearLocator, MaxNLocator, \
         ScalarFormatter
 
 import numpy.ma as ma
@@ -315,10 +315,8 @@ def aggregateBar2(spList, varLists, trialNumList, func=(None, None)):
     return vars, noise_sigma
 
 
-
-def plotAggregateBar(spList, trialNumList, ACThr=0.2):
+def getACFreqThreshold(spList, trialNumList, ACThr):
     varLists = [['acVal'], ['freq']]
-    ylabels=('Correlation', '$\gamma$ frequency (Hz)')
     vars, noise_sigma = aggregateBar2(spList, varLists, trialNumList)
     AC = vars[0]
     freq = vars[1]
@@ -338,7 +336,14 @@ def plotAggregateBar(spList, trialNumList, ACThr=0.2):
         freqStd.append(np.std(freq_filt))
         thrCount.append(float(len(AC[spIdx][thrIdx])) / len (AC[spIdx]))
 
-    print thrCount
+    return (ACMean, ACStd), (freqMean, freqStd), thrCount, noise_sigma
+
+
+def plotAggregateBar(spList, trialNumList, ACThr=0.2):
+    ylabels=('Correlation', '$\gamma$ frequency (Hz)')
+
+    (ACMean, ACStd), (freqMean, freqStd), thrCount, noise_sigma = \
+            getACFreqThreshold(spList, trialNumList, ACThr)
 
     ax_thr = plt.subplot(2, 1, 1)
     plot1AxisBar(noise_sigma, thrCount, [np.nan]*len(thrCount),
@@ -355,6 +360,37 @@ def plotAggregateBar(spList, trialNumList, ACThr=0.2):
             ylabels=ylabels,
             colors=(cAC, cFreq))
 
+
+def plotThresholdComparison(spList, trialNumList, ACThrList):
+    counts = []
+    noise_sigma = None
+    for ACThr in ACThrList:
+        _, _, thrCount, noise_sigma = getACFreqThreshold(spList, trialNumList,
+                ACThr)
+        counts.append(thrCount)
+    counts = np.array(counts)
+
+    print ACThrList, counts
+
+    ax = plt.gca()
+    globalAxesSettings(ax)
+    plt.plot(ACThrList, counts, 'o-')
+    plt.plot([0], [1], linestyle='None', marker='None')
+    ax.set_xlabel('Correlation threshold', labelpad=15)
+    ax.set_ylabel('Count', labelpad=15)
+    leg = []
+    for s in noise_sigma:
+        leg.append("{0}".format(int(s)))
+    ax.legend(leg, loc=(0.75, 0.6), title='$\sigma$ (pA)', frameon=False,
+            fontsize='small')
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.xaxis.set_major_locator(MultipleLocator(0.3))
+    ax.yaxis.set_major_locator(MultipleLocator(0.5))
+    ax.xaxis.set_minor_locator(AutoMinorLocator(3))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.margins(0.025)
 
 
 ###############################################################################
@@ -400,4 +436,12 @@ if (__name__ == '__main__'):
             trialNumList= range(NTrials))
     plt.tight_layout()
     plt.savefig('{0}/aggregateBar_AC_freq.pdf'.format(baseDir), transparent=True,
+            dpi=300)
+    ###############################################################################
+    plt.figure(figsize=(6.5, 5))
+    plotThresholdComparison(dataSpaces,
+            trialNumList=range(NTrials),
+            ACThrList=np.arange(0, 0.65, 0.05))
+    plt.tight_layout()
+    plt.savefig('{0}/AC_threshold_comparison.pdf'.format(baseDir), transparent=True,
             dpi=300)
