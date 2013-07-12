@@ -45,12 +45,9 @@ for trial_idx in range(options.ntrials):
     ei_net = BasicGridCellNetwork(options, simulationOpts=None,
             stateRecParams=(stateMonParams, stateMonParams))
 
-    ei_net.setVelocityCurrentInput_e()
+    #ei_net.setVelocityCurrentInput_e()
     ei_net.setPlaceCells()
     
-    
-    
-
     ei_net.simulate(options.time, printTime=options.printTime)
     ei_net.endSimulation()
     out.append(ei_net.getAllData())

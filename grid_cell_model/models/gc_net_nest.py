@@ -24,6 +24,7 @@ import numpy    as np
 import logging  as lg
 
 from numpy.random import rand, randn
+from scipy.io     import loadmat
 
 import gc_neurons
 from gc_net       import GridCellNetwork
@@ -481,7 +482,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
 
 
     def fillParams(self, dest, src):
-        for key, value in src:
+        for key, value in src.iteritems():
             dest[key] = value
         return dest
 
