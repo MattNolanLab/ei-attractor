@@ -32,14 +32,14 @@ p['noise_sigma']       = 150.0     # pA
 
 # Submitting
 ENV         = 'cluster'
-simRootDir  = 'output/grids_test'
+simRootDir  = 'output/grids_no_velocity'
 simLabel    = 'grids_no_velocity_{0}pA_big'.format(int(p['noise_sigma']))
 appName     = 'simulation_grids.py'
 rtLimit     = '02:00:00'
 numCPU      = 4
 blocking    = True
 timePrefix  = False
-numRepeat   = 1
+numRepeat   = 10
 dry_run     = False
 
 p['time']              = 1200e3  # ms
@@ -51,10 +51,10 @@ p['pc_conn_weight']    = 0.5
 
 ac = ArgumentCreator(p, printout=True)
 
-#iterparams = {
-#        'pc_max_rate'   : np.arange(0, 100, 10),
-#}
-#ac.insertDict(iterparams, mult=True)
+iterparams = {
+        'pc_max_rate'   : np.arange(0, 100, 10),
+}
+ac.insertDict(iterparams, mult=True)
 
 ###############################################################################
 submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
@@ -63,4 +63,4 @@ submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
 ac.setOption('output_dir', submitter.outputDir())
 startJobNum = 0
 submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
-#submitter.saveIterParams(iterparams, dry_run=dry_run)
+submitter.saveIterParams(iterparams, dry_run=dry_run)
