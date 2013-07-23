@@ -20,7 +20,8 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import figure, plot, pcolormesh, subplot2grid
+from matplotlib.pyplot import figure, plot, pcolormesh, subplot2grid, savefig,\
+        colorbar, axis, xlabel, ylabel
 import os
 import errno
 
@@ -28,10 +29,12 @@ from interface       import DictDSVisitor, sumAllVariables, \
         extractStateVariable
 from plotting.signal import signalPlot
 from analysis.spikes import PopulationSpikes
+from analysis.grid_cells import extractSpikePositions2D, plotSpikes2D, \
+        SNSpatialRate2D, SNAutoCorr, cellGridnessScore
 from plotting.bumps  import torusFiringRate
 from otherpkg.log    import log_warn
 
-__all__ = ['DetailedPlotVisitor']
+__all__ = ['DetailedPlotVisitor', 'GridPlotVisitor']
 
 
 class DetailedPlotVisitor(DictDSVisitor):
@@ -267,5 +270,178 @@ class DetailedPlotVisitor(DictDSVisitor):
             "{0}/job{1:05}_trial{2:03}_E_{3}_I_{4}_detailPlot.png".format(self.rootDir,
                     jobNum, trialNum, int(E_total), int(I_total))
         plt.savefig(fileName)
+
+
+
+class GridPlotVisitor(DictDSVisitor):
+    '''
+    Plot the following figures for the data set:
+        * Spike map, showing the trajectory of a simulated animal and spike
+          positions
+        * Smoothed rate map
+        * Autocorrelation of the rate map
+    '''
+    def __init__(self, rootDir, spikeType='E', neuronNum=0, arenaDiam=180.0,
+            smoothingSigma=3.0):
+        '''
+        Parameters
+        ----------
+        rootDir : string
+            Root output directory where to store the output figures.
+        spikeType : string
+            Type of the analysis, can be either 'E' - to plot grid field data
+            for E cells, or 'I' to plot them for the I cells.
+        neuronNum : int, optional
+            Neuron index.
+        arenaDiam : float (cm)
+            Arena diameter
+        smoothingSigma : float (cm), optional
+            Gaussian smoothing kernel width
+        '''
+        self.rootDir = rootDir
+        self.setSpikeType(spikeType)
+        self.neuronNum = neuronNum
+        self.outputDir = 'grids'
+        self.arenaDiam = arenaDiam
+        self.smoothingSigma = smoothingSigma
+
+
+
+    def _checkSpikeType(self, t):
+        if (t == 'E' or t == 'I'):
+            return True
+        msg = "spikeType must be 'E' or 'I'. Got '{0}'".format(spikeType)
+        raise ValueError(msg)
+
+    def setSpikeType(self, t):
+        self._checkSpikeType(t)
+        self._spikeType = t
+
+
+    def createOutputDirs(self):
+        # Create output directory(ies)
+        try:
+            os.makedirs('{0}/{1}'.format(self.rootDir, self.outputDir))
+        except OSError as e:
+            if (e.errno == errno.EEXIST):
+                log_warn("GridPlotVisitor", 'Output directory already ' +
+                        'exists. This might overwrite files.')
+            else:
+                raise e
+
+
+    
+    def _shiftSpikeTimes(self, s, startT):
+        '''
+        Shift the times of the spikes so that the time starts at startT. All
+        the spikes with negative time will be removed
+        '''
+        s -= startT
+        return np.delete(s, np.nonzero(s < 0)[0])
+
+
+    def visitDictDataSet(self, ds, **kw):
+        data = ds.data
+        simT = self.getOption(data, 'time') # ms
+        jobNum = self.getOption(data, 'job_num')
+        if ('trialNum' in kw.keys()):
+            trialNum = kw['trialNum']
+        else:
+            trialNum = 0
+        self.createOutputDirs()
+        fileNameTemplate = "{0}/{1}/job{2:05}_trial{3:03}".format(self.rootDir,
+                self.outputDir, jobNum, trialNum)
+
+        pos_x         = self.getNetParam(data, 'rat_pos_x')
+        pos_y         = self.getNetParam(data, 'rat_pos_y')
+        rat_dt        = self.getNetParam(data, 'rat_dt')
+        velocityStart = self.getOption(data, 'theta_start_t')
+        if self._spikeType == 'E':
+            monName = 'spikeMon_e'
+        if self._spikeType == 'I':
+            monName = 'spikeMon_i'
+
+        gridSep = self.getOption(data, 'gridSep')
+        corr_cutRmin = gridSep / 2
+
+        spikes = DictDSVisitor._getNeuronSpikeTrain(data, monName, self.neuronNum)
+        spikes = self._shiftSpikeTimes(spikes, velocityStart)
+        
+        # Plot E FRs
+        figure()
+        bumpTStart = velocityStart + 20e3
+        bumpTEnd = bumpTStart + 1e3
+        senders, times, N = DictDSVisitor._getSpikeTrain(self, data, monName,
+                ['Ne_x', 'Ne_y'])
+        sp = PopulationSpikes(N, senders, times)
+        Fe = sp.avgFiringRate(bumpTStart, bumpTEnd)
+        Ne_x = self.getNetParam(data, 'Ne_x')
+        Ne_y = self.getNetParam(data, 'Ne_y')
+        bump_e = np.reshape(Fe, (Ne_y, Ne_x))
+        torusFiringRate(
+                rateMap  = bump_e,
+                labelx   = '',
+                labely   = 'Neuron #',
+                titleStr = 'E firing rate')
+        savefig(fileNameTemplate + '_bump_' + self._spikeType + '.png')
+
+        return
+
+
+        figure()
+        plotSpikes2D(spikes, pos_x, pos_y, rat_dt)
+        savefig(fileNameTemplate + '_spikePlot_' + self._spikeType + '.png')
+
+        figure()
+        rateMap, xedges, yedges = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt,
+                self.arenaDiam, self.smoothingSigma)
+        X, Y = np.meshgrid(xedges, yedges)
+        pcolormesh(X, Y, rateMap)
+        colorbar()
+        axis('equal')
+        axis('off')
+        savefig('{0}_rateMap_{1}.png'.format(fileNameTemplate,
+            self._spikeType))
+
+        
+        #figure()
+        #FT_size = 256
+        #Fs = 1.0/(self.smoothingSigma/100.0) # units: 1/m
+        #rateMap_pad = np.ndarray((FT_size, FT_size))
+        #rateMap_pad[:, :] = 0
+        #rateMap_pad[0:rateMap.shape[0], 0:rateMap.shape[0]] = rateMap - np.mean(rateMap.flatten())
+        #FT = fft2(rateMap_pad)
+        #fxy = np.linspace(-1.0, 1.0, FT_size)
+        #fxy_igor = Fs/2.0*np.linspace(-1.0, 1.0, FT_size+1)
+        #FX, FY = np.meshgrid(fxy, fxy)
+        #FX *= Fs/2.0
+        #FY *= Fs/2.0
+        #PSD_centered = np.abs(np.fft.fftshift(FT))**2
+        #pcolormesh(FX, FY, PSD_centered)
+        ##axis('equal')
+        #xlim([-10, 10])
+        #ylim([-10, 10])
+        #savefig('{0}_fft2_{1}.png'.format(fileNameTemplate, self._spikeType))
+
+
+        figure()
+        corr, xedges_corr, yedges_corr = SNAutoCorr(rateMap, self.arenaDiam,
+            self.smoothingSigma)
+        X, Y = np.meshgrid(xedges_corr, yedges_corr)
+        pcolormesh(X, Y, corr)
+        axis('equal')
+        axis('off')
+        savefig('{0}_rateCorr_{1}.png'.format(fileNameTemplate,
+            self._spikeType))
+
+
+        figure()
+        G, crossCorr, angles = cellGridnessScore(rateMap, self.arenaDiam,
+            self.smoothingSigma, corr_cutRmin)
+        plot(angles, crossCorr)
+        xlabel('Angle (deg.)')
+        ylabel('Corr. coefficient')
+        savefig('{0}_gridnessCorr_{1}.png'.format(fileNameTemplate,
+            self._spikeType))
 
 

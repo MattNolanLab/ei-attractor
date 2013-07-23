@@ -174,6 +174,29 @@ class DictDSVisitor(Visitor):
         return senders, times, N
 
 
+    @staticmethod
+    def _getNeuronSpikeTrain(data, monName, n):
+        '''
+        Return a spike train for the particular neuron indexed by `n`.  If
+        there are no spikes from the particular neuron, return an empty array.
+
+        Parameters
+        ----------
+        data : dict-like object
+            Data dictionary
+        monName : string
+            Name of the monitor
+        n : int
+            Neuron number. 
+        output : numpy array
+            Spikes of the selected neuron
+        '''
+        mon = data[monName]
+        senders, times = extractSpikes(mon)
+        idx = (senders == n)
+        return times[idx]
+
+
 class EmptyDSVisitor(DictDSVisitor):
     '''
     A Dictionary date set visitor that will do nothing.
