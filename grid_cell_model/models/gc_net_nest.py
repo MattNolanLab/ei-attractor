@@ -63,9 +63,7 @@ class NestGridCellNetwork(GridCellNetwork):
         self._placeCellsLoaded = False
 
         self.PC = []
-        self.N_pc = 0
         self.PC_start = []
-        self.N_pc_start = 0
 
         self._initNESTKernel()
         self._constructNetwork()
@@ -359,12 +357,14 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
-        self.setStartPlaceCells(PosInputs([0.], [.0], self.rat_dt))
+        self.PC_start, _, _ = self.setStartPlaceCells(PosInputs([0.], [.0],
+            self.rat_dt))
 
 
     def setStartPlaceCells(self, posIn):
-        return self.setGenericPlaceCells(
-                self.no.N_pc_start,
+        print "Setting up initialization place cells"
+        return self.createGenericPlaceCells(
+                self.no.N_place_cells,
                 self.no.pc_start_max_rate,
                 self.no.pc_start_conn_weight,
                 start=0.0,
@@ -373,7 +373,8 @@ class NestGridCellNetwork(GridCellNetwork):
 
 
     def setPlaceCells(self, start=None, end=None, posIn=None):
-        return self.createGenericPlaceCells(self.no.N_place_cells,
+        print "Setting up velocity place cells"
+        self.PC, _, _ = self.createGenericPlaceCells(self.no.N_place_cells,
                 self.no.pc_max_rate, self.no.pc_conn_weight, start, end, posIn)
 
 
@@ -392,13 +393,13 @@ class NestGridCellNetwork(GridCellNetwork):
             posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
 
         if (N != 0):
-            print "Setting up place cells"
+            NTotal = N*N
 
             boxSize = [self.no.arenaSize, self.no.arenaSize]
-            PCHelper = UniformBoxPlaceCells(boxSize, N, maxRate,
+            PCHelper = UniformBoxPlaceCells(boxSize, (N, N), maxRate,
                     self.no.pc_field_std, random=False)
 
-            PC = nest.Create('place_cell_generator', N,
+            PC = nest.Create('place_cell_generator', NTotal,
                     params={'rate'       : maxRate,
                             'field_size' : self.no.pc_field_std,
                             'start'      : start,
@@ -432,7 +433,7 @@ class NestGridCellNetwork(GridCellNetwork):
                     self.no.gridSep, [.0, .0], fieldSigma=connStdDev)
             ctr_x = nest.GetStatus(PC, 'ctr_x')
             ctr_y = nest.GetStatus(PC, 'ctr_y')
-            for pc_id in xrange(N):
+            for pc_id in xrange(NTotal):
                 w = pc_input.getSheetInput(ctr_x[pc_id], ctr_y[pc_id]).flatten()
                 gt_th = w > pc_weight_threshold
                 post = np.array(self.E_pop)[gt_th]
@@ -445,7 +446,7 @@ class NestGridCellNetwork(GridCellNetwork):
                         delay=[self.no.delay] * len(w),
                         model='PC_AMPA')
 
-            return PC, PCHelper
+            return PC, PCHelper, NTotal
 
 
         else:
@@ -470,7 +471,7 @@ class NestGridCellNetwork(GridCellNetwork):
         d['E_pop'          ] = np.array(self.E_pop)
         d['I_pop'          ] = np.array(self.I_pop)
         d['PC'             ] = np.array(self.PC)
-        d['N_pc'           ] = self.N_pc
+        d['PC_start'       ] = np.array(self.PC_start)
         d['net_Ne'         ] = self.net_Ne
         d['net_Ni'         ] = self.net_Ni
         d['rat_pos_x'      ] = self.rat_pos_x

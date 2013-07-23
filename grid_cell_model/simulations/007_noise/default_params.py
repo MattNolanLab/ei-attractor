@@ -100,12 +100,11 @@ defaultParameters = {
         "E_AMPA"                :   0,            # mV
         "E_GABA_A"              :   -75,          # mV
         
-        "N_place_cells"         :   30*30,
+        "N_place_cells"         :   30,           # sqrt(total PC number)
         "pc_max_rate"           :   100.0,        # Hz
         "pc_field_std"          :   20.0,         # cm
         "pc_conn_weight"        :   5.,           # nS
         "bumpCurrentSlope"      :   0.53,         # neurons/s/pA, !! this will depend on prefDirC !!
-        "N_pc_start"            :   30*30,
         "pc_start_max_rate"     :   100.0,        # Hz
         "pc_start_conn_weight"  :   5.0,          # nS
 

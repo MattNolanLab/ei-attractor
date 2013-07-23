@@ -132,11 +132,10 @@ def getOptParser():
     optParser.add_option("--E_AMPA",            type="float",  help="AMPA reversal potential (V)")
     optParser.add_option("--E_GABA_A",          type="float",  help="GABA A reversal potential (V)")
 
-    optParser.add_option("--N_place_cells",     type="float",  help="Number of place cells connected to grid cells")
+    optParser.add_option("--N_place_cells",     type="int",  help="Number of place cells connected to grid cells in one dimension. The total number of place cells will be the square of this parameter.")
     optParser.add_option("--pc_max_rate",       type="float",  help="Place cell maximal firing rate (Hz)")
     optParser.add_option("--pc_field_std",      type="float",  help="Std. deviation of the Gaussian specifying the place field size (cm)")
     optParser.add_option("--pc_conn_weight",    type="float",  help="Connection weight from each place to grid cells (nS)")
-    optParser.add_option("--N_pc_start",        type="float",  help="Number of place cells used for bump initialisation")
     optParser.add_option("--pc_start_max_rate", type="float",  help="Init place cell maximal firing rate (Hz)")
     optParser.add_option("--pc_start_conn_weight", type="float",  help="Connection weight from each initialisation place cell to grid cells (nS)")
 
