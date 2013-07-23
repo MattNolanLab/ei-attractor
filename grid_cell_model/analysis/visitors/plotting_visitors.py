@@ -434,6 +434,7 @@ class GridPlotVisitor(DictDSVisitor):
             figure()
             rateMap, xedges, yedges = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt,
                     self.arenaDiam, self.smoothingSigma)
+            rateMap *= 1e3 # should be Hz
             X, Y = np.meshgrid(xedges, yedges)
             pcolormesh(X, Y, rateMap)
             colorbar()
