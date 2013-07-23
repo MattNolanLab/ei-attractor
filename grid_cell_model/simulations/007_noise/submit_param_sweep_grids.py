@@ -33,7 +33,7 @@ p['noise_sigma']       = 150.0     # pA
 # Submitting
 ENV         = 'cluster'
 simRootDir  = 'output/grids_no_velocity'
-simLabel    = 'grids_no_velocity_{0}pA_big'.format(int(p['noise_sigma']))
+simLabel    = 'grids_no_velocity_{0}pA'.format(int(p['noise_sigma']))
 appName     = 'simulation_grids.py'
 rtLimit     = '02:00:00'
 numCPU      = 4
