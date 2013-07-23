@@ -281,8 +281,34 @@ class GridPlotVisitor(DictDSVisitor):
         * Smoothed rate map
         * Autocorrelation of the rate map
     '''
+    class PlotOptions(object):
+        def __init__(self):
+            self.bump        = True
+            self.spikes      = True
+            self.rateMap     = True
+            self.fft         = False
+            self.sn_ac       = True
+            self.gridness_ac = True
+
+        def setAll(self, val):
+            self.bump        = val
+            self.spikes      = val
+            self.rateMap     = val
+            self.fft         = val
+            self.sn_ac       = val
+            self.gridness_ac = val
+
+    class BumpOnly(PlotOptions):
+        def __init__(self):
+            GridPlotVisitor.PlotOptions.__init__(self)
+            self.setAll(False)
+            self.bump = True
+
+
+
     def __init__(self, rootDir, spikeType='E', neuronNum=0, arenaDiam=180.0,
-            smoothingSigma=3.0):
+            smoothingSigma=3.0, bumpTStart=None, bumpTEnd=None,
+            plotOptions=PlotOptions()):
         '''
         Parameters
         ----------
@@ -297,6 +323,13 @@ class GridPlotVisitor(DictDSVisitor):
             Arena diameter
         smoothingSigma : float (cm), optional
             Gaussian smoothing kernel width
+        plotBump : bool, optional
+            Whether to plot bump (needs spiking activity of the whole
+            population)
+        bumpTStart : float
+            Start time for bump (firing rate) plots (ms)
+        bumpTEnd   : float
+            End time for bump plots (ms)
         '''
         self.rootDir = rootDir
         self.setSpikeType(spikeType)
@@ -304,6 +337,9 @@ class GridPlotVisitor(DictDSVisitor):
         self.outputDir = 'grids'
         self.arenaDiam = arenaDiam
         self.smoothingSigma = smoothingSigma
+        self.bumpTStart = bumpTStart
+        self.bumpTEnd = bumpTEnd
+        self.po = plotOptions
 
 
 
@@ -368,80 +404,86 @@ class GridPlotVisitor(DictDSVisitor):
         spikes = self._shiftSpikeTimes(spikes, velocityStart)
         
         # Plot E FRs
-        figure()
-        bumpTStart = velocityStart + 20e3
-        bumpTEnd = bumpTStart + 1e3
-        senders, times, N = DictDSVisitor._getSpikeTrain(self, data, monName,
-                ['Ne_x', 'Ne_y'])
-        sp = PopulationSpikes(N, senders, times)
-        Fe = sp.avgFiringRate(bumpTStart, bumpTEnd)
-        Ne_x = self.getNetParam(data, 'Ne_x')
-        Ne_y = self.getNetParam(data, 'Ne_y')
-        bump_e = np.reshape(Fe, (Ne_y, Ne_x))
-        torusFiringRate(
-                rateMap  = bump_e,
-                labelx   = '',
-                labely   = 'Neuron #',
-                titleStr = 'E firing rate')
-        savefig(fileNameTemplate + '_bump_' + self._spikeType + '.png')
+        if (self.po.bump):
+            figure()
+            if (self.bumpTStart is None):
+                bumpTStart = velocityStart
+            if (self.bumpTEnd is None):
+                bumpTEnd = bumpTStart + 1e3
+            senders, times, N = DictDSVisitor._getSpikeTrain(self, data, monName,
+                    ['Ne_x', 'Ne_y'])
+            sp = PopulationSpikes(N, senders, times)
+            Fe = sp.avgFiringRate(bumpTStart, bumpTEnd)
+            Ne_x = self.getNetParam(data, 'Ne_x')
+            Ne_y = self.getNetParam(data, 'Ne_y')
+            bump_e = np.reshape(Fe, (Ne_y, Ne_x))
+            torusFiringRate(
+                    rateMap  = bump_e,
+                    labelx   = '',
+                    labely   = 'Neuron #',
+                    titleStr = 'E firing rate')
+            savefig(fileNameTemplate + '_bump_' + self._spikeType + '.png')
 
-        return
 
+        if (self.po.spikes):
+            figure()
+            plotSpikes2D(spikes, pos_x, pos_y, rat_dt)
+            savefig(fileNameTemplate + '_spikePlot_' + self._spikeType + '.png')
 
-        figure()
-        plotSpikes2D(spikes, pos_x, pos_y, rat_dt)
-        savefig(fileNameTemplate + '_spikePlot_' + self._spikeType + '.png')
-
-        figure()
-        rateMap, xedges, yedges = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt,
-                self.arenaDiam, self.smoothingSigma)
-        X, Y = np.meshgrid(xedges, yedges)
-        pcolormesh(X, Y, rateMap)
-        colorbar()
-        axis('equal')
-        axis('off')
-        savefig('{0}_rateMap_{1}.png'.format(fileNameTemplate,
-            self._spikeType))
+        if (self.po.rateMap):
+            figure()
+            rateMap, xedges, yedges = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt,
+                    self.arenaDiam, self.smoothingSigma)
+            X, Y = np.meshgrid(xedges, yedges)
+            pcolormesh(X, Y, rateMap)
+            colorbar()
+            axis('equal')
+            axis('off')
+            savefig('{0}_rateMap_{1}.png'.format(fileNameTemplate,
+                self._spikeType))
 
         
-        #figure()
-        #FT_size = 256
-        #Fs = 1.0/(self.smoothingSigma/100.0) # units: 1/m
-        #rateMap_pad = np.ndarray((FT_size, FT_size))
-        #rateMap_pad[:, :] = 0
-        #rateMap_pad[0:rateMap.shape[0], 0:rateMap.shape[0]] = rateMap - np.mean(rateMap.flatten())
-        #FT = fft2(rateMap_pad)
-        #fxy = np.linspace(-1.0, 1.0, FT_size)
-        #fxy_igor = Fs/2.0*np.linspace(-1.0, 1.0, FT_size+1)
-        #FX, FY = np.meshgrid(fxy, fxy)
-        #FX *= Fs/2.0
-        #FY *= Fs/2.0
-        #PSD_centered = np.abs(np.fft.fftshift(FT))**2
-        #pcolormesh(FX, FY, PSD_centered)
-        ##axis('equal')
-        #xlim([-10, 10])
-        #ylim([-10, 10])
-        #savefig('{0}_fft2_{1}.png'.format(fileNameTemplate, self._spikeType))
+        if (self.po.fft):
+            figure()
+            FT_size = 256
+            Fs = 1.0/(self.smoothingSigma/100.0) # units: 1/m
+            rateMap_pad = np.ndarray((FT_size, FT_size))
+            rateMap_pad[:, :] = 0
+            rateMap_pad[0:rateMap.shape[0], 0:rateMap.shape[0]] = rateMap - np.mean(rateMap.flatten())
+            FT = fft2(rateMap_pad)
+            fxy = np.linspace(-1.0, 1.0, FT_size)
+            fxy_igor = Fs/2.0*np.linspace(-1.0, 1.0, FT_size+1)
+            FX, FY = np.meshgrid(fxy, fxy)
+            FX *= Fs/2.0
+            FY *= Fs/2.0
+            PSD_centered = np.abs(np.fft.fftshift(FT))**2
+            pcolormesh(FX, FY, PSD_centered)
+            #axis('equal')
+            xlim([-10, 10])
+            ylim([-10, 10])
+            savefig('{0}_fft2_{1}.png'.format(fileNameTemplate, self._spikeType))
 
 
-        figure()
-        corr, xedges_corr, yedges_corr = SNAutoCorr(rateMap, self.arenaDiam,
-            self.smoothingSigma)
-        X, Y = np.meshgrid(xedges_corr, yedges_corr)
-        pcolormesh(X, Y, corr)
-        axis('equal')
-        axis('off')
-        savefig('{0}_rateCorr_{1}.png'.format(fileNameTemplate,
-            self._spikeType))
+        if (self.po.sn_ac):
+            figure()
+            corr, xedges_corr, yedges_corr = SNAutoCorr(rateMap, self.arenaDiam,
+                self.smoothingSigma)
+            X, Y = np.meshgrid(xedges_corr, yedges_corr)
+            pcolormesh(X, Y, corr)
+            axis('equal')
+            axis('off')
+            savefig('{0}_rateCorr_{1}.png'.format(fileNameTemplate,
+                self._spikeType))
 
 
-        figure()
-        G, crossCorr, angles = cellGridnessScore(rateMap, self.arenaDiam,
-            self.smoothingSigma, corr_cutRmin)
-        plot(angles, crossCorr)
-        xlabel('Angle (deg.)')
-        ylabel('Corr. coefficient')
-        savefig('{0}_gridnessCorr_{1}.png'.format(fileNameTemplate,
-            self._spikeType))
+        if (self.po.gridness_ac):
+            figure()
+            G, crossCorr, angles = cellGridnessScore(rateMap, self.arenaDiam,
+                self.smoothingSigma, corr_cutRmin)
+            plot(angles, crossCorr)
+            xlabel('Angle (deg.)')
+            ylabel('Corr. coefficient')
+            savefig('{0}_gridnessCorr_{1}.png'.format(fileNameTemplate,
+                self._spikeType))
 
 

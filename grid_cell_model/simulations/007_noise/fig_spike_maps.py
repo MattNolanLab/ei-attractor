@@ -35,13 +35,15 @@ spikeType = 'E'
 
 noise_sigma = 150
 dirs = \
-    ('grids_no_velocity_{0}pA',    (1, 100))
+    ('grids_velocity_ON_{0}pA',    (1, 1))
+    #('EI_param_sweep_{0}pA',    (1, 1))
+    #('grids_no_velocity_{0}pA',    (1, 100))
 
-NTrials = 1
 simDir = dirs[0].format(int(noise_sigma))
-rootDir = "output/grids_no_velocity/{0}".format(simDir)
+rootDir = "output_local/pc_test/{0}".format(simDir)
 shape   = dirs[1]
 
 sp = JobTrialSpace2D(shape, rootDir)#, dataPoints=[(0, 0)])
-visitor = GridPlotVisitor(rootDir, spikeType=spikeType)
+po = GridPlotVisitor.BumpOnly()
+visitor = GridPlotVisitor(rootDir, spikeType=spikeType, plotOptions=po)
 sp.visit(visitor)
