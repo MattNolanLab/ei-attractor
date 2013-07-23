@@ -108,7 +108,7 @@ class HDF5DataStorage(DataStorage):
         self._createDataMember(key, value, self._group)
 
     def __getitem__(self, key):
-        print("__getitem__({0}), group: {1}".format(key, self._group.name))
+        #print("__getitem__({0}), group: {1}".format(key, self._group.name))
         val = self._group[key]
         if (isinstance(val, h5py.Group)):
             if (val.attrs['type'] == 'dict'):
