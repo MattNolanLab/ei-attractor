@@ -63,6 +63,9 @@ class NestGridCellNetwork(GridCellNetwork):
         self._placeCellsLoaded = False
 
         self.PC = []
+        self.N_pc = 0
+        self.PC_start = []
+        self.N_pc_start = 0
 
         self._initNESTKernel()
         self._constructNetwork()
@@ -309,6 +312,13 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
+        # Place cells to initialize the bump - it should be initialized onto
+        # the correct position, i.e. the bump must be at the correct starting
+        # position, which matches the actual velocity simulation place cell
+        # input
+        posIn = PosInputs([self.rat_pos_x[0]], [self.rat_pos_y[0]], self.rat_dt)
+        self.setStartPlaceCells(posIn)
+
 
     def setConstantVelocityCurrent_e(self, vel, start_t=None, end_t=None):
         '''
@@ -349,14 +359,29 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
-        self.setPlaceCells(start=0.0, end=self.no.theta_start_t,
-                posIn=PosInputs([0.], [.0], self.rat_dt))
+        self.setStartPlaceCells(PosInputs([0.], [.0], self.rat_dt))
+
+
+    def setStartPlaceCells(self, posIn):
+        return self.setGenericPlaceCells(
+                self.no.N_pc_start,
+                self.no.pc_start_max_rate,
+                self.no.pc_start_conn_weight,
+                start=0.0,
+                end=self.no.theta_start_t,
+                posIn=posIn)
 
 
     def setPlaceCells(self, start=None, end=None, posIn=None):
+        return self.createGenericPlaceCells(self.no.N_place_cells,
+                self.no.pc_max_rate, self.no.pc_conn_weight, start, end, posIn)
+
+
+    def createGenericPlaceCells(self, N, maxRate, weight, start=None, end=None, posIn=None):
         '''
         Generate place cells and connect them to grid cells. The wiring is
-        fixed, and there is no plasticity.
+        fixed, and there is no plasticity. This method can be used more than
+        once, to set up different populations of place cells.
         '''
         if start is None:
             start = self.no.theta_start_t
@@ -366,32 +391,29 @@ class NestGridCellNetwork(GridCellNetwork):
             self._loadRatVelocities()
             posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
 
-        if (self.no.N_place_cells != 0):
+        if (N != 0):
             print "Setting up place cells"
 
             boxSize = [self.no.arenaSize, self.no.arenaSize]
-            N_pc_size = int(np.sqrt(self.no.N_place_cells))
-            N = [N_pc_size, N_pc_size]
-            self.N_pc_created = N_pc_size**2
-            self.PCHelper = UniformBoxPlaceCells(boxSize, N,
-                    self.no.pc_max_rate, self.no.pc_field_std, random=False)
+            PCHelper = UniformBoxPlaceCells(boxSize, N, maxRate,
+                    self.no.pc_field_std, random=False)
 
-            self.PC = nest.Create('place_cell_generator', self.N_pc_created,
-                    params={'rate'       : self.no.pc_max_rate,
+            PC = nest.Create('place_cell_generator', N,
+                    params={'rate'       : maxRate,
                             'field_size' : self.no.pc_field_std,
                             'start'      : start,
                             'stop'       : end})
-            nest.SetStatus(self.PC, 'ctr_x', self.PCHelper.centers[:, 0])
-            nest.SetStatus(self.PC, 'ctr_y', self.PCHelper.centers[:, 1])
+            nest.SetStatus(PC, 'ctr_x', PCHelper.centers[:, 0])
+            nest.SetStatus(PC, 'ctr_y', PCHelper.centers[:, 1])
 
             npos = int(self.no.time / self.rat_dt)
-            nest.SetStatus([self.PC[0]], params={
+            nest.SetStatus([PC[0]], params={
                 'rat_pos_x' : posIn.pos_x[0:npos],
                 'rat_pos_y' : posIn.pos_y[0:npos],
                 'rat_pos_dt': posIn.pos_dt})
 
-            test_x = nest.GetStatus([self.PC[0]], 'rat_pos_x')
-            test_y = nest.GetStatus([self.PC[0]], 'rat_pos_y')
+            test_x = nest.GetStatus([PC[0]], 'rat_pos_x')
+            test_y = nest.GetStatus([PC[0]], 'rat_pos_y')
             #print test_x, test_y
 
 
@@ -408,21 +430,22 @@ class NestGridCellNetwork(GridCellNetwork):
 
             pc_input = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize,
                     self.no.gridSep, [.0, .0], fieldSigma=connStdDev)
-            ctr_x = nest.GetStatus(self.PC, 'ctr_x')
-            ctr_y = nest.GetStatus(self.PC, 'ctr_y')
-            for pc_id in xrange(self.N_pc_created):
+            ctr_x = nest.GetStatus(PC, 'ctr_x')
+            ctr_y = nest.GetStatus(PC, 'ctr_y')
+            for pc_id in xrange(N):
                 w = pc_input.getSheetInput(ctr_x[pc_id], ctr_y[pc_id]).flatten()
                 gt_th = w > pc_weight_threshold
                 post = np.array(self.E_pop)[gt_th]
                 w    = w[gt_th]
                 #print post, w
                 nest.DivergentConnect(
-                        [self.PC[pc_id]],
+                        [PC[pc_id]],
                         list(post),
-                        weight=list(w * self.no.pc_conn_weight),
+                        weight=list(w * weight),
                         delay=[self.no.delay] * len(w),
                         model='PC_AMPA')
 
+            return PC, PCHelper
 
 
         else:
@@ -447,6 +470,7 @@ class NestGridCellNetwork(GridCellNetwork):
         d['E_pop'          ] = np.array(self.E_pop)
         d['I_pop'          ] = np.array(self.I_pop)
         d['PC'             ] = np.array(self.PC)
+        d['N_pc'           ] = self.N_pc
         d['net_Ne'         ] = self.net_Ne
         d['net_Ni'         ] = self.net_Ni
         d['rat_pos_x'      ] = self.rat_pos_x
@@ -458,7 +482,6 @@ class NestGridCellNetwork(GridCellNetwork):
         d['Ni_x'           ] = self.Ni_x
         d['Ni_y'           ] = self.Ni_y
         d['prefDirs_e'     ] = self.prefDirs_e
-        d['N_pc_created'   ] = self.N_pc_created
 
         return d
             
