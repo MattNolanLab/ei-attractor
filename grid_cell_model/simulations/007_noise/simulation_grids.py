@@ -26,6 +26,7 @@ from data_storage       import DataStorage
 
 
 parser          = getOptParser()
+parser.add_option("--velON", type="int", help="Velocity input ON?")
 (options, args) = parser.parse_args()
 
 stateMonParams = {
@@ -45,7 +46,8 @@ for trial_idx in range(options.ntrials):
     ei_net = BasicGridCellNetwork(options, simulationOpts=None,
             stateRecParams=(stateMonParams, stateMonParams))
 
-    #ei_net.setVelocityCurrentInput_e()
+    if (options.velON == 1):
+        ei_net.setVelocityCurrentInput_e()
     ei_net.setPlaceCells()
     
     ei_net.simulate(options.time, printTime=options.printTime)

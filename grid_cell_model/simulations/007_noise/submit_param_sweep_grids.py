@@ -33,18 +33,19 @@ p['noise_sigma']       = 150.0     # pA
 # Submitting
 ENV         = 'cluster'
 simRootDir  = 'output/grids_init'
-simLabel    = 'grids_velocity_OFF_{0}pA'.format(int(p['noise_sigma']))
+simLabel    = 'grids_velocity_ON{0}pA'.format(int(p['noise_sigma']))
 appName     = 'simulation_grids.py'
 rtLimit     = '02:00:00'
-numCPU      = 4
+numCPU      = 1
 blocking    = True
 timePrefix  = False
-numRepeat   = 10
+numRepeat   = 5
 dry_run     = False
 
-p['time']              = 1200e3  # ms
-p['nthreads']          = 4
+p['time']              = 300e3  # ms
+p['nthreads']          = 1
 p['ntrials']           = 1
+p['velON']             = 1
 
 p['bumpCurrentSlope']  = 0.53 # neurons/s/pA, !! this will depend on prefDirC !!
 p['pc_conn_weight']    = 0.5
