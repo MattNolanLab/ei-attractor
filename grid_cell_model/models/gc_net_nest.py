@@ -31,6 +31,7 @@ from gc_net       import GridCellNetwork
 from place_input  import PlaceCellInput
 from place_cells  import UniformBoxPlaceCells
 from data_storage import DataStorage
+from otherpkg.log import log_info
 
 import nest
 
@@ -288,6 +289,7 @@ class NestGridCellNetwork(GridCellNetwork):
         prefDirs_mask can be used to manipulate velocity input strength
         for each neuron.
         '''
+        print("Setting up velocity input current.")
         self._loadRatVelocities()
 
 
@@ -310,12 +312,6 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
-        # Place cells to initialize the bump - it should be initialized onto
-        # the correct position, i.e. the bump must be at the correct starting
-        # position, which matches the actual velocity simulation place cell
-        # input
-        posIn = PosInputs([self.rat_pos_x[0]], [self.rat_pos_y[0]], self.rat_dt)
-        self.setStartPlaceCells(posIn)
 
 
     def setConstantVelocityCurrent_e(self, vel, start_t=None, end_t=None):
@@ -357,22 +353,34 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
-        self.PC_start, _, _ = self.setStartPlaceCells(PosInputs([0.], [.0],
-            self.rat_dt))
+        self.setStartPlaceCells(PosInputs([0.], [.0], self.rat_dt))
 
 
     def setStartPlaceCells(self, posIn):
-        print "Setting up initialization place cells"
-        return self.createGenericPlaceCells(
-                self.no.N_place_cells,
-                self.no.pc_start_max_rate,
-                self.no.pc_start_conn_weight,
-                start=0.0,
-                end=self.no.theta_start_t,
-                posIn=posIn)
+        if (len(self.PC_start) == 0):
+            print "Setting up initialization place cells"
+            self.PC_start, _, _ = self.createGenericPlaceCells(
+                    self.no.N_place_cells,
+                    self.no.pc_start_max_rate,
+                    self.no.pc_start_conn_weight,
+                    start=0.0,
+                    end=self.no.theta_start_t,
+                    posIn=posIn)
+        else:
+            log_info('Initialization place cells already set. Skipping the set up')
 
 
     def setPlaceCells(self, start=None, end=None, posIn=None):
+        # Place cells to initialize the bump - it should be initialized onto
+        # the correct position, i.e. the bump must be at the correct starting
+        # position, which matches the actual velocity simulation place cell
+        # input
+        self._loadRatVelocities()
+        startPos = PosInputs([self.rat_pos_x[0]], [self.rat_pos_y[0]],
+                self.rat_dt)
+        self.setStartPlaceCells(startPos)
+
+        # Here the actual velocity place cells
         print "Setting up velocity place cells"
         self.PC, _, _ = self.createGenericPlaceCells(self.no.N_place_cells,
                 self.no.pc_max_rate, self.no.pc_conn_weight, start, end, posIn)
