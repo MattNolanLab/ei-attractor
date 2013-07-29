@@ -155,23 +155,30 @@ class NestGridCellNetwork(GridCellNetwork):
             if self.spikeMon_e is not None:
                 return self.spikeMon_e
             else:
+                if (N_ids is None):
+                    N_ids = np.arange(len(self.E_pop))
+                src = list(np.array(self.E_pop)[N_ids])
                 self.spikeMon_e = nest.Create('spike_detector')
                 nest.SetStatus(self.spikeMon_e, {
                     "label"     : "E spikes",
                     'withtime'  : True,
                     'withgid'   : True})
-                nest.ConvergentConnect(self.E_pop, self.spikeMon_e)
+                nest.ConvergentConnect(src, self.spikeMon_e)
                 return self.spikeMon_e
         elif (type == "I"):
             if (self.spikeMon_i is not None):
                 return self.spikeMon_i
             else:
+                if (N_ids is None):
+                    N_ids = np.arange(len(self.I_pop))
+                src = list(np.array(self.I_pop)[N_ids])
                 self.spikeMon_i = nest.Create('spike_detector')
                 nest.SetStatus(self.spikeMon_i, {
                     "label"     : "I spikes",
                     'withtime'  : True,
                     'withgid'   : True})
-                nest.ConvergentConnect(self.I_pop, self.spikeMon_i)
+                print src
+                nest.ConvergentConnect(src, self.spikeMon_i)
                 return self.spikeMon_i
         else:
             raise ValueError("Unsupported type of spike detector: " + type)
@@ -528,7 +535,6 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         '''
         NestGridCellNetwork.__init__(self, options, simulationOpts)
 
-
         # Spikes
         self.nrecSpikes_e = nrec_spikes[0]
         self.nrecSpikes_i = nrec_spikes[1]
@@ -538,8 +544,10 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         if (self.nrecSpikes_i is None):
             self.nrecSpike_i = self.Ni_x*self.Ni_y
 
-        self.spikeMon_e  = self.getSpikeDetector("E")
-        self.spikeMon_i  = self.getSpikeDetector("I")
+        self.spikeMon_e  = self.getSpikeDetector("E",
+                np.arange(self.nrecSpikes_e))
+        self.spikeMon_i  = self.getSpikeDetector("I",
+                np.arange(self.nrecSpikes_i))
 
 
         # States

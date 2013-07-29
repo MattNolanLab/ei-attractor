@@ -21,10 +21,12 @@
 import numpy as np
 from submitting.factory     import SubmitterFactory
 from submitting.arguments   import ArgumentCreator
+from data_storage           import DataStorage
 
 
 def submitParamSweep(p, startFrac, endFrac, Nvals, ENV, simRootDir, simLabel,
-        appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run):
+        appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
+        extraIterparams={}):
     ac = ArgumentCreator(p, printout=True)
 
     fracArr = np.linspace(startFrac, endFrac, Nvals)
@@ -46,6 +48,7 @@ def submitParamSweep(p, startFrac, endFrac, Nvals, ENV, simRootDir, simLabel,
         'g_GABA_total'      : np.array(g_GABA_total_arr),
         'g_uni_GABA_total'  : np.array(g_uni_GABA_total_arr)
     }
+    iterparams.update(extraIterparams)
     ac.insertDict(iterparams, mult=False)
 
     ###############################################################################
@@ -56,3 +59,15 @@ def submitParamSweep(p, startFrac, endFrac, Nvals, ENV, simRootDir, simLabel,
     startJobNum = 0
     submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
     submitter.saveIterParams(iterparams, dry_run=dry_run)
+
+
+###############################################################################
+
+def getBumpCurrentSlope(noise_sigma, threshold=0):
+    fileName = 'bump_slope_data/bump_slope_{0}pA.h5'.format(int(noise_sigma))
+    ds = DataStorage.open(fileName, 'r')
+    slopes = np.abs(ds['lineFitSlope'].flatten())
+    ds.close()
+    slopes[slopes < threshold] = np.nan
+    return slopes
+

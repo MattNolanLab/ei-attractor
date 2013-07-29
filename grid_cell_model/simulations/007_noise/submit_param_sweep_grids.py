@@ -20,10 +20,10 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from submitting.factory     import SubmitterFactory
+from submitting.factory   import SubmitterFactory
 from submitting.arguments import ArgumentCreator
 from default_params       import defaultParameters as p
-from param_sweep          import submitParamSweep
+from param_sweep          import submitParamSweep, getBumpCurrentSlope
 import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
@@ -32,36 +32,34 @@ p['noise_sigma']       = 150.0     # pA
 
 # Submitting
 ENV         = 'cluster'
-simRootDir  = 'output/grids_init'
-simLabel    = 'grids_velocity_OFF{0}pA'.format(int(p['noise_sigma']))
+simRootDir  = 'output/grids'
+simLabel    = 'EI_param_sweep_{0}pA'.format(int(p['noise_sigma']))
 appName     = 'simulation_grids.py'
-rtLimit     = '02:00:00'
+rtLimit     = '04:00:00'
 numCPU      = 1
 blocking    = True
 timePrefix  = False
-numRepeat   = 5
+numRepeat   = 1
 dry_run     = False
 
-p['time']              = 300e3  # ms
+p['time']              = 600e3  # ms
 p['nthreads']          = 1
 p['ntrials']           = 1
-p['velON']             = 0
+p['velON']             = 1
 
-p['bumpCurrentSlope']  = 0.53 # neurons/s/pA, !! this will depend on prefDirC !!
-p['pc_conn_weight']    = 0.5
 
-ac = ArgumentCreator(p, printout=True)
+# Range of parameters around default values
+Nvals        = 30    # Number of values for each dimension
+startFrac    = 0.
+endFrac      = 2.8572
 
-iterparams = {
-        'pc_max_rate'   : np.arange(0, 100, 10),
-}
-ac.insertDict(iterparams, mult=True)
+extraIterparams = {'bumpCurrentSlope' : getBumpCurrentSlope(p['noise_sigma'],
+    threshold=0.05)}
+#extraIterparams['bumpCurrentSlope'] = [1.0]
 
 ###############################################################################
-submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
-        rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-        blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
-ac.setOption('output_dir', submitter.outputDir())
-startJobNum = 0
-submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
-submitter.saveIterParams(iterparams, dry_run=dry_run)
+
+submitParamSweep(p, startFrac, endFrac, Nvals, ENV, simRootDir, simLabel,
+        appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
+        extraIterparams)
+

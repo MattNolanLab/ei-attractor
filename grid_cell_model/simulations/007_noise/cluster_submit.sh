@@ -39,6 +39,7 @@ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib/nest
 export LD_LIBRARY_PATH
 
+trap 'echo catch signal USR2 at `date +"%D %T"`' usr2
 
 # Run the program
 python $* 
