@@ -402,8 +402,9 @@ class GridPlotVisitor(DictDSVisitor):
 
         spikes = DictDSVisitor._getNeuronSpikeTrain(data, monName, self.neuronNum)
         spikes = self._shiftSpikeTimes(spikes, velocityStart)
+
+        out = {}
         
-        # Plot E FRs
         if (self.po.bump):
             figure()
             if (self.bumpTStart is None):
@@ -423,6 +424,7 @@ class GridPlotVisitor(DictDSVisitor):
                     labely   = 'Neuron #',
                     titleStr = 'E firing rate')
             savefig(fileNameTemplate + '_bump_' + self._spikeType + '.png')
+            out['bump_e'] = bump_e
 
 
         if (self.po.spikes):
@@ -442,6 +444,9 @@ class GridPlotVisitor(DictDSVisitor):
             axis('off')
             savefig('{0}_rateMap_{1}.png'.format(fileNameTemplate,
                 self._spikeType))
+            out['rateMap_e'] = rateMap
+            out['rateMap_e_X'] = X
+            out['rateMap_e_Y'] = Y
 
         
         if (self.po.fft):
@@ -463,6 +468,9 @@ class GridPlotVisitor(DictDSVisitor):
             xlim([-10, 10])
             ylim([-10, 10])
             savefig('{0}_fft2_{1}.png'.format(fileNameTemplate, self._spikeType))
+            out['FFTX'] = FX
+            out['FFTY'] = FY
+            out['FFT']  = PSD_centered
 
 
         if (self.po.sn_ac):
@@ -475,6 +483,9 @@ class GridPlotVisitor(DictDSVisitor):
             axis('off')
             savefig('{0}_rateCorr_{1}.png'.format(fileNameTemplate,
                 self._spikeType))
+            out['corr_X'] = X
+            out['corr_Y'] = Y
+            out['corr']   = corr
 
 
         if (self.po.gridness_ac):
@@ -486,5 +497,10 @@ class GridPlotVisitor(DictDSVisitor):
             ylabel('Corr. coefficient')
             savefig('{0}_gridnessCorr_{1}.png'.format(fileNameTemplate,
                 self._spikeType))
+            out['gridnessScore']  = G
+            out['gridnessCorr']   = crossCorr
+            out['gridnessAngles'] = angles
+
+        data['analysis'] = out
 
 
