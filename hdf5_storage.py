@@ -18,10 +18,10 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from collections import MutableMapping, MutableSequence
 import numpy as np
 import h5py
 from interface import DataStorage
-
 
 class HDF5DataStorage(DataStorage):
     '''
@@ -82,6 +82,14 @@ class HDF5DataStorage(DataStorage):
     Note that in the current version, cycles are not detected in compound
     objects(dict, list). The user must handle these situations beforhand.
     '''
+    @staticmethod
+    def factory(filePath, mode):
+        '''
+        Create the HDF5MapStorage object from a file.
+        '''
+        f = h5py.File(filePath, mode)
+        return HDF5MapStorage(f, f['/'])
+
 
     def __init__(self, fileObj, grp):
         '''
@@ -93,31 +101,25 @@ class HDF5DataStorage(DataStorage):
         self._file  = fileObj
 
 
-    @classmethod
-    def factory(cls, filePath, mode):
+    def _getitem(self, dataSet):
         '''
-        Create the HDF5DataStorage object from a file.
+        Return the correct implementation of the data set `dataSet`.
+        Three options are currently possible:
+            1. Dict-like data set (in fact a hdf5 group, witth type attribute
+               set to 'dict')
+            2. List-like data set (a group again, with type attribute set to
+               'list')
+            3. An atomic data (everything else)
+
+        1. and 2. will return a reference, 3. will return an actual copy of the
+           object.
         '''
-        f = h5py.File(filePath, mode)
-        return cls(f, f['/'])
-
-       
-    def __setitem__(self, key, value):
-        if (key in self._group):
-            del self._group[key] # TODO: this is costly operation
-        self._createDataMember(key, value, self._group)
-
-    def __getitem__(self, key):
-        #print("__getitem__({0}), group: {1}".format(key, self._group.name))
-        val = self._group[key]
+        val = dataSet
         if (isinstance(val, h5py.Group)):
             if (val.attrs['type'] == 'dict'):
-                return HDF5DataStorage(self._file, val)
+                return HDF5MapStorage(self._file, val)
             elif (val.attrs['type'] == 'list'):
-                res = []
-                for k in val.keys():
-                    res.append(HDF5DataStorage(self._file, val)[k])
-                return res
+                return HDF5ListStorage(self._file, val)
             else:
                 raise Exception("Unknown type attribute encountered while " +
                         "parsing the get request. Please check whether your " +
@@ -130,32 +132,6 @@ class HDF5DataStorage(DataStorage):
                     return np.array([], dtype=val.dtype)
                 else:
                     raise
-
-    def __delitem__(self, key):
-        del self._group[key]
-
-    def __len__(self):
-        return len(self._group)
-
-    def __iter__(self):
-        return iter(self._group.keys())
-
-
-    def close(self):
-        '''
-        Close the file associated with this object.
-
-        This will inevitably invalidate all the HDF5DataStorage objects derived
-        from the same open file and subsequent access to any data members that
-        are not copies will throw an exception.
-        '''
-        self._file.close()
-
-    def flush(self):
-        '''
-        Flush all the data to the file stream.
-        '''
-        self._file.flush()
 
 
     def _createDataMember(self, name, value, grp):
@@ -174,21 +150,17 @@ class HDF5DataStorage(DataStorage):
               for the performance limitations of storing lists.
         '''
         try:
-            if (isinstance(value, dict)):
+            if (isinstance(value, MutableMapping)):
                 newGrp = grp.create_group(name)
                 newGrp.attrs['type'] = 'dict'
                 for k, v in value.iteritems():
                     self._createDataMember(k, v, newGrp)
-            elif (isinstance(value, list)):
+            elif (isinstance(value, MutableSequence)):
                 newGrp = grp.create_group(name)
                 newGrp.attrs['type'] = 'list'
-                ln = len(value)
-                if (ln != 0):
-                    nDigits = int(np.ceil(np.log10(ln)))
-                    digit = "{0:0" + str(nDigits) + "}"
                 it = 0
                 for v in value:
-                    self._createDataMember(digit.format(it), v, newGrp)
+                    self._createDataMember(str(it), v, newGrp)
                     it += 1
             else:
                 try:
@@ -205,4 +177,116 @@ class HDF5DataStorage(DataStorage):
             print "Could not create a data member %s" % name
             raise
 
+
+    def close(self):
+        '''
+        Close the file associated with this object.
+
+        This will inevitably invalidate all the HDF5MapStorage objects derived
+        from the same open file and subsequent access to any data members that
+        are not copies will throw an exception.
+        '''
+        self._file.close()
+
+
+    def flush(self):
+        '''
+        Flush all the data to the file stream.
+        '''
+        self._file.flush()
+
+
+
+class HDF5MapStorage(HDF5DataStorage, MutableMapping):
+    '''
+    Dictionary-like HDF5 DataStorage implementation
+    '''
+
+    def __init__(self, fileObj, grp):
+        HDF5DataStorage.__init__(self, fileObj, grp)
+       
+    def __setitem__(self, key, value):
+        if (key in self._group):
+            del self._group[key] # TODO: this is costly operation
+        self._createDataMember(key, value, self._group)
+
+    def __getitem__(self, key):
+        #print("__getitem__({0}), group: {1}".format(key, self._group.name))
+        return self._getitem(self._group[key])
+
+    def __delitem__(self, key):
+        del self._group[key]
+
+    def __len__(self):
+        return len(self._group)
+
+    def __iter__(self):
+        return iter(self._group.keys())
+
+
+
+class HDF5ListStorage(HDF5DataStorage, MutableSequence):
+    '''
+    List-like HDF5 DataStorage implementation.
+    '''
+    def __init__(self, fileObj, grp):
+        HDF5DataStorage.__init__(self, fileObj, grp)
+       
+    def __setitem__(self, index, value):
+        if (isinstance(index, slice)):
+            raise TypeError('Slicing is not supported!')
+        index = str(index)
+        if (index in self._group):
+            del self._group[index] # TODO: this is costly operation
+            self._createDataMember(index, value, self._group)
+        else:
+            raise IndexError
+
+    def __getitem__(self, index):
+        if (isinstance(index, slice)):
+            raise TypeError('Slicing is not supported!')
+        if (index < 0):
+            index = len(self._group) + index
+        return self._getitem(self._group[str(index)])
+
+    def __delitem__(self, index):
+        raise NotImplementedError('Deleting items in an HDF5 stored list is' +\
+                ' not as easy as you think!')
+
+    def insert(self, index, value):
+        raise NotImplementedError('Inserting items in an HDF5 stored list is' +\
+                ' not as easy as you think!')
+
+    def append(self, value):
+        index = len(self)
+        self._createDataMember(str(index), value, self._group)
+
+
+    def __len__(self):
+        return len(self._group)
+
+    def __iter__(self):
+        idx = 0
+        stop = len(self)
+        while (idx < stop):
+            yield self[idx]
+            idx += 1
+
+    def __repr__(self):
+        ret = '['
+        for idx in xrange(len(self) - 1):
+            ret += str(self[idx]) + ', '
+        ret += str(self[-1]) + ']'
+        return ret
+
+    def __eq__(self, other):
+        if (len(self) != len(other)):
+            return False
+        for idx in xrange(len(self)):
+            if (self[idx] != other[idx]):
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
