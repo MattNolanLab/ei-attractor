@@ -35,7 +35,7 @@ ENV         = 'cluster'
 simRootDir  = 'output/grids'
 simLabel    = 'EI_param_sweep_{0}pA'.format(int(p['noise_sigma']))
 appName     = 'simulation_grids.py'
-rtLimit     = '04:00:00'
+rtLimit     = '10:00:00'
 numCPU      = 1
 blocking    = True
 timePrefix  = False
@@ -44,7 +44,7 @@ dry_run     = False
 
 p['time']              = 600e3  # ms
 p['nthreads']          = 1
-p['ntrials']           = 1
+p['ntrials']           = 3
 p['velON']             = 1
 
 
