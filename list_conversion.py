@@ -61,19 +61,12 @@ def fixGroup(grp):
 
 
 ###############################################################################
-if (len(sys.argv) != 2):
+if (len(sys.argv) < 2):
     exit(1)
 
-fileList = list(open(sys.argv[1], 'r'))
-
-it = 0
-for fileName in fileList:
-    print it
-    if (fileName[-1] == '\n'):
-        fileName = fileName[0:-1]
+for fileName in sys.argv[1:]:
     print "Processing file: {0}".format(fileName)
     f = h5py.File(fileName, 'r+')
     fixGroup(f)
     f.close()
-    it += 1
 
