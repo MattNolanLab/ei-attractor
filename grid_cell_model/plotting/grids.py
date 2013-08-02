@@ -22,11 +22,31 @@ import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as mpl
 from matplotlib.pyplot  import plot, xlabel, ylabel, legend, ylim, \
-        tight_layout, axis, title, pcolormesh, colorbar, hold, subplot, gca
+        tight_layout, axis, title, pcolor, colorbar, hold, subplot, gca
 from matplotlib.ticker  import MaxNLocator, LinearLocator
 
-from global_defs        import globalAxesSettings, createColorbar
-from plotting.low_level import xScaleBar
+from global_defs         import globalAxesSettings, createColorbar
+from plotting.low_level  import xScaleBar
+from analysis.grid_cells import extractSpikePositions2D
+
+
+def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, diam, ax=None, titleStr='',
+        scaleBar=None, spikeDotSize=5):
+    '''
+    Plot spike positions into the figure. Both positions and spikes must be aligned!
+    '''
+    if (ax is None):
+        ax = gca()
+    neuronPos_x, neuronPos_y, m_i = extractSpikePositions2D(spikeTimes, rat_pos_x, rat_pos_y, dt)
+
+    plot(rat_pos_x[0:m_i], rat_pos_y[0:m_i])
+    hold('on')
+    plot(neuronPos_x, neuronPos_y, 'or', markersize=spikeDotSize)
+    axis('off')
+    axis('scaled')
+    title(titleStr, va='bottom')
+    if (scaleBar is not None):
+        xScaleBar(scaleBar, ax, bottom=0, right=diam/2.0, unitsText='cm', size='small')
 
 
 
@@ -38,7 +58,7 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None):
         ax = gca()
     rateMap = ma.masked_array(rateMap, mask = np.sqrt(X**2 + Y**2) > diam/2.0)
     globalAxesSettings(ax)
-    pcolormesh(X, Y, rateMap)
+    pcolor(X, Y, rateMap)
     axis('scaled')
     axis('off')
     title(titleStr, va='bottom')
@@ -52,7 +72,7 @@ def plotAutoCorrelation(ac, X, Y, diam=np.inf, ax=None, titleStr="",
         ax = gca()
     ac = ma.masked_array(ac, mask = np.sqrt(X**2 + Y**2) > diam)
     globalAxesSettings(ax)
-    pcolormesh(X, Y, ac)
+    pcolor(X, Y, ac)
     axis('scaled')
     axis('off')
     title(titleStr, va='bottom')

@@ -29,9 +29,10 @@ from interface       import DictDSVisitor, sumAllVariables, \
         extractStateVariable
 from plotting.signal import signalPlot
 from analysis.spikes import PopulationSpikes
-from analysis.grid_cells import extractSpikePositions2D, plotSpikes2D, \
-        SNSpatialRate2D, SNAutoCorr, cellGridnessScore
+from analysis.grid_cells import extractSpikePositions2D, SNSpatialRate2D, \
+        SNAutoCorr, cellGridnessScore
 from plotting.bumps  import torusFiringRate
+from plotting.grids  import plotSpikes2D
 from otherpkg.log    import log_warn
 
 __all__ = ['DetailedPlotVisitor', 'GridPlotVisitor']
@@ -431,6 +432,10 @@ class GridPlotVisitor(DictDSVisitor):
             figure()
             plotSpikes2D(spikes, pos_x, pos_y, rat_dt)
             savefig(fileNameTemplate + '_spikePlot_' + self._spikeType + '.png')
+            out['spikes_e'] = spikes
+            out['rat_pos_x'] = pos_x
+            out['rat_pos_y'] = pos_y
+            out['rat_dt']    = rat_dt
 
         if (self.po.rateMap):
             figure()
