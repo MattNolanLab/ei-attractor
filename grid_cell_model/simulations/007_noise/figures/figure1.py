@@ -27,7 +27,7 @@ from fig_conn_func  import plotWeights
 from data_storage   import DataStorage
 from figures_shared import plotStateSignal, plotThetaSignal, extractStateVars,\
         getOption, thetaLim
-from plotting.grids import plotGridRateMap, plotAutoCorrelation
+from plotting.grids import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
 
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -153,17 +153,22 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
 
 def plotGrids(gs, data, colStart=0):
     a = data['trials'][0]['analysis']
+    arenaDiam = data['trials'][0]['options']['arenaSize']
     rateMap = a['rateMap_e']
 
-    # Grid field
+    # Spikes
     ax0 = subplot(gs[0, colStart])
+    plotSpikes2D(a['spikes_e'], a['rat_pos_x'], a['rat_pos_y'], a['rat_dt'],
+            diam=arenaDiam, scaleBar=50, spikeDotSize=2)
+
+    # Grid field
+    ax0 = subplot(gs[0, colStart+1])
     X = a['rateMap_e_X']
     Y = a['rateMap_e_Y']
-    arenaDiam = data['trials'][0]['options']['arenaSize']
     plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=50)
 
     # Grid field autocorrelation
-    ax1 = subplot(gs[0, colStart+1])
+    ax1 = subplot(gs[0, colStart+2])
     X = a['corr_X']
     Y = a['corr_Y']
     ac = a['corr']
@@ -241,9 +246,9 @@ plotWeights(ax_sch)
 fig.text(w_left-1.25*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
         fontweight='bold')
 
-gs = GridSpec(1, 2, wspace=0)
+gs = GridSpec(1, 3, wspace=0)
 g_left  = w_right + div
-g_right = g_left + 0.2
+g_right = g_left + 0.3
 gs.update(left=g_left, right=g_right, bottom=top+top_margin, top=top_top)
 grids_ds = openGridJob(gridRootDir, noise_sigma=150, jobNum=340)
 plotGrids(gs, grids_ds, colStart=0) 
