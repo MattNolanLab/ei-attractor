@@ -23,10 +23,11 @@ from matplotlib.pyplot import *
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 
-from fig_conn_func import plotWeights
-from data_storage import DataStorage
+from fig_conn_func  import plotWeights
+from data_storage   import DataStorage
 from figures_shared import plotStateSignal, plotThetaSignal, extractStateVars,\
         getOption, thetaLim
+from plotting.grids import plotGridRateMap, plotAutoCorrelation
 
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -43,12 +44,18 @@ dataRootDir = 'output_local'
 root0   = "{0}/single_neuron".format(dataRootDir)
 root150 = "{0}/single_neuron".format(dataRootDir)
 root300 = "{0}/single_neuron".format(dataRootDir)
+gridRootDir = '{0}/grids'.format(dataRootDir)
 fileTemplate = "noise_sigma{0}_output.h5"
 
 ##############################################################################
 
 def openJob(rootDir, noise_sigma):
     fileName = rootDir + '/' + fileTemplate.format(noise_sigma)
+    return DataStorage.open(fileName, 'r')
+
+def openGridJob(rootDir, noise_sigma, jobNum):
+    fileName = rootDir + '/' + \
+            'EI_param_sweep_{0}pA/job{1:05}_output.h5'.format(noise_sigma, jobNum)
     return DataStorage.open(fileName, 'r')
 
 
@@ -84,7 +91,7 @@ def plotHistogram(ax, sig, color='black', labelx="", labely="",
 
 
 def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
-        letterPos=None):
+        letterPos=None, scaleBar=None):
     if (yLabelOn):
         VmText = "V (mV)"
         IsynText = "I (nA)"
@@ -98,6 +105,8 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     ncols = 4
     plotTStart = 5e3
     plotTEnd   = 5.25e3
+
+    stateYlim = [-80, -40]
 
     theta_start_t = getOption(data, 'theta_start_t')
     #theta_start_t = 1e3
@@ -120,19 +129,21 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     # I cell Vm
     t, VmMiddle = extractStateVars(mon_i, ['V_m'], plotTStart,
             plotTEnd)
-    plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='blue')
+    plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='blue',
+            scaleBar=scaleBar)
+    ylim(stateYlim)
 
-    # E cell Vm histogram
-    ax3 = subplot(gs[2, colStart:colStart+2])
-    t, VmMiddle = extractStateVars(mon_e, ['V_m'], theta_start_t,
-            simTime)
-    plotHistogram(ax3, VmMiddle, labelx = histLabelX, labely=countText, color='red')
+    ## E cell Vm histogram
+    #ax3 = subplot(gs[2, colStart:colStart+2])
+    #t, VmMiddle = extractStateVars(mon_e, ['V_m'], theta_start_t,
+    #        simTime)
+    #plotHistogram(ax3, VmMiddle, labelx = histLabelX, labely=countText, color='red')
 
-    # I cell Vm histogram
-    ax4 = subplot(gs[2, colStart+2:colStart+4])
-    t, VmMiddle = extractStateVars(mon_i, ['V_m'], theta_start_t,
-            simTime)
-    plotHistogram(ax4, VmMiddle, labelx = histLabelX, labely="", color='blue')
+    ## I cell Vm histogram
+    #ax4 = subplot(gs[2, colStart+2:colStart+4])
+    #t, VmMiddle = extractStateVars(mon_i, ['V_m'], theta_start_t,
+    #        simTime)
+    #plotHistogram(ax4, VmMiddle, labelx = histLabelX, labely="", color='blue')
 
 
     if (yLabelOn):
@@ -140,16 +151,37 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
                 loc=[0.0, 1.1], ncol=2)
 
 
+def plotGrids(gs, data, colStart=0):
+    a = data['trials'][0]['analysis']
+    rateMap = a['rateMap_e']
 
-figSize = (10, 6)
+    # Grid field
+    ax0 = subplot(gs[0, colStart])
+    X = a['rateMap_e_X']
+    Y = a['rateMap_e_Y']
+    arenaDiam = data['trials'][0]['options']['arenaSize']
+    plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=50)
+
+    # Grid field autocorrelation
+    ax1 = subplot(gs[0, colStart+1])
+    X = a['corr_X']
+    Y = a['corr_Y']
+    ac = a['corr']
+    plotAutoCorrelation(ac, X, Y, diam=arenaDiam, scaleBar=50)
+
+
+
+
+
+figSize = (10, 4.6)
 fig = figure(figsize=figSize)
 
 hr = 0.75
 vh = 1.  # Vm height
 th = 0.75 # top plot height
-height_ratios = [th, vh, hr]
+height_ratios = [th, vh]
 
-top = 0.58
+top = 0.45
 bottom = 0.08
 margin = 0.075
 div = 0.06
@@ -165,8 +197,8 @@ letter_ha='left'
 
 # Model schematic
 gs = GridSpec(1, 4)
-top_margin = 0.17
-top_top = 0.92
+top_margin = 0.25
+top_top = 0.9
 top_letter_pos = 1.5
 fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
         fontweight='bold')
@@ -176,54 +208,62 @@ fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
 left = margin
 right = left + width
 ds = openJob(root0, noise_sigma=0)
-gs = GridSpec(3, 4, height_ratios=height_ratios, hspace=hspace,
+gs = GridSpec(2, 4, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 # do not update left and right
 gs.update(left=left, right=right, bottom=bottom, top=top)
 drawSignals(gs, ds, colStart=0, noise_sigma=0, letter="C")
-fig.text(letter_left, top+letter_div, "C", va=letter_va, ha=letter_ha,
+fig.text(letter_left, top+letter_div, "D", va=letter_va, ha=letter_ha,
         fontsize=19, fontweight='bold')
 
 
 # noise_sigma = 150 pA
 ds = openJob(root150, noise_sigma=150)
-gs = GridSpec(3, 4, height_ratios=height_ratios, hspace=hspace,
+gs = GridSpec(2, 4, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
 drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150, letter="D",
         letterPos=-0.2)
-fig.text(letter_left+margin+width+0.5*div, top+letter_div, "D", va=letter_va,
+fig.text(letter_left+margin+width+0.5*div, top+letter_div, "E", va=letter_va,
         ha=letter_ha, fontsize=19, fontweight='bold')
 
 
-# Connection weights
-gs = GridSpec(1, 4)
-w_shift = 0.4*width + div
+# Connection weights and grid fields
+gs = GridSpec(1, 1)
+w_shift = 0.2*width + div
 w_left  = left - w_shift
 w_right = w_left + 0.15
 gs.update(left=w_left, right=w_right, bottom=top+top_margin, top=top_top)
-ax_sch = subplot(gs[0, :])
+ax_sch = subplot(gs[0, 0])
 plotWeights(ax_sch)
-fig.text(w_left-0.5*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
+fig.text(w_left-1.25*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
         fontweight='bold')
-#gs.tight_layout(fig, rect=[w_left-0.5*div, top+top_margin, w_right, top_top])
+
+gs = GridSpec(1, 2, wspace=0)
+g_left  = w_right + div
+g_right = g_left + 0.2
+gs.update(left=g_left, right=g_right, bottom=top+top_margin, top=top_top)
+grids_ds = openGridJob(gridRootDir, noise_sigma=150, jobNum=340)
+plotGrids(gs, grids_ds, colStart=0) 
+fig.text(g_left-0.2*div, letter_top, "C", va=letter_va, ha=letter_ha, fontsize=19,
+        fontweight='bold')
 
 
 # noise_sigma = 300 pA
 ds = openJob(root300, noise_sigma=300)
-gs = GridSpec(3, 4, height_ratios=height_ratios, hspace=hspace,
+gs = GridSpec(2, 4, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300, letter="E",
-        letterPos=-0.2)
-fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "E", va=letter_va,
+drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300,
+        letterPos=-0.2, scaleBar=50)
+fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "F", va=letter_va,
         ha=letter_ha, fontsize=19, fontweight='bold')
 
-fname = outputDir + "/figure1.pdf"
+fname = outputDir + "/figure1.png"
 savefig(fname)
 
 ## Paste-in model schematic
