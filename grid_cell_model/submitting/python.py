@@ -57,7 +57,7 @@ class ClusterSubmitter(QsubSubmitter):
             Number of cores to use for OpenMP programs
         '''
         self.submitScript = 'cluster_submit.sh '
-        self.default_qsub_params = ' ' 
+        self.default_qsub_params = '-notify ' 
         self.appName = appName
         scriptName = self.submitScript + appName
         self.rtLimit  = rtLimit

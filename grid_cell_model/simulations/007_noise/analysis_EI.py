@@ -22,10 +22,10 @@
 #
 from optparse import OptionParser
 import matplotlib
-matplotlib.use('cairo')
+matplotlib.use('agg')
 
 from analysis.visitors    import AutoCorrelationVisitor, BumpFittingVisitor, \
-        FiringRateVisitor, BumpVelocityVisitor
+        FiringRateVisitor, BumpVelocityVisitor, GridPlotVisitor
 from parameters           import JobTrialSpace2D
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -41,7 +41,7 @@ optParser.add_option('--forceUpdate', type="int")
 optParser.add_option("--output_dir",  type="string")
 optParser.add_option("--job_num",     type="int") # unused
 optParser.add_option("--type",        type="choice", choices=['gamma-bump',
-    'velocity'])
+    'velocity', 'grids'])
 
 o, args = optParser.parse_args()
 
@@ -68,5 +68,10 @@ if (o.type == "gamma-bump"):
 elif (o.type == "velocity"):
     VelVisitor = BumpVelocityVisitor(forceUpdate=forceUpdate, printSlope=True)
     sp.visit(VelVisitor, trialList='all-at-once')
+elif (o.type == 'grids'):
+    spikeType = 'E'
+    po = GridPlotVisitor.PlotOptions()
+    visitor = GridPlotVisitor(o.output_dir, spikeType=spikeType, plotOptions=po)
+    sp.visit(visitor)
 else:
     raise ValueError("Unknown analysis type option: {0}".format(o.type))

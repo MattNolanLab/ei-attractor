@@ -27,7 +27,7 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 
-p['noise_sigma']       = 150.0     # pA
+p['noise_sigma']       = 300.0     # pA
 
 # Submitting
 ENV         = 'cluster'
@@ -51,7 +51,6 @@ p['dIvel']    = 10
 
 
 # Range of parameters around default values
-# Let's choose a 0.5 - 2 range around the default values
 Nvals        = 30    # Number of values for each dimension
 startFrac    = 0.
 endFrac      = 2.8572

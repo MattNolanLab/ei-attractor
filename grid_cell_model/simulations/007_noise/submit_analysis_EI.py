@@ -36,23 +36,21 @@ numRepeat   = 1
 dry_run     = False
 
 
+noise_sigma = 150
 gammaBumpType = 'gamma-bump'
 velocityType = 'velocity'
+gridsType = 'grids'
+
 
 dirs = \
-    ('output/velocity',   velocityType,  'EI_param_sweep_0pA',   (30, 30))
-    #('output/velocity',   velocityType,  'EI_param_sweep_150pA', (30, 30))
-    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_150pA',     (1, 1))
-    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_300pA_big', (40, 40))
-    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_0pA_big',   (40, 40))
-    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_150pA_big', (40, 40))
-    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_0pA_small_sample', (2, 2))
-    #('output/velocity',   velocityType,  'EI_param_sweep_300pA', (30, 30))
+    ('output/grids',      gridsType,     'EI_param_sweep_{0}pA', (30, 30))
+    #('output/velocity',   velocityType,  'EI_param_sweep_{0}pA', (30, 30))
+    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_{0}pA',     (1, 1))
 
 p = {}
 simRootDir = dirs[0]
 p['type']  = dirs[1]
-simLabel   = dirs[2]
+simLabel   = dirs[2].format(int(noise_sigma))
 rowN       = dirs[3][0]
 colN       = dirs[3][1]
 

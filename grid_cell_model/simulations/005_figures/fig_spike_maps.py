@@ -19,6 +19,8 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
+import matplotlib
+matplotlib.use('agg')
 
 from scipy.io           import loadmat
 from scipy.io           import savemat
@@ -30,7 +32,19 @@ from analysis.grid_cells import extractSpikePositions2D, plotSpikes2D, SNSpatial
 from analysis.conversion import neuronSpikes
 
 
-jobRange = [1100, 1121]
+#jobRange = [2000, 2079]
+#jobRange = [2080, 2159]
+#jobRange = [2160, 2239]
+#jobRange = [2240, 2319]
+#jobRange = [2320, 2400]
+#jobRange = [2401, 2479]
+#jobRange = [2480, 2559]
+#jobRange = [2560, 2640]
+#jobRange = [2641, 2719]
+#jobRange = [2720, 2800]
+#jobRange = [2801, 2879]
+#jobRange = [2880, 2959]
+jobRange = [2960, 2999]
 trialNum = 0
 dumpNum = 0
 
@@ -47,7 +61,7 @@ neuronNum = 10
 spikeType = 'excitatory'
 
 
-dirName = "output/"
+dirName = "output/old"
 fileNamePrefix = ''
 fileNameTemp = "{0}/{1}job{2:05}_trial{3:04}_dump{4:03}"
 
@@ -135,28 +149,6 @@ for job_it in range(jobN):
     savefig(fileName + '_gridnessCorr_' + spikeType + '.png')
 
     close('all')
-
-
-    h5file = openFile(fileName + '_' + spikeType + '_igor.h5', mode = "w", title =
-            "Bump velocity export figures")
-    
-    neuronPos_x, neuronPos_y, max_i = extractSpikePositions2D(spikes, pos_x, pos_y, rat_dt)
-    h5file.createArray(h5file.root, 'rat_pos_x', pos_x[0:max_i+1])
-    h5file.createArray(h5file.root, 'rat_pos_y', pos_y[0:max_i+1])
-    h5file.createArray(h5file.root, 'neuronPos_x', neuronPos_x)
-    h5file.createArray(h5file.root, 'neuronPos_y', neuronPos_y)
-
-    rateMap[rateMap.mask == 1] = np.nan
-    h5file.createArray(h5file.root, 'rateMap', rateMap)
-    corr[corr.mask==1] = np.nan
-    h5file.createArray(h5file.root, 'corrMap', corr)
-    h5file.createArray(h5file.root, 'PSD_centered', PSD_centered)
-    h5file.createArray(h5file.root, 'FFT_FX', FX)
-    h5file.createArray(h5file.root, 'FFT_FY', FY)
-    h5file.createArray(h5file.root, 'FFT_fxy', fxy_igor)
-
-
-    h5file.close()
 
 
 # Save gridness scores
