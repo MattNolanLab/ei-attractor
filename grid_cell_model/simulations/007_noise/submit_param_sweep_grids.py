@@ -28,7 +28,7 @@ import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
 
-p['noise_sigma']       = 150.0     # pA
+p['noise_sigma']       = 300.0     # pA
 
 # Submitting
 ENV         = 'cluster'
@@ -44,7 +44,7 @@ dry_run     = False
 
 p['time']              = 600e3  # ms
 p['nthreads']          = 1
-p['ntrials']           = 6
+p['ntrials']           = 5
 p['velON']             = 1
 
 
