@@ -28,14 +28,14 @@ import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
 
-p['noise_sigma']       = 300.0     # pA
+p['noise_sigma']       = 0.0     # pA
 
 # Submitting
 ENV         = 'cluster'
 simRootDir  = 'output/grids'
 simLabel    = 'EI_param_sweep_{0}pA'.format(int(p['noise_sigma']))
 appName     = 'simulation_grids.py'
-rtLimit     = '10:00:00'
+rtLimit     = '14:00:00'
 numCPU      = 1
 blocking    = True
 timePrefix  = False
@@ -44,7 +44,7 @@ dry_run     = False
 
 p['time']              = 600e3  # ms
 p['nthreads']          = 1
-p['ntrials']           = 2
+p['ntrials']           = 6
 p['velON']             = 1
 
 
