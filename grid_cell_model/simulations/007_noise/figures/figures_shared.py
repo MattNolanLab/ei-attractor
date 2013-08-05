@@ -83,9 +83,9 @@ def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
 
 
 
-def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn, thetaLim):
+def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn, thetaLim, color='grey'):
     setSignalAxes(ax, leftSpineOn=False)
-    ax.plot(t, theta, color="grey")
+    ax.plot(t, theta, color=color)
     ax.set_ylim(thetaLim)
     txt = '$\sigma = ' + str(noise_sigma) + '\ \mathrm{pA}$'
     ax.text(0.5, 1.1, txt,

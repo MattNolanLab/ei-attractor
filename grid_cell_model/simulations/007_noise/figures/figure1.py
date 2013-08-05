@@ -116,20 +116,27 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     mon_i = data['stateMon_i']
 
     ax0 = subplot(gs[0, colStart:colStart+ncols])
-    t, IStim = extractStateVars(mon_e, ['I_stim'], plotTStart,
+    t, IStim_e = extractStateVars(mon_e, ['I_stim'], plotTStart,
             plotTEnd)
-    plotThetaSignal(ax0, t, IStim, noise_sigma, yLabelOn, thetaLim)
+    plotThetaSignal(ax0, t, IStim_e, noise_sigma, yLabelOn, thetaLim,
+            color='red')
+    t, IStim_i = extractStateVars(mon_i, ['I_stim'], plotTStart,
+            plotTEnd)
+    plotThetaSignal(ax0, t, IStim_i, noise_sigma, yLabelOn, thetaLim,
+            color='blue')
 
     # E cell Vm
     ax1 = subplot(gs[1, colStart:colStart+ncols])
     t, VmMiddle = extractStateVars(mon_e, ['V_m'], plotTStart,
             plotTEnd)
     plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='red')
+    ylim(stateYlim)
 
     # I cell Vm
+    ax2 = subplot(gs[2, colStart:colStart+ncols])
     t, VmMiddle = extractStateVars(mon_i, ['V_m'], plotTStart,
             plotTEnd)
-    plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='blue',
+    plotStateSignal(ax2, t, VmMiddle, labely=VmText, color='blue',
             scaleBar=scaleBar)
     ylim(stateYlim)
 
@@ -146,9 +153,9 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     #plotHistogram(ax4, VmMiddle, labelx = histLabelX, labely="", color='blue')
 
 
-    if (yLabelOn):
-        ax1.legend(['E cell', 'I cell'], fontsize='small', frameon=False,
-                loc=[0.0, 1.1], ncol=2)
+    #if (yLabelOn):
+    #    ax1.legend(['E cell', 'I cell'], fontsize='small', frameon=False,
+    #            loc=[0.0, 1.1], ncol=2)
 
 
 def plotGrids(gs, data, colStart=0):
@@ -178,13 +185,13 @@ def plotGrids(gs, data, colStart=0):
 
 
 
-figSize = (10, 4.6)
+figSize = (10, 5.2)
 fig = figure(figsize=figSize)
 
 hr = 0.75
 vh = 1.  # Vm height
 th = 0.75 # top plot height
-height_ratios = [th, vh]
+height_ratios = [th, vh, vh]
 
 top = 0.45
 bottom = 0.08
@@ -200,6 +207,9 @@ letter_left=0.01
 letter_va='bottom'
 letter_ha='left'
 
+gs_rows = 3
+gs_cols = 4
+
 # Model schematic
 gs = GridSpec(1, 4)
 top_margin = 0.25
@@ -213,26 +223,25 @@ fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
 left = margin
 right = left + width
 ds = openJob(root0, noise_sigma=0)
-gs = GridSpec(2, 4, height_ratios=height_ratios, hspace=hspace,
+gs = GridSpec(gs_rows, gs_cols, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 # do not update left and right
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, ds, colStart=0, noise_sigma=0, letter="C")
+drawSignals(gs, ds, colStart=0, noise_sigma=0)
 fig.text(letter_left, top+letter_div, "D", va=letter_va, ha=letter_ha,
         fontsize=19, fontweight='bold')
 
 
 # noise_sigma = 150 pA
 ds = openJob(root150, noise_sigma=150)
-gs = GridSpec(2, 4, height_ratios=height_ratios, hspace=hspace,
+gs = GridSpec(gs_rows, gs_cols, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150, letter="D",
-        letterPos=-0.2)
-fig.text(letter_left+margin+width+0.5*div, top+letter_div, "E", va=letter_va,
-        ha=letter_ha, fontsize=19, fontweight='bold')
+drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150, letterPos=-0.2)
+#fig.text(letter_left+margin+width+0.5*div, top+letter_div, "E", va=letter_va,
+#        ha=letter_ha, fontsize=19, fontweight='bold')
 
 
 # Connection weights and grid fields
@@ -258,15 +267,15 @@ fig.text(g_left-0.2*div, letter_top, "C", va=letter_va, ha=letter_ha, fontsize=1
 
 # noise_sigma = 300 pA
 ds = openJob(root300, noise_sigma=300)
-gs = GridSpec(2, 4, height_ratios=height_ratios, hspace=hspace,
+gs = GridSpec(gs_rows, gs_cols, height_ratios=height_ratios, hspace=hspace,
         wspace=wspace)
 left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
 drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300,
         letterPos=-0.2, scaleBar=50)
-fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "F", va=letter_va,
-        ha=letter_ha, fontsize=19, fontweight='bold')
+#fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "F", va=letter_va,
+#        ha=letter_ha, fontsize=19, fontweight='bold')
 
 fname = outputDir + "/figure1.png"
 savefig(fname)
