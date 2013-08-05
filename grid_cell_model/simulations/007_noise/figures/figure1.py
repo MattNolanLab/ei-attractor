@@ -89,6 +89,22 @@ def plotHistogram(ax, sig, color='black', labelx="", labely="",
     ax.yaxis.set_ticks_position('left')
 
 
+def plotGamma(gs, data, gsRow, gsCol, plotTStart, plotTEnd, yLabelOn=True,
+        scaleBar=None):
+    if (yLabelOn):
+        IsynText = "I (nA)"
+    else:
+        IsynText = ""
+
+    mon_e = data['trials'][0]['stateMon_e']
+
+    # E cell Isyn
+    ax0 = subplot(gs[gsRow,gsCol]) 
+    t, IsynMiddle = extractStateVars(mon_e, ['I_clamp_GABA_A'],
+            plotTStart, plotTEnd)
+    plotStateSignal(ax0, t, IsynMiddle*1e-3, labely=IsynText, labelyPos=-0.15,
+            color='red', scaleBar=scaleBar, scaleX=0.75, scaleY=-0.1)
+
 
 def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
         letterPos=None, scaleBar=None):
@@ -158,24 +174,35 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     #            loc=[0.0, 1.1], ncol=2)
 
 
-def plotGrids(gs, data, colStart=0):
+def plotGrids(gs, data, gsRow=0, colStart=0):
     a = data['trials'][0]['analysis']
     arenaDiam = data['trials'][0]['options']['arenaSize']
     rateMap = a['rateMap_e']
+    _, nCols = gs.get_geometry()
+    nColsPerPlot = nCols/3
 
     # Spikes
-    ax0 = subplot(gs[0, colStart])
+    it = 0
+    cStart = colStart + it*nColsPerPlot
+    cEnd = cStart + nColsPerPlot
+    ax0 = subplot(gs[gsRow, cStart:cEnd])
     plotSpikes2D(a['spikes_e'], a['rat_pos_x'], a['rat_pos_y'], a['rat_dt'],
-            diam=arenaDiam, scaleBar=50, spikeDotSize=2)
+            diam=arenaDiam, scaleBar=50, scaleText=False, spikeDotSize=2)
 
     # Grid field
-    ax0 = subplot(gs[0, colStart+1])
+    it = 1
+    cStart = colStart + it*nColsPerPlot
+    cEnd = cStart + nColsPerPlot
+    ax1 = subplot(gs[gsRow, cStart:cEnd])
     X = a['rateMap_e_X']
     Y = a['rateMap_e_Y']
-    plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=50)
+    plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=50, scaleText=False)
 
     # Grid field autocorrelation
-    ax1 = subplot(gs[0, colStart+2])
+    it = 2
+    cStart = colStart + it*nColsPerPlot
+    cEnd = cStart + nColsPerPlot
+    ax2 = subplot(gs[gsRow, cStart:cEnd])
     X = a['corr_X']
     Y = a['corr_Y']
     ac = a['corr']
@@ -212,8 +239,8 @@ gs_cols = 4
 
 # Model schematic
 gs = GridSpec(1, 4)
-top_margin = 0.25
-top_top = 1.05
+top_margin = 0.15
+top_top = 0.95
 top_letter_pos = 1.5
 fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
         fontweight='bold')
@@ -244,16 +271,19 @@ drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150, letterPos=-0.2)
 #        ha=letter_ha, fontsize=19, fontweight='bold')
 
 
-# Grid fields
-gs = GridSpec(1, 3, wspace=0)
+# Grid fields and gamma
+gs = GridSpec(2, 6, wspace=0, height_ratios=[1, 0.5])
 g_shift = 0.2*width + div
 g_left  = left - g_shift
 g_right = g_left + 0.3
-gs.update(left=g_left, right=g_right, bottom=top+top_margin, top=top_top)
+gs.update(left=g_left, right=g_right, bottom=top+top_margin, top=top_top,
+        hspace=0.3)
 grids_ds = openGridJob(gridRootDir, noise_sigma=150, jobNum=340)
 plotGrids(gs, grids_ds, colStart=0) 
 fig.text(g_left-0.2*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
         fontweight='bold')
+plotGamma(gs, grids_ds, 1, slice(1, 6), plotTStart=582e3, plotTEnd=582.25e3,
+        scaleBar=50)
 
 
 # noise_sigma = 300 pA

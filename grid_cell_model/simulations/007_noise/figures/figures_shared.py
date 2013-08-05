@@ -26,7 +26,7 @@ import matplotlib.transforms as transforms
 from analysis.visitors.interface import extractStateVariable, sumAllVariables,\
         extractSpikes
 from plotting.global_defs        import globalAxesSettings
-from plotting.low_level          import xScaleBar, yScaleBar
+from plotting.low_level          import xScaleBar
 
 
 theta_T = 250.0 # ms
@@ -65,7 +65,7 @@ def setSignalAxes(ax, leftSpineOn):
     ax.yaxis.set_minor_locator(AutoMinorLocator(2))
 
 def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
-        color='black', scaleBar=None):
+        color='black', scaleBar=None, scaleX=0.75, scaleY=0.05):
     setSignalAxes(ax, leftSpineOn)
 
     if (sig is not None):
@@ -79,7 +79,7 @@ def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
     ax.set_xlim([t[0], t[-1]])
 
     if (scaleBar is not None):
-        xScaleBar(scaleBar, ax, size='small')
+        xScaleBar(scaleBar, x=scaleX, y=scaleY, ax=ax, size='small')
 
 
 

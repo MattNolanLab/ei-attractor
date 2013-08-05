@@ -20,9 +20,10 @@
 #
 import matplotlib.pyplot     as m
 import matplotlib.transforms as transforms
+import matplotlib.patches    as patches
 
-def xScaleBar(scaleLen, ax=m.gca(), height=0.02, bottom=0.05, right=None,
-        color='black', unitsText='ms', size='medium'):
+def xScaleBar(scaleLen, x, y, ax=m.gca(), height=0.02, color='black',
+        unitsText='ms', size='medium'):
     '''
     Plot a horizontal (X) scale bar into the axes.
 
@@ -46,43 +47,41 @@ def xScaleBar(scaleLen, ax=m.gca(), height=0.02, bottom=0.05, right=None,
     size 
         Size of the text below the scale bar.
     '''
-    if (right is None):
-        (left, right) = ax.get_xlim()
-    scaleCenter = right - 0.5*scaleLen
-    ax.axvspan(
-            xmin = right - scaleLen,
-            xmax = right,
-            ymin = bottom,
-            ymax = bottom + height,
-            color = color)
-    trans = transforms.blended_transform_factory(ax.transData, ax.transAxes)
-    textTemplate = '{0}'
-    if (unitsText != ''):
-        textTemplate += ' {1}'
-    ax.text(scaleCenter, bottom - 0.05,
-            textTemplate.format(scaleLen, unitsText),
-            va='top', ha='center', transform=trans, size=size)
+    (left, right) = ax.get_xlim()
+    axisLen = scaleLen / (right - left)
+    scaleCenter = x + 0.5*axisLen
+    rect = patches.Rectangle((x,y), width=axisLen, height=height,
+            transform=ax.transAxes, color=color)
+    rect.set_clip_on(False)
+    ax.add_patch(rect)
+    if (unitsText is not None):
+        textTemplate = '{0}'
+        if (unitsText != ''):
+            textTemplate += ' {1}'
+        ax.text(scaleCenter, y - 0.05,
+                textTemplate.format(scaleLen, unitsText),
+                va='top', ha='center', transform=ax.transAxes, size=size)
 
 
-def yScaleBar(scaleLen, ax=m.gca(), width=0.01, bottom=None, right=0.8,
-        color='black', unitsText='ms', size='medium'):
-    '''
-    Plot a vertical (Y) scale bar into the axes.
-    '''
-    if (bottom is None):
-        (bottom, top) = ax.get_ylim()
-    scaleCenter = bottom + 0.5*scaleLen
-    ax.axhspan(
-            xmin = right - width,
-            xmax = right,
-            ymin = bottom,
-            ymax = bottom + scaleLen,
-            color = color)
-    trans = transforms.blended_transform_factory(ax.transAxes, ax.transData)
-    textTemplate = '{0}'
-    if (unitsText != ''):
-        textTemplate += ' {1}'
-    ax.text(right + 0.05, scaleCenter,
-            textTemplate.format(scaleLen, unitsText),
-            va='center', ha='left', transform=trans, size=size)
+#def yScaleBar(scaleLen, ax=m.gca(), width=0.01, bottom=None, right=0.8,
+#        color='black', unitsText='ms', size='medium'):
+#    '''
+#    Plot a vertical (Y) scale bar into the axes.
+#    '''
+#    if (bottom is None):
+#        (bottom, top) = ax.get_ylim()
+#    scaleCenter = bottom + 0.5*scaleLen
+#    ax.axhspan(
+#            xmin = right - width,
+#            xmax = right,
+#            ymin = bottom,
+#            ymax = bottom + scaleLen,
+#            color = color)
+#    trans = transforms.blended_transform_factory(ax.transAxes, ax.transData)
+#    textTemplate = '{0}'
+#    if (unitsText != ''):
+#        textTemplate += ' {1}'
+#    ax.text(right + 0.05, scaleCenter,
+#            textTemplate.format(scaleLen, unitsText),
+#            va='center', ha='left', transform=trans, size=size)
 

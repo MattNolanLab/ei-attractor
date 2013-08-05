@@ -29,9 +29,17 @@ from global_defs         import globalAxesSettings, createColorbar
 from plotting.low_level  import xScaleBar
 from analysis.grid_cells import extractSpikePositions2D
 
+def gridScaleBar(scaleLen, scaleText, ax):
+    if (scaleLen is not None):
+        if (scaleText):
+            unitsText = 'cm'
+        else:
+            unitsText = None
+        xScaleBar(scaleLen, x=0.7, y=-0.00, ax=ax, height=0.015,
+                unitsText=unitsText, size='small')
 
 def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, diam, ax=None, titleStr='',
-        scaleBar=None, spikeDotSize=5):
+        scaleBar=None, scaleText=True, spikeDotSize=5):
     '''
     Plot spike positions into the figure. Both positions and spikes must be aligned!
     '''
@@ -45,12 +53,12 @@ def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, diam, ax=None, titleStr='
     axis('off')
     axis('scaled')
     title(titleStr, va='bottom')
-    if (scaleBar is not None):
-        xScaleBar(scaleBar, ax, bottom=0, right=diam/2.0, unitsText='cm', size='small')
+    gridScaleBar(scaleBar, scaleText, ax)
 
 
 
-def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None):
+def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
+        scaleText=True):
     '''
     Plot the grid-like rate map into the current axis
     '''
@@ -62,12 +70,11 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None):
     axis('scaled')
     axis('off')
     title(titleStr, va='bottom')
-    if (scaleBar is not None):
-        xScaleBar(scaleBar, ax, bottom=0, right=diam/2.0, unitsText='cm', size='small')
+    gridScaleBar(scaleBar, scaleText, ax)
 
  
 def plotAutoCorrelation(ac, X, Y, diam=np.inf, ax=None, titleStr="",
-        scaleBar=None):
+        scaleBar=None, scaleText=True):
     if (ax is None):
         ax = gca()
     ac = ma.masked_array(ac, mask = np.sqrt(X**2 + Y**2) > diam)
@@ -76,7 +83,6 @@ def plotAutoCorrelation(ac, X, Y, diam=np.inf, ax=None, titleStr="",
     axis('scaled')
     axis('off')
     title(titleStr, va='bottom')
-    if (scaleBar is not None):
-        xScaleBar(scaleBar, ax, bottom=0, right=diam, unitsText='cm', size='small')
+    gridScaleBar(scaleBar, scaleText, ax)
 
 
