@@ -193,8 +193,8 @@ vh = 1.  # Vm height
 th = 0.75 # top plot height
 height_ratios = [th, vh, vh]
 
-top = 0.45
-bottom = 0.08
+top = 0.4
+bottom = 0.05
 margin = 0.075
 div = 0.06
 width = 0.26
@@ -213,7 +213,7 @@ gs_cols = 4
 # Model schematic
 gs = GridSpec(1, 4)
 top_margin = 0.25
-top_top = 0.9
+top_top = 1.05
 top_letter_pos = 1.5
 fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
         fontweight='bold')
@@ -228,7 +228,7 @@ gs = GridSpec(gs_rows, gs_cols, height_ratios=height_ratios, hspace=hspace,
 # do not update left and right
 gs.update(left=left, right=right, bottom=bottom, top=top)
 drawSignals(gs, ds, colStart=0, noise_sigma=0)
-fig.text(letter_left, top+letter_div, "D", va=letter_va, ha=letter_ha,
+fig.text(letter_left, top+letter_div, "C", va=letter_va, ha=letter_ha,
         fontsize=19, fontweight='bold')
 
 
@@ -244,24 +244,15 @@ drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150, letterPos=-0.2)
 #        ha=letter_ha, fontsize=19, fontweight='bold')
 
 
-# Connection weights and grid fields
-gs = GridSpec(1, 1)
-w_shift = 0.2*width + div
-w_left  = left - w_shift
-w_right = w_left + 0.15
-gs.update(left=w_left, right=w_right, bottom=top+top_margin, top=top_top)
-ax_sch = subplot(gs[0, 0])
-plotWeights(ax_sch)
-fig.text(w_left-1.25*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
-        fontweight='bold')
-
+# Grid fields
 gs = GridSpec(1, 3, wspace=0)
-g_left  = w_right + div
+g_shift = 0.2*width + div
+g_left  = left - g_shift
 g_right = g_left + 0.3
 gs.update(left=g_left, right=g_right, bottom=top+top_margin, top=top_top)
 grids_ds = openGridJob(gridRootDir, noise_sigma=150, jobNum=340)
 plotGrids(gs, grids_ds, colStart=0) 
-fig.text(g_left-0.2*div, letter_top, "C", va=letter_va, ha=letter_ha, fontsize=19,
+fig.text(g_left-0.2*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
         fontweight='bold')
 
 
