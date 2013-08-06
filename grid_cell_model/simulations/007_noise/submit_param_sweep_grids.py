@@ -44,7 +44,7 @@ dry_run     = False
 
 p['time']              = 600e3  # ms
 p['nthreads']          = 1
-p['ntrials']           = 5
+p['ntrials']           = 8
 p['velON']             = 1
 
 
