@@ -23,11 +23,15 @@ from matplotlib.pyplot import *
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 
-from fig_conn_func  import plotWeights
-from data_storage   import DataStorage
-from figures_shared import plotStateSignal, plotThetaSignal, extractStateVars,\
+from fig_conn_func        import plotWeights
+from data_storage         import DataStorage
+from figures_shared       import plotStateSignal, plotThetaSignal, extractStateVars,\
         getOption, thetaLim
-from plotting.grids import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
+from plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
+from plotting.global_defs import globalAxesSettings
+from plotting.low_level   import xScaleBar
+from analysis.visitors    import AutoCorrelationVisitor
+from parameters           import DictDataSet
 
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -56,7 +60,7 @@ def openJob(rootDir, noise_sigma):
 def openGridJob(rootDir, noise_sigma, jobNum):
     fileName = rootDir + '/' + \
             'EI_param_sweep_{0}pA/job{1:05}_output.h5'.format(noise_sigma, jobNum)
-    return DataStorage.open(fileName, 'r')
+    return DataStorage.open(fileName, 'a')
 
 
 def plotHistogram(ax, sig, color='black', labelx="", labely="",
@@ -96,14 +100,58 @@ def plotGamma(gs, data, gsRow, gsCol, plotTStart, plotTEnd, yLabelOn=True,
     else:
         IsynText = ""
 
-    mon_e = data['trials'][0]['stateMon_e']
+    d = data['trials'][0]
+    mon_e = d['stateMon_e']
 
     # E cell Isyn
+    labelYPos = -0.175
     ax0 = subplot(gs[gsRow,gsCol]) 
     t, IsynMiddle = extractStateVars(mon_e, ['I_clamp_GABA_A'],
             plotTStart, plotTEnd)
-    plotStateSignal(ax0, t, IsynMiddle*1e-3, labely=IsynText, labelyPos=-0.15,
-            color='red', scaleBar=scaleBar, scaleX=0.75, scaleY=-0.1)
+    plotStateSignal(ax0, t, IsynMiddle*1e-3, labely=IsynText,
+            labelyPos=labelYPos, color='red', scaleBar=scaleBar, scaleX=0.85,
+            scaleY=-0.15, scaleText=None)
+
+    # Autocorrelation of the 10s signal sample
+    acStateList = ['I_clamp_GABA_A']
+    acTEnd = 10e3 # ms
+    v = AutoCorrelationVisitor('stateMon_e', acStateList, tEnd=acTEnd,
+            forceUpdate=False)
+    v.visitDictDataSet(DictDataSet(d))
+    a = d['analysis']
+    acVec = a['acVec'][0, :]
+    freq_T = 1. / a['freq'][0] * 1e3
+    acVal  = a['acVal'][0]
+    dt    = a['ac_dt']
+    times = np.arange(len(acVec))*dt
+    ax1 = subplot(gs[gsRow + 1,gsCol]) 
+    globalAxesSettings(ax1)
+    ax1.plot(times, acVec, color='black')
+    ax1.set_xlim([0, times[-1]])
+    ax1.set_ylim([-1, 1])
+    ax1.xaxis.set_visible(False)
+    ax1.spines['top'].set_visible(False)
+    ax1.spines['bottom'].set_visible(False)
+    ax1.spines['right'].set_visible(False)
+    ax1.yaxis.set_major_locator(LinearLocator(3))
+    ax1.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax1.text(labelYPos, 0.5, 'C',
+        verticalalignment='center', horizontalalignment='right',
+        transform=ax1.transAxes,
+        rotation=90)
+    xScaleBar(scaleBar, x=0.75, y=-0.15, ax=ax1, size='small',
+            unitsText='ms')
+
+    # Frequency annotation
+    ann_x = freq_T
+    ann_y = acVal
+    ax1.annotate("",
+        xy=(ann_x, ann_y ), xycoords='data',
+        xytext=(ann_x, ann_y+0.9), textcoords='data',
+        arrowprops=dict(arrowstyle="-|>",
+                        connectionstyle="arc3"),
+        )
+
 
 
 def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
@@ -239,8 +287,8 @@ gs_cols = 4
 
 # Model schematic
 gs = GridSpec(1, 4)
-top_margin = 0.15
-top_top = 0.95
+top_margin = 0.125
+top_top = 0.97
 top_letter_pos = 1.5
 fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
         fontweight='bold')
@@ -272,18 +320,18 @@ drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150, letterPos=-0.2)
 
 
 # Grid fields and gamma
-gs = GridSpec(2, 6, wspace=0, height_ratios=[1, 0.5])
-g_shift = 0.2*width + div
+gs = GridSpec(3, 6, wspace=0, height_ratios=[1, 0.5, 0.5])
+g_shift = 0.1*width + div
 g_left  = left - g_shift
 g_right = g_left + 0.3
 gs.update(left=g_left, right=g_right, bottom=top+top_margin, top=top_top,
-        hspace=0.3)
+        hspace=0.35)
 grids_ds = openGridJob(gridRootDir, noise_sigma=150, jobNum=340)
 plotGrids(gs, grids_ds, colStart=0) 
 fig.text(g_left-0.2*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
         fontweight='bold')
 plotGamma(gs, grids_ds, 1, slice(1, 6), plotTStart=582e3, plotTEnd=582.25e3,
-        scaleBar=50)
+        scaleBar=25)
 
 
 # noise_sigma = 300 pA
@@ -299,12 +347,5 @@ drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300,
 #        ha=letter_ha, fontsize=19, fontweight='bold')
 
 fname = outputDir + "/figure1.png"
-savefig(fname)
+savefig(fname, dpi=300)
 
-## Paste-in model schematic
-#fig_final = sg.fromfile(fname)
-#fig_sch = sg.fromfile('figures/model_schematic.svg')
-#
-#plot = fig_sch.getroot()
-#fig_final.append(plot)
-#fig_final.save(fname)

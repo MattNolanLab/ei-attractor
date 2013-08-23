@@ -23,7 +23,7 @@ import matplotlib.transforms as transforms
 import matplotlib.patches    as patches
 
 def xScaleBar(scaleLen, x, y, ax=m.gca(), height=0.02, color='black',
-        unitsText='ms', size='medium'):
+        unitsText='ms', size='medium', textYOffset=0.075):
     '''
     Plot a horizontal (X) scale bar into the axes.
 
@@ -58,7 +58,7 @@ def xScaleBar(scaleLen, x, y, ax=m.gca(), height=0.02, color='black',
         textTemplate = '{0}'
         if (unitsText != ''):
             textTemplate += ' {1}'
-        ax.text(scaleCenter, y - 0.05,
+        ax.text(scaleCenter, y - textYOffset,
                 textTemplate.format(scaleLen, unitsText),
                 va='top', ha='center', transform=ax.transAxes, size=size)
 
