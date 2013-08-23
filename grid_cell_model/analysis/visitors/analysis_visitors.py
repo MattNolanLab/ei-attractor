@@ -82,8 +82,8 @@ class AutoCorrelationVisitor(DictDSVisitor):
     monitored neurons. The results will be stored to the dictionary where the
     data came from.
     '''
-    def __init__(self, monName, stateList, dtMult=1e-3, norm=True,
-            bandStart=20, bandEnd=200, forceUpdate=False):
+    def __init__(self, monName, stateList, dtMult=1e-3, tStart=None, tEnd=None,
+            norm=True, bandStart=20, bandEnd=200, forceUpdate=False):
         '''
         Initialise the visitor.
 
@@ -95,6 +95,12 @@ class AutoCorrelationVisitor(DictDSVisitor):
             A list of strings naming the state variables to extract (and sum)
         dtMult : float, optional
             dt Multiplier to transform dt into seconds
+        tStart : float, optional
+            Start time of the analysis. If None, the signal will not be
+            cropped. The first value of the signal array is treated as time
+            zero.
+        tEnd : float, optional
+            End time of the analysis. If None, the signal will not be cropped.
         norm : bool, optional
             Whether the autocorrelation function should be normalized
         bandStart : float, optional
@@ -109,6 +115,8 @@ class AutoCorrelationVisitor(DictDSVisitor):
         self.stateList   = stateList
         self.maxLag      = None
         self.dtMult      = dtMult
+        self.tStart      = tStart
+        self.tEnd        = tEnd
         self.norm        = norm
         self.bandStart   = bandStart
         self.bandEnd     = bandEnd
@@ -141,6 +149,15 @@ class AutoCorrelationVisitor(DictDSVisitor):
         #for n_id in range(5):
             #print "n_id: ", n_id
             sig, dt = sumAllVariables(mon, n_id, self.stateList)
+            startIdx = 0
+            endIdx   = len(sig)
+            print(len(sig))
+            if (self.tStart is not None):
+                startIdx = int(self.tStart / dt)
+            if (self.tEnd is not None):
+                endIdx = int(self.tEnd / dt)
+            sig = sig[startIdx:endIdx]
+            print(len(sig))
             sig = butterBandPass(sig, dt*self.dtMult, self.bandStart,
                     self.bandEnd)
             ac = autoCorrelation(sig - np.mean(sig), max_lag=self.maxLag/dt,
@@ -148,11 +165,11 @@ class AutoCorrelationVisitor(DictDSVisitor):
             ext_idx, ext_t = localExtrema(ac)
             acVec.append(ac)
     
-            f, a = findFreq(ac, dt*1e-3, ext_idx, ext_t)
+            f, a = findFreq(ac, dt*self.dtMult, ext_idx, ext_t)
             freq.append(f)
             acval.append(a)
     
-        return freq, acval, acVec
+        return freq, acval, acVec, dt
 
 
     def visitDictDataSet(self, ds, **kw):
@@ -179,10 +196,12 @@ class AutoCorrelationVisitor(DictDSVisitor):
             log_info("AutoCorrelationVisitor", "Analysing a dataset")
             o = data['options']
             self.maxLag = 1. / (o['theta_freq'] * 1e-3)
-            freq, acVal, acVec = self.extractACStat(data[self.monName])
-            a['freq']  = np.array(freq),
-            a['acVal'] = np.array(acVal),
+            freq, acVal, acVec, dt = self.extractACStat(data[self.monName])
+            print freq
+            a['freq']  = np.array(freq)
+            a['acVal'] = np.array(acVal)
             a['acVec'] = np.array(acVec)
+            a['ac_dt'] = dt
         else:
             log_info("AutoCorrelationVisitor", "Data present. Skipping analysis.")
 
