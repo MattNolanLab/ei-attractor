@@ -33,7 +33,7 @@ lg.basicConfig(level=lg.INFO)
 # Other
 plt.rcParams['font.size'] = 11
 
-noise_sigma = 150
+noise_sigma = 0
 dirs = \
     ('EI_param_sweep_{0}pA',    (30, 30))
 
