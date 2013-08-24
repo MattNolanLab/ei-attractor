@@ -36,10 +36,10 @@ def aggregate2DTrial(sp, varList, trialNumList):
     return np.mean(retVar, 2)
 
 
-def computeYX(sp, iterList):
+def computeYX(sp, iterList, r=0, c=0, trialNum=0):
     E, I = sp.getIteratedParameters(iterList)
-    Ne = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ne')
-    Ni = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ni')
+    Ne = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ne')
+    Ni = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ni')
     return E/Ne, I/Ni
 
 def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
@@ -91,7 +91,7 @@ def plotGridTrial(sp, varList, iterList, trialNumList=[0], xlabel="",
         title="", clbarNTicks=2, xticks=True, yticks=True):
     G = aggregate2DTrial(sp, varList, trialNumList)
     G = ma.MaskedArray(G, mask=np.isnan(G))
-    Y, X = computeYX(sp, iterList)
+    Y, X = computeYX(sp, iterList, r=1, c=2)
     return plot2DTrial(X, Y, G, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
 

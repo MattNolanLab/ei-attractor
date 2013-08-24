@@ -50,16 +50,15 @@ nrec_spikes_i = 10
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(options.output_dir,
         options.fileNamePrefix, options.job_num)
-if (exists(output_fname)):
-    print('Output file exists, doing nothing')
-    exit(0)
-d = DataStorage.open(output_fname, 'w')
+d = DataStorage.open(output_fname, 'a')
+if ("trials" not in d.keys()):
+    d['trials'] = []
 
-out = []
 overalT = 0.
 ################################################################################
-for trial_idx in range(options.ntrials):
+for trial_idx in range(len(d['trials']), options.ntrials):
     print("\n\t\tStarting trial no. {0}\n".format(trial_idx))
+    d['invalidated'] = 1
     ei_net = BasicGridCellNetwork(options, simulationOpts=None,
             nrec_spikes=(nrec_spikes_e, nrec_spikes_i),
             stateRecParams=(stateMonParams, stateMonParams))
@@ -74,11 +73,11 @@ for trial_idx in range(options.ntrials):
         print("Simulation interrupted. Message: {0}".format(str(e)))
         print("Trying to save the simulated data if possible...")
     ei_net.endSimulation()
-    out.append(ei_net.getAllData())
+    d['trials'].append(ei_net.getAllData())
+    d.flush()
     constrT, simT, totalT = ei_net.printTimes()
     overalT += totalT
 
-d["trials"] = out
 d.close()
 print "Script total run time: {0} s".format(overalT)
 ################################################################################

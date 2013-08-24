@@ -42,7 +42,7 @@ def fixList(grp):
     Convert all the indexes in group `grp`. From the 0-prefix format to a
     no-prefix format.
     '''
-    print "  Fixing list (group) at {0}".format(grp.name)
+    print "  Fixing list at {0}".format(grp.name)
     for oldIdx in grp.keys():
         newIdx = str(int(oldIdx))
         if (newIdx != oldIdx):
@@ -51,11 +51,17 @@ def fixList(grp):
 
 def fixGroup(grp):
     if (isGroup(grp)):
+        print "  Processing group at {0}".format(grp.name)
         if (isList(grp)):
             fixList(grp)
         # Even if the list was fixed, fix all of its children
         for key in grp.keys():
-            fixGroup(grp[key])
+            try:
+                fixGroup(grp[key])
+            except KeyError as e:
+                msg = "ERROR: Could not access {0}/{1}. File might be broken!"
+                msg += "\nFile name: {2}"
+                print(msg.format(grp.name, key, grp.file.filename))
     else:
         return
 
@@ -66,7 +72,12 @@ if (len(sys.argv) < 2):
 
 for fileName in sys.argv[1:]:
     print "Processing file: {0}".format(fileName)
-    f = h5py.File(fileName, 'r+')
-    fixGroup(f)
-    f.close()
+    try:
+        f = h5py.File(fileName, 'r+')
+        fixGroup(f)
+        f.close()
+    except IOError:
+        print "ERROR: unable to open file!"
+    
+print("Conversion complete")
 
