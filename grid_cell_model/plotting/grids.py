@@ -38,7 +38,7 @@ def gridScaleBar(scaleLen, scaleText, ax):
         xScaleBar(scaleLen, x=0.7, y=-0.00, ax=ax, height=0.015,
                 unitsText=unitsText, size='small')
 
-def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, diam, ax=None, titleStr='',
+def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, ax=None, titleStr='',
         scaleBar=None, scaleText=True, spikeDotSize=5):
     '''
     Plot spike positions into the figure. Both positions and spikes must be aligned!

@@ -25,6 +25,7 @@ from matplotlib.gridspec import GridSpec
 
 from parameters  import JobTrialSpace2D
 from EI_plotting import plotGridTrial
+from plotting.grids import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -42,7 +43,7 @@ plt.rcParams['font.size'] = 12
 outputDir = "."
 figSize = (12, 8)
 
-NTrials=1
+NTrials=10
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 trialNum = 0
@@ -57,7 +58,7 @@ shape = (30, 30)
 
 
 
-def drawGrids(gs, dataSpace, iterList, NTrials=1, r=0, c=0, yLabelOn=True,
+def drawGridSweeps(gs, dataSpace, iterList, NTrials=1, r=0, c=0, yLabelOn=True,
         yticks=True):
     if (yLabelOn):
         yLabelText = 'E (nS)'
@@ -91,18 +92,52 @@ def drawGrids(gs, dataSpace, iterList, NTrials=1, r=0, c=0, yLabelOn=True,
     #            fontsize='large')
 
 
+def drawGridExample(gs, dataSpace, dsRows, dsCols, trialNum=0, colStart=0,
+        rowStart=0):
+
+    for idx in range(len(dsRows)):
+        if (idx == len(dsRows) - 1):
+            scaleBar = 50
+        else:
+            scaleBar = None
+        r = dsRows[idx]
+        c = dsCols[idx]
+        d = dataSpace[r][c][trialNum].data
+        a = d['analysis']
+
+        arenaDiam = d['options']['arenaSize']
+
+        ax0 = subplot(gs[rowStart, colStart+idx]) 
+        plotSpikes2D(a['spikes_e'], a['rat_pos_x'], a['rat_pos_y'],
+                a['rat_dt'], spikeDotSize=3, scaleBar=scaleBar, scaleText=None)
+
+        ax1 = subplot(gs[rowStart+1, colStart+idx]) 
+        rateMap = a['rateMap_e']
+        X       = a['rateMap_e_X']
+        Y       = a['rateMap_e_Y']
+        plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=scaleBar,
+                scaleText=False)
+
+        ax2 = subplot(gs[rowStart+2, colStart+idx]) 
+        X = a['corr_X']
+        Y = a['corr_Y']
+        ac = a['corr']
+        plotAutoCorrelation(ac, X, Y, diam=arenaDiam, scaleBar=scaleBar)
+
 
 fig = figure(figsize=figSize)
 
 th = 1 # top plot height
 hr = 0.75
+space = 0.5
 top = 0.93
-bottom = 0.1
-margin = 0.04
-div = 0.02
-width = 0.23
-hspace = 0.3
-gsHeightRatios = [th, hr, hr, hr]
+bottom = 0.05
+margin = 0.05
+div = 0.08
+width = 0.25
+hspace = 0
+wspace = 0.1
+gsHeightRatios = [th, space, hr, hr, hr]
 
 letter_top=0.97
 letter_div = 0.02
@@ -110,7 +145,7 @@ letter_left=0.01
 letter_va='bottom'
 letter_ha='left'
 
-gsRows = 4
+gsRows = 5
 gsCols = 2
 
 # noise_sigm = 0 pA
@@ -119,7 +154,9 @@ right = left + width
 gs = GridSpec(gsRows, gsCols, height_ratios=gsHeightRatios, hspace=hspace)
 gs.update(left=left, right=right, bottom=bottom, top=top)
 dataSpace = JobTrialSpace2D(shape, root0)
-drawGrids(gs, dataSpace, iterList, NTrials=NTrials, r=1, c=2)
+drawGridSweeps(gs, dataSpace, iterList, NTrials=NTrials, r=1, c=2)
+drawGridExample(gs, dataSpace, dsRows=[28, 15], dsCols=[3, 15], trialNum=0,
+        colStart=0, rowStart=2)
 
 
 # noise_sigma = 150 pA
@@ -128,8 +165,10 @@ left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
 dataSpace = JobTrialSpace2D(shape, root150)
-drawGrids(gs, dataSpace, iterList, NTrials=NTrials, r=11, c=10, yLabelOn=False,
-        yticks=False)
+drawGridSweeps(gs, dataSpace, iterList, NTrials=NTrials, r=11, c=10,
+        yLabelOn=False, yticks=False)
+drawGridExample(gs, dataSpace, dsRows=[10, 2], dsCols=[10, 9], trialNum=0,
+        colStart=0, rowStart=2)
 
 
 
@@ -139,8 +178,10 @@ left = right + div
 right = left + width
 gs.update(left=left, right=right, bottom=bottom, top=top)
 dataSpace = JobTrialSpace2D(shape, root300)
-drawGrids(gs, dataSpace, iterList, NTrials=NTrials, r=0, c=5, yLabelOn=False,
-        yticks=False)
+drawGridSweeps(gs, dataSpace, iterList, NTrials=NTrials, r=0, c=5,
+        yLabelOn=False, yticks=False)
+drawGridExample(gs, dataSpace, dsRows=[16, 15], dsCols=[7, 23], trialNum=0,
+        colStart=0, rowStart=2)
 
 fname = outputDir + "/figure2.png"
 savefig(fname, dpi=300)
