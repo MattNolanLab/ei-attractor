@@ -34,11 +34,8 @@ from analysis.visitors    import AutoCorrelationVisitor
 from parameters           import DictDataSet
 
 from matplotlib import rc
-rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-## for Palatino and other serif fonts use:
-#rc('font',**{'family':'serif','serif':['Palatino']})
-#rc('text', usetex=True)
 rc('pdf', fonttype=42)
+rc('mathtext', default='regular')
 
 outputDir = "."
 
@@ -235,7 +232,7 @@ def plotGrids(gs, data, gsRow=0, colStart=0):
     cEnd = cStart + nColsPerPlot
     ax0 = subplot(gs[gsRow, cStart:cEnd])
     plotSpikes2D(a['spikes_e'], a['rat_pos_x'], a['rat_pos_y'], a['rat_dt'],
-            diam=arenaDiam, scaleBar=50, scaleText=False, spikeDotSize=2)
+            scaleBar=50, scaleText=False, spikeDotSize=2)
 
     # Grid field
     it = 1
@@ -346,6 +343,6 @@ drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300,
 #fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "F", va=letter_va,
 #        ha=letter_ha, fontsize=19, fontweight='bold')
 
-fname = outputDir + "/figure1.png"
+fname = outputDir + "/figure1.pdf"
 savefig(fname, dpi=300)
 

@@ -32,11 +32,8 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 from matplotlib import rc
-rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-## for Palatino and other serif fonts use:
-#rc('font',**{'family':'serif','serif':['Palatino']})
-#rc('text', usetex=True)
 rc('pdf', fonttype=42)
+rc('mathtext', default='regular')
 
 plt.rcParams['font.size'] = 12
 

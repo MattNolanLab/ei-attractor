@@ -88,11 +88,11 @@ def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn, thetaLim, color='grey')
     setSignalAxes(ax, leftSpineOn=False)
     ax.plot(t, theta, color=color)
     ax.set_ylim(thetaLim)
-    txt = '$\sigma = ' + str(noise_sigma) + '\ \mathrm{pA}$'
+    txt = '$\sigma$ = ' + str(noise_sigma) + ' pA'
     ax.text(0.5, 1.1, txt,
             verticalalignment='bottom', horizontalalignment='center',
             transform=ax.transAxes,
-            fontsize='large', fontweight='bold')
+            fontsize='large', fontweight='normal')
     ax.axhline(0.0, color='grey', linestyle=':', linewidth=0.5)
     if (yLabelOn):
         ax.text(t[-1] - 10, -50, "0 pA", ha="right", va='top', fontsize='small')
