@@ -21,13 +21,15 @@
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as mpl
-from matplotlib.pyplot  import plot, xlabel, ylabel, legend, ylim, \
+from matplotlib.pyplot  import plot, xlabel, ylabel, legend, xlim, ylim, \
         tight_layout, axis, title, pcolor, colorbar, hold, subplot, gca
 from matplotlib.ticker  import MaxNLocator, LinearLocator
 
 from global_defs         import globalAxesSettings, createColorbar
 from plotting.low_level  import xScaleBar
 from analysis.grid_cells import extractSpikePositions2D
+
+lim_factor = 1.1
 
 def gridScaleBar(scaleLen, scaleText, ax):
     if (scaleLen is not None):
@@ -38,8 +40,8 @@ def gridScaleBar(scaleLen, scaleText, ax):
         xScaleBar(scaleLen, x=0.7, y=-0.00, ax=ax, height=0.015,
                 unitsText=unitsText, size='small')
 
-def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, ax=None, titleStr='',
-        scaleBar=None, scaleText=True, spikeDotSize=5):
+def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, diam=np.inf, ax=None,
+        titleStr='', scaleBar=None, scaleText=True, spikeDotSize=5):
     '''
     Plot spike positions into the figure. Both positions and spikes must be aligned!
     '''
@@ -53,6 +55,9 @@ def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, ax=None, titleStr='',
     axis('off')
     axis('scaled')
     title(titleStr, va='bottom')
+    if (diam != np.inf):
+        xlim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
+        ylim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
     gridScaleBar(scaleBar, scaleText, ax)
 
 
@@ -70,6 +75,9 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
     axis('scaled')
     axis('off')
     title(titleStr, va='bottom')
+    if (diam != np.inf):
+        xlim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
+        ylim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
     gridScaleBar(scaleBar, scaleText, ax)
 
  
@@ -83,6 +91,9 @@ def plotAutoCorrelation(ac, X, Y, diam=np.inf, ax=None, titleStr="",
     axis('scaled')
     axis('off')
     title(titleStr, va='bottom')
+    if (diam != np.inf):
+        xlim([-lim_factor*diam, lim_factor*diam])
+        ylim([-lim_factor*diam, lim_factor*diam])
     gridScaleBar(scaleBar, scaleText, ax)
 
 
