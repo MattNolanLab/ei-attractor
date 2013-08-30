@@ -19,6 +19,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import matplotlib.pyplot as plt
 from matplotlib.pyplot import *
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
@@ -36,6 +37,7 @@ from parameters           import DictDataSet
 from matplotlib import rc
 rc('pdf', fonttype=42)
 rc('mathtext', default='regular')
+plt.rcParams['font.size'] = 11
 
 outputDir = "."
 
@@ -47,6 +49,10 @@ root150 = "{0}/single_neuron".format(dataRootDir)
 root300 = "{0}/single_neuron".format(dataRootDir)
 gridRootDir = '{0}/grids'.format(dataRootDir)
 fileTemplate = "noise_sigma{0}_output.h5"
+
+examples = 0
+grids    = 0
+gamma    = 1
 
 ##############################################################################
 
@@ -117,7 +123,8 @@ def plotGamma(gs, data, gsRow, gsCol, plotTStart, plotTEnd, yLabelOn=True,
     v.visitDictDataSet(DictDataSet(d))
     a = d['analysis']
     acVec = a['acVec'][0, :]
-    freq_T = 1. / a['freq'][0] * 1e3
+    freq = a['freq'][0]
+    freq_T = 1. /  freq * 1e3
     acVal  = a['acVal'][0]
     dt    = a['ac_dt']
     times = np.arange(len(acVec))*dt
@@ -132,7 +139,7 @@ def plotGamma(gs, data, gsRow, gsCol, plotTStart, plotTEnd, yLabelOn=True,
     ax1.spines['right'].set_visible(False)
     ax1.yaxis.set_major_locator(LinearLocator(3))
     ax1.yaxis.set_minor_locator(AutoMinorLocator(2))
-    ax1.text(labelYPos, 0.5, 'C',
+    ax1.text(labelYPos, 0.5, 'Correlation',
         verticalalignment='center', horizontalalignment='right',
         transform=ax1.transAxes,
         rotation=90)
@@ -142,11 +149,15 @@ def plotGamma(gs, data, gsRow, gsCol, plotTStart, plotTEnd, yLabelOn=True,
     # Frequency annotation
     ann_x = freq_T
     ann_y = acVal
-    ax1.annotate("",
+    txt = "Frequency: {0:.1f} Hz ({1:.1f} ms)\nCorrelation: {2:.1f}"
+    txt = txt.format(freq, freq_T, acVal)
+    ax1.annotate(txt,
         xy=(ann_x, ann_y ), xycoords='data',
-        xytext=(ann_x, ann_y+0.9), textcoords='data',
+        xytext=(0.2, 1.2), textcoords='axes fraction',
+        va='center', ha='left',
         arrowprops=dict(arrowstyle="-|>",
-                        connectionstyle="arc3"),
+                        connectionstyle="arc3",
+                        relpos=(0, 0.5)),
         )
 
 
@@ -219,35 +230,24 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     #            loc=[0.0, 1.1], ncol=2)
 
 
-def plotGrids(gs, data, gsRow=0, colStart=0):
+def plotGrids(gs, data, gsRowStart=0, gsCol=0):
     a = data['trials'][0]['analysis']
     arenaDiam = data['trials'][0]['options']['arenaSize']
     rateMap = a['rateMap_e']
-    _, nCols = gs.get_geometry()
-    nColsPerPlot = nCols/3
 
     # Spikes
-    it = 0
-    cStart = colStart + it*nColsPerPlot
-    cEnd = cStart + nColsPerPlot
-    ax0 = subplot(gs[gsRow, cStart:cEnd])
+    ax0 = subplot(gs[gsRowStart, gsCol])
     plotSpikes2D(a['spikes_e'], a['rat_pos_x'], a['rat_pos_y'], a['rat_dt'],
             scaleBar=50, scaleText=False, spikeDotSize=2)
 
     # Grid field
-    it = 1
-    cStart = colStart + it*nColsPerPlot
-    cEnd = cStart + nColsPerPlot
-    ax1 = subplot(gs[gsRow, cStart:cEnd])
+    ax1 = subplot(gs[gsRowStart+1, gsCol])
     X = a['rateMap_e_X']
     Y = a['rateMap_e_Y']
     plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=50, scaleText=False)
 
     # Grid field autocorrelation
-    it = 2
-    cStart = colStart + it*nColsPerPlot
-    cEnd = cStart + nColsPerPlot
-    ax2 = subplot(gs[gsRow, cStart:cEnd])
+    ax2 = subplot(gs[gsRowStart+2, gsCol])
     X = a['corr_X']
     Y = a['corr_Y']
     ac = a['corr']
@@ -257,16 +257,14 @@ def plotGrids(gs, data, gsRow=0, colStart=0):
 
 
 
-figSize = (10, 5.2)
-fig = figure(figsize=figSize)
 
 hr = 0.75
 vh = 1.  # Vm height
 th = 0.75 # top plot height
 height_ratios = [th, vh, vh]
 
-top = 0.4
-bottom = 0.05
+top = 0.87
+bottom = 0.075
 margin = 0.075
 div = 0.06
 width = 0.26
@@ -274,7 +272,7 @@ hspace = 0.3
 wspace = 1.2
 
 letter_top=0.95
-letter_div = 0.05
+letter_div = 0.02
 letter_left=0.01
 letter_va='bottom'
 letter_ha='left'
@@ -282,67 +280,67 @@ letter_ha='left'
 gs_rows = 3
 gs_cols = 4
 
-# Model schematic
-gs = GridSpec(1, 4)
-top_margin = 0.125
-top_top = 0.97
-top_letter_pos = 1.5
-fig.text(letter_left, letter_top, "A", va=letter_va, ha=letter_ha, fontsize=19,
-        fontweight='bold')
+
+if (examples):
+    fig_examples = figure(figsize=(9.6, 2.6))
+
+    # noise_sigm = 0 pA
+    left = margin
+    right = left + width
+    ds = openJob(root0, noise_sigma=0)
+    gs = GridSpec(gs_rows, gs_cols, height_ratios=height_ratios, hspace=hspace,
+            wspace=wspace)
+    # do not update left and right
+    gs.update(left=left, right=right, bottom=bottom, top=top)
+    drawSignals(gs, ds, colStart=0, noise_sigma=0)
+    #fig.text(left, top+letter_div, "B", va=letter_va, ha=letter_ha,
+    #        fontsize=19, fontweight='bold')
 
 
-# noise_sigm = 0 pA
-left = margin
-right = left + width
-ds = openJob(root0, noise_sigma=0)
-gs = GridSpec(gs_rows, gs_cols, height_ratios=height_ratios, hspace=hspace,
-        wspace=wspace)
-# do not update left and right
-gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, ds, colStart=0, noise_sigma=0)
-fig.text(letter_left, top+letter_div, "C", va=letter_va, ha=letter_ha,
-        fontsize=19, fontweight='bold')
+    # noise_sigma = 150 pA
+    ds = openJob(root150, noise_sigma=150)
+    gs = GridSpec(gs_rows, gs_cols, height_ratios=height_ratios, hspace=hspace,
+            wspace=wspace)
+    left = right + div
+    right = left + width
+    gs.update(left=left, right=right, bottom=bottom, top=top)
+    drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150, letterPos=-0.2)
 
 
-# noise_sigma = 150 pA
-ds = openJob(root150, noise_sigma=150)
-gs = GridSpec(gs_rows, gs_cols, height_ratios=height_ratios, hspace=hspace,
-        wspace=wspace)
-left = right + div
-right = left + width
-gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=150, letterPos=-0.2)
-#fig.text(letter_left+margin+width+0.5*div, top+letter_div, "E", va=letter_va,
-#        ha=letter_ha, fontsize=19, fontweight='bold')
+
+    # noise_sigma = 300 pA
+    ds = openJob(root300, noise_sigma=300)
+    gs = GridSpec(gs_rows, gs_cols, height_ratios=height_ratios, hspace=hspace,
+            wspace=wspace)
+    left = right + div
+    right = left + width
+    gs.update(left=left, right=right, bottom=bottom, top=top)
+    drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300,
+            letterPos=-0.2, scaleBar=50)
+
+    fname = outputDir + "/figure1_examples.pdf"
+    savefig(fname, dpi=300)
 
 
-# Grid fields and gamma
-gs = GridSpec(3, 6, wspace=0, height_ratios=[1, 0.5, 0.5])
-g_shift = 0.1*width + div
-g_left  = left - g_shift
-g_right = g_left + 0.3
-gs.update(left=g_left, right=g_right, bottom=top+top_margin, top=top_top,
-        hspace=0.35)
 grids_ds = openGridJob(gridRootDir, noise_sigma=150, jobNum=340)
-plotGrids(gs, grids_ds, colStart=0) 
-fig.text(g_left-0.2*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
-        fontweight='bold')
-plotGamma(gs, grids_ds, 1, slice(1, 6), plotTStart=582e3, plotTEnd=582.25e3,
-        scaleBar=25)
+if (grids):
+    ## Grid fields and gamma
+    fig_grids = figure(figsize=(1.3, 2.6))
+    gs = GridSpec(3, 1)
+    gs.update(left=0, right=1, bottom=0.1, top=1, hspace=0)
+    plotGrids(gs, grids_ds) 
+    #fig.text(g_left-0.2*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
+    #        fontweight='bold')
+    fname = outputDir + "/figure1_grids.png"
+    savefig(fname, dpi=300, transparent=True)
 
-
-# noise_sigma = 300 pA
-ds = openJob(root300, noise_sigma=300)
-gs = GridSpec(gs_rows, gs_cols, height_ratios=height_ratios, hspace=hspace,
-        wspace=wspace)
-left = right + div
-right = left + width
-gs.update(left=left, right=right, bottom=bottom, top=top)
-drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300,
-        letterPos=-0.2, scaleBar=50)
-#fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "F", va=letter_va,
-#        ha=letter_ha, fontsize=19, fontweight='bold')
-
-fname = outputDir + "/figure1.pdf"
-savefig(fname, dpi=300)
+if (gamma):
+    fig_grids = figure(figsize=(4, 2.6))
+    gs = GridSpec(2, 1, height_ratios=[1, 0.8])
+    gs.update(left=0, right=1, bottom=0.1, top=1)
+    plotGamma(gs, grids_ds, 0, 0, plotTStart=582e3, plotTEnd=582.25e3,
+            scaleBar=25)
+    gs.tight_layout(fig_grids, rect=(0.05, 0.05, 1, 1), h_pad=3)
+    fname = outputDir + "/figure1_gamma.pdf"
+    savefig(fname, dpi=300, transparent=True)
 
