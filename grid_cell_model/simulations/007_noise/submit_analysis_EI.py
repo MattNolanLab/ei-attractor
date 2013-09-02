@@ -28,7 +28,7 @@ lg.basicConfig(level=lg.DEBUG)
 # Submitting
 ENV         = 'cluster'
 appName     = 'analysis_EI.py'
-rtLimit     = '00:05:00'
+rtLimit     = '00:10:00'
 numCPU      = 1
 blocking    = False
 timePrefix  = False
@@ -36,7 +36,7 @@ numRepeat   = 1
 dry_run     = False
 
 
-noise_sigma = 150
+noise_sigma = 300 # pA
 gammaBumpType = 'gamma-bump'
 velocityType = 'velocity'
 gridsType = 'grids'

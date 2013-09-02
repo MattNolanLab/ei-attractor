@@ -33,7 +33,7 @@ from analysis.grid_cells import extractSpikePositions2D, SNSpatialRate2D, \
         SNAutoCorr, cellGridnessScore
 from plotting.bumps  import torusFiringRate
 from plotting.grids  import plotSpikes2D
-from otherpkg.log    import log_warn
+from otherpkg.log    import log_warn, log_info
 
 __all__ = ['DetailedPlotVisitor', 'GridPlotVisitor']
 
@@ -309,7 +309,7 @@ class GridPlotVisitor(DictDSVisitor):
 
     def __init__(self, rootDir, spikeType='E', neuronNum=0, arenaDiam=180.0,
             smoothingSigma=3.0, bumpTStart=None, bumpTEnd=None,
-            plotOptions=PlotOptions()):
+            minGridnessT=0.0, plotOptions=PlotOptions()):
         '''
         Parameters
         ----------
@@ -331,6 +331,10 @@ class GridPlotVisitor(DictDSVisitor):
             Start time for bump (firing rate) plots (ms)
         bumpTEnd   : float
             End time for bump plots (ms)
+        minGridnessT : float
+            Minimal time (determined by the time of last spike of an E cell) to
+            consider the simulation for gridness score (if less than this time,
+            gridness score will be NaN).
         '''
         self.rootDir = rootDir
         self.setSpikeType(spikeType)
@@ -341,6 +345,7 @@ class GridPlotVisitor(DictDSVisitor):
         self.bumpTStart = bumpTStart
         self.bumpTEnd = bumpTEnd
         self.po = plotOptions
+        self.minGridnessT = minGridnessT
 
 
 
@@ -502,7 +507,13 @@ class GridPlotVisitor(DictDSVisitor):
             ylabel('Corr. coefficient')
             savefig('{0}_gridnessCorr_{1}.png'.format(fileNameTemplate,
                 self._spikeType))
-            out['gridnessScore']  = G
+            # Gridness score valid only when T >= minGridnessT
+            lastSpikeT = data['spikeMon_e']['events']['times'][-1]
+            if (lastSpikeT >= self.minGridnessT):
+                out['gridnessScore']  = G
+            else:
+                log_warn('GridPlotVisitor', 'Simulation too short, G <- NaN')
+                out['gridnessScore']  = np.nan
             out['gridnessCorr']   = crossCorr
             out['gridnessAngles'] = angles
 
