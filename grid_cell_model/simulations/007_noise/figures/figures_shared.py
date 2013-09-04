@@ -19,7 +19,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-#from matplotlib.pyplot import plot,
+from matplotlib.pyplot import gca
 from matplotlib.ticker import MaxNLocator, AutoMinorLocator, LinearLocator
 import matplotlib.transforms as transforms
 
@@ -180,4 +180,17 @@ def plotEIRaster(ax, data, mon_e, mon_i, tLimits, labely='', labelyPos=-0.2):
         verticalalignment='center', horizontalalignment='right',
         transform=ax.transAxes,
         rotation=90)
+
+
+def plotOneHist(data, range=None, nbins=40, normed=False, color='blue'):
+    ax = gca()
+    globalAxesSettings(ax)
+    ax.hist(data, bins=nbins, range=range, normed=normed, histtype='step',
+            align='mid')
+    ax.minorticks_on()
+    ax.xaxis.set_minor_locator(AutoMinorLocator(3))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(3))
+    ax.xaxis.set_major_locator(MaxNLocator(4))
+    ax.yaxis.set_major_locator(MaxNLocator(4))
+
 

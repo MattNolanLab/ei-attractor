@@ -29,11 +29,53 @@ from parameters import DataSpace
 
 ###############################################################################
 
-def aggregate2DTrial(sp, varList, trialNumList):
+def aggregate2DTrial(sp, varList, trialNumList, fReduce=np.mean):
+    '''
+    Aggregate all the data from a 2D ParamSpace, applying fReduce on the trials
+    of all the data sets in the parameter space.
+
+    Parameters
+    ----------
+    sp : ParamSpace
+        A parameter space to apply the reduction on.
+    varList : list of strings
+        A variable list, specifying the location of the variable to reduce.
+        This will be prefixed with ['analysis']
+    trialNumList : list of ints
+        A list specifying exactly which trials are to be processed.
+    fReduce : a function f(data, axis)
+        A reduction function.
+    output : a 2D numpy array of the reduced values
+    '''
     varList = ['analysis'] + varList
     retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean,
             saveData=True)
-    return np.mean(retVar, 2)
+    return fReduce(retVar, 2)
+
+
+def aggregate2D(sp, varList, funReduce=None):
+    '''
+    Aggregate all the data from a 2D ParamSpace, applying fReduce on the trials
+    of all the data sets in the parameter space, however the data is retrieved
+    from the top-level of the data hierarchy, i.e. sp['analysis']. funReduce is
+    applied on the data of each item in the ParamSpace (not necessarily
+    trials).
+
+    Parameters
+    ----------
+    sp : ParamSpace
+        A parameter space to apply the reduction on.
+    varList : list of strings
+        A variable list, specifying the location of the variable to reduce.
+        This will be prefixed with ['analysis']
+    funReduce : a function f(data, axis)
+        A reduction function.
+    output : a 2D numpy array of the reduced values
+    '''
+    varList = ['analysis'] + varList
+    return sp.aggregateData(varList, funReduce=funReduce,
+            trialNumList='all-at-once', saveData=True)
+
 
 
 def computeYX(sp, iterList, r=0, c=0, trialNum=0):

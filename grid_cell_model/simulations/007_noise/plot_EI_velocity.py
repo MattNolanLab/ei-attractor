@@ -32,16 +32,12 @@ import numpy.ma          as ma
 from plotting.global_defs import globalAxesSettings
 from EI_plotting import plot2DTrial
 from parameters.param_space import JobTrialSpace2D, DataSpace
+from figures.figures_shared import plotOneHist
+from figures.EI_plotting    import aggregate2D
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)
-
-
-def aggregate2D(sp, varList, funReduce=None):
-    varList = ['analysis'] + varList
-    return sp.aggregateData(varList, funReduce=funReduce,
-            trialNumList='all-at-once', saveData=True)
 
 
 def computeYX(sp, iterList):
@@ -82,17 +78,6 @@ def plotSlopeVsError(sp, varList, iterList):
     ax.xaxis.set_major_locator(MaxNLocator(4))
     ax.yaxis.set_major_locator(MaxNLocator(4))
 
-
-def plotOneHist(data, range=None, nbins=40, normed=False):
-    ax = plt.gca()
-    globalAxesSettings(ax)
-    hist(data, bins=nbins, range=range, normed=normed, histtype='step',
-            align='mid')
-    ax.minorticks_on()
-    ax.xaxis.set_minor_locator(AutoMinorLocator(3))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(3))
-    ax.xaxis.set_major_locator(MaxNLocator(4))
-    ax.yaxis.set_major_locator(MaxNLocator(4))
 
 def plotHistograms(sp, varList, iterList):
     ((X, Y), slopes, errs) = getAll(sp, varList, iterList)

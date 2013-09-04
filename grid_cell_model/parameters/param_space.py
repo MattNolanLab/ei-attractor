@@ -335,6 +335,7 @@ class JobTrialSpace2D(DataSpace):
                                 '{1}). Setting value as NaN.'
                             log_warn('JobTrialSpace2D', msg.format(r, c))
                             log_warn("JobTrialSpace2D", "Error message: {0}".format(str(e)))
+                            retVar[r,c] = np.nan
                 else:
                     if (len(self[r][c]) == 0):
                         retVar[r, c, :] = np.nan
@@ -349,6 +350,7 @@ class JobTrialSpace2D(DataSpace):
                                     '{1}). Setting value as NaN.'.format(r, c)
                                 log_warn('JobTrialSpace2D', msg)
                                 log_warn("JobTrialSpace2D", "Error message: {0}".format(str(e)))
+                                retVar[r][c][trialNum] = np.nan
 
         if (saveData):
             outFileName = '{0}/{1}'.format(self._rootDir, saveDataFileName)
