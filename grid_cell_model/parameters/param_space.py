@@ -245,8 +245,71 @@ class JobTrialSpace2D(DataSpace):
                 self[r][c].visit(visitor, trialList)
 
 
+    def _createAggregateOutput(self, trialNumList, output_dtype):
+        '''
+        Create the correct data type given the parameters. The output can be
+        either a numpy.ndarray or a multidimensional list.
+
+        Parameters
+        ----------
+        see self.aggregateData
+        '''
+        shape = self.getShape()
+        rows = shape[0]
+        cols = shape[1]
+        retVar = None
+        if (output_dtype == 'array'):
+            if (trialNumList == 'all-at-once'):
+                retVar = np.ndarray((rows, cols))
+            else:
+                nTrials = len(trialNumList)
+                retVar = np.ndarray((rows, cols, nTrials))
+        elif (output_dtype == 'list'):
+            if (trialNumList == 'all-at-once'):
+                retVar = [[np.nan for x in xrange(cols)] for x in xrange(rows)]
+            else:
+                nTrials = len(trialNumList)
+                retVar = [[[np.nan for t in xrange(nTrials)] for c in
+                    xrange(cols)] for r in xrange(rows)]
+        return retVar
+
+
+    def _aggregateItem(self, retVar, r, c, trialNumList, varList, funReduce):
+        if (trialNumList == 'all-at-once'):
+            data = self[r][c].getAllTrialsAsDataSet().data
+            if (data is None):
+                retVar[r][c] = np.nan
+            else:
+                try:
+                    retVar[r][c] = funReduce(getDictData(data, varList))
+                except (IOError, KeyError) as e:
+                    self._reductionFailureMsg(e, r, c)
+                    retVar[r][c] = np.nan
+        else:
+            for trialNum in trialNumList:
+                if (len(self[r][c]) == 0):
+                    retVar[r][c][trialNum] = np.nan
+                    continue
+
+                try:
+                    data = self[r][c][trialNum].data
+                    retVar[r][c][trialNum] = funReduce(getDictData(data,
+                        varList))
+                except (IOError, KeyError) as e:
+                    self._reductionFailureMsg(e, r, c)
+                    retVar[r][c][trialNum] = np.nan
+
+
+    def _reductionFailureMsg(self, e, r, c):
+        msg = 'Reduction step failed at (r, c) == ({0}, '+\
+            '{1}). Setting value as NaN.'.format(r, c)
+        log_warn('JobTrialSpace2D', msg)
+        log_warn("JobTrialSpace2D", "Error message: {0}".format(str(e)))
+
+
     def aggregateData(self, varList, trialNumList, funReduce=None,
-            loadData=False, saveData=False, saveDataFileName='reductions.h5'):
+            output_dtype='array', loadData=False, saveData=False,
+            saveDataFileName='reductions.h5'):
         '''
         Aggregate the data from each trial into a 2D object array of the shape
         (row, col), each item containing a list of values, one value for each
@@ -268,6 +331,9 @@ class JobTrialSpace2D(DataSpace):
         funReduce : a function f(x), or None
             A function to apply to each data point for each trial. Must take
             exactly one parameter. If None, no function will be applied.
+        output_dtype : string
+            Output array data type. If 'array' the output will be of type
+            numpy.ndarray; if 'list', the output will be list.
         loadData : bool, optional
             If True, try to load data from the reductions data file (defined by
             the saveDataFileName). If the data cannot be loaded, do the
@@ -307,50 +373,18 @@ class JobTrialSpace2D(DataSpace):
             inData.close()
 
 
-
         # Data not loaded, do the reduction
         shape = self.getShape()
         rows = shape[0]
         cols = shape[1]
-        retVar = None
-        if (trialNumList == 'all-at-once'):
-            retVar = np.ndarray((rows, cols))
-        else:
-            nTrials = len(trialNumList)
-            retVar = np.ndarray((rows, cols, nTrials))
+        retVar = self._createAggregateOutput(trialNumList, output_dtype)
 
         if (funReduce is None):
             funReduce = lambda x: x
+
         for r in xrange(rows):
             for c in xrange(cols):
-                if (trialNumList == 'all-at-once'):
-                    data = self[r][c].getAllTrialsAsDataSet().data
-                    if (data is None):
-                        retVar[r, c] = np.nan
-                    else:
-                        try:
-                            retVar[r, c] = funReduce(getDictData(data, varList))
-                        except (IOError, KeyError) as e:
-                            msg = 'Reduction step failed at (r, c) == ({0}, '+\
-                                '{1}). Setting value as NaN.'
-                            log_warn('JobTrialSpace2D', msg.format(r, c))
-                            log_warn("JobTrialSpace2D", "Error message: {0}".format(str(e)))
-                            retVar[r,c] = np.nan
-                else:
-                    if (len(self[r][c]) == 0):
-                        retVar[r, c, :] = np.nan
-                    else:
-                        for trialNum in trialNumList:
-                            try:
-                                data = self[r][c][trialNum].data
-                                retVar[r][c][trialNum] = funReduce(getDictData(data,
-                                    varList))
-                            except (IOError, KeyError) as e:
-                                msg = 'Reduction step failed at (r, c) == ({0}, '+\
-                                    '{1}). Setting value as NaN.'.format(r, c)
-                                log_warn('JobTrialSpace2D', msg)
-                                log_warn("JobTrialSpace2D", "Error message: {0}".format(str(e)))
-                                retVar[r][c][trialNum] = np.nan
+                self._aggregateItem(retVar, r, c, trialNumList, varList, funReduce)
 
         if (saveData):
             outFileName = '{0}/{1}'.format(self._rootDir, saveDataFileName)
