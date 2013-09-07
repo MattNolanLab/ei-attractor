@@ -261,17 +261,6 @@ if (grids):
     exRows = [28, 15]
     exCols = [3, 15]
     exDir  = [(1., -1), (1., 1.)]
-    drawGridSweeps(gs, gridDataSpace0, iterList, NTrials=NTrials, r=1, c=2,
-            xLabelOn=False, exRows=exRows, exCols=exCols, exLetters=['B', 'C'],
-            exDir=exDir, xticks=False)
-    #fig.text(left-letter_left_offset, top, "A", va=letter_va, ha=letter_ha,
-    #        fontsize=19, fontweight='bold')
-    #drawGridExample(gs, gridDataSpace0, dsRows=exRows, dsCols=exCols, trialNum=0,
-    #        colStart=0, rowStart=2)
-    #fig.text(left-letter_ex_xoffset, letter_top-letter_ex_yoffset, "B", va=letter_va,
-    #        ha=letter_ha, fontsize=19, fontweight='bold')
-    #fig.text(left+letter_ex2_mult*width, letter_top-letter_ex_yoffset, "C",
-    #        va=letter_va, ha=letter_ha, fontsize=19, fontweight='bold')
 
 
     # noise_sigma = 150 pA
@@ -285,14 +274,6 @@ if (grids):
     drawGridSweeps(gs, gridDataSpace150, iterList, NTrials=NTrials, r=11, c=10,
             xLabelOn=False, xticks=False, exRows=exRows, exCols=exCols,
             exLetters=['E', 'F'], exDir=exDir)
-    #fig.text(left-letter_left_offset, top, "B", va=letter_va, ha=letter_ha,
-    #        fontsize=19, fontweight='bold')
-    #drawGridExample(gs, gridDataSpace150, dsRows=exRows, dsCols=exCols, trialNum=0,
-    #        colStart=0, rowStart=2)
-    #fig.text(left-letter_ex_xoffset, letter_top-letter_ex_yoffset, "E", va=letter_va,
-    #        ha=letter_ha, fontsize=19, fontweight='bold')
-    #fig.text(left+letter_ex2_mult*width, letter_top-letter_ex_yoffset, "F",
-    #        va=letter_va, ha=letter_ha, fontsize=19, fontweight='bold')
 
 
 
@@ -307,14 +288,6 @@ if (grids):
     drawGridSweeps(gs, gridDataSpace300, iterList, NTrials=NTrials, r=0, c=5,
             xticks=True, exRows=exRows, exCols=exCols, exLetters=['H', 'I'],
             exDir=exDir, exColor='black')
-    #fig.text(left-letter_left_offset, top, "C", va=letter_va, ha=letter_ha,
-    #        fontsize=19, fontweight='bold')
-    #drawGridExample(gs, gridDataSpace300, dsRows=exRows, dsCols=exCols, trialNum=0,
-    #        colStart=0, rowStart=2, scaleBarFlag=True)
-    #fig.text(left-letter_ex_xoffset, letter_top-letter_ex_yoffset, "H", va=letter_va,
-    #        ha=letter_ha, fontsize=19, fontweight='bold')
-    #fig.text(left+letter_ex2_mult*width, letter_top-letter_ex_yoffset, "I",
-    #        va=letter_va, ha=letter_ha, fontsize=19, fontweight='bold')
 
     fname = outputDir + "/figure2_sweeps.png"
     savefig(fname, dpi=300, transparent=True)
