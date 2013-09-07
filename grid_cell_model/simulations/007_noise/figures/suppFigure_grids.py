@@ -22,11 +22,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.pyplot   import figure, subplot, plot, savefig
+from matplotlib.colorbar import make_axes
 
 from parameters  import JobTrialSpace2D
 from EI_plotting import plotGridTrial, computeYX, aggregate2D, \
         drawGridExamples,  drawEIRectSelection
-from plotting.global_defs import globalAxesSettings
+from plotting.global_defs import globalAxesSettings, createColorbar
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -80,6 +81,12 @@ def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0)):
             clbarNTicks=3,
             vmin=None,
             vmax=None)
+
+    cax, kw = make_axes(ax0, orientation='vertical',
+            nticks=4, shrink=0.9)
+    globalAxesSettings(cax)
+    cb = createColorbar(ax, None, "Gridness score", cax=cax, **kw)
+
     drawEIRectSelection(ax0, spaceRect, X, Y)
 
 

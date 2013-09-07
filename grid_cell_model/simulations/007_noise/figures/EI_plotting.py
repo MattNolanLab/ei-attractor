@@ -23,7 +23,6 @@ import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 from matplotlib.ticker   import MaxNLocator, LinearLocator, AutoMinorLocator
-from matplotlib.colorbar import make_axes
 from matplotlib.patches  import Rectangle
 from matplotlib.gridspec import GridSpec
 
@@ -180,8 +179,8 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="",
 
 
 def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
-        exIdx=(0, 0), xlabelPos=-0.2, ylabelPos=-0.2, xlabel2Pos=-0.6,
-        ylabel2Pos=-0.6):
+        exIdx=(0, 0), xlabelPos=-0.2, xlabel2=True, ylabel2=True,
+        ylabelPos=-0.2, xlabel2Pos=-0.6, ylabel2Pos=-0.6, fontSize=None):
     left   = spaceRect[0]
     bottom = spaceRect[1]
     right  = spaceRect[2]
@@ -224,28 +223,52 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
             if (gsCol == 0):
                 label = "{0:.2f}".format(we[r][c])
                 ax.text(ylabelPos, 0.5, label, rotation=90,
-                        transform=ax.transAxes, va='center', ha='right')
+                        transform=ax.transAxes, va='center', ha='right',
+                        fontsize=fontSize)
             if (gsRow == exRows - 1):
                 label = "{0:.2f}".format(wi[r][c])
                 ax.text(0.5, xlabelPos, label, transform=ax.transAxes,
-                        va='top', ha='center')
+                        va='top', ha='center', fontsize=fontSize)
             # Second Y label
-            if (r-bottom == 0 and c-left == 0):
+            if (ylabel2 and r-bottom == 0 and c-left == 0):
                 trans = transforms.blended_transform_factory(ax.transAxes,
                         plt.gcf().transFigure)
                 weTxt_y = gsBottom + (gsTop - gsBottom)/2.0
                 ax.text(ylabel2Pos, weTxt_y, '$w_E$ (nS)', transform=trans,
-                        va='center', ha='right', rotation=90)
+                        va='center', ha='right', rotation=90,
+                        fontsize=fontSize)
             
 
-        if (r - bottom == 0):
+        # Second X label
+        if (xlabel2 and r - bottom == 0):
             trans = transforms.blended_transform_factory(plt.gcf().transFigure,
                     ax.transAxes)
             wiTxt_x = gsLeft + (gsRight - gsLeft)/2.0
             ax.text(wiTxt_x, xlabel2Pos, '$w_I$ (nS)', transform=trans, va='top',
-                    ha='center')
+                    ha='center', fontsize=fontSize)
 
     return gs
+
+
+def plotSquareGridExample(exLeft, exBottom, sz, fileName, exIdx, sweep_ax,
+        sweepDataSpace, iterList, exGsCoords, figSize=(2.1, 2.1), fontSize=None,
+        xlabel2=True, ylabel2=True):
+    # Create the example plot
+    fig = plt.figure(figsize=figSize)
+
+    exRect = [exLeft, exBottom, exLeft+sz-1, exBottom+sz-1]
+    gs = drawGridExamples(sweepDataSpace, exRect, iterList,
+            gsCoords=exGsCoords, exIdx=exIdx, fontSize='small',
+            xlabel2=xlabel2, ylabel2=ylabel2)
+    gs.update(wspace=0, hspace=0)
+    plt.savefig(fileName, dpi=300, transparent=False)
+
+    # Draw the selection into the EI plot
+    if (sweep_ax is not None):
+        exRow, exCol = exIdx
+        Y, X = computeYX(sweepDataSpace, iterList, r=exRow, c=exCol)
+        drawEIRectSelection(sweep_ax, exRect, X, Y)
+
 
 
 def drawEIRectSelection(ax, spaceRect, X, Y):
@@ -254,13 +277,10 @@ def drawEIRectSelection(ax, spaceRect, X, Y):
     right  = spaceRect[2]
     top    = spaceRect[3]
 
-    cax, kw = make_axes(ax, orientation='vertical',
-            nticks=4, shrink=0.9)
-    globalAxesSettings(cax)
-    cb = createColorbar(ax, None, "Gridness score", cax=cax, **kw)
     rectLeft   = X[bottom, left]
     rectBottom = Y[bottom, left]
     rectRight  = X[top, right+1]
     rectTop    = Y[top+1, right]
     ax.add_patch(Rectangle((rectLeft, rectBottom), rectRight-rectLeft,
         rectTop-rectBottom, facecolor='None', lw=2))
+
