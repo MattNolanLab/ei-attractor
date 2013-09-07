@@ -21,9 +21,15 @@
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
-from matplotlib.ticker  import MaxNLocator, LinearLocator, AutoMinorLocator
+import matplotlib.transforms as transforms
+from matplotlib.ticker   import MaxNLocator, LinearLocator, AutoMinorLocator
+from matplotlib.colorbar import make_axes
+from matplotlib.patches  import Rectangle
+from matplotlib.gridspec import GridSpec
+
 
 from plotting.global_defs import globalAxesSettings, createColorbar
+from plotting.grids       import plotGridRateMap
 from parameters import DataSpace
 
 
@@ -172,3 +178,89 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="",
     return C
 
 
+
+def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
+        exIdx=(0, 0), xlabelPos=-0.2, ylabelPos=-0.2, xlabel2Pos=-0.6,
+        ylabel2Pos=-0.6):
+    left   = spaceRect[0]
+    bottom = spaceRect[1]
+    right  = spaceRect[2]
+    top    = spaceRect[3]
+    exRow, exCol = exIdx
+
+    rateMaps   = aggregate2D(dataSpace, ['analysis', 'rateMap_e'])
+    rateMaps_X = aggregate2D(dataSpace, ['analysis', 'rateMap_e_X'])
+    rateMaps_Y = aggregate2D(dataSpace, ['analysis', 'rateMap_e_Y'])
+    arenaDiams = aggregate2D(dataSpace, ['options', 'arenaSize'])
+
+    scaleBar = None
+    exRows = top - bottom + 1
+    exCols = right - left + 1
+    gs = GridSpec(exRows, exCols)
+    gsLeft   = gsCoords[0]
+    gsBottom = gsCoords[1]
+    gsRight  = gsCoords[2]
+    gsTop    = gsCoords[3]
+    gs.update(left=gsLeft, bottom=gsBottom, right=gsRight, top=gsTop)
+
+    we, wi = computeYX(dataSpace, iterList, r=exRow, c=exCol)
+    ax = None
+    for r in range(bottom, top+1):
+        for c in range(left, right+1):
+            print r, c
+            rateMap   = rateMaps[r][c][trialNum]
+            if (not isinstance(rateMap, np.ndarray)):
+                continue
+
+            gsRow = top - r
+            gsCol = c - left
+            ax = plt.subplot(gs[gsRow, gsCol]) 
+            X         = rateMaps_X[r][c][0]
+            Y         = rateMaps_Y[r][c][0]
+            arenaDiam = arenaDiams[r][c][0]
+            plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=scaleBar,
+                    scaleText=False)
+
+            if (gsCol == 0):
+                label = "{0:.2f}".format(we[r][c])
+                ax.text(ylabelPos, 0.5, label, rotation=90,
+                        transform=ax.transAxes, va='center', ha='right')
+            if (gsRow == exRows - 1):
+                label = "{0:.2f}".format(wi[r][c])
+                ax.text(0.5, xlabelPos, label, transform=ax.transAxes,
+                        va='top', ha='center')
+            # Second Y label
+            if (r-bottom == 0 and c-left == 0):
+                trans = transforms.blended_transform_factory(ax.transAxes,
+                        plt.gcf().transFigure)
+                weTxt_y = gsBottom + (gsTop - gsBottom)/2.0
+                ax.text(ylabel2Pos, weTxt_y, '$w_E$ (nS)', transform=trans,
+                        va='center', ha='right', rotation=90)
+            
+
+        if (r - bottom == 0):
+            trans = transforms.blended_transform_factory(plt.gcf().transFigure,
+                    ax.transAxes)
+            wiTxt_x = gsLeft + (gsRight - gsLeft)/2.0
+            ax.text(wiTxt_x, xlabel2Pos, '$w_I$ (nS)', transform=trans, va='top',
+                    ha='center')
+
+    return gs
+
+
+def drawEIRectSelection(ax, spaceRect, X, Y):
+    left   = spaceRect[0]
+    bottom = spaceRect[1]
+    right  = spaceRect[2]
+    top    = spaceRect[3]
+
+    cax, kw = make_axes(ax, orientation='vertical',
+            nticks=4, shrink=0.9)
+    globalAxesSettings(cax)
+    cb = createColorbar(ax, None, "Gridness score", cax=cax, **kw)
+    rectLeft   = X[bottom, left]
+    rectBottom = Y[bottom, left]
+    rectRight  = X[top, right+1]
+    rectTop    = Y[top+1, right]
+    ax.add_patch(Rectangle((rectLeft, rectBottom), rectRight-rectLeft,
+        rectTop-rectBottom, facecolor='None', lw=2))
