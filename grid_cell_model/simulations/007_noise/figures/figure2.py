@@ -94,57 +94,7 @@ def drawGridSweeps(gs, dataSpace, iterList, NTrials=1, r=0, c=0, xLabelOn=True,
     print("    max(G): {0}".format(np.max(G)))
     print("    min(G): {0}".format(np.min(G)))
 
-    Y, X = computeYX(dataSpace, iterList, r=r, c=c)
-    for idx in range(len(exRows)):
-        row = exRows[idx]
-        col = exCols[idx]
-        x = X[row, col]
-        y = Y[row, col]
-        arrowDir = exDir[idx]
-        #ax0.plot(x, y, 'o', color=clr)
-        ax0.annotate(exLetters[idx],
-            xy=(x, y), xycoords='data',
-            xytext=(x+1.0*arrowDir[0], y+0.75*arrowDir[1]), textcoords='data',
-            color=exColor, fontweight='bold',
-            arrowprops=dict(arrowstyle="->",
-                            connectionstyle="arc3",
-                            color=exColor, linewidth=2),
-            )
 
-
-
-def drawGridExample(gs, dataSpace, dsRows, dsCols, trialNum=0, colStart=0,
-        rowStart=0, scaleBarFlag=False):
-
-    for idx in range(len(dsRows)):
-        if (idx == len(dsRows) - 1 and scaleBarFlag==True):
-            scaleBar = 50
-        else:
-            scaleBar = None
-        r = dsRows[idx]
-        c = dsCols[idx]
-        d = dataSpace[r][c][trialNum].data
-        a = d['analysis']
-
-        arenaDiam = d['options']['arenaSize']
-
-        ax0 = subplot(gs[rowStart, colStart+idx]) 
-        plotSpikes2D(a['spikes_e'], a['rat_pos_x'], a['rat_pos_y'],
-                a['rat_dt'], diam=arenaDiam, spikeDotSize=3, scaleBar=scaleBar,
-                scaleText=None)
-
-        ax1 = subplot(gs[rowStart+1, colStart+idx]) 
-        rateMap = a['rateMap_e']
-        X       = a['rateMap_e_X']
-        Y       = a['rateMap_e_Y']
-        plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=scaleBar,
-                scaleText=False)
-
-        ax2 = subplot(gs[rowStart+2, colStart+idx]) 
-        X = a['corr_X']
-        Y = a['corr_Y']
-        ac = a['corr']
-        plotAutoCorrelation(ac, X, Y, diam=arenaDiam, scaleBar=scaleBar)
 
 
 
