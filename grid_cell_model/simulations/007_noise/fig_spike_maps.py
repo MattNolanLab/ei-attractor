@@ -22,7 +22,6 @@
 import numpy as np
 import matplotlib
 matplotlib.use('agg')
-from matplotlib.pyplot import rcParams
 
 from parameters  import JobTrialSpace2D
 from analysis.visitors import GridPlotVisitor
@@ -30,20 +29,19 @@ import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)
 
-rcParams['font.size'] = 14
 spikeType = 'E'
 
 noise_sigma = 150
 dirs = \
-    ('grids_velocity_ON_{0}pA',    (1, 100))
+    ('grids_velocity_OFF{0}pA',    (1, 50))
     #('EI_param_sweep_{0}pA',    (1, 1))
     #('grids_no_velocity_{0}pA',    (1, 100))
 
 simDir = dirs[0].format(int(noise_sigma))
-rootDir = "output/grids_no_velocity/{0}".format(simDir)
+rootDir = "output/grids_init/{0}".format(simDir)
 shape   = dirs[1]
 
-sp = JobTrialSpace2D(shape, rootDir)#, dataPoints=[(0, 0)])
+sp = JobTrialSpace2D(shape, rootDir)
 po = GridPlotVisitor.PlotOptions()
 visitor = GridPlotVisitor(rootDir, spikeType=spikeType, plotOptions=po)
 sp.visit(visitor)

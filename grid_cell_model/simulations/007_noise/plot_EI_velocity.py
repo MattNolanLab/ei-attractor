@@ -30,14 +30,16 @@ from matplotlib.ticker  import MaxNLocator, AutoMinorLocator
 import numpy.ma          as ma
 
 from plotting.global_defs import globalAxesSettings
-from EI_plotting import plot2DTrial
+from figures.EI_plotting import plot2DTrial
 from parameters.param_space import JobTrialSpace2D, DataSpace
 from figures.figures_shared import plotOneHist
 from figures.EI_plotting    import aggregate2D
 
 import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+lg.basicConfig(level=lg.WARN)
+#lg.basicConfig(level=lg.INFO)
+
+dir = ('EI_param_sweep_{0}pA', (30, 30))
 
 
 def computeYX(sp, iterList):
@@ -90,7 +92,7 @@ def plotHistograms(sp, varList, iterList):
     ylabel("Count")
 
     ax = subplot(1, 2, 2)
-    plotOneHist(errs, range=[0, 250])
+    plotOneHist(errs, range=[0, 130])
     xlabel("Error of fit (nrns/s)")
     
 
@@ -99,50 +101,51 @@ def plotHistograms(sp, varList, iterList):
 
             
 ###############################################################################
+noise_sigmas = [0, 150, 300]
 
-dirs = \
-    ('EI_param_sweep_300pA', (30, 30))
-    #('EI_param_sweep_0pA', (30, 30))
-    #('EI_param_sweep_150pA', (30, 30))
 
-rootDir = "output/velocity/{0}".format(dirs[0])
-shape   = dirs[1]
+for noise_sigma in noise_sigmas:
+    file = dir[0].format(int(noise_sigma))
+    rootDir = "output/velocity/{0}".format(file)
+    shape   = dir[1]
 
-sp = JobTrialSpace2D(shape, rootDir)
-iterList  = ['g_AMPA_total', 'g_GABA_total']
+    sp = JobTrialSpace2D(shape, rootDir)
+    iterList  = ['g_AMPA_total', 'g_GABA_total']
 
-    
-################################################################################
-plt.figure(figsize=(5.1, 2.9))
-N = 2
-plt.subplot(1, N, 1)
-slope = plotVelSlope(sp, ['lineFitSlope'], iterList,
-        xlabel="I (nS)",
-        ylabel='E (nS)',
-        clBarLabel = "Slope",
-        clbarNTicks=3)
+        
+    ################################################################################
+    plt.figure(figsize=(5.1, 2.9))
+    N = 2
+    plt.subplot(1, N, 1)
+    slope = plotVelSlope(sp, ['lineFitSlope'], iterList,
+            xlabel="I (nS)",
+            ylabel='E (nS)',
+            clBarLabel = "Slope",
+            clbarNTicks=3)
 
-plt.subplot(1, N, 2)
-lineFitErr = plotVelSlope(sp, ['lineFitErr'], iterList,
-        xlabel="I (nS)",
-        ylabel='E (nS)',
-        clBarLabel = "Line fit error",
-        clbarNTicks=3)
+    plt.subplot(1, N, 2)
+    lineFitErr = plotVelSlope(sp, ['lineFitErr'], iterList,
+            xlabel="I (nS)",
+            ylabel='E (nS)',
+            clBarLabel = "Line fit error",
+            clbarNTicks=4,
+            vmin=0,
+            vmax=50)
 
-plt.tight_layout()
-noise_sigma = sp.getParam(sp[0][0][0].data['IvelData'][0], 'noise_sigma')
-plt.savefig(sp.rootDir +
-    '/../analysis_EI_{0}pA_vel.png'.format(int(noise_sigma)))
-###############################################################################
-plt.figure(figsize=(3, 3))
-plotSlopeVsError(sp, [], iterList)
-plt.tight_layout()
-plt.savefig(sp.rootDir +
-    '/../analysis_EI_{0}pA_slope_vs_err.png'.format(int(noise_sigma)))
-###############################################################################
-plt.figure(figsize=(5.1, 2.9))
-plotHistograms(sp, [], iterList)
-plt.tight_layout()
-plt.savefig(sp.rootDir +
-    '/../analysis_EI_{0}pA_vel_hist.png'.format(int(noise_sigma)))
+    plt.tight_layout()
+    noise_sigma = sp.getParam(sp[0][0][0].data['IvelData'][0], 'noise_sigma')
+    plt.savefig(sp.rootDir +
+        '/../analysis_EI_{0}pA_vel.png'.format(int(noise_sigma)))
+    ###############################################################################
+    plt.figure(figsize=(3, 3))
+    plotSlopeVsError(sp, [], iterList)
+    plt.tight_layout()
+    plt.savefig(sp.rootDir +
+        '/../analysis_EI_{0}pA_slope_vs_err.png'.format(int(noise_sigma)))
+    ###############################################################################
+    plt.figure(figsize=(5.1, 2.9))
+    plotHistograms(sp, [], iterList)
+    plt.tight_layout()
+    plt.savefig(sp.rootDir +
+        '/../analysis_EI_{0}pA_vel_hist.png'.format(int(noise_sigma)))
 
