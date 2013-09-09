@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
-#   submit_basic_grids.py
+#   submit_param_sweep_grids.py
 #
-#   Submit job(s) to the cluster/workstation
+#   Submit job(s) to the cluster/workstation: grid field parameter sweeps
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -28,14 +28,14 @@ import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
 
-p['noise_sigma']       = 300.0     # pA
+p['noise_sigma']       = 0.0     # pA
 
 # Submitting
 ENV         = 'cluster'
-simRootDir  = 'output/grids'
+simRootDir  = 'output/grids_50pA_Ivel'
 simLabel    = 'EI_param_sweep_{0}pA'.format(int(p['noise_sigma']))
 appName     = 'simulation_grids.py'
-rtLimit     = '10:00:00'
+rtLimit     = '05:00:00'
 numCPU      = 1
 blocking    = True
 timePrefix  = False
@@ -44,7 +44,7 @@ dry_run     = False
 
 p['time']              = 600e3  # ms
 p['nthreads']          = 1
-p['ntrials']           = 10
+p['ntrials']           = 1
 p['velON']             = 1
 
 
