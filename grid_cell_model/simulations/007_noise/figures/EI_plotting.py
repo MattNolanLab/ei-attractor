@@ -282,5 +282,5 @@ def drawEIRectSelection(ax, spaceRect, X, Y):
     rectRight  = X[top, right+1]
     rectTop    = Y[top+1, right]
     ax.add_patch(Rectangle((rectLeft, rectBottom), rectRight-rectLeft,
-        rectTop-rectBottom, facecolor='None', lw=2))
+        rectTop-rectBottom, facecolor='None', lw=1))
 
