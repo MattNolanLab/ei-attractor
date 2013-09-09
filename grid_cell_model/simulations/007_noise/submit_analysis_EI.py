@@ -28,7 +28,7 @@ lg.basicConfig(level=lg.DEBUG)
 # Submitting
 ENV         = 'cluster'
 appName     = 'analysis_EI.py'
-rtLimit     = '00:10:00'
+rtLimit     = '00:01:00'
 numCPU      = 1
 blocking    = False
 timePrefix  = False
@@ -36,15 +36,15 @@ numRepeat   = 1
 dry_run     = False
 
 
-noise_sigma = 300 # pA
+noise_sigma = 0 # pA
 gammaBumpType = 'gamma-bump'
 velocityType = 'velocity'
 gridsType = 'grids'
 
 
 dirs = \
-    ('output/grids',      gridsType,     'EI_param_sweep_{0}pA', (30, 30))
-    #('output/velocity',   velocityType,  'EI_param_sweep_{0}pA', (30, 30))
+    ('output/velocity',   velocityType,  'EI_param_sweep_{0}pA', (30, 30))
+    #('output/grids',      gridsType,     'EI_param_sweep_{0}pA', (30, 30))
     #('output/one_to_one', gammaBumpType, 'EI_param_sweep_{0}pA',     (1, 1))
 
 p = {}
@@ -56,7 +56,7 @@ colN       = dirs[3][1]
 
 p['shapeRows'] = rowN
 p['shapeCols'] = colN
-p['forceUpdate'] = 0
+p['forceUpdate'] = 1
 
 ###############################################################################
 

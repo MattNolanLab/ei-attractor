@@ -66,12 +66,14 @@ if (o.type == "gamma-bump"):
     sp.visit(bumpVisitor)
     sp.visit(FRVisitor)
 elif (o.type == "velocity"):
-    VelVisitor = BumpVelocityVisitor(forceUpdate=forceUpdate, printSlope=True)
+    VelVisitor = BumpVelocityVisitor(forceUpdate=forceUpdate, printSlope=True,
+            lineFitMaxIdx=5)
     sp.visit(VelVisitor, trialList='all-at-once')
 elif (o.type == 'grids'):
     spikeType = 'E'
     po = GridPlotVisitor.PlotOptions()
-    visitor = GridPlotVisitor(o.output_dir, spikeType=spikeType, plotOptions=po)
+    visitor = GridPlotVisitor(o.output_dir, spikeType=spikeType,
+            plotOptions=po, minGridnessT=300e3)
     sp.visit(visitor)
 else:
     raise ValueError("Unknown analysis type option: {0}".format(o.type))
