@@ -315,14 +315,14 @@ class JobTrialSpace2D(DataSpace):
     def _getAggregationDS(self):
         nm = '{0}/{1}'.format(self._rootDir, self.saveDataFileName)
         try:
-            self._aggregationDS = DataStorage.open(nm, 'r')
+            self._aggregationDS = DataStorage.open(nm, 'a')
             return self._aggregationDS
         except IOError as e:
             return None
 
 
     def aggregateData(self, varList, trialNumList, funReduce=None,
-            output_dtype='array', loadData=False, saveData=False,
+            output_dtype='array', loadData=True, saveData=False,
             saveDataFileName='reductions.h5'):
         '''
         Aggregate the data from each trial into a 2D object array of the shape
@@ -367,20 +367,21 @@ class JobTrialSpace2D(DataSpace):
                     "space has not been implemented yet.")
 
         # Try to load data
-        try:
-            msg = 'Loading aggregated data from file: {0}, var: {1}'
-            log_info('JobTrialSpace2D', msg.format(self.saveDataFileName,
-                varList[-1]))
-            inData = self._getAggregationDS()
-            if (inData is not None):
-                retVar = inData[varList[-1]]
-                return retVar
-            else:
-                io_err = 'Could not open file: {0}. Performing the reduction.'
-                log_info('JobTrialSpace2D', io_err.format(self.saveDataFileName))
-        except KeyError as e:
-            key_err = 'Could not load var: {0}. Performing the reduction.'
-            log_info('JobTrialSpace2D', key_err.format(varList[-1]))
+        if (loadData):
+            try:
+                msg = 'Loading aggregated data from file: {0}, var: {1}'
+                log_info('JobTrialSpace2D', msg.format(self.saveDataFileName,
+                    varList[-1]))
+                inData = self._getAggregationDS()
+                if (inData is not None):
+                    retVar = inData[varList[-1]]
+                    return retVar
+                else:
+                    io_err = 'Could not open file: {0}. Performing the reduction.'
+                    log_info('JobTrialSpace2D', io_err.format(self.saveDataFileName))
+            except KeyError as e:
+                key_err = 'Could not load var: {0}. Performing the reduction.'
+                log_info('JobTrialSpace2D', key_err.format(varList[-1]))
 
 
         # Data not loaded, do the reduction
@@ -397,12 +398,15 @@ class JobTrialSpace2D(DataSpace):
                 self._aggregateItem(retVar, r, c, trialNumList, varList, funReduce)
 
         if (saveData):
-            outFileName = '{0}/{1}'.format(self._rootDir, self.saveDataFileName)
             msg = 'Saving aggregated data into file: {0}, var: {1}'
-            log_info('JobTrialSpace2D', msg.format(outFileName, varList[-1]))
-            out = DataStorage.open(outFileName, 'a')
-            out[varList[-1]] = retVar
-            out.close()
+            log_info('JobTrialSpace2D', msg.format(self.saveDataFileName,
+                varList[-1]))
+            outData = self._getAggregationDS()
+            if (outData is not None):
+                outData[varList[-1]] = retVar
+            else:
+                io_err = 'Could not open file: {0}. Not saving the reduced data!'
+                log_warn('JobTrialSpace2D', io_err.format(self.saveDataFileName))
 
         return retVar
         
