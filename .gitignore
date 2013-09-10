@@ -4,6 +4,7 @@
 *.so
 *.swp
 *.swo
+*.tmp$$
 .DS_Store
 output_local
 

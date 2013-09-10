@@ -53,15 +53,15 @@ iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
 exampleIdx   = [(1, 2), (11, 10), (0, 5)] # (row, col)
-gridsDataRoot= 'output_local/grids'
+gridsDataRoot= 'output_local/grids_50pA_Ivel'
 velDataRoot = 'output_local/velocity'
 shape = (30, 30)
 
 grid_examples = 1
-grids0        = 1
-grids150      = 1
-grids300      = 1
-hists         = 0
+grids0        = 0
+grids150      = 0
+grids300      = 0
+hists         = 1
 
 ##############################################################################
 
@@ -177,9 +177,9 @@ def plotGridnessHistogram(spList, trialNumList, ylabelPos=-0.2):
     plt.setp(l.get_title(), fontsize='x-small')
 
     ax.set_xlabel("Gridness score")
-    #ax.text(ylabelPos, 0.5, 'Count', rotation=90, transform=ax.transAxes,
-    #        va='center', ha='right')
-    ax.set_ylabel("p(G)")
+    ax.text(ylabelPos, 0.5, 'p(G)', rotation=90, transform=ax.transAxes,
+            va='center', ha='right')
+    #ax.set_ylabel("p(G)")
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -196,7 +196,8 @@ def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
     GVars = ['gridnessScore']
     errVars = ['lineFitErr']
     slopeVars = ['lineFitSlope']
-    noise_sigma = [0, 150, 300]
+    noise_sigma = [0, 151, 300]
+    markers = ['o', 'x', '*']
 
     ax = plt.gca()
     plt.hold('on')
@@ -207,29 +208,32 @@ def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
         errs = aggregate2D(spVel, errVars, funReduce=np.sum).flatten()
         slopes = np.abs(aggregate2D(spVel, slopeVars,
             funReduce=None).flatten())
-        #filtIdx = np.logical_not(np.isnan(G))
-        ax.plot(G, errs/slopes, 'o', markersize=2)
+        i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(slopes)))
+        ax.scatter(G[i], slopes[i], c=errs[i], s=4, linewidths=0,
+                marker=markers[idx], edgecolors='None')
 
     if (maxErr is not None):
         ax.set_ylim([0, maxErr])
+    else:
+        ax.set_ylim([0, None])
 
     leg = []
     for s in noise_sigma:
         leg.append("{0}".format(int(s)))
-    l = ax.legend(leg, loc=(0.8, 0.5), title='$\sigma$ (pA)', frameon=False,
+    l = ax.legend(leg, loc=(0.8, 0.25), title='$\sigma$ (pA)', frameon=False,
             fontsize='x-small', ncol=1)
     plt.setp(l.get_title(), fontsize='x-small')
 
     ax.set_xlabel("Gridness score")
-    ax.text(ylabelPos, 0.5, 'Error of fit (norm., pA)', rotation=90, transform=ax.transAxes,
+    ax.text(ylabelPos, 0.5, 'Slope (nrns/s/pA)', rotation=90, transform=ax.transAxes,
             va='center', ha='right')
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.xaxis.set_major_locator(MultipleLocator(0.5))
-    #ax.yaxis.set_major_locator(MultipleLocator(50))
+    ax.yaxis.set_major_locator(MultipleLocator(0.5))
     ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(3))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
     ax.margins(0.05, 0.025)
 
 
@@ -346,17 +350,17 @@ if (hists):
     gs = GridSpec(3, 1, height_ratios=[0.8, 0.6, 1])
 
     ax_hist = subplot(gs[0, 0])
-    plotGridnessHistogram(gridSpList, range(NTrials), ylabelPos=ylabelPos)
+    plotGridnessHistogram([gridSpList[0]], range(NTrials), ylabelPos=ylabelPos)
 
     ax_threshold = subplot(gs[1, 0])
-    plotGridnessThresholdComparison(gridSpList, range(NTrials),
+    plotGridnessThresholdComparison([gridSpList[0]], range(NTrials),
             thrList=np.arange(-0.4, 1.2, 0.05), ylabelPos=ylabelPos)
 
-    #ax_grids_vel = subplot(gs[2, 0])
-    #plotGridnessVsFitErr(gridSpList, velSpList, range(NTrials),
-    #        ylabelPos=ylabelPos, maxErr=1000)
+    ax_grids_vel = subplot(gs[2, 0])
+    plotGridnessVsFitErr([gridSpList[0]], [velSpList[0]], range(NTrials),
+            ylabelPos=ylabelPos, maxErr=None)
 
-    gs.tight_layout(fig, rect=[0, 0, 1, 1], h_pad=3.0, pad=0.5)
+    gs.tight_layout(fig, rect=[0.1, 0, 1, 1], h_pad=3.0, pad=0.5)
     fname = outputDir + "/figure2_histograms.pdf"
     savefig(fname, dpi=300, transparent=True)
 
