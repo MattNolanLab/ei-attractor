@@ -26,11 +26,11 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'cluster'
+ENV         = 'workstation'
 appName     = 'analysis_EI.py'
-rtLimit     = '00:01:00'
+rtLimit     = '00:02:00'
 numCPU      = 1
-blocking    = False
+blocking    = True
 timePrefix  = False
 numRepeat   = 1
 dry_run     = False
@@ -43,8 +43,8 @@ gridsType = 'grids'
 
 
 dirs = \
-    ('output/velocity',   velocityType,  'EI_param_sweep_{0}pA', (30, 30))
-    #('output/grids',      gridsType,     'EI_param_sweep_{0}pA', (30, 30))
+    ('output/grids_50pA_Ivel',  gridsType,     'EI_param_sweep_{0}pA', (30, 30))
+    #('output/velocity',   velocityType,  'EI_param_sweep_{0}pA', (30, 30))
     #('output/one_to_one', gammaBumpType, 'EI_param_sweep_{0}pA',     (1, 1))
 
 p = {}
@@ -63,7 +63,7 @@ p['forceUpdate'] = 1
 ac = ArgumentCreator(p, printout=True)
 
 iterparams = {
-        'row' : np.arange(rowN),
+        'row' : np.arange(0, 3),
         'col' : np.arange(colN)
 }
 ac.insertDict(iterparams, mult=True)
