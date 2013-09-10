@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
-#   figure1.py
+#   suppFigure_model.py
 #
-#   Noise publication Figure 1.
+#   Supplementary figure: model description and output.
 #
 #       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -50,8 +50,8 @@ root300 = "{0}/single_neuron".format(dataRootDir)
 gridRootDir = '{0}/grids'.format(dataRootDir)
 fileTemplate = "noise_sigma{0}_output.h5"
 
-examples = 0
-grids    = 0
+examples = 1
+grids    = 1
 gamma    = 1
 
 ##############################################################################
@@ -318,7 +318,7 @@ if (examples):
     drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300,
             letterPos=-0.2, scaleBar=50)
 
-    fname = outputDir + "/figure1_examples.pdf"
+    fname = outputDir + "/suppFigure_model_examples.pdf"
     savefig(fname, dpi=300)
 
 
@@ -331,7 +331,7 @@ if (grids):
     plotGrids(gs, grids_ds) 
     #fig.text(g_left-0.2*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
     #        fontweight='bold')
-    fname = outputDir + "/figure1_grids.png"
+    fname = outputDir + "/suppFigure_model_grids.png"
     savefig(fname, dpi=300, transparent=True)
 
 if (gamma):
@@ -341,6 +341,6 @@ if (gamma):
     plotGamma(gs, grids_ds, 0, 0, plotTStart=582e3, plotTEnd=582.25e3,
             scaleBar=25)
     gs.tight_layout(fig_grids, rect=(0.05, 0.05, 1, 1), h_pad=3)
-    fname = outputDir + "/figure1_gamma.pdf"
+    fname = outputDir + "/suppFigure_model_gamma.pdf"
     savefig(fname, dpi=300, transparent=True)
 
