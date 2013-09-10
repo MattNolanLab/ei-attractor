@@ -28,9 +28,9 @@ lg.basicConfig(level=lg.DEBUG)
 # Submitting
 ENV         = 'cluster'
 appName     = 'analysis_EI.py'
-rtLimit     = '00:10:00'
+rtLimit     = '00:01:00'
 numCPU      = 1
-blocking    = False
+blocking    = True
 timePrefix  = False
 numRepeat   = 1
 dry_run     = False
@@ -43,9 +43,9 @@ gridsType = 'grids'
 
 
 dirs = \
-    ('output/grids',      gridsType,     'EI_param_sweep_{0}pA', (30, 30))
+    ('output/one_to_one', gammaBumpType, 'EI_param_sweep_{0}pA', (40, 40))
+    #('output/grids',      gridsType,     'EI_param_sweep_{0}pA', (30, 30))
     #('output/velocity',   velocityType,  'EI_param_sweep_{0}pA', (30, 30))
-    #('output/one_to_one', gammaBumpType, 'EI_param_sweep_{0}pA',     (1, 1))
 
 p = {}
 simRootDir = dirs[0]
