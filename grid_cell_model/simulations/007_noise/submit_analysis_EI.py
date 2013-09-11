@@ -63,7 +63,7 @@ p['forceUpdate'] = 1
 ac = ArgumentCreator(p, printout=True)
 
 iterparams = {
-        'row' : np.arange(0, 3),
+        'row' : np.arange(rowN),
         'col' : np.arange(colN)
 }
 ac.insertDict(iterparams, mult=True)
