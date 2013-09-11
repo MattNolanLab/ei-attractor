@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
-#   suppFigure_grids.py
+#   suppFigure_bumps.py
 #
-#   Supplementary figure: grid field examples
+#   Supplementary figure: bump examples
 #
 #       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -21,12 +21,12 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.pyplot   import figure, subplot, plot, savefig, close
+from matplotlib.pyplot   import figure, subplot, plot, savefig
 from matplotlib.colorbar import make_axes
 
 from parameters  import JobTrialSpace2D
-from EI_plotting import plotGridTrial, computeYX, aggregate2D, \
-        drawGridExamples,  drawEIRectSelection
+from EI_plotting import plotBumpSigmaTrial, computeYX, aggregate2D, \
+        drawBumpExamples,  drawEIRectSelection
 from plotting.global_defs import globalAxesSettings, createColorbar
 
 import logging as lg
@@ -42,13 +42,12 @@ plt.rcParams['font.size'] = 12
 outputDir = "."
 
 NTrials=10
-exampleIdx = [(1, 2), (11, 10), (0, 5)] # (row, col)
+exampleIdx = [(0, 0), (0, 0), (0, 0)] # (row, col)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
-gridsDataRoot= 'output_local/grids'
-velDataRoot = 'output_local/velocity'
-shape = (30, 30)
+bumpsDataRoot= 'output_local/one_to_one'
+shape = (40, 40)
 
 
 ##############################################################################
@@ -64,44 +63,46 @@ def getNoiseRoots(prefix, noise_sigmas):
     return roots
 
 
-def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0)):
+def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0), cmap='jet_r',
+        rectColor='black'):
     exRow, exCol = exIdx
     Y, X = computeYX(dataSpace, iterList, r=exRow, c=exCol)
 
     # Replot gridness score param. sweep
     ax0 = plt.gca()
-    G = plotGridTrial(dataSpace, ['gridnessScore'], iterList,
+    varList = ['bump_e', 'sigma']
+    G = plotBumpSigmaTrial(dataSpace, varList, iterList,
             trialNumList=range(NTrials),
-            r=exRow,
-            c=exCol,
             xlabel="$w_I$ (nS)",
             ylabel="$w_E$ (nS)",
             colorBar=False,
-            clBarLabel = "Gridness score",
             clbarNTicks=3,
-            vmin=None,
-            vmax=None)
+            vmin=0,
+            vmax=10,
+            cmap=cmap)
+    plt.set_cmap('jet_r')
 
     cax, kw = make_axes(ax0, orientation='vertical',
             nticks=4, shrink=0.9)
     globalAxesSettings(cax)
-    cb = createColorbar(ax, None, "Gridness score", cax=cax, **kw)
+    cb = createColorbar(ax, None, "Bump $\sigma$ (neurons)", cax=cax, **kw)
 
-    drawEIRectSelection(ax0, spaceRect, X, Y)
+    drawEIRectSelection(ax0, spaceRect, X, Y, color=rectColor)
 
 
 
-def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx):
+def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx,
+        rectColor='black'):
     fig = figure(figsize=(8.27, 11.69))
     margin    = 0.1
     sw_left   = margin
-    sw_bottom = 0.8
+    sw_bottom = 0.82
     sw_right  = 0.5
-    sw_top    = 0.95
-    div       = 0.1
+    sw_top    = 0.97
+    div       = 0.075
 
     letter_left = 0.03
-    letter_top_off = 0.02
+    letter_top_off = 0.01
     letter_va='bottom'
     letter_ha='left'
 
@@ -110,127 +111,146 @@ def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx):
 
     sweepsRect = sw_left, sw_bottom, sw_right-sw_left, sw_top-sw_bottom
     ax_sweeps = fig.add_axes(sweepsRect)
-    drawSweep(ax_sweeps, dataSpace, iterList, exRect, exIdx)
+    drawSweep(ax_sweeps, dataSpace, iterList, exRect, exIdx,
+            rectColor=rectColor)
     fig.text(letter_left, sw_top+letter_top_off, "A", va=letter_va, ha=letter_ha,
             fontsize=19, fontweight='bold')
 
     gsCoords = margin, 0.075, 1.0 - margin, sw_bottom-div
     #gsCoords = margin, 0.46, 0.5, sw_bottom-div
-    gs = drawGridExamples(dataSpace, exRect, iterList, gsCoords=gsCoords,
-            exIdx=exIdx)
+    gs = drawBumpExamples(dataSpace, exRect, iterList, gsCoords=gsCoords,
+            exIdx=exIdx, cmap='jet')
     fig.text(letter_left, sw_bottom-div+letter_top_off, "B", va=letter_va,
             ha=letter_ha, fontsize=19, fontweight='bold')
     noise_sigma_txt = "$\sigma_{{noise}}$ = {0} pA".format(int(noise_sigma))
     fig.text(nsX, nsY, noise_sigma_txt, va='center', ha='right', fontsize=19)
 
 
-gridRoots = getNoiseRoots(gridsDataRoot, noise_sigmas)
-gridDataSpace0   = JobTrialSpace2D(shape, gridRoots[0])
-gridDataSpace150 = JobTrialSpace2D(shape, gridRoots[1])
-gridDataSpace300 = JobTrialSpace2D(shape, gridRoots[2])
+bumpRoots = getNoiseRoots(bumpsDataRoot, noise_sigmas)
+bumpDataSpace0   = JobTrialSpace2D(shape, bumpRoots[0])
+bumpDataSpace150 = JobTrialSpace2D(shape, bumpRoots[1])
+bumpDataSpace300 = JobTrialSpace2D(shape, bumpRoots[2])
 
 exWidth = 6
 exHeight = 8
 
+# Flags
 f0_0 = 1
 f0_1 = 1
+f0_2 = 1
 f150_0 = 1
 f150_1 = 1
 f150_2 = 1
 f300_0 = 1
 f300_1 = 1
+f300_2 = 1
 
 
 if (f0_0):
-    # High gridness Score - 0 pA
-    exLeft = 2
-    exBottom = 21
+    # Bumps - 0 pA
+    exLeft = 7
+    exBottom = 29
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-    drawA4RectExamples(gridDataSpace0, noise_sigmas[0], iterList, exRect,
+    drawA4RectExamples(bumpDataSpace0, noise_sigmas[0], iterList, exRect,
             exampleIdx[0])
 
-    fname = outputDir + "/suppFigure_grids0.png"
+    fname = outputDir + "/suppFigure_bumps0.png"
     savefig(fname, dpi=300, transparent=False)
-    close()
-
 
 
 if (f0_1):
-    # Low gridness Score - 0 pA
-    exLeft = 18
-    exBottom = 13
+    # Transition - 0 pA
+    exLeft = 0
+    exBottom = 5
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-    drawA4RectExamples(gridDataSpace0, noise_sigmas[0], iterList, exRect,
-            exampleIdx[0])
+    drawA4RectExamples(bumpDataSpace0, noise_sigmas[0], iterList, exRect,
+            exampleIdx[0], rectColor='red')
 
-    fname = outputDir + "/suppFigure_grids1.png"
+    fname = outputDir + "/suppFigure_bumps1.png"
     savefig(fname, dpi=300, transparent=False)
-    close()
+
+
+if (f0_2):
+    # No bump region at all - 0 pA
+    exLeft = 25
+    exBottom = 8
+    exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
+    drawA4RectExamples(bumpDataSpace0, noise_sigmas[0], iterList, exRect,
+            exampleIdx[0], rectColor='red')
+
+    fname = outputDir + "/suppFigure_bumps2.png"
+    savefig(fname, dpi=300, transparent=False)
 
 
 if (f150_0):
     # Transition - 150 pA
-    exLeft = 6
-    exBottom = 1
+    exLeft = 7
+    exBottom = 5
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-    drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
-            exampleIdx[1])
+    drawA4RectExamples(bumpDataSpace150, noise_sigmas[1], iterList, exRect,
+            exampleIdx[1], rectColor='red')
 
-    fname = outputDir + "/suppFigure_grids2.png"
+    fname = outputDir + "/suppFigure_bumps3.png"
     savefig(fname, dpi=300, transparent=False)
-    close()
 
 
 if (f150_1):
-    # Low GS region - 150 pA
+    # Good bumps - 150 pA
     exLeft = 20
-    exBottom = 16
+    exBottom = 20
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-    drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
+    drawA4RectExamples(bumpDataSpace150, noise_sigmas[1], iterList, exRect,
             exampleIdx[1])
 
-    fname = outputDir + "/suppFigure_grids3.png"
+    fname = outputDir + "/suppFigure_bumps4.png"
     savefig(fname, dpi=300, transparent=False)
-    close()
 
 
 if (f150_2):
-    # Stripe region - 150 pA
-    exLeft = 1
-    exBottom = 18
+    # Another transition - 150 pA
+    exLeft = 0
+    exBottom = 30
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-    drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
-            exampleIdx[1])
+    drawA4RectExamples(bumpDataSpace150, noise_sigmas[1], iterList, exRect,
+            exampleIdx[1], rectColor='red')
 
-    fname = outputDir + "/suppFigure_grids4.png"
+    fname = outputDir + "/suppFigure_bumps5.png"
     savefig(fname, dpi=300, transparent=False)
-    close()
 
 
 if (f300_0):
-    # Stripe region - 300 pA
-    exLeft = 4
-    exBottom = 9
+    # Transition - 150 pA
+    exLeft = 8
+    exBottom = 6
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-    drawA4RectExamples(gridDataSpace300, noise_sigmas[2], iterList, exRect,
-            exampleIdx[2])
+    drawA4RectExamples(bumpDataSpace300, noise_sigmas[2], iterList, exRect,
+            exampleIdx[2], rectColor='red')
 
-    fname = outputDir + "/suppFigure_grids5.png"
+    fname = outputDir + "/suppFigure_bumps6.png"
     savefig(fname, dpi=300, transparent=False)
-    close()
 
 
 if (f300_1):
-    # Low score region - 300 pA
-    exLeft = 16
-    exBottom = 9
+    # Small bumps - 150 pA
+    exLeft = 20
+    exBottom = 20
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-    drawA4RectExamples(gridDataSpace300, noise_sigmas[2], iterList, exRect,
+    drawA4RectExamples(bumpDataSpace300, noise_sigmas[2], iterList, exRect,
             exampleIdx[2])
 
-    fname = outputDir + "/suppFigure_grids6.png"
+    fname = outputDir + "/suppFigure_bumps7.png"
     savefig(fname, dpi=300, transparent=False)
-    close()
 
+
+if (f300_2):
+    # Small bumps - 150 pA
+    exLeft = 2
+    exBottom = 30
+    exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
+    drawA4RectExamples(bumpDataSpace300, noise_sigmas[2], iterList, exRect,
+            exampleIdx[2])
+
+    fname = outputDir + "/suppFigure_bumps8.png"
+    savefig(fname, dpi=300, transparent=False)
 
 
