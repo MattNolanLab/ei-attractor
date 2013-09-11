@@ -148,6 +148,24 @@ def plotGridTrial(sp, varList, iterList, trialNumList=[0], r=0, c=0, xlabel="",
             vmax, title, clbarNTicks, xticks, yticks)
 
 
+def computeVelYX(sp, iterList):
+    E, I = sp.getIteratedParameters(iterList)
+    Ne = DataSpace.getNetParam(sp[0][0][0].data['IvelData'][0], 'net_Ne')
+    Ni = DataSpace.getNetParam(sp[0][0][0].data['IvelData'][0], 'net_Ni')
+    return E/Ne, I/Ni
+
+
+def plotVelTrial(sp, varList, iterList, xlabel="", ylabel="", colorBar=True,
+        clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
+        xticks=True, yticks=True):
+    slopes = np.abs(aggregate2D(sp, varList, funReduce=np.sum))
+    slopes = ma.MaskedArray(slopes, mask=np.isnan(slopes))
+    Y, X = computeVelYX(sp, iterList)
+    return plot2DTrial(X, Y, slopes, xlabel, ylabel, colorBar, clBarLabel, vmin,
+            vmax, title, clbarNTicks, xticks, yticks)
+
+
+
 def plot2DTrial(X, Y, C, xlabel="", ylabel="", colorBar=True, clBarLabel="",
         vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
         yticks=True, cmap=None):

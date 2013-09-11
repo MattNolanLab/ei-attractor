@@ -189,11 +189,11 @@ def plotEIRaster(ax, data, mon_e, mon_i, tLimits, labely='', labelyPos=-0.2):
         rotation=90)
 
 
-def plotOneHist(data, range=None, nbins=40, normed=False, color='blue'):
+def plotOneHist(data, bins=40, normed=False, **kw):
     ax = gca()
     globalAxesSettings(ax)
-    ax.hist(data, bins=nbins, range=range, normed=normed, histtype='step',
-            align='mid')
+    ax.hist(data, bins=bins, normed=normed, histtype='step',
+            align='mid', **kw)
     ax.minorticks_on()
     ax.xaxis.set_minor_locator(AutoMinorLocator(3))
     ax.yaxis.set_minor_locator(AutoMinorLocator(3))
