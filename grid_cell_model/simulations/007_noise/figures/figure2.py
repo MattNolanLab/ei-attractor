@@ -58,9 +58,9 @@ velDataRoot = 'output_local/velocity'
 shape = (30, 30)
 
 grid_examples = 1
-grids0        = 0
-grids150      = 0
-grids300      = 0
+grids0        = 1
+grids150      = 1
+grids300      = 1
 hists         = 1
 
 ##############################################################################
