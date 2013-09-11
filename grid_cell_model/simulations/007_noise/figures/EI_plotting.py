@@ -192,6 +192,7 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
     rateMaps_X = aggregate2D(dataSpace, ['analysis', 'rateMap_e_X'])
     rateMaps_Y = aggregate2D(dataSpace, ['analysis', 'rateMap_e_Y'])
     arenaDiams = aggregate2D(dataSpace, ['options', 'arenaSize'])
+    G          = aggregate2D(dataSpace, ['analysis', 'gridnessScore'])
 
     scaleBar = None
     exRows = top - bottom + 1
@@ -218,8 +219,9 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
             X         = rateMaps_X[r][c][0]
             Y         = rateMaps_Y[r][c][0]
             arenaDiam = arenaDiams[r][c][0]
+            gScore    = G[r][c][0]
             plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=scaleBar,
-                    scaleText=False)
+                    scaleText=False, maxRate=True, G=gScore)
 
             if (gsCol == 0):
                 label = "{0:.2f}".format(we[r][c])

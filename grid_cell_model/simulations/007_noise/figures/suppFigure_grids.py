@@ -21,7 +21,7 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.pyplot   import figure, subplot, plot, savefig
+from matplotlib.pyplot   import figure, subplot, plot, savefig, close
 from matplotlib.colorbar import make_axes
 
 from parameters  import JobTrialSpace2D
@@ -132,82 +132,105 @@ gridDataSpace300 = JobTrialSpace2D(shape, gridRoots[2])
 exWidth = 6
 exHeight = 8
 
-
-# High gridness Score - 0 pA
-exLeft = 2
-exBottom = 21
-exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-drawA4RectExamples(gridDataSpace0, noise_sigmas[0], iterList, exRect,
-        exampleIdx[0])
-
-fname = outputDir + "/suppFigure_grids0.png"
-savefig(fname, dpi=300, transparent=False)
+f0_0 = 1
+f0_1 = 1
+f150_0 = 1
+f150_1 = 1
+f150_2 = 1
+f300_0 = 1
+f300_1 = 1
 
 
-# Low gridness Score - 0 pA
-exLeft = 18
-exBottom = 13
-exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-drawA4RectExamples(gridDataSpace0, noise_sigmas[0], iterList, exRect,
-        exampleIdx[0])
+if (f0_0):
+    # High gridness Score - 0 pA
+    exLeft = 2
+    exBottom = 21
+    exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
+    drawA4RectExamples(gridDataSpace0, noise_sigmas[0], iterList, exRect,
+            exampleIdx[0])
 
-fname = outputDir + "/suppFigure_grids1.png"
-savefig(fname, dpi=300, transparent=False)
-
-
-# Transition - 150 pA
-exLeft = 6
-exBottom = 1
-exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
-        exampleIdx[1])
-
-fname = outputDir + "/suppFigure_grids2.png"
-savefig(fname, dpi=300, transparent=False)
+    fname = outputDir + "/suppFigure_grids0.png"
+    savefig(fname, dpi=300, transparent=False)
+    close()
 
 
-# Low GS region - 150 pA
-exLeft = 20
-exBottom = 16
-exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
-        exampleIdx[1])
 
-fname = outputDir + "/suppFigure_grids3.png"
-savefig(fname, dpi=300, transparent=False)
+if (f0_1):
+    # Low gridness Score - 0 pA
+    exLeft = 18
+    exBottom = 13
+    exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
+    drawA4RectExamples(gridDataSpace0, noise_sigmas[0], iterList, exRect,
+            exampleIdx[0])
 
-
-# Stripe region - 150 pA
-exLeft = 1
-exBottom = 18
-exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
-        exampleIdx[1])
-
-fname = outputDir + "/suppFigure_grids4.png"
-savefig(fname, dpi=300, transparent=False)
+    fname = outputDir + "/suppFigure_grids1.png"
+    savefig(fname, dpi=300, transparent=False)
+    close()
 
 
-# Stripe region - 300 pA
-exLeft = 4
-exBottom = 9
-exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-drawA4RectExamples(gridDataSpace300, noise_sigmas[2], iterList, exRect,
-        exampleIdx[2])
+if (f150_0):
+    # Transition - 150 pA
+    exLeft = 6
+    exBottom = 1
+    exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
+    drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
+            exampleIdx[1])
 
-fname = outputDir + "/suppFigure_grids5.png"
-savefig(fname, dpi=300, transparent=False)
+    fname = outputDir + "/suppFigure_grids2.png"
+    savefig(fname, dpi=300, transparent=False)
+    close()
 
 
-# Low score region - 300 pA
-exLeft = 16
-exBottom = 9
-exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-drawA4RectExamples(gridDataSpace300, noise_sigmas[2], iterList, exRect,
-        exampleIdx[2])
+if (f150_1):
+    # Low GS region - 150 pA
+    exLeft = 20
+    exBottom = 16
+    exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
+    drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
+            exampleIdx[1])
 
-fname = outputDir + "/suppFigure_grids6.png"
-savefig(fname, dpi=300, transparent=False)
+    fname = outputDir + "/suppFigure_grids3.png"
+    savefig(fname, dpi=300, transparent=False)
+    close()
+
+
+if (f150_2):
+    # Stripe region - 150 pA
+    exLeft = 1
+    exBottom = 18
+    exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
+    drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
+            exampleIdx[1])
+
+    fname = outputDir + "/suppFigure_grids4.png"
+    savefig(fname, dpi=300, transparent=False)
+    close()
+
+
+if (f300_0):
+    # Stripe region - 300 pA
+    exLeft = 4
+    exBottom = 9
+    exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
+    drawA4RectExamples(gridDataSpace300, noise_sigmas[2], iterList, exRect,
+            exampleIdx[2])
+
+    fname = outputDir + "/suppFigure_grids5.png"
+    savefig(fname, dpi=300, transparent=False)
+    close()
+
+
+if (f300_1):
+    # Low score region - 300 pA
+    exLeft = 16
+    exBottom = 9
+    exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
+    drawA4RectExamples(gridDataSpace300, noise_sigmas[2], iterList, exRect,
+            exampleIdx[2])
+
+    fname = outputDir + "/suppFigure_grids6.png"
+    savefig(fname, dpi=300, transparent=False)
+    close()
 
 
 
