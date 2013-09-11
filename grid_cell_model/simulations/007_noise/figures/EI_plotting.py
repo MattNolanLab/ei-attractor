@@ -261,13 +261,24 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
     return gs
 
 
-def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
-        exIdx=(0, 0), xlabelPos=-0.2, xlabel2=True, ylabel2=True,
-        ylabelPos=-0.2, xlabel2Pos=-0.6, ylabel2Pos=-0.6, fontSize=None,
-        cmap=None):
+def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, **kw):
     '''
     TODO: code duplication
     '''
+    # kw processing
+    trialNum   = kw.pop('trialNum', 0)
+    exIdx      = kw.pop('exIdx', (0, 0))
+    xlabel     = kw.pop('xlabel', True)
+    ylabel     = kw.pop('ylabel', True)
+    xlabelPos  = kw.pop('xlabelPos', -0.2)
+    ylabelPos  = kw.pop('ylabelPos', -0.2)
+    xlabel2    = kw.pop('xlabel2', True)
+    ylabel2    = kw.pop('ylabel2', True)
+    xlabel2Pos = kw.pop('xlabel2os', -0.6)
+    ylabel2Pos = kw.pop('ylabel2os', -0.6)
+    # + plotBump() kwargs
+
+
     left   = spaceRect[0]
     bottom = spaceRect[1]
     right  = spaceRect[2]
@@ -298,14 +309,14 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
             gsRow = top - r
             gsCol = c - left
             ax = plt.subplot(gs[gsRow, gsCol]) 
-            plotBump(ax, bump, cmap=cmap)
+            plotBump(ax, bump, **kw)
 
-            if (gsCol == 0):
+            if (ylabel and gsCol == 0):
                 label = "{0:.2f}".format(we[r][c])
                 ax.text(ylabelPos, 0.5, label, rotation=90,
                         transform=ax.transAxes, va='center', ha='right',
                         fontsize=fontSize)
-            if (gsRow == exRows - 1):
+            if (xlabel and gsRow == exRows - 1):
                 label = "{0:.2f}".format(wi[r][c])
                 ax.text(0.5, xlabelPos, label, transform=ax.transAxes,
                         va='top', ha='center', fontsize=fontSize)

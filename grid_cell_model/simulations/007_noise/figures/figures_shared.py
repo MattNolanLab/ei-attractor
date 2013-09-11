@@ -98,14 +98,18 @@ def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn, thetaLim, color='grey')
         ax.text(t[-1] - 10, -50, "0 pA", ha="right", va='top', fontsize='small')
     
 
-def plotBump(ax, rateMap, cmap=None, maxRate=True):
+def plotBump(ax, rateMap, cmap='jet', maxRate=True, **kw):
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
-    ax.pcolormesh(rateMap, cmap=cmap)
+    fs = kw.pop('fontsize', 'small')
+    rx = kw.pop('rateXPos', 0.95)
+    ry = kw.pop('rateYPos', 1.025)
+    ax.pcolormesh(rateMap, cmap=cmap, **kw)
     axis("scaled")
+    axis('off')
     if (maxRate):
         rStr = '{0:.1f} Hz'.format(np.max(rateMap.flatten()))
-        ax.text(0.95, 1.025, rStr, ha="right", va='bottom', fontsize='x-small',
+        ax.text(rx, ry, rStr, ha="right", va='bottom', fontsize=fs,
                 transform=ax.transAxes)
 
 def plotSpikes(ax, t, trajectory, spikeTimes):
