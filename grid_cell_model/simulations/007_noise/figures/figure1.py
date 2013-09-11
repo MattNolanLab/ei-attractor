@@ -21,7 +21,8 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.pyplot   import figure, subplot, plot, savefig, close
+from matplotlib.pyplot   import figure, subplot, plot, savefig, close, \
+        errorbar
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import MultipleLocator, AutoMinorLocator, LinearLocator, MaxNLocator, \
         ScalarFormatter
@@ -57,15 +58,16 @@ velDataRoot = 'output_local/velocity'
 bumpShape = (40, 40)
 velShape  = (30, 30)
 
-bumpExamples = 0
+bumpExamples = 1
 bumpSweep0   = 0
 bumpSweep150 = 0
 bumpSweep300 = 0
-velExamples  = 0
-velSweep0    = 1
-velSweep150  = 1
-velSweep300  = 1
+velExamples  = 1
+velSweep0    = 0
+velSweep150  = 0
+velSweep300  = 0
 hists        = 1 
+velLines     = 1
 
 ##############################################################################
 
@@ -112,6 +114,7 @@ def drawBumpSweeps(ax, dataSpace, iterList, noise_sigma, NTrials=1, r=0, c=0, yL
     if (cbar == False):
         cax.set_visible(False)
     ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+    cax.yaxis.set_minor_locator(AutoMinorLocator(2))
 
     return ax, cax
 
@@ -234,6 +237,53 @@ def plotSlopeHistogram(spList, varList, **kw):
     ax.margins(0.01)
     
 
+def plotSlopes(ax, dataSpace, pos, **kw):
+    # kwargs
+    trialNum = kw.pop('trialNum', 0)
+    markersize = kw.pop('markersize', 4)
+    color = kw.pop('color', 'blue')
+
+    r = pos[0]
+    c = pos[1]
+    d = dataSpace[r][c].getAllTrialsAsDataSet().data
+    a = d['analysis']
+    IvelVec = dataSpace[r][c][trialNum].data['IvelVec']
+    slopes = a['bumpVelAll']
+    lineFit = a['lineFitLine']
+    lineFitRange = a['fitRange']
+
+    nTrials = slopes.shape[0]
+    avgSlope = np.mean(slopes, axis=0)
+    stdErrSlope = np.std(slopes, axis=0) / np.sqrt(nTrials)
+
+    if (ax is None):
+        ax = plt.gca()
+    plt.hold('on')
+    globalAxesSettings(ax)
+
+    r = lineFitRange
+    errorbar(IvelVec, -avgSlope, stdErrSlope, fmt='o-', markersize=markersize,
+            color=color, alpha=0.5, **kw)
+    plot(IvelVec[0:r], -lineFit, '-', linewidth=2, color=color, **kw)
+
+def plotAllSlopes(ax, spList, positions, **kw):
+    colors = kw.pop('colors', ('blue', 'green', 'red'))
+
+    for idx, dataSpace in enumerate(spList):
+        kw['color'] = colors[idx]
+        plotSlopes(ax, dataSpace, positions[idx], **kw)
+
+    ax.set_xlabel('Velocity current (pA)')
+    ax.set_ylabel('$v_{bump}$ (neurons/s)')
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.xaxis.set_major_locator(MultipleLocator(50))
+    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+    ax.yaxis.set_major_locator(MultipleLocator(20))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.margins(0.05)
+    
+
 
 ###############################################################################
 bumpRoots = getNoiseRoots(bumpDataRoot, noise_sigmas)
@@ -259,7 +309,7 @@ sweepBottom = 0.2
 sweepRight  = 0.9
 sweepTop    = 0.85
 
-histFigsize =(2.8, 1.5)
+histFigsize =(2.6, 1.7)
 histLeft    = 0.22
 histBottom  = 0.3
 histRight   = 0.95
@@ -357,9 +407,11 @@ if (bumpSweep300):
 
 ###############################################################################
 
+velSpList = [velDataSpace0, velDataSpace150, velDataSpace300]
+
 if (velSweep0):
     # noise_sigma = 0 pA
-    fig = figure("sweeps0", figsize=sweepFigSize)
+    fig = figure("bumpSweeps0", figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     ax, cax = drawVelSweeps(ax, velDataSpace0, iterList,
@@ -370,7 +422,7 @@ if (velSweep0):
 
 if (velSweep150):
     # noise_sigma = 150 pA
-    fig = figure("sweeps150", figsize=sweepFigSize)
+    fig = figure("bumpSweeps150", figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     ax, cax = drawVelSweeps(ax, velDataSpace150, iterList, yLabelOn=False,
@@ -381,7 +433,7 @@ if (velSweep150):
 
 if (velSweep300):
     # noise_sigma = 300 pA
-    fig = figure("sweeps300", figsize=sweepFigSize)
+    fig = figure("bumpSweeps300", figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     ax, cax = drawVelSweeps(ax, velDataSpace300, iterList, yLabelOn=False,
@@ -389,10 +441,8 @@ if (velSweep300):
     fname = outputDir + "/figure1_err_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=True)
 
-
 # Stats
 if (hists):
-    velSpList = [velDataSpace0, velDataSpace150, velDataSpace300]
     fig = figure(figsize=histFigsize)
     ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
         histTop))
@@ -409,4 +459,13 @@ if (hists):
     fname = outputDir + "/figure1_slope_histograms.pdf"
     savefig(fname, dpi=300, transparent=True)
 
+
+if (velLines):
+    positions = ((18, 2), (15, 5), (10,2))
+    fig = figure(figsize=(2.5, histFigsize[1]))
+    ax = fig.add_axes(Bbox.from_extents(0.3, histBottom, histRight,
+        histTop))
+    plotAllSlopes(ax, velSpList, positions)
+    fname = outputDir + "/figure1_slope_examples.pdf"
+    savefig(fname, dpi=300, transparent=True)
 

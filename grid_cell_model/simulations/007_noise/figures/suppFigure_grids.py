@@ -46,8 +46,7 @@ exampleIdx = [(1, 2), (11, 10), (0, 5)] # (row, col)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
-gridsDataRoot= 'output_local/grids'
-velDataRoot = 'output_local/velocity'
+gridsDataRoot= 'output_local/grids_50pA_Ivel'
 shape = (30, 30)
 
 
@@ -158,7 +157,7 @@ if (f0_0):
 if (f0_1):
     # Low gridness Score - 0 pA
     exLeft = 18
-    exBottom = 13
+    exBottom = 14
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(gridDataSpace0, noise_sigmas[0], iterList, exRect,
             exampleIdx[0])
@@ -171,7 +170,7 @@ if (f0_1):
 if (f150_0):
     # Transition - 150 pA
     exLeft = 6
-    exBottom = 1
+    exBottom = 3
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
             exampleIdx[1])
