@@ -184,8 +184,9 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="", colorBar=True, clBarLabel="",
 
 
 def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
-        exIdx=(0, 0), xlabelPos=-0.2, xlabel2=True, ylabel2=True,
-        ylabelPos=-0.2, xlabel2Pos=-0.6, ylabel2Pos=-0.6, fontSize=None):
+        exIdx=(0, 0), xlabel=True, ylabel=True, xlabelPos=-0.2, xlabel2=True,
+        ylabel2=True, ylabelPos=-0.2, xlabel2Pos=-0.6, ylabel2Pos=-0.6,
+        fontSize=None, maxRate=True, plotGScore=True):
     left   = spaceRect[0]
     bottom = spaceRect[1]
     right  = spaceRect[2]
@@ -223,16 +224,19 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
             X         = rateMaps_X[r][c][0]
             Y         = rateMaps_Y[r][c][0]
             arenaDiam = arenaDiams[r][c][0]
-            gScore    = G[r][c][0]
+            if (plotGScore):
+                gScore = G[r][c][0]
+            else:
+                gScore = None
             plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=scaleBar,
-                    scaleText=False, maxRate=True, G=gScore)
+                    scaleText=False, maxRate=maxRate, G=gScore)
 
-            if (gsCol == 0):
+            if (ylabel and gsCol == 0):
                 label = "{0:.2f}".format(we[r][c])
                 ax.text(ylabelPos, 0.5, label, rotation=90,
                         transform=ax.transAxes, va='center', ha='right',
                         fontsize=fontSize)
-            if (gsRow == exRows - 1):
+            if (xlabel and gsRow == exRows - 1):
                 label = "{0:.2f}".format(wi[r][c])
                 ax.text(0.5, xlabelPos, label, transform=ax.transAxes,
                         va='top', ha='center', fontsize=fontSize)
@@ -327,16 +331,18 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
 
 
 def plotSquareGridExample(exLeft, exBottom, sz, fileName, exIdx, sweep_ax,
-        sweepDataSpace, iterList, exGsCoords, figSize=(2.1, 2.1), fontSize=None,
-        xlabel2=True, ylabel2=True):
+        sweepDataSpace, iterList, exGsCoords, wspace=0, hspace=0, figSize=(2.1, 2.1),
+        fontSize=None, xlabel=True, ylabel=True, xlabel2=True, ylabel2=True,
+        maxRate=True, plotGScore=True):
     # Create the example plot
     fig = plt.figure(figsize=figSize)
 
     exRect = [exLeft, exBottom, exLeft+sz-1, exBottom+sz-1]
     gs = drawGridExamples(sweepDataSpace, exRect, iterList,
-            gsCoords=exGsCoords, exIdx=exIdx, fontSize='small',
-            xlabel2=xlabel2, ylabel2=ylabel2)
-    gs.update(wspace=0, hspace=0)
+            gsCoords=exGsCoords, exIdx=exIdx, fontSize='small', xlabel=xlabel,
+            ylabel=ylabel, xlabel2=xlabel2, ylabel2=ylabel2, maxRate=maxRate,
+            plotGScore=plotGScore)
+    gs.update(wspace=wspace, hspace=hspace)
     plt.savefig(fileName, dpi=300, transparent=False)
 
     # Draw the selection into the EI plot
