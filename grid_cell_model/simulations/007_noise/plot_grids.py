@@ -33,13 +33,13 @@ lg.basicConfig(level=lg.INFO)
 # Other
 plt.rcParams['font.size'] = 11
 
-noise_sigma = 300
+noise_sigma = 0
 dirs = \
     ('EI_param_sweep_{0}pA',    (30, 30))
 
-NTrials = 10
+NTrials = 1
 dir = dirs[0].format(int(noise_sigma))
-rootDir = "output/grids/{0}".format(dir)
+rootDir = "output/grids_50pA_Ivel/{0}".format(dir)
 shape   = dirs[1]
 
 sp = JobTrialSpace2D(shape, rootDir)

@@ -399,11 +399,12 @@ class BumpVelocityVisitor(DictDSVisitor):
     '''
 
     def __init__(self, win_dt=20.0, winLen=250.0, forceUpdate=False,
-            printSlope=False):
+            printSlope=False, lineFitMaxIdx=None):
         self.win_dt = win_dt
         self.winLen = winLen
         self.forceUpdate = forceUpdate
         self.printSlope = printSlope
+        self.lineFitMaxIdx = lineFitMaxIdx
 
 
     def _getSpikeTrain(self, data, monName, dimList):
@@ -463,8 +464,9 @@ class BumpVelocityVisitor(DictDSVisitor):
                 return
 
 
+            # Plot the estimated bump velocities (nrns/s)
             from matplotlib.pyplot import figure, errorbar, xlabel, ylabel, \
-                    plot, title, savefig
+                    plot, title, savefig, legend
             figure()
             IvelVec = trials[0]['IvelVec'] # All the same
             avgSlope = np.mean(slopes, axis=0)
@@ -473,11 +475,20 @@ class BumpVelocityVisitor(DictDSVisitor):
             xlabel('Velocity current (pA)')
             ylabel('Bump velocity (neurons/s)')
 
-            line, slope = getLineFit(avgSlope)
-            lineFitErr = np.abs(line - avgSlope)
-            slope = slope/(IvelVec[1] - IvelVec[0])
-            plot(IvelVec, line)
-            title("Line fit slope: " + str(slope) + ' nrns/s/pA')
+            # Fit a line (nrns/s/pA)
+            if (self.lineFitMaxIdx is None):
+                fitRange = len(IvelVec)
+            else:
+                fitRange = min(self.lineFitMaxIdx+1, len(IvelVec))
+            log_info('BumpVelocityVisitor', 'fitRange == {0}'.format(fitRange))
+            fitAvgSlope = avgSlope[0:fitRange]
+            fitIvelVec  = IvelVec[0:fitRange]
+            line, slope = getLineFit(fitAvgSlope)
+            lineFitErr = np.abs(line - fitAvgSlope)
+            slope = slope/(fitIvelVec[1] - fitIvelVec[0])
+            plot(fitIvelVec, line, 'o-')
+            title("Line fit slope: {0:.3f} nrns/s/pA".format(slope))
+            legend(['Estimated bump speed', 'Line fit'], loc='best')
             
             fileName = splitext(kw['fileName'])[0] + '.pdf'
             savefig(fileName)
@@ -485,7 +496,8 @@ class BumpVelocityVisitor(DictDSVisitor):
             analysisTop.update({
                 'lineFitLine'  : line,
                 'lineFitSlope' : slope,
-                'lineFitErr'   : lineFitErr
+                'lineFitErr'   : lineFitErr,
+                'fitRange'     : fitRange
             })
 
         data['analysis'] = analysisTop
