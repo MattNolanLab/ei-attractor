@@ -33,30 +33,13 @@ from plotting.global_defs import globalAxesSettings
 from figures.EI_plotting import plot2DTrial
 from parameters.param_space import JobTrialSpace2D, DataSpace
 from figures.figures_shared import plotOneHist
-from figures.EI_plotting    import aggregate2D
+from figures.EI_plotting    import aggregate2D, plotVelTrial
 
 import logging as lg
 lg.basicConfig(level=lg.WARN)
 #lg.basicConfig(level=lg.INFO)
 
 dir = ('EI_param_sweep_{0}pA', (30, 30))
-
-
-def computeYX(sp, iterList):
-    E, I = sp.getIteratedParameters(iterList)
-    Ne = DataSpace.getNetParam(sp[0][0][0].data['IvelData'][0], 'net_Ne')
-    Ni = DataSpace.getNetParam(sp[0][0][0].data['IvelData'][0], 'net_Ni')
-    return E/Ne, I/Ni
-
-
-def plotVelSlope(sp, varList, iterList, xlabel="", ylabel="", colorBar=True,
-        clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
-        xticks=True, yticks=True):
-    slopes = np.abs(aggregate2D(sp, varList, funReduce=np.sum))
-    slopes = ma.MaskedArray(slopes, mask=np.isnan(slopes))
-    Y, X = computeYX(sp, iterList)
-    return plot2DTrial(X, Y, slopes, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
 
 
 def getAll(sp, varList, iterList):
@@ -117,14 +100,14 @@ for noise_sigma in noise_sigmas:
     plt.figure(figsize=(5.1, 2.9))
     N = 2
     plt.subplot(1, N, 1)
-    slope = plotVelSlope(sp, ['lineFitSlope'], iterList,
+    slope = plotVelTrial(sp, ['lineFitSlope'], iterList,
             xlabel="I (nS)",
             ylabel='E (nS)',
             clBarLabel = "Slope",
             clbarNTicks=3)
 
     plt.subplot(1, N, 2)
-    lineFitErr = plotVelSlope(sp, ['lineFitErr'], iterList,
+    lineFitErr = plotVelTrial(sp, ['lineFitErr'], iterList,
             xlabel="I (nS)",
             ylabel='E (nS)',
             clBarLabel = "Line fit error",

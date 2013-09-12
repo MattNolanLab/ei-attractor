@@ -357,7 +357,7 @@ if (grids300):
 
 # Stats
 if (hists):
-    ylabelPos = -0.225
+    ylabelPos = -0.16
     gridSpList = [gridDataSpace0, gridDataSpace150, gridDataSpace300]
     velSpList = [velDataSpace0, velDataSpace150, velDataSpace300]
     fig = figure(figsize=(3.7, 6))
