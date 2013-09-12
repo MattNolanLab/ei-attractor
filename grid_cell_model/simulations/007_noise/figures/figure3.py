@@ -38,13 +38,10 @@ lg.basicConfig(level=lg.INFO)
 
 # Other
 from matplotlib import rc
-#rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-## for Palatino and other serif fonts use:
-#rc('font',**{'family':'serif','serif':['Palatino']})
-#rc('text', usetex=True)
 rc('pdf', fonttype=42)
+rc('mathtext', default='regular')
 
-plt.rcParams['font.size'] = 25
+plt.rcParams['font.size'] = 10
 
 ###############################################################################
 cFreq = 'blue'
@@ -85,15 +82,16 @@ def drawColorbar(drawAx, label):
 
 
 def plot2DNoiseACFreq(spList, iterList, trialNumList=[0]):
+    noise_sigmas = [0, 150, 300]
     NSp = len(spList)
     Sz2D = 1.
     clBarSz = 0.1
     hr = [Sz2D]*NSp + [clBarSz]
     gs = GridSpec(len(spList), 2, wspace=0.15, hspace=0.15, height_ratios=hr,
-            bottom=0.22)
+            top=0.95, left=0.15, bottom=0.22, right=0.95)
     for spIdx in range(NSp):
         if (spIdx == NSp - 1):
-            xlabel = "I (nS)"
+            xlabel = "$w_{I}$ (nS)"
             xticks = True
             clbar = True
         else:
@@ -105,13 +103,16 @@ def plot2DNoiseACFreq(spList, iterList, trialNumList=[0]):
         acVal = plotACTrial(spList[spIdx], ['acVal'], iterList,
                 trialNumList=trialNumList,
                 xlabel=xlabel,
-                ylabel='E (nS)',
+                ylabel='$w{_E}$ (nS)',
                 colorBar=False,
                 clBarLabel = "Correlation",
                 clbarNTicks=3,
                 xticks=xticks,
                 vmin=0,
                 vmax=0.7)
+        sigmaStr = '$\sigma$ = {0}'.format(noise_sigmas[spIdx])
+        ax_AC.text(-0.3, 0.5, sigmaStr, rotation=90, transform=ax_AC.transAxes,
+                va='center', ha='right', size='large')
         if (clbar):
             drawColorbar(ax_AC, 'Correlation')
 
@@ -125,7 +126,7 @@ def plot2DNoiseACFreq(spList, iterList, trialNumList=[0]):
                 xticks=xticks,
                 yticks=False,
                 vmin=0,
-                vmax=150)
+                vmax=120)
         if (clbar):
             drawColorbar(ax_Freq, 'Frequency (Hz)')
 
@@ -141,78 +142,12 @@ def extractACExample(sp, r, c, trialNum):
     return ac, dt, freq, acVal, noise_sigma
 
 
-def plotACExamples(spList, r, c, trialNum=0):
-    gs = GridSpec(len(spList), 1, hspace=0.2)
-    #gs.update(left=left, right=right, bottom=bottom, top=top)
-    plt.hold('on')
-    idx = 0
-    for sp in spList:
-        ax = plt.subplot(gs[idx, :])
-        globalAxesSettings(ax)
-        ax.xaxis.set_visible(False)
-        ax.spines['top'].set_visible(False)
-        ax.spines['bottom'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.xaxis.set_ticks_position('bottom')
-        ax.yaxis.set_ticks_position('left')
-        ax.xaxis.set_major_locator(LinearLocator(2))
-        ax.yaxis.set_major_locator(LinearLocator(3))
-        ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-        ax.yaxis.set_minor_locator(AutoMinorLocator(2))
-        ac, dt, freq, acVal, noise_sigma = extractACExample(sp, r, c, trialNum)
-        t = np.arange(len(ac))*dt
-        plt.plot(t, ac)
-        ax.set_ylim([-1, 1])
-        ax.set_xlim([0, 125])
-        if (idx == 1):
-            ax.set_ylabel('Correlation')
-        ax.text(0.9, 1.0, '$\sigma$ = ' + str(int(noise_sigma)) + ' pA',
-                verticalalignment='center', horizontalalignment='right',
-                transform=ax.transAxes, fontsize='small')
-        ann_x = 1./freq*1e3
-        ann_y = acVal
-        ax.annotate("",
-            xy=(ann_x, ann_y ), xycoords='data',
-            xytext=(ann_x, ann_y+0.9), textcoords='data',
-            arrowprops=dict(arrowstyle="-|>",
-                            connectionstyle="arc3"),
-            )
-        idx += 1
-    ax.xaxis.set_visible(True)
-    ax.spines['bottom'].set_visible(True)
-    ax.set_xlabel('Lag (ms)')
-    gs.tight_layout(plt.gcf(), h_pad=0.2)
-
-
 def getStatData(sp, r, c, trialNum):
     data = sp[r][c][trialNum].data
     freq = data['analysis']['freq']
     acVal = data['analysis']['acVal']
     noise_sigma = data['options']['noise_sigma']
     return freq, acVal, noise_sigma
-
-def plotFreqACStat(spList, r, c, trialNum=0):
-    freqAvg = []
-    freqStd = []
-    acAvg   = []
-    acStd   = []
-    nsa     = []
-    for sp in spList:
-        freq, acVal, noise_sigma = getStatData(sp, r, c, trialNum)
-        freqAvg.append(np.mean(freq))
-        freqStd.append(np.std(freq))
-        acAvg.append(np.mean(acVal))
-        acStd.append(np.std(acVal))
-        nsa.append(noise_sigma)
-    nsa = np.array(nsa, dtype=int)
-
-    plot2AxisBar(nsa,
-            (acAvg, freqAvg),
-            (acStd, freqStd),
-            xlabel='$\sigma$ (pA)',
-            ylabels=('Correlation', '$\gamma$ frequency (Hz)'),
-            colors=(cAC, cFreq))
-    
 
 def plot2AxisBar(X, Y, err, xlabel, ylabels, colors):
     N = len(X)
@@ -376,12 +311,12 @@ def plotThresholdComparison(spList, trialNumList, ACThrList):
     globalAxesSettings(ax)
     plt.plot(ACThrList, counts, 'o-')
     plt.plot([0], [1], linestyle='None', marker='None')
-    ax.set_xlabel('Correlation threshold', labelpad=15)
-    ax.set_ylabel('Count', labelpad=15)
+    ax.set_xlabel('Correlation threshold', labelpad=5)
+    ax.set_ylabel('Count', labelpad=5)
     leg = []
     for s in noise_sigma:
         leg.append("{0}".format(int(s)))
-    ax.legend(leg, loc=(0.75, 0.6), title='$\sigma$ (pA)', frameon=False,
+    ax.legend(leg, loc=(0.8, 0.55), title='$\sigma$ (pA)', frameon=False,
             fontsize='small')
 
     ax.spines['top'].set_visible(False)
@@ -414,34 +349,23 @@ if (__name__ == '__main__'):
         
 
     #################################################################################
-    plt.figure(figsize=(5, 5))
-    plotACExamples(dataSpaces, r, c)
-    plt.savefig('{0}/analysis_AC_Examples.pdf'.format(baseDir), transparent=True)
-    #################################################################################
-    plt.figure(figsize=(5.5, 5))
-    plotFreqACStat(dataSpaces, r, c)
-    plt.tight_layout()
-    plt.savefig('{0}/analysis_Freq_AC_stat.pdf'.format(baseDir), transparent=True)
-    
-    
-    #################################################################################
-    plt.figure(figsize=(6.5, 8))
-    plot2DNoiseACFreq(dataSpaces, iterList)
+    #plt.figure(figsize=(4.5, 5))
+    #plot2DNoiseACFreq(dataSpaces, iterList)
+    ##plt.tight_layout()
+    #fname = 'figure3_aggregated_AC_Freq.png'
+    #plt.savefig(fname, transparent=False, dpi=300)
+    ################################################################################
+    #plt.figure(figsize=(5, 6))
+    #plotAggregateBar(dataSpaces,
+    #        trialNumList= range(NTrials))
     #plt.tight_layout()
-    plt.savefig('{0}/aggregated_AC_Freq.png'.format(baseDir), transparent=True,
-            dpi=400)
+    #plt.savefig('{0}/aggregateBar_AC_freq.pdf'.format(baseDir), transparent=True,
+    #        dpi=300)
     ###############################################################################
-    plt.figure(figsize=(5, 6))
-    plotAggregateBar(dataSpaces,
-            trialNumList= range(NTrials))
-    plt.tight_layout()
-    plt.savefig('{0}/aggregateBar_AC_freq.pdf'.format(baseDir), transparent=True,
-            dpi=300)
-    ###############################################################################
-    plt.figure(figsize=(6.5, 5))
+    plt.figure(figsize=(3.5, 2))
     plotThresholdComparison(dataSpaces,
             trialNumList=range(NTrials),
             ACThrList=np.arange(0, 0.65, 0.05))
     plt.tight_layout()
-    plt.savefig('{0}/AC_threshold_comparison.pdf'.format(baseDir), transparent=True,
+    plt.savefig('figure3_AC_threshold_comparison.pdf'.format(baseDir), transparent=True,
             dpi=300)

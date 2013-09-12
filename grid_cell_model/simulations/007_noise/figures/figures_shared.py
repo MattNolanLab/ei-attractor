@@ -98,14 +98,18 @@ def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn, thetaLim, color='grey')
         ax.text(t[-1] - 10, -50, "0 pA", ha="right", va='top', fontsize='small')
     
 
-def plotBump(ax, rateMap, cmap=None, maxRate=True):
+def plotBump(ax, rateMap, cmap='jet', maxRate=True, **kw):
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
-    ax.pcolormesh(rateMap, cmap=cmap)
+    fs = kw.pop('fontsize', 'small')
+    rx = kw.pop('rateXPos', 0.95)
+    ry = kw.pop('rateYPos', 1.025)
+    ax.pcolormesh(rateMap, cmap=cmap, **kw)
     axis("scaled")
+    axis('off')
     if (maxRate):
         rStr = '{0:.1f} Hz'.format(np.max(rateMap.flatten()))
-        ax.text(0.95, 1.025, rStr, ha="right", va='bottom', fontsize='x-small',
+        ax.text(rx, ry, rStr, ha="right", va='bottom', fontsize=fs,
                 transform=ax.transAxes)
 
 def plotSpikes(ax, t, trajectory, spikeTimes):
@@ -185,11 +189,11 @@ def plotEIRaster(ax, data, mon_e, mon_i, tLimits, labely='', labelyPos=-0.2):
         rotation=90)
 
 
-def plotOneHist(data, range=None, nbins=40, normed=False, color='blue'):
+def plotOneHist(data, bins=40, normed=False, **kw):
     ax = gca()
     globalAxesSettings(ax)
-    ax.hist(data, bins=nbins, range=range, normed=normed, histtype='step',
-            align='mid')
+    ax.hist(data, bins=bins, normed=normed, histtype='step',
+            align='mid', **kw)
     ax.minorticks_on()
     ax.xaxis.set_minor_locator(AutoMinorLocator(3))
     ax.yaxis.set_minor_locator(AutoMinorLocator(3))

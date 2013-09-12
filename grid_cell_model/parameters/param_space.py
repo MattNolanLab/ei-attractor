@@ -79,9 +79,9 @@ class TrialSet(DataSpace):
         if (self._dataLoaded):
             return
         try:
+            log_info("param_space", "Opening " + self._fileName)
             self._ds = DataStorage.open(self._fileName, self._fileMode)
             DataSpace.__init__(self, self._ds['trials'], key='trials')
-            log_info("param_space", "Opened " + self._fileName)
         except (IOError, KeyError) as e:
             self._ds = None
             msg =  "Could not open file {0}. Creating an empty DataSet instead."
