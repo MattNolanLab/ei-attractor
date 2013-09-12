@@ -53,5 +53,5 @@ class DictDataSet(DataSet):
         return self._d
 
 
-    def visit(self, v):
-        v.visitDictDataSet(self)
+    def visit(self, v, **kw):
+        v.visitDictDataSet(self, **kw)

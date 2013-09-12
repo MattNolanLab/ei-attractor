@@ -119,7 +119,8 @@ class ProgramSubmitter(object):
 
 
 
-    def saveIterParams(self, iterParams, fileName='iterparams.h5'):
+    def saveIterParams(self, iterParams, fileName='iterparams.h5',
+            dry_run=False):
         '''
         Save iterated parameters.
 
@@ -133,9 +134,13 @@ class ProgramSubmitter(object):
         '''
         filePath = self.outputDir() + '/' + fileName
         log_info('root.submitters', 'Saving parameter iteration data to: {0}'.format(filePath))
-        o = DataStorage.open(filePath, 'w')
-        o['iterParams'] = iterParams
-        o.close()
+        if (dry_run):
+            log_info('root.submitters', 'Dry run: not performing the save ' +
+                    'actually.')
+        else:
+            o = DataStorage.open(filePath, 'w')
+            o['iterParams'] = iterParams
+            o.close()
 
 
     def _saveAllOptions(self):

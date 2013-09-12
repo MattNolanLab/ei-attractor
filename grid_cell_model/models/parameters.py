@@ -62,29 +62,15 @@ def getOptParser():
 
     optParser.add_option("--Ivel",                 type="float",  help="Velocity input (In constant velocity currents, pA)")
     optParser.add_option("--bumpCurrentSlope",     type="float",  help="Slope of the bump-current linear relationsip (starts at zero, pA/(cm/s)")
-    optParser.add_option("--rat_dt",               type="float",  help="Velocity input time resolution (must be setup according to the velocity file) (ms)")
     optParser.add_option("--ratVelFName",          type="string", help="Positional input file name (matlab)")
-
-    optParser.add_option("--Iext_e",               type="float",  help="External background current into the excitatory population (pA)")
-    optParser.add_option("--Iext_i",               type="float",  help="External background current into the inhibitory population (pA)")
 
     optParser.add_option("--Iext_e_const",         type="float",  help="Constant part of externals E current (pA)")
     optParser.add_option("--Iext_i_const",         type="float",  help="Constant part of externals I current (pA)")
-    optParser.add_option("--Iext_start",           type="float",  help="Additional - bump initialising current at the beginning of the simulation (pA)")
-    optParser.add_option("--Iext_start_dur",       type="float",  help="Start current duration (ms)")
     optParser.add_option("--Iext_e_theta",         type="float",  help="Theta E external current aplitude (pA)")
     optParser.add_option("--Iext_i_theta",         type="float",  help="Theta I external current aplitude (pA)")
-    optParser.add_option("--sigmaIextGaussian",    type="float",  help="Sigma of the gaussian envelope of the external current. If not specified, the envelope is const=1.0 everywhere. Applies to both E and I cells and is normalised to <0, 1>")
-    optParser.add_option('--shuffleIextGaussian',  type="float", help="Shuffle the Gaussian external excitatory input")
 
-    optParser.add_option('--condAddPercSynapses_e',type="float",  help="Number of E synapses to add conductances to (%)")
-    optParser.add_option('--condAdd_e',            type="float",  help="Conductance value to add to each synapse (nS)")
     optParser.add_option("--theta_start_t",        type="float",  help="Start time of theta stimulation (ms)")
     optParser.add_option("--theta_freq",           type="float",  help="Theta oscillation frequency (Hz)")
-    optParser.add_option("--theta_ph_jit_mean_e",  type="float",  help="E population phase distribution mean (uniform, rad)")
-    optParser.add_option("--theta_ph_jit_spread_e",type="float",  help="E population phase distribution spread (rad)")
-    optParser.add_option("--theta_ph_jit_mean_i",  type="float",  help="I population phase distribution mean (uniform, rad)")
-    optParser.add_option("--theta_ph_jit_spread_i",type="float",  help="I population phase distribution spread (rad)")
 
     optParser.add_option("--AMPA_gaussian",     type="float", help="If 1, AMPA profile will be gauusian, if 0, ring-like. Can be used to swap connectivity types")
     optParser.add_option("--pAMPA_mu",          type="float", help="AMPA profile center (normalised)")
@@ -93,16 +79,10 @@ def getOptParser():
     optParser.add_option("--pGABA_sigma",       type="float", help="GABA A profile spread (normalised)")
     optParser.add_option("--NMDA_amount",       type="float", help="NMDA portion relative to AMPA (%)")
 
-    optParser.add_option("--prefDirC_e",        type="float", help="Excitatory (E-->I) preferred directtion multiplier")
-    optParser.add_option("--prefDirC_i",        type="float", help="Inhibitory (I-->E) preferred directtion multiplier")
+    optParser.add_option("--prefDirC_e",        type="float", help="Excitatory (E-->I) preferred direction multiplier")
+    optParser.add_option("--prefDirC_i",        type="float", help="Inhibitory (I-->E) preferred direction multiplier")
     optParser.add_option("--arenaSize",         type="float", help="Size of the arena where the rat runs (cm)")
     optParser.add_option("--gridSep",           type="float", help="Distance between grid field peaks (cm)")
-    optParser.add_option("--Iplace",            type="float", help="Place cell current input (pA)")
-    optParser.add_option("--placeT",            type="float", help="Place cell input repeat period (ms)")
-    optParser.add_option("--placeDur",          type="float", help="Place cell input duration (ms)")
-    optParser.add_option("--thetaPlaceFreq",    type="float", help="Frequency of theta modulation of the place cell current input (Hz)")
-    optParser.add_option("--thetaPlacePhase",   type="float", help="Phase shift of the theta modulation of the place cell current (rad)")
-    optParser.add_option("--placeSigma",        type="float", help="Place cell input sigma (of the gaussian) (cm)")
 
     optParser.add_option("--taum_e",            type="float",  help="Mean of excitatory neuron membrane time constant (ms)")
     optParser.add_option("--taum_e_spread",     type="float",  help="Spread of --taum_e (see --taum_i_spread option) (ms)")
@@ -152,14 +132,14 @@ def getOptParser():
     optParser.add_option("--E_AMPA",            type="float",  help="AMPA reversal potential (V)")
     optParser.add_option("--E_GABA_A",          type="float",  help="GABA A reversal potential (V)")
 
-    optParser.add_option("--N_place_cells",     type="float",  help="Number of place cells connected to grid cells")
+    optParser.add_option("--N_place_cells",     type="int",  help="Number of place cells connected to grid cells in one dimension. The total number of place cells will be the square of this parameter.")
     optParser.add_option("--pc_max_rate",       type="float",  help="Place cell maximal firing rate (Hz)")
     optParser.add_option("--pc_field_std",      type="float",  help="Std. deviation of the Gaussian specifying the place field size (cm)")
     optParser.add_option("--pc_conn_weight",    type="float",  help="Connection weight from each place to grid cells (nS)")
+    optParser.add_option("--pc_start_max_rate", type="float",  help="Init place cell maximal firing rate (Hz)")
+    optParser.add_option("--pc_start_conn_weight", type="float",  help="Connection weight from each initialisation place cell to grid cells (nS)")
 
     optParser.add_option("--noise_sigma",       type="float",  help="Std. dev of neural noise (V)")
-    optParser.add_option("--theta_noise_sigma", type="float",  help="Std. dev of theta stimulation noise (V)")
-    optParser.add_option("--sigma_init_cond",   type="float",  help="Std. dev of distribution of initial membrane voltages (V)")
 
 
     optParser.add_option("--time",              type="float",  help="Total simulation time (ms)")
@@ -172,9 +152,7 @@ def getOptParser():
     optParser.add_option("--stateMonDur",       type="float",  help="State monitors window duration (ms)")
     optParser.add_option("--job_num",           type="int",    help="Use argument of this option to specify the output file name number, instead of using time")
 
-    # Other parameters
-    optParser.add_option("--stim_spread",       type="float",  help="Stimulation spread; normalised to 1. This the sigma of a Gaussian function that defines the gain of stimulation to each neuron")
-
+    optParser.add_option("--gammaNSample",      type="int",    help="Number of neurons in the network to sample from, for the frequency analysis.")
     return optParser
 
 

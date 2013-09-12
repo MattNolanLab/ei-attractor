@@ -20,107 +20,58 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import numpy as np
-import matplotlib.pyplot as plt
+from optparse import OptionParser
+import matplotlib
+matplotlib.use('agg')
 
-import numpy.ma as ma
-from matplotlib.ticker  import MaxNLocator, LinearLocator
-
-from analysis.visitors    import AutoCorrelationVisitor
+from analysis.visitors    import AutoCorrelationVisitor, BumpFittingVisitor, \
+        FiringRateVisitor, BumpVelocityVisitor, GridPlotVisitor
 from parameters           import JobTrialSpace2D
-from plotting.global_defs import globalAxesSettings, createColorbar
 import logging as lg
-lg.basicConfig(level=lg.WARN)
+#lg.basicConfig(level=lg.WARN)
+lg.basicConfig(level=lg.INFO)
 
+###############################################################################
+optParser = OptionParser()
+optParser.add_option('--row',         type="int")
+optParser.add_option('--col',         type="int")
+optParser.add_option('--shapeRows',   type="int")
+optParser.add_option('--shapeCols',   type="int")
+optParser.add_option('--forceUpdate', type="int")
+optParser.add_option("--output_dir",  type="string")
+optParser.add_option("--job_num",     type="int") # unused
+optParser.add_option("--type",        type="choice", choices=['gamma-bump',
+    'velocity', 'grids'])
 
-# Other
-plt.rcParams['font.size'] = 11
+o, args = optParser.parse_args()
 
 ###############################################################################
 
-def plot2DTrial(sp, varName, iterList, xlabel="", ylabel="", colorBar=True,
-        clBarLabel="", title="", clbarNTicks=2, xticks=True, yticks=True):
-    if (len(iterList) != 2):
-        raise ValueError("iterList must contain exactly 2 elements.")
-    shape = sp.getShape()
-    rows = shape[0]
-    cols = shape[1]
-    trialNum = 0
-    retVar = np.ndarray(shape)
-    for r in xrange(rows):
-        for c in xrange(cols):
-            if (len(sp[r][c]) == 0):
-                retVar[r][c] = np.nan
-            else:
-                data = sp[r][c][trialNum].data['analysis']
-                retVar[r][c] = np.mean(data[varName])
+shape = (o.shapeRows, o.shapeCols)
+dataPoints = [(o.row, o.col)]
+trialNums = None
 
-    retVar =  ma.MaskedArray(retVar, mask=np.isnan(retVar))
+sp = JobTrialSpace2D(shape, o.output_dir, dataPoints=dataPoints)
+forceUpdate = bool(o.forceUpdate)
 
-
-    ax = plt.gca()
-    globalAxesSettings(ax)
-    Y, X = sp.getIteratedParameters(iterList)
-    plt.pcolormesh(X, Y, retVar)
-    createColorbar(ax, retVar, clBarLabel, nticks=clbarNTicks,
-            orientation='horizontal', pad=0.3)
-    if (xlabel != ""):
-        plt.xlabel(xlabel)
-    if (ylabel != ""):
-        #plt.ylabel(ylabel, color='white')
-        plt.ylabel(ylabel)
-    plt.axis('tight')
-    ax.xaxis.set_major_locator(LinearLocator(3))
-    ax.yaxis.set_major_locator(LinearLocator(3))
-    if (not xticks):
-        ax.xaxis.set_ticklabels([])
-    if (not yticks):
-        ax.yaxis.set_ticklabels([])
-
-    return retVar
-
-
-###############################################################################
-
-dirs = {
-    #'output_local/2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample' : (2, 2),
-    #'output_local/2013-03-30T19-34-44_EI_param_sweep_0pA_full'   : (20, 20)
-    'output_local/2013-03-30T19-47-20_EI_param_sweep_150pA_full' : (20, 20),
-    #'output_local/2013-03-30T19-48-27_EI_param_sweep_300pA_full' : (20, 20)
-}
-
-for rootDir, shape in dirs.iteritems():
-    sp = JobTrialSpace2D(shape, rootDir)
-    
+if (o.type == "gamma-bump"):
     monName   = 'stateMonF_e'
     stateList = ['I_clamp_GABA_A']
     iterList  = ['g_AMPA_total', 'g_GABA_total']
-    forceUpdate = False
-    visitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
+    ACVisitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
+    bumpVisitor = BumpFittingVisitor(forceUpdate=forceUpdate)
+    FRVisitor = FiringRateVisitor(forceUpdate=forceUpdate)
+
+    sp.visit(ACVisitor)
+    sp.visit(bumpVisitor)
+    sp.visit(FRVisitor)
+elif (o.type == "velocity"):
+    VelVisitor = BumpVelocityVisitor(forceUpdate=forceUpdate, printSlope=True)
+    sp.visit(VelVisitor, trialList='all-at-once')
+elif (o.type == 'grids'):
+    spikeType = 'E'
+    po = GridPlotVisitor.PlotOptions()
+    visitor = GridPlotVisitor(o.output_dir, spikeType=spikeType, plotOptions=po)
     sp.visit(visitor)
-    
-    ###############################################################################
-    plt.figure(figsize=(5.1, 2.9))
-    N = 2
-    plt.subplot(1, N, 1)
-    
-    acVal = plot2DTrial(sp, 'acVal', iterList,
-            xlabel="I coupling strength (nS)",
-            ylabel='E coupling strength (nS)',
-            clBarLabel = "Correlation",
-            clbarNTicks=3)
-    
-    ###############################################################################
-    plt.subplot(1, N, 2)
-    freq = plot2DTrial(sp, 'freq', iterList,
-            xlabel="I coupling strength (nS)",
-            clBarLabel = "Frequency (Hz)",
-            clbarNTicks=3,
-            yticks=False)
-    ###############################################################################
-    plt.tight_layout()
-    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
-    plt.savefig(sp.rootDir + '/analysis_EI_{0}pA.png'.format(int(noise_sigma)))
-
-plt.show()
-
+else:
+    raise ValueError("Unknown analysis type option: {0}".format(o.type))

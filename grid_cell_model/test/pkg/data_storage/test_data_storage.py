@@ -63,7 +63,7 @@ print ds['list_nested']
 print ds['list_nested'][3][2].keys()
 
 # Check if the order is maintained
-lst = range(5000)
+lst = range(100)
 print lst
 ds['list_order'] = lst
 
@@ -71,6 +71,14 @@ ds.close()
 
 ds = DataStorage.open('test.h5', mode='a')
 lst_test = ds['list_order']
+print lst_test
 print "lst_test == lst:", lst_test == lst
+
+# Testing iterator
+yieldList = ds['list']
+for val1 in yieldList:
+    print val1
+    for val2 in yieldList:
+        print " " + str(val2)
 
 ###############################################################################

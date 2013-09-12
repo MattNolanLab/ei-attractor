@@ -19,9 +19,50 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import matplotlib.pyplot as plt
-from matplotlib.ticker  import MaxNLocator
+from matplotlib.ticker  import MaxNLocator, LinearLocator
 
 from global_defs import globalAxesSettings
+
+
+def signalPlot(t, sig, ax, labelx=None, labely="", timeUnits="ms", leg=None,
+        nticks=3, nThetaTicks=None):
+    '''
+    Plot a customized signal plot into an axis.
+
+    Parameters
+    ----------
+    t : numpy array
+        Time array
+    sig : numpy array
+        Signal values
+    ax : matplotlib.axes object
+        Axes to plot into
+    labelx : string
+        X label
+    labely : string
+        Y label
+    timeUnits : string
+        Time units to be appended to xlabe
+    leg : list of strings or None
+        Legend to print. If None, do not print any legend
+    nticks : int
+        Number of ticks on the yaxis
+    '''
+    if (labelx is None):
+        labelx = 'Time (%s)' % timeUnits
+    plt.hold('on')
+    globalAxesSettings(ax)
+    if nThetaTicks is not None:
+        ax.xaxis.set_major_locator(LinearLocator(nThetaTicks))
+        plt.grid(b=True, which='major', axis='x')
+    else:
+        ax.xaxis.set_major_locator(MaxNLocator(4))
+    ax.yaxis.set_major_locator(MaxNLocator(nticks-1))
+    plt.plot(t, sig)
+    plt.xlabel(labelx)
+    plt.ylabel(labely)
+    if (leg is not None):
+        plt.legend(leg)
 
 
 def EIPlot(E, I, labelx=None, labely="", holdVal='on', timeUnits="ms",

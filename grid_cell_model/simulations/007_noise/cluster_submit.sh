@@ -23,7 +23,6 @@
 #$ -P inf_ndtc
 #$ -cwd
 #$ -j y
-#$ -pe OpenMP 4
 
 # Initialise environment module
 . /etc/profile.d/modules.sh
@@ -40,6 +39,7 @@ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib/nest
 export LD_LIBRARY_PATH
 
+trap 'echo catch signal USR2 at `date +"%D %T"`' usr2
 
 # Run the program
 python $* 

@@ -24,11 +24,14 @@ import numpy    as np
 import logging  as lg
 
 from numpy.random import rand, randn
+from scipy.io     import loadmat
 
+import gc_neurons
 from gc_net       import GridCellNetwork
 from place_input  import PlaceCellInput
 from place_cells  import UniformBoxPlaceCells
 from data_storage import DataStorage
+from otherpkg.log import log_info
 
 import nest
 
@@ -61,6 +64,7 @@ class NestGridCellNetwork(GridCellNetwork):
         self._placeCellsLoaded = False
 
         self.PC = []
+        self.PC_start = []
 
         self._initNESTKernel()
         self._constructNetwork()
@@ -107,64 +111,8 @@ class NestGridCellNetwork(GridCellNetwork):
 
     def _constructNetwork(self):
         '''Construct the E/I network'''
-        self.e_neuron_params = {
-                "V_m"              : self.no.EL_e,
-                "C_m"              : self.no.taum_e * self.no.gL_e,
-                "t_ref"            : self.no.t_ref_e,
-                "V_peak"           : self.no.V_peak_e,
-                "V_reset"          : self.no.Vr_e,
-                "E_L"              : self.no.EL_e,
-                "g_L"              : self.no.gL_e,
-                "Delta_T"          : self.no.deltaT_e,
-                "V_th"             : self.no.Vt_e,
-                "E_AMPA"           : self.no.E_AMPA,
-                "E_GABA_A"         : self.no.E_GABA_A,
-                "tau_AMPA_fall"    : self.no.tau_AMPA,
-                "tau_NMDA_fall"    : self.no.tau_NMDA_fall,
-                "tau_GABA_A_fall"  : self.no.tau_GABA_A_fall,
-                "tau_AHP"          : self.no.tau_AHP_e,
-                "E_AHP"            : self.no.E_AHP_e,
-                "g_AHP_max"        : self.no.g_AHP_e_max,
-                "g_AHP_ad"         : False,
-                "I_const"          : self.no.Iext_e_const,
-                "I_ac_amp"         : self.no.Iext_e_theta,
-                "I_ac_freq"        : self.no.theta_freq,
-                "I_ac_phase"       : -np.pi/2,
-                "I_ac_start_t"     : self.no.theta_start_t,
-                "I_noise_std"      : self.no.noise_sigma,
-                "V_clamp"          : self.no.Vclamp,
-                "rat_pos_x"        : [],
-                "rat_pos_y"        : []}
-
-        self.i_neuron_params = {
-                "V_m"              : self.no.EL_i,
-                "C_m"              : self.no.taum_i * self.no.gL_i,
-                "t_ref"            : self.no.t_ref_i,
-                "V_peak"           : self.no.V_peak_i,
-                "V_reset"          : self.no.Vr_i,
-                "E_L"              : self.no.EL_i,
-                "g_L"              : self.no.gL_i,
-                "Delta_T"          : self.no.deltaT_i,
-                "V_th"             : self.no.Vt_i,
-                "E_AMPA"           : self.no.E_AMPA,
-                "E_GABA_A"         : self.no.E_GABA_A,
-                "tau_AMPA_fall"    : self.no.tau_AMPA,
-                "tau_NMDA_fall"    : self.no.tau_NMDA_fall,
-                "tau_GABA_A_fall"  : self.no.tau_GABA_A_fall,
-                "tau_AHP"          : self.no.ad_tau_i_mean,
-                "E_AHP"            : self.no.EL_i,  # AHP has a role of adaptation here 
-                "g_AHP_max"        : self.no.ad_i_g_inc,
-                "g_AHP_ad"         : True,
-                "I_const"          : self.no.Iext_i_const,
-                "I_ac_amp"         : self.no.Iext_i_theta,
-                "I_ac_freq"        : self.no.theta_freq,
-                "I_ac_phase"       : -np.pi/2,
-                "I_ac_start_t"     : self.no.theta_start_t,
-                "I_noise_std"      : self.no.noise_sigma,
-                "V_clamp"          : self.no.Vclamp,
-                "g_NMDA_fraction"  : self.no.NMDA_amount,
-                "rat_pos_x"        : [],
-                "rat_pos_y"        : []}
+        self.e_neuron_params = gc_neurons.getENeuronParams(self.no)
+        self.i_neuron_params = gc_neurons.getINeuronParams(self.no)
 
 
         self.B_GABA = 1.0   # Must be here for compatibility with brian code
@@ -207,23 +155,30 @@ class NestGridCellNetwork(GridCellNetwork):
             if self.spikeMon_e is not None:
                 return self.spikeMon_e
             else:
+                if (N_ids is None):
+                    N_ids = np.arange(len(self.E_pop))
+                src = list(np.array(self.E_pop)[N_ids])
                 self.spikeMon_e = nest.Create('spike_detector')
                 nest.SetStatus(self.spikeMon_e, {
                     "label"     : "E spikes",
                     'withtime'  : True,
                     'withgid'   : True})
-                nest.ConvergentConnect(self.E_pop, self.spikeMon_e)
+                nest.ConvergentConnect(src, self.spikeMon_e)
                 return self.spikeMon_e
         elif (type == "I"):
             if (self.spikeMon_i is not None):
                 return self.spikeMon_i
             else:
+                if (N_ids is None):
+                    N_ids = np.arange(len(self.I_pop))
+                src = list(np.array(self.I_pop)[N_ids])
                 self.spikeMon_i = nest.Create('spike_detector')
                 nest.SetStatus(self.spikeMon_i, {
                     "label"     : "I spikes",
                     'withtime'  : True,
                     'withgid'   : True})
-                nest.ConvergentConnect(self.I_pop, self.spikeMon_i)
+                print src
+                nest.ConvergentConnect(src, self.spikeMon_i)
                 return self.spikeMon_i
         else:
             raise ValueError("Unsupported type of spike detector: " + type)
@@ -329,7 +284,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
         # Map velocities to currents: we use the slope of bump speed vs. rat speed and
         # inter-peak grid field distance to remap
-        # Bump current slope must be estimated
+        # Bump speed-current slope must be estimated
         self.velC = self.Ne_x / self.no.gridSep / self.no.bumpCurrentSlope
 
         self._ratVelocitiesLoaded = True
@@ -341,6 +296,7 @@ class NestGridCellNetwork(GridCellNetwork):
         prefDirs_mask can be used to manipulate velocity input strength
         for each neuron.
         '''
+        print("Setting up velocity input current.")
         self._loadRatVelocities()
 
 
@@ -362,6 +318,7 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_x", self.prefDirs_e[:, 0]);
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
+
 
 
     def setConstantVelocityCurrent_e(self, vel, start_t=None, end_t=None):
@@ -403,14 +360,44 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
-        self.setPlaceCells(start=0.0, end=self.no.theta_start_t,
-                posIn=PosInputs([0.], [.0], self.rat_dt))
+        self.setStartPlaceCells(PosInputs([0.], [.0], self.rat_dt))
+
+
+    def setStartPlaceCells(self, posIn):
+        if (len(self.PC_start) == 0):
+            print "Setting up initialization place cells"
+            self.PC_start, _, _ = self.createGenericPlaceCells(
+                    self.no.N_place_cells,
+                    self.no.pc_start_max_rate,
+                    self.no.pc_start_conn_weight,
+                    start=0.0,
+                    end=self.no.theta_start_t,
+                    posIn=posIn)
+        else:
+            log_info('Initialization place cells already set. Skipping the set up')
 
 
     def setPlaceCells(self, start=None, end=None, posIn=None):
+        # Place cells to initialize the bump - it should be initialized onto
+        # the correct position, i.e. the bump must be at the correct starting
+        # position, which matches the actual velocity simulation place cell
+        # input
+        self._loadRatVelocities()
+        startPos = PosInputs([self.rat_pos_x[0]], [self.rat_pos_y[0]],
+                self.rat_dt)
+        self.setStartPlaceCells(startPos)
+
+        # Here the actual velocity place cells
+        print "Setting up velocity place cells"
+        self.PC, _, _ = self.createGenericPlaceCells(self.no.N_place_cells,
+                self.no.pc_max_rate, self.no.pc_conn_weight, start, end, posIn)
+
+
+    def createGenericPlaceCells(self, N, maxRate, weight, start=None, end=None, posIn=None):
         '''
         Generate place cells and connect them to grid cells. The wiring is
-        fixed, and there is no plasticity.
+        fixed, and there is no plasticity. This method can be used more than
+        once, to set up different populations of place cells.
         '''
         if start is None:
             start = self.no.theta_start_t
@@ -420,32 +407,29 @@ class NestGridCellNetwork(GridCellNetwork):
             self._loadRatVelocities()
             posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
 
-        if (self.no.N_place_cells != 0):
-            print "Setting up place cells"
+        if (N != 0):
+            NTotal = N*N
 
             boxSize = [self.no.arenaSize, self.no.arenaSize]
-            N_pc_size = int(np.sqrt(self.no.N_place_cells))
-            N = [N_pc_size, N_pc_size]
-            self.N_pc_created = N_pc_size**2
-            self.PCHelper = UniformBoxPlaceCells(boxSize, N,
-                    self.no.pc_max_rate, self.no.pc_field_std, random=False)
+            PCHelper = UniformBoxPlaceCells(boxSize, (N, N), maxRate,
+                    self.no.pc_field_std, random=False)
 
-            self.PC = nest.Create('place_cell_generator', self.N_pc_created,
-                    params={'rate'       : self.no.pc_max_rate,
+            PC = nest.Create('place_cell_generator', NTotal,
+                    params={'rate'       : maxRate,
                             'field_size' : self.no.pc_field_std,
                             'start'      : start,
                             'stop'       : end})
-            nest.SetStatus(self.PC, 'ctr_x', self.PCHelper.centers[:, 0])
-            nest.SetStatus(self.PC, 'ctr_y', self.PCHelper.centers[:, 1])
+            nest.SetStatus(PC, 'ctr_x', PCHelper.centers[:, 0])
+            nest.SetStatus(PC, 'ctr_y', PCHelper.centers[:, 1])
 
             npos = int(self.no.time / self.rat_dt)
-            nest.SetStatus([self.PC[0]], params={
+            nest.SetStatus([PC[0]], params={
                 'rat_pos_x' : posIn.pos_x[0:npos],
                 'rat_pos_y' : posIn.pos_y[0:npos],
                 'rat_pos_dt': posIn.pos_dt})
 
-            test_x = nest.GetStatus([self.PC[0]], 'rat_pos_x')
-            test_y = nest.GetStatus([self.PC[0]], 'rat_pos_y')
+            test_x = nest.GetStatus([PC[0]], 'rat_pos_x')
+            test_y = nest.GetStatus([PC[0]], 'rat_pos_y')
             #print test_x, test_y
 
 
@@ -462,21 +446,22 @@ class NestGridCellNetwork(GridCellNetwork):
 
             pc_input = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize,
                     self.no.gridSep, [.0, .0], fieldSigma=connStdDev)
-            ctr_x = nest.GetStatus(self.PC, 'ctr_x')
-            ctr_y = nest.GetStatus(self.PC, 'ctr_y')
-            for pc_id in xrange(self.N_pc_created):
+            ctr_x = nest.GetStatus(PC, 'ctr_x')
+            ctr_y = nest.GetStatus(PC, 'ctr_y')
+            for pc_id in xrange(NTotal):
                 w = pc_input.getSheetInput(ctr_x[pc_id], ctr_y[pc_id]).flatten()
                 gt_th = w > pc_weight_threshold
                 post = np.array(self.E_pop)[gt_th]
                 w    = w[gt_th]
                 #print post, w
                 nest.DivergentConnect(
-                        [self.PC[pc_id]],
+                        [PC[pc_id]],
                         list(post),
-                        weight=list(w * self.no.pc_conn_weight),
+                        weight=list(w * weight),
                         delay=[self.no.delay] * len(w),
                         model='PC_AMPA')
 
+            return PC, PCHelper, NTotal
 
 
         else:
@@ -501,6 +486,7 @@ class NestGridCellNetwork(GridCellNetwork):
         d['E_pop'          ] = np.array(self.E_pop)
         d['I_pop'          ] = np.array(self.I_pop)
         d['PC'             ] = np.array(self.PC)
+        d['PC_start'       ] = np.array(self.PC_start)
         d['net_Ne'         ] = self.net_Ne
         d['net_Ni'         ] = self.net_Ni
         d['rat_pos_x'      ] = self.rat_pos_x
@@ -512,7 +498,6 @@ class NestGridCellNetwork(GridCellNetwork):
         d['Ni_x'           ] = self.Ni_x
         d['Ni_y'           ] = self.Ni_y
         d['prefDirs_e'     ] = self.prefDirs_e
-        d['N_pc_created'   ] = self.N_pc_created
 
         return d
             
@@ -536,7 +521,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
 
 
     def fillParams(self, dest, src):
-        for key, value in src:
+        for key, value in src.iteritems():
             dest[key] = value
         return dest
 
@@ -550,7 +535,6 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         '''
         NestGridCellNetwork.__init__(self, options, simulationOpts)
 
-
         # Spikes
         self.nrecSpikes_e = nrec_spikes[0]
         self.nrecSpikes_i = nrec_spikes[1]
@@ -560,8 +544,10 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         if (self.nrecSpikes_i is None):
             self.nrecSpike_i = self.Ni_x*self.Ni_y
 
-        self.spikeMon_e  = self.getSpikeDetector("E")
-        self.spikeMon_i  = self.getSpikeDetector("I")
+        self.spikeMon_e  = self.getSpikeDetector("E",
+                np.arange(self.nrecSpikes_e))
+        self.spikeMon_i  = self.getSpikeDetector("I",
+                np.arange(self.nrecSpikes_i))
 
 
         # States
@@ -600,7 +586,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         )
 
   
-    def _getSpikeMonData(self, mon, gidStart):
+    def getSpikeMonData(self, mon, gidStart):
         '''
         Generate a dictionary of a spike data from the monitor ``mon``
         '''
@@ -609,27 +595,41 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         return st
 
 
-    def getAllData(self):
+    def getSpikes(self):
         '''
-        Save all the simulated data into a dictionary and return it.
+        Return a dictionary of spike monitor data.
         '''
         out = {}
-        out['options']  = self.no._einet_optdict
-        out['net_attr'] = self.getAttrDictionary()
-        
-        # Save spikes
+
         if (self.spikeMon_e is not None):
-            out['spikeMon_e'] = self._getSpikeMonData(self.spikeMon_e,
+            out['spikeMon_e'] = self.getSpikeMonData(self.spikeMon_e,
                     self.E_pop[0])
         if (self.spikeMon_i is not None):
-            out['spikeMon_i'] = self._getSpikeMonData(self.spikeMon_i,
+            out['spikeMon_i'] = self.getSpikeMonData(self.spikeMon_i,
                     self.I_pop[0])
 
         for label, vals in self._extraSpikeMons.iteritems():
             assert(label not in out.keys())
-            out[label] = self._getSpikeMonData(vals[0], vals[1])
+            out[label] = self.getSpikeMonData(vals[0], vals[1])
+
+        return out
+
+    
+    def getNetParams(self):
+        out = {}
+        out['options']  = self.no._einet_optdict
+        out['net_attr'] = self.getAttrDictionary()
+        return out
 
 
+    def getAllData(self):
+        '''
+        Save all the simulated data into a dictionary and return it.
+        '''
+        out = self.getNetParams()
+
+        # Spike monitors
+        out.update(self.getSpikes())
         
         #Save state variables
         out['stateMon_e']   = nest.GetStatus(self.stateMon_e)
@@ -639,6 +639,20 @@ class BasicGridCellNetwork(NestGridCellNetwork):
             out[label] = nest.GetStatus(val)
 
         return out
+
+
+    def saveSpikes(self, fileName):
+        '''
+        Save all the simulated spikes that have been recorded into a file.
+
+        Parameters
+        ----------
+        fileName : string
+            Path and name of the file
+        '''
+        out = DataStorage.open(fileName, 'w')
+        d = self.getSpikes()
+        out.close()
 
 
     def saveAll(self, fileName):
@@ -655,6 +669,51 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         for key, val in d.iteritems():
             out[key] = val
         out.close()
+
+
+
+class ConstantVelocityNetwork(BasicGridCellNetwork):
+    '''
+    A grid cell network that simulates a constant velocity in a specified
+    direction.
+    '''
+
+    def __init__(self, options, simulationOpts=None,
+            vel              = [0.0, 0.0],
+            nrec_spikes      = (None, None),
+            stateRecord_type = 'middle-center',
+            stateRecParams   = (None, None)):
+        '''
+        Generate the network.
+
+        Parameters
+        ----------
+        vel : a pair [x, y]
+            Velocity input vector, i.e. it specifies the direction and
+            magnitude of the velocity current.
+        '''
+        BasicGridCellNetwork.__init__(self,
+                options, simulationOpts,
+                nrec_spikes,
+                stateRecord_type,
+                stateRecParams)
+
+        self.setConstantVelocityCurrent_e(vel)
+
+    def getSpikes(self):
+        '''
+        Return a dictionary of spike monitor data.
+        '''
+        out = {}
+        out['spikeMon_e'] = self.getSpikeMonData(self.spikeMon_e,
+                self.E_pop[0])
+        return out
+
+
+    def getMinimalSaveData(self):
+        out = self.getNetParams()
+        out.update(self.getSpikes())
+        return out
 
 
 

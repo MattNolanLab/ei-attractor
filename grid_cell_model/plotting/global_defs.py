@@ -20,24 +20,35 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator, LinearLocator
 
 
-def globalAxesSettings(ax):
+def globalAxesSettings(ax, setTickPos=True):
     ax.tick_params(
-            direction='out'
+            which='major',
+            direction='out',
+            width=1,
+            length=6
     )
-    ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('left')
+    ax.tick_params(
+            which='minor',
+            direction='out',
+            width=1,
+            length=4
+    )
+    if (setTickPos):
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
 
 
 def createColorbar(ax, data=None, label="", nticks=2, **kw):
-    if (data is not None):
-        mn = np.min(data.flatten())
-        mx = np.max(data.flatten())
-        ticks = np.linspace(mn, mx, nticks)
-    else:
-        ticks = None
-    cb = plt.colorbar(ax=ax, ticks=ticks, **kw)
+    #if (data is not None):
+    #    mn = np.min(data.flatten())
+    #    mx = np.max(data.flatten())
+    #    ticks = np.linspace(mn, mx, nticks)
+    #else:
+    #    ticks = None
+    cb = plt.colorbar(ax=ax, ticks=MaxNLocator(nticks+1), **kw)
     if (label != ""):
         cb.set_label(label)
 

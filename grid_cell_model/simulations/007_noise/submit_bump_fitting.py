@@ -30,6 +30,7 @@ simLabel    = 'correlation_1d'
 simRootDir  = 'output_local'
 appName     = 'simulation_stationary.py'
 rtLimit     = '00:05:00'
+numCPU      = 4
 blocking    = True
 timePrefix  = False
 numRepeat   = 1
@@ -52,7 +53,7 @@ ac.insertDict(iterp, mult=False)
 ###############################################################################
 submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
         rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-        blocking=blocking, timePrefix=timePrefix);
+        blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
 ac.setOption('output_dir', submitter.outputDir())
 startJobNum = 0
 submitter.submitAll(startJobNum, numRepeat, dry_run=False)

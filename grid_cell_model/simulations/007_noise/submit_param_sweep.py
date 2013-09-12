@@ -19,67 +19,37 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import numpy as np
-from default_params         import defaultParameters as p
-from submitting.factory     import SubmitterFactory
-from submitting.arguments   import ArgumentCreator
+from default_params import defaultParameters as p
+from param_sweep    import submitParamSweep
 import logging as lg
-lg.basicConfig(level=lg.DEBUG)
-
-
-# Submitting
-ENV         = 'cluster'
-simRootDir  =  'output'
-simLabel    =  'EI_param_sweep_300pA_full'
-appName     = 'simulation_stationary.py'
-rtLimit     = '00:20:00'
-blocking    = True
-timePrefix  = True
-numRepeat   = 1
-
-p['time']              = 10e3  # ms
-p['nthreads']          = 4
-p['ntrials']           = 10
+#lg.basicConfig(level=lg.DEBUG)
+lg.basicConfig(level=lg.INFO)
 
 p['noise_sigma']       = 300.0     # pA
 
+# Submitting
+ENV         = 'cluster'
+simRootDir  = 'output/one_to_one'
+simLabel    = 'EI_param_sweep_{0}pA_big'.format(int(p['noise_sigma']))
+appName     = 'simulation_stationary.py'
+rtLimit     = '00:20:00'
+numCPU      = 4
+blocking    = True
+timePrefix  = False
+numRepeat   = 1
+dry_run     = False
 
-###############################################################################
+p['time']              = 10e3  # ms
+p['nthreads']          = 4
+p['ntrials']           = 5
 
-ac = ArgumentCreator(p, printout=True)
 
 # Range of parameters around default values
-# Let's choose a 0.5 - 2 range around the default values
-Nvals        = 20     # Number of values for each dimension
-startFrac    = 0.5
-endFrac      = 2.0
-
-
-fracArr = np.linspace(startFrac, endFrac, Nvals)
-print(fracArr)
-
-g_AMPA_total_arr     = []
-g_GABA_total_arr     = []
-g_uni_GABA_total_arr = []
-for E_coupling in fracArr:
-    for I_coupling in fracArr:
-        g_AMPA_total_arr.append(E_coupling*p['g_AMPA_total'])
-        g_GABA_total_arr.append(I_coupling*p['g_GABA_total'])
-        g_uni_GABA_total_arr.append(I_coupling*p['g_uni_GABA_total'])
-
-
-iterparams = {
-    'g_AMPA_total'      : np.array(g_AMPA_total_arr),
-    'g_GABA_total'      : np.array(g_GABA_total_arr),
-    'g_uni_GABA_total'  : np.array(g_uni_GABA_total_arr)
-}
-ac.insertDict(iterparams, mult=False)
+Nvals        = 40    # Number of values for each dimension
+startFrac    = 0.
+endFrac      = 2.8572
 
 ###############################################################################
-submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
-        rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-        blocking=blocking, timePrefix=timePrefix);
-ac.setOption('output_dir', submitter.outputDir())
-startJobNum = 0
-submitter.submitAll(startJobNum, numRepeat, dry_run=False)
-submitter.saveIterParams(iterparams)
+
+submitParamSweep(p, startFrac, endFrac, Nvals, ENV, simRootDir, simLabel,
+        appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run)

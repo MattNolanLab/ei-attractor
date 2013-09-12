@@ -23,9 +23,12 @@ import scipy
 
 from scipy import weave
 
+from otherpkg.log import log_warn
+
 __all__ = ['firingRate', 'multipleFiringRate', 'firingRateFromPairs',
         'firingRateSlidingWindow', 'slidingFiringRateTuple',
-        'torusPopulationVector', 'torusPopulationVectorFromRates']
+        'torusPopulationVector', 'torusPopulationVectorFromRates',
+        'SpikeTrain', 'PopulationSpikes', 'ThetaSpikeAnalysis']
 
 
 def firingRate(spikeTrain, tstart, tend):
@@ -51,15 +54,15 @@ def multipleFiringRate(spikeTrainArray, tstart, tend):
 
     return result
 
-def firingRateFromPairs(N, N_ids, times, tstart, tend):
-    '''
-    Compute average firing rate for all the neurons in the range <0, N), given
-    two arrays: N_ids (neuron ids) and times of spikes corresponding to N_ids).
-    '''
-    result = np.ndarray((N, ))
-    for n_it in xrange(N):
-        result[n_it] = firingRate(times[N_ids == n_it], tstart, tend)
-    return result
+#def firingRateFromPairs(N, N_ids, times, tstart, tend):
+#    '''
+#    Compute average firing rate for all the neurons in the range <0, N), given
+#    two arrays: N_ids (neuron ids) and times of spikes corresponding to N_ids).
+#    '''
+#    result = np.ndarray((N, ))
+#    for n_it in xrange(N):
+#        result[n_it] = firingRate(times[N_ids == n_it], tstart, tend)
+#    return result
 
 
 
@@ -95,14 +98,16 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
     spikes is a tuple(n_id, times), in which n_id is a list/array of neuron id
     and times is a list/array of spike times
 
+    Parameters
+    ----------
     spikes  A pair (n_id, spikes)
     N       Total number of neurons
     tstart  When the firing rate will start (ms)
     tend    End time of firing rate (ms)
     dt      Sliding window dt - not related to simulation time (ms)
-    winLen  Length of the sliding window (ms)
+    winLen  Length of the sliding window (ms). Must be >= dt.
 
-    return  a n array of shape (N, int((tend-tstart)/dt)+1
+    return  An array of shape (N, int((tend-tstart)/dt)+1
     '''
     #print "Start sliding firing rate.."
     
@@ -157,20 +162,149 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
         
 
 
+
 def torusPopulationVector(spikes, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=1.0):
+    '''
+    This function is deprecated. Use the OO version instead
+    '''
+    log_warn('This function is deprecated')
     N = sheetSize[0]*sheetSize[1]
     F, tsteps = slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen)
 
     return torusPopulationVectorFromRates((F, tsteps), sheetSize)
 
 
-def torusPopulationVectorFromRates(FR, sheetSize):
-        F = FR[0]
-        tsteps = FR[1]
 
-        sheetSize_x = sheetSize[0]
-        sheetSize_y = sheetSize[1]
+class SpikeTrain(object):
+    '''
+    A base class for handling spike trains.
+    '''
+    def __init__(self):
+        raise NotImplementedError()
+
+
+
+class PopulationSpikes(SpikeTrain):
+    '''
+    Class to handle a population of spikes and a set of methods to do analysis
+    on the *whole* population.
+    '''
+    def __init__(self, N, senders, times):
+        self._N       = N
+        self._senders = senders
+        self._times   = times
+        if (N < 0):
+            raise ValueError("Number of neurons in the spike train must be " + 
+                    "non-negative! Got {0}.".format(N))
+
+
+    def avgFiringRate(self, tStart, tEnd):
+        '''
+        Compute and average firing rate for all the neurons between 'tstart'
+        and 'tend'. Return an array of firing rates, one item for each neuron
+        in the population.
+
+        Parameters
+        ----------
+        tStart : float (ms)
+            Start time.
+        tEnd   : float (ms)
+            End time.
+        output : numpy array
+            Firing rate in Hz for each neuron in the population.
+        '''
+        result  = np.zeros((self._N, ))
+        times   = self._times
+        senders = self._senders
+        N       = int(self._N)
+        ts      = float(tStart)
+        te      = float(tEnd)
+        code = '''
+            for (int i = 0; i < senders.size(); i++)
+            {
+                int t = times(i);
+                int s = senders(i);
+                if (s >= 0 && s < N && t >= ts && t <= te)
+                    result(s)++; 
+                else if (s < 0 || s >= N)
+                    std::cout << "senders is outside range <0, N)" << 
+                            std::endl;
+            }
+        '''
+
+        err = weave.inline(code,
+                ['N', 'times', 'senders', 'ts', 'te', 'result'],
+                type_converters=weave.converters.blitz,
+                compiler='gcc',
+                extra_compile_args=['-O3'],
+                verbose=2)
+        return 1e3 * result / (tEnd - tStart)
+
+
+    def slidingFiringRate(self, tStart, tEnd, dt, winLen):
+        '''
+        Compute a sliding firing rate over the population of spikes, by taking
+        a rectangular window of specified length.
+
+        Parameters
+        ----------
+        tStart : float
+            Start time of the firing rate analysis.
+        tEnd : float
+            End time of the analysis
+        dt : float
+            Firing rate window time step
+        winLen : float
+            Lengths of the windowing function (rectangle)
+        output : a tuple
+            A pair (F, t), specifying the vector of firing rates and
+            corresponding times.
+        '''
+        spikes = (self._senders, self._times)
+        return slidingFiringRateTuple(spikes, self._N, tStart, tEnd, dt,
+                winLen)
+
+
+
+class TorusPopulationSpikes(PopulationSpikes):
+    '''
+    Spikes of a population of neurons on a twisted torus.
+    '''
+
+    def __init__(self, senders, times, sheetSize):
+        self._sheetSize = sheetSize
+        N = sheetSize[0]*sheetSize[1]
+        PopulationSpikes.__init__(self, N, senders, times)
+
+    
+    def populationVector(self, tStart, tEnd, dt, winLen):
+        '''
+        Compute the population vector on a torus, from the spikes present. Note
+        that this method will have a limited functionality on a twisted torus,
+        but can be used if the population activity translates in the X
+        dimension only.
+
+        Parameters
+        ----------
+        tStart : float
+            Start time of analysis
+        tEnd : float
+            End time of analysis
+        dt : float
+            Time step of the (rectangular) windowing function
+        winLen : float
+            Length of the windowing function
+        output : tuple
+            A pair (r, t) in which r is a 2D vector of shape
+            (int((tEnd-tStart)/dt)+1), 2), corresponding to the population
+            vector for each time step of the windowing function, and t is a
+            vector of times, of length the first dimension of r.
+        '''
+        sheetSize_x = self._sheetSize[0]
+        sheetSize_y = self._sheetSize[1]
+        N = sheetSize_x*sheetSize_y
         
+        F, tsteps = self.slidingFiringRate(tStart, tEnd, dt, winLen)
         P = np.ndarray((len(tsteps), 2), dtype=complex)
         X, Y = np.meshgrid(np.arange(sheetSize_x), np.arange(sheetSize_y))
         X = np.exp(1j*(X - sheetSize_x/2)/sheetSize_x*2*np.pi).ravel()
@@ -179,5 +313,54 @@ def torusPopulationVectorFromRates(FR, sheetSize):
             P[t_it, 0] = np.dot(F[:, t_it], X)
             P[t_it, 1] = np.dot(F[:, t_it], Y)
 
-        return (np.angle(P)/2/np.pi*sheetSize, tsteps)
+        return (np.angle(P)/2/np.pi*self._sheetSize, tsteps)
+
+
+
+
+
+class ThetaSpikeAnalysis(PopulationSpikes):
+    '''
+    Analyse population spike trains for theta oscillation-related information.
+    '''
+    def __init__(self, N, senders, times):
+        PopulationSpikes.__init__(self, N, senders, times)
+
+
+    def firingRateMiddleTheta(self, thetaStartT, thetaFreq, tEnd, winLen):
+        '''
+        Compute firing rate for every neuron in the population. For each
+        neuron, return an array of firing rates for every theta cycle.
+
+        Parameters
+        ----------
+        thetaStartT : float (ms)
+            Start time of the theta signal. The center of the firing rate
+            window will be in the middle of the theta signal. Therefore it is
+            up to the user to ensure that the peak of the theta signal is in
+            the middle.
+        thetaFreq : float (Hz)
+            Theta signal frequency
+        tEnd : float (ms)
+            Analysis end time
+        winLen : float
+            Length of the firing rate window as a fraction of the theta cycle
+            time. Will be derived from thetaFreq, and should be in the range
+            (0, 1>.
+        '''
+        thetaT = 1e3 / thetaFreq # ms
+        spikes = (self._senders, self._times)
+        return slidingFiringRateTuple(spikes, self._N, thetaStartT + .5*thetaT,
+                tEnd, thetaT, winLen * thetaT)
+
+
+    def avgFiringRateMiddleTheta(self, thetaStartT, thetaFreq, tEnd, winLen):
+        '''
+        Do the same thing as getFiringRateMiddleTheta, but for each neuron also
+        compute its average firing rate from theta_start_t to tend
+        '''
+        fr, times = self.firingRateMiddleTheta(theta_start_t, theta_freq, tend, winlen)
+        return np.mean(fr, 1)
+
+
 

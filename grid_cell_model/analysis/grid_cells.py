@@ -26,9 +26,8 @@ import numpy.ma as ma
 from scipy.integrate             import trapz
 from scipy.signal                import correlate2d
 from scipy.ndimage.interpolation import rotate
-from matplotlib.pyplot           import *
 
-__all__ = ['gaussianFilter', 'extractSpikePositions2D', 'plotSpikes2D', 'SNSpatialRate2D',
+__all__ = ['gaussianFilter', 'extractSpikePositions2D', 'SNSpatialRate2D',
         'SNFiringRate', 'motionDirection', 'SNAutoCorr', 'cellGridnessScore']
 
 
@@ -52,20 +51,6 @@ def extractSpikePositions2D(spikeTimes, rat_pos_x, rat_pos_y, dt):
     neuronPos_y = rat_pos_y[neuronPos_i]
 
     return (neuronPos_x, neuronPos_y, np.max(neuronPos_i))
-
-
-def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt):
-    '''
-    Plot spike positions into the figure. Both positions and spikes must be aligned!
-    '''
-    neuronPos_x, neuronPos_y, m_i = extractSpikePositions2D(spikeTimes, rat_pos_x, rat_pos_y, dt)
-
-    plot(rat_pos_x[0:m_i], rat_pos_y[0:m_i])
-    hold('on')
-    plot(neuronPos_x, neuronPos_y, 'or', markersize=5)
-    hold('off')
-    axis('off')
-    axis('equal')
 
 
 def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
@@ -97,18 +82,6 @@ def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
 
     return  rateMap.T, xedges, yedges
 
-
-def plotSNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
-    '''
-    Create a 2D rate map from spike times and rat tracking data and plot this.
-    '''
-
-    rateMap, xedges, yedges = SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h)
-
-    X, Y = np.meshgrid(xedges, yedges)
-    figure(fig)
-    pcolormesh(X, Y, rateMap)
-    colormap('jet')
 
 
 def SNAutoCorr(rateMap, arenaDiam, h):

@@ -87,17 +87,34 @@ class python_exception : public std::exception {
 };
 
 
+/**
+ * Conver PyObject* to a PyArrayObject*.
+ *
+ * @param obj Python object. Any array-like object.
+ * @return Numpy PyArrayObject*. The documentation for PyArrayFromObject is
+ *      little cryptic, but this function should always increase the reference
+ *      count of the **object that is returned**
+ * @throw python_exception when the conversion fails
+ */
 template<class T, int N>
-blitz::Array<T,N> convertPyToBlitz(PyObject* obj)
+PyArrayObject* convertPyToNumpy(PyObject* obj)
 {
     PyArrayObject* arr_obj;
 
     arr_obj = (PyArrayObject *) PyArray_FromObject(obj,
             detail::numpy_type_map<T>::typenum, N, N);
+
     if (arr_obj == NULL) {
         throw python_exception();
     }
 
+    return arr_obj;
+}
+
+
+template<class T, int N>
+blitz::Array<T,N> convertPyToBlitz(PyArrayObject* arr_obj)
+{
     blitz::TinyVector<int,N> shape(0);
     blitz::TinyVector<int,N> strides(0);
     for (int i = 0; i < N; i++)

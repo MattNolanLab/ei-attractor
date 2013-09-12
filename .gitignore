@@ -3,6 +3,7 @@
 *.o
 *.so
 *.swp
+*.swo
 .DS_Store
 output_local
 

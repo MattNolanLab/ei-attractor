@@ -50,21 +50,37 @@ def bumpPosition(spikes, sheetSize, tstart, tend, dt, winLen, units="s"):
 
 
 
-def torusFiringRate(rateMap, labelx, labely=None, titleStr=""):
+def torusFiringRate(rateMap, labelx, labely=None, titleStr="", clbar=True,
+        vMin=None, vMax=None, xTicks=True, yTicks=True, xTickLabels=True,
+        yTickLabels=True):
     '''Firing rate of cells on the twisted torus'''
     if (labely is None):
         labely = labelx
-    pcolormesh(rateMap)
-    globalAxesSettings(mpl.gca())
+    ax = mpl.gca()
+    ax.minorticks_on()
+    pcolormesh(rateMap, vmin=vMin, vmax=vMax)
+    globalAxesSettings(ax)
     locx = LinearLocator(2)
-    mpl.gca().xaxis.set_ticks([0, len(rateMap[0])])
-    mpl.gca().yaxis.set_ticks([0, len(rateMap)])
+    if (xTicks):
+        ax.xaxis.set_ticks([1, len(rateMap[0])])
+    else:
+        ax.xaxis.set_ticks([])
+    if (xTicks):
+        ax.yaxis.set_ticks([1, len(rateMap)])
+    else:
+        ax.yaxis.set_ticks([])
+    if (not xTickLabels):
+        ax.xaxis.set_ticklabels([])
+    if (not yTickLabels):
+        ax.yaxis.set_ticklabels([])
+
     xlabel(labelx)
     ylabel(labely)
-    createColorbar(mpl.gca(), data=rateMap, label='Firing rate (Hz)')
-    axis('tight')
+    if (clbar):
+        cb = mpl.colorbar(ticks=MaxNLocator(4))
+        cb.set_label('Firing rate (Hz)')
+    axis('scaled')
     title(titleStr, va='bottom')
-    tight_layout()
 
 
 def flatFiringRate(FR, times, labely=None, labelx=None, units="ms",

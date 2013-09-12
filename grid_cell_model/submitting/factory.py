@@ -29,7 +29,7 @@ class SubmitterFactory(object):
     @classmethod
     def getSubmitter(cls, argCreator, appName, envType='guess',
             rtLimit="00:05:00", output_dir=".", label='', timePrefix=True,
-            blocking=True):
+            blocking=True, numCPU=1):
         '''
         Get the appropriate factory object, depending on the ``envType```
         parameter. By default, try to guess the best submitter, but this can be
@@ -79,6 +79,6 @@ class SubmitterFactory(object):
             raise ValueError("Unsupported envType parameter.")
 
         return Scls(argCreator, appName, rtLimit, output_dir, label,
-                timePrefix, blocking)
+                timePrefix, blocking, numCPU)
 
 

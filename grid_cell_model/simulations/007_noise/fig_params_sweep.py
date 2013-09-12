@@ -47,7 +47,7 @@ def spikeStatistics(spikeTimes, theta_start_t, theta_freq, T):
     phaseOfFirstSpike = []
     for theta_it in xrange(nThetas):
         # No. of spikes per theta
-        spikesTheta = spikes_theta_no == theta_it
+        spikesTheta = (spikes_theta_no == theta_it)
         spikesPerEachTheta.append(numpy.count_nonzero(spikesTheta))
 
         # Time of the first spike, nans removed

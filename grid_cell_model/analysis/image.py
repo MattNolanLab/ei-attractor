@@ -20,7 +20,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 from scipy    import weave
-from matplotlib.pyplot import *
+import matplotlib.pyplot as plt
 
 import numpy as np
 import scipy.optimize
@@ -144,7 +144,7 @@ def fitGaussianTT(sig_f, i, dim):
         a.y = x[2] # mu_y
         dist = remapTwistedTorus(a, others, dim)
         #dist = np.sqrt((others.x - a.x)**2 + (others.y - a.y)**2)
-        #print "C:", x[0], a, "sigma:", x[3]
+        #print "A:", x[0], a, "sigma:", x[3]
         return np.abs(x[0]) * np.exp( -dist**2/2./ x[3]**2 ) - sig_f
 #                       |                            |
 #                       A                          sigma
@@ -152,7 +152,8 @@ def fitGaussianTT(sig_f, i, dim):
     x0 = np.array([i.A0, i.mu0_x, i.mu0_y, i.sigma0])
 
     xest,ierr = scipy.optimize.leastsq(gaussDiff, x0)
-    return xest
+    err = gaussDiff(xest)
+    return xest, err**2
 
 
 
@@ -185,11 +186,11 @@ def remapAndPlot(a, dims):
     others.x = X.flatten()
     others.y = Y.flatten()
     dist = remapTwistedTorus(a, others, dims)
-    figure()
-    pcolormesh(np.reshape(dist, (dims.y, dims.x)))
-    title('a:(x, y): ' + str(a.x) + ', ' + str(a.y) + ', x_dim:' + str(dims.x) +
+    plt.figure()
+    plt.pcolormesh(np.reshape(dist, (dims.y, dims.x)))
+    plt.title('a:(x, y): ' + str(a.x) + ', ' + str(a.y) + ', x_dim:' + str(dims.x) +
             ', y_dim: ' + str(dims.y))
-    axis('equal')
+    plt.axis('equal')
 
 
 if (__name__ == '__main__'):

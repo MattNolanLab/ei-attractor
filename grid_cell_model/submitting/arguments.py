@@ -22,6 +22,7 @@
 Argument processing and setup - to submit jobs with multiple parameter
 sweeps/runs
 '''
+from gc_exceptions import DimensionException
 
 class ArgumentCreator(object):
     '''

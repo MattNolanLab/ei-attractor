@@ -1,7 +1,7 @@
 #
 #   interface.py
 #
-#   Loading and saving data in the simulations/analysis.
+#   Immplementation independent data storage interface classes (base class(es)).
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,10 +19,8 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from collections import MutableMapping
 
-
-class DataStorage(MutableMapping):
+class DataStorage(object):
     '''
     Class for saving and loading data structures transparently.
     
@@ -40,8 +38,8 @@ class DataStorage(MutableMapping):
     semantics of the non-compound data access can be changed in the future.
     '''
 
-    @classmethod
-    def open(cls, filePath, mode='w'):
+    @staticmethod
+    def open(filePath, mode='w'):
         '''
         Given the file Path, return the DataStorage object with the correct
         implementation, inferred from the filePath extension.
@@ -56,10 +54,3 @@ class DataStorage(MutableMapping):
         return hdf5_storage.HDF5DataStorage.factory(filePath, mode=mode)
 
 
-
-
-###############################################################################
-#                                  Tests
-###############################################################################
-if __name__ == "__main__":
-    pass

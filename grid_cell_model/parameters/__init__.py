@@ -18,7 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from param_space import JobTrialSpace2D
+from param_space import JobTrialSpace2D, DataSpace
 from data_sets   import DictDataSet
 
 __all__ = ['data_sets', 'param_space']
