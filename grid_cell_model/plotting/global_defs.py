@@ -51,4 +51,5 @@ def createColorbar(ax, data=None, label="", nticks=2, **kw):
     cb = plt.colorbar(ax=ax, ticks=MaxNLocator(nticks+1), **kw)
     if (label != ""):
         cb.set_label(label)
+    return cb
 

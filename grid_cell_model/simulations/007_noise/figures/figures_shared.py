@@ -19,7 +19,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from matplotlib.pyplot import gca
+from matplotlib.pyplot import gca, axis
 from matplotlib.ticker import MaxNLocator, AutoMinorLocator, LinearLocator
 import matplotlib.transforms as transforms
 
@@ -98,12 +98,15 @@ def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn, thetaLim, color='grey')
         ax.text(t[-1] - 10, -50, "0 pA", ha="right", va='top', fontsize='small')
     
 
-def plotBump(ax, rateMap):
-    rateMap = np.zeros((10, 10))
+def plotBump(ax, rateMap, cmap=None, maxRate=True):
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
-    ax.pcolormesh(rateMap)
+    ax.pcolormesh(rateMap, cmap=cmap)
     axis("scaled")
+    if (maxRate):
+        rStr = '{0:.1f} Hz'.format(np.max(rateMap.flatten()))
+        ax.text(0.95, 1.025, rStr, ha="right", va='bottom', fontsize='x-small',
+                transform=ax.transAxes)
 
 def plotSpikes(ax, t, trajectory, spikeTimes):
     pass
