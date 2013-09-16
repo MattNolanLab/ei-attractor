@@ -542,7 +542,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         if (self.nrecSpikes_e is None):
             self.nrecSpikes_e = self.Ne_x*self.Ne_y
         if (self.nrecSpikes_i is None):
-            self.nrecSpike_i = self.Ni_x*self.Ni_y
+            self.nrecSpikes_i = self.Ni_x*self.Ni_y
 
         self.spikeMon_e  = self.getSpikeDetector("E",
                 np.arange(self.nrecSpikes_e))

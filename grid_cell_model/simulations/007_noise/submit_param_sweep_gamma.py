@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
-#   submit_param_sweep.py
+#   submit_param_sweep_gamma.py
 #
-#   Submit job(s) to the cluster/workstation: parameter sweep (noise)
+#   Submit job(s) to the cluster/workstation: gamma parameter sweep (noise)
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -25,12 +25,12 @@ import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
 
-p['noise_sigma']       = 300.0     # pA
+p['noise_sigma'] = 0.0     # pA
 
 # Submitting
 ENV         = 'cluster'
-simRootDir  = 'output/one_to_one'
-simLabel    = 'EI_param_sweep_{0}pA_big'.format(int(p['noise_sigma']))
+simRootDir  = 'output/even_spacing/gamma_bump'
+simLabel    = '{0}pA'.format(int(p['noise_sigma']))
 appName     = 'simulation_stationary.py'
 rtLimit     = '00:20:00'
 numCPU      = 4
@@ -45,11 +45,11 @@ p['ntrials']           = 5
 
 
 # Range of parameters around default values
-Nvals        = 40    # Number of values for each dimension
-startFrac    = 0.
-endFrac      = 2.8572
+Nvals  = 31      # Number of values for each dimension
+startG = 0.0     # nS
+endG   = 6120.0  # nS
 
 ###############################################################################
 
-submitParamSweep(p, startFrac, endFrac, Nvals, ENV, simRootDir, simLabel,
+submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
         appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run)

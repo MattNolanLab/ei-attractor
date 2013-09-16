@@ -121,7 +121,7 @@ def getOptParser():
     optParser.add_option("--g_uni_AMPA_total",  type="float",  help="Total AMPA connections synaptic conductance (nS)")
     optParser.add_option("--uni_AMPA_density",  type="float",  help="Density of uniform AMPA connections (fraction)")
     optParser.add_option("--g_GABA_total",      type="float",  help="Total GABA connections synaptic conductance (nS)")
-    optParser.add_option("--g_uni_GABA_total",  type="float",  help="Total uniform GABA A connections synaptic conductance (nS)")
+    optParser.add_option("--g_uni_GABA_frac",   type="float",  help="Total uniform GABA A connections synaptic conductance (fraction of g_GABA_total)")
     optParser.add_option("--uni_GABA_density",  type="float",  help="Density of uniform GABA A connections")
     optParser.add_option("--NMDA_percent",      type="float",  help="Percentage of NMDA conductance the excitatory synapse contains (%)")
     optParser.add_option("--tau_NMDA_rise",     type="float",  help="NMDA rise time constant (ms)")

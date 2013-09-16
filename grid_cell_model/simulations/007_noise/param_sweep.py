@@ -24,29 +24,29 @@ from submitting.arguments   import ArgumentCreator
 from data_storage           import DataStorage
 
 
-def submitParamSweep(p, startFrac, endFrac, Nvals, ENV, simRootDir, simLabel,
+def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
         appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
         extraIterparams={}):
     ac = ArgumentCreator(p, printout=True)
 
-    fracArr = np.linspace(startFrac, endFrac, Nvals)
-    #fracArr = [1.0]
-    print(fracArr)
+    GArr = np.linspace(startG, endG, Nvals)
+    #GArr = [1.0]
+    print(GArr)
 
     g_AMPA_total_arr     = []
     g_GABA_total_arr     = []
     g_uni_GABA_total_arr = []
-    for E_coupling in fracArr:
-        for I_coupling in fracArr:
-            g_AMPA_total_arr.append(E_coupling*p['g_AMPA_total'])
-            g_GABA_total_arr.append(I_coupling*p['g_GABA_total'])
-            g_uni_GABA_total_arr.append(I_coupling*p['g_uni_GABA_total'])
+    for E_coupling in GArr:
+        for I_coupling in GArr:
+            g_AMPA_total_arr.append(E_coupling)
+            g_GABA_total_arr.append(I_coupling)
 
 
     iterparams = {
         'g_AMPA_total'      : np.array(g_AMPA_total_arr),
         'g_GABA_total'      : np.array(g_GABA_total_arr),
-        'g_uni_GABA_total'  : np.array(g_uni_GABA_total_arr)
+        #'g_AMPA_total'      : [1400],
+        #'g_GABA_total'      : [2160]
     }
     iterparams.update(extraIterparams)
     ac.insertDict(iterparams, mult=False)
