@@ -36,7 +36,7 @@ numRepeat   = 1
 dry_run     = False
 
 
-noise_sigma = 300 # pA
+noise_sigma = 300.0 # pA
 gammaBumpType = 'gamma-bump'
 velocityType = 'velocity'
 gridsType = 'grids'
