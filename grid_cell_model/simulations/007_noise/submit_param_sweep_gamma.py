@@ -25,7 +25,7 @@ import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
 
-noise_sigma_all = [0.0, 150.0, 300.0] # pA
+noise_sigma_all = [150.0, 300.0] # pA
 
 for noise_sigma in noise_sigma_all:
     p = dp.copy()
@@ -36,19 +36,19 @@ for noise_sigma in noise_sigma_all:
     simRootDir  = 'output/even_spacing/gamma_bump'
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
     appName     = 'simulation_stationary.py'
-    rtLimit     = '00:20:00'
-    numCPU      = 4
+    rtLimit     = '00:45:00'
+    numCPU      = 1
     blocking    = True
     timePrefix  = False
     numRepeat   = 1
     dry_run     = False
 
     p['time']              = 10e3  # ms
-    p['nthreads']          = 4
+    p['nthreads']          = 1
     p['ntrials']           = 5
 
 
-    # Range of parameters around default values
+    # Range of E/I synaptic conductances
     Nvals  = 31      # Number of values for each dimension
     startG = 0.0     # nS
     endG   = 6120.0  # nS
