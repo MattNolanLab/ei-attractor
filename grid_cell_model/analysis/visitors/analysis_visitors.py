@@ -243,7 +243,7 @@ class BumpFittingVisitor(DictDSVisitor):
         dim = Position2D()
         dim.x = Nx
         dim.y = Ny
-        return fitGaussianBumpTT(bump, dim)
+        return fitGaussianBumpTT(bump, dim), bump
 
     def visitDictDataSet(self, ds, **kw):
         '''
@@ -263,14 +263,15 @@ class BumpFittingVisitor(DictDSVisitor):
             Nx  = self.getNetParam(data, 'Ne_x')
             Ny  = self.getNetParam(data, 'Ne_y')
             mon = data['spikeMon_e']
-            (A, mu_x, mu_y, sigma), err2 = self.fitGaussianToMon(mon, Nx, Ny,
-                    tstart, tend)
+            ((A, mu_x, mu_y, sigma), err2), bump = self.fitGaussianToMon(mon,
+                    Nx, Ny, tstart, tend)
             a['bump_e'] = {
                     'A' : A,
                     'mu_x' : mu_x,
                     'mu_y' : mu_y,
                     'sigma' : np.abs(sigma),
-                    'err2'  : np.sum(err2)
+                    'err2'  : np.sum(err2),
+                    'bump_e_rateMap' : bump
             }
 
             # Fit the Gaussian onto I neurons
