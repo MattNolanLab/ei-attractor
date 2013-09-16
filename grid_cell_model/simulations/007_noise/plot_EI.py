@@ -20,6 +20,8 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import matplotlib
+matplotlib.use('Agg')
 from parameters  import JobTrialSpace2D
 from figures.EI_plotting import plotACTrial, plotBumpSigmaTrial, \
         plotBumpErrTrial, plotFRTrial
@@ -32,34 +34,36 @@ lg.basicConfig(level=lg.INFO)
 ###############################################################################
 
 if (__name__ == '__main__'):
-    import matplotlib
-    matplotlib.use('cairo')
+    from matplotlib import rc
+    rc('pdf', fonttype=42)
+    rc('mathtext', default='regular')
     import matplotlib.pyplot as plt
+
     # Other
     plt.rcParams['font.size'] = 11
+    figSize = (5.1, 3.5)
 
     dirs = \
-        ('EI_param_sweep_0pA',    (40, 40))
-        #('EI_param_sweep_0pA_small_sample', (2, 2))
-        #('EI_param_sweep_150pA',  (40, 40))
-        #('EI_param_sweep_300pA',  (40, 40))
+        ('0pA',    (31, 31))
+        #('150pA',  (31, 31))
+        #('300pA',  (31, 31))
 
     NTrials = 5
-    rootDir = "output_local/one_to_one/{0}".format(dirs[0])
+    rootDir = "output/even_spacing/gamma_bump/{0}".format(dirs[0])
     shape   = dirs[1]
 
     sp = JobTrialSpace2D(shape, rootDir)
     iterList  = ['g_AMPA_total', 'g_GABA_total']
         
     ################################################################################
-    plt.figure(figsize=(5.1, 2.9))
+    plt.figure(figsize=figSize)
     N = 2
     plt.subplot(1, N, 1)
 
     acVal = plotACTrial(sp, ['acVal'], iterList,
             trialNumList=range(NTrials),
-            xlabel="I (nS)",
-            ylabel='E (nS)',
+            xlabel="$g_I$ (nS)",
+            ylabel='$g_E$ (nS)',
             clBarLabel = "Correlation",
             clbarNTicks=3,
             vmin=0,
@@ -68,7 +72,7 @@ if (__name__ == '__main__'):
     plt.subplot(1, N, 2)
     freq = plotACTrial(sp, ['freq'], iterList,
             trialNumList=range(NTrials),
-            xlabel="I (nS)",
+            xlabel="$g_I$ (nS)",
             clBarLabel = "Frequency (Hz)",
             clbarNTicks=3,
             yticks=False,
@@ -83,7 +87,7 @@ if (__name__ == '__main__'):
     ################################################################################
     # The following is an average over trials
     ################################################################################
-    plt.figure(figsize=(5.1, 2.9))
+    plt.figure(figsize=figSize)
     N = 2
     plt.subplot(1, N, 1)
 
@@ -91,8 +95,8 @@ if (__name__ == '__main__'):
     bump_sigma = plotBumpSigmaTrial(sp, ['bump_e', 'sigma'], iterList,
             thr=bumpSigmaThreshold,
             trialNumList=range(NTrials),
-            xlabel="I (nS)",
-            ylabel='E (nS)',
+            xlabel="$g_I$ (nS)",
+            ylabel='$g_E$ (nS)',
             clBarLabel = "Gaussian $\sigma$ (nrns)",
             vmin=0,
             vmax=bumpSigmaThreshold,
@@ -102,7 +106,7 @@ if (__name__ == '__main__'):
     bump_err2 = plotBumpErrTrial(sp, ['bump_e', 'err2'], iterList,
             trialNumList=range(NTrials),
             mask=bump_sigma.mask,
-            xlabel="I (nS)",
+            xlabel="$g_I$ (nS)",
             clBarLabel = "Error of fit (Hz)",
             clbarNTicks=3,
             yticks=False,
@@ -115,14 +119,14 @@ if (__name__ == '__main__'):
             '/../analysis_EI_{0}pA_bump.png'.format(int(noise_sigma)))
     ###############################################################################
     ###############################################################################
-    plt.figure(figsize=(5.1, 2.9))
+    plt.figure(figsize=figSize)
     N = 2
     plt.subplot(1, N, 1)
 
     FR_e = plotFRTrial(sp, ['FR_e', 'avg'], iterList,
             trialNumList=range(NTrials),
-            xlabel="I (nS)",
-            ylabel='E (nS)',
+            xlabel="$g_I$ (nS)",
+            ylabel='$g_E$ (nS)',
             clBarLabel = "E cell firing rate (Hz)",
             clbarNTicks=4,
             vmin=0,
@@ -133,7 +137,7 @@ if (__name__ == '__main__'):
     FR_i = plotFRTrial(sp, ['FR_i', 'avg'], iterList,
             trialNumList=range(NTrials),
             thr=FR_threshold,
-            xlabel="I (nS)",
+            xlabel="$g_I$ (nS)",
             clBarLabel = "I cell firing rate (Hz)",
             clbarNTicks=3,
             vmin=0,

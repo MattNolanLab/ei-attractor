@@ -36,14 +36,14 @@ numRepeat   = 1
 dry_run     = False
 
 
-noise_sigma = 300.0 # pA
+noise_sigma = 150.0 # pA
 gammaBumpType = 'gamma-bump'
 velocityType = 'velocity'
 gridsType = 'grids'
 
 
 dirs = \
-    ('output/one_to_one', gammaBumpType, 'EI_param_sweep_{0}pA', (40, 40))
+    ('output/even_spacing/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
     #('output/grids',      gridsType,     'EI_param_sweep_{0}pA', (30, 30))
     #('output/velocity',   velocityType,  'EI_param_sweep_{0}pA', (30, 30))
 
