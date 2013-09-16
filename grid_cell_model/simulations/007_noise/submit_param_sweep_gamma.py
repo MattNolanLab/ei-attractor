@@ -19,37 +19,41 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from default_params import defaultParameters as p
+from default_params import defaultParameters as dp
 from param_sweep    import submitParamSweep
 import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
 
-p['noise_sigma'] = 0.0     # pA
+noise_sigma_all = [0.0, 150.0, 300.0] # pA
 
-# Submitting
-ENV         = 'cluster'
-simRootDir  = 'output/even_spacing/gamma_bump'
-simLabel    = '{0}pA'.format(int(p['noise_sigma']))
-appName     = 'simulation_stationary.py'
-rtLimit     = '00:20:00'
-numCPU      = 4
-blocking    = True
-timePrefix  = False
-numRepeat   = 1
-dry_run     = False
+for noise_sigma in noise_sigma_all:
+    p = dp.copy()
+    p['noise_sigma'] = noise_sigma # pA
 
-p['time']              = 10e3  # ms
-p['nthreads']          = 4
-p['ntrials']           = 5
+    # Submitting
+    ENV         = 'cluster'
+    simRootDir  = 'output/even_spacing/gamma_bump'
+    simLabel    = '{0}pA'.format(int(p['noise_sigma']))
+    appName     = 'simulation_stationary.py'
+    rtLimit     = '00:20:00'
+    numCPU      = 4
+    blocking    = True
+    timePrefix  = False
+    numRepeat   = 1
+    dry_run     = False
+
+    p['time']              = 10e3  # ms
+    p['nthreads']          = 4
+    p['ntrials']           = 5
 
 
-# Range of parameters around default values
-Nvals  = 31      # Number of values for each dimension
-startG = 0.0     # nS
-endG   = 6120.0  # nS
+    # Range of parameters around default values
+    Nvals  = 31      # Number of values for each dimension
+    startG = 0.0     # nS
+    endG   = 6120.0  # nS
 
-###############################################################################
+    ###############################################################################
 
-submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
-        appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run)
+    submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
+            appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run)
