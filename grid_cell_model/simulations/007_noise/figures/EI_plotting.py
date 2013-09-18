@@ -96,8 +96,8 @@ def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
     C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.isnan(C))
     Y, X = computeYX(sp, iterList)
-    plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
-            title, clbarNTicks, xticks, yticks)
+    return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
+            vmax, title, clbarNTicks, xticks, yticks)
 
 def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, trialNumList=[0],
         xlabel="", ylabel="", colorBar=True, clBarLabel="", vmin=None,
@@ -188,9 +188,9 @@ def plot2DTrial(X, Y, C, xlabel="", ylabel="", colorBar=True, clBarLabel="",
         plt.ylabel(ylabel, ha='right')
         ax.yaxis.set_label_coords(-0.125, 0.5)
     ax.xaxis.set_ticks([0, 6])
-    ax.yaxis.set_ticks([0, 3])
+    ax.yaxis.set_ticks([0, 6])
     ax.xaxis.set_minor_locator(AutoMinorLocator(6))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(3))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(6))
     plt.axis('scaled')
     if (not xticks):
         ax.xaxis.set_ticklabels([])

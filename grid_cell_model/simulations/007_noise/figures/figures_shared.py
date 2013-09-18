@@ -38,6 +38,22 @@ thetaMax = 1500
 thetaMin = -500
 thetaLim = [thetaMin, thetaMax]
 
+
+
+def getNoiseRootDir(prefix, noise_sigma):
+    return  "{0}/{1}pA".format(prefix, int(noise_sigma))
+
+
+
+def getNoiseRoots(prefix, noise_sigmas):
+    roots = []
+    for s in noise_sigmas:
+        roots.append(getNoiseRootDir(prefix, s))
+    return roots
+
+
+
+
 def getOption(data, optStr):
     return data['options'][optStr]
 
