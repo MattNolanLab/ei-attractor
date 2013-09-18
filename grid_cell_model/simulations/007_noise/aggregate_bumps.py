@@ -25,9 +25,9 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 
-noise_sigmas = [150, 300]
+noise_sigmas = [0, 150, 300]
 dirs = \
-    ('EI_param_sweep_{0}pA',    (40, 40))
+    ('{0}pA',    (31, 31))
 
 NTrials = 5
 trialNumList = xrange(NTrials)
@@ -37,7 +37,7 @@ varListBase = ['analysis']
 ################################################################################
 for noise_sigma in noise_sigmas:
     dir = dirs[0].format(int(noise_sigma))
-    rootDir = "output/one_to_one/{0}".format(dir)
+    rootDir = "output/even_spacing/gamma_bump/{0}".format(dir)
 
     sp = JobTrialSpace2D(shape, rootDir)
     sp.aggregateData(varListBase + ['bump_e', 'sigma'], trialNumList,
