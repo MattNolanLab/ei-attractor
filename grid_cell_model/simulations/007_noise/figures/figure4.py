@@ -2,7 +2,7 @@
 #
 #   figure4.py
 #
-#   Noise paper figure 4.
+#   Putting it all together: parameterscape plots.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -21,22 +21,15 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import LinearLocator, NullLocator
+from matplotlib.pyplot   import figure, plot, savefig
 
 import numpy.ma as ma
 
-from parameters      import JobTrialSpace2D, DataSpace
-from analysis.visitors.interface import EmptyDSVisitor
-from analysis.spikes import PopulationSpikes
-from EI_plotting     import plot2DTrial
+from parameters  import JobTrialSpace2D, DataSpace
+from EI_plotting import aggregate2DTrial, computeYX
 from plotting.global_defs import globalAxesSettings
-from plotting.bumps  import torusFiringRate
-from EI_plotting     import plotBumpSigmaTrial, plotBumpErrTrial
-from figures_shared  import _getSpikeTrain
-from figure3         import plot2AxisBar, plot1AxisBar
-
-
+from plotting.parameterscape import parameterScape
+from figures_shared import getNoiseRoots, plotOneHist
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)
@@ -44,257 +37,91 @@ lg.basicConfig(level=lg.INFO)
 
 # Other
 from matplotlib import rc
-#rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-## for Palatino and other serif fonts use:
-#rc('font',**{'family':'serif','serif':['Palatino']})
-#rc('text', usetex=True)
 rc('pdf', fonttype=42)
+rc('mathtext', default='regular')
 
-plt.rcParams['font.size'] = 25
+plt.rcParams['font.size'] = 11
 
 ###############################################################################
 cFreq = 'blue'
 cAC = 'green'
 cCount = 'red'
 
+outputDir = "."
+NTrials = 5
+iterList  = ['g_AMPA_total', 'g_GABA_total']
+
+noise_sigmas  = [0, 150, 300]
+exampleIdx    = [(0, 0), (0, 0), (0, 0)] # (row, col)
+gammaDataRoot = 'output_local/even_spacing/gamma_bump'
+velDataRoot = 'output_local/velocity'
+gridsDataRoot= 'output_local/grids_50pA_Ivel'
+shape = (31, 31)
+
+figSize = (8, 6)
+
+
 ###############################################################################
-
-def aggregate2DTrial(sp, varList, trialNumList):
-    varList = ['analysis'] + varList
-    retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean,
-            saveData=True)
-    return np.mean(retVar, 2)
+noise0   = 1
+noise150 = 1
+noise300 = 1
 
 
-
-def computeYX(sp, iterList):
-    E, I = sp.getIteratedParameters(iterList)
-    Ne = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ne')
-    Ni = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ni')
-    return E/Ne, I/Ni
-
-
- 
-def drawColorbar(drawAx, label):
-    pos = drawAx.get_position()
-    pos.y0 -= 0.12
-    pos.y1 -= 0.12
-    pos.y1 = pos.y0 + 0.1*(pos.y1 - pos.y0)
-    w = pos.x1 - pos.x0
-    pos.x0 += 0.1*w
-    pos.x1 -= 0.1*w
-    clba = plt.gcf().add_axes(pos)
-    globalAxesSettings(clba)
-    clba.minorticks_on()
-    cb = plt.colorbar(cax=clba, orientation='horizontal',
-            ticks=LinearLocator(2))
-    cb.set_label(label)
-
-
-def plot2DNoiseBumps(spList, iterList, trialNumList=[0]):
-    NSp = len(spList)
-    Sz2D = 1.
-    clBarSz = 0.1
-    hr = [Sz2D]*NSp + [clBarSz]
-    gs = GridSpec(len(spList), 2, wspace=0.15, hspace=0.15, height_ratios=hr,
-            bottom=0.22)
-    for spIdx in range(NSp):
-        if (spIdx == NSp - 1):
-            xlabel = "I (nS)"
-            xticks = True
-            clbar = True
-        else:
-            xlabel = ""
-            xticks = False
-            clbar = False
-
-
-        bumpSigmaThreshold = 10
-        ax_sigma = plt.subplot(gs[spIdx, 0])
-        bump_sigma = plotBumpSigmaTrial(spList[spIdx], ['bump_e', 'sigma'], iterList,
-                thr=bumpSigmaThreshold,
-                trialNumList=range(NTrials),
-                xlabel=xlabel,
-                ylabel='E (nS)',
-                colorBar=False,
-                vmin=0,
-                vmax=bumpSigmaThreshold,
-                xticks=xticks,
-                clbarNTicks=4)
-        if (clbar):
-            drawColorbar(ax_sigma, 'Bump $\sigma$ (nrns)')
-
-        ax_err = plt.subplot(gs[spIdx, 1])
-        bump_err2 = plotBumpErrTrial(spList[spIdx], ['bump_e', 'err2'], iterList,
-                trialNumList=range(NTrials),
-                mask=bump_sigma.mask,
-                xlabel=xlabel,
-                colorBar=False,
-                clbarNTicks=3,
-                xticks=xticks,
-                yticks=False,
-                vmin=0,
-                vmax=200)
-        if (clbar):
-            drawColorbar(ax_err, 'Error of fit (Hz)')
-
+###############################################################################
+def drawParamScape(ax, dataSpace, varList, trialNumList):
+    # Bump sigmas
+    sigmaVarList = ['bump_e', 'sigma']
+    CVarList = ['acVal']
+    FVarList = ['freq']
+    sigma = aggregate2DTrial(dataSpace, sigmaVarList, trialNumList)
+    C = aggregate2DTrial(dataSpace, CVarList, trialNumList)
+    F = aggregate2DTrial(dataSpace, FVarList, trialNumList)
+    sigma = ma.MaskedArray(sigma, mask=np.isnan(sigma))
+    C = ma.MaskedArray(C, mask=np.isnan(C))
+    F = ma.MaskedArray(F, mask=np.isnan(F))
+    Y, X = computeYX(dataSpace, iterList)
+    Y = Y[:, 0]
+    X = X[0, :]
+    parameterScape(ax, X, Y, [sigma, C, F],
+            fmts=['o', 's', 's'],
+            sizes=[20, 10, 5],
+            cmaps=['jet_r', 'jet', 'jet'],
+            vranges=[(0, 10), (-0.09, 0.675), (30, 90)])
+    ax.set_xlabel('$g_I$ (nS)')
+    ax.set_ylabel('$g_E$ (nS)')
 
 
 
 ###############################################################################
-def aggregateBarBumps(spList, varLists, trialNumList, thresholds=(np.infty, \
-        np.infty), func=(None, None)):
-    # Ugly hack!!!
-    # asusming sigma is first, err2 is second
-    means = ([], [])
-    errs  = ([], [])
-    noise_sigma = []
-    counts = ([], [])
-    for idx in xrange(len(spList)):
-        mask = False
-        for varIdx in range(len(varLists)):
-            f = func[varIdx]
-            if f is None:
-                f = lambda x: x
-            var = f(aggregate2DTrial(spList[idx], varLists[varIdx],
-                trialNumList).flatten())
-            mask = np.logical_or(np.logical_or(np.isnan(var), var >
-                thresholds[varIdx]), mask)
-            var = ma.MaskedArray(var, mask=mask)
-            means[varIdx].append(np.mean(var))
-            errs[varIdx].append(np.std(var))
-            counts[varIdx].append(1. * np.sum(np.logical_not(mask)) / len(var))
 
-        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
+gammaRoots = getNoiseRoots(gammaDataRoot, noise_sigmas)
+gammaDataSpace0   = JobTrialSpace2D(shape, gammaRoots[0])
+gammaDataSpace150 = JobTrialSpace2D(shape, gammaRoots[1])
+gammaDataSpace300 = JobTrialSpace2D(shape, gammaRoots[2])
 
-    noise_sigma = np.array(noise_sigma, dtype=int)
-    return means, errs, noise_sigma, counts
+velRoots = getNoiseRoots(velDataRoot, noise_sigmas)
+velDataSpace0   = JobTrialSpace2D(shape, velRoots[0])
+velDataSpace150 = JobTrialSpace2D(shape, velRoots[1])
+velDataSpace300 = JobTrialSpace2D(shape, velRoots[2])
 
+if (noise0):
+    fig = plt.figure(figsize=figSize)
+    drawParamScape(plt.gca(), gammaDataSpace0, varList=None,
+            trialNumList=xrange(NTrials))
+    fname = outputDir + "/figure4_parameterscape_0pA.png"
+    savefig(fname, dpi=300, transparent=True)
 
+if (noise150):
+    fig = plt.figure(figsize=figSize)
+    drawParamScape(plt.gca(), gammaDataSpace150, varList=None,
+            trialNumList=xrange(NTrials))
+    fname = outputDir + "/figure4_parameterscape_150pA.png"
+    savefig(fname, dpi=300, transparent=True)
 
-def plotAggregateBarBumps(spList, trialNumList, ylabels, sigmaTh=10,
-        errTh=np.infty):
-    varLists = [['bump_e', 'sigma'], ['bump_e', 'err2']]
-    (sigmaMean, err2Mean), (sigmaStd, err2Std), noise_sigma, (sigmaCnt,
-            err2Cnt) = \
-            aggregateBarBumps(spList, varLists, trialNumList, thresholds=(sigmaTh,
-                errTh), func=(None, np.sqrt))
-    
-
-    print sigmaMean, err2Mean
-
-    ax_thr = plt.subplot(2, 1, 1)
-    plot1AxisBar(noise_sigma, sigmaCnt, [np.nan]*len(sigmaCnt),
-            xlabel='', ylabel = 'Count', color=cCount,
-            xTickLabels=False)
-
-    ax_bumps = plt.subplot(2, 1, 2)
-    plot2AxisBar(noise_sigma,
-            (sigmaMean, err2Mean),
-            (sigmaStd,  err2Std),
-            xlabel='$\sigma$ (pA)',
-            ylabels=ylabels,
-            colors=(cAC, cFreq))
-
-
-def drawBumpColorbar(drawAx):
-    pos = drawAx.get_position()
-    pos.x0 += 0.05
-    pos.x1 += 0.05
-    pos.x0 = pos.x1 - 0.1*(pos.x1 - pos.x0)
-    h = pos.y1 - pos.y0
-    pos.y0 += 0.1*h
-    pos.y1 -= 0.1*h
-    clba = plt.gcf().add_axes(pos)
-    globalAxesSettings(clba)
-    cb = plt.colorbar(cax=clba, orientation='vertical',
-            ticks=NullLocator())
-    #clba.yaxis.set_ticklabels(['min'], ['max'])
-    cb.set_label('F (Hz)', fontsize='small')
-
-def plotBumps(spList, r, c, trialNum=0):
-    N = len(spList)
-    gs = GridSpec(1, len(spList), wspace=0.15, left=0.01, right=0.85,
-            bottom=0.01, top=0.99)
-    for spIdx in range(len(spList)):
-        ax = plt.subplot(gs[0, spIdx])
-        data = spList[spIdx][r][c][trialNum].data
-        v = EmptyDSVisitor()
-        tStart = v.getOption(data, 'theta_start_t')
-        tEnd   = v.getOption(data, 'time')
-        ESenders, ETimes, EN = v._getSpikeTrain(data, 'spikeMon_e', ('Ne_x',
-            'Ne_y'))
-        s = PopulationSpikes(EN, ESenders, ETimes)
-        Fe = s.avgFiringRate(tStart, tEnd)
-        Ne_x = v.getNetParam(data, 'Ne_x')
-        Ne_y = v.getNetParam(data, 'Ne_y')
-        bump_e = np.reshape(Fe, (Ne_y, Ne_x))
-
-        if (spIdx == 0):
-            yTickLabels = True
-        else:
-            yTickLabels = False
-        torusFiringRate(
-                rateMap  = bump_e,
-                labelx   = '',
-                labely   = '',
-                titleStr = '',
-                clbar    = False,
-                xTicks   = False,
-                yTicks   = False,
-                xTickLabels = False,
-                yTickLabels = False)
-
-    drawBumpColorbar(ax)
-
-
-###############################################################################
-            
-if (__name__ == '__main__'):
-
-    NTrials = 5
-    iterList  = ['g_AMPA_total', 'g_GABA_total']
-    r = 14
-    c = 13
-
-    baseDir = 'output_local/one_to_one'
-    dirs = [ \
-        ('EI_param_sweep_0pA',    (40, 40)),
-        ('EI_param_sweep_150pA',  (40, 40)),
-        ('EI_param_sweep_300pA',  (40, 40))
-    ]
-
-    dataSpaces = []
-    for (dir, shape) in dirs:
-        rootDir = "{0}/{1}".format(baseDir, dir)
-        dataSpaces.append(JobTrialSpace2D(shape, rootDir))
-        
-
-    ##########################################################################
-    plt.figure(figsize=(6.5, 8))
-    plot2DNoiseBumps(dataSpaces, iterList)
-    #plt.tight_layout()
-    plt.savefig('{0}/noise_bumps_2d.pdf'.format(baseDir), transparent=True,
-            dpi=300)
-    ##########################################################################
-    plt.figure(figsize=(5.5, 6))
-    plotAggregateBarBumps(dataSpaces,
-            trialNumList= range(NTrials),
-            ylabels=('Bump $\sigma$\n(neurons)', 'Error of fit (Hz)'))
-    plt.tight_layout()
-    plt.savefig('{0}/aggregateBar_bump.pdf'.format(baseDir), transparent=True,
-            dpi=300)
-    ##########################################################################
-    plt.figure(figsize=(5, 1.5))
-    plotBumps(dataSpaces, r, c)
-    plt.savefig('{0}/bumps_example.pdf'.format(baseDir), transparent=False,
-            dpi=300)
-    ##########################################################################
-    rc('text', usetex=True)
-    fig = plt.figure(figsize=(5.5, 1.5))
-    fig.text(0.5, 0.5,
-            '$G(x, y) = A \exp\left(\\frac{(x - \mu_x)^2 + (y - ' +
-            ' \mu_y)^2}{2\sigma^2}\\right)$',
-            ha='center', va='center', fontsize=plt.rcParams['font.size'] + 3)
-    plt.savefig('{0}/gaussian_equation.pdf'.format(baseDir), transparent=True)
+if (noise300):
+    fig = plt.figure(figsize=figSize)
+    drawParamScape(plt.gca(), gammaDataSpace300, varList=None,
+            trialNumList=xrange(NTrials))
+    fname = outputDir + "/figure4_parameterscape_300pA.png"
+    savefig(fname, dpi=300, transparent=True)
 
