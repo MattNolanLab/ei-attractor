@@ -34,7 +34,7 @@ import numpy.ma as ma
 from parameters  import JobTrialSpace2D, DataSpace
 from EI_plotting import plot2DTrial, plotACTrial
 from plotting.global_defs import globalAxesSettings
-from figures_shared import getNoiseRoots
+from figures_shared import getNoiseRoots, plotOneHist
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)
@@ -61,10 +61,11 @@ exampleIdx    = [(0, 0), (0, 0), (0, 0)] # (row, col)
 gammaDataRoot = 'output_local/even_spacing/gamma_bump'
 gammaShape    = (31, 31)
 
-gammaSweep0   = 1
-gammaSweep150 = 1
-gammaSweep300 = 1
+gammaSweep0   = 0
+gammaSweep150 = 0
+gammaSweep300 = 0
 threshold     = 0
+freqHist      = 1
 
 ###############################################################################
 
@@ -202,6 +203,52 @@ def plotThresholdComparison(spList, trialNumList, ACThrList):
     ax.xaxis.set_minor_locator(AutoMinorLocator(3))
     ax.yaxis.set_minor_locator(AutoMinorLocator(2))
     ax.margins(0.025)
+    
+
+def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
+    FVarList = ['freq']
+    CVarList = ['acVal']
+    noise_sigma = [0, 150, 300]
+    colors = ['red', 'green', 'blue']
+
+    ax = plt.gca()
+    plt.hold('on')
+    globalAxesSettings(ax)
+
+    for idx, sp in enumerate(spList):
+        F = aggregate2DTrial(sp, FVarList, trialNumList).flatten()
+        C = aggregate2DTrial(sp, CVarList, trialNumList).flatten()
+        filtIdx = np.logical_and(np.logical_not(np.isnan(F)), C > CThreshold)
+        plotOneHist(F[filtIdx], bins=20, normed=True)
+    leg = []
+    for s in noise_sigma:
+        leg.append("{0}".format(int(s)))
+    l = ax.legend(leg, loc=(0.8, 0.5), title='$\sigma$ (pA)', frameon=False,
+            fontsize='x-small', ncol=1)
+    plt.setp(l.get_title(), fontsize='x-small')
+
+    ax.set_xlabel("Oscillation frequency (Hz)")
+    #ax.text(ylabelPos, 0.5, 'p(F)', rotation=90, transform=ax.transAxes,
+    #        va='center', ha='right')
+    ax.set_ylabel('p(Frequency)')
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.xaxis.set_major_locator(MultipleLocator(20))
+    ax.yaxis.set_major_locator(MaxNLocator(4))
+    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    f = ScalarFormatter(useMathText=True)
+    f.set_scientific(True)
+    f.set_powerlimits([0, 3])
+    ax.yaxis.set_major_formatter(f)
+    #ax.margins(0.01, 0.00)
+
+    thStr = 'Frequencies with C > {0}'.format(CThreshold)
+    ax.text(0.99, 1.1, thStr, transform=ax.transAxes, va='bottom',
+            ha='right')
+    
+
 
 
 ###############################################################################
@@ -261,3 +308,15 @@ if (threshold):
     plt.tight_layout()
     plt.savefig('figure3_AC_threshold_comparison.pdf'.format(baseDir), transparent=True,
             dpi=300)
+
+
+if (freqHist):
+    ylabelPos = -0.16
+    gammaSpList = [gammaDataSpace0, gammaDataSpace150, gammaDataSpace300]
+    fig = figure(figsize=(3.7, 2.5))
+    plotFreqHistogram(gammaSpList, range(NTrials), ylabelPos=ylabelPos)
+    plt.tight_layout()
+    fname = outputDir + "/figure3_freq_histograms.pdf"
+    savefig(fname, dpi=300, transparent=True)
+
+
