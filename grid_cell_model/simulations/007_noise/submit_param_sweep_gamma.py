@@ -25,7 +25,7 @@ import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
 
-noise_sigma_all = [150.0, 300.0] # pA
+noise_sigma_all = [0.0, 150.0, 300.0] # pA
 
 for noise_sigma in noise_sigma_all:
     p = dp.copy()
@@ -33,7 +33,7 @@ for noise_sigma in noise_sigma_all:
 
     # Submitting
     ENV         = 'cluster'
-    simRootDir  = 'output/even_spacing/gamma_bump'
+    simRootDir  = 'output/no_theta/gamma_bump'
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
     appName     = 'simulation_stationary.py'
     rtLimit     = '00:45:00'
@@ -46,6 +46,12 @@ for noise_sigma in noise_sigma_all:
     p['time']              = 10e3  # ms
     p['nthreads']          = 1
     p['ntrials']           = 5
+
+    # No theta parameters
+    p['Iext_e_const'] = 487.5   # pA
+    p['Iext_i_const'] = 212.5   # pA
+    p['Iext_e_theta'] = 0       # pA
+    p['Iext_i_theta'] = 0       # pA
 
 
     # Range of E/I synaptic conductances

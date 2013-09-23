@@ -27,8 +27,8 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'cluster'
-simRootDir  = 'output'
+ENV         = 'workstation'
+simRootDir  = 'output/no_theta/tmp'
 appName     = 'details_EI.py'
 rtLimit     = '00:02:30'
 numCPU      = 1
@@ -38,10 +38,7 @@ numRepeat   = 1
 dry_run     = False
 
 dirs = [
-    #('2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample', (2, 2)),
-    ('2013-04-24T15-27-30_EI_param_sweep_0pA_big'         , (40, 40)),
-    ('2013-04-24T21-37-47_EI_param_sweep_150pA_big'       , (40, 40)),
-    ('2013-04-24T21-43-32_EI_param_sweep_300pA_big'       , (40, 40))
+    ('150pA'         , (1, 1))
 ]
 
 for simLabel, (rowN, colN) in dirs:

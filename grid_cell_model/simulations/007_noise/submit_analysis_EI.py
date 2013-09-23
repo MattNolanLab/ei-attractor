@@ -26,7 +26,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'cluster'
+ENV         = 'workstation'
 appName     = 'analysis_EI.py'
 rtLimit     = '00:01:00'
 numCPU      = 1
@@ -43,7 +43,7 @@ gridsType = 'grids'
 
 
 dirs = \
-    ('output/even_spacing/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
+    ('output/no_theta/tmp', gammaBumpType, '{0}pA', (1, 1))
     #('output/grids',      gridsType,     'EI_param_sweep_{0}pA', (30, 30))
     #('output/velocity',   velocityType,  'EI_param_sweep_{0}pA', (30, 30))
 
