@@ -44,12 +44,12 @@ if (__name__ == '__main__'):
     figSize = (5.1, 3.5)
 
     dirs = \
-        ('0pA',    (31, 31))
-        #('150pA',  (31, 31))
+        ('150pA',  (31, 31))
         #('300pA',  (31, 31))
+        #('0pA',    (31, 31))
 
     NTrials = 5
-    rootDir = "output/even_spacing/gamma_bump/{0}".format(dirs[0])
+    rootDir = "output/no_theta/gamma_bump/{0}".format(dirs[0])
     shape   = dirs[1]
 
     sp = JobTrialSpace2D(shape, rootDir)
@@ -67,7 +67,8 @@ if (__name__ == '__main__'):
             clBarLabel = "Correlation",
             clbarNTicks=3,
             vmin=0,
-            vmax=0.75)
+            vmax=0.75,
+            r=0, c=1)
     ###############################################################################
     plt.subplot(1, N, 2)
     freq = plotACTrial(sp, ['freq'], iterList,
@@ -77,10 +78,11 @@ if (__name__ == '__main__'):
             clbarNTicks=3,
             yticks=False,
             vmin=0,
-            vmax=150)
+            vmax=150,
+            r=0, c=1)
     ###############################################################################
     plt.tight_layout()
-    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+    noise_sigma = sp.getParam(sp[0][1][0].data, 'noise_sigma')
     plt.savefig(sp.rootDir +
             '/../analysis_EI_{0}pA.png'.format(int(noise_sigma)))
 
@@ -100,7 +102,8 @@ if (__name__ == '__main__'):
             clBarLabel = "Gaussian $\sigma$ (nrns)",
             vmin=0,
             vmax=bumpSigmaThreshold,
-            clbarNTicks=4)
+            clbarNTicks=4,
+            r=0, c=1)
     ###############################################################################
     plt.subplot(1, N, 2)
     bump_err2 = plotBumpErrTrial(sp, ['bump_e', 'err2'], iterList,
@@ -111,10 +114,11 @@ if (__name__ == '__main__'):
             clbarNTicks=3,
             yticks=False,
             vmin=0,
-            vmax=200)
+            vmax=200,
+            r=0, c=1)
     ###############################################################################
     plt.tight_layout()
-    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+    noise_sigma = sp.getParam(sp[0][1][0].data, 'noise_sigma')
     plt.savefig(sp.rootDir +
             '/../analysis_EI_{0}pA_bump.png'.format(int(noise_sigma)))
     ###############################################################################
@@ -130,7 +134,8 @@ if (__name__ == '__main__'):
             clBarLabel = "E cell firing rate (Hz)",
             clbarNTicks=4,
             vmin=0,
-            vmax=50)
+            vmax=50,
+            r=0, c=1)
     ###############################################################################
     plt.subplot(1, N, 2)
     FR_threshold=250
@@ -142,10 +147,11 @@ if (__name__ == '__main__'):
             clbarNTicks=3,
             vmin=0,
             vmax=FR_threshold,
-            yticks=False)
+            yticks=False,
+            r=0, c=1)
     ###############################################################################
     plt.tight_layout()
-    noise_sigma = sp.getParam(sp[0][0][0].data, 'noise_sigma')
+    noise_sigma = sp.getParam(sp[0][1][0].data, 'noise_sigma')
     plt.savefig(sp.rootDir +
         '/../analysis_EI_{0}pA_FR.png'.format(int(noise_sigma)))
 
