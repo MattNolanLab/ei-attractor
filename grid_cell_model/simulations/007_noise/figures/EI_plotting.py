@@ -84,25 +84,26 @@ def computeYX(sp, iterList, r=0, c=0, trialNum=0):
     Ni = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ni')
     return E/Ne, I/Ni
 
-def plotACTrial(sp, varList, iterList, trialNumList=[0], xlabel="", ylabel="",
-        colorBar=True, clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
-        xticks=True, yticks=True):
+def plotACTrial(sp, varList, iterList, trialNumList=[0], r=0, c=0, xlabel="",
+        ylabel="", colorBar=True, clBarLabel="", vmin=None, vmax=None,
+        title="", clbarNTicks=2, xticks=True, yticks=True):
     C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.isnan(C))
-    Y, X = computeYX(sp, iterList)
+    Y, X = computeYX(sp, iterList, r=r, c=c)
     plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
             title, clbarNTicks, xticks, yticks)
 
-def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, trialNumList=[0],
-        xlabel="", ylabel="", colorBar=True, clBarLabel="", vmin=None,
-        vmax=None, title="", clbarNTicks=2, xticks=True, yticks=True):
+def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, r=0, c=0,
+        trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
+        vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
+        yticks=True):
     C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
-    Y, X = computeYX(sp, iterList)
+    Y, X = computeYX(sp, iterList, r=r, c=c)
     return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
 
-def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, mask=None,
+def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
         trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
         vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
         yticks=True):
@@ -111,11 +112,11 @@ def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, mask=None,
         mask = False
     C = ma.MaskedArray(C, mask=np.logical_or(np.logical_or(np.isnan(C), C >
         thr), mask))
-    Y, X = computeYX(sp, iterList)
+    Y, X = computeYX(sp, iterList, r=r, c=c)
     return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
 
-def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
+def plotFRTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
         trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
         vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
         yticks=True):
@@ -123,7 +124,7 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, mask=None,
     if mask is None:
         mask = False
     FR = ma.MaskedArray(FR, mask=np.logical_or(FR > thr, mask))
-    Y, X = computeYX(sp, iterList)
+    Y, X = computeYX(sp, iterList, r=r, c=c)
     return plot2DTrial(X, Y, FR, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
             
