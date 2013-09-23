@@ -27,8 +27,8 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'workstation'
-simRootDir  = 'output/no_theta/tmp'
+ENV         = 'cluster'
+simRootDir  = 'output/no_theta/gamma_bump'
 appName     = 'details_EI.py'
 rtLimit     = '00:02:30'
 numCPU      = 1
@@ -37,12 +37,15 @@ timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
-dirs = [
-    ('150pA'         , (1, 1))
-]
+noise_sigma_all = [0.0, 150.0, 300.0] # pA
+dirs = ('{0}pA'         , (31, 31))
 
-for simLabel, (rowN, colN) in dirs:
+for noise_sigma in noise_sigma_all:
     p = {}
+    simLabel   = dirs[0].format(int(noise_sigma))
+    rowN       = dirs[1][0]
+    colN       = dirs[1][1]
+
     p['shapeRows'] = rowN
     p['shapeCols'] = colN
 
