@@ -381,12 +381,10 @@ def fitCircularSlope(bumpPos, times, normFac):
     return x[0][0] / 2. / np.pi * normFac
     
 
-def getLineFit(Y):
+def getLineFit(X, Y):
     '''
     Fit a line to data
     '''
-    X = np.arange(len(Y))
-    
     func = lambda P: P[0]*X  - Y
     P0 = np.array([0.0]) # slope
     P = leastsq(func, P0)
@@ -397,13 +395,18 @@ def fitBumpSpeed(IvelVec, bumpSpeed, fitRange):
     '''
     Fit a line to bumpSpeed vs IvelVec, useing IvelVec[0:fitRange+1]
     '''
-    avgBumpSpeed = np.mean(bumpSpeed, axis=0)
-    fitAvgSpeed = avgBumpSpeed[0:fitRange+1]
-    fitIvelVec  = IvelVec[0:fitRange+1]
-    line, slope = getLineFit(fitAvgSpeed)
-    lineFitErr = np.abs(line - fitAvgSpeed) / len(fitIvelVec)
-    slope = slope/(fitIvelVec[1] - fitIvelVec[0])
-    return line, slope, lineFitErr, fitIvelVec
+    fitSpeed    = np.array(bumpSpeed)[:, 0:fitRange+1]
+    fitIvelVec  = np.repeat([IvelVec[0:fitRange+1]], fitSpeed.shape[0],
+            axis=0)
+    fitSpeed    = fitSpeed.flatten()
+    fitIvelVec   = fitIvelVec.flatten()
+    line, slope = getLineFit(fitIvelVec, fitSpeed)
+    lineFitErr  = np.abs(line - fitSpeed) / len(fitIvelVec)
+
+    # Compose return values; as a function of IvelVec[0:fitRange+1]
+    retLine = np.array(IvelVec[0:fitRange+1]) * slope
+    retIvelVec = IvelVec[0:fitRange+1]
+    return retLine, slope, lineFitErr, retIvelVec
 
 
 class BumpVelocityVisitor(DictDSVisitor):
@@ -537,10 +540,12 @@ class BumpVelocityVisitor(DictDSVisitor):
                 slope       = slope_all[maxRangeIdx]
                 fitIvelVec  = fitIvelVec_all[maxRangeIdx]
 
-
             plot(fitIvelVec, line, 'o-')
-            title("Line fit slope: {0:.3f} nrns/s/pA".format(slope))
-            legend(['Estimated bump speed', 'Line fit'], loc='best')
+            plot(IvelVec, slopes.T, 'o', color='blue', alpha=0.4)
+            t = "Line fit slope: {0:.3f} nrns/s/pA, error: {1:.3f} " + \
+                    "neurons/s (norm)"
+            title(t.format(slope, np.sum(lineFitErr)))
+            legend(['Average bump speed', 'Line fit', 'Estimated bump speed'], loc='best')
             
             fileName = splitext(kw['fileName'])[0] + '.pdf'
             savefig(fileName)

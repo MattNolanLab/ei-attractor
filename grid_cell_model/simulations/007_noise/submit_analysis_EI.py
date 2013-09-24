@@ -28,7 +28,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'workstation'
+ENV         = 'cluster'
 appName     = 'analysis_EI.py'
 rtLimit     = '00:02:00'
 numCPU      = 1
@@ -72,7 +72,7 @@ for noise_sigma in noise_sigma_all:
             'row' : np.arange(rowN),
             'col' : np.arange(colN)
             #'row' : [10],
-            #'col' : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            #'col' : [10]
     }
     ac.insertDict(iterparams, mult=True)
 
