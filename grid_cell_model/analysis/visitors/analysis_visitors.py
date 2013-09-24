@@ -440,7 +440,9 @@ class BumpVelocityVisitor(DictDSVisitor):
                 tEnd   = self.getOption(iData, 'time')
                 bumpPos, bumpPos_t = pop.populationVector(tStart, tEnd,
                         self.win_dt, self.winLen)
-                slope = fitCircularSlope(bumpPos[:, 0], bumpPos_t,
+                # NOTE: the bump moves in an opposite direction; we have to
+                # negate the speed
+                slope = -fitCircularSlope(bumpPos[:, 0], bumpPos_t,
                         sheetSize[0]/2.0)*1e3
                 slopes[trialNum].append(slope)
                 iData['analysis'] = {
