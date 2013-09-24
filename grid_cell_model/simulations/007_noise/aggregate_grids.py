@@ -29,7 +29,7 @@ noise_sigmas = [0, 150, 300]
 dirs = \
     ('EI_param_sweep_{0}pA',    (30, 30))
 
-NTrials = 10
+NTrials = 1
 trialNumList = xrange(NTrials)
 shape   = dirs[1]
 varListBase = ['analysis']
@@ -37,7 +37,7 @@ varListBase = ['analysis']
 ################################################################################
 for noise_sigma in noise_sigmas:
     dir = dirs[0].format(int(noise_sigma))
-    rootDir = "output/grids/{0}".format(dir)
+    rootDir = "output/grids_50pA_Ivel/{0}".format(dir)
 
     sp = JobTrialSpace2D(shape, rootDir)
     sp.aggregateData(varListBase + ['rateMap_e'], trialNumList, funReduce=None,
@@ -46,5 +46,7 @@ for noise_sigma in noise_sigmas:
             funReduce=None, saveData=True, output_dtype='list')
     sp.aggregateData(varListBase + ['rateMap_e_Y'], [trialNumList[0]],
             funReduce=None, saveData=True, output_dtype='list')
+    sp.aggregateData(varListBase + ['gridnessScore'], trialNumList,
+            funReduce=None, saveData=True, output_dtype='array')
     sp.aggregateData(['options', 'arenaSize'], [trialNumList[0]],
             funReduce=None, saveData=True, output_dtype='array')

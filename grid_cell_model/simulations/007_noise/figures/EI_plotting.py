@@ -131,9 +131,13 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
 
 def plotGridTrial(sp, varList, iterList, trialNumList=[0], r=0, c=0, xlabel="",
         ylabel="", colorBar=True, clBarLabel="", vmin=None, vmax=None,
-        title="", clbarNTicks=2, xticks=True, yticks=True):
+        title="", clbarNTicks=2, xticks=True, yticks=True, nansAs0=False):
     G = aggregate2DTrial(sp, varList, trialNumList)
-    G = ma.MaskedArray(G, mask=np.isnan(G))
+    nans = np.isnan(G)
+    if (nansAs0):
+        G[nans] = 0
+    else:
+        G = ma.MaskedArray(G, mask=nans)
     Y, X = computeYX(sp, iterList, r=r, c=c)
     return plot2DTrial(X, Y, G, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
