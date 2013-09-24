@@ -493,33 +493,49 @@ class BumpVelocityVisitor(DictDSVisitor):
             ylabel('Bump velocity (neurons/s)')
 
             # Fit a line (nrns/s/pA)
+            # results
             line       = None
             lineFitErr = None
             slope      = None
             fitIvelVec = None
             errSum     = None
+            # All, in case we need the one with max range
+            line_all       = []
+            lineFitErr_all = []
+            slope_all      = []
+            fitIvelVec_all = []
+            maxRange_all   = []
             for fitRange in xrange(1, len(IvelVec)):
                 log_info('BumpVelocityVisitor', "fitRange: {0}".format(fitRange))
                 newLine, newSlope, newErr, newIvelVecRange = \
                         fitBumpSpeed(IvelVec, slopes, fitRange)
-                # Keep only the line that covers the desired range and has a
-                # minimal error of fit, but if we are at the end and there are
-                # no lines fitted yet, we keep the line anyway
-                if ((newLine[-1] >= self.bumpSpeedMax) or (fitRange ==
-                        len(IvelVec) - 1)):
+                line_all.append(newLine)
+                lineFitErr_all.append(newErr)
+                slope_all.append(newSlope)
+                fitIvelVec_all.append(newIvelVecRange)
+                maxRange_all.append(newLine[-1])
+                # Keep only lines that covers the desired range and have a
+                # minimal error of fit
+                if ((newLine[-1] >= self.bumpSpeedMax)):
                     errSumNew = np.sum(newErr)
-                    if ((line is None) or (errSumNew < errSum)):
-                        if (line is None and fitRange == len(IvelVec) - 1):
-                            msg = 'No suitable fits that cover <0, {0:.2f}>' +\
-                            ' neurons/s. Using the fit with the full range ' +\
-                            'of Ivel <0, {1}> pA'
-                            log_info('BumpVelocityVisitor',
-                                    msg.format(self.bumpSpeedMax, IvelVec[-1]))
+                    if ((line is None) or (errSumNew <= errSum)):
                         line       = newLine
                         lineFitErr = newErr
                         slope      = newSlope
                         fitIvelVec = newIvelVecRange
                         errSum     = errSumNew
+
+            if (line is None):
+                msg = 'No suitable fits that cover <0, {0:.2f}> neurons/s.' +\
+                ' Using the fit with the max. bump speed range.'
+                log_info('BumpVelocityVisitor', msg.format(self.bumpSpeedMax))
+                msg = "Bump speed maxima: {0}".format(maxRange_all)
+                log_info('BumpVelocityVisitor', msg.format(self.bumpSpeedMax))
+                maxRangeIdx = np.argmax(maxRange_all)
+                line        = line_all[maxRangeIdx]
+                lineFitErr  = lineFitErr_all[maxRangeIdx]
+                slope       = slope_all[maxRangeIdx]
+                fitIvelVec  = fitIvelVec_all[maxRangeIdx]
 
 
             plot(fitIvelVec, line, 'o-')

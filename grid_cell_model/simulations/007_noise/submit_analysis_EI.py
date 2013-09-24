@@ -20,13 +20,15 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from submitting.factory     import SubmitterFactory
-from submitting.arguments   import ArgumentCreator
+from submitting.factory   import SubmitterFactory
+from submitting.arguments import ArgumentCreator
+from param_sweep          import getSpeedPercentile
+from default_params       import defaultParameters as dp
 import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'cluster'
+ENV         = 'workstation'
 appName     = 'analysis_EI.py'
 rtLimit     = '00:02:00'
 numCPU      = 1
@@ -41,9 +43,9 @@ gridsType = 'grids'
 
 noise_sigma_all = [0.0, 150.0, 300.0] # pA
 dirs = \
-    ('output/even_spacing/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
-    #('output/grids_50pA_Ivel',  gridsType,     'EI_param_sweep_{0}pA', (30, 30))
-    #('output/velocity',   velocityType,  'EI_param_sweep_{0}pA', (30, 30))
+    ('output/even_spacing/velocity',   velocityType,  '{0}pA', (31, 31))
+    #('output/even_spacing/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
+    #('output/grids_50pA_Ivel',  gridsType,     '{0}pA', (30, 30))
 
 for noise_sigma in noise_sigma_all:
     p = {}
@@ -57,6 +59,11 @@ for noise_sigma in noise_sigma_all:
     p['shapeCols'] = colN
     p['forceUpdate'] = 0
 
+    if (p['type'] == velocityType):
+        percentile = 99.0
+        p['bumpSpeedMax'] = getSpeedPercentile(percentile, dp['ratVelFName'],
+                dp['gridSep'], dp['Ne'])
+
     ###############################################################################
 
     ac = ArgumentCreator(p, printout=True)
@@ -64,6 +71,8 @@ for noise_sigma in noise_sigma_all:
     iterparams = {
             'row' : np.arange(rowN),
             'col' : np.arange(colN)
+            #'row' : [10],
+            #'col' : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     }
     ac.insertDict(iterparams, mult=True)
 
