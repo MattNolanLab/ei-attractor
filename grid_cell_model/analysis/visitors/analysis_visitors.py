@@ -393,20 +393,34 @@ def getLineFit(Y):
     return P[0][0]*X, P[0][0]
 
 
+def fitBumpSpeed(IvelVec, bumpSpeed, fitRange):
+    '''
+    Fit a line to bumpSpeed vs IvelVec, useing IvelVec[0:fitRange+1]
+    '''
+    avgBumpSpeed = np.mean(bumpSpeed, axis=0)
+    fitAvgSpeed = avgBumpSpeed[0:fitRange+1]
+    fitIvelVec  = IvelVec[0:fitRange+1]
+    line, slope = getLineFit(fitAvgSpeed)
+    lineFitErr = np.abs(line - fitAvgSpeed) / len(fitIvelVec)
+    slope = slope/(fitIvelVec[1] - fitIvelVec[0])
+    return line, slope, lineFitErr, fitIvelVec
+
+
 class BumpVelocityVisitor(DictDSVisitor):
     '''
     A visitor that estimates the relationship between injected velocity current
     and bump speed.
     '''
 
-    def __init__(self, win_dt=20.0, winLen=250.0, forceUpdate=False,
-            printSlope=False, lineFitMaxIdx=None):
+    def __init__(self, bumpSpeedMax, win_dt=20.0, winLen=250.0,
+            forceUpdate=False, printSlope=False):
+        self.bumpSpeedMax = bumpSpeedMax # cm/s
         self.win_dt = win_dt
         self.winLen = winLen
         self.forceUpdate = forceUpdate
         self.printSlope = printSlope
-        self.lineFitMaxIdx = lineFitMaxIdx
 
+        assert(self.bumpSpeedMax is not None)
 
     def _getSpikeTrain(self, data, monName, dimList):
         N_x = self.getNetParam(data, dimList[0])
@@ -479,16 +493,35 @@ class BumpVelocityVisitor(DictDSVisitor):
             ylabel('Bump velocity (neurons/s)')
 
             # Fit a line (nrns/s/pA)
-            if (self.lineFitMaxIdx is None):
-                fitRange = len(IvelVec)
-            else:
-                fitRange = min(self.lineFitMaxIdx+1, len(IvelVec))
-            log_info('BumpVelocityVisitor', 'fitRange == {0}'.format(fitRange))
-            fitAvgSlope = avgSlope[0:fitRange]
-            fitIvelVec  = IvelVec[0:fitRange]
-            line, slope = getLineFit(fitAvgSlope)
-            lineFitErr = np.abs(line - fitAvgSlope)
-            slope = slope/(fitIvelVec[1] - fitIvelVec[0])
+            line       = None
+            lineFitErr = None
+            slope      = None
+            fitIvelVec = None
+            errSum     = None
+            for fitRange in xrange(1, len(IvelVec)):
+                log_info('BumpVelocityVisitor', "fitRange: {0}".format(fitRange))
+                newLine, newSlope, newErr, newIvelVecRange = \
+                        fitBumpSpeed(IvelVec, slopes, fitRange)
+                # Keep only the line that covers the desired range and has a
+                # minimal error of fit, but if we are at the end and there are
+                # no lines fitted yet, we keep the line anyway
+                if ((newLine[-1] >= self.bumpSpeedMax) or (fitRange ==
+                        len(IvelVec) - 1)):
+                    errSumNew = np.sum(newErr)
+                    if ((line is None) or (errSumNew < errSum)):
+                        if (line is None and fitRange == len(IvelVec) - 1):
+                            msg = 'No suitable fits that cover <0, {0:.2f}>' +\
+                            ' neurons/s. Using the fit with the full range ' +\
+                            'of Ivel <0, {1}> pA'
+                            log_info('BumpVelocityVisitor',
+                                    msg.format(self.bumpSpeedMax, IvelVec[-1]))
+                        line       = newLine
+                        lineFitErr = newErr
+                        slope      = newSlope
+                        fitIvelVec = newIvelVecRange
+                        errSum     = errSumNew
+
+
             plot(fitIvelVec, line, 'o-')
             title("Line fit slope: {0:.3f} nrns/s/pA".format(slope))
             legend(['Estimated bump speed', 'Line fit'], loc='best')
@@ -500,7 +533,7 @@ class BumpVelocityVisitor(DictDSVisitor):
                 'lineFitLine'  : line,
                 'lineFitSlope' : slope,
                 'lineFitErr'   : lineFitErr,
-                'fitRange'     : fitRange
+                'fitIvelVec'   : fitIvelVec
             })
 
         data['analysis'] = analysisTop
