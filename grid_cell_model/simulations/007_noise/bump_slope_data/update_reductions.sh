@@ -22,7 +22,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-root_dir="../output/velocity/EI_param_sweep_"
+root_dir="../output/even_spacing/velocity/"
 target_file="bump_slope_"
 
 I_vec="0pA 150pA 300pA"

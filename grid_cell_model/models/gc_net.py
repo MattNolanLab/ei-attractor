@@ -217,7 +217,9 @@ class GridCellNetwork(object):
 
         g_AMPA_mean = self.no.g_AMPA_total / self.net_Ne
         g_GABA_mean = self.no.g_GABA_total / self.net_Ni
-        g_uni_GABA_mean = self.no.g_uni_GABA_total / self.net_Ni / self.no.uni_GABA_density
+        g_uni_GABA_total = self.no.g_GABA_total * self.no.g_uni_GABA_frac
+        g_uni_GABA_mean = g_uni_GABA_total / self.net_Ni / self.no.uni_GABA_density
+        print "g_uni_GABA_total: ", g_uni_GABA_total
         print "g_uni_GABA_mean: ", g_uni_GABA_mean
 
         # E --> I connections

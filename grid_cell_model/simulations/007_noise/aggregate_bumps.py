@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
-#   plot_grids.py
+#   aggregate_bumps.py
 #
-#   Grid fields in the EI parameter sweep.
+#   Aggregate bump data into the reductions file.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,45 +19,30 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import matplotlib
-matplotlib.use('cairo')
-import matplotlib.pyplot as plt
-
 from parameters  import JobTrialSpace2D
-from figures.EI_plotting import plotGridTrial
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)
 
 
-# Other
-plt.rcParams['font.size'] = 11
-
-noise_sigma_all = [0., 150.0, 300.0] # pA
+noise_sigmas = [0, 150, 300]
 dirs = \
     ('{0}pA',    (31, 31))
-NTrials = 1
 
-for noise_sigma in noise_sigma_all:
+NTrials = 5
+trialNumList = xrange(NTrials)
+shape   = dirs[1]
+varListBase = ['analysis']
+
+################################################################################
+for noise_sigma in noise_sigmas:
     dir = dirs[0].format(int(noise_sigma))
-    rootDir = "output/even_spacing/grids/{0}".format(dir)
-    shape   = dirs[1]
+    rootDir = "output/even_spacing/gamma_bump/{0}".format(dir)
 
     sp = JobTrialSpace2D(shape, rootDir)
-    iterList  = ['g_AMPA_total', 'g_GABA_total']
-        
-    ################################################################################
-    plt.figure(figsize=(2.9, 2.9))
-    G = plotGridTrial(sp, ['gridnessScore'], iterList,
-            trialNumList=range(NTrials),
-            r=1,
-            c=22,
-            xlabel="I (nS)",
-            ylabel='E (nS)',
-            clBarLabel = "Gridness score",
-            clbarNTicks=3)
-    ###############################################################################
-    plt.tight_layout()
-    plt.savefig(sp.rootDir +
-            '/../analysis_EI_gridness_{0}pA.png'.format(int(noise_sigma)))
-
+    sp.aggregateData(varListBase + ['bump_e', 'sigma'], trialNumList,
+            funReduce=None, saveData=True, output_dtype='array')
+    sp.aggregateData(varListBase + ['bump_e', 'err2'], trialNumList,
+            funReduce=None, saveData=True, output_dtype='array')
+    sp.aggregateData(varListBase + ['bump_e', 'bump_e_rateMap'], trialNumList,
+            funReduce=None, saveData=True, output_dtype='list')

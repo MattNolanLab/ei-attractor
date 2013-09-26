@@ -35,7 +35,7 @@ defaultParameters = {
         "printTime"             :   0,            # This is boolean
 
         "ratVelFName"           : '../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
-        #"ratVelFName"           : '../../../data/hafting_et_al_2006/rat_trajectory_original.mat',
+        #"ratVelFName"           : '../../../data/hafting_et_al_2005/rat_trajectory_original.mat',
 
         "gridSep"               :   60,             # cm
 
@@ -94,7 +94,7 @@ defaultParameters = {
         "tau_GABA_A_rise"       :   0.1,          # ms
         "tau_GABA_A_fall"       :   5,            # ms
         "g_GABA_total"          :   2160,         # nS
-        "g_uni_GABA_total"      :   28,           # nS
+        "g_uni_GABA_frac"       :   0.013,        # fraction of g_GABA_total
         "uni_GABA_density"      :   0.4,
 
         "E_AMPA"                :   0,            # mV
