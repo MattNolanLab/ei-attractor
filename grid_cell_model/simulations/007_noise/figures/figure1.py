@@ -54,20 +54,20 @@ iterList  = ['g_AMPA_total', 'g_GABA_total']
 noise_sigmas = [0, 150, 300]
 exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
 bumpDataRoot= 'output_local/even_spacing/gamma_bump'
-velDataRoot = 'output_local/velocity'
+velDataRoot = 'output_local/even_spacing/velocity'
 bumpShape = (31, 31)
-velShape  = (30, 30)
+velShape  = (31, 31)
 
 bumpExamples = 1
-bumpSweep0   = 1
-bumpSweep150 = 1
-bumpSweep300 = 1
+bumpSweep0   = 0
+bumpSweep150 = 0
+bumpSweep300 = 0
 velExamples  = 1
 velSweep0    = 1
 velSweep150  = 1
 velSweep300  = 1
-hists        = 0 
-velLines     = 0
+hists        = 1 
+velLines     = 1
 
 ##############################################################################
 
@@ -152,12 +152,12 @@ def drawVelSweeps(ax, dataSpace, iterList, noise_sigma, r=0, c=0, yLabelOn=True,
             colorBar=False,
             yticks=yticks,
             vmin=0,
-            vmax=60)
+            vmax=10)
     plt.set_cmap('jet')
     cax, kw = make_axes(ax, orientation='vertical', shrink=0.8,
             pad=0.05)
     globalAxesSettings(cax)
-    cb = plt.colorbar(ax=ax, cax=cax, ticks=MultipleLocator(20), **kw)
+    cb = plt.colorbar(ax=ax, cax=cax, ticks=MultipleLocator(5), **kw)
     cb.set_label('Fit error (neurons/s)')
     if (cbar == False):
         cax.set_visible(False)
@@ -206,22 +206,22 @@ def plotVelHistogram(spList, varList, xlabel="", ylabel="", **kw):
     return ax
 
 def plotErrHistogram(spList, varList, **kw):
-    ax = plotVelHistogram(spList, varList, range=[0, 60], **kw)
+    ax = plotVelHistogram(spList, varList, range=[0, 10], **kw)
 
-    ax.xaxis.set_major_locator(MultipleLocator(20))
+    ax.xaxis.set_major_locator(MultipleLocator(2))
     ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.yaxis.set_major_locator(MaxNLocator(3))
-    ax.set_ylim([-0.0025, 1.01*0.2])
-    ax.margins(0.01)
+    ax.yaxis.set_major_locator(MaxNLocator(4))
+    ax.set_ylim([-0.0025, 2])
+    #ax.margins(0.01)
     
 def plotSlopeHistogram(spList, varList, **kw):
-    ax = plotVelHistogram(spList, varList, **kw)
+    ax = plotVelHistogram(spList, varList, range=[0, 1.5], **kw)
 
-    #ax.xaxis.set_major_locator(MultipleLocator(20))
+    ax.xaxis.set_major_locator(MultipleLocator(0.4))
     ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.yaxis.set_major_locator(MaxNLocator(3))
-    ax.set_ylim([-0.0025, 10])
-    ax.margins(0.01)
+    ax.yaxis.set_major_locator(MaxNLocator(4))
+    ax.set_ylim([-0.0025, 9])
+    #ax.margins(0.01)
     
 
 def plotSlopes(ax, dataSpace, pos, **kw):
@@ -237,7 +237,7 @@ def plotSlopes(ax, dataSpace, pos, **kw):
     IvelVec = dataSpace[r][c][trialNum].data['IvelVec']
     slopes = a['bumpVelAll']
     lineFit = a['lineFitLine']
-    lineFitRange = a['fitRange']
+    fitIvelVec = a['fitIvelVec']
 
     nTrials = slopes.shape[0]
     avgSlope = np.mean(slopes, axis=0)
@@ -248,10 +248,9 @@ def plotSlopes(ax, dataSpace, pos, **kw):
     plt.hold('on')
     globalAxesSettings(ax)
 
-    r = lineFitRange
-    errorbar(IvelVec, -avgSlope, stdErrSlope, fmt='o-', markersize=markersize,
+    errorbar(IvelVec, avgSlope, stdErrSlope, fmt='o-', markersize=markersize,
             color=color, alpha=0.5, **kw)
-    plot(IvelVec[0:r], -lineFit, '-', linewidth=2, color=color, **kw)
+    plot(fitIvelVec, lineFit, '-', linewidth=2, color=color, **kw)
 
 def plotAllSlopes(ax, spList, positions, **kw):
     colors = kw.pop('colors', ('blue', 'green', 'red'))
@@ -448,7 +447,7 @@ if (hists):
 
 
 if (velLines):
-    positions = ((18, 2), (15, 5), (10,2))
+    positions = ((4, 27), (4, 27), (4, 27))
     fig = figure(figsize=(2.5, histFigsize[1]))
     ax = fig.add_axes(Bbox.from_extents(0.3, histBottom, histRight,
         histTop))

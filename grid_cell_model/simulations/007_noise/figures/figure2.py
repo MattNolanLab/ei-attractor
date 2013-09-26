@@ -57,7 +57,7 @@ gridsDataRoot= 'output_local/even_spacing/grids'
 velDataRoot = 'output_local/velocity'
 shape = (31, 31)
 
-grid_examples = 0
+grid_examples = 1
 grids0        = 1
 grids150      = 1
 grids300      = 1
