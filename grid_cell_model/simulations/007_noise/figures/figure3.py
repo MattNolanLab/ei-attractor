@@ -61,10 +61,10 @@ exampleIdx    = [(0, 0), (0, 0), (0, 0)] # (row, col)
 gammaDataRoot = 'output_local/even_spacing/gamma_bump'
 gammaShape    = (31, 31)
 
-gammaSweep0   = 0
-gammaSweep150 = 0
-gammaSweep300 = 0
-threshold     = 0
+gammaSweep0   = 1
+gammaSweep150 = 1
+gammaSweep300 = 1
+threshold     = 1
 freqHist      = 1
 
 ###############################################################################
@@ -147,6 +147,21 @@ def extractACExample(sp, r, c, trialNum):
     return ac, dt, freq, acVal, noise_sigma
 
 
+def aggregateBar2(spList, varLists, trialNumList, func=(None, None)):
+    vars = ([], [])
+    noise_sigma = []
+    for idx in xrange(len(spList)):
+        for varIdx in range(len(varLists)):
+            f = func[varIdx]
+            if f is None:
+                f = lambda x: x
+            vars[varIdx].append(f(aggregate2DTrial(spList[idx], varLists[varIdx],
+                trialNumList).flatten()))
+        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
+
+    noise_sigma = np.array(noise_sigma, dtype=int)
+    return vars, noise_sigma
+ 
 
 
 def getACFreqThreshold(spList, trialNumList, ACThr):
@@ -299,10 +314,11 @@ if (gammaSweep150):
     fig.savefig(fname, dpi=300, transparent=True)
         
 
+gammaSpList = [gammaDataSpace0, gammaDataSpace150, gammaDataSpace300]
 if (threshold):
     ###############################################################################
     plt.figure(figsize=(3.5, 2))
-    plotThresholdComparison(dataSpaces,
+    plotThresholdComparison(gammaSpList,
             trialNumList=range(NTrials),
             ACThrList=np.arange(0, 0.65, 0.05))
     plt.tight_layout()
@@ -312,7 +328,6 @@ if (threshold):
 
 if (freqHist):
     ylabelPos = -0.16
-    gammaSpList = [gammaDataSpace0, gammaDataSpace150, gammaDataSpace300]
     fig = figure(figsize=(3.7, 2.5))
     plotFreqHistogram(gammaSpList, range(NTrials), ylabelPos=ylabelPos)
     plt.tight_layout()
