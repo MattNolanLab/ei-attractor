@@ -43,9 +43,9 @@ gridsType = 'grids'
 
 noise_sigma_all = [0.0, 150.0, 300.0] # pA
 dirs = \
-    ('output/even_spacing/velocity',   velocityType,  '{0}pA', (31, 31))
+    ('output/even_spacing/grids',      gridsType,     '{0}pA', (31, 31))
+    #('output/even_spacing/velocity',   velocityType,  '{0}pA', (31, 31))
     #('output/even_spacing/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
-    #('output/grids_50pA_Ivel',  gridsType,     '{0}pA', (30, 30))
 
 for noise_sigma in noise_sigma_all:
     p = {}
