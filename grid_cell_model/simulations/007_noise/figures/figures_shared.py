@@ -18,15 +18,19 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import numpy as np
-from matplotlib.pyplot import gca, axis
-from matplotlib.ticker import MaxNLocator, AutoMinorLocator, LinearLocator
+import numpy       as np
+import EI_plotting as EI
 import matplotlib.transforms as transforms
+
+from matplotlib.pyplot   import gca, axis, colorbar
+from matplotlib.ticker   import MaxNLocator, AutoMinorLocator, LinearLocator
+from matplotlib.colorbar import make_axes
 
 from analysis.visitors.interface import extractStateVariable, sumAllVariables,\
         extractSpikes
-from plotting.global_defs        import globalAxesSettings
-from plotting.low_level          import xScaleBar
+from plotting.global_defs import globalAxesSettings
+from plotting.low_level   import xScaleBar
+
 
 
 theta_T = 250.0 # ms
@@ -216,4 +220,13 @@ def plotOneHist(data, bins=40, normed=False, **kw):
     ax.xaxis.set_major_locator(MaxNLocator(4))
     ax.yaxis.set_major_locator(MaxNLocator(4))
 
-
+###############################################################################
+# Parameter sweep plotting
+def createColorbar(ax, **kwargs):
+    cbLabel = kwargs.pop('label', '')
+    cax, kwargs = make_axes(ax, **kwargs)
+    globalAxesSettings(cax)
+    cb = colorbar(ax=ax, cax=cax, **kwargs)
+    cb.set_label(cbLabel)
+    cax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    return cax

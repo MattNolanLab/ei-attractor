@@ -32,6 +32,10 @@ from plotting.grids       import plotGridRateMap
 from parameters import DataSpace
 from figures_shared       import plotBump
 
+###############################################################################
+
+xlabelText = '$g_I$ (nS)'
+ylabelText = '$g_E$ (nS)'
 
 ###############################################################################
 
@@ -156,20 +160,17 @@ def computeVelYX(sp, iterList):
     return E/Ne, I/Ni
 
 
-def plotVelTrial(sp, varList, iterList, xlabel="", ylabel="", colorBar=True,
-        clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
-        xticks=True, yticks=True):
+def plotVelTrial(sp, varList, iterList, **kwargs):
     slopes = np.abs(aggregate2D(sp, varList, funReduce=np.sum))
     slopes = ma.MaskedArray(slopes, mask=np.isnan(slopes))
     Y, X = computeVelYX(sp, iterList)
-    return plot2DTrial(X, Y, slopes, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
+    return plot2DTrial(X, Y, slopes, **kwargs)
 
 
 
-def plot2DTrial(X, Y, C, xlabel="", ylabel="", colorBar=True, clBarLabel="",
-        vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
-        yticks=True, cmap=None):
+def plot2DTrial(X, Y, C, xlabel=xlabelText, ylabel=ylabelText, colorBar=False,
+        clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
+        xticks=True, yticks=True, cmap=None):
 
     ax = plt.gca()
     globalAxesSettings(ax)
