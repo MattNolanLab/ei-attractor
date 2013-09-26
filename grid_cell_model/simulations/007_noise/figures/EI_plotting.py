@@ -102,7 +102,7 @@ def plotACTrial(sp, varList, iterList, trialNumList=[0], r=0, c=0, xlabel="",
 def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, r=0, c=0,
         trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
         vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
-        yticks=True):
+        yticks=True, cmap=None):
     C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
     Y, X = computeYX(sp, iterList, r=r, c=c)
