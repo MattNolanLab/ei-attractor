@@ -27,7 +27,7 @@ lg.basicConfig(level=lg.INFO)
 
 noise_sigmas = [0, 150, 300]
 dirs = \
-    ('EI_param_sweep_{0}pA',    (30, 30))
+    ('{0}pA',    (31, 31))
 
 NTrials = 1
 trialNumList = xrange(NTrials)
@@ -37,7 +37,7 @@ varListBase = ['analysis']
 ################################################################################
 for noise_sigma in noise_sigmas:
     dir = dirs[0].format(int(noise_sigma))
-    rootDir = "output/grids_50pA_Ivel/{0}".format(dir)
+    rootDir = "output/even_spacing/grids/{0}".format(dir)
 
     sp = JobTrialSpace2D(shape, rootDir)
     sp.aggregateData(varListBase + ['rateMap_e'], trialNumList, funReduce=None,
