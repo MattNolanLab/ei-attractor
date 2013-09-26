@@ -34,7 +34,7 @@ from EI_plotting import plotGridTrial, computeYX, aggregate2DTrial, \
         plotSquareGridExample
 from plotting.grids import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
 from plotting.global_defs import globalAxesSettings, createColorbar
-from figures_shared import plotOneHist
+from figures_shared import plotOneHist, getNoiseRoots
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -52,30 +52,18 @@ NTrials=10
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
-exampleIdx   = [(1, 2), (11, 10), (0, 5)] # (row, col)
-gridsDataRoot= 'output_local/grids_50pA_Ivel'
+exampleIdx   = [(1, 22), (1, 22), (1, 22)] # (row, col)
+gridsDataRoot= 'output_local/even_spacing/grids'
 velDataRoot = 'output_local/velocity'
-shape = (30, 30)
+shape = (31, 31)
 
-grid_examples = 1
+grid_examples = 0
 grids0        = 1
 grids150      = 1
 grids300      = 1
 hists         = 1
 
 ##############################################################################
-
-def getNoiseRootDir(prefix, noise_sigma):
-    return  "{0}/EI_param_sweep_{1}pA".format(prefix, int(noise_sigma))
-
-
-def getNoiseRoots(prefix, noise_sigmas):
-    roots = []
-    for s in noise_sigmas:
-        roots.append(getNoiseRootDir(prefix, s))
-    return roots
-
-
 
 def drawGridSweeps(ax, dataSpace, iterList, NTrials=1, r=0, c=0, xLabelOn=True,
         xticks=True, exRows=[], exCols=[], exColor='white',
@@ -100,9 +88,9 @@ def drawGridSweeps(ax, dataSpace, iterList, NTrials=1, r=0, c=0, xLabelOn=True,
             xticks=xticks,
             vmin=-0.5,
             vmax=1.15,
-            nansAs0=True)
-    cax, kw = make_axes(ax, orientation='horizontal', shrink=0.9,
-            pad=0.25)
+            nansAs0=False)
+    cax, kw = make_axes(ax, orientation='horizontal', shrink=0.8,
+            pad=0.2)
     globalAxesSettings(cax)
     cb = plt.colorbar(ax=ax, cax=cax, ticks=MultipleLocator(0.5), **kw)
     cb.set_label('Gridness score')
@@ -256,11 +244,11 @@ exGsCoords = 0, 0.0, 1.0-exMargin, 1.0-exMargin
 exWspace=0.2
 exHspace=0.2
 
-sweepFigSize = (2.7, 2.5)
-sweepLeft   = 0.2
+sweepFigSize = (2.43, 3.33)
+sweepLeft   = 0.15
 sweepBottom = 0.1
 sweepRight  = 0.99
-sweepTop    = 0.99
+sweepTop    = 0.95
 if (grids0):
 
     # noise_sigma = 0 pA
@@ -352,7 +340,7 @@ if (grids300):
                 hspace=exHspace, maxRate=True, plotGScore=False)
 
     fname = outputDir + "/figure2_sweeps300.png"
-    fig.savefig(fname, dpi=300, transparent=False)
+    fig.savefig(fname, dpi=300, transparent=True)
 
 
 # Stats
