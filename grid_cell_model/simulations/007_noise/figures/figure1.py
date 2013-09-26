@@ -34,7 +34,7 @@ from EI_plotting import plotBumpSigmaTrial, computeYX, aggregate2DTrial, \
         aggregate2D, drawEIRectSelection, drawBumpExamples, plotVelTrial
 from plotting.grids import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
 from plotting.global_defs import globalAxesSettings, createColorbar
-from figures_shared import plotOneHist
+from figures_shared import plotOneHist, getNoiseRoots
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -53,41 +53,30 @@ iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
 exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
-bumpDataRoot= 'output_local/one_to_one'
+bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/velocity'
-bumpShape = (40, 40)
+bumpShape = (31, 31)
 velShape  = (30, 30)
 
 bumpExamples = 1
-bumpSweep0   = 0
-bumpSweep150 = 0
-bumpSweep300 = 0
+bumpSweep0   = 1
+bumpSweep150 = 1
+bumpSweep300 = 1
 velExamples  = 1
-velSweep0    = 0
-velSweep150  = 0
-velSweep300  = 0
-hists        = 1 
-velLines     = 1
+velSweep0    = 1
+velSweep150  = 1
+velSweep300  = 1
+hists        = 0 
+velLines     = 0
 
 ##############################################################################
-
-def getNoiseRootDir(prefix, noise_sigma):
-    return  "{0}/EI_param_sweep_{1}pA".format(prefix, int(noise_sigma))
-
-
-def getNoiseRoots(prefix, noise_sigmas):
-    roots = []
-    for s in noise_sigmas:
-        roots.append(getNoiseRootDir(prefix, s))
-    return roots
-
 
 
 def drawBumpSweeps(ax, dataSpace, iterList, noise_sigma, NTrials=1, r=0, c=0, yLabelOn=True,
         yticks=True, cbar=False):
-    xLabelText = '$w_I$ (nS)'
+    xLabelText = '$g_I$ (nS)'
     if (yLabelOn):
-        yLabelText = '$w_E$ (nS)'
+        yLabelText = '$g_E$ (nS)'
     else:
         yLabelText = ''
 
@@ -100,8 +89,6 @@ def drawBumpSweeps(ax, dataSpace, iterList, noise_sigma, NTrials=1, r=0, c=0, yL
             xlabel=xLabelText,
             ylabel=yLabelText,
             colorBar=False,
-            clBarLabel = "Gridness score",
-            clbarNTicks=3,
             yticks=yticks,
             vmin=0,
             vmax=10)
@@ -149,9 +136,9 @@ def plotBumpExample(exLeft, exBottom, w, h, fileName, exIdx, sweep_ax,
 ###############################################################################
 def drawVelSweeps(ax, dataSpace, iterList, noise_sigma, r=0, c=0, yLabelOn=True,
         yticks=True, cbar=False):
-    xLabelText = '$w_I$ (nS)'
+    xLabelText = '$g_I$ (nS)'
     if (yLabelOn):
-        yLabelText = '$w_E$ (nS)'
+        yLabelText = '$g_E$ (nS)'
     else:
         yLabelText = ''
 
@@ -303,7 +290,7 @@ exGsCoords = 0.02, 0, 0.98, 1.0-exMargin
 exWspace=0.2
 exHspace=0.15
 
-sweepFigSize = (3.4, 2.1)
+sweepFigSize = (2.5, 2.1)
 sweepLeft   = 0.15
 sweepBottom = 0.2
 sweepRight  = 0.9

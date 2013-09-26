@@ -68,9 +68,9 @@ hists         = 1
 def drawGridSweeps(ax, dataSpace, iterList, NTrials=1, r=0, c=0, xLabelOn=True,
         xticks=True, exRows=[], exCols=[], exColor='white',
         cbar=False):
-    yLabelText = '$w_E$ (nS)'
+    yLabelText = '$g_E$ (nS)'
     if (xLabelOn):
-        xLabelText = '$w_I$ (nS)'
+        xLabelText = '$g_I$ (nS)'
     else:
         xLabelText = ''
 
