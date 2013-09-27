@@ -24,7 +24,7 @@ from os.path        import splitext
 
 from interface        import DictDSVisitor, extractStateVariable, \
         extractSpikes, sumAllVariables
-from otherpkg.log     import log_info
+from otherpkg.log     import log_info, log_warn
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 from analysis.image   import Position2D, fitGaussianBumpTT
 from analysis.spikes  import slidingFiringRateTuple, ThetaSpikeAnalysis, \
