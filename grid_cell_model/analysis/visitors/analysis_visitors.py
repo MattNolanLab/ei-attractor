@@ -446,9 +446,10 @@ class BumpVelocityVisitor(DictDSVisitor):
             IvelVec = trials[trialNum]['IvelVec']
             for IvelIdx in xrange(len(IvelVec)):
                 iData = trials[trialNum]['IvelData'][IvelIdx]
-                #if 'analysis' in iData.keys() and not self.forceUpdate:
-                #    log_info('BumpVelocityVisitor', "Data present. Skipping analysis.")
-                #    continue
+                if 'analysis' in iData.keys() and not self.forceUpdate:
+                    log_info('BumpVelocityVisitor', "Data present. Skipping analysis.")
+                    slopes[trialNum].append(iData['analysis']['slope'])
+                    continue
 
                 senders, times, sheetSize =  self._getSpikeTrain(iData,
                         'spikeMon_e', ['Ne_x', 'Ne_y'])
@@ -470,7 +471,6 @@ class BumpVelocityVisitor(DictDSVisitor):
         slopes = np.array(slopes)
 
         analysisTop = {'bumpVelAll' : slopes}
-
 
         if (self.printSlope and 'fileName' not in kw.keys()):
             msg = 'printSlope requested, but did not receive the fileName ' + \
