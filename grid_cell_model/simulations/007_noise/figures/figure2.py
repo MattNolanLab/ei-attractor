@@ -30,11 +30,12 @@ from matplotlib.colorbar import make_axes
 from matplotlib.transforms import Bbox
 
 from parameters  import JobTrialSpace2D
+import EI_plotting as EI
 from EI_plotting import plotBumpSigmaTrial, computeYX, aggregate2DTrial, \
         aggregate2D, drawEIRectSelection, drawBumpExamples, plotVelTrial
 from plotting.grids import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
-from plotting.global_defs import globalAxesSettings, createColorbar
-from figures_shared import plotOneHist, getNoiseRoots
+from plotting.global_defs import globalAxesSettings
+from figures_shared import plotOneHist, getNoiseRoots, createColorbar
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -58,16 +59,16 @@ velDataRoot = 'output_local/even_spacing/velocity'
 bumpShape = (31, 31)
 velShape  = (31, 31)
 
-bumpExamples = 1
-bumpSweep0   = 1
-bumpSweep150 = 1
-bumpSweep300 = 1
-velExamples  = 1
+bumpExamples = 0
+bumpSweep0   = 0
+bumpSweep150 = 0
+bumpSweep300 = 0
+velExamples  = 0
 velSweep0    = 1
 velSweep150  = 1
 velSweep300  = 1
-hists        = 1 
-velLines     = 1
+hists        = 0 
+velLines     = 0
 
 ##############################################################################
 
@@ -133,39 +134,36 @@ def plotBumpExample(exLeft, exBottom, w, h, fileName, exIdx, sweep_ax,
         drawEIRectSelection(sweep_ax, exRect, X, Y, color=rectColor)
 
 
-###############################################################################
-def drawVelSweeps(ax, dataSpace, iterList, noise_sigma, r=0, c=0, yLabelOn=True,
-        yticks=True, cbar=False):
-    xLabelText = '$g_I$ (nS)'
-    if (yLabelOn):
-        yLabelText = '$g_E$ (nS)'
-    else:
-        yLabelText = ''
+def drawVelSweep(ax, dataSpace, iterList, varList, noise_sigma, **kwargs):
+    # process kwargs
+    sigmaTitle    = kwargs.pop('sigmaTitle', True)
+    xlabelOn      = kwargs.pop('xlabelOn', True)
+    ylabelOn      = kwargs.pop('ylabelOn', True)
+    cmap          = kwargs.pop('cmap', None)
+    cbar          = kwargs.pop('cbar', True)
+    cbar_kwargs                = kwargs.pop('cbar_kwargs', {})
+    cbar_kwargs['label']       = cbar_kwargs.get('label', '')
+    cbar_kwargs['shrink']      = cbar_kwargs.get('shrink', 0.8)
+    cbar_kwargs['orientation'] = cbar_kwargs.get('orientation', 'vertical')
+    cbar_kwargs['pad']         = cbar_kwargs.get('pad', 0.05)
+    cbar_kwargs['ticks']       = cbar_kwargs.get('ticks', MultipleLocator(5))
 
     if (ax is None):
         ax = plt.gca()
 
-    varList = ['lineFitErr']
-    G = plotVelTrial(dataSpace, varList, iterList,
-            xlabel=xLabelText,
-            ylabel=yLabelText,
-            colorBar=False,
-            yticks=yticks,
-            vmin=0,
-            vmax=10)
-    plt.set_cmap('jet')
-    cax, kw = make_axes(ax, orientation='vertical', shrink=0.8,
-            pad=0.05)
-    globalAxesSettings(cax)
-    cb = plt.colorbar(ax=ax, cax=cax, ticks=MultipleLocator(5), **kw)
-    cb.set_label('Fit error (neurons/s)')
+    val = plotVelTrial(dataSpace, varList, iterList, **kwargs)
+    plt.set_cmap(cmap)
+    cax = createColorbar(ax, **cbar_kwargs)
+    
+    print("drawVelSweep: max(val): {0}".format(np.max(val.ravel())))
+
     if (cbar == False):
         cax.set_visible(False)
-    ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
-
-    cax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
 
     return ax, cax
+
 
 
 def plotVelHistogram(spList, varList, xlabel="", ylabel="", **kw):
@@ -292,7 +290,7 @@ exHspace=0.15
 sweepFigSize = (2.5, 2.1)
 sweepLeft   = 0.15
 sweepBottom = 0.2
-sweepRight  = 0.9
+sweepRight  = 0.87
 sweepTop    = 0.85
 
 histFigsize =(2.6, 1.7)
@@ -394,37 +392,87 @@ if (bumpSweep300):
 ###############################################################################
 
 velSpList = [velDataSpace0, velDataSpace150, velDataSpace300]
+errVarList = ['lineFitErr']
+slopeVarList = ['lineFitSlope']
+err_vmin = 0
+err_vmax = 10
+slope_vmin = 0
+slope_vmax = 1.6
+
+
+def createSweepFig(name):
+    fig = figure(name, figsize=sweepFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+        sweepTop))
+    return fig, ax
 
 if (velSweep0):
     # noise_sigma = 0 pA
-    fig = figure("bumpSweeps0", figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    ax, cax = drawVelSweeps(ax, velDataSpace0, iterList,
-            noise_sigma=noise_sigmas[0], cbar=False)
+    fig, ax = createSweepFig("velErrSweeps0")
+    ax, cax = drawVelSweep(ax, velDataSpace0, iterList, errVarList,
+            noise_sigma=noise_sigmas[0],
+            cbar=False,
+            xlabel='', xticks=False,
+            vmin=err_vmin, vmax=err_vmax)
     fname = outputDir + "/figure2_err_sweeps0.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+    fig, ax = createSweepFig("velSlopeSweep0")
+    ax, cax = drawVelSweep(ax, velDataSpace0, iterList, slopeVarList,
+            noise_sigma=noise_sigmas[0],
+            cbar=False,
+            sigmaTitle=False,
+            vmin=slope_vmin, vmax=slope_vmax)
+    fname = outputDir + "/figure2_slope_sweeps0.png"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
 if (velSweep150):
     # noise_sigma = 150 pA
-    fig = figure("bumpSweeps150", figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    ax, cax = drawVelSweeps(ax, velDataSpace150, iterList, yLabelOn=False,
-            yticks=False, noise_sigma=noise_sigmas[1], cbar=False)
+    fig, ax = createSweepFig("velErrSweeps150")
+    ax, cax = drawVelSweep(ax, velDataSpace150, iterList, errVarList,
+            ylabel='', yticks=False,
+            noise_sigma=noise_sigmas[1],
+            cbar=False,
+            xlabel='', xticks=False,
+            vmin=err_vmin, vmax=err_vmax)
     fname = outputDir + "/figure2_err_sweeps150.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+    fig, ax = createSweepFig("velSlopeSweep150")
+    ax, cax = drawVelSweep(ax, velDataSpace150, iterList, slopeVarList,
+            noise_sigma=noise_sigmas[1],
+            ylabel='', yticks=False,
+            cbar=False,
+            sigmaTitle=False,
+            vmin=slope_vmin, vmax=slope_vmax)
+    fname = outputDir + "/figure2_slope_sweeps150.png"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
 if (velSweep300):
     # noise_sigma = 300 pA
-    fig = figure("bumpSweeps300", figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    ax, cax = drawVelSweeps(ax, velDataSpace300, iterList, yLabelOn=False,
-            yticks=False, noise_sigma=noise_sigmas[2], cbar=True)
+    fig, ax = createSweepFig("velErrSweeps300")
+    ax, cax = drawVelSweep(ax, velDataSpace300, iterList, errVarList,
+            ylabel='', yticks=False,
+            noise_sigma=noise_sigmas[2],
+            cbar=True,
+            xlabel='', xticks=False,
+            vmin=err_vmin, vmax=err_vmax,
+            cbar_kwargs = {'label' : 'Fit error (neurons/s)'})
     fname = outputDir + "/figure2_err_sweeps300.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+    fig, ax = createSweepFig("velSlopeSweep300")
+    ax, cax = drawVelSweep(ax, velDataSpace300, iterList, slopeVarList,
+            noise_sigma=noise_sigmas[2],
+            ylabel='', yticks=False,
+            cbar=True,
+            sigmaTitle=False,
+            vmin=slope_vmin, vmax=slope_vmax,
+            cbar_kwargs = {'label' : 'Slope (neurons/s/pA)',
+                'ticks' : MultipleLocator(0.5)})
+    fname = outputDir + "/figure2_slope_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=True)
 
 # Stats
