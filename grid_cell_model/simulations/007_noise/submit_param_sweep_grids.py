@@ -48,7 +48,7 @@ for noise_sigma in noise_sigma_all:
 
     p['time']              = 600e3  # ms
     p['nthreads']          = 1
-    p['ntrials']           = 1
+    p['ntrials']           = 2
     p['velON']             = 1
 
 
