@@ -309,7 +309,7 @@ class GridPlotVisitor(DictDSVisitor):
 
     def __init__(self, rootDir, spikeType='E', neuronNum=0, arenaDiam=180.0,
             smoothingSigma=3.0, bumpTStart=None, bumpTEnd=None,
-            minGridnessT=0.0, plotOptions=PlotOptions()):
+            minGridnessT=0.0, plotOptions=PlotOptions(), forceUpdate=False):
         '''
         Parameters
         ----------
@@ -335,17 +335,24 @@ class GridPlotVisitor(DictDSVisitor):
             Minimal time (determined by the time of last spike of an E cell) to
             consider the simulation for gridness score (if less than this time,
             gridness score will be NaN).
+        plotOptions : PlotOptions
+            A set of flags that specify what should be plotted. TODO: this is
+            broken now, since there are dependencies.
+        forceUpdate : bool
+            Whether to force data analysis and saving of the results even when
+            they already exist.
         '''
-        self.rootDir = rootDir
-        self.setSpikeType(spikeType)
-        self.neuronNum = neuronNum
-        self.outputDir = 'grids'
-        self.arenaDiam = arenaDiam
+        self.rootDir        = rootDir
+        self.neuronNum      = neuronNum
+        self.outputDir      = 'grids'
+        self.arenaDiam      = arenaDiam
         self.smoothingSigma = smoothingSigma
-        self.bumpTStart = bumpTStart
-        self.bumpTEnd = bumpTEnd
-        self.po = plotOptions
-        self.minGridnessT = minGridnessT
+        self.bumpTStart     = bumpTStart
+        self.bumpTEnd       = bumpTEnd
+        self.po             = plotOptions
+        self.minGridnessT   = minGridnessT
+        self.forceUpdate    = forceUpdate
+        self.setSpikeType(spikeType)
 
 
 
@@ -384,6 +391,11 @@ class GridPlotVisitor(DictDSVisitor):
 
     def visitDictDataSet(self, ds, **kw):
         data = ds.data
+
+        if ('analysis' in data.keys() and not self.forceUpdate):
+            log_info("GridPlotVisitor", "Data present. Skipping analysis.")
+            return
+
         simT = self.getOption(data, 'time') # ms
         jobNum = self.getOption(data, 'job_num')
         if ('trialNum' in kw.keys()):
