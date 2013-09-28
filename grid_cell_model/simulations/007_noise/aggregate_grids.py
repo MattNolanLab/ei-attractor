@@ -33,6 +33,7 @@ NTrials = 1
 trialNumList = xrange(NTrials)
 shape   = dirs[1]
 varListBase = ['analysis']
+loadData = True
 
 ################################################################################
 for noise_sigma in noise_sigmas:
@@ -41,12 +42,16 @@ for noise_sigma in noise_sigmas:
 
     sp = JobTrialSpace2D(shape, rootDir)
     sp.aggregateData(varListBase + ['rateMap_e'], trialNumList, funReduce=None,
-            saveData=True, output_dtype='list')
+            saveData=True, loadData=loadData, output_dtype='list')
     sp.aggregateData(varListBase + ['rateMap_e_X'], [trialNumList[0]],
-            funReduce=None, saveData=True, output_dtype='list')
+            funReduce=None, saveData=True, loadData=loadData,
+            output_dtype='list')
     sp.aggregateData(varListBase + ['rateMap_e_Y'], [trialNumList[0]],
-            funReduce=None, saveData=True, output_dtype='list')
+            funReduce=None, saveData=True, loadData=loadData,
+            output_dtype='list')
     sp.aggregateData(varListBase + ['gridnessScore'], trialNumList,
-            funReduce=None, saveData=True, output_dtype='array')
+            funReduce=None, saveData=True, loadData=loadData,
+            output_dtype='array')
     sp.aggregateData(['options', 'arenaSize'], [trialNumList[0]],
-            funReduce=None, saveData=True, output_dtype='array')
+            funReduce=None, saveData=True, loadData=loadData,
+            output_dtype='array')
