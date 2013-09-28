@@ -28,6 +28,7 @@ from parameters  import JobTrialSpace2D
 from EI_plotting import plotBumpSigmaTrial, computeYX, aggregate2D, \
         drawBumpExamples,  drawEIRectSelection
 from plotting.global_defs import globalAxesSettings, createColorbar
+from figures_shared import getNoiseRoots
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -46,21 +47,11 @@ exampleIdx = [(0, 0), (0, 0), (0, 0)] # (row, col)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
-bumpsDataRoot= 'output_local/one_to_one'
-shape = (40, 40)
+bumpsDataRoot= 'output_local/even_spacing/gamma_bump'
+shape = (31, 31)
 
 
 ##############################################################################
-
-def getNoiseRootDir(prefix, noise_sigma):
-    return  "{0}/EI_param_sweep_{1}pA".format(prefix, int(noise_sigma))
-
-
-def getNoiseRoots(prefix, noise_sigmas):
-    roots = []
-    for s in noise_sigmas:
-        roots.append(getNoiseRootDir(prefix, s))
-    return roots
 
 
 def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0), cmap='jet_r',
@@ -73,8 +64,6 @@ def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0), cmap='jet_r',
     varList = ['bump_e', 'sigma']
     G = plotBumpSigmaTrial(dataSpace, varList, iterList,
             trialNumList=range(NTrials),
-            xlabel="$w_I$ (nS)",
-            ylabel="$w_E$ (nS)",
             colorBar=False,
             clbarNTicks=3,
             vmin=0,
@@ -97,7 +86,7 @@ def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx,
     margin    = 0.1
     sw_left   = margin
     sw_bottom = 0.82
-    sw_right  = 0.5
+    sw_right  = 0.4
     sw_top    = 0.97
     div       = 0.075
 
@@ -116,7 +105,7 @@ def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx,
     fig.text(letter_left, sw_top+letter_top_off, "A", va=letter_va, ha=letter_ha,
             fontsize=19, fontweight='bold')
 
-    gsCoords = margin, 0.075, 1.0 - margin, sw_bottom-div
+    gsCoords = 0.12, 0.075, 0.95, sw_bottom-div
     #gsCoords = margin, 0.46, 0.5, sw_bottom-div
     gs = drawBumpExamples(dataSpace, exRect, iterList, gsCoords=gsCoords,
             exIdx=exIdx, cmap='jet')
@@ -135,21 +124,21 @@ exWidth = 6
 exHeight = 8
 
 # Flags
-f0_0 = 1
-f0_1 = 1
-f0_2 = 1
-f150_0 = 1
-f150_1 = 1
-f150_2 = 1
-f300_0 = 1
-f300_1 = 1
+f0_0   = 0
+f0_1   = 0
+f0_2   = 0
+f150_0 = 0
+f150_1 = 0
+f150_2 = 0
+f300_0 = 0
+f300_1 = 0
 f300_2 = 1
 
 
 if (f0_0):
     # Bumps - 0 pA
-    exLeft = 7
-    exBottom = 29
+    exLeft = 3
+    exBottom = 19
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(bumpDataSpace0, noise_sigmas[0], iterList, exRect,
             exampleIdx[0])
@@ -161,7 +150,7 @@ if (f0_0):
 if (f0_1):
     # Transition - 0 pA
     exLeft = 0
-    exBottom = 5
+    exBottom = 3
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(bumpDataSpace0, noise_sigmas[0], iterList, exRect,
             exampleIdx[0], rectColor='red')
@@ -172,8 +161,8 @@ if (f0_1):
 
 if (f0_2):
     # No bump region at all - 0 pA
-    exLeft = 25
-    exBottom = 8
+    exLeft = 18
+    exBottom = 3
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(bumpDataSpace0, noise_sigmas[0], iterList, exRect,
             exampleIdx[0], rectColor='red')
@@ -184,8 +173,8 @@ if (f0_2):
 
 if (f150_0):
     # Transition - 150 pA
-    exLeft = 7
-    exBottom = 5
+    exLeft = 5
+    exBottom = 2
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(bumpDataSpace150, noise_sigmas[1], iterList, exRect,
             exampleIdx[1], rectColor='red')
@@ -196,8 +185,8 @@ if (f150_0):
 
 if (f150_1):
     # Good bumps - 150 pA
-    exLeft = 20
-    exBottom = 20
+    exLeft = 15
+    exBottom = 10
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(bumpDataSpace150, noise_sigmas[1], iterList, exRect,
             exampleIdx[1])
@@ -208,8 +197,8 @@ if (f150_1):
 
 if (f150_2):
     # Another transition - 150 pA
-    exLeft = 0
-    exBottom = 30
+    exLeft = 1
+    exBottom = 20
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(bumpDataSpace150, noise_sigmas[1], iterList, exRect,
             exampleIdx[1], rectColor='red')
@@ -220,8 +209,8 @@ if (f150_2):
 
 if (f300_0):
     # Transition - 150 pA
-    exLeft = 8
-    exBottom = 6
+    exLeft = 5
+    exBottom = 3
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(bumpDataSpace300, noise_sigmas[2], iterList, exRect,
             exampleIdx[2], rectColor='red')
@@ -232,8 +221,8 @@ if (f300_0):
 
 if (f300_1):
     # Small bumps - 150 pA
-    exLeft = 20
-    exBottom = 20
+    exLeft = 15
+    exBottom = 10
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(bumpDataSpace300, noise_sigmas[2], iterList, exRect,
             exampleIdx[2])
@@ -244,8 +233,8 @@ if (f300_1):
 
 if (f300_2):
     # Small bumps - 150 pA
-    exLeft = 2
-    exBottom = 30
+    exLeft = 1
+    exBottom = 11
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(bumpDataSpace300, noise_sigmas[2], iterList, exRect,
             exampleIdx[2])

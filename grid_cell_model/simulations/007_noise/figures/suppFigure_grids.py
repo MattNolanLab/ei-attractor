@@ -28,6 +28,7 @@ from parameters  import JobTrialSpace2D
 from EI_plotting import plotGridTrial, computeYX, aggregate2D, \
         drawGridExamples,  drawEIRectSelection
 from plotting.global_defs import globalAxesSettings, createColorbar
+from figures_shared import getNoiseRoots
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -42,26 +43,15 @@ plt.rcParams['font.size'] = 12
 outputDir = "."
 
 NTrials=10
-exampleIdx = [(1, 2), (11, 10), (0, 5)] # (row, col)
+exampleIdx   = [(1, 22), (1, 22), (1, 22)] # (row, col)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
-gridsDataRoot= 'output_local/grids_50pA_Ivel'
-shape = (30, 30)
+gridsDataRoot= 'output_local/even_spacing/grids'
+shape = (31, 31)
 
 
 ##############################################################################
-
-def getNoiseRootDir(prefix, noise_sigma):
-    return  "{0}/EI_param_sweep_{1}pA".format(prefix, int(noise_sigma))
-
-
-def getNoiseRoots(prefix, noise_sigmas):
-    roots = []
-    for s in noise_sigmas:
-        roots.append(getNoiseRootDir(prefix, s))
-    return roots
-
 
 def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0)):
     exRow, exCol = exIdx
@@ -94,13 +84,13 @@ def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx):
     fig = figure(figsize=(8.27, 11.69))
     margin    = 0.1
     sw_left   = margin
-    sw_bottom = 0.8
-    sw_right  = 0.5
-    sw_top    = 0.95
-    div       = 0.1
+    sw_bottom = 0.82
+    sw_right  = 0.4
+    sw_top    = 0.97
+    div       = 0.075
 
     letter_left = 0.03
-    letter_top_off = 0.02
+    letter_top_off = 0.01
     letter_va='bottom'
     letter_ha='left'
 
@@ -113,7 +103,7 @@ def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx):
     fig.text(letter_left, sw_top+letter_top_off, "A", va=letter_va, ha=letter_ha,
             fontsize=19, fontweight='bold')
 
-    gsCoords = margin, 0.075, 1.0 - margin, sw_bottom-div
+    gsCoords = 0.12, 0.075, 0.92, sw_bottom-div
     #gsCoords = margin, 0.46, 0.5, sw_bottom-div
     gs = drawGridExamples(dataSpace, exRect, iterList, gsCoords=gsCoords,
             exIdx=exIdx)
@@ -131,19 +121,21 @@ gridDataSpace300 = JobTrialSpace2D(shape, gridRoots[2])
 exWidth = 6
 exHeight = 8
 
-f0_0 = 1
-f0_1 = 1
+f0_0   = 1
+f0_1   = 1
+f0_2   = 1
 f150_0 = 1
 f150_1 = 1
 f150_2 = 1
 f300_0 = 1
 f300_1 = 1
+f300_2 = 1
 
 
 if (f0_0):
     # High gridness Score - 0 pA
-    exLeft = 2
-    exBottom = 21
+    exLeft = 1
+    exBottom = 20
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(gridDataSpace0, noise_sigmas[0], iterList, exRect,
             exampleIdx[0])
@@ -156,8 +148,8 @@ if (f0_0):
 
 if (f0_1):
     # Low gridness Score - 0 pA
-    exLeft = 18
-    exBottom = 14
+    exLeft = 20
+    exBottom = 10
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(gridDataSpace0, noise_sigmas[0], iterList, exRect,
             exampleIdx[0])
@@ -166,24 +158,23 @@ if (f0_1):
     savefig(fname, dpi=300, transparent=False)
     close()
 
-
-if (f150_0):
-    # Transition - 150 pA
-    exLeft = 6
-    exBottom = 3
+if (f0_1):
+    # Transition, low g_E - 0 pA
+    exLeft = 3
+    exBottom = 6
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-    drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
-            exampleIdx[1])
+    drawA4RectExamples(gridDataSpace0, noise_sigmas[0], iterList, exRect,
+            exampleIdx[0])
 
     fname = outputDir + "/suppFigure_grids2.png"
     savefig(fname, dpi=300, transparent=False)
     close()
 
 
-if (f150_1):
-    # Low GS region - 150 pA
-    exLeft = 20
-    exBottom = 16
+if (f150_0):
+    # Transition - 150 pA
+    exLeft = 5
+    exBottom = 2
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
             exampleIdx[1])
@@ -193,10 +184,10 @@ if (f150_1):
     close()
 
 
-if (f150_2):
-    # Stripe region - 150 pA
-    exLeft = 1
-    exBottom = 18
+if (f150_1):
+    # Low GS region - 150 pA
+    exLeft = 15
+    exBottom = 15
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
             exampleIdx[1])
@@ -206,28 +197,53 @@ if (f150_2):
     close()
 
 
-if (f300_0):
-    # Stripe region - 300 pA
-    exLeft = 4
-    exBottom = 9
+if (f150_2):
+    # High g_E - 150 pA
+    exLeft = 1
+    exBottom = 15
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-    drawA4RectExamples(gridDataSpace300, noise_sigmas[2], iterList, exRect,
-            exampleIdx[2])
+    drawA4RectExamples(gridDataSpace150, noise_sigmas[1], iterList, exRect,
+            exampleIdx[1])
 
     fname = outputDir + "/suppFigure_grids5.png"
     savefig(fname, dpi=300, transparent=False)
     close()
 
 
-if (f300_1):
-    # Low score region - 300 pA
-    exLeft = 16
-    exBottom = 9
+if (f300_0):
+    # Transition - 300 pA
+    exLeft = 3
+    exBottom = 7
     exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
     drawA4RectExamples(gridDataSpace300, noise_sigmas[2], iterList, exRect,
             exampleIdx[2])
 
     fname = outputDir + "/suppFigure_grids6.png"
+    savefig(fname, dpi=300, transparent=False)
+    close()
+
+
+if (f300_1):
+    # Low score region - 300 pA
+    exLeft = 15
+    exBottom = 15
+    exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
+    drawA4RectExamples(gridDataSpace300, noise_sigmas[2], iterList, exRect,
+            exampleIdx[2])
+
+    fname = outputDir + "/suppFigure_grids7.png"
+    savefig(fname, dpi=300, transparent=False)
+    close()
+
+if (f300_2):
+    # Transition, high g_E - 300 pA
+    exLeft = 1
+    exBottom = 20
+    exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
+    drawA4RectExamples(gridDataSpace300, noise_sigmas[2], iterList, exRect,
+            exampleIdx[2])
+
+    fname = outputDir + "/suppFigure_grids8.png"
     savefig(fname, dpi=300, transparent=False)
     close()
 

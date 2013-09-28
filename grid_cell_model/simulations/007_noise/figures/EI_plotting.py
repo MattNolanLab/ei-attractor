@@ -103,15 +103,16 @@ def plotACTrial(sp, varList, iterList, trialNumList=[0], r=0, c=0, xlabel="",
     plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
             title, clbarNTicks, xticks, yticks)
 
-def plotBumpSigmaTrial(sp, varList, iterList, thr=np.infty, r=0, c=0,
-        trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
-        vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
-        yticks=True, cmap=None):
+def plotBumpSigmaTrial(sp, varList, iterList, **kwargs):
+    r            = kwargs.pop('r', 0)
+    c            = kwargs.pop('c', 0)
+    thr          = kwargs.pop('thr', np.infty)
+    trialNumList = kwargs.pop('trialNumList', [0])
+
     C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
     Y, X = computeYX(sp, iterList, r=r, c=c)
-    return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks, cmap=cmap)
+    return plot2DTrial(X, Y, C, **kwargs)
 
 def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
         trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
@@ -265,7 +266,7 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
                 trans = transforms.blended_transform_factory(ax.transAxes,
                         plt.gcf().transFigure)
                 weTxt_y = gsBottom + (gsTop - gsBottom)/2.0
-                ax.text(ylabel2Pos, weTxt_y, '$w_E$ (nS)', transform=trans,
+                ax.text(ylabel2Pos, weTxt_y, ylabelText, transform=trans,
                         va='center', ha='right', rotation=90,
                         fontsize=fontSize)
             
@@ -275,7 +276,7 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
             trans = transforms.blended_transform_factory(plt.gcf().transFigure,
                     ax.transAxes)
             wiTxt_x = gsLeft + (gsRight - gsLeft)/2.0
-            ax.text(wiTxt_x, xlabel2Pos, '$w_I$ (nS)', transform=trans, va='top',
+            ax.text(wiTxt_x, xlabel2Pos, xlabelText, transform=trans, va='top',
                     ha='center', fontsize=fontSize)
 
     return gs
@@ -296,6 +297,7 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, **kw):
     ylabel2    = kw.pop('ylabel2', True)
     xlabel2Pos = kw.pop('xlabel2os', -0.6)
     ylabel2Pos = kw.pop('ylabel2os', -0.6)
+    fontSize   = kw.pop('fontSize', 'medium')
     # + plotBump() kwargs
 
 
@@ -345,7 +347,7 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, **kw):
                 trans = transforms.blended_transform_factory(ax.transAxes,
                         plt.gcf().transFigure)
                 weTxt_y = gsBottom + (gsTop - gsBottom)/2.0
-                ax.text(ylabel2Pos, weTxt_y, '$w_E$ (nS)', transform=trans,
+                ax.text(ylabel2Pos, weTxt_y, ylabelText, transform=trans,
                         va='center', ha='right', rotation=90,
                         fontsize=fontSize)
             
@@ -355,7 +357,7 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, **kw):
             trans = transforms.blended_transform_factory(plt.gcf().transFigure,
                     ax.transAxes)
             wiTxt_x = gsLeft + (gsRight - gsLeft)/2.0
-            ax.text(wiTxt_x, xlabel2Pos, '$w_I$ (nS)', transform=trans, va='top',
+            ax.text(wiTxt_x, xlabel2Pos, xlabelText, transform=trans, va='top',
                     ha='center', fontsize=fontSize)
 
     return gs
