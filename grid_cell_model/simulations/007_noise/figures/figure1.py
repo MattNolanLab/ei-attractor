@@ -180,53 +180,7 @@ def plotGridnessHistogram(spList, trialNumList, ylabelPos=-0.2):
     
 
 
-def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
-        ylabelPos=-0.2, maxErr=None):
-    GVars = ['gridnessScore']
-    errVars = ['lineFitErr']
-    slopeVars = ['lineFitSlope']
-    noise_sigma = [0, 150, 300]
-    markers = ['o', '^', '*']
-
-    ax = plt.gca()
-    plt.hold('on')
-    globalAxesSettings(ax)
-
-    for idx, (spGrids, spVel) in enumerate(zip(spListGrids, spListVelocity)):
-        G = aggregate2DTrial(spGrids, GVars, trialNumList).flatten()
-        errs = aggregate2D(spVel, errVars, funReduce=np.sum).flatten()
-        slopes = np.abs(aggregate2D(spVel, slopeVars,
-            funReduce=None).flatten())
-        i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(slopes)))
-        ax.scatter(G[i], slopes[i], c=errs[i], 
-                marker=markers[idx], edgecolors='None')
-
-    if (maxErr is not None):
-        ax.set_ylim([0, maxErr])
-    else:
-        ax.set_ylim([0, None])
-
-    leg = []
-    for s in noise_sigma:
-        leg.append("{0}".format(int(s)))
-    l = ax.legend(leg, loc=(0.8, 0.8), title='$\sigma$ (pA)', frameon=False,
-            fontsize='x-small', ncol=1)
-    plt.setp(l.get_title(), fontsize='x-small')
-
-    ax.set_xlabel("Gridness score")
-    ax.text(ylabelPos, 0.5, 'Slope (nrns/s/pA)', rotation=90, transform=ax.transAxes,
-            va='center', ha='right')
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(0.5))
-    ax.yaxis.set_major_locator(MultipleLocator(0.5))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
-    ax.margins(0.05, 0.025)
-
-
-
+##############################################################################
 
 gridRoots = getNoiseRoots(gridsDataRoot, noise_sigmas)
 gridDataSpace0   = JobTrialSpace2D(shape, gridRoots[0])
@@ -357,10 +311,6 @@ if (hists):
     ax_threshold = subplot(gs[1, 0])
     plotGridnessThresholdComparison(gridSpList, range(NTrials),
             thrList=np.arange(-0.4, 1.2, 0.05), ylabelPos=ylabelPos)
-
-    #ax_grids_vel = subplot(gs[2, 0])
-    #plotGridnessVsFitErr(gridSpList, velSpList, range(NTrials),
-    #        ylabelPos=ylabelPos, maxErr=None)
 
     gs.tight_layout(fig, rect=[0.1, 0, 1, 1], h_pad=3.0, pad=0.5)
     fname = outputDir + "/figure1_histograms.pdf"

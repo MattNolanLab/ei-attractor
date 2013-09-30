@@ -54,21 +54,24 @@ iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
 exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
+gridsDataRoot= 'output_local/even_spacing/grids'
 bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/even_spacing/velocity'
 bumpShape = (31, 31)
 velShape  = (31, 31)
+gridShape  = (31, 31)
 
-bumpExamples = 0
-bumpSweep0   = 0
-bumpSweep150 = 0
-bumpSweep300 = 0
-velExamples  = 0
-velSweep0    = 1
-velSweep150  = 1
-velSweep300  = 1
-hists        = 0 
-velLines     = 0
+bumpExamples      = 0
+bumpSweep0        = 0
+bumpSweep150      = 0
+bumpSweep300      = 0
+velExamples       = 0
+velSweep0         = 0
+velSweep150       = 0
+velSweep300       = 0
+hists             = 0
+velLines          = 0
+gridness_vs_error = 1
 
 ##############################################################################
 
@@ -268,6 +271,58 @@ def plotAllSlopes(ax, spList, positions, **kw):
     ax.margins(0.05)
     
 
+def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
+        ylabelPos=-0.2, maxErr=None):
+    GVars = ['gridnessScore']
+    errVars = ['lineFitErr']
+    slopeVars = ['lineFitSlope']
+    noise_sigma = [0, 150, 300]
+    markers = ['o', '^', '*']
+    colors = ['blue', 'green', 'red']
+    errMins = []
+    errMaxs = []
+
+    ax = plt.gca()
+    plt.hold('on')
+    globalAxesSettings(ax)
+    ax.set_yscale('log')
+
+    for idx, (spGrids, spVel) in enumerate(zip(spListGrids, spListVelocity)):
+        G = aggregate2DTrial(spGrids, GVars, trialNumList).flatten()
+        errs = aggregate2D(spVel, errVars, funReduce=np.sum).flatten()
+        #slopes = np.abs(aggregate2D(spVel, slopeVars,
+        #    funReduce=None).flatten())
+        i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(errs)))
+        ax.scatter(G[i], errs[i],  s=5, marker=markers[idx], 
+                color=colors[idx], edgecolors='None')
+        errMins.append(np.min(errs[i]))
+        errMaxs.append(np.max(errs[i]))
+
+    if (maxErr is not None):
+        ax.set_ylim([0, maxErr])
+    else:
+        ax.set_ylim([0, None])
+
+    leg = []
+    for s in noise_sigma:
+        leg.append("{0}".format(int(s)))
+    l = ax.legend(leg, loc=(0.3, 0.85), title='$\sigma$ (pA)', frameon=False,
+            fontsize='small', ncol=3, columnspacing=1.5)
+    plt.setp(l.get_title(), fontsize='small')
+
+    ax.set_xlabel("Gridness score")
+    ax.set_ylabel('Error (nrns/s/data point)')
+    #ax.text(ylabelPos, 0.5, 'Error (nrns/s/data point)', rotation=90, transform=ax.transAxes,
+    #        va='center', ha='right')
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.xaxis.set_major_locator(MultipleLocator(0.5))
+    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.set_xmargin(0.05)
+    ax.autoscale_view(tight=True)
+    ax.set_ylim(np.min(errMins), np.max(errMaxs)*1.5)
+
 
 ###############################################################################
 bumpRoots = getNoiseRoots(bumpDataRoot, noise_sigmas)
@@ -279,6 +334,12 @@ velRoots = getNoiseRoots(velDataRoot, noise_sigmas)
 velDataSpace0   = JobTrialSpace2D(velShape, velRoots[0])
 velDataSpace150 = JobTrialSpace2D(velShape, velRoots[1])
 velDataSpace300 = JobTrialSpace2D(velShape, velRoots[2])
+
+gridRoots = getNoiseRoots(gridsDataRoot, noise_sigmas)
+gridDataSpace0   = JobTrialSpace2D(gridShape, gridRoots[0])
+gridDataSpace150 = JobTrialSpace2D(gridShape, gridRoots[1])
+gridDataSpace300 = JobTrialSpace2D(gridShape, gridRoots[2])
+
 
 exW = 4
 exH = 2
@@ -501,5 +562,13 @@ if (velLines):
         histTop))
     plotAllSlopes(ax, velSpList, positions)
     fname = outputDir + "/figure2_slope_examples.pdf"
+    savefig(fname, dpi=300, transparent=True)
+
+if (gridness_vs_error):
+    gridSpList = [gridDataSpace0, gridDataSpace150, gridDataSpace300]
+    fig = figure(figsize=(3.4, 2.5))
+    plotGridnessVsFitErr(gridSpList, velSpList, range(NTrials), maxErr=None)
+    fig.tight_layout()
+    fname = outputDir + "/figure2_gridness_vs_error.pdf"
     savefig(fname, dpi=300, transparent=True)
 
