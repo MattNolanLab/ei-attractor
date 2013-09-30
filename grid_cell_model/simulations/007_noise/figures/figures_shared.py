@@ -19,7 +19,6 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy       as np
-import EI_plotting as EI
 import matplotlib.transforms as transforms
 
 from matplotlib.pyplot   import gca, axis, colorbar
