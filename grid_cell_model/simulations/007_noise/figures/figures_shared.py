@@ -25,6 +25,7 @@ from matplotlib.pyplot   import gca, axis, colorbar
 from matplotlib.ticker   import MaxNLocator, AutoMinorLocator, LinearLocator
 from matplotlib.colorbar import make_axes
 
+from parameters.param_space import JobTrialSpace2D
 from analysis.visitors.interface import extractStateVariable, sumAllVariables,\
         extractSpikes
 from plotting.global_defs import globalAxesSettings
@@ -55,6 +56,12 @@ def getNoiseRoots(prefix, noise_sigmas):
     return roots
 
 
+def getNoiseDataSpaces(dataRoot, noise_sigmas, shape):
+    roots = getNoiseRoots(dataRoot, noise_sigmas)
+    ds = []
+    for root in roots:
+        ds.append(JobTrialSpace2D(shape, root))
+    return ds
 
 
 def getOption(data, optStr):

@@ -21,20 +21,14 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.pyplot   import figure, subplot, plot, savefig
-from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import MultipleLocator, AutoMinorLocator, LinearLocator, MaxNLocator, \
-        ScalarFormatter
-from matplotlib.colorbar import make_axes
+from matplotlib.gridspec   import GridSpec
+from matplotlib.ticker     import MultipleLocator, AutoMinorLocator
+from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
-from parameters  import JobTrialSpace2D
-from EI_plotting import plotGridTrial, computeYX, aggregate2DTrial, \
-        aggregate2D, drawGridExamples, drawEIRectSelection, \
-        plotSquareGridExample
-from plotting.grids import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
-from plotting.global_defs import globalAxesSettings, createColorbar
-from figures_shared import plotOneHist, getNoiseRoots
+from EI_plotting          import plotGridTrial, aggregate2DTrial, plotSquareGridExample
+from plotting.global_defs import globalAxesSettings
+from figures_shared       import plotOneHist, getNoiseDataSpaces
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -181,16 +175,8 @@ def plotGridnessHistogram(spList, trialNumList, ylabelPos=-0.2):
 
 
 ##############################################################################
-
-gridRoots = getNoiseRoots(gridsDataRoot, noise_sigmas)
-gridDataSpace0   = JobTrialSpace2D(shape, gridRoots[0])
-gridDataSpace150 = JobTrialSpace2D(shape, gridRoots[1])
-gridDataSpace300 = JobTrialSpace2D(shape, gridRoots[2])
-
-velRoots = getNoiseRoots(velDataRoot, noise_sigmas)
-velDataSpace0   = JobTrialSpace2D(shape, velRoots[0])
-velDataSpace150 = JobTrialSpace2D(shape, velRoots[1])
-velDataSpace300 = JobTrialSpace2D(shape, velRoots[2])
+velSpaces  = getNoiseDataSpaces(velDataRoot,   noise_sigmas, shape)
+gridSpaces = getNoiseDataSpaces(gridsDataRoot, noise_sigmas, shape)
 
 exSz = 4
 exMargin = 0.1
@@ -206,12 +192,12 @@ sweepTop    = 0.95
 if (grids0):
 
     # noise_sigma = 0 pA
-    fig = figure("sweeps0", figsize=sweepFigSize)
+    fig = plt.figure("sweeps0", figsize=sweepFigSize)
     exRows = [28, 15]
     exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    ax, cax = drawGridSweeps(ax, gridDataSpace0, iterList, NTrials=NTrials,
+    ax, cax = drawGridSweeps(ax, gridSpaces[0], iterList, NTrials=NTrials,
             r=exampleIdx[0][0], c=exampleIdx[0][1], xLabelOn=False,
             exRows=exRows, exCols=exCols, xticks=False)
     if (grid_examples):
@@ -219,7 +205,7 @@ if (grids0):
         exBottom = 24
         fname = outputDir + "/figure1_examples_0pA_0.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[0], ax,
-                gridDataSpace0, iterList, exGsCoords, xlabel2=False,
+                gridSpaces[0], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
         
@@ -227,7 +213,7 @@ if (grids0):
         exBottom = 14
         fname = outputDir + "/figure1_examples_0pA_1.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[0], ax,
-                gridDataSpace0, iterList, exGsCoords, xlabel2=False,
+                gridSpaces[0], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
     fname = outputDir + "/figure1_sweeps0.png"
@@ -237,12 +223,12 @@ if (grids0):
 
 if (grids150):
     # noise_sigma = 150 pA
-    fig = figure("sweeps150", figsize=sweepFigSize)
+    fig = plt.figure("sweeps150", figsize=sweepFigSize)
     exRows = [8, 2]
     exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    ax, cax = drawGridSweeps(ax, gridDataSpace150, iterList, NTrials=NTrials,
+    ax, cax = drawGridSweeps(ax, gridSpaces[1], iterList, NTrials=NTrials,
             r=exampleIdx[1][0], c=exampleIdx[1][1], xLabelOn=False,
             xticks=False, exRows=exRows, exCols=exCols) 
     if (grid_examples):
@@ -250,7 +236,7 @@ if (grids150):
         exBottom = 24
         fname = outputDir + "/figure1_examples_150pA_0.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[1], ax,
-                gridDataSpace150, iterList, exGsCoords, xlabel2=False,
+                gridSpaces[1], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
 
@@ -258,7 +244,7 @@ if (grids150):
         exBottom = 14
         fname = outputDir + "/figure1_examples_150pA_1.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[1], ax,
-                gridDataSpace150, iterList, exGsCoords, xlabel2=False,
+                gridSpaces[1], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
     fname = outputDir + "/figure1_sweeps150.png"
@@ -268,12 +254,12 @@ if (grids150):
 
 if (grids300):
     # noise_sigma = 300 pA
-    fig = figure("sweeps300", figsize=sweepFigSize)
+    fig = plt.figure("sweeps300", figsize=sweepFigSize)
     exRows = [16, 15]
     exCols = [6, 23]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    _, cax = drawGridSweeps(ax, gridDataSpace300, iterList, NTrials=NTrials,
+    _, cax = drawGridSweeps(ax, gridSpaces[2], iterList, NTrials=NTrials,
             r=exampleIdx[2][0], c=exampleIdx[2][1], xticks=True, exRows=exRows,
             exCols=exCols, exColor='black', cbar=True)
     if (grid_examples):
@@ -281,7 +267,7 @@ if (grids300):
         exBottom = 24
         fname = outputDir + "/figure1_examples_300pA_0.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[2], ax,
-                gridDataSpace300, iterList, exGsCoords, xlabel2=False,
+                gridSpaces[2], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
 
@@ -289,7 +275,7 @@ if (grids300):
         exBottom = 14
         fname = outputDir + "/figure1_examples_300pA_1.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[2], ax,
-                gridDataSpace300, iterList, exGsCoords, xlabel2=False,
+                gridSpaces[2], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
 
@@ -300,20 +286,18 @@ if (grids300):
 # Stats
 if (hists):
     ylabelPos = -0.16
-    gridSpList = [gridDataSpace0, gridDataSpace150, gridDataSpace300]
-    velSpList = [velDataSpace0, velDataSpace150, velDataSpace300]
-    fig = figure(figsize=(3.7, 6))
+    fig = plt.figure(figsize=(3.7, 6))
     gs = GridSpec(3, 1, height_ratios=[0.8, 0.6, 1])
 
-    ax_hist = subplot(gs[0, 0])
-    plotGridnessHistogram(gridSpList, range(NTrials), ylabelPos=ylabelPos)
+    ax_hist = plt.subplot(gs[0, 0])
+    plotGridnessHistogram(gridSpaces, range(NTrials), ylabelPos=ylabelPos)
 
-    ax_threshold = subplot(gs[1, 0])
-    plotGridnessThresholdComparison(gridSpList, range(NTrials),
+    ax_threshold = plt.subplot(gs[1, 0])
+    plotGridnessThresholdComparison(gridSpaces, range(NTrials),
             thrList=np.arange(-0.4, 1.2, 0.05), ylabelPos=ylabelPos)
 
     gs.tight_layout(fig, rect=[0.1, 0, 1, 1], h_pad=3.0, pad=0.5)
     fname = outputDir + "/figure1_histograms.pdf"
-    savefig(fname, dpi=300, transparent=True)
+    plt.savefig(fname, dpi=300, transparent=True)
 
 
