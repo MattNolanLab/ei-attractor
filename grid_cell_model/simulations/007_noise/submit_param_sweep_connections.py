@@ -19,8 +19,10 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from default_params import defaultParameters as dp
-from param_sweep    import submitParamSweep
+import numpy as np
+from submitting.factory   import SubmitterFactory
+from submitting.arguments import ArgumentCreator
+from default_params       import defaultParameters as dp
 import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
@@ -40,19 +42,40 @@ timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
+p['time']     = 0.1 # unused
 p['nthreads'] = 1
 p['ntrials']  = 1
-p['connOnly'] = 1
-#p['connNE']   = 10
-#p['connNI']   = p['connNE']
 
 
 # Range of E/I synaptic conductances
-Nvals  = 31      # Number of values for each dimension
+Nvals  = 31       # Number of values (these will be equivalent to go through the
+                 # diagonal of the parameter space
 startG = 0.0     # nS
 endG   = 6120.0  # nS
 
 ###############################################################################
+ac = ArgumentCreator(p, printout=True)
 
-submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
-        appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run)
+GArr = np.linspace(startG, endG, Nvals)
+g_AMPA_total_arr = []
+g_GABA_total_arr = []
+for coupling in GArr:
+    g_AMPA_total_arr.append(coupling)
+    g_GABA_total_arr.append(coupling)
+
+iterparams = {
+    'g_AMPA_total'      : np.array(g_AMPA_total_arr),
+    'g_GABA_total'      : np.array(g_GABA_total_arr),
+    #'g_AMPA_total'      : [1400],
+    #'g_GABA_total'      : [2160]
+}
+ac.insertDict(iterparams, mult=False)
+
+###############################################################################
+submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
+        rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
+        blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
+ac.setOption('output_dir', submitter.outputDir())
+startJobNum = 0
+submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
+submitter.saveIterParams(iterparams, dry_run=dry_run)

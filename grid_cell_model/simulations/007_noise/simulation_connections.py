@@ -41,10 +41,15 @@ for trial_idx in range(o.ntrials):
     
     ei_net.endConstruction()
     ei_net.beginSimulation() 
+
+    data = ei_net.getNetParams()
+    # E --> I neurons
+    data['g_IE'] = ei_net.getConnMatrix("E")
+    # I --> E neurons
+    data['g_EI'] = ei_net.getConnMatrix("I")
+
     ei_net.endSimulation()
 
-    data = ei_net.getNetparams()
-    data['g_EI'] = ei_net.getConnMatrix("E")
     
     out.append(data)
     constrT, simT, totalT = ei_net.printTimes()

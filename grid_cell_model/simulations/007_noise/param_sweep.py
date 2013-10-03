@@ -36,7 +36,6 @@ def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
 
     g_AMPA_total_arr     = []
     g_GABA_total_arr     = []
-    g_uni_GABA_total_arr = []
     for E_coupling in GArr:
         for I_coupling in GArr:
             g_AMPA_total_arr.append(E_coupling)
