@@ -19,13 +19,13 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy       as np
-import EI_plotting as EI
 import matplotlib.transforms as transforms
 
 from matplotlib.pyplot   import gca, axis, colorbar
 from matplotlib.ticker   import MaxNLocator, AutoMinorLocator, LinearLocator
 from matplotlib.colorbar import make_axes
 
+from parameters.param_space import JobTrialSpace2D
 from analysis.visitors.interface import extractStateVariable, sumAllVariables,\
         extractSpikes
 from plotting.global_defs import globalAxesSettings
@@ -56,6 +56,41 @@ def getNoiseRoots(prefix, noise_sigmas):
     return roots
 
 
+def getNoiseDataSpaces(dataRoot, noise_sigmas, shape):
+    roots = getNoiseRoots(dataRoot, noise_sigmas)
+    ds = []
+    for root in roots:
+        ds.append(JobTrialSpace2D(shape, root))
+    return ds
+
+
+class NoiseDataSpaces(object):
+    class Roots(object):
+        def __init__(self, *args):
+            la = len(args)
+            if (la == 1):
+                self.bump  = args[0]
+                self.v     = args[0]
+                self.grids = args[0]
+            elif (la == 3):
+                self.bump  = args[0]
+                self.v     = args[1]
+                self.grids = args[2]
+            else:
+                raise IndexError("Roots class constructor needs either 1 or"+\
+                        " three arguments")
+
+    '''
+    A container for the data spaces for all levels of noise.
+    '''
+    def __init__(self, roots, shape, noise_sigmas):
+        self.bumpGamma    = getNoiseDataSpaces(roots.bump,  noise_sigmas,
+                shape)
+        self.v            = getNoiseDataSpaces(roots.v,     noise_sigmas,
+                shape)
+        self.grids        = getNoiseDataSpaces(roots.grids, noise_sigmas,
+                shape)
+        self.noise_sigmas = noise_sigmas
 
 
 def getOption(data, optStr):
