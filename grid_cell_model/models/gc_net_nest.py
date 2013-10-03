@@ -257,7 +257,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 weight=list(weights), delay=[self.no.delay]*len(weights))
 
 
-    def getInputConnections(self, post, popType):
+    def getConnMatrix(self, popType):
         '''
         Return all *input* connections to neuron with index post from the
         specified popType.
@@ -278,14 +278,13 @@ class NestGridCellNetwork(GridCellNetwork):
         output : a 2D numpy array
             An array containing the connections 
         '''
-        conns = None
         if (popType == 'E'):
-            conns = nest.FindConnections(self.I_pop, np.min(self.E_pop) + post)
+            conns = nest.FindConnections(self.E_pop)
         elif (popType == 'I'):
-            conns = nest.FindConnections(self.E_pop, np.min(self.I_pop) + post)
+            conns = nest.FindConnections(self.I_pop)
         else:
             msg = 'popType must be either \'E\' or \'I\'. Got {0}'
-            raise ValueError(msg.format(popType)
+            raise ValueError(msg.format(popType))
 
         return nest.GetStatus(conns, keys='weight')
          
