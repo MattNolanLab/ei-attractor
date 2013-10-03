@@ -257,6 +257,39 @@ class NestGridCellNetwork(GridCellNetwork):
                 weight=list(weights), delay=[self.no.delay]*len(weights))
 
 
+    def getInputConnections(self, post, popType):
+        '''
+        Return all *input* connections to neuron with index post from the
+        specified popType.
+
+        Parameters
+        ----------
+        post : int or list
+            List of local indexes, relative to the population, of the
+            post-synaptic neurons.
+        popType : string, 'E' or 'I'
+            Type of the population. If popType == 'E', return connection
+            weights for AMPA connections only. The NMDA connections will be a
+            fraction of the AMPA connection strength specified by the
+            NMDA_amount parameter.
+
+            If popType == 'I' the connection weights returned will be for
+            GABA_A connections.
+        output : a 2D numpy array
+            An array containing the connections 
+        '''
+        conns = None
+        if (popType == 'E'):
+            conns = nest.FindConnections(self.I_pop, np.min(self.E_pop) + post)
+        elif (popType == 'I'):
+            conns = nest.FindConnections(self.E_pop, np.min(self.I_pop) + post)
+        else:
+            msg = 'popType must be either \'E\' or \'I\'. Got {0}'
+            raise ValueError(msg.format(popType)
+
+        return nest.GetStatus(conns, keys='weight')
+         
+
 
     ############################################################################ 
     #                     External sources definitions
