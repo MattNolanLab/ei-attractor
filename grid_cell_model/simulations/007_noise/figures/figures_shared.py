@@ -64,6 +64,35 @@ def getNoiseDataSpaces(dataRoot, noise_sigmas, shape):
     return ds
 
 
+class NoiseDataSpaces(object):
+    class Roots(object):
+        def __init__(self, *args):
+            la = len(args)
+            if (la == 1):
+                self.bump  = args[0]
+                self.v     = args[0]
+                self.grids = args[0]
+            elif (la == 3):
+                self.bump  = args[0]
+                self.v     = args[1]
+                self.grids = args[2]
+            else:
+                raise IndexError("Roots class constructor needs either 1 or"+\
+                        " three arguments")
+
+    '''
+    A container for the data spaces for all levels of noise.
+    '''
+    def __init__(self, roots, shape, noise_sigmas):
+        self.bumpGamma    = getNoiseDataSpaces(roots.bump,  noise_sigmas,
+                shape)
+        self.v            = getNoiseDataSpaces(roots.v,     noise_sigmas,
+                shape)
+        self.grids        = getNoiseDataSpaces(roots.grids, noise_sigmas,
+                shape)
+        self.noise_sigmas = noise_sigmas
+
+
 def getOption(data, optStr):
     return data['options'][optStr]
 
