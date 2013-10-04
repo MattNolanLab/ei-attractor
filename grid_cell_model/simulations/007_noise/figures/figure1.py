@@ -26,9 +26,10 @@ from matplotlib.ticker     import MultipleLocator, AutoMinorLocator
 from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
+import EI_plotting as EI
 from EI_plotting          import plotGridTrial, aggregate2DTrial, plotSquareGridExample
 from plotting.global_defs import globalAxesSettings
-from figures_shared       import plotOneHist, getNoiseDataSpaces
+from figures_shared       import plotOneHist, NoiseDataSpaces
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -45,10 +46,11 @@ outputDir = "."
 NTrials=10
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
-noise_sigmas = [0, 150, 300]
-exampleIdx   = [(1, 22), (1, 22), (1, 22)] # (row, col)
-gridsDataRoot= 'output_local/even_spacing/grids'
-velDataRoot = 'output_local/velocity'
+noise_sigmas  = [0, 150, 300]
+exampleIdx    = [(1, 22), (1, 22), (1, 22)] # (row, col)
+bumpDataRoot  = None
+velDataRoot   = None
+gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 grid_examples = 1
@@ -56,6 +58,7 @@ grids0        = 1
 grids150      = 1
 grids300      = 1
 hists         = 1
+slices        = 1
 
 ##############################################################################
 
@@ -175,8 +178,8 @@ def plotGridnessHistogram(spList, trialNumList, ylabelPos=-0.2):
 
 
 ##############################################################################
-velSpaces  = getNoiseDataSpaces(velDataRoot,   noise_sigmas, shape)
-gridSpaces = getNoiseDataSpaces(gridsDataRoot, noise_sigmas, shape)
+roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
+ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
 exSz = 4
 exMargin = 0.1
@@ -197,7 +200,7 @@ if (grids0):
     exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    ax, cax = drawGridSweeps(ax, gridSpaces[0], iterList, NTrials=NTrials,
+    ax, cax = drawGridSweeps(ax, ps.grids[0], iterList, NTrials=NTrials,
             r=exampleIdx[0][0], c=exampleIdx[0][1], xLabelOn=False,
             exRows=exRows, exCols=exCols, xticks=False)
     if (grid_examples):
@@ -205,7 +208,7 @@ if (grids0):
         exBottom = 24
         fname = outputDir + "/figure1_examples_0pA_0.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[0], ax,
-                gridSpaces[0], iterList, exGsCoords, xlabel2=False,
+                ps.grids[0], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
         
@@ -213,11 +216,12 @@ if (grids0):
         exBottom = 14
         fname = outputDir + "/figure1_examples_0pA_1.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[0], ax,
-                gridSpaces[0], iterList, exGsCoords, xlabel2=False,
+                ps.grids[0], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
     fname = outputDir + "/figure1_sweeps0.png"
     fig.savefig(fname, dpi=300, transparent=True)
+    plt.close()
 
 
 
@@ -228,7 +232,7 @@ if (grids150):
     exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    ax, cax = drawGridSweeps(ax, gridSpaces[1], iterList, NTrials=NTrials,
+    ax, cax = drawGridSweeps(ax, ps.grids[1], iterList, NTrials=NTrials,
             r=exampleIdx[1][0], c=exampleIdx[1][1], xLabelOn=False,
             xticks=False, exRows=exRows, exCols=exCols) 
     if (grid_examples):
@@ -236,7 +240,7 @@ if (grids150):
         exBottom = 24
         fname = outputDir + "/figure1_examples_150pA_0.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[1], ax,
-                gridSpaces[1], iterList, exGsCoords, xlabel2=False,
+                ps.grids[1], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
 
@@ -244,11 +248,12 @@ if (grids150):
         exBottom = 14
         fname = outputDir + "/figure1_examples_150pA_1.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[1], ax,
-                gridSpaces[1], iterList, exGsCoords, xlabel2=False,
+                ps.grids[1], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
     fname = outputDir + "/figure1_sweeps150.png"
     fig.savefig(fname, dpi=300, transparent=True)
+    plt.close()
 
 
 
@@ -259,7 +264,7 @@ if (grids300):
     exCols = [6, 23]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    _, cax = drawGridSweeps(ax, gridSpaces[2], iterList, NTrials=NTrials,
+    _, cax = drawGridSweeps(ax, ps.grids[2], iterList, NTrials=NTrials,
             r=exampleIdx[2][0], c=exampleIdx[2][1], xticks=True, exRows=exRows,
             exCols=exCols, exColor='black', cbar=True)
     if (grid_examples):
@@ -267,7 +272,7 @@ if (grids300):
         exBottom = 24
         fname = outputDir + "/figure1_examples_300pA_0.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[2], ax,
-                gridSpaces[2], iterList, exGsCoords, xlabel2=False,
+                ps.grids[2], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
 
@@ -275,29 +280,55 @@ if (grids300):
         exBottom = 14
         fname = outputDir + "/figure1_examples_300pA_1.png"
         plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[2], ax,
-                gridSpaces[2], iterList, exGsCoords, xlabel2=False,
+                ps.grids[2], iterList, exGsCoords, xlabel2=False,
                 ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
                 hspace=exHspace, maxRate=True, plotGScore=False)
 
     fname = outputDir + "/figure1_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=True)
+    plt.close()
 
 
 # Stats
+sliceFigSize = (3.7, 2)
+sliceLeft   = 0.2
+sliceBottom = 0.3
+sliceRight  = 0.99
+sliceTop    = 0.85
 if (hists):
     ylabelPos = -0.16
-    fig = plt.figure(figsize=(3.7, 6))
-    gs = GridSpec(3, 1, height_ratios=[0.8, 0.6, 1])
-
-    ax_hist = plt.subplot(gs[0, 0])
-    plotGridnessHistogram(gridSpaces, range(NTrials), ylabelPos=ylabelPos)
-
-    ax_threshold = plt.subplot(gs[1, 0])
-    plotGridnessThresholdComparison(gridSpaces, range(NTrials),
+    fig = plt.figure(figsize=sliceFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
+        sliceTop))
+    plotGridnessThresholdComparison(ps.grids, range(NTrials),
             thrList=np.arange(-0.4, 1.2, 0.05), ylabelPos=ylabelPos)
-
-    gs.tight_layout(fig, rect=[0.1, 0, 1, 1], h_pad=3.0, pad=0.5)
-    fname = outputDir + "/figure1_histograms.pdf"
+    fname = outputDir + "/figure1_threshold_comparison.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
+
+
+if (slices):
+    ylabelPos = -0.16
+    idx_horizontal = 7
+    fig = plt.figure(figsize=sliceFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
+        sliceTop))
+    EI.plotGridnessSlice(ps, idx_horizontal, slice(None), ax=ax)
+    ax.yaxis.set_major_locator(MultipleLocator(0.4))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    fname = "figure1_slice_horizontal.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+    idx_vertical = 3
+    fig = plt.figure(figsize=sliceFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
+        sliceTop))
+    EI.plotGridnessSlice(ps, slice(None), idx_vertical, ax=ax)
+    ax.yaxis.set_major_locator(MultipleLocator(0.4))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    fname = "figure1_slice_vertical.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
 
 

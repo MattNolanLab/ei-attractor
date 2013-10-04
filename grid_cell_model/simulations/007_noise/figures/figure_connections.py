@@ -55,11 +55,10 @@ weights = 0
 def plotConnHistogram(val, **kw):
     # keyword arguments
     kw['bins']      = kw.get('bins', 20)
-    kw['normed']    = kw.get('normed', True)
     #kw['edgecolor'] = kw.get('edgecolor', 'none')
     ax              = kw.get('ax', plt.gca())
     xlabel          = kw.pop('xlabel', 'g (nS)')
-    ylabel          = kw.pop('ylabel', 'p(g)')
+    ylabel          = kw.pop('ylabel', 'Count')
     title           = kw.pop('title', '')
     locators        = kw.pop('locator', {})
 
