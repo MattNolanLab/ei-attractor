@@ -59,68 +59,19 @@ shape = (31, 31)
 
 ##############################################################################
 
-def plotOneSlice(ax, x, y, **kw):
-    xlabel    = kw.pop('xlabel', '')
-    ylabel    = kw.pop('ylabel', '')
-    ylabelPos = kw.pop('ylabelPos', -0.2)
-    fmt       = kw.pop('fmt', 'o-')
-    xticks    = kw.pop('xticks', True)
-    yticks    = kw.pop('yticks', True)
-
-    globalAxesSettings(ax)
-    ndim = len(y.shape)
-    if (ndim == 2):
-        mean = np.mean(y, axis=1) # axis 1: trials
-        std  = np.std(y, axis=1)
-        ax.errorbar(x, mean, std, fmt=fmt, **kw)
-    elif (ndim == 1):
-        ax.plot(x, y, fmt, **kw)
-    ax.set_xlabel(xlabel)
-    ax.text(ylabelPos, 0.5, ylabel, rotation=90, transform=ax.transAxes,
-            va='center', ha='center')
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(1))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(3))
-    w = x[-1] - x[0]
-    margin = 0.025
-    ax.set_xlim([-margin*w, x[-1]+margin*w])
-
-    if (not xticks):
-        ax.xaxis.set_ticklabels([])
-    if (not yticks):
-        ax.yaxis.set_ticklabels([])
-
-
-def extractSliceX(X, Y, rowSlice, colSlice):
-    if (isinstance(rowSlice, slice)):
-        return Y[rowSlice, colSlice]
-    else:
-        return X[rowSlice, colSlice]
-
 
 def plotSlice(paramSpaces, rowSlice, colSlice, **kw):
     # kwargs
     title  = kw.pop('title', True)
 
-    if (isinstance(rowSlice, slice)):
-        xlabel = EI.ylabelText
-        titleText = "$g_I$"
-    else:
-        xlabel = EI.xlabelText
-        titleText = "$g_E$"
-
-    GVars         = ['gridnessScore']
     gammaVars     = ['acVal']
     bumpSigmaVars = ['sigma']
     errVars       = ['lineFitErr']
     slopeVars     = ['lineFitSlope']
-    gridsTrialNumList = range(1)
     gammaTrialNumList = range(5)
 
-    rcG     = [(1, 22), (1, 22), (1, 22)] # (row, col)
+    labels = EI.decideLabels(rowSlice, colSlice)
+
     rcGamma = [(0, 0), (0, 0), (0, 0)] # (row, col)
 
     sp = paramSpaces
@@ -130,17 +81,7 @@ def plotSlice(paramSpaces, rowSlice, colSlice, **kw):
 
     # Gridness score
     ax_G = plt.subplot(spRows, spCols, 1)
-    for idx, noise_sigma in enumerate(sp.noise_sigmas):
-        space = sp.grids[idx]
-        G = space.aggregateData(GVars, gridsTrialNumList,
-                output_dtype='array', loadData=True, saveData=False)
-        Y, X = computeYX(space, iterList, r=rcG[idx][0], c=rcG[idx][1])
-        x = extractSliceX(X, Y, rowSlice, colSlice)
-        y = G[rowSlice, colSlice, :]
-        kw['xlabel'] = ''
-        kw['ylabel'] = 'Gridness score'
-        plotOneSlice(ax_G, x, y, xticks=False, **kw)
-    ax_G.yaxis.set_major_locator(MaxNLocator(4))
+    EI.plotGridnessSlice(paramSpaces, rowSlice, colSlice, ax=ax_G)
         
     
     # Gamma
@@ -150,11 +91,11 @@ def plotSlice(paramSpaces, rowSlice, colSlice, **kw):
         P = space.aggregateData(gammaVars, gammaTrialNumList,
                 output_dtype='array', loadData=True, saveData=False)
         Y, X = computeYX(space, iterList, r=rcGamma[idx][0], c=rcGamma[idx][1])
-        x = extractSliceX(X, Y, rowSlice, colSlice)
+        x = EI.extractSliceX(X, Y, rowSlice, colSlice)
         y = P[rowSlice, colSlice, :]
         kw['xlabel'] = ''
         kw['ylabel'] = 'Correlation ($\gamma$)'
-        plotOneSlice(ax_gamma, x, y, xticks=False, **kw)
+        EI.plotOneSlice(ax_gamma, x, y, xticks=False, **kw)
     ax_gamma.yaxis.set_major_locator(MaxNLocator(4))
     
 
@@ -165,11 +106,11 @@ def plotSlice(paramSpaces, rowSlice, colSlice, **kw):
         sigma = space.aggregateData(bumpSigmaVars, gammaTrialNumList,
                 output_dtype='array', loadData=True, saveData=False)
         Y, X = computeYX(space, iterList, r=rcGamma[idx][0], c=rcGamma[idx][1])
-        x = extractSliceX(X, Y, rowSlice, colSlice)
+        x = EI.extractSliceX(X, Y, rowSlice, colSlice)
         y = sigma[rowSlice, colSlice, :]
         kw['xlabel'] = ''
         kw['ylabel'] = 'Bump $\sigma$ (neurons)'
-        plotOneSlice(ax_sigma, x, y, xticks=False, **kw)
+        EI.plotOneSlice(ax_sigma, x, y, xticks=False, **kw)
     ax_sigma.set_yscale('log')
 
 
@@ -180,11 +121,11 @@ def plotSlice(paramSpaces, rowSlice, colSlice, **kw):
         V = space.aggregateData(errVars, 'all-at-once', output_dtype='array',
                 loadData=True, saveData=False)
         Y, X = computeVelYX(space, iterList)
-        x = extractSliceX(X, Y, rowSlice, colSlice)
+        x = EI.extractSliceX(X, Y, rowSlice, colSlice)
         y = V[rowSlice, colSlice]
         kw['xlabel'] = ''
         kw['ylabel'] = 'Velocity error of fit\n(neurons/s)'
-        plotOneSlice(ax_velErr, x, y, xticks=False, **kw)
+        EI.plotOneSlice(ax_velErr, x, y, xticks=False, **kw)
     ax_velErr.yaxis.set_major_locator(MaxNLocator(4))
 
     # Vel slope
@@ -194,11 +135,11 @@ def plotSlice(paramSpaces, rowSlice, colSlice, **kw):
         S = space.aggregateData(slopeVars, 'all-at-once', output_dtype='array',
                 loadData=True, saveData=False)
         Y, X = computeVelYX(space, iterList)
-        x = extractSliceX(X, Y, rowSlice, colSlice)
+        x = EI.extractSliceX(X, Y, rowSlice, colSlice)
         y = S[rowSlice, colSlice]
-        kw['xlabel'] = xlabel
+        kw['xlabel'] = labels['xlabel']
         kw['ylabel'] = 'Bump speed slope\n(neurons/s/pA)'
-        plotOneSlice(ax_velSlope, x, y, **kw)
+        EI.plotOneSlice(ax_velSlope, x, y, **kw)
     ax_velSlope.yaxis.set_major_locator(MaxNLocator(4))
 
     l_ax = ax_G
@@ -215,8 +156,8 @@ def plotSlice(paramSpaces, rowSlice, colSlice, **kw):
             sliceG = X[0, colSlice]
         else:
             sliceG = Y[rowSlice, 0]
-        ax_G.set_title('{0} = {1} nS'.format(titleText, sliceG), y=1.2,
-                va='bottom', fontsize='large')
+        ax_G.set_title('{0} = {1} nS'.format(labels['titleText'], sliceG),
+                y=1.2, va='bottom', fontsize='large')
         
 
         
@@ -235,7 +176,7 @@ top    = 0.85
 
 outputDir = 'slices'
 
-for idx in xrange(shape[0]):
+for idx in [20]: #xrange(shape[0]):
     print "Horizontal slice no. {0}".format(idx)
     fig = plt.figure("slices_horizontal", figsize=figSize)
     plotSlice(ps, idx, slice(None))
@@ -244,11 +185,11 @@ for idx in xrange(shape[0]):
     plt.savefig(fname, dpi=300, transparent=False)
     plt.close()
 
-for idx in xrange(shape[1]):
-    print "Vertical slice no. {0}".format(idx)
-    fig = plt.figure("slices_vertical", figsize=figSize)
-    plotSlice(ps, slice(None), idx)
-    fig.tight_layout(rect=[0.1, 0.01, 0.99, 0.99], pad=0.2, h_pad=1)
-    fname = "{0}/figure_slices_vertical_{1}.png".format(outputDir, idx)
-    plt.savefig(fname, dpi=300, transparent=False)
-    plt.close()
+#for idx in xrange(shape[1]):
+#    print "Vertical slice no. {0}".format(idx)
+#    fig = plt.figure("slices_vertical", figsize=figSize)
+#    plotSlice(ps, slice(None), idx)
+#    fig.tight_layout(rect=[0.1, 0.01, 0.99, 0.99], pad=0.2, h_pad=1)
+#    fname = "{0}/figure_slices_vertical_{1}.png".format(outputDir, idx)
+#    plt.savefig(fname, dpi=300, transparent=False)
+#    plt.close()

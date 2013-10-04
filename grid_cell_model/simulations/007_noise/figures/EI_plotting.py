@@ -22,7 +22,8 @@ import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
-from matplotlib.ticker   import MaxNLocator, LinearLocator, AutoMinorLocator
+from matplotlib.ticker   import MaxNLocator, LinearLocator, AutoMinorLocator, \
+        MultipleLocator
 from matplotlib.patches  import Rectangle
 from matplotlib.gridspec import GridSpec
 
@@ -377,6 +378,7 @@ def plotSquareGridExample(exLeft, exBottom, sz, fileName, exIdx, sweep_ax,
             plotGScore=plotGScore)
     gs.update(wspace=wspace, hspace=hspace)
     plt.savefig(fileName, dpi=300, transparent=False)
+    plt.close()
 
     # Draw the selection into the EI plot
     if (sweep_ax is not None):
@@ -404,3 +406,99 @@ def drawEIRectSelection(ax, spaceRect, X, Y, color='black'):
     ax.add_patch(Rectangle((rectLeft, rectBottom), rectRight-rectLeft,
         rectTop-rectBottom, facecolor='None', lw=1, edgecolor=color))
 
+
+##############################################################################
+# Slices through parameter spaces
+def decideLabels(rowSlice, colSlice):
+    if (isinstance(rowSlice, slice)):
+        xlabel = ylabelText
+        titleText = "$g_I$"
+    else:
+        xlabel = xlabelText
+        titleText = "$g_E$"
+
+    titles = dict(xlabel=xlabel, titleText=titleText)
+    return titles
+
+
+def plotOneSlice(ax, x, y, **kw):
+    xlabel           = kw.pop('xlabel', '')
+    ylabel           = kw.pop('ylabel', '')
+    ylabelPos        = kw.pop('ylabelPos', -0.2)
+    fmt              = kw.pop('fmt', 'o-')
+    xticks           = kw.pop('xticks', True)
+    yticks           = kw.pop('yticks', True)
+    kw['markersize'] = kw.get('markersize', 4)
+
+    globalAxesSettings(ax)
+    ndim = len(y.shape)
+    if (ndim == 2):
+        mean = np.mean(y, axis=1) # axis 1: trials
+        std  = np.std(y, axis=1)
+        ax.errorbar(x, mean, std, fmt=fmt, **kw)
+    elif (ndim == 1):
+        ax.plot(x, y, fmt, **kw)
+    ax.set_xlabel(xlabel)
+    ax.text(ylabelPos, 0.5, ylabel, rotation=90, transform=ax.transAxes,
+            va='center', ha='center')
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.xaxis.set_major_locator(MultipleLocator(1))
+    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(3))
+    w = x[-1] - x[0]
+    margin = 0.025
+    ax.set_xlim([-margin*w, x[-1]+margin*w])
+
+    if (not xticks):
+        ax.xaxis.set_ticklabels([])
+    if (not yticks):
+        ax.yaxis.set_ticklabels([])
+
+
+def extractSliceX(X, Y, rowSlice, colSlice):
+    if (isinstance(rowSlice, slice)):
+        return Y[rowSlice, colSlice]
+    else:
+        return X[rowSlice, colSlice]
+
+
+
+def plotGridnessSlice(paramSpaces, rowSlice, colSlice, NTrials=1, **kw):
+    # kwargs
+    title        = kw.pop('title', True)
+    rcG          = kw.pop('rowsCols', [(1, 22), (1, 22), (1, 22)]) # (row, col)
+    ax           = kw.pop('ax', plt.gca())
+    iterList     = kw.pop('iterList', ['g_AMPA_total', 'g_GABA_total'])
+    kw['ylabel'] = kw.get('ylabel', 'Gridness score')
+    labels = decideLabels(rowSlice, colSlice)
+    kw['xlabel'] = kw.get('xlabel', labels['xlabel'])
+
+    GVars = ['gridnessScore']
+    trialNumList = range(NTrials)
+    sp = paramSpaces
+
+    # Gridness score
+    for idx, noise_sigma in enumerate(sp.noise_sigmas):
+        space = sp.grids[idx]
+        G = space.aggregateData(GVars, trialNumList, output_dtype='array',
+                loadData=True, saveData=False)
+        Y, X = computeYX(space, iterList, r=rcG[idx][0], c=rcG[idx][1])
+        x = extractSliceX(X, Y, rowSlice, colSlice)
+        y = G[rowSlice, colSlice, :]
+        plotOneSlice(ax, x, y, **kw)
+    ax.yaxis.set_major_locator(MaxNLocator(4))
+
+    # Title
+    if (title):
+        if (isinstance(rowSlice, slice)):
+            sliceG = X[0, colSlice]
+        else:
+            sliceG = Y[rowSlice, 0]
+        ax.set_title('{0} = {1} nS'.format(labels['titleText'], sliceG), x=0.95,
+                va='bottom', ha='right', fontsize='small')
+        
+    return ax
+        
+    

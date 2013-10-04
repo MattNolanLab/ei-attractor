@@ -57,6 +57,8 @@ def getNoiseRoots(prefix, noise_sigmas):
 
 
 def getNoiseDataSpaces(dataRoot, noise_sigmas, shape):
+    if (dataRoot is None):
+        return None
     roots = getNoiseRoots(dataRoot, noise_sigmas)
     ds = []
     for root in roots:
