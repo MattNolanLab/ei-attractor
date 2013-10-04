@@ -45,10 +45,11 @@ files="
     suppFigure_grids7.png
     suppFigure_grids8.png
     suppFigure_model_all.png
+    slices
     "
 
 ls $dst_dir
 for f in $files
 do
-    cp -v $f $dst_dir
+    cp -vr $f $dst_dir
 done
