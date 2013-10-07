@@ -316,6 +316,7 @@ if (slices):
     EI.plotGridnessSlice(ps, idx_horizontal, slice(None), ax=ax)
     ax.yaxis.set_major_locator(MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.set_ylim([-0.5, 1.21])
     fname = "figure1_slice_horizontal.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
@@ -327,6 +328,7 @@ if (slices):
     EI.plotGridnessSlice(ps, slice(None), idx_vertical, ax=ax)
     ax.yaxis.set_major_locator(MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.set_ylim([-0.5, 1.21])
     fname = "figure1_slice_vertical.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
