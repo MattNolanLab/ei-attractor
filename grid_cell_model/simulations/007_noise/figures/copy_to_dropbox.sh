@@ -44,7 +44,7 @@ files="
     suppFigure_grids6.png
     suppFigure_grids7.png
     suppFigure_grids8.png
-    suppFigure_model_all.png
+    suppFigure_model.png
     slices
     "
 
