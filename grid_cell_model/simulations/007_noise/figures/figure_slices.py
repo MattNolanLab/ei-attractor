@@ -81,7 +81,7 @@ def plotSlice(paramSpaces, rowSlice, colSlice, **kw):
 
     # Gridness score
     ax_G = plt.subplot(spRows, spCols, 1)
-    EI.plotGridnessSlice(paramSpaces, rowSlice, colSlice, ax=ax_G)
+    EI.plotGridnessSlice(paramSpaces, rowSlice, colSlice, ax=ax_G, title=False)
         
     
     # Gamma
@@ -176,7 +176,7 @@ top    = 0.85
 
 outputDir = 'slices'
 
-for idx in [20]: #xrange(shape[0]):
+for idx in xrange(shape[0]):
     print "Horizontal slice no. {0}".format(idx)
     fig = plt.figure("slices_horizontal", figsize=figSize)
     plotSlice(ps, idx, slice(None))
@@ -185,11 +185,11 @@ for idx in [20]: #xrange(shape[0]):
     plt.savefig(fname, dpi=300, transparent=False)
     plt.close()
 
-#for idx in xrange(shape[1]):
-#    print "Vertical slice no. {0}".format(idx)
-#    fig = plt.figure("slices_vertical", figsize=figSize)
-#    plotSlice(ps, slice(None), idx)
-#    fig.tight_layout(rect=[0.1, 0.01, 0.99, 0.99], pad=0.2, h_pad=1)
-#    fname = "{0}/figure_slices_vertical_{1}.png".format(outputDir, idx)
-#    plt.savefig(fname, dpi=300, transparent=False)
-#    plt.close()
+for idx in xrange(shape[1]):
+    print "Vertical slice no. {0}".format(idx)
+    fig = plt.figure("slices_vertical", figsize=figSize)
+    plotSlice(ps, slice(None), idx)
+    fig.tight_layout(rect=[0.1, 0.01, 0.99, 0.99], pad=0.2, h_pad=1)
+    fname = "{0}/figure_slices_vertical_{1}.png".format(outputDir, idx)
+    plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()

@@ -53,7 +53,7 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-grid_examples = 1
+grid_examples = 0
 grids0        = 1
 grids150      = 1
 grids300      = 1
@@ -85,6 +85,7 @@ def drawGridSweeps(ax, dataSpace, iterList, NTrials=1, r=0, c=0, xLabelOn=True,
             xticks=xticks,
             vmin=-0.5,
             vmax=1.15,
+            ignoreNaNs=True,
             nansAs0=False)
     cax, kw = make_axes(ax, orientation='horizontal', shrink=0.8,
             pad=0.2)

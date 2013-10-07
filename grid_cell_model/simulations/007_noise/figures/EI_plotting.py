@@ -40,7 +40,8 @@ ylabelText = '$g_E$ (nS)'
 
 ###############################################################################
 
-def aggregate2DTrial(sp, varList, trialNumList, fReduce=np.mean):
+def aggregate2DTrial(sp, varList, trialNumList, fReduce=np.mean,
+        ignoreNaNs=False):
     '''
     Aggregate all the data from a 2D ParamSpace, applying fReduce on the trials
     of all the data sets in the parameter space.
@@ -56,11 +57,16 @@ def aggregate2DTrial(sp, varList, trialNumList, fReduce=np.mean):
         A list specifying exactly which trials are to be processed.
     fReduce : a function f(data, axis)
         A reduction function.
+    ignoreNaNs : bool, optional
+        If True, mask the NaN values.
     output : a 2D numpy array of the reduced values
     '''
     varList = ['analysis'] + varList
     retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean,
             saveData=True)
+    if (ignoreNaNs):
+        nans = np.isnan(retVar)
+        retVar = ma.MaskedArray(retVar, mask=nans)
     return fReduce(retVar, 2)
 
 
@@ -141,18 +147,21 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
             vmax, title, clbarNTicks, xticks, yticks)
             
 
-def plotGridTrial(sp, varList, iterList, trialNumList=[0], r=0, c=0, xlabel="",
-        ylabel="", colorBar=True, clBarLabel="", vmin=None, vmax=None,
-        title="", clbarNTicks=2, xticks=True, yticks=True, nansAs0=False):
-    G = aggregate2DTrial(sp, varList, trialNumList)
+def plotGridTrial(sp, varList, iterList, trialNumList=[0], **kwargs):
+    # kwargs
+    r          = kwargs.pop('r', 0)
+    c          = kwargs.pop('c', 0)
+    nansAs0    = kwargs.pop('nansAs0', False)
+    ignoreNaNs = kwargs.pop('ignoreNaNs', False)
+
+    G = aggregate2DTrial(sp, varList, trialNumList, ignoreNaNs=ignoreNaNs)
     nans = np.isnan(G)
     if (nansAs0):
         G[nans] = 0
     else:
         G = ma.MaskedArray(G, mask=nans)
     Y, X = computeYX(sp, iterList, r=r, c=c)
-    return plot2DTrial(X, Y, G, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
+    return plot2DTrial(X, Y, G, **kwargs)
 
 
 def computeVelYX(sp, iterList):
@@ -474,6 +483,7 @@ def plotGridnessSlice(paramSpaces, rowSlice, colSlice, NTrials=1, **kw):
     kw['ylabel'] = kw.get('ylabel', 'Gridness score')
     labels = decideLabels(rowSlice, colSlice)
     kw['xlabel'] = kw.get('xlabel', labels['xlabel'])
+    ignoreNaNs   = kw.get('ignoreNaNs', True)
 
     GVars = ['gridnessScore']
     trialNumList = range(NTrials)
@@ -484,6 +494,9 @@ def plotGridnessSlice(paramSpaces, rowSlice, colSlice, NTrials=1, **kw):
         space = sp.grids[idx]
         G = space.aggregateData(GVars, trialNumList, output_dtype='array',
                 loadData=True, saveData=False)
+        if (ignoreNaNs):
+            nans = np.isnan(G)
+            G = ma.MaskedArray(G, mask=nans)
         Y, X = computeYX(space, iterList, r=rcG[idx][0], c=rcG[idx][1])
         x = extractSliceX(X, Y, rowSlice, colSlice)
         y = G[rowSlice, colSlice, :]
