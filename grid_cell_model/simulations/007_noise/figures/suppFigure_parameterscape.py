@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#   figure4.py
+#   suppFigure_parameterscape.py
 #
 #   Putting it all together: parameterscape plots.
 #
@@ -141,20 +141,20 @@ if (noise0):
     fig = plt.figure(figsize=figSize)
     drawParamScape(fig, gammaDataSpace0, varList=None,
             trialNumList=xrange(NTrials), noise_sigma=noise_sigmas[0])
-    fname = outputDir + "/figure4_parameterscape_0pA.png"
+    fname = outputDir + "/suppFigure_parameterscape_0pA.png"
     savefig(fname, dpi=dpi, transparent=transparent)
 
 if (noise150):
     fig = plt.figure(figsize=figSize)
     drawParamScape(fig, gammaDataSpace150, varList=None,
             trialNumList=xrange(NTrials), noise_sigma=noise_sigmas[1])
-    fname = outputDir + "/figure4_parameterscape_150pA.png"
+    fname = outputDir + "/suppFigure_parameterscape_150pA.png"
     savefig(fname, dpi=dpi, transparent=transparent)
 
 if (noise300):
     fig = plt.figure(figsize=figSize)
     drawParamScape(fig, gammaDataSpace300, varList=None,
             trialNumList=xrange(NTrials), noise_sigma=noise_sigmas[2])
-    fname = outputDir + "/figure4_parameterscape_300pA.png"
+    fname = outputDir + "/suppFigure_parameterscape_300pA.png"
     savefig(fname, dpi=dpi, transparent=transparent)
 
