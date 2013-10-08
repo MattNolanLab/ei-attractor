@@ -322,8 +322,8 @@ if (threshold):
             trialNumList=range(NTrials),
             ACThrList=np.arange(0, 0.65, 0.05))
     plt.tight_layout()
-    plt.savefig('figure3_AC_threshold_comparison.pdf'.format(baseDir), transparent=True,
-            dpi=300)
+    fname = 'figure3_AC_threshold_comparison.pdf'
+    plt.savefig(fname, transparent=True, dpi=300)
 
 
 if (freqHist):
