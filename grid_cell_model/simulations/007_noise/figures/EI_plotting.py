@@ -514,4 +514,43 @@ def plotGridnessSlice(paramSpaces, rowSlice, colSlice, NTrials=1, **kw):
         
     return ax
         
+##############################################################################
+# Raster plots
+def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
+    # kw arguments 
+    ax               = kw.pop('ax', plt.gca())
+    ylabel           = kw.pop('ylabel', 'Neuron #')
+    yticks           = kw.pop('yticks', True)
+    ylabelPos        = kw.pop('ylabelPos', -0.2)
+    EColor           = kw.pop('ecolor', 'red')
+    IColor           = kw.pop('icolor', 'blue')
+    kw['markersize'] = kw.get('markersize', 1.0)
+
+    ESpikes = ESpikes.windowed(tLimits)
+    ISpikes = ISpikes.windowed(tLimits)
+
+    ESenders, ETimes = ESpikes.rasterData()
+    ISenders, ITimes = ISpikes.rasterData()
+    ISenders += ESpikes.N
+
+    globalAxesSettings(ax)
+    ax.minorticks_on()
+    ax.xaxis.set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.yaxis.set_major_locator(LinearLocator(2))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
+
+    ax.plot(ETimes, ESenders+1, '.', color='red',  **kw)
+    ax.plot(ITimes, ISenders+1, '.', color='blue', **kw)
+
+    ax.set_xlim(tLimits)
+    ax.set_ylim([1, ESpikes.N+ISpikes.N])
+    ax.invert_yaxis()
+    ax.text(ylabelPos, 0.5, ylabel, va='center', ha='right',
+            transform=ax.transAxes, rotation=90)
+    if (not yticks):
+        ax.yaxis.set_ticklabels([])
     
+    return ax

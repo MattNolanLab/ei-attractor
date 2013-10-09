@@ -26,8 +26,7 @@ from matplotlib.ticker   import MaxNLocator, AutoMinorLocator, LinearLocator
 from matplotlib.colorbar import make_axes
 
 from parameters.param_space import JobTrialSpace2D
-from analysis.visitors.interface import extractStateVariable, sumAllVariables,\
-        extractSpikes
+from analysis.visitors.interface import extractStateVariable, sumAllVariables
 from plotting.global_defs import globalAxesSettings
 from plotting.low_level   import xScaleBar
 
@@ -169,10 +168,6 @@ def plotBump(ax, rateMap, cmap='jet', maxRate=True, **kw):
         ax.text(rx, ry, rStr, ha="right", va='bottom', fontsize=fs,
                 transform=ax.transAxes)
 
-def plotSpikes(ax, t, trajectory, spikeTimes):
-    pass
-
-
 
 def sliceSignal(t, sig, tStart, tEnd):
     idx = np.logical_and(t >= tStart, t <= tEnd)
@@ -190,60 +185,6 @@ def extractStateVars(mon, varName, plotTStart, plotTEnd):
     sig, dt = sumAllVariables(mon, nIdxMiddle, varName)
     t, sigMiddle, idx = sliceSignal(t, sig, plotTStart, plotTEnd)
     return t, sigMiddle
-
-
-def sliceSpikes(senders, times, tLimits):
-    idx = np.logical_and(times >= tLimits[0], times <= tLimits[1])
-    return senders[idx], times[idx]
-
-def _getSpikeTrain(data, mon, NParam, tLimits):
-    '''
-    Return the senders and spike times from a monitor in the data
-    dictionary
-
-    Parameters
-    ----------
-    data : dict
-        A data dictionary containing monName
-    mon : str
-        The spike monitor dictionary name
-    NParam : string
-        Name of the parameter that specifies the total number of neurons
-    output: tuple
-        A tuple containing (senders, times, N). 'N' is the total number of
-        neurons in the population.
-    '''
-    N = data['net_attr'][NParam]
-    senders, times = extractSpikes(data[mon])
-    senders, times = sliceSpikes(senders, times, tLimits)
-    return senders, times, N
-
-
-def plotEIRaster(ax, data, mon_e, mon_i, tLimits, labely='', labelyPos=-0.2):
-    ESenders, ETimes, EN = _getSpikeTrain(data, mon_e, 'net_Ne', tLimits)
-    ISenders, ITimes, IN = _getSpikeTrain(data, mon_i, 'net_Ni', tLimits)
-    ISenders += EN
-
-    globalAxesSettings(ax)
-    ax.minorticks_on()
-    ax.xaxis.set_visible(False)
-    ax.spines['top'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.yaxis.set_major_locator(LinearLocator(2))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
-
-    ms = 1.0
-    ax.plot(ETimes, ESenders+1, '.', color='red', markersize=ms)
-    ax.plot(ITimes, ISenders+1, '.', color='blue', markersize=ms)
-
-    ax.set_xlim(tLimits)
-    ax.set_ylim([0, EN+IN])
-    ax.invert_yaxis()
-    ax.text(labelyPos, 0.5, labely,
-        verticalalignment='center', horizontalalignment='right',
-        transform=ax.transAxes,
-        rotation=90)
 
 
 def plotOneHist(data, bins=40, normed=False, **kw):
