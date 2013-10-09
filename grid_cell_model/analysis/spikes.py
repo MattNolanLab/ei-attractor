@@ -190,12 +190,34 @@ class PopulationSpikes(SpikeTrain):
     on the *whole* population.
     '''
     def __init__(self, N, senders, times):
+        '''
+        Initialize the population of neurons emitting spikes.
+
+        Parameters
+        ----------
+        N : int
+            Number of neurons in the population
+        senders : 1D array
+            Neuron numbers corresponding to the spikes
+        times : 1D array
+            Spike times. The shape of this array must be the same as for
+            `senders`.
+        '''
         self._N       = N
         self._senders = senders
         self._times   = times
         if (N < 0):
-            raise ValueError("Number of neurons in the spike train must be " + 
-                    "non-negative! Got {0}.".format(N))
+            msg = "Number of neurons in the spike train must be " +\
+                    "non-negative! Got {0}."
+            raise ValueError(msg.format(N))
+
+
+    @property
+    def N(self):
+        '''
+        Number of neurons in the population
+        '''
+        return self._N
 
 
     def avgFiringRate(self, tStart, tEnd):
@@ -266,6 +288,45 @@ class PopulationSpikes(SpikeTrain):
         spikes = (self._senders, self._times)
         return slidingFiringRateTuple(spikes, self._N, tStart, tEnd, dt,
                 winLen)
+
+
+    def windowed(self, tLimits):
+        '''
+        Return population spikes restricted to tLimits.
+
+        Parameters
+        ----------
+        tLimits : a pair
+            A tuple (tStart, tEnd). The spikes in the population must satisfy
+            tStart >= t <= tEnd.
+        output : PopulationSpikes instance
+            A copy of self with only a subset of spikes, limited by the time
+            window.
+        '''
+        tStart = tLimits[0]
+        tEnd   = tLimits[1]
+        tIdx = np.logical_and(self._times >= tStart, self._times <= tEnd)
+        return PopulationSpikes(self._N, self._senders[tIdx],
+                self._times[tIdx])
+
+
+    def rasterData(self, neuronList=None):
+        '''
+        Extract the senders and corresponding spike times for a raster plot.
+        TODO: implement neuronList
+
+        Parameters
+        ==========
+        neuronList : list, optional
+            Extract only neurons given in this list
+        output : a tuple
+            A pair containing (senders, times).
+        '''
+        if (neuronList is not None):
+            raise NotImplementedError()
+
+        return self._senders, self._times
+
 
 
 

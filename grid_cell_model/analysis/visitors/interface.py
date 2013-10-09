@@ -18,6 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from data_storage.sim_models.ei import extractSpikes
 
 def extractStateVariable(mon, nIdx, varStr):
     '''Extract state variable from a monitor.
@@ -36,17 +37,6 @@ def extractStateVariable(mon, nIdx, varStr):
     n = mon[nIdx]
     return n['events'][varStr], n['interval']
 
-
-
-def extractSpikes(mon):
-    '''
-    Extract spikes from a spike monitor (a dict-like object), that contains the
-    relevant fields.
-    
-    Return a tuple (senders, spikeTimes).
-    '''
-    e = mon['events']
-    return (e['senders'], e['times'])
 
 
 def sumAllVariables(mon, nIdx, varList):
