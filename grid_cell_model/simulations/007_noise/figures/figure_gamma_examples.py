@@ -104,6 +104,8 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, scaleBar=None):
         'I_clamp_NMDA'], plotTStart, plotTEnd)
     plotStateSignal(ax4, t, IsynMiddle*1e-3, labely=IsynText, color='blue')
 
+
+    # TODO: use EI_plotting.plotEIRaster
     ax5 = subplot(gs[5, colStart:colStart+ncols])
     plotEIRaster(ax5, data, 'spikeMon_e', 'spikeMon_i', (plotTStart, plotTEnd),
             labely=rasterText)
@@ -180,6 +182,6 @@ drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300, scaleBar=50)
 fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "C", va=letter_va,
         ha=letter_ha, fontsize=19, fontweight='bold')
 
-fname = outputDir + "/figure2.png"
+fname = outputDir + "/figure_gamma_examples.png"
 savefig(fname, dpi=300)
 
