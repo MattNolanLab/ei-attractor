@@ -53,7 +53,7 @@ NTrials = 5
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas  = [0, 150, 300]
-rasterRC      = [(18, 15), (18, 15), (18, 15)] # (row, col)
+rasterRC      = [(15, 15), (15, 15), (15, 15)] # (row, col)
 bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
 velDataRoot   = None
 gridsDataRoot = None
@@ -66,16 +66,34 @@ raster300 = 1
 ###############################################################################
 
 def rasterPlot(dataSpaces, noise_sigma_idx, r, c, trialNum=0, **kw):
-    title = kw.pop('title', True)
+    title   = kw.pop('title', True)
+    ann     = kw.pop('ann', False)
+    ann_EI  = kw.pop('ann_EI', False)
     tLimits = [2e3, 2.5e3] # ms
 
+    space = dataSpaces.bumpGamma[noise_sigma_idx]
     noise_sigma = dataSpaces.noise_sigmas[noise_sigma_idx]
-    data = dataSpaces.bumpGamma[noise_sigma_idx][r][c][trialNum].data
+    data = space[r][c][trialNum].data
     ESpikes = MonitoredSpikes(data, 'spikeMon_e', 'net_Ne')
     ISpikes = MonitoredSpikes(data, 'spikeMon_i', 'net_Ni')
     ax = EI.plotEIRaster(ESpikes, ISpikes, tLimits, **kw) 
-    ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)), y=1.02,
-            va='bottom')
+    ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)), x=0.02, y=1.02,
+            va='bottom', ha='left')
+    if (ann):
+        Y, X = EI.computeYX(space, iterList, r=r, c=c)
+        gE = Y[r, c]
+        gI = X[r, c]
+        txt = '$g_E$ = {0} nS\n$g_I$ = {1} nS'.format(gE, gI)
+        ax.text(0.99, 1.02, txt, va='bottom', ha='right', size='small',
+                transform=ax.transAxes)
+
+    if (ann_EI):
+        ax.text(-0.05, 0.75, 'E', va='center', ha='center', size='small',
+                transform=ax.transAxes, color='red', weight='bold')
+        ax.text(-0.05, 0.25, 'I', va='center', ha='center', size='small',
+                transform=ax.transAxes, color='blue', weight='bold')
+
+
     return ax
 
 
@@ -84,12 +102,12 @@ roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
 
-rasterFigSize = (3.5, 1.75)
+rasterFigSize = (3.5, 1.9)
 transparent   = True
 rasterLeft    = 0.2
 rasterBottom  = 0.1
 rasterRight   = 0.99
-rasterTop     = 0.82
+rasterTop     = 0.8
 
 
 if (raster0):
@@ -99,7 +117,8 @@ if (raster0):
         rasterTop))
     rasterPlot(ps, 
             noise_sigma_idx=0,
-            r=rasterRC[0][0], c=rasterRC[0][1])
+            r=rasterRC[0][0], c=rasterRC[0][1],
+            ann_EI=True)
     fname = outputDir + "/figure4_raster0.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
@@ -127,7 +146,8 @@ if (raster300):
     rasterPlot(ps, 
             noise_sigma_idx=2,
             r=rasterRC[2][0], c=rasterRC[2][1],
-            ylabel='', yticks=False)
+            ylabel='', yticks=False,
+            ann=True)
     fname = outputDir + "/figure4_raster300.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()

@@ -23,7 +23,7 @@ import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 from matplotlib.ticker   import MaxNLocator, LinearLocator, AutoMinorLocator, \
-        MultipleLocator
+        MultipleLocator, NullLocator
 from matplotlib.patches  import Rectangle
 from matplotlib.gridspec import GridSpec
 
@@ -521,6 +521,7 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
     ax               = kw.pop('ax', plt.gca())
     ylabel           = kw.pop('ylabel', 'Neuron #')
     yticks           = kw.pop('yticks', True)
+    yticks_style     = kw.pop('yticks_style', 'separate')
     ylabelPos        = kw.pop('ylabelPos', -0.2)
     EColor           = kw.pop('ecolor', 'red')
     IColor           = kw.pop('icolor', 'blue')
@@ -540,13 +541,15 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
     ax.spines['bottom'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.yaxis.set_major_locator(LinearLocator(2))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
+    ax.yaxis.set_minor_locator(NullLocator())
 
-    ax.plot(ETimes, ESenders+1, '.', color='red',  **kw)
-    ax.plot(ITimes, ISenders+1, '.', color='blue', **kw)
+    ax.plot(ETimes, ESenders+1, '.', color='red',  mec='none', **kw)
+    ax.plot(ITimes, ISenders+1, '.', color='blue', mec='none', **kw)
 
     ax.set_xlim(tLimits)
     ax.set_ylim([1, ESpikes.N+ISpikes.N])
+    if (yticks_style == 'separate'):
+        ax.set_yticks([1, ESpikes.N, ESpikes.N+ISpikes.N])
     ax.invert_yaxis()
     ax.text(ylabelPos, 0.5, ylabel, va='center', ha='right',
             transform=ax.transAxes, rotation=90)

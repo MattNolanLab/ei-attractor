@@ -26,6 +26,7 @@ files="
     figure1.png
     figure2.png
     figure3.png
+    figure4.png
     suppFigure_bumps0.png
     suppFigure_bumps1.png
     suppFigure_bumps2.png
