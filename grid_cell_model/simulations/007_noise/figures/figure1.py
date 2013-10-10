@@ -20,9 +20,10 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
+import numpy.ma as ma
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ti
 from matplotlib.gridspec   import GridSpec
-from matplotlib.ticker     import MultipleLocator, AutoMinorLocator
 from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
@@ -43,7 +44,7 @@ plt.rcParams['font.size'] = 11
 
 outputDir = "."
 
-NTrials=10
+NTrials=2
 gridTrialNumList = np.arange(NTrials)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
@@ -97,10 +98,10 @@ def plotGridnessThresholdComparison(spList, trialNumList, thrList, r=0, c=0,
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(0.3))
-    ax.yaxis.set_major_locator(MultipleLocator(0.5))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(3))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.xaxis.set_major_locator(ti.MultipleLocator(0.3))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(3))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.margins(0.02, 0.07)
 
 
@@ -132,10 +133,10 @@ def plotGridnessHistogram(spList, trialNumList, ylabelPos=-0.2):
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(0.5))
-    ax.yaxis.set_major_locator(MultipleLocator(2))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(2))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(2))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.margins(0.05, 0.025)
     
 
@@ -160,7 +161,7 @@ cbar_kwargs = {'label' : 'Gridness score',
     'orientation': 'horizontal',
     'shrink': 0.8,
     'pad' : 0.2,
-    'ticks' : MultipleLocator(0.5)}
+    'ticks' : ti.MultipleLocator(0.5)}
 
 vmin = -0.5
 vmax = 1.1
@@ -304,8 +305,8 @@ if (slices):
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
     EI.plotGridnessSlice(ps, idx_horizontal, slice(None), ax=ax)
-    ax.yaxis.set_major_locator(MultipleLocator(0.4))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.set_ylim([-0.5, 1.21])
     fname = "figure1_slice_horizontal.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
@@ -316,8 +317,8 @@ if (slices):
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
     EI.plotGridnessSlice(ps, slice(None), idx_vertical, ax=ax)
-    ax.yaxis.set_major_locator(MultipleLocator(0.4))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.set_ylim([-0.5, 1.21])
     fname = "figure1_slice_vertical.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
