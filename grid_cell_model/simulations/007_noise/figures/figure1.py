@@ -56,10 +56,10 @@ gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 grid_examples = 0
-grids0        = 1
-grids150      = 1
-grids300      = 1
-hists         = 1
+grids0        = 0
+grids150      = 0
+grids300      = 0
+hists         = 0
 slices        = 1
 
 ##############################################################################
@@ -355,11 +355,12 @@ if (hists):
 
 if (slices):
     ylabelPos = -0.16
-    idx_horizontal = 15
+    slice_horizontal = slice(13, 18)
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
-    EI.plotGridnessSlice(ps, idx_horizontal, slice(None), ax=ax)
+    EI.plotGridnessSlice(ps, slice_horizontal, slice(None), type='horizontal',
+            ax=ax)
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.set_ylim([-0.5, 1.21])
@@ -367,11 +368,12 @@ if (slices):
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
-    idx_vertical = 15
+    slice_vertical = slice(13, 18)
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
-    EI.plotGridnessSlice(ps, slice(None), idx_vertical, ax=ax)
+    EI.plotGridnessSlice(ps, slice(None), slice_vertical, type='vertical',
+            ax=ax)
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.set_ylim([-0.5, 1.21])

@@ -469,13 +469,15 @@ def drawEIRectSelection(ax, spaceRect, X, Y, color='black'):
 
 ##############################################################################
 # Slices through parameter spaces
-def decideLabels(rowSlice, colSlice):
-    if (isinstance(rowSlice, slice)):
+def decideLabels(type):
+    if (type == 'horizontal'):
         xlabel = ylabelText
         titleText = "$g_I$"
-    else:
+    elif (type == 'vertical'):
         xlabel = xlabelText
         titleText = "$g_E$"
+    else:
+        raise ValueError("type must be 'horizontal' or 'vertical'")
 
     titles = dict(xlabel=xlabel, titleText=titleText)
     return titles
@@ -488,6 +490,7 @@ def plotOneSlice(ax, x, y, **kw):
     fmt              = kw.pop('fmt', 'o-')
     xticks           = kw.pop('xticks', True)
     yticks           = kw.pop('yticks', True)
+    errors           = kw.pop('errors', True)
     kw['markersize'] = kw.get('markersize', 4)
 
     globalAxesSettings(ax)
@@ -495,7 +498,10 @@ def plotOneSlice(ax, x, y, **kw):
     if (ndim == 2):
         mean = np.mean(y, axis=1) # axis 1: trials
         std  = np.std(y, axis=1)
-        ax.errorbar(x, mean, std, fmt=fmt, **kw)
+        if (errors):
+            ax.errorbar(x, mean, std, fmt=fmt, **kw)
+        else:
+            ax.plot(x, mean, fmt, **kw)
     elif (ndim == 1):
         ax.plot(x, y, fmt, **kw)
     ax.set_xlabel(xlabel)
@@ -517,22 +523,44 @@ def plotOneSlice(ax, x, y, **kw):
         ax.yaxis.set_ticklabels([])
 
 
-def extractSliceX(X, Y, rowSlice, colSlice):
-    if (isinstance(rowSlice, slice)):
-        return Y[rowSlice, colSlice]
+def extractSliceX(X, Y, rowSlice, colSlice, type):
+    if (type == 'horizontal'):
+        return X[0, colSlice]
     else:
-        return X[rowSlice, colSlice]
+        return Y[rowSlice, 0]
 
 
+def collapseTrials(var, type, ignoreNaNs):
+    if (len(var.shape) != 3):
+        return var
 
-def plotGridnessSlice(paramSpaces, rowSlice, colSlice, NTrials=1, **kw):
+    trials = []
+    for trialIdx in xrange(var.shape[2]):
+        trials.append(var[:, :, trialIdx])
+
+    res    = None
+    if (type == 'horizontal'):
+        res = np.vstack(trials).T
+    elif (type == 'vertical'):
+        res = np.hstack(trials)
+    else:
+        raise ValueError("type must be 'horizontal' or 'vertical'")
+
+    if (ignoreNaNs):
+        nans = np.isnan(res)
+        res = ma.MaskedArray(res, mask=nans)
+
+    return res
+
+
+def plotGridnessSlice(paramSpaces, rowSlice, colSlice, type, NTrials=1, **kw):
     # kwargs
     title        = kw.pop('title', True)
     rcG          = kw.pop('rowsCols', [(1, 22), (1, 22), (1, 22)]) # (row, col)
     ax           = kw.pop('ax', plt.gca())
     iterList     = kw.pop('iterList', ['g_AMPA_total', 'g_GABA_total'])
     kw['ylabel'] = kw.get('ylabel', 'Gridness score')
-    labels = decideLabels(rowSlice, colSlice)
+    labels = decideLabels(type)
     kw['xlabel'] = kw.get('xlabel', labels['xlabel'])
     ignoreNaNs   = kw.get('ignoreNaNs', True)
 
@@ -549,19 +577,25 @@ def plotGridnessSlice(paramSpaces, rowSlice, colSlice, NTrials=1, **kw):
             nans = np.isnan(G)
             G = ma.MaskedArray(G, mask=nans)
         Y, X = computeYX(space, iterList, r=rcG[idx][0], c=rcG[idx][1])
-        x = extractSliceX(X, Y, rowSlice, colSlice)
-        y = G[rowSlice, colSlice, :]
+        x = extractSliceX(X, Y, rowSlice, colSlice, type)
+        y = collapseTrials(G[rowSlice, colSlice, :], type, ignoreNaNs)
+        #import pdb; pdb.set_trace()
         plotOneSlice(ax, x, y, **kw)
     ax.yaxis.set_major_locator(MaxNLocator(4))
 
     # Title
     if (title):
-        if (isinstance(rowSlice, slice)):
-            sliceG = X[0, colSlice]
-        else:
+        if (type == 'horizontal'):
             sliceG = Y[rowSlice, 0]
-        ax.set_title('{0} = {1} nS'.format(labels['titleText'], sliceG), x=0.95,
-                va='bottom', ha='right', fontsize='small')
+        else:
+            sliceG = X[0, colSlice]
+        if (isinstance(sliceG, np.ndarray)):
+            txt = '{0} = {1} - {2} nS'.format(labels['titleText'], sliceG[0],
+                    sliceG[-1])
+        else:
+            txt = '{0} = {1} nS'.format(labels['titleText'], sliceG)
+        ax.set_title(txt, x=0.99, y=0.92, va='bottom', ha='right',
+                fontsize='small')
         
     return ax
         
