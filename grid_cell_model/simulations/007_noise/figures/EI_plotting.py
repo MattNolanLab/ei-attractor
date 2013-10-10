@@ -213,7 +213,7 @@ def plotVelTrial(sp, varList, iterList, noise_sigma, **kwargs):
     cbar       = kwargs.pop('cbar', True)
 
     C    = np.abs(aggregate2D(sp, varList, funReduce = np.sum))
-    C    = ma.MaskedArray(C, mask                    = np.isnan(C))
+    C    = ma.MaskedArray(C, mask = np.isnan(C))
     Y, X = computeVelYX(sp, iterList, r=r, c=c)
     C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kwargs)
 
@@ -225,6 +225,38 @@ def plotVelTrial(sp, varList, iterList, noise_sigma, **kwargs):
     return C, ax, cax
 
 
+def plotVelStdSweep(sp, iterList, noise_sigma, **kwargs):
+    # process kwargs
+    r          = kwargs.pop('r', 0)
+    c          = kwargs.pop('c', 0)
+    sigmaTitle = kwargs.pop('sigmaTitle', True)
+    cbar       = kwargs.pop('cbar', True)
+
+
+    varList = ['analysis', 'bumpVelAll']
+    all = sp.aggregateData(varList, funReduce=None,
+        trialNumList='all-at-once', output_dtype='list')
+    C = np.ndarray((len(all), len(all[0])))
+    for row in xrange(len(all)):
+        for col in xrange(len(all[0])):
+            slopes = all[row][col]
+            if (isinstance(slopes, np.ndarray)):
+                std = np.std(slopes, axis=0)
+                C[row, col] = np.mean(std)
+            else:
+                C[row, col] = np.nan
+
+    Y, X = computeVelYX(sp, iterList, r=r, c=c)
+    C = ma.MaskedArray(C, mask = np.isnan(C))
+    C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kwargs)
+
+    print("plotVelStdSweep: max(C): {0}".format(np.max(C.ravel())))
+    print("plotVelStdSweep: min(C): {0}".format(np.min(C.ravel())))
+
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+    
+    return C, ax, cax
 
 
 

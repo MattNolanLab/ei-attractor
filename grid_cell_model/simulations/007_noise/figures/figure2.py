@@ -27,9 +27,7 @@ from matplotlib.ticker     import MultipleLocator, AutoMinorLocator, \
 from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
-from EI_plotting          import plotBumpSigmaTrial, computeYX, \
-        aggregate2DTrial, aggregate2D, drawEIRectSelection, drawBumpExamples, \
-        plotVelTrial
+import EI_plotting as EI
 from plotting.global_defs import globalAxesSettings
 from figures_shared       import plotOneHist, getNoiseDataSpaces, createColorbar
 
@@ -57,16 +55,16 @@ bumpShape = (31, 31)
 velShape  = (31, 31)
 gridShape  = (31, 31)
 
-bumpExamples      = 1
-bumpSweep0        = 1
-bumpSweep150      = 1
-bumpSweep300      = 1
-velExamples       = 1
+bumpExamples      = 0
+bumpSweep0        = 0
+bumpSweep150      = 0
+bumpSweep300      = 0
+velExamples       = 0
 velSweep0         = 1
 velSweep150       = 1
 velSweep300       = 1
 velLines          = 1
-gridness_vs_error = 1
+gridness_vs_error = 0
 
 ##############################################################################
 
@@ -83,7 +81,7 @@ def plotBumpExample(exLeft, exBottom, w, h, fileName, exIdx, sweep_ax,
     fig = plt.figure(figsize=figSize)
 
     exRect = [exLeft, exBottom, exLeft+w-1, exBottom+h-1]
-    gs = drawBumpExamples(sweepDataSpace, exRect, iterList,
+    gs = EI.drawBumpExamples(sweepDataSpace, exRect, iterList,
             gsCoords=exGsCoords, xlabel=False, ylabel=False, xlabel2=False,
             ylabel2=False, fontsize='xx-small', rateYPos=1.05, rateXPos=0.98,
             **kw)
@@ -94,8 +92,8 @@ def plotBumpExample(exLeft, exBottom, w, h, fileName, exIdx, sweep_ax,
     # Draw the selection into the EI plot
     if (sweep_ax is not None):
         exRow, exCol = exIdx
-        Y, X = computeYX(sweepDataSpace, iterList, r=exRow, c=exCol)
-        drawEIRectSelection(sweep_ax, exRect, X, Y, color=rectColor)
+        Y, X = EI.computeYX(sweepDataSpace, iterList, r=exRow, c=exCol)
+        EI.drawEIRectSelection(sweep_ax, exRect, X, Y, color=rectColor)
 
 
 
@@ -116,14 +114,14 @@ def plotSlopes(ax, dataSpace, pos, **kw):
 
     nTrials = slopes.shape[0]
     avgSlope = np.mean(slopes, axis=0)
-    stdErrSlope = np.std(slopes, axis=0) / np.sqrt(nTrials)
+    stdSlope = np.std(slopes, axis=0)
 
     if (ax is None):
         ax = plt.gca()
     plt.hold('on')
     globalAxesSettings(ax)
 
-    ax.errorbar(IvelVec, avgSlope, stdErrSlope, fmt='o-',
+    ax.errorbar(IvelVec, avgSlope, stdSlope, fmt='o-',
             markersize=markersize, color=color, alpha=0.5, **kw)
     ax.plot(fitIvelVec, lineFit, '-', linewidth=2, color=color, **kw)
 
@@ -162,9 +160,9 @@ def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
     ax.set_yscale('log')
 
     for idx, (spGrids, spVel) in enumerate(zip(spListGrids, spListVelocity)):
-        G = aggregate2DTrial(spGrids, GVars, trialNumList).flatten()
-        errs = aggregate2D(spVel, errVars, funReduce=np.sum).flatten()
-        #slopes = np.abs(aggregate2D(spVel, slopeVars,
+        G = EI.aggregate2DTrial(spGrids, GVars, trialNumList).flatten()
+        errs = EI.aggregate2D(spVel, errVars, funReduce=np.sum).flatten()
+        #slopes = np.abs(EI.aggregate2D(spVel, slopeVars,
         #    funReduce=None).flatten())
         i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(errs)))
         ax.scatter(G[i], errs[i],  s=5, marker=markers[idx], 
@@ -243,7 +241,7 @@ if (bumpSweep0):
     exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    plotBumpSigmaTrial(bumpSpaces[0], sigmaVarList, iterList,
+    EI.plotBumpSigmaTrial(bumpSpaces[0], sigmaVarList, iterList,
             noise_sigma=noise_sigmas[0],
             ax=ax,
             trialNumList=bumpTrialNumList,
@@ -276,7 +274,7 @@ if (bumpSweep150):
     exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    plotBumpSigmaTrial(bumpSpaces[1], sigmaVarList, iterList,
+    EI.plotBumpSigmaTrial(bumpSpaces[1], sigmaVarList, iterList,
             noise_sigma=noise_sigmas[1],
             ax=ax,
             trialNumList=bumpTrialNumList,
@@ -312,7 +310,7 @@ if (bumpSweep300):
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     ax.set_clip_on(False)
-    plotBumpSigmaTrial(bumpSpaces[2], sigmaVarList, iterList,
+    EI.plotBumpSigmaTrial(bumpSpaces[2], sigmaVarList, iterList,
             noise_sigma=noise_sigmas[2],
             ax=ax,
             trialNumList=bumpTrialNumList,
@@ -344,6 +342,8 @@ if (bumpSweep300):
 slopeVarList = ['lineFitSlope']
 slope_vmin = 0
 slope_vmax = 1.6
+std_vmin = 0
+std_vmax = 14
 
 slope_cbar_kwargs = dict(
         orientation='vertical',
@@ -351,8 +351,14 @@ slope_cbar_kwargs = dict(
         ticks=MultipleLocator(0.5),
         extend='max', extendfrac=0.1)
 
+std_cbar_kwargs = dict(
+        orientation='vertical',
+        label='Mean $\sigma_{speed}$ (neurons/s)',
+        ticks=MultipleLocator(4),
+        extend='max', extendfrac=0.1)
 
-def createSweepFig(name):
+
+def createSweepFig(name=None):
     fig = plt.figure(name, figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
@@ -361,39 +367,77 @@ def createSweepFig(name):
 if (velSweep0):
     # noise_sigma = 0 pA
     fig, ax = createSweepFig("velSlopeSweep0")
-    _, ax, cax = plotVelTrial(velSpaces[0], slopeVarList, iterList,
+    _, ax, cax = EI.plotVelTrial(velSpaces[0], slopeVarList, iterList,
             noise_sigmas[0],
             ax=ax,
+            xlabel='', xticks=False,
             cbar=False, cbar_kwargs=slope_cbar_kwargs,
             vmin=slope_vmin, vmax=slope_vmax)
     fname = outputDir + "/figure2_slope_sweeps0.png"
     fig.savefig(fname, dpi=300, transparent=True)
 
+    fig, ax = createSweepFig()
+    _, ax, cax = EI.plotVelStdSweep(velSpaces[0], iterList,
+            noise_sigmas[0],
+            ax=ax,
+            sigmaTitle=False,
+            cbar=False, cbar_kwargs=std_cbar_kwargs,
+            vmin=std_vmin, vmax=std_vmax)
+    fname = outputDir + "/figure2_vel_std_sweeps0.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+
 
 if (velSweep150):
     # noise_sigma = 150 pA
     fig, ax = createSweepFig("velSlopeSweep150")
-    _, ax, cax = plotVelTrial(velSpaces[1], slopeVarList, iterList,
+    _, ax, cax = EI.plotVelTrial(velSpaces[1], slopeVarList, iterList,
             noise_sigma=noise_sigmas[1],
             ax=ax,
+            xlabel='', xticks=False,
             ylabel='', yticks=False,
             cbar=False, cbar_kwargs=slope_cbar_kwargs,
             vmin=slope_vmin, vmax=slope_vmax)
     fname = outputDir + "/figure2_slope_sweeps150.png"
     fig.savefig(fname, dpi=300, transparent=True)
 
+    fig, ax = createSweepFig()
+    _, ax, cax = EI.plotVelStdSweep(velSpaces[1], iterList,
+            noise_sigmas[1],
+            ax=ax,
+            ylabel='', yticks=False,
+            sigmaTitle=False,
+            cbar=False, cbar_kwargs=std_cbar_kwargs,
+            vmin=std_vmin, vmax=std_vmax)
+    fname = outputDir + "/figure2_vel_std_sweeps150.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+
 
 if (velSweep300):
     # noise_sigma = 300 pA
     fig, ax = createSweepFig("velSlopeSweep300")
-    _, ax, cax = plotVelTrial(velSpaces[2], slopeVarList, iterList,
+    _, ax, cax = EI.plotVelTrial(velSpaces[2], slopeVarList, iterList,
             noise_sigma=noise_sigmas[2],
             ax=ax,
+            xlabel='', xticks=False,
             ylabel='', yticks=False,
             cbar=True, cbar_kwargs=slope_cbar_kwargs,
             vmin=slope_vmin, vmax=slope_vmax)
     fname = outputDir + "/figure2_slope_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=True)
+
+    fig, ax = createSweepFig()
+    _, ax, cax = EI.plotVelStdSweep(velSpaces[2], iterList,
+            noise_sigmas[2],
+            ax=ax,
+            ylabel='', yticks=False,
+            sigmaTitle=False,
+            cbar=True, cbar_kwargs=std_cbar_kwargs,
+            vmin=std_vmin, vmax=std_vmax)
+    fname = outputDir + "/figure2_vel_std_sweeps300.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
 
 if (velLines):
     positions = ((4, 27), (4, 27), (4, 27))
