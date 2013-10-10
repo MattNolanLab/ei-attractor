@@ -46,6 +46,7 @@ files="
     suppFigure_grids7.png
     suppFigure_grids8.png
     suppFigure_model.png
+    suppFigure_velocity.png
     slices
     "
 

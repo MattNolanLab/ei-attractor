@@ -2,7 +2,7 @@
 #
 #   suppFigure_velocity.py
 #
-#   Supplementary figure that illustrates bump speed tracking simulations.
+#   Noise publication: supplementary figure: bump speed/velocity estimations.
 #
 #       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -21,12 +21,15 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.gridspec   import GridSpec
+from matplotlib.ticker     import MultipleLocator, AutoMinorLocator, \
+        MaxNLocator, ScalarFormatter
+from matplotlib.colorbar   import make_axes
+from matplotlib.transforms import Bbox
 
-from parameters  import JobTrialSpace2D, DataSpace
-from analysis.spikes import TorusPopulationSpikes
-from analysis.visitors.interface import extractSpikes
-from figures_shared import plotBump, getNoiseRoots
-
+import EI_plotting as EI
+from plotting.global_defs import globalAxesSettings
+from figures_shared       import plotOneHist, NoiseDataSpaces
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -38,85 +41,173 @@ rc('mathtext', default='regular')
 
 plt.rcParams['font.size'] = 10
 
+outputDir = "."
 
-DS = DataSpace
-
+NTrials=10
+iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
+exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
+gridsDataRoot= None
+bumpDataRoot= None
 velDataRoot = 'output_local/even_spacing/velocity'
-velShape  = (31, 31)
+shape = (31, 31)
 
-# Flags
-bump_movement = 1
+velSweep0         = 1
+velSweep150       = 1
+velSweep300       = 1
+hists             = 1
+
+##############################################################################
+
+
+
+def plotVelHistogram(spList, varList, xlabel="", ylabel="", **kw):
+    noise_sigma = [0, 150, 300]
+    colors = ['red', 'green', 'blue']
+    range = kw.get('range')
+    plotLegend = kw.pop('plotLegend', False)
+
+    ax = plt.gca()
+    plt.hold('on')
+    globalAxesSettings(ax)
+
+    for idx, sp in enumerate(spList):
+        var = np.abs(EI.aggregate2D(sp, varList, funReduce=None))
+        filtIdx = np.logical_not(np.isnan(var))
+        if (range is not None):
+            var[var < range[0]] = range[0]
+            var[var > range[1]] = range[1]
+        plotOneHist(var[filtIdx], normed=True, **kw)
+
+    if (plotLegend):
+        leg = []
+        for s in noise_sigma:
+            leg.append("{0}".format(int(s)))
+        l = ax.legend(leg, loc=(0.75, 0.5), title='$\sigma$ (pA)',
+                frameon=False, fontsize='x-small', ncol=1)
+        plt.setp(l.get_title(), fontsize='x-small')
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    f = ScalarFormatter(useMathText=True)
+    f.set_scientific(True)
+    f.set_powerlimits([0, 3])
+    ax.yaxis.set_major_formatter(f)
+    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    return ax
+
+def plotErrHistogram(spList, varList, **kw):
+    ax = plotVelHistogram(spList, varList, range=[0, 10], **kw)
+
+    ax.xaxis.set_major_locator(MultipleLocator(2))
+    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.yaxis.set_major_locator(MaxNLocator(4))
+    ax.set_ylim([-0.0025, 2])
+    #ax.margins(0.01)
+    
+def plotSlopeHistogram(spList, varList, **kw):
+    ax = plotVelHistogram(spList, varList, range=[0, 1.5], **kw)
+
+    ax.xaxis.set_major_locator(MultipleLocator(0.4))
+    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.yaxis.set_major_locator(MaxNLocator(4))
+    ax.set_ylim([-0.0025, 9])
+    #ax.margins(0.01)
+    
 
 ###############################################################################
-velRoots = getNoiseRoots(velDataRoot, noise_sigmas)
-velDataSpace0   = JobTrialSpace2D(velShape, velRoots[0])
-velDataSpace150 = JobTrialSpace2D(velShape, velRoots[1])
-velDataSpace300 = JobTrialSpace2D(velShape, velRoots[2])
+roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
+ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
+
+sweepFigSize = (2.5, 2.1)
+sweepLeft   = 0.15
+sweepBottom = 0.2
+sweepRight  = 0.87
+sweepTop    = 0.85
+
+histFigsize =(2.6, 1.7)
+histLeft    = 0.22
+histBottom  = 0.3
+histRight   = 0.95
+histTop     = 0.86
+
+
+###############################################################################
+
+errVarList = ['lineFitErr']
+err_vmin = 0
+err_vmax = 10
+
+
+def createSweepFig(name):
+    fig = plt.figure(name, figsize=sweepFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+        sweepTop))
+    return fig, ax
+
+if (velSweep0):
+    # noise_sigma = 0 pA
+    fig, ax = createSweepFig("velErrSweeps0")
+    _, ax, cax = EI.plotVelTrial(ps.v[0], errVarList, iterList,
+            noise_sigmas[0],
+            ax=ax,
+            cbar=False,
+            xlabel='', xticks=False,
+            vmin=err_vmin, vmax=err_vmax)
+    fname = outputDir + "/suppFigure_velocity_err_sweeps0.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+
+if (velSweep150):
+    # noise_sigma = 150 pA
+    fig, ax = createSweepFig("velErrSweeps150")
+    _, ax, cax = EI.plotVelTrial(ps.v[1], errVarList, iterList,
+            noise_sigma=noise_sigmas[1],
+            ax=ax,
+            ylabel='', yticks=False,
+            cbar=False,
+            xlabel='', xticks=False,
+            vmin=err_vmin, vmax=err_vmax)
+    fname = outputDir + "/suppFigure_velocity_err_sweeps150.png"
+    fig.savefig(fname, dpi=300, transparent=True)
 
 
 
-class BumpTiming(object):
-    def __init__(self, tStart=0, nRows=2, nCols=5, dt=500, winLen=500):
-        self.tStart = tStart
-        self.nRows  = nRows
-        self.nCols  = nCols
-        self.dt     = dt     # ms
-        self.winLen = winLen # ms
-
-    @property
-    def tEnd(self):
-        return (self.nRows*self.nCols - 1) * self.dt
-
-
-
-def _getSpikeTrain(data, monName, dimList):
-    N_x = DS.getNetParam(data, dimList[0])
-    N_y = DS.getNetParam(data, dimList[1])
-    senders, times = extractSpikes(data[monName])
-    return senders, times, (N_x, N_y)
+if (velSweep300):
+    # noise_sigma = 300 pA
+    fig, ax = createSweepFig("velErrSweeps300")
+    _, ax, cax = EI.plotVelTrial(ps.v[2], errVarList, iterList,
+            noise_sigma=noise_sigmas[2],
+            ax=ax,
+            ylabel='', yticks=False,
+            cbar=True,
+            xlabel='', xticks=False,
+            vmin=err_vmin, vmax=err_vmax,
+            cbar_kwargs = {'label' : 'Fit error (neurons/s)'})
+    fname = outputDir + "/suppFigure_velocity_err_sweeps300.png"
+    fig.savefig(fname, dpi=300, transparent=True)
 
 
-def drawBumpMovement(dataSpace, r, c, fileName, **kw):
-    # Keyword args
-    figSize  = kw.pop('figSize', (5, 2))
-    trialNum = kw.pop('trialNum', 0)
-    IvelIdx  = kw.pop('IvelIdx', 3)
-    bt       = kw.pop('bumpTiming', BumpTiming())
-    h_pad    = kw.pop('h_pad', 2)
 
-    ds     = dataSpace[r][c].getAllTrialsAsDataSet()
-    data   = ds.data
-    trials = data['trials']
-    Ivel = trials[trialNum]['IvelVec'][IvelIdx]
-    iData  = trials[trialNum]['IvelData'][IvelIdx]
+# Stats
+if (hists):
+    fig = plt.figure(figsize=histFigsize)
+    ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
+        histTop))
+    plotErrHistogram(ps.v, ['lineFitErr'], xlabel='Fit error (neurons/s)',
+            ylabel='p(error)')
+    fname = outputDir + "/suppFigure_velocity_err_histograms.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
 
-    # Extract spikes
-    senders, times, sheetSize =  _getSpikeTrain(iData, 'spikeMon_e', ['Ne_x',
-        'Ne_y'])
-    pop = TorusPopulationSpikes(senders, times, sheetSize)
-    Fe, Ft = pop.slidingFiringRate(bt.tStart, bt.tEnd, bt.dt, bt.winLen)
+    fig = plt.figure(figsize=histFigsize)
+    ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
+        histTop))
+    plotSlopeHistogram(ps.v, ['lineFitSlope'], xlabel='Slope (neurons/s/pA)',
+            ylabel='p(slope)', plotLegend=True)
+    fname = outputDir + "/suppFigure_velocity_slope_histograms.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
 
-    # Create the example plot
-    fig = plt.figure(figsize=figSize)
-    idx = 0
-    for r in range(bt.nRows):
-        for c in range(bt.nCols):
-            ax = plt.subplot(bt.nRows, bt.nCols, idx+1)
-            plotBump(ax, Fe[:, :, idx], maxRate=False)
-            plt.title("{0} s".format(Ft[idx]*1e-3), fontsize='small')
-            idx += 1
-
-    print("Ivel: {0} pA".format(Ivel))
-    fig.tight_layout(h_pad=h_pad)
-    plt.savefig(fileName, dpi=300, transparent=False)
-    plt.close()
-
-
-# Bump Movement
-if (bump_movement):
-    drawBumpMovement(velDataSpace150,
-            r = 6, c = 12,
-            fileName = "suppFigure_bump_moving.png")
 

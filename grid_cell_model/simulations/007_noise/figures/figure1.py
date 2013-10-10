@@ -44,6 +44,7 @@ plt.rcParams['font.size'] = 11
 outputDir = "."
 
 NTrials=10
+gridTrialNumList = np.arange(NTrials)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas  = [0, 150, 300]
@@ -61,45 +62,6 @@ hists         = 1
 slices        = 1
 
 ##############################################################################
-
-def drawGridSweeps(ax, dataSpace, iterList, NTrials=1, r=0, c=0, xLabelOn=True,
-        xticks=True, exRows=[], exCols=[], exColor='white',
-        cbar=False):
-    yLabelText = '$g_E$ (nS)'
-    if (xLabelOn):
-        xLabelText = '$g_I$ (nS)'
-    else:
-        xLabelText = ''
-
-    if (ax is None):
-        ax = plt.gca()
-    G = plotGridTrial(dataSpace, ['gridnessScore'], iterList,
-            trialNumList=range(NTrials),
-            r=r,
-            c=c,
-            xlabel=xLabelText,
-            ylabel=yLabelText,
-            colorBar=False,
-            clBarLabel = "Gridness score",
-            clbarNTicks=3,
-            xticks=xticks,
-            vmin=-0.5,
-            vmax=1.15,
-            ignoreNaNs=True,
-            nansAs0=False)
-    cax, kw = make_axes(ax, orientation='horizontal', shrink=0.8,
-            pad=0.2)
-    globalAxesSettings(cax)
-    cb = plt.colorbar(ax=ax, cax=cax, ticks=MultipleLocator(0.5), **kw)
-    cb.set_label('Gridness score')
-    if (cbar == False):
-        cax.set_visible(False)
-
-    print("    max(G): {0}".format(np.max(G)))
-    print("    min(G): {0}".format(np.min(G)))
-    return ax, cax
-
-
 
 
 
@@ -192,7 +154,21 @@ sweepFigSize = (2.43, 3.33)
 sweepLeft   = 0.15
 sweepBottom = 0.1
 sweepRight  = 0.99
-sweepTop    = 0.95
+sweepTop    = 0.92
+
+cbar_kwargs = {'label' : 'Gridness score',
+    'orientation': 'horizontal',
+    'shrink': 0.8,
+    'pad' : 0.2,
+    'ticks' : MultipleLocator(0.5)}
+
+vmin = -0.5
+vmax = 1.1
+
+##############################################################################
+
+varList = ['gridnessScore']
+
 if (grids0):
 
     # noise_sigma = 0 pA
@@ -201,9 +177,14 @@ if (grids0):
     exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    ax, cax = drawGridSweeps(ax, ps.grids[0], iterList, NTrials=NTrials,
-            r=exampleIdx[0][0], c=exampleIdx[0][1], xLabelOn=False,
-            exRows=exRows, exCols=exCols, xticks=False)
+    plotGridTrial(ps.grids[0], varList, iterList, ps.noise_sigmas[0],
+            trialNumList=gridTrialNumList,
+            ax=ax,
+            r=exampleIdx[0][0], c=exampleIdx[0][1],
+            xlabel='', xticks=False,
+            cbar=False, cbar_kwargs=cbar_kwargs,
+            vmin=vmin, vmax=vmax,
+            ignoreNaNs=True)
     if (grid_examples):
         exLeft = 2
         exBottom = 24
@@ -233,9 +214,14 @@ if (grids150):
     exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    ax, cax = drawGridSweeps(ax, ps.grids[1], iterList, NTrials=NTrials,
-            r=exampleIdx[1][0], c=exampleIdx[1][1], xLabelOn=False,
-            xticks=False, exRows=exRows, exCols=exCols) 
+    plotGridTrial(ps.grids[1], varList, iterList, ps.noise_sigmas[1],
+            trialNumList=gridTrialNumList,
+            ax=ax,
+            r=exampleIdx[1][0], c=exampleIdx[1][1],
+            xlabel='', xticks=False,
+            cbar=False, cbar_kwargs=cbar_kwargs,
+            vmin=vmin, vmax=vmax,
+            ignoreNaNs=True)
     if (grid_examples):
         exLeft = 2
         exBottom = 24
@@ -265,9 +251,13 @@ if (grids300):
     exCols = [6, 23]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    _, cax = drawGridSweeps(ax, ps.grids[2], iterList, NTrials=NTrials,
-            r=exampleIdx[2][0], c=exampleIdx[2][1], xticks=True, exRows=exRows,
-            exCols=exCols, exColor='black', cbar=True)
+    plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
+            trialNumList=gridTrialNumList,
+            ax=ax,
+            r=exampleIdx[2][0], c=exampleIdx[2][1],
+            cbar_kwargs=cbar_kwargs,
+            vmin=vmin, vmax=vmax,
+            ignoreNaNs=True)
     if (grid_examples):
         exLeft = 2
         exBottom = 24
@@ -309,7 +299,7 @@ if (hists):
 
 if (slices):
     ylabelPos = -0.16
-    idx_horizontal = 7
+    idx_horizontal = 15
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
@@ -321,7 +311,7 @@ if (slices):
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
-    idx_vertical = 3
+    idx_vertical = 15
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))

@@ -28,10 +28,10 @@ from matplotlib.patches  import Rectangle
 from matplotlib.gridspec import GridSpec
 
 
-from plotting.global_defs import globalAxesSettings, createColorbar
+from plotting.global_defs import globalAxesSettings
 from plotting.grids       import plotGridRateMap
 from parameters import DataSpace
-from figures_shared       import plotBump
+from figures_shared       import plotBump, createColorbar
 
 ###############################################################################
 
@@ -101,25 +101,49 @@ def computeYX(sp, iterList, r=0, c=0, trialNum=0):
     Ni = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ni')
     return E/Ne, I/Ni
 
-def plotACTrial(sp, varList, iterList, trialNumList=[0], r=0, c=0, xlabel="",
-        ylabel="", colorBar=True, clBarLabel="", vmin=None, vmax=None,
-        title="", clbarNTicks=2, xticks=True, yticks=True):
+
+
+def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
+    #kw arguments
+    r          = kw.pop('r', 0)
+    c          = kw.pop('c', 0)
+    cbar       = kw.pop('cbar', True)
+    sigmaTitle = kw.pop('sigmaTitle', True)
+
     C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.isnan(C))
     Y, X = computeYX(sp, iterList, r=r, c=c)
-    plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin, vmax,
-            title, clbarNTicks, xticks, yticks)
+    C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kw)
 
-def plotBumpSigmaTrial(sp, varList, iterList, **kwargs):
-    r            = kwargs.pop('r', 0)
-    c            = kwargs.pop('c', 0)
-    thr          = kwargs.pop('thr', np.infty)
-    trialNumList = kwargs.pop('trialNumList', [0])
+    print("    max(C): {0}".format(np.max(C)))
+    print("    min(C): {0}".format(np.min(C)))
+
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+
+    return C, ax, cax
+
+
+def plotBumpSigmaTrial(sp, varList, iterList, noise_sigma, trialNumList=[0],
+        thr=np.infty, **kw):
+    #kw arguments
+    r          = kw.pop('r', 0)
+    c          = kw.pop('c', 0)
+    cbar       = kw.pop('cbar', True)
+    kw['cmap'] = kw.get('cmap', 'jet_r')
+    sigmaTitle = kw.pop('sigmaTitle', True)
 
     C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
     Y, X = computeYX(sp, iterList, r=r, c=c)
-    return plot2DTrial(X, Y, C, **kwargs)
+    C, ax, cax =  plot2DTrial(X, Y, C, colorBar=cbar, **kw)
+
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+
+    return C, ax, cax
+
+
 
 def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
         trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
@@ -147,12 +171,14 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
             vmax, title, clbarNTicks, xticks, yticks)
             
 
-def plotGridTrial(sp, varList, iterList, trialNumList=[0], **kwargs):
-    # kwargs
+def plotGridTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kwargs):
+    #kw arguments
     r          = kwargs.pop('r', 0)
     c          = kwargs.pop('c', 0)
     nansAs0    = kwargs.pop('nansAs0', False)
     ignoreNaNs = kwargs.pop('ignoreNaNs', False)
+    sigmaTitle = kwargs.pop('sigmaTitle', True)
+    cbar       = kwargs.pop('cbar', True)
 
     G = aggregate2DTrial(sp, varList, trialNumList, ignoreNaNs=ignoreNaNs)
     nans = np.isnan(G)
@@ -161,39 +187,64 @@ def plotGridTrial(sp, varList, iterList, trialNumList=[0], **kwargs):
     else:
         G = ma.MaskedArray(G, mask=nans)
     Y, X = computeYX(sp, iterList, r=r, c=c)
-    return plot2DTrial(X, Y, G, **kwargs)
+    G, ax, cax = plot2DTrial(X, Y, G, colorBar=cbar, **kwargs)
+
+    print("    max(G): {0}".format(np.max(G)))
+    print("    min(G): {0}".format(np.min(G)))
+
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+    return G, ax, cax
 
 
-def computeVelYX(sp, iterList):
+def computeVelYX(sp, iterList, r=0, c=0, trialNum=0):
     E, I = sp.getIteratedParameters(iterList)
-    Ne = DataSpace.getNetParam(sp[0][0][0].data['IvelData'][0], 'net_Ne')
-    Ni = DataSpace.getNetParam(sp[0][0][0].data['IvelData'][0], 'net_Ni')
+    Ne = DataSpace.getNetParam(sp[r][c][trialNum].data['IvelData'][0], 'net_Ne')
+    Ni = DataSpace.getNetParam(sp[r][c][trialNum].data['IvelData'][0], 'net_Ni')
     return E/Ne, I/Ni
 
 
-def plotVelTrial(sp, varList, iterList, **kwargs):
-    slopes = np.abs(aggregate2D(sp, varList, funReduce=np.sum))
-    slopes = ma.MaskedArray(slopes, mask=np.isnan(slopes))
-    Y, X = computeVelYX(sp, iterList)
-    return plot2DTrial(X, Y, slopes, **kwargs)
+
+def plotVelTrial(sp, varList, iterList, noise_sigma, **kwargs):
+    # process kwargs
+    r          = kwargs.pop('r', 0)
+    c          = kwargs.pop('c', 0)
+    sigmaTitle = kwargs.pop('sigmaTitle', True)
+    cbar       = kwargs.pop('cbar', True)
+
+    C    = np.abs(aggregate2D(sp, varList, funReduce = np.sum))
+    C    = ma.MaskedArray(C, mask                    = np.isnan(C))
+    Y, X = computeVelYX(sp, iterList, r=r, c=c)
+    C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kwargs)
+
+    print("plotVelTrial: max(C): {0}".format(np.max(C.ravel())))
+
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+
+    return C, ax, cax
 
 
 
-def plot2DTrial(X, Y, C, xlabel=xlabelText, ylabel=ylabelText, colorBar=False,
-        clBarLabel="", vmin=None, vmax=None, title="", clbarNTicks=2,
-        xticks=True, yticks=True, cmap=None):
 
-    ax = plt.gca()
+
+def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=xlabelText, ylabel=ylabelText,
+        colorBar=False, clBarLabel="", vmin=None, vmax=None, title="",
+        clbarNTicks=2, xticks=True, yticks=True, cmap=None, cbar_kwargs={},
+        **kw):
+    # kw arguments (cbar)
+    cbar_kwargs['label']       = cbar_kwargs.get('label', '')
+    cbar_kwargs['shrink']      = cbar_kwargs.get('shrink', 0.8)
+    cbar_kwargs['orientation'] = cbar_kwargs.get('orientation', 'vertical')
+    cbar_kwargs['pad']         = cbar_kwargs.get('pad', 0.05)
+    cbar_kwargs['ticks']       = cbar_kwargs.get('ticks', MultipleLocator(5))
+
     globalAxesSettings(ax)
     ax.minorticks_on()
-    plt.pcolor(X, Y, C, vmin=vmin, vmax=vmax, cmap=cmap)
-    if (colorBar):
-        if (clbarNTicks == None):
-            createColorbar(ax, None, clBarLabel, orientation='horizontal',
-                    pad=0.2, shrink=0.9)
-        else:
-            createColorbar(ax, C, clBarLabel, nticks=clbarNTicks,
-                    orientation='horizontal', pad=0.2, shrink=0.8)
+    plt.pcolor(X, Y, C, vmin=vmin, vmax=vmax, cmap=cmap, **kw)
+    cax = createColorbar(ax, **cbar_kwargs)
+    if (colorBar == False):
+        cax.set_visible(False)
     if (xlabel != ""):
         plt.xlabel(xlabel, va='top')
         ax.xaxis.set_label_coords(0.5, -0.125)
@@ -210,7 +261,7 @@ def plot2DTrial(X, Y, C, xlabel=xlabelText, ylabel=ylabelText, colorBar=False,
     if (not yticks):
         ax.yaxis.set_ticklabels([])
 
-    return C
+    return C, ax, cax
 
 
 

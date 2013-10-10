@@ -100,43 +100,6 @@ def drawColorbar(drawAx, label):
     cb.set_label(label)
 
 
-def drawGammaPowerSweeps(ax, dataSpace, iterList, noise_sigma, trialNumList,
-        r=0, c=0, yLabelOn=True, yticks=True, exRows=[], exCols=[],
-        exColor='white', cbar=False):
-    xLabelText = '$g_I$ (nS)'
-    if (yLabelOn):
-        yLabelText = '$g_E$ (nS)'
-    else:
-        yLabelText = ''
-
-    if (ax is None):
-        ax = plt.gca()
-
-    C = plotACTrial(dataSpace, ['acVal'], iterList,
-            trialNumList=trialNumList,
-            xlabel=xLabelText,
-            ylabel=yLabelText,
-            colorBar=False,
-            yticks=yticks,
-            vmin=-0.09,
-            vmax=0.675)
-    cax, kw = make_axes(ax, orientation='vertical', shrink=0.9,
-            pad=0.05)
-    globalAxesSettings(cax)
-    cb = plt.colorbar(ax=ax, cax=cax, ticks=MultipleLocator(0.2), **kw)
-    cax.yaxis.set_minor_locator(AutoMinorLocator(2))
-    cb.set_label('Correlation')
-    if (cbar == False):
-        cax.set_visible(False)
-    ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
-
-    print("    max(C): {0}".format(np.max(C)))
-    print("    min(C): {0}".format(np.min(C)))
-    return ax, cax
-
-
-
-
 def extractACExample(sp, r, c, trialNum):
     data = sp[r][c][trialNum].data
     ac = data['analysis']['acVec'][0]
@@ -280,39 +243,116 @@ sweepBottom = 0.2
 sweepRight  = 0.85
 sweepTop    = 0.85
 
+AC_vmin = -0.09
+AC_vmax = 0.675
+F_vmin  = 30
+F_vmax  = 120
+
+ACVarList = ['acVal']
+FVarList  = ['freq']
+
+AC_cbar_kwargs = dict(
+        orientation='vertical',
+        ticks=MultipleLocator(0.2),
+        shrink=0.8,
+        label='Correlation')
+F_cbar_kwargs = dict(
+        orientation='vertical',
+        ticks=MultipleLocator(30),
+        shrink=0.8,
+        label='Frequency',
+        extend='max', extendfrac=0.1)
+
 
 if (gammaSweep0):
     # noise_sigma = 0 pA
-    fig = figure("sweeps0", figsize=sweepFigSize)
+    fig = figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    ax, cax = drawGammaPowerSweeps(ax, gammaDataSpace0, iterList,
-            noise_sigma=noise_sigmas[0], trialNumList=xrange(NTrials), cbar=False)
+    plotACTrial(gammaDataSpace0, ACVarList, iterList,
+            noise_sigma=noise_sigmas[0],
+            ax=ax,
+            trialNumList=xrange(NTrials),
+            xlabel='', xticks=False,
+            cbar=False, cbar_kwargs=AC_cbar_kwargs,
+            vmin=AC_vmin, vmax=AC_vmax)
     fname = outputDir + "/figure3_sweeps0.png"
     fig.savefig(fname, dpi=300, transparent=True)
         
-if (gammaSweep150):
-    # noise_sigma = 0 pA
-    fig = figure("sweeps150", figsize=sweepFigSize)
+    fig = figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    ax, cax = drawGammaPowerSweeps(ax, gammaDataSpace150, iterList,
-            noise_sigma=noise_sigmas[1], trialNumList=xrange(NTrials),
-            yticks=False, yLabelOn=False, cbar=False)
+    plotACTrial(gammaDataSpace0, FVarList, iterList,
+            noise_sigma=noise_sigmas[0],
+            ax=ax,
+            trialNumList=xrange(NTrials),
+            cbar=False, cbar_kwargs=F_cbar_kwargs,
+            sigmaTitle=False,
+            vmin=F_vmin, vmax=F_vmax)
+    fname = outputDir + "/figure3_freq_sweeps0.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+        
+if (gammaSweep150):
+    # noise_sigma = 0 pA
+    fig = figure(figsize=sweepFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+        sweepTop))
+    plotACTrial(gammaDataSpace150, ACVarList, iterList,
+            noise_sigma=noise_sigmas[1],
+            ax=ax,
+            trialNumList=xrange(NTrials),
+            xlabel='', xticks=False,
+            cbar=False, cbar_kwargs=AC_cbar_kwargs,
+            vmin=AC_vmin, vmax=AC_vmax,
+            ylabel='', yticks=False)
     fname = outputDir + "/figure3_sweeps150.png"
     fig.savefig(fname, dpi=300, transparent=True)
         
-if (gammaSweep150):
-    # noise_sigma = 0 pA
-    fig = figure("sweeps300", figsize=sweepFigSize)
+    fig = figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    ax, cax = drawGammaPowerSweeps(ax, gammaDataSpace300, iterList,
-            noise_sigma=noise_sigmas[2], trialNumList=xrange(NTrials),
-            yticks=False, yLabelOn=False, cbar=True)
+    plotACTrial(gammaDataSpace150, FVarList, iterList,
+            noise_sigma=noise_sigmas[1],
+            ax=ax,
+            trialNumList=xrange(NTrials),
+            cbar=False, cbar_kwargs=F_cbar_kwargs,
+            sigmaTitle=False,
+            ylabel='', yticks=False,
+            vmin=F_vmin, vmax=F_vmax)
+    fname = outputDir + "/figure3_freq_sweeps150.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+        
+if (gammaSweep300):
+    # noise_sigma = 0 pA
+    fig = figure(figsize=sweepFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+        sweepTop))
+    plotACTrial(gammaDataSpace300, ACVarList, iterList,
+            noise_sigma=noise_sigmas[2],
+            ax=ax,
+            trialNumList=xrange(NTrials),
+            xlabel='', xticks=False,
+            cbar=True, cbar_kwargs=AC_cbar_kwargs,
+            vmin=AC_vmin, vmax=AC_vmax,
+            ylabel='', yticks=False)
     fname = outputDir + "/figure3_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=True)
         
+    fig = figure(figsize=sweepFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+        sweepTop))
+    plotACTrial(gammaDataSpace300, FVarList, iterList,
+            noise_sigma=noise_sigmas[2],
+            ax=ax,
+            trialNumList=xrange(NTrials),
+            cbar=True, cbar_kwargs=F_cbar_kwargs,
+            sigmaTitle=False,
+            ylabel='', yticks=False,
+            vmin=F_vmin, vmax=F_vmax)
+    fname = outputDir + "/figure3_freq_sweeps300.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+        
+
 
 gammaSpList = [gammaDataSpace0, gammaDataSpace150, gammaDataSpace300]
 if (threshold):
