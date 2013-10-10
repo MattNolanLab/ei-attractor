@@ -44,3 +44,6 @@ for noise_sigma in noise_sigmas:
     sp.aggregateData(varListBase + ['lineFitSlope'], funReduce=None,
             trialNumList='all-at-once', saveData=True, output_dtype='array',
             loadData=loadData)
+    sp.aggregateData(varListBase + ['bumpVelAll'], funReduce=None,
+            trialNumList='all-at-once', saveData=True, output_dtype='list',
+            loadData=loadData)
