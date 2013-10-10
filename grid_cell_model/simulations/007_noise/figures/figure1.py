@@ -140,6 +140,61 @@ def plotGridnessHistogram(spList, trialNumList, ylabelPos=-0.2):
     ax.margins(0.05, 0.025)
     
 
+def computeMarginal(G, type, X, Y, ignoreNaNs):
+    trials = []
+    for trialIdx in xrange(G.shape[2]):
+        trials.append(G[:, :, trialIdx])
+
+    res    = None
+    x      = None
+    xlabel = ''
+    if (type == 'horizontal'):
+        res = np.vstack(trials)
+        if (ignoreNaNs):
+            nans = np.isnan(res)
+            res = ma.MaskedArray(res, mask=nans)
+        res = res.T
+        x   = X[0, :]
+        xlabel = EI.xlabelText
+    elif (type == 'vertical'):
+        res = np.hstack(trials)
+        if (ignoreNaNs):
+            nans = np.isnan(res)
+            res = ma.MaskedArray(res, mask=nans)
+        x   = Y[:, 0]
+        xlabel = EI.ylabelText
+    else:
+        raise ValueError("Marginal type must be 'horizontal' or 'vertical'")
+    #import pdb; pdb.set_trace()
+    return res, x, xlabel
+
+
+def plotGridnessMarginal(paramSpaces, type, NTrials=1, **kw):
+    # kwargs
+    title        = kw.pop('title', True)
+    rcG          = kw.pop('rowsCols', [(1, 22), (1, 22), (1, 22)]) # (row, col)
+    ax           = kw.pop('ax', plt.gca())
+    iterList     = kw.pop('iterList', ['g_AMPA_total', 'g_GABA_total'])
+    kw['ylabel'] = kw.get('ylabel', 'Gridness score')
+    ignoreNaNs   = kw.get('ignoreNaNs', True)
+
+    GVars = ['gridnessScore']
+    trialNumList = range(NTrials)
+    sp = paramSpaces
+
+    # Gridness score
+    for idx, noise_sigma in enumerate(sp.noise_sigmas):
+        space = sp.grids[idx]
+        G = space.aggregateData(GVars, trialNumList, output_dtype='array',
+                loadData=True, saveData=False)
+        Y, X = EI.computeYX(space, iterList, r=rcG[idx][0], c=rcG[idx][1])
+        marginal, x, kw['xlabel'] = computeMarginal(G, type, X, Y, ignoreNaNs)
+        EI.plotOneSlice(ax, x, marginal, **kw)
+    ax.yaxis.set_major_locator(ti.MaxNLocator(4))
+
+    return ax
+        
+
 
 ##############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
