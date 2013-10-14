@@ -21,15 +21,14 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ti
 from matplotlib.gridspec   import GridSpec
-from matplotlib.ticker     import MultipleLocator, AutoMinorLocator, \
-        MaxNLocator, ScalarFormatter
 from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
 import EI_plotting as EI
 from plotting.global_defs import globalAxesSettings
-from figures_shared       import plotOneHist, getNoiseDataSpaces, createColorbar
+from figures_shared       import NoiseDataSpaces
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -51,18 +50,16 @@ exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
 gridsDataRoot= 'output_local/even_spacing/grids'
 bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/even_spacing/velocity'
-bumpShape = (31, 31)
-velShape  = (31, 31)
-gridShape  = (31, 31)
+shape = (31, 31)
 
 bumpExamples      = 0
 bumpSweep0        = 0
 bumpSweep150      = 0
 bumpSweep300      = 0
 velExamples       = 0
-velSweep0         = 1
-velSweep150       = 1
-velSweep300       = 1
+velSweep0         = 0
+velSweep150       = 0
+velSweep300       = 0
 velLines          = 1
 gridness_vs_error = 0
 
@@ -97,11 +94,18 @@ def plotBumpExample(exLeft, exBottom, w, h, fileName, exIdx, sweep_ax,
 
 
 
-def plotSlopes(ax, dataSpace, pos, **kw):
+def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
     # kwargs
-    trialNum = kw.pop('trialNum', 0)
+    trialNum   = kw.pop('trialNum', 0)
     markersize = kw.pop('markersize', 4)
-    color = kw.pop('color', 'blue')
+    color      = kw.pop('color', 'blue')
+    xlabel     = kw.pop('xlabel', 'Velocity current (pA)')
+    ylabel     = kw.pop('ylabel', 'Bump speed (neurons/s)')
+    xticks     = kw.pop('xticks', True)
+    yticks     = kw.pop('yticks', True)
+    g_ann      = kw.pop('g_ann', True)
+    sigma_ann  = kw.pop('sigma_ann', True)
+    kw['markeredgecolor'] = color
 
     r = pos[0]
     c = pos[1]
@@ -121,27 +125,46 @@ def plotSlopes(ax, dataSpace, pos, **kw):
     plt.hold('on')
     globalAxesSettings(ax)
 
-    ax.errorbar(IvelVec, avgSlope, stdSlope, fmt='o-',
-            markersize=markersize, color=color, alpha=0.5, **kw)
-    ax.plot(fitIvelVec, lineFit, '-', linewidth=2, color=color, **kw)
+    ax.plot(IvelVec, slopes.T, 'o', color='none', markersize=markersize, **kw)
+    #ax.errorbar(IvelVec, avgSlope, stdSlope, fmt='o-',
+    #        markersize=markersize, color=color, alpha=0.5, **kw)
+    ax.plot(fitIvelVec, lineFit, '-', linewidth=1, color=color, **kw)
 
-def plotAllSlopes(ax, spList, positions, **kw):
-    colors = kw.pop('colors', ('blue', 'green', 'red'))
-
-    for idx, dataSpace in enumerate(spList):
-        kw['color'] = colors[idx]
-        plotSlopes(ax, dataSpace, positions[idx], **kw)
-
-    ax.set_xlabel('Velocity current (pA)')
-    ax.set_ylabel('$v_{bump}$ (neurons/s)')
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(50))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
-    ax.yaxis.set_major_locator(MultipleLocator(20))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.xaxis.set_major_locator(ti.MultipleLocator(50))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(5))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(20))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.margins(0.05)
-    
+
+    if (not xticks):
+        ax.xaxis.set_ticklabels([])
+    if (not yticks):
+        ax.yaxis.set_ticklabels([])
+
+    # Annotations
+    if (sigma_ann):
+        sigma_txt = '$\sigma$ = {0} pA'.format(noise_sigma)
+    else:
+        sigma_txt = ''
+
+    if (g_ann):
+        Y, X = EI.computeVelYX(dataSpace, iterList, r, c)
+        gE = Y[r, c]
+        gI = X[r, c]
+        g_txt = '$g_E$ = {0}, $g_I$ = {1} nS'.format(gE, gI)
+    else:
+        g_txt = ''
+
+    txt = '{0}\n{1}'.format(g_txt, sigma_txt)
+    ax.text(0.05, 0.85, txt, transform=ax.transAxes, va='bottom',
+            ha='left', size='x-small')
+
+
+
 
 def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
         ylabelPos=-0.2, maxErr=None):
@@ -189,17 +212,16 @@ def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(0.5))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.set_xmargin(0.05)
     ax.autoscale_view(tight=True)
     ax.set_ylim(np.min(errMins), np.max(errMaxs)*1.5)
 
 
 ###############################################################################
-bumpSpaces = getNoiseDataSpaces(bumpDataRoot,  noise_sigmas, bumpShape)
-velSpaces  = getNoiseDataSpaces(velDataRoot,   noise_sigmas, velShape)
-gridSpaces = getNoiseDataSpaces(gridsDataRoot, noise_sigmas, gridShape)
+roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
+ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
 
 exW = 4
@@ -215,11 +237,11 @@ sweepBottom = 0.2
 sweepRight  = 0.87
 sweepTop    = 0.85
 
-histFigsize =(2.6, 1.7)
-histLeft    = 0.22
-histBottom  = 0.3
-histRight   = 0.95
-histTop     = 0.86
+velFigsize =(2.6, 2)
+velLeft    = 0.3
+velBottom  = 0.35
+velRight   = 0.95
+velTop     = 0.65
 
 
 ##############################################################################
@@ -230,7 +252,7 @@ bump_vmax = 10
 bump_cbar_kwargs = dict(
         orientation='vertical',
         shrink=0.8, pad=0.05,
-        ticks=MultipleLocator(5),
+        ticks=ti.MultipleLocator(5),
         label='Bump $\sigma$ (neurons)',
         extend='max', extendfrac=0.1)
 
@@ -241,8 +263,8 @@ if (bumpSweep0):
     exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotBumpSigmaTrial(bumpSpaces[0], sigmaVarList, iterList,
-            noise_sigma=noise_sigmas[0],
+    EI.plotBumpSigmaTrial(ps.bumpGamma[0], sigmaVarList, iterList,
+            noise_sigma=ps.noise_sigmas[0],
             ax=ax,
             trialNumList=bumpTrialNumList,
             cbar=False, cbar_kwargs=bump_cbar_kwargs,
@@ -252,14 +274,14 @@ if (bumpSweep0):
         exBottom = 24
         fname = outputDir + "/figure2_examples_0pA_0.png"
         plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[0],
-                ax, bumpSpaces[0], iterList, exGsCoords, wspace=exWspace,
+                ax, ps.bumpGamma[0], iterList, exGsCoords, wspace=exWspace,
                 hspace=exHspace, rectColor='red')
 
         exLeft = 25
         exBottom = 15
         fname = outputDir + "/figure2_examples_0pA_1.png"
         plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[0],
-                ax, bumpSpaces[0], iterList, exGsCoords, wspace=exWspace,
+                ax, ps.bumpGamma[0], iterList, exGsCoords, wspace=exWspace,
                 hspace=exHspace, rectColor='red')
 
     fname = outputDir + "/figure2_sweeps0.png"
@@ -274,7 +296,7 @@ if (bumpSweep150):
     exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotBumpSigmaTrial(bumpSpaces[1], sigmaVarList, iterList,
+    EI.plotBumpSigmaTrial(ps.bumpGamma[1], sigmaVarList, iterList,
             noise_sigma=noise_sigmas[1],
             ax=ax,
             trialNumList=bumpTrialNumList,
@@ -286,14 +308,14 @@ if (bumpSweep150):
         exBottom = 24
         fname = outputDir + "/figure2_examples_150pA_0.png"
         plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[1],
-                ax, bumpSpaces[1], iterList, exGsCoords, wspace=exWspace,
+                ax, ps.bumpGamma[1], iterList, exGsCoords, wspace=exWspace,
                 hspace=exHspace, rectColor='red')
 
         exLeft = 25
         exBottom = 15
         fname = outputDir + "/figure2_examples_150pA_1.png"
         plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[1],
-                ax, bumpSpaces[1], iterList, exGsCoords, wspace=exWspace,
+                ax, ps.bumpGamma[1], iterList, exGsCoords, wspace=exWspace,
                 hspace=exHspace, rectColor='black')
 
 
@@ -310,7 +332,7 @@ if (bumpSweep300):
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     ax.set_clip_on(False)
-    EI.plotBumpSigmaTrial(bumpSpaces[2], sigmaVarList, iterList,
+    EI.plotBumpSigmaTrial(ps.bumpGamma[2], sigmaVarList, iterList,
             noise_sigma=noise_sigmas[2],
             ax=ax,
             trialNumList=bumpTrialNumList,
@@ -322,14 +344,14 @@ if (bumpSweep300):
         exBottom = 24
         fname = outputDir + "/figure2_examples_300pA_0.png"
         plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[2],
-                ax, bumpSpaces[2], iterList, exGsCoords, wspace=exWspace,
+                ax, ps.bumpGamma[2], iterList, exGsCoords, wspace=exWspace,
                 hspace=exHspace, rectColor='red')
 
         exLeft = 25
         exBottom = 15
         fname = outputDir + "/figure2_examples_300pA_1.png"
         plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[2],
-                ax, bumpSpaces[2], iterList, exGsCoords, wspace=exWspace,
+                ax, ps.bumpGamma[2], iterList, exGsCoords, wspace=exWspace,
                 hspace=exHspace, rectColor='black')
 
 
@@ -348,13 +370,13 @@ std_vmax = 14
 slope_cbar_kwargs = dict(
         orientation='vertical',
         label='Slope (neurons/s/pA)',
-        ticks=MultipleLocator(0.5),
+        ticks=ti.MultipleLocator(0.5),
         extend='max', extendfrac=0.1)
 
 std_cbar_kwargs = dict(
         orientation='vertical',
         label='Mean $\sigma_{speed}$ (neurons/s)',
-        ticks=MultipleLocator(4),
+        ticks=ti.MultipleLocator(4),
         extend='max', extendfrac=0.1)
 
 
@@ -367,7 +389,7 @@ def createSweepFig(name=None):
 if (velSweep0):
     # noise_sigma = 0 pA
     fig, ax = createSweepFig("velSlopeSweep0")
-    _, ax, cax = EI.plotVelTrial(velSpaces[0], slopeVarList, iterList,
+    _, ax, cax = EI.plotVelTrial(ps.v[0], slopeVarList, iterList,
             noise_sigmas[0],
             ax=ax,
             xlabel='', xticks=False,
@@ -377,7 +399,7 @@ if (velSweep0):
     fig.savefig(fname, dpi=300, transparent=True)
 
     fig, ax = createSweepFig()
-    _, ax, cax = EI.plotVelStdSweep(velSpaces[0], iterList,
+    _, ax, cax = EI.plotVelStdSweep(ps.v[0], iterList,
             noise_sigmas[0],
             ax=ax,
             sigmaTitle=False,
@@ -391,7 +413,7 @@ if (velSweep0):
 if (velSweep150):
     # noise_sigma = 150 pA
     fig, ax = createSweepFig("velSlopeSweep150")
-    _, ax, cax = EI.plotVelTrial(velSpaces[1], slopeVarList, iterList,
+    _, ax, cax = EI.plotVelTrial(ps.v[1], slopeVarList, iterList,
             noise_sigma=noise_sigmas[1],
             ax=ax,
             xlabel='', xticks=False,
@@ -402,7 +424,7 @@ if (velSweep150):
     fig.savefig(fname, dpi=300, transparent=True)
 
     fig, ax = createSweepFig()
-    _, ax, cax = EI.plotVelStdSweep(velSpaces[1], iterList,
+    _, ax, cax = EI.plotVelStdSweep(ps.v[1], iterList,
             noise_sigmas[1],
             ax=ax,
             ylabel='', yticks=False,
@@ -417,7 +439,7 @@ if (velSweep150):
 if (velSweep300):
     # noise_sigma = 300 pA
     fig, ax = createSweepFig("velSlopeSweep300")
-    _, ax, cax = EI.plotVelTrial(velSpaces[2], slopeVarList, iterList,
+    _, ax, cax = EI.plotVelTrial(ps.v[2], slopeVarList, iterList,
             noise_sigma=noise_sigmas[2],
             ax=ax,
             xlabel='', xticks=False,
@@ -428,7 +450,7 @@ if (velSweep300):
     fig.savefig(fname, dpi=300, transparent=True)
 
     fig, ax = createSweepFig()
-    _, ax, cax = EI.plotVelStdSweep(velSpaces[2], iterList,
+    _, ax, cax = EI.plotVelStdSweep(ps.v[2], iterList,
             noise_sigmas[2],
             ax=ax,
             ylabel='', yticks=False,
@@ -441,16 +463,41 @@ if (velSweep300):
 
 if (velLines):
     positions = ((4, 27), (4, 27), (4, 27))
-    fig = plt.figure(figsize=(2.5, histFigsize[1]))
-    ax = fig.add_axes(Bbox.from_extents(0.3, histBottom, histRight,
-        histTop))
-    plotAllSlopes(ax, velSpaces, positions)
-    fname = outputDir + "/figure2_slope_examples.pdf"
+    #positions = ((15, 15), (15, 15), (15, 15))
+    fig = plt.figure(figsize=(2.5, velFigsize[1]))
+    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
+        velTop))
+    plotSlopes(ax, ps.v[0], positions[0], noise_sigma=ps.noise_sigmas[0],
+            xlabel='', xticks=False,
+            ylabel='',
+            color='blue')
+    fname = outputDir + "/figure2_slope_examples_0.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
+
+    fig = plt.figure(figsize=(2.5, velFigsize[1]))
+    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
+        velTop))
+    plotSlopes(ax, ps.v[1], positions[1], noise_sigma=ps.noise_sigmas[1],
+            xlabel='', xticks=False,
+            g_ann=False,
+            color='green')
+    fname = outputDir + "/figure2_slope_examples_1.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+
+    fig = plt.figure(figsize=(2.5, velFigsize[1]))
+    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
+        velTop))
+    plotSlopes(ax, ps.v[2], positions[2], noise_sigma=ps.noise_sigmas[2],
+            ylabel='',
+            g_ann=False,
+            color='red')
+    fname = outputDir + "/figure2_slope_examples_2.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+
 
 if (gridness_vs_error):
     fig = plt.figure(figsize=(3.4, 2.5))
-    plotGridnessVsFitErr(gridSpaces, velSpaces, range(NTrials), maxErr=None)
+    plotGridnessVsFitErr(ps.grids, ps.v, range(NTrials), maxErr=None)
     fig.tight_layout()
     fname = outputDir + "/figure2_gridness_vs_error.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
