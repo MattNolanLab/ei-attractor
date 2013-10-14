@@ -30,7 +30,7 @@ noise_sigmas = [0, 150, 300]
 dirs         = ('{0}pA', (31, 31))
 shape        = dirs[1]
 varListBase  = ['analysis']
-loadData     = False
+loadData     = True
 
 ################################################################################
 for noise_sigma in noise_sigmas:
