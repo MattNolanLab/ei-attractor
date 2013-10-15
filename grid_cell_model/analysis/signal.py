@@ -392,4 +392,10 @@ def downSample(sig, factor, X=None):
     return (sig[idx], X[idx])
 
 
+###############################################################################
+#                                     Other
+###############################################################################
+def sliceSignal(t, sig, tStart, tEnd):
+    idx = np.logical_and(t >= tStart, t <= tEnd)
+    return t[idx], sig[idx], idx
 

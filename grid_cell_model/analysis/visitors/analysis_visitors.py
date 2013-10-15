@@ -22,8 +22,8 @@ import numpy as np
 from scipy.optimize import leastsq
 from os.path        import splitext
 
-from interface        import DictDSVisitor, extractStateVariable, \
-        sumAllVariables
+from interface        import DictDSVisitor 
+from data_storage.sim_models.ei import sumAllVariables, extractStateVariable
 from otherpkg.log     import log_info, log_warn
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 from analysis.image   import Position2D, fitGaussianBumpTT

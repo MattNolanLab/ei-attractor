@@ -25,8 +25,8 @@ from matplotlib.pyplot import figure, plot, pcolormesh, subplot2grid, savefig,\
 import os
 import errno
 
-from interface       import DictDSVisitor, sumAllVariables, \
-        extractStateVariable
+from interface       import DictDSVisitor
+from data_storage.sim_models.ei import extractStateVariable, sumAllVariables
 from plotting.signal import signalPlot
 from analysis.spikes import PopulationSpikes
 from analysis.grid_cells import extractSpikePositions2D, SNSpatialRate2D, \

@@ -20,60 +20,6 @@
 #
 from data_storage.sim_models.ei import extractSpikes
 
-def extractStateVariable(mon, nIdx, varStr):
-    '''Extract state variable from a monitor.
-    
-    Parameters
-    ----------
-    mon : list of dicts
-        A list of (NEST) monitors, each monitoring one neuron.
-    nIdx : int
-        Neuron index
-    varStr : str
-        Name of the variable
-    output
-        A tuple (data, dt), for the signal
-    '''
-    n = mon[nIdx]
-    return n['events'][varStr], n['interval']
-
-
-
-def sumAllVariables(mon, nIdx, varList):
-    '''
-    Extract all variables from the list of monitors and sum them. The variables
-    must implement the + operator.
-
-    Parameters
-    ----------
-    mon : a list of dicts
-        A list that contains dictionaries of monitors. The list should be
-        compatible with the extractStateVariable function.
-    nIdx : int
-        Neuron index
-    varList : list of strings
-        Contains the list of variables that whould be extracted from the
-        monitor and summed up.
-    output
-        A tuple (sum, dt) that contains the sum of all the variables 'sum' and
-        the sampling rate of the signals ('dt').
-    '''
-    sigSum = None
-    dtCheck = None
-    for idx in range(len(varList)):
-        sig, dt = extractStateVariable(mon, nIdx, varList[idx])
-        if (idx == 0):
-            sigSum = sig
-            dtCheck = dt
-        else:
-            assert(dtCheck == dt)
-            sigSum += sig
-
-    return sigSum, dt
-
-
-
-
 
 class Visitor(object):
     '''

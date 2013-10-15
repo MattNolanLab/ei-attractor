@@ -26,7 +26,6 @@ from matplotlib.ticker   import MaxNLocator, AutoMinorLocator, LinearLocator
 from matplotlib.colorbar import make_axes
 
 from parameters.param_space import JobTrialSpace2D
-from analysis.visitors.interface import extractStateVariable, sumAllVariables
 from plotting.global_defs import globalAxesSettings
 from plotting.low_level   import xScaleBar
 
@@ -92,6 +91,8 @@ class NoiseDataSpaces(object):
         self.grids        = getNoiseDataSpaces(roots.grids, noise_sigmas,
                 shape)
         self.noise_sigmas = noise_sigmas
+
+
 
 
 def getOption(data, optStr):
@@ -167,24 +168,6 @@ def plotBump(ax, rateMap, cmap='jet', maxRate=True, **kw):
         rStr = '{0:.1f} Hz'.format(np.max(rateMap.flatten()))
         ax.text(rx, ry, rStr, ha="right", va='bottom', fontsize=fs,
                 transform=ax.transAxes)
-
-
-def sliceSignal(t, sig, tStart, tEnd):
-    idx = np.logical_and(t >= tStart, t <= tEnd)
-    return t[idx], sig[idx], idx
-
-
-def extractStateVars(mon, varName, plotTStart, plotTEnd):
-    '''
-    Extract state variables from a pair of monitors. One in the centre, the
-    other one at the edge of the neural sheet.
-    '''
-    nIdxMiddle = 0
-
-    t, dt = extractStateVariable(mon, nIdxMiddle, 'times')
-    sig, dt = sumAllVariables(mon, nIdxMiddle, varName)
-    t, sigMiddle, idx = sliceSignal(t, sig, plotTStart, plotTEnd)
-    return t, sigMiddle
 
 
 def plotOneHist(data, bins=40, normed=False, **kw):
