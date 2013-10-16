@@ -26,9 +26,9 @@ class SubmitterFactory(object):
     Submitting factory.
     '''
 
-    @classmethod
-    def getSubmitter(cls, argCreator, appName, envType='guess',
-            rtLimit="00:05:00", output_dir=".", label='', **kw):
+    @staticmethod
+    def getSubmitter(argCreator, appName, envType='guess', output_dir=".",
+            label='', **kw):
         '''
         Get the appropriate factory object, depending on the ``envType```
         parameter. By default, try to guess the best submitter, but this can be
@@ -72,11 +72,12 @@ class SubmitterFactory(object):
             raise NotImplementedError()
         elif (envType == 'workstation'):
             Scls =  WorkstationSubmitter
+            rtLimit = kw.pop('rtLimit', None) # ignored here
         elif (envType == 'cluster'):
             Scls = ClusterSubmitter
         else:
             raise ValueError("Unsupported envType parameter.")
 
-        return Scls(argCreator, appName, rtLimit, output_dir, label, **kw)
+        return Scls(argCreator, appName, output_dir, label, **kw)
 
 

@@ -31,7 +31,7 @@ class ProgramSubmitter(object):
     inherit from this class and implement/override the necessary methods.
     '''
 
-    def __init__(self, argCreator, output_dir, label, timePrefix,
+    def __init__(self, argCreator, output_dir, label, timePrefix=False,
             blocking=True, forceExisting=True, numCPU=1):
         '''
         Create the submitter object.
@@ -246,12 +246,10 @@ class QsubSubmitter(ProgramSubmitter):
     Submit jobs on a machine that supports qsub command (cluster)
     '''
     def __init__(self, argCreator, scriptName, qsub_params, output_dir, label,
-            timePrefix, blocking=True):
-        ProgramSubmitter.__init__(self, argCreator, output_dir, label,
-                timePrefix, blocking, numCPU)
+            **kw):
+        ProgramSubmitter.__init__(self, argCreator, output_dir, label, **kw)
         self._scriptName  = scriptName
         self._qsub_params = qsub_params
-        self._blocking = False
 
     def RunProgram(self, args, job_num, dry_run):
         cmdStr = 'qsub ' + self._qsub_params + ' ' + \
