@@ -27,8 +27,8 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 # We are expecting 1-3 distinct simulation runs
-#simLabel = 'monotonic'
-simLabel = 'non_monotonic'
+#simLabel = 'non_monotonic'
+simLabel = 'EI-3_3'
 
 p = dp.copy()
 # Submitting
@@ -47,13 +47,14 @@ p['nthreads']          = 1
 p['ntrials']           = 5
 
 
-# Range of E/I synaptic conductances
-if (simLabel == 'monotonic'):
-    raise NotImplementedError()
+# Range of noise and E/I synaptic conductances
+noiseParams = SweepParams(0, 300, 31)
+if (simLabel == 'EI-3_3'):
+    gEParams    = SweepParams(2856, 3264, 3)
+    gIParams    = SweepParams(2856, 3264, 3)
 elif (simLabel == 'non_monotonic'):
     gEParams    = SweepParams(816, 1224, 3)
     gIParams    = SweepParams(2856, 3264, 3)
-    noiseParams = SweepParams(0, 300, 31)
 else:
     raise ValueError('Unknown simLabel!')
 
