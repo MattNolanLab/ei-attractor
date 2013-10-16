@@ -22,8 +22,7 @@ import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
-from matplotlib.ticker   import MaxNLocator, LinearLocator, AutoMinorLocator, \
-        MultipleLocator, NullLocator
+import matplotlib.ticker as ti
 from matplotlib.patches  import Rectangle
 from matplotlib.gridspec import GridSpec
 
@@ -32,6 +31,7 @@ from plotting.global_defs import globalAxesSettings
 from plotting.grids       import plotGridRateMap
 from parameters import DataSpace
 from figures_shared       import plotBump, createColorbar
+from data_storage.sim_models.ei import extractSummedSignals
 
 ###############################################################################
 
@@ -95,20 +95,28 @@ def aggregate2D(sp, varList, funReduce=None):
 
 
 
-def computeYX(sp, iterList, r=0, c=0, trialNum=0):
+def computeYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True):
     E, I = sp.getIteratedParameters(iterList)
-    Ne = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ne')
-    Ni = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ni')
+    if (normalize):
+        Ne = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ne')
+        Ni = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ni')
+    else:
+        Ne = 1
+        Ni = 1
     return E/Ne, I/Ni
 
 
 
+
+##############################################################################
+# Parameter sweeps
 def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
     #kw arguments
-    r          = kw.pop('r', 0)
-    c          = kw.pop('c', 0)
-    cbar       = kw.pop('cbar', True)
-    sigmaTitle = kw.pop('sigmaTitle', True)
+    r           = kw.pop('r', 0)
+    c           = kw.pop('c', 0)
+    cbar        = kw.pop('cbar', True)
+    sigmaTitle  = kw.pop('sigmaTitle', True)
+    annotations = kw.pop('annotations', None)
 
     C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.isnan(C))
@@ -120,6 +128,11 @@ def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
 
     if (sigmaTitle):
         ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+
+    if (annotations is not None):
+        for a in annotations:
+            plotSweepAnnotation(X=X, Y=Y, **a)
+
 
     return C, ax, cax
 
@@ -269,7 +282,7 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=xlabelText, ylabel=ylabelText,
     cbar_kwargs['shrink']      = cbar_kwargs.get('shrink', 0.8)
     cbar_kwargs['orientation'] = cbar_kwargs.get('orientation', 'vertical')
     cbar_kwargs['pad']         = cbar_kwargs.get('pad', 0.05)
-    cbar_kwargs['ticks']       = cbar_kwargs.get('ticks', MultipleLocator(5))
+    cbar_kwargs['ticks']       = cbar_kwargs.get('ticks', ti.MultipleLocator(5))
 
     globalAxesSettings(ax)
     ax.minorticks_on()
@@ -285,8 +298,8 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=xlabelText, ylabel=ylabelText,
         ax.yaxis.set_label_coords(-0.125, 0.5)
     ax.xaxis.set_ticks([0, 6])
     ax.yaxis.set_ticks([0, 6])
-    ax.xaxis.set_minor_locator(AutoMinorLocator(6))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(6))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(6))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
     plt.axis('scaled')
     if (not xticks):
         ax.xaxis.set_ticklabels([])
@@ -297,6 +310,33 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=xlabelText, ylabel=ylabelText,
 
 
 
+def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
+    # keyword args
+    ax = kw.pop('ax', plt.gca())
+    kw['color']      = kw.get('color', 'black')
+    kw['arrowprops'] = kw.get('arrowprops',
+            dict(arrowstyle         = "->",
+                    linewidth       = 1.5,
+                    color           = kw['color'],
+                    connectionstyle = "arc3,rad=0"))
+
+    r, c = rc[0], rc[1]
+    xy   = (X[r, c], Y[r, c])
+    x = xy[0]
+    y = xy[1]
+    xo = xytext_offset[0]
+    yo = xytext_offset[1]
+    
+    plt.annotate(txt, (x, y), xytext=(x+xo, y+yo), xycoords='data',
+        textcoords='data', ha='center', va='center', fontweight='bold', zorder=1, **kw)
+
+
+
+
+
+
+##############################################################################
+# Example plots - grids, bumps, gamma
 def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
         exIdx=(0, 0), xlabel=True, ylabel=True, xlabelPos=-0.2, xlabel2=True,
         ylabel2=True, ylabelPos=-0.2, xlabel2Pos=-0.6, ylabel2Pos=-0.6,
@@ -499,6 +539,47 @@ def drawEIRectSelection(ax, spaceRect, X, Y, color='black'):
         rectTop-rectBottom, facecolor='None', lw=1, edgecolor=color))
 
 
+
+
+def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
+    ax          = kw.pop('ax', plt.gca())
+    noise_sigma = kw.pop('noise_sigma', None)
+
+    globalAxesSettings(ax)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+
+    data = ps[r][c][trialNum].data
+    monEList = data['stateMon_e']
+    t, Isyn_e = extractSummedSignals(monEList, ['I_clamp_GABA_A'], tStart,
+            tEnd, monIdx=1)
+    monIList = data['stateMon_i']
+    t, Isyn_i = extractSummedSignals(monIList, ['I_clamp_AMPA',
+        'I_clamp_NMDA'], tStart, tEnd)
+    plt.plot(t, Isyn_e, color='red')
+    plt.plot(t, Isyn_i, color='blue')
+    max = np.max(Isyn_e)
+    min = np.min(Isyn_i)
+    absmax = np.max([np.abs(max), np.abs(min)])
+
+    ax.set_xlim([tStart, tEnd])
+    ax.xaxis.set_ticks_position('none')
+    ax.yaxis.set_ticks_position('none')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_ylim([-absmax, absmax])
+
+    if (noise_sigma is not None):
+        txt = '$\sigma$ = {0} pA'.format(noise_sigma)
+        ax.text(0.95, 1.01, txt, transform=ax.transAxes, va='bottom', ha='right',
+                size='x-small')
+
+
+
+
+
 ##############################################################################
 # Slices through parameter spaces
 def decideLabels(type):
@@ -542,9 +623,9 @@ def plotOneSlice(ax, x, y, **kw):
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(1))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(3))
+    ax.xaxis.set_major_locator(ti.MultipleLocator(1))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(5))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(3))
     w = x[-1] - x[0]
     margin = 0.025
     ax.set_xlim([-margin*w, x[-1]+margin*w])
@@ -613,7 +694,7 @@ def plotGridnessSlice(paramSpaces, rowSlice, colSlice, type, NTrials=1, **kw):
         y = collapseTrials(G[rowSlice, colSlice, :], type, ignoreNaNs)
         #import pdb; pdb.set_trace()
         plotOneSlice(ax, x, y, **kw)
-    ax.yaxis.set_major_locator(MaxNLocator(4))
+    ax.yaxis.set_major_locator(ti.MaxNLocator(4))
 
     # Title
     if (title):
@@ -630,6 +711,55 @@ def plotGridnessSlice(paramSpaces, rowSlice, colSlice, type, NTrials=1, **kw):
                 fontsize='small')
         
     return ax
+
+
+
+##############################################################################
+# Detailed noise levels
+def plotDetailedNoise(sp, NTrials, **kw):
+    xlabel           = kw.pop('xlabel', '$\sigma_{noise}$ (pA)')
+    ylabel           = kw.pop('ylabel', 'Correlation')
+    ylabelPos        = kw.pop('ylabelPos', -0.2)
+    xticks           = kw.pop('xticks', True)
+    yticks           = kw.pop('yticks', True)
+    ax               = kw.pop('ax', plt.gca())
+    markersize       = kw.pop('markersize', 4)
+    color            = kw.pop('color', 'blue')
+
+    acValVars = ['analysis', 'acVal']
+    iterList = ['noise_sigma', 'g_AMPA_total']
+    ignoreNaNs = kw.pop('ignoreNaNs', False)
+    trialNumList = range(NTrials)
+
+    # Gridness score
+    acVal = sp.aggregateData(acValVars, trialNumList, output_dtype='array',
+            loadData=True, saveData=False)
+    if (ignoreNaNs):
+        nans = np.isnan(acVal)
+        acVal = ma.MaskedArray(acVal, mask=nans)
+    Y, X = computeYX(sp, iterList, normalize=False)
+    noise_sigma = Y[:, 0]
+    AC = np.mean(acVal, axis=2)
+    AC_mean = np.mean(AC, axis=1)
+    globalAxesSettings(ax)
+    plt.plot(noise_sigma, AC[:, :], 'o', markeredgecolor=color,
+            markersize=markersize, color='none',  **kw)
+    plt.plot(noise_sigma, AC_mean, '-', color=color, markersize=markersize,
+            **kw)
+    ax.set_xlabel(xlabel)
+    ax.text(ylabelPos, 0.5, ylabel, va='center', ha='right',
+            transform=ax.transAxes, rotation=90)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.1))
+    if (not yticks):
+        ax.yaxis.set_ticklabels([])
+    if (not xticks):
+        ax.xaxis.set_ticklabels([])
+    ax.margins(0.05, 0.05)
+       
+
         
 ##############################################################################
 # Raster plots
@@ -657,8 +787,8 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
     ax.spines['top'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.yaxis.set_major_locator(LinearLocator(2))
-    ax.yaxis.set_minor_locator(NullLocator())
+    ax.yaxis.set_major_locator(ti.LinearLocator(2))
+    ax.yaxis.set_minor_locator(ti.NullLocator())
 
     ax.plot(ETimes, ESenders+1, '.', color='red',  mec='none', **kw)
     ax.plot(ITimes, ISenders+1, '.', color='blue', mec='none', **kw)

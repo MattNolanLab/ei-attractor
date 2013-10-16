@@ -31,6 +31,7 @@ from matplotlib.colorbar import make_axes
 
 import numpy.ma as ma
 
+import EI_plotting as EI
 from parameters  import JobTrialSpace2D, DataSpace
 from EI_plotting import plot2DTrial, plotACTrial
 from plotting.global_defs import globalAxesSettings
@@ -59,13 +60,19 @@ iterList  = ['g_AMPA_total', 'g_GABA_total']
 noise_sigmas  = [0, 150, 300]
 exampleIdx    = [(0, 0), (0, 0), (0, 0)] # (row, col)
 gammaDataRoot = 'output_local/even_spacing/gamma_bump'
+detailedRoot  = 'output_local/detailed_noise/gamma_bump/non_monotonic'
 gammaShape    = (31, 31)
+detailedShape = (31, 9)
 
-gammaSweep0   = 1
-gammaSweep150 = 1
-gammaSweep300 = 1
-threshold     = 1
-freqHist      = 1
+gammaSweep0    = 1
+gammaSweep150  = 1
+gammaSweep300  = 1
+threshold      = 0
+freqHist       = 0
+detailed_noise = 0
+examples0      = 1
+examples150    = 1
+examples300    = 1
 
 ###############################################################################
 
@@ -171,7 +178,7 @@ def plotThresholdComparison(spList, trialNumList, ACThrList):
     leg = []
     for s in noise_sigma:
         leg.append("{0}".format(int(s)))
-    ax.legend(leg, loc=(0.8, 0.55), title='$\sigma$ (pA)', frameon=False,
+    ax.legend(leg, loc=(0.8, 0.5), title='$\sigma$ (pA)', frameon=False,
             fontsize='small')
 
     ax.spines['top'].set_visible(False)
@@ -237,11 +244,16 @@ gammaDataSpace150 = JobTrialSpace2D(gammaShape, gammaRoots[1])
 gammaDataSpace300 = JobTrialSpace2D(gammaShape, gammaRoots[2])
 
 
-sweepFigSize = (3.2, 2.5)
-sweepLeft   = 0.15
-sweepBottom = 0.2
-sweepRight  = 0.85
-sweepTop    = 0.85
+# gamma example rows and columns
+exampleRC = ( (5, 15), (6, 3), (25, 4), (15, 15) )
+
+
+sweepFigSize = (2, 2.8)
+sweepLeft    = 0.17
+sweepBottom  = 0.1
+sweepRight   = 0.95
+sweepTop     = 0.9
+transparent  = True
 
 AC_vmin = -0.09
 AC_vmax = 0.675
@@ -252,19 +264,46 @@ ACVarList = ['acVal']
 FVarList  = ['freq']
 
 AC_cbar_kwargs = dict(
-        orientation='vertical',
+        orientation='horizontal',
         ticks=MultipleLocator(0.2),
         shrink=0.8,
+        pad=0.2,
         label='Correlation')
 F_cbar_kwargs = dict(
-        orientation='vertical',
+        orientation='horizontal',
         ticks=MultipleLocator(30),
         shrink=0.8,
+        pad=0.2,
         label='Frequency',
         extend='max', extendfrac=0.1)
 
 
+ann_color = 'white'
+ann0 = dict(
+        txt='B',
+        rc=exampleRC[0],
+        xytext_offset=(1.5, 0),
+        color=ann_color)
+ann1 = dict(
+        txt='C',
+        rc=exampleRC[1],
+        xytext_offset=(1.5, 1),
+        color=ann_color)
+ann2 = dict(
+        txt='D',
+        rc=exampleRC[2],
+        xytext_offset=(1.5, -1),
+        color=ann_color)
+ann3 = dict(
+        txt='E',
+        rc=exampleRC[3],
+        xytext_offset=(1.5, 1),
+        color=ann_color)
+ann = [ann0, ann1, ann2, ann3]
+
+
 if (gammaSweep0):
+
     # noise_sigma = 0 pA
     fig = figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -275,9 +314,10 @@ if (gammaSweep0):
             trialNumList=xrange(NTrials),
             xlabel='', xticks=False,
             cbar=False, cbar_kwargs=AC_cbar_kwargs,
-            vmin=AC_vmin, vmax=AC_vmax)
+            vmin=AC_vmin, vmax=AC_vmax,
+            annotations=ann)
     fname = outputDir + "/figure3_sweeps0.png"
-    fig.savefig(fname, dpi=300, transparent=True)
+    fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -286,13 +326,18 @@ if (gammaSweep0):
             noise_sigma=noise_sigmas[0],
             ax=ax,
             trialNumList=xrange(NTrials),
+            xlabel='', xticks=False,
+            ylabel='', yticks=False,
             cbar=False, cbar_kwargs=F_cbar_kwargs,
-            sigmaTitle=False,
-            vmin=F_vmin, vmax=F_vmax)
+            sigmaTitle=True,
+            vmin=F_vmin, vmax=F_vmax,
+            annotations=ann)
     fname = outputDir + "/figure3_freq_sweeps0.png"
-    fig.savefig(fname, dpi=300, transparent=True)
+    fig.savefig(fname, dpi=300, transparent=transparent)
         
 if (gammaSweep150):
+    for a in ann:
+        a['color'] = 'black'
     # noise_sigma = 0 pA
     fig = figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -304,9 +349,9 @@ if (gammaSweep150):
             xlabel='', xticks=False,
             cbar=False, cbar_kwargs=AC_cbar_kwargs,
             vmin=AC_vmin, vmax=AC_vmax,
-            ylabel='', yticks=False)
+            annotations=ann)
     fname = outputDir + "/figure3_sweeps150.png"
-    fig.savefig(fname, dpi=300, transparent=True)
+    fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -315,12 +360,14 @@ if (gammaSweep150):
             noise_sigma=noise_sigmas[1],
             ax=ax,
             trialNumList=xrange(NTrials),
-            cbar=False, cbar_kwargs=F_cbar_kwargs,
-            sigmaTitle=False,
+            xlabel='', xticks=False,
             ylabel='', yticks=False,
-            vmin=F_vmin, vmax=F_vmax)
+            cbar=False, cbar_kwargs=F_cbar_kwargs,
+            sigmaTitle=True,
+            vmin=F_vmin, vmax=F_vmax,
+            annotations=ann)
     fname = outputDir + "/figure3_freq_sweeps150.png"
-    fig.savefig(fname, dpi=300, transparent=True)
+    fig.savefig(fname, dpi=300, transparent=transparent)
         
 if (gammaSweep300):
     # noise_sigma = 0 pA
@@ -331,12 +378,11 @@ if (gammaSweep300):
             noise_sigma=noise_sigmas[2],
             ax=ax,
             trialNumList=xrange(NTrials),
-            xlabel='', xticks=False,
             cbar=True, cbar_kwargs=AC_cbar_kwargs,
             vmin=AC_vmin, vmax=AC_vmax,
-            ylabel='', yticks=False)
+            annotations=ann)
     fname = outputDir + "/figure3_sweeps300.png"
-    fig.savefig(fname, dpi=300, transparent=True)
+    fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -345,12 +391,13 @@ if (gammaSweep300):
             noise_sigma=noise_sigmas[2],
             ax=ax,
             trialNumList=xrange(NTrials),
-            cbar=True, cbar_kwargs=F_cbar_kwargs,
-            sigmaTitle=False,
             ylabel='', yticks=False,
-            vmin=F_vmin, vmax=F_vmax)
+            cbar=True, cbar_kwargs=F_cbar_kwargs,
+            sigmaTitle=True,
+            vmin=F_vmin, vmax=F_vmax,
+            annotations=ann)
     fname = outputDir + "/figure3_freq_sweeps300.png"
-    fig.savefig(fname, dpi=300, transparent=True)
+    fig.savefig(fname, dpi=300, transparent=transparent)
         
 
 
@@ -374,4 +421,171 @@ if (freqHist):
     fname = outputDir + "/figure3_freq_histograms.pdf"
     savefig(fname, dpi=300, transparent=True)
 
+
+##############################################################################
+detailedPS = JobTrialSpace2D(detailedShape, detailedRoot)
+detailedNTrials = 5
+
+sliceFigSize = (4.3, 1.8)
+sliceLeft   = 0.15
+sliceBottom = 0.3
+sliceRight  = 0.95
+sliceTop    = 0.85
+if (detailed_noise):
+    ylabelPos = -0.13
+    fig = plt.figure(figsize=sliceFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
+        sliceTop))
+    EI.plotDetailedNoise(detailedPS, detailedNTrials,
+            ax=ax, ylabelPos=ylabelPos)
+    fname = "figure3_detailed_noise_non_monotonic.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+##############################################################################
+exampleTrialNum = 0
+exampleFigSize = (2, 0.82)
+exampleLeft   = 0.01
+exampleBottom = 0.01
+exampleRight  = 0.99
+exampleTop    = 0.82
+if (examples0):
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace0, ax=ax,
+            r=exampleRC[0][0], c=exampleRC[0][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3,
+            noise_sigma=noise_sigmas[0])
+    fname = "figure3_example0_0.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace0, ax=ax,
+            r=exampleRC[1][0], c=exampleRC[1][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3)
+    fname = "figure3_example0_1.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace0, ax=ax,
+            r=exampleRC[2][0], c=exampleRC[2][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3)
+    fname = "figure3_example0_2.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace0, ax=ax,
+            r=exampleRC[3][0], c=exampleRC[3][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3)
+    fname = "figure3_example0_3.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+if (examples150):
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace150, ax=ax,
+            r=exampleRC[0][0], c=exampleRC[0][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3,
+            noise_sigma=noise_sigmas[1])
+    fname = "figure3_example150_0.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace150, ax=ax,
+            r=exampleRC[1][0], c=exampleRC[1][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3)
+    fname = "figure3_example150_1.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace150, ax=ax,
+            r=exampleRC[2][0], c=exampleRC[2][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3)
+    fname = "figure3_example150_2.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace150, ax=ax,
+            r=exampleRC[3][0], c=exampleRC[3][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3)
+    fname = "figure3_example150_3.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+
+
+if (examples300):
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace300, ax=ax,
+            r=exampleRC[0][0], c=exampleRC[0][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3,
+            noise_sigma=noise_sigmas[2])
+    fname = "figure3_example300_0.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace300, ax=ax,
+            r=exampleRC[1][0], c=exampleRC[1][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3)
+    fname = "figure3_example300_1.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace300, ax=ax,
+            r=exampleRC[2][0], c=exampleRC[2][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3)
+    fname = "figure3_example300_2.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+    fig = plt.figure(figsize=exampleFigSize)
+    ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+        exampleRight, exampleTop))
+    EI.plotGammaExample(gammaDataSpace300, ax=ax,
+            r=exampleRC[3][0], c=exampleRC[3][1],
+            trialNum=exampleTrialNum,
+            tStart = 2e3, tEnd=2.25e3)
+    fname = "figure3_example300_3.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
 
