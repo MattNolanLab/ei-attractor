@@ -67,9 +67,9 @@ detailedShape = (31, 9)
 gammaSweep0    = 1
 gammaSweep150  = 1
 gammaSweep300  = 1
-threshold      = 0
-freqHist       = 0
-detailed_noise = 0
+threshold      = 1
+freqHist       = 1
+detailed_noise = 1
 examples0      = 1
 examples150    = 1
 examples300    = 1
@@ -263,13 +263,13 @@ F_vmax  = 120
 ACVarList = ['acVal']
 FVarList  = ['freq']
 
-AC_cbar_kwargs = dict(
+AC_cbar_kw = dict(
         orientation='horizontal',
         ticks=MultipleLocator(0.2),
         shrink=0.8,
         pad=0.2,
         label='Correlation')
-F_cbar_kwargs = dict(
+F_cbar_kw = dict(
         orientation='horizontal',
         ticks=MultipleLocator(30),
         shrink=0.8,
@@ -313,7 +313,7 @@ if (gammaSweep0):
             ax=ax,
             trialNumList=xrange(NTrials),
             xlabel='', xticks=False,
-            cbar=False, cbar_kwargs=AC_cbar_kwargs,
+            cbar=False, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
     fname = outputDir + "/figure3_sweeps0.png"
@@ -328,7 +328,7 @@ if (gammaSweep0):
             trialNumList=xrange(NTrials),
             xlabel='', xticks=False,
             ylabel='', yticks=False,
-            cbar=False, cbar_kwargs=F_cbar_kwargs,
+            cbar=False, cbar_kw=F_cbar_kw,
             sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=ann)
@@ -347,7 +347,7 @@ if (gammaSweep150):
             ax=ax,
             trialNumList=xrange(NTrials),
             xlabel='', xticks=False,
-            cbar=False, cbar_kwargs=AC_cbar_kwargs,
+            cbar=False, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
     fname = outputDir + "/figure3_sweeps150.png"
@@ -362,7 +362,7 @@ if (gammaSweep150):
             trialNumList=xrange(NTrials),
             xlabel='', xticks=False,
             ylabel='', yticks=False,
-            cbar=False, cbar_kwargs=F_cbar_kwargs,
+            cbar=False, cbar_kw=F_cbar_kw,
             sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=ann)
@@ -378,7 +378,7 @@ if (gammaSweep300):
             noise_sigma=noise_sigmas[2],
             ax=ax,
             trialNumList=xrange(NTrials),
-            cbar=True, cbar_kwargs=AC_cbar_kwargs,
+            cbar=True, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
     fname = outputDir + "/figure3_sweeps300.png"
@@ -392,7 +392,7 @@ if (gammaSweep300):
             ax=ax,
             trialNumList=xrange(NTrials),
             ylabel='', yticks=False,
-            cbar=True, cbar_kwargs=F_cbar_kwargs,
+            cbar=True, cbar_kw=F_cbar_kw,
             sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=ann)

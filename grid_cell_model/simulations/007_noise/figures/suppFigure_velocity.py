@@ -186,7 +186,7 @@ if (velSweep300):
             cbar=True,
             xlabel='', xticks=False,
             vmin=err_vmin, vmax=err_vmax,
-            cbar_kwargs = {'label' : 'Fit error (neurons/s)'})
+            cbar_kw = {'label' : 'Fit error (neurons/s)'})
     fname = outputDir + "/suppFigure_velocity_err_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=True)
 

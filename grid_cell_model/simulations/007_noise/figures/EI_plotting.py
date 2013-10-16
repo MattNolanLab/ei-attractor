@@ -184,14 +184,15 @@ def plotFRTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
             vmax, title, clbarNTicks, xticks, yticks)
             
 
-def plotGridTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kwargs):
+def plotGridTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
     #kw arguments
-    r          = kwargs.pop('r', 0)
-    c          = kwargs.pop('c', 0)
-    nansAs0    = kwargs.pop('nansAs0', False)
-    ignoreNaNs = kwargs.pop('ignoreNaNs', False)
-    sigmaTitle = kwargs.pop('sigmaTitle', True)
-    cbar       = kwargs.pop('cbar', True)
+    r           = kw.pop('r', 0)
+    c           = kw.pop('c', 0)
+    nansAs0     = kw.pop('nansAs0', False)
+    ignoreNaNs  = kw.pop('ignoreNaNs', False)
+    sigmaTitle  = kw.pop('sigmaTitle', True)
+    cbar        = kw.pop('cbar', True)
+    annotations = kw.pop('annotations', None)
 
     G = aggregate2DTrial(sp, varList, trialNumList, ignoreNaNs=ignoreNaNs)
     nans = np.isnan(G)
@@ -200,13 +201,18 @@ def plotGridTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kwargs
     else:
         G = ma.MaskedArray(G, mask=nans)
     Y, X = computeYX(sp, iterList, r=r, c=c)
-    G, ax, cax = plot2DTrial(X, Y, G, colorBar=cbar, **kwargs)
+    G, ax, cax = plot2DTrial(X, Y, G, colorBar=cbar, **kw)
 
     print("    max(G): {0}".format(np.max(G)))
     print("    min(G): {0}".format(np.min(G)))
 
     if (sigmaTitle):
         ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+
+    if (annotations is not None):
+        for a in annotations:
+            plotSweepAnnotation(X=X, Y=Y, **a)
+
     return G, ax, cax
 
 
@@ -218,17 +224,17 @@ def computeVelYX(sp, iterList, r=0, c=0, trialNum=0):
 
 
 
-def plotVelTrial(sp, varList, iterList, noise_sigma, **kwargs):
+def plotVelTrial(sp, varList, iterList, noise_sigma, **kw):
     # process kwargs
-    r          = kwargs.pop('r', 0)
-    c          = kwargs.pop('c', 0)
-    sigmaTitle = kwargs.pop('sigmaTitle', True)
-    cbar       = kwargs.pop('cbar', True)
+    r          = kw.pop('r', 0)
+    c          = kw.pop('c', 0)
+    sigmaTitle = kw.pop('sigmaTitle', True)
+    cbar       = kw.pop('cbar', True)
 
     C    = np.abs(aggregate2D(sp, varList, funReduce = np.sum))
     C    = ma.MaskedArray(C, mask = np.isnan(C))
     Y, X = computeVelYX(sp, iterList, r=r, c=c)
-    C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kwargs)
+    C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kw)
 
     print("plotVelTrial: max(C): {0}".format(np.max(C.ravel())))
 
@@ -238,12 +244,12 @@ def plotVelTrial(sp, varList, iterList, noise_sigma, **kwargs):
     return C, ax, cax
 
 
-def plotVelStdSweep(sp, iterList, noise_sigma, **kwargs):
+def plotVelStdSweep(sp, iterList, noise_sigma, **kw):
     # process kwargs
-    r          = kwargs.pop('r', 0)
-    c          = kwargs.pop('c', 0)
-    sigmaTitle = kwargs.pop('sigmaTitle', True)
-    cbar       = kwargs.pop('cbar', True)
+    r          = kw.pop('r', 0)
+    c          = kw.pop('c', 0)
+    sigmaTitle = kw.pop('sigmaTitle', True)
+    cbar       = kw.pop('cbar', True)
 
 
     varList = ['analysis', 'bumpVelAll']
@@ -261,7 +267,7 @@ def plotVelStdSweep(sp, iterList, noise_sigma, **kwargs):
 
     Y, X = computeVelYX(sp, iterList, r=r, c=c)
     C = ma.MaskedArray(C, mask = np.isnan(C))
-    C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kwargs)
+    C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kw)
 
     print("plotVelStdSweep: max(C): {0}".format(np.max(C.ravel())))
     print("plotVelStdSweep: min(C): {0}".format(np.min(C.ravel())))
@@ -275,19 +281,19 @@ def plotVelStdSweep(sp, iterList, noise_sigma, **kwargs):
 
 def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=xlabelText, ylabel=ylabelText,
         colorBar=False, clBarLabel="", vmin=None, vmax=None, title="",
-        clbarNTicks=2, xticks=True, yticks=True, cmap=None, cbar_kwargs={},
+        clbarNTicks=2, xticks=True, yticks=True, cmap=None, cbar_kw={},
         **kw):
     # kw arguments (cbar)
-    cbar_kwargs['label']       = cbar_kwargs.get('label', '')
-    cbar_kwargs['shrink']      = cbar_kwargs.get('shrink', 0.8)
-    cbar_kwargs['orientation'] = cbar_kwargs.get('orientation', 'vertical')
-    cbar_kwargs['pad']         = cbar_kwargs.get('pad', 0.05)
-    cbar_kwargs['ticks']       = cbar_kwargs.get('ticks', ti.MultipleLocator(5))
+    cbar_kw['label']       = cbar_kw.get('label', '')
+    cbar_kw['shrink']      = cbar_kw.get('shrink', 0.8)
+    cbar_kw['orientation'] = cbar_kw.get('orientation', 'vertical')
+    cbar_kw['pad']         = cbar_kw.get('pad', 0.05)
+    cbar_kw['ticks']       = cbar_kw.get('ticks', ti.MultipleLocator(5))
 
     globalAxesSettings(ax)
     ax.minorticks_on()
     plt.pcolor(X, Y, C, vmin=vmin, vmax=vmax, cmap=cmap, **kw)
-    cax = createColorbar(ax, **cbar_kwargs)
+    cax = createColorbar(ax, **cbar_kw)
     if (colorBar == False):
         cax.set_visible(False)
     if (xlabel != ""):
@@ -337,6 +343,14 @@ def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
 
 ##############################################################################
 # Example plots - grids, bumps, gamma
+def plotOneGridExample(dataSpace, rc, iterList, **kw):
+    r, c = rc[0], rc[1]
+    spaceRect = (c, r, c, r)
+    gsCoords  = (0, 0, 1, 1)
+    return drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, **kw)
+
+
+
 def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
         exIdx=(0, 0), xlabel=True, ylabel=True, xlabelPos=-0.2, xlabel2=True,
         ylabel2=True, ylabelPos=-0.2, xlabel2Pos=-0.6, ylabel2Pos=-0.6,
@@ -497,17 +511,14 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, **kw):
 
 
 def plotSquareGridExample(exLeft, exBottom, sz, fileName, exIdx, sweep_ax,
-        sweepDataSpace, iterList, exGsCoords, wspace=0, hspace=0, figSize=(2.1, 2.1),
-        fontSize=None, xlabel=True, ylabel=True, xlabel2=True, ylabel2=True,
-        maxRate=True, plotGScore=True):
+        sweepDataSpace, iterList, exGsCoords, wspace=0, hspace=0,
+        figSize=(2.1,2.1), **kw):
     # Create the example plot
     fig = plt.figure(figsize=figSize)
 
     exRect = [exLeft, exBottom, exLeft+sz-1, exBottom+sz-1]
     gs = drawGridExamples(sweepDataSpace, exRect, iterList,
-            gsCoords=exGsCoords, exIdx=exIdx, fontSize='small', xlabel=xlabel,
-            ylabel=ylabel, xlabel2=xlabel2, ylabel2=ylabel2, maxRate=maxRate,
-            plotGScore=plotGScore)
+            gsCoords=exGsCoords, exIdx=exIdx, fontSize='small', **kw)
     gs.update(wspace=wspace, hspace=hspace)
     plt.savefig(fileName, dpi=300, transparent=False)
     plt.close()

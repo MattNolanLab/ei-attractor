@@ -28,7 +28,6 @@ from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
 import EI_plotting as EI
-from EI_plotting          import plotGridTrial, aggregate2DTrial, plotSquareGridExample
 from plotting.global_defs import globalAxesSettings
 from figures_shared       import plotOneHist, NoiseDataSpaces
 
@@ -44,7 +43,7 @@ plt.rcParams['font.size'] = 11
 
 outputDir = "."
 
-NTrials=2
+NTrials=3
 gridTrialNumList = np.arange(NTrials)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
@@ -55,12 +54,14 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-grid_examples = 0
-grids0        = 0
-grids150      = 0
-grids300      = 0
-hists         = 0
-slices        = 1
+grids0      = 1
+grids150    = 1
+grids300    = 1
+hists       = 0
+slices      = 0
+examples0   = 1
+examples150 = 1
+examples300 = 1
 
 ##############################################################################
 
@@ -77,7 +78,7 @@ def plotGridnessThresholdComparison(spList, trialNumList, thrList, r=0, c=0,
     globalAxesSettings(ax)
 
     for sp in spList:
-        G = aggregate2DTrial(sp, varList, trialNumList).flatten()
+        G = EI.aggregate2DTrial(sp, varList, trialNumList).flatten()
         counts = []
         for thr in thrList:
             thrIdx = np.logical_and(G > thr, np.logical_not(np.isnan(G)))
@@ -116,7 +117,7 @@ def plotGridnessHistogram(spList, trialNumList, ylabelPos=-0.2):
     globalAxesSettings(ax)
 
     for idx, sp in enumerate(spList):
-        G = aggregate2DTrial(sp, varList, trialNumList).flatten()
+        G = EI.aggregate2DTrial(sp, varList, trialNumList).flatten()
         filtIdx = np.logical_not(np.isnan(G))
         plotOneHist(G[filtIdx], normed=True)
     leg = []
@@ -200,63 +201,70 @@ def plotGridnessMarginal(paramSpaces, type, NTrials=1, **kw):
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
-exSz = 4
-exMargin = 0.1
-exGsCoords = 0, 0.0, 1.0-exMargin, 1.0-exMargin
-exWspace=0.2
-exHspace=0.2
 
-sweepFigSize = (2.43, 3.33)
+sweepFigSize = (3.5, 2.5)
 sweepLeft   = 0.15
-sweepBottom = 0.1
-sweepRight  = 0.99
-sweepTop    = 0.92
+sweepBottom = 0.2
+sweepRight  = 0.87
+sweepTop    = 0.85
 
-cbar_kwargs = {'label' : 'Gridness score',
-    'orientation': 'horizontal',
+cbar_kw= {'label' : 'Gridness score',
+    'orientation': 'vertical',
     'shrink': 0.8,
-    'pad' : 0.2,
+    'pad' : -0.05,
     'ticks' : ti.MultipleLocator(0.5)}
 
 vmin = -0.5
 vmax = 1.1
 
 ##############################################################################
+exampleRC = ( (6, 15), (15, 15), (12, 5), (25, 3), (25, 25) )
+
+ann0 = dict(
+        txt='B',
+        rc=exampleRC[0],
+        xytext_offset=(1.5, 1),
+        color='black')
+ann1 = dict(
+        txt='C',
+        rc=exampleRC[1],
+        xytext_offset=(1.5, 1),
+        color='black')
+ann2 = dict(
+        txt='D',
+        rc=exampleRC[2],
+        xytext_offset=(1.5, -1),
+        color='black')
+ann3 = dict(
+        txt='E',
+        rc=exampleRC[3],
+        xytext_offset=(1.5, 0.5),
+        color='black')
+ann4 = dict(
+        txt='F',
+        rc=exampleRC[4],
+        xytext_offset=(-1.5, 0.5),
+        color='black')
+ann = [ann0, ann1, ann2, ann3, ann4]
+
 
 varList = ['gridnessScore']
 
 if (grids0):
-
     # noise_sigma = 0 pA
     fig = plt.figure("sweeps0", figsize=sweepFigSize)
     exRows = [28, 15]
     exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    plotGridTrial(ps.grids[0], varList, iterList, ps.noise_sigmas[0],
+    EI.plotGridTrial(ps.grids[0], varList, iterList, ps.noise_sigmas[0],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[0][0], c=exampleIdx[0][1],
-            xlabel='', xticks=False,
-            cbar=False, cbar_kwargs=cbar_kwargs,
+            cbar=False, cbar_kw=cbar_kw,
             vmin=vmin, vmax=vmax,
-            ignoreNaNs=True)
-    if (grid_examples):
-        exLeft = 2
-        exBottom = 24
-        fname = outputDir + "/figure1_examples_0pA_0.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[0], ax,
-                ps.grids[0], iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
-        
-        exLeft = 18
-        exBottom = 14
-        fname = outputDir + "/figure1_examples_0pA_1.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[0], ax,
-                ps.grids[0], iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
+            ignoreNaNs=True,
+            annotations=ann)
     fname = outputDir + "/figure1_sweeps0.png"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
@@ -270,30 +278,15 @@ if (grids150):
     exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    plotGridTrial(ps.grids[1], varList, iterList, ps.noise_sigmas[1],
+    EI.plotGridTrial(ps.grids[1], varList, iterList, ps.noise_sigmas[1],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[1][0], c=exampleIdx[1][1],
-            xlabel='', xticks=False,
-            cbar=False, cbar_kwargs=cbar_kwargs,
+            ylabel='', yticks=False,
+            cbar=False, cbar_kw=cbar_kw,
             vmin=vmin, vmax=vmax,
-            ignoreNaNs=True)
-    if (grid_examples):
-        exLeft = 2
-        exBottom = 24
-        fname = outputDir + "/figure1_examples_150pA_0.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[1], ax,
-                ps.grids[1], iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
-
-        exLeft = 18
-        exBottom = 14
-        fname = outputDir + "/figure1_examples_150pA_1.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[1], ax,
-                ps.grids[1], iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
+            ignoreNaNs=True,
+            annotations=ann)
     fname = outputDir + "/figure1_sweeps150.png"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
@@ -307,30 +300,15 @@ if (grids300):
     exCols = [6, 23]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
+    EI.plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[2][0], c=exampleIdx[2][1],
-            cbar_kwargs=cbar_kwargs,
+            ylabel='', yticks=False,
+            cbar_kw=cbar_kw,
             vmin=vmin, vmax=vmax,
-            ignoreNaNs=True)
-    if (grid_examples):
-        exLeft = 2
-        exBottom = 24
-        fname = outputDir + "/figure1_examples_300pA_0.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[2], ax,
-                ps.grids[2], iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
-
-        exLeft = 18
-        exBottom = 14
-        fname = outputDir + "/figure1_examples_300pA_1.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[2], ax,
-                ps.grids[2], iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
-
+            ignoreNaNs=True,
+            annotations=ann)
     fname = outputDir + "/figure1_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
@@ -381,5 +359,58 @@ if (slices):
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
+
+##############################################################################
+# Grid field examples
+exampleFName = outputDir + "/figure1_examples_{0}pA_{1}.png"
+exTransparent = True
+exampleFigSize = (1, 1)
+exampleLeft   = 0.01
+exampleBottom = 0.01
+exampleRight  = 0.99
+exampleTop    = 0.85
+
+if (examples0):
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[0], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = EI.plotOneGridExample(ps.grids[0], rc, iterList,
+                exIdx=exampleIdx[0],
+                xlabel=False, ylabel=False,
+                xlabel2=False, ylabel2=False, 
+                maxRate=True, plotGScore=False)
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
+    
+if (examples150):
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[1], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = EI.plotOneGridExample(ps.grids[1], rc, iterList,
+                exIdx=exampleIdx[1],
+                xlabel=False, ylabel=False,
+                xlabel2=False, ylabel2=False, 
+                maxRate=True, plotGScore=False)
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
+    
+if (examples300):
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[2], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = EI.plotOneGridExample(ps.grids[2], rc, iterList,
+                exIdx=exampleIdx[2],
+                xlabel=False, ylabel=False,
+                xlabel2=False, ylabel2=False, 
+                maxRate=True, plotGScore=False)
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
+    
 
 

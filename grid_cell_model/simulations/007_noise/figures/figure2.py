@@ -52,16 +52,16 @@ bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-bumpExamples      = 0
-bumpSweep0        = 0
-bumpSweep150      = 0
-bumpSweep300      = 0
-velExamples       = 0
-velSweep0         = 0
-velSweep150       = 0
-velSweep300       = 0
+bumpExamples      = 1
+bumpSweep0        = 1
+bumpSweep150      = 1
+bumpSweep300      = 1
+velExamples       = 1
+velSweep0         = 1
+velSweep150       = 1
+velSweep300       = 1
 velLines          = 1
-gridness_vs_error = 0
+gridness_vs_error = 1
 
 ##############################################################################
 
@@ -249,7 +249,7 @@ sigmaVarList = ['bump_e', 'sigma']
 bumpTrialNumList = np.arange(5)
 bump_vmin = 0
 bump_vmax = 10
-bump_cbar_kwargs = dict(
+bump_cbar_kw= dict(
         orientation='vertical',
         shrink=0.8, pad=0.05,
         ticks=ti.MultipleLocator(5),
@@ -267,7 +267,7 @@ if (bumpSweep0):
             noise_sigma=ps.noise_sigmas[0],
             ax=ax,
             trialNumList=bumpTrialNumList,
-            cbar=False, cbar_kwargs=bump_cbar_kwargs,
+            cbar=False, cbar_kw=bump_cbar_kw,
             vmin=bump_vmin, vmax=bump_vmax)
     if (bumpExamples):
         exLeft = 1
@@ -300,7 +300,7 @@ if (bumpSweep150):
             noise_sigma=noise_sigmas[1],
             ax=ax,
             trialNumList=bumpTrialNumList,
-            cbar=False, cbar_kwargs=bump_cbar_kwargs,
+            cbar=False, cbar_kw=bump_cbar_kw,
             ylabel='', yticks=False,
             vmin=bump_vmin, vmax=bump_vmax)
     if (bumpExamples):
@@ -336,7 +336,7 @@ if (bumpSweep300):
             noise_sigma=noise_sigmas[2],
             ax=ax,
             trialNumList=bumpTrialNumList,
-            cbar=True, cbar_kwargs=bump_cbar_kwargs,
+            cbar=True, cbar_kw=bump_cbar_kw,
             ylabel='', yticks=False,
             vmin=bump_vmin, vmax=bump_vmax)
     if (bumpExamples):
@@ -367,13 +367,13 @@ slope_vmax = 1.6
 std_vmin = 0
 std_vmax = 14
 
-slope_cbar_kwargs = dict(
+slope_cbar_kw= dict(
         orientation='vertical',
         label='Slope (neurons/s/pA)',
         ticks=ti.MultipleLocator(0.5),
         extend='max', extendfrac=0.1)
 
-std_cbar_kwargs = dict(
+std_cbar_kw= dict(
         orientation='vertical',
         label='Mean $\sigma_{speed}$ (neurons/s)',
         ticks=ti.MultipleLocator(4),
@@ -393,7 +393,7 @@ if (velSweep0):
             noise_sigmas[0],
             ax=ax,
             xlabel='', xticks=False,
-            cbar=False, cbar_kwargs=slope_cbar_kwargs,
+            cbar=False, cbar_kw=slope_cbar_kw,
             vmin=slope_vmin, vmax=slope_vmax)
     fname = outputDir + "/figure2_slope_sweeps0.png"
     fig.savefig(fname, dpi=300, transparent=True)
@@ -403,7 +403,7 @@ if (velSweep0):
             noise_sigmas[0],
             ax=ax,
             sigmaTitle=False,
-            cbar=False, cbar_kwargs=std_cbar_kwargs,
+            cbar=False, cbar_kw=std_cbar_kw,
             vmin=std_vmin, vmax=std_vmax)
     fname = outputDir + "/figure2_vel_std_sweeps0.png"
     fig.savefig(fname, dpi=300, transparent=True)
@@ -418,7 +418,7 @@ if (velSweep150):
             ax=ax,
             xlabel='', xticks=False,
             ylabel='', yticks=False,
-            cbar=False, cbar_kwargs=slope_cbar_kwargs,
+            cbar=False, cbar_kw=slope_cbar_kw,
             vmin=slope_vmin, vmax=slope_vmax)
     fname = outputDir + "/figure2_slope_sweeps150.png"
     fig.savefig(fname, dpi=300, transparent=True)
@@ -429,7 +429,7 @@ if (velSweep150):
             ax=ax,
             ylabel='', yticks=False,
             sigmaTitle=False,
-            cbar=False, cbar_kwargs=std_cbar_kwargs,
+            cbar=False, cbar_kw=std_cbar_kw,
             vmin=std_vmin, vmax=std_vmax)
     fname = outputDir + "/figure2_vel_std_sweeps150.png"
     fig.savefig(fname, dpi=300, transparent=True)
@@ -444,7 +444,7 @@ if (velSweep300):
             ax=ax,
             xlabel='', xticks=False,
             ylabel='', yticks=False,
-            cbar=True, cbar_kwargs=slope_cbar_kwargs,
+            cbar=True, cbar_kw=slope_cbar_kw,
             vmin=slope_vmin, vmax=slope_vmax)
     fname = outputDir + "/figure2_slope_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=True)
@@ -455,7 +455,7 @@ if (velSweep300):
             ax=ax,
             ylabel='', yticks=False,
             sigmaTitle=False,
-            cbar=True, cbar_kwargs=std_cbar_kwargs,
+            cbar=True, cbar_kw=std_cbar_kw,
             vmin=std_vmin, vmax=std_vmax)
     fname = outputDir + "/figure2_vel_std_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=True)
