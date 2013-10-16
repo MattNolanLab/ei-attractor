@@ -79,8 +79,7 @@ class WorkstationSubmitter(GenericSubmitter):
     This will submit the python command on a generic processor machine.
     '''
 
-    def __init__(self, argCreator, appName, rtLimit, outputDir, label,
-            timePrefix, blocking, numCPU):
+    def __init__(self, argCreator, appName, rtLimit, outputDir, label, **kw):
         '''
         Initialize the submitter.
 
@@ -109,5 +108,5 @@ class WorkstationSubmitter(GenericSubmitter):
         self.progName = 'python '
         commandStr = self.progName + appName
         GenericSubmitter.__init__(self, argCreator, commandStr, outputDir,
-                label, timePrefix, blocking=blocking)
+                label, **kw)
 
