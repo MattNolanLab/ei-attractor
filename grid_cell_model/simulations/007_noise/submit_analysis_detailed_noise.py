@@ -29,10 +29,10 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'cluster'
+ENV         = 'workstation'
 appName     = 'analysis_EI.py'
 rtLimit     = '00:02:00'
-numCPU      = 1
+numCPU      = 12
 blocking    = True
 timePrefix  = False
 numRepeat   = 1
@@ -43,7 +43,7 @@ velocityType  = 'velocity'
 gridsType     = 'grids'
 
 dirs = \
-    ('output/detailed_noise/gamma_bump', gammaBumpType, 'non_monotonic', (1, 279))
+    ('output/detailed_noise/gamma_bump', gammaBumpType, 'non_monotonic', (31, 9))
     #('output/even_spacing/grids',      gridsType,       'non_monotonic', (31, 31))
     #('output/even_spacing/velocity',   velocityType,    'non_monotonic', (31, 31))
 
