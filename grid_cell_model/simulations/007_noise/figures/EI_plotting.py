@@ -133,18 +133,18 @@ def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
         for a in annotations:
             plotSweepAnnotation(X=X, Y=Y, **a)
 
-
     return C, ax, cax
 
 
 def plotBumpSigmaTrial(sp, varList, iterList, noise_sigma, trialNumList=[0],
         thr=np.infty, **kw):
     #kw arguments
-    r          = kw.pop('r', 0)
-    c          = kw.pop('c', 0)
-    cbar       = kw.pop('cbar', True)
-    kw['cmap'] = kw.get('cmap', 'jet_r')
-    sigmaTitle = kw.pop('sigmaTitle', True)
+    r           = kw.pop('r', 0)
+    c           = kw.pop('c', 0)
+    cbar        = kw.pop('cbar', True)
+    kw['cmap']  = kw.get('cmap', 'jet_r')
+    sigmaTitle  = kw.pop('sigmaTitle', True)
+    annotations = kw.pop('annotations', None)
 
     C = aggregate2DTrial(sp, varList, trialNumList)
     C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
@@ -153,6 +153,10 @@ def plotBumpSigmaTrial(sp, varList, iterList, noise_sigma, trialNumList=[0],
 
     if (sigmaTitle):
         ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+
+    if (annotations is not None):
+        for a in annotations:
+            plotSweepAnnotation(X=X, Y=Y, **a)
 
     return C, ax, cax
 

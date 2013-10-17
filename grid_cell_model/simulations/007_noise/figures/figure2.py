@@ -52,46 +52,32 @@ bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-bumpExamples      = 1
-bumpSweep0        = 1
-bumpSweep150      = 1
-bumpSweep300      = 1
-velExamples       = 1
-velSweep0         = 1
-velSweep150       = 1
-velSweep300       = 1
-velLines          = 1
-gridness_vs_error = 1
+bumpSweep         = 1
+bumpExamples      = 0
+velExamples       = 0
+velSweep0         = 0
+velSweep150       = 0
+velSweep300       = 0
+velLines          = 0
+gridness_vs_error = 0
 
 ##############################################################################
 
-
-def plotBumpExample(exLeft, exBottom, w, h, fileName, exIdx, sweep_ax,
-        sweepDataSpace, iterList, exGsCoords, **kw):
+def plotBumpExample(sp, rc, iterList, **kw):
     #keyword
-    wspace = kw.pop('wspace', 0)
-    hspace = kw.pop('hspace', 0)
-    figSize = kw.pop('figSize', (1.8, 1))
-    rectColor = kw.pop('rectColor', 'black')
+    wspace    = kw.pop('wspace', 0)
+    hspace    = kw.pop('hspace', 0)
+    gsCoords  = kw.pop('exGsCoords', (0, 0, 1, 1))
 
-    # Create the example plot
-    fig = plt.figure(figsize=figSize)
-
-    exRect = [exLeft, exBottom, exLeft+w-1, exBottom+h-1]
-    gs = EI.drawBumpExamples(sweepDataSpace, exRect, iterList,
-            gsCoords=exGsCoords, xlabel=False, ylabel=False, xlabel2=False,
-            ylabel2=False, fontsize='xx-small', rateYPos=1.05, rateXPos=0.98,
+    r, c = rc[0], rc[1] 
+    spaceRect = [c, r, c, r]
+    return EI.drawBumpExamples(sp, spaceRect, iterList,
+            gsCoords=gsCoords,
+            xlabel=False, ylabel=False,
+            xlabel2=False, ylabel2=False,
+            fontsize='x-small',
+            rateYPos=1.05, rateXPos=0.98,
             **kw)
-    gs.update(wspace=wspace, hspace=hspace)
-    plt.savefig(fileName, dpi=300, transparent=False)
-    plt.close()
-
-    # Draw the selection into the EI plot
-    if (sweep_ax is not None):
-        exRow, exCol = exIdx
-        Y, X = EI.computeYX(sweepDataSpace, iterList, r=exRow, c=exCol)
-        EI.drawEIRectSelection(sweep_ax, exRect, X, Y, color=rectColor)
-
 
 
 def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
@@ -223,19 +209,17 @@ def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
-
 exW = 4
 exH = 2
 exMargin = 0.075
-exGsCoords = 0.02, 0, 0.98, 1.0-exMargin
 exWspace=0.2
 exHspace=0.15
 
-sweepFigSize = (2.5, 2.1)
-sweepLeft   = 0.15
-sweepBottom = 0.2
-sweepRight  = 0.87
-sweepTop    = 0.85
+sweepFigSize = (1.9, 2.6)
+sweepLeft    = 0.17
+sweepBottom  = 0.1
+sweepRight   = 0.95
+sweepTop     = 0.9
 
 velFigsize =(2.6, 2)
 velLeft    = 0.3
@@ -250,13 +234,42 @@ bumpTrialNumList = np.arange(5)
 bump_vmin = 0
 bump_vmax = 10
 bump_cbar_kw= dict(
-        orientation='vertical',
-        shrink=0.8, pad=0.05,
+        orientation='horizontal',
+        shrink=0.8, pad=0.2,
         ticks=ti.MultipleLocator(5),
         label='Bump $\sigma$ (neurons)',
         extend='max', extendfrac=0.1)
 
-if (bumpSweep0):
+exampleRC = ( (6, 15), (15, 15), (12, 5), (25, 3), (25, 25) )
+
+ann0 = dict(
+        txt='B',
+        rc=exampleRC[0],
+        xytext_offset=(1.5, 1),
+        color='white')
+ann1 = dict(
+        txt='C',
+        rc=exampleRC[1],
+        xytext_offset=(1.5, 1),
+        color='white')
+ann2 = dict(
+        txt='D',
+        rc=exampleRC[2],
+        xytext_offset=(0.5, 1.5),
+        color='black')
+ann3 = dict(
+        txt='E',
+        rc=exampleRC[3],
+        xytext_offset=(1.5, 0.5),
+        color='black')
+ann4 = dict(
+        txt='F',
+        rc=exampleRC[4],
+        xytext_offset=(-1.5, 0.5),
+        color='white')
+ann = [ann0, ann1, ann2, ann3, ann4]
+
+if (bumpSweep):
     # noise_sigma = 0 pA
     fig = plt.figure("sweeps0", figsize=sweepFigSize)
     exRows = [28, 15]
@@ -266,30 +279,14 @@ if (bumpSweep0):
     EI.plotBumpSigmaTrial(ps.bumpGamma[0], sigmaVarList, iterList,
             noise_sigma=ps.noise_sigmas[0],
             ax=ax,
+            xlabel='', xticks=False,
             trialNumList=bumpTrialNumList,
             cbar=False, cbar_kw=bump_cbar_kw,
-            vmin=bump_vmin, vmax=bump_vmax)
-    if (bumpExamples):
-        exLeft = 1
-        exBottom = 24
-        fname = outputDir + "/figure2_examples_0pA_0.png"
-        plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[0],
-                ax, ps.bumpGamma[0], iterList, exGsCoords, wspace=exWspace,
-                hspace=exHspace, rectColor='red')
-
-        exLeft = 25
-        exBottom = 15
-        fname = outputDir + "/figure2_examples_0pA_1.png"
-        plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[0],
-                ax, ps.bumpGamma[0], iterList, exGsCoords, wspace=exWspace,
-                hspace=exHspace, rectColor='red')
-
+            vmin=bump_vmin, vmax=bump_vmax,
+            annotations=ann)
     fname = outputDir + "/figure2_sweeps0.png"
     fig.savefig(fname, dpi=300, transparent=True)
 
-
-
-if (bumpSweep150):
     # noise_sigma = 150 pA
     fig = plt.figure("sweeps150", figsize=sweepFigSize)
     exRows = [8, 2]
@@ -299,32 +296,14 @@ if (bumpSweep150):
     EI.plotBumpSigmaTrial(ps.bumpGamma[1], sigmaVarList, iterList,
             noise_sigma=noise_sigmas[1],
             ax=ax,
+            xlabel='', xticks=False,
             trialNumList=bumpTrialNumList,
             cbar=False, cbar_kw=bump_cbar_kw,
-            ylabel='', yticks=False,
-            vmin=bump_vmin, vmax=bump_vmax)
-    if (bumpExamples):
-        exLeft = 1
-        exBottom = 24
-        fname = outputDir + "/figure2_examples_150pA_0.png"
-        plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[1],
-                ax, ps.bumpGamma[1], iterList, exGsCoords, wspace=exWspace,
-                hspace=exHspace, rectColor='red')
-
-        exLeft = 25
-        exBottom = 15
-        fname = outputDir + "/figure2_examples_150pA_1.png"
-        plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[1],
-                ax, ps.bumpGamma[1], iterList, exGsCoords, wspace=exWspace,
-                hspace=exHspace, rectColor='black')
-
-
+            vmin=bump_vmin, vmax=bump_vmax,
+            annotations=ann)
     fname = outputDir + "/figure2_sweeps150.png"
     fig.savefig(fname, dpi=300, transparent=True)
 
-
-
-if (bumpSweep300):
     # noise_sigma = 300 pA
     fig = plt.figure("sweeps300", figsize=sweepFigSize)
     exRows = [16, 15]
@@ -337,27 +316,56 @@ if (bumpSweep300):
             ax=ax,
             trialNumList=bumpTrialNumList,
             cbar=True, cbar_kw=bump_cbar_kw,
-            ylabel='', yticks=False,
-            vmin=bump_vmin, vmax=bump_vmax)
-    if (bumpExamples):
-        exLeft = 1
-        exBottom = 24
-        fname = outputDir + "/figure2_examples_300pA_0.png"
-        plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[2],
-                ax, ps.bumpGamma[2], iterList, exGsCoords, wspace=exWspace,
-                hspace=exHspace, rectColor='red')
-
-        exLeft = 25
-        exBottom = 15
-        fname = outputDir + "/figure2_examples_300pA_1.png"
-        plotBumpExample(exLeft, exBottom, exW, exH, fname, exampleIdx[2],
-                ax, ps.bumpGamma[2], iterList, exGsCoords, wspace=exWspace,
-                hspace=exHspace, rectColor='black')
-
-
-
+            vmin=bump_vmin, vmax=bump_vmax,
+            annotations=ann)
     fname = outputDir + "/figure2_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=True)
+
+
+##############################################################################
+# Bump examples
+exampleFName = outputDir + "/figure2_examples_{0}pA_{1}.png"
+exTransparent = True
+exampleFigSize = (0.8, 0.8)
+exampleLeft   = 0.01
+exampleBottom = 0.01
+exampleRight  = 0.99
+exampleTop    = 0.85
+
+if (bumpExamples):
+    # noise sigma == 0 pA
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[0], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = plotBumpExample(ps.bumpGamma[0], rc, iterList,
+                exIdx=exampleIdx[0])
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
+
+    # noise sigma == 150 pA
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[1], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = plotBumpExample(ps.bumpGamma[1], rc, iterList,
+                exIdx=exampleIdx[1])
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
+
+    # noise sigma == 300 pA
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[2], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = plotBumpExample(ps.bumpGamma[2], rc, iterList,
+                exIdx=exampleIdx[1])
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
+
 
 ###############################################################################
 
