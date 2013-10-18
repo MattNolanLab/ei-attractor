@@ -47,6 +47,7 @@ files="
     suppFigure_grids8.png
     suppFigure_model.png
     suppFigure_velocity.png
+    suppFigure_no_theta.png
     slices
     "
 
