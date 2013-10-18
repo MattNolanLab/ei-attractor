@@ -53,7 +53,7 @@ velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
 bumpSweep         = 1
-bumpExamples      = 0
+bumpExamples      = 1
 velExamples       = 0
 velSweep0         = 0
 velSweep150       = 0
@@ -240,7 +240,7 @@ bump_cbar_kw= dict(
         label='Bump $\sigma$ (neurons)',
         extend='max', extendfrac=0.1)
 
-exampleRC = ( (6, 15), (15, 15), (12, 5), (25, 3), (25, 25) )
+exampleRC = ( (5, 15), (15, 5) )
 
 ann0 = dict(
         txt='B',
@@ -250,24 +250,9 @@ ann0 = dict(
 ann1 = dict(
         txt='C',
         rc=exampleRC[1],
-        xytext_offset=(1.5, 1),
-        color='white')
-ann2 = dict(
-        txt='D',
-        rc=exampleRC[2],
-        xytext_offset=(0.5, 1.5),
+        xytext_offset=(1.2, 1.1),
         color='black')
-ann3 = dict(
-        txt='E',
-        rc=exampleRC[3],
-        xytext_offset=(1.5, 0.5),
-        color='black')
-ann4 = dict(
-        txt='F',
-        rc=exampleRC[4],
-        xytext_offset=(-1.5, 0.5),
-        color='white')
-ann = [ann0, ann1, ann2, ann3, ann4]
+ann = [ann0, ann1]
 
 if (bumpSweep):
     # noise_sigma = 0 pA
@@ -288,6 +273,8 @@ if (bumpSweep):
     fig.savefig(fname, dpi=300, transparent=True)
 
     # noise_sigma = 150 pA
+    for a in ann:
+        a['color'] = 'black'
     fig = plt.figure("sweeps150", figsize=sweepFigSize)
     exRows = [8, 2]
     exCols = [10, 9]
@@ -325,6 +312,7 @@ if (bumpSweep):
 ##############################################################################
 # Bump examples
 exampleFName = outputDir + "/figure2_examples_{0}pA_{1}.png"
+bumpTrialNum = 0
 exTransparent = True
 exampleFigSize = (0.8, 0.8)
 exampleLeft   = 0.01
@@ -338,7 +326,8 @@ if (bumpExamples):
         fname = exampleFName.format(ps.noise_sigmas[0], idx)
         plt.figure(figsize=exampleFigSize)
         gs = plotBumpExample(ps.bumpGamma[0], rc, iterList,
-                exIdx=exampleIdx[0])
+                exIdx=exampleIdx[0],
+                trialNum=bumpTrialNum)
         gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
                 top=exampleTop)
         plt.savefig(fname, dpi=300, transparent=exTransparent)
@@ -349,7 +338,8 @@ if (bumpExamples):
         fname = exampleFName.format(ps.noise_sigmas[1], idx)
         plt.figure(figsize=exampleFigSize)
         gs = plotBumpExample(ps.bumpGamma[1], rc, iterList,
-                exIdx=exampleIdx[1])
+                exIdx=exampleIdx[1],
+                trialNum=bumpTrialNum)
         gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
                 top=exampleTop)
         plt.savefig(fname, dpi=300, transparent=exTransparent)
@@ -360,7 +350,8 @@ if (bumpExamples):
         fname = exampleFName.format(ps.noise_sigmas[2], idx)
         plt.figure(figsize=exampleFigSize)
         gs = plotBumpExample(ps.bumpGamma[2], rc, iterList,
-                exIdx=exampleIdx[1])
+                exIdx=exampleIdx[1],
+                trialNum=bumpTrialNum)
         gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
                 top=exampleTop)
         plt.savefig(fname, dpi=300, transparent=exTransparent)

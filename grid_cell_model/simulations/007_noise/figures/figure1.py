@@ -54,14 +54,12 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-grids0      = 1
-grids150    = 1
-grids300    = 1
+grids       = 1
 hists       = 0
 slices      = 0
-examples0   = 1
-examples150 = 1
-examples300 = 1
+examples0   = 0
+examples150 = 0
+examples300 = 0
 
 ##############################################################################
 
@@ -218,7 +216,18 @@ vmin = -0.5
 vmax = 1.1
 
 ##############################################################################
-exampleRC = ( (6, 15), (15, 15), (12, 5), (25, 3), (25, 25) )
+exampleRC = ( (5, 15), (15, 5) )
+slice_horizontal = slice(13, 18)
+slice_vertical = slice(13, 18)
+sliceAnn = [\
+    dict(
+        sliceSpan=slice_horizontal,
+        type='horizontal',
+        letter='G'),
+    dict(
+        sliceSpan=slice_vertical,
+        type='vertical',
+        letter='H')]
 
 ann0 = dict(
         txt='B',
@@ -228,29 +237,14 @@ ann0 = dict(
 ann1 = dict(
         txt='C',
         rc=exampleRC[1],
-        xytext_offset=(1.5, 1),
+        xytext_offset=(0.5, 1.5),
         color='black')
-ann2 = dict(
-        txt='D',
-        rc=exampleRC[2],
-        xytext_offset=(1.5, -1),
-        color='black')
-ann3 = dict(
-        txt='E',
-        rc=exampleRC[3],
-        xytext_offset=(1.5, 0.5),
-        color='black')
-ann4 = dict(
-        txt='F',
-        rc=exampleRC[4],
-        xytext_offset=(-1.5, 0.5),
-        color='black')
-ann = [ann0, ann1, ann2, ann3, ann4]
+ann = [ann0, ann1]
 
 
 varList = ['gridnessScore']
 
-if (grids0):
+if (grids):
     # noise_sigma = 0 pA
     fig = plt.figure("sweeps0", figsize=sweepFigSize)
     exRows = [28, 15]
@@ -264,15 +258,16 @@ if (grids0):
             cbar=False, cbar_kw=cbar_kw,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
-            annotations=ann)
+            annotations=ann,
+            sliceAnn=sliceAnn)
     fname = outputDir + "/figure1_sweeps0.png"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
 
-
-if (grids150):
     # noise_sigma = 150 pA
+    for a in sliceAnn:
+        a['letterColor'] = 'black'
     fig = plt.figure("sweeps150", figsize=sweepFigSize)
     exRows = [8, 2]
     exCols = [10, 9]
@@ -286,14 +281,13 @@ if (grids150):
             cbar=False, cbar_kw=cbar_kw,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
-            annotations=ann)
+            annotations=ann,
+            sliceAnn=sliceAnn)
     fname = outputDir + "/figure1_sweeps150.png"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
 
-
-if (grids300):
     # noise_sigma = 300 pA
     fig = plt.figure("sweeps300", figsize=sweepFigSize)
     exRows = [16, 15]
@@ -308,7 +302,8 @@ if (grids300):
             cbar_kw=cbar_kw,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
-            annotations=ann)
+            annotations=ann,
+            sliceAnn=sliceAnn)
     fname = outputDir + "/figure1_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
@@ -333,7 +328,6 @@ if (hists):
 
 if (slices):
     ylabelPos = -0.16
-    slice_horizontal = slice(13, 18)
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
@@ -346,7 +340,6 @@ if (slices):
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
-    slice_vertical = slice(13, 18)
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))

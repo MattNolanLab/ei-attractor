@@ -286,7 +286,7 @@ def plotVelStdSweep(sp, iterList, noise_sigma, **kw):
 def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=xlabelText, ylabel=ylabelText,
         colorBar=False, clBarLabel="", vmin=None, vmax=None, title="",
         clbarNTicks=2, xticks=True, yticks=True, cmap=None, cbar_kw={},
-        **kw):
+        sliceAnn=None, **kw):
     # kw arguments (cbar)
     cbar_kw['label']       = cbar_kw.get('label', '')
     cbar_kw['shrink']      = cbar_kw.get('shrink', 0.8)
@@ -316,6 +316,13 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=xlabelText, ylabel=ylabelText,
     if (not yticks):
         ax.yaxis.set_ticklabels([])
 
+    # slice annotations
+    if (sliceAnn is not None):
+        for args in sliceAnn:
+            args.update(ax=ax, X=X, Y=Y)
+            plotSliceAnnotation(**args)
+        
+
     return C, ax, cax
 
 
@@ -338,7 +345,8 @@ def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
     yo = xytext_offset[1]
     
     plt.annotate(txt, (x, y), xytext=(x+xo, y+yo), xycoords='data',
-        textcoords='data', ha='center', va='center', fontweight='bold', zorder=1, **kw)
+        textcoords='data', ha='center', va='center', fontweight='bold',
+        zorder=10, **kw)
 
 
 
@@ -599,11 +607,11 @@ def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
 # Slices through parameter spaces
 def decideLabels(type):
     if (type == 'horizontal'):
-        xlabel = ylabelText
-        titleText = "$g_I$"
-    elif (type == 'vertical'):
         xlabel = xlabelText
         titleText = "$g_E$"
+    elif (type == 'vertical'):
+        xlabel = ylabelText
+        titleText = "$g_I$"
     else:
         raise ValueError("type must be 'horizontal' or 'vertical'")
 
@@ -726,6 +734,38 @@ def plotGridnessSlice(paramSpaces, rowSlice, colSlice, type, NTrials=1, **kw):
                 fontsize='small')
         
     return ax
+
+
+def plotSliceAnnotation(ax, X, Y, sliceSpan, type, **kw):
+    # kw arguments
+    kw['color']     = kw.get('color', 'white')
+    kw['linewidth'] = kw.get('linewidth', 1.0)
+    letter      = kw.pop('letter', None)
+    letterColor = kw.pop('letterColor', 'white')
+
+    if (type == 'horizontal'):
+        pos0  = Y[sliceSpan.start,0]
+        pos1  = Y[sliceSpan.stop, 0]
+        ax.axhline(y=pos0, **kw)
+        ax.axhline(y=pos1, **kw)
+        if (letter is not None):
+            width = X[0, -1] - X[0, 0]
+            ax.text(0.9*width, (pos1 + pos0)/2.0, letter, color=letterColor,
+                    ha='center', va='center', weight='bold', zorder=2)
+    elif (type == 'vertical'):
+        pos0 = X[0, sliceSpan.start]
+        pos1 = X[0, sliceSpan.stop]
+        ax.axvline(x=pos0, **kw)
+        ax.axvline(x=pos1, **kw)
+        if (letter is not None):
+            height = Y[-1, 0] - Y[0, 0]
+            ax.text((pos1+pos0)/2.0, 0.9*height, letter, color=letterColor,
+                    ha='center', va='center', weight='bold', zorder=2)
+
+    else:
+        raise ValueError()
+
+
 
 
 
