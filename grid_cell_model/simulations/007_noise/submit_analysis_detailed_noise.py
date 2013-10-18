@@ -44,9 +44,9 @@ gridsType     = 'grids'
 
 dirs = \
     ('output/detailed_noise/gamma_bump', gammaBumpType, 'EI-3_3', (31, 9))
-    #('output/detailed_noise/gamma_bump', gammaBumpType, 'non_monotonic', (31, 9))
-    #('output/even_spacing/grids',      gridsType,       'non_monotonic', (31, 31))
-    #('output/even_spacing/velocity',   velocityType,    'non_monotonic', (31, 31))
+    #('output/detailed_noise/gamma_bump', gammaBumpType, 'EI-1_3', (31, 9))
+    #('output/even_spacing/grids',      gridsType,       'EI-1_3', (31, 31))
+    #('output/even_spacing/velocity',   velocityType,    'EI-1_3', (31, 31))
 
 p = {}
 simRootDir = dirs[0]

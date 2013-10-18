@@ -27,17 +27,17 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 # We are expecting 1-3 distinct simulation runs
-#simLabel = 'non_monotonic'
+#simLabel = 'EI-1_3'
 #simLabel = 'EI-3_3'
 simLabel = 'EI-5_08'
 
 p = dp.copy()
 # Submitting
-ENV         = 'workstation'
+ENV         = 'cluster'
 simRootDir  = 'output/detailed_noise/gamma_bump'
 appName     = 'simulation_stationary.py'
-rtLimit     = '00:25:00'
-numCPU      = 16
+rtLimit     = '00:45:00'
+numCPU      = 1
 blocking    = True
 timePrefix  = False
 numRepeat   = 1
@@ -53,7 +53,7 @@ noiseParams = SweepParams(0, 300, 31)
 if (simLabel == 'EI-3_3'):
     gEParams = SweepParams(2856, 3264, 3)
     gIParams = SweepParams(2856, 3264, 3)
-elif (simLabel == 'non_monotonic'):
+elif (simLabel == 'EI-1_3'):
     gEParams = SweepParams(816, 1224, 3)
     gIParams = SweepParams(2856, 3264, 3)
 elif (simLabel == 'EI-5_08'):
@@ -66,3 +66,4 @@ else:
 submitNoiseSweep(p, gEParams, gIParams, noiseParams,
         ENV, simRootDir, simLabel, appName, rtLimit, numCPU, blocking,
         timePrefix, numRepeat, dry_run)
+
