@@ -152,13 +152,11 @@ class AutoCorrelationVisitor(DictDSVisitor):
             sig, dt = sumAllVariables(mon, n_id, self.stateList)
             startIdx = 0
             endIdx   = len(sig)
-            print(len(sig))
             if (self.tStart is not None):
                 startIdx = int(self.tStart / dt)
             if (self.tEnd is not None):
                 endIdx = int(self.tEnd / dt)
             sig = sig[startIdx:endIdx]
-            print(len(sig))
             sig = butterBandPass(sig, dt*self.dtMult, self.bandStart,
                     self.bandEnd)
             ac = autoCorrelation(sig - np.mean(sig), max_lag=self.maxLag/dt,

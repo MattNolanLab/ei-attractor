@@ -29,11 +29,11 @@ noise_sigmas = [0, 150, 300]
 dirs = \
     ('{0}pA',    (31, 31))
 
-NTrials = 1
+NTrials = 3
 trialNumList = xrange(NTrials)
 shape   = dirs[1]
 varListBase = ['analysis']
-loadData = True
+loadData = False
 
 ################################################################################
 for noise_sigma in noise_sigmas:

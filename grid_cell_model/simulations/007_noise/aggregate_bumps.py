@@ -19,30 +19,43 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import numpy as np
 from parameters  import JobTrialSpace2D
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)
 
 
-noise_sigmas = [0, 150, 300]
+ns_all  = [0, 150, 300]
+ns_none = [-100]
 dirs = \
-    ('{0}pA',    (31, 31))
+    ("output/detailed_noise/gamma_bump/EI-3_3",  (31, 9),  ns_none)
+    #("output/detailed_noise/gamma_bump/EI-1_3",  (31, 9),  ns_none)
+    #("output/even_spacing/gamma_bump/{0}pA",     (31, 31), ns_all)
 
 NTrials = 5
 trialNumList = xrange(NTrials)
-shape   = dirs[1]
 varListBase = ['analysis']
+loadData = False
 
 ################################################################################
+shape        = dirs[1]
+noise_sigmas = dirs[2]
 for noise_sigma in noise_sigmas:
-    dir = dirs[0].format(int(noise_sigma))
-    rootDir = "output/even_spacing/gamma_bump/{0}".format(dir)
+    rootDir = dirs[0].format(int(noise_sigma))
 
     sp = JobTrialSpace2D(shape, rootDir)
     sp.aggregateData(varListBase + ['bump_e', 'sigma'], trialNumList,
-            funReduce=None, saveData=True, output_dtype='array')
+            funReduce=None, loadData=loadData,saveData=True,
+            output_dtype='array')
     sp.aggregateData(varListBase + ['bump_e', 'err2'], trialNumList,
-            funReduce=None, saveData=True, output_dtype='array')
+            funReduce=None, loadData=loadData, saveData=True,
+            output_dtype='array')
     sp.aggregateData(varListBase + ['bump_e', 'bump_e_rateMap'], trialNumList,
-            funReduce=None, saveData=True, output_dtype='list')
+            funReduce=None, loadData=loadData, saveData=True,
+            output_dtype='list')
+
+    sp.aggregateData(varListBase + ['acVal'], trialNumList, funReduce=np.mean,
+            loadData=loadData, saveData=True, output_dtype='array')
+    sp.aggregateData(varListBase + ['acVec'], trialNumList, funReduce=None,
+            loadData=loadData, saveData=True, output_dtype='list')
