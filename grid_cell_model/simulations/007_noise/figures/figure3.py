@@ -68,8 +68,8 @@ shape    = (31, 31)
 gammaSweep0    = 1
 gammaSweep150  = 1
 gammaSweep300  = 1
-threshold      = 0
-freqHist       = 0
+threshold      = 1
+freqHist       = 1
 detailed_noise = 1
 examples       = 1
 
@@ -409,7 +409,7 @@ if (freqHist):
 
 
 ##############################################################################
-nonmRoot  = 'output_local/detailed_noise/gamma_bump/non_monotonic'
+nonmRoot  = 'output_local/detailed_noise/gamma_bump/EI-1_3'
 EI33Root  = 'output_local/detailed_noise/gamma_bump/EI-3_3'
 detailedShape = (31, 9)
 

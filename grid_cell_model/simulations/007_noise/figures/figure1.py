@@ -223,11 +223,11 @@ sliceAnn = [\
     dict(
         sliceSpan=slice_horizontal,
         type='horizontal',
-        letter='G'),
+        letter=None),
     dict(
         sliceSpan=slice_vertical,
         type='vertical',
-        letter='H')]
+        letter=None)]
 
 ann0 = dict(
         txt='B',
@@ -357,7 +357,7 @@ if (slices):
 # Grid field examples
 exampleFName = outputDir + "/figure1_examples_{0}pA_{1}.png"
 exTransparent = True
-exampleFigSize = (1, 1)
+exampleFigSize = (1, 1.2)
 exampleLeft   = 0.01
 exampleBottom = 0.01
 exampleRight  = 0.99
