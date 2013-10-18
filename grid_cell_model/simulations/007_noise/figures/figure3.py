@@ -23,18 +23,13 @@
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
-from matplotlib.pyplot   import figure, plot, savefig
-from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import MultipleLocator, AutoMinorLocator, LinearLocator, MaxNLocator, \
-        ScalarFormatter
+import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
-from matplotlib.colorbar import make_axes
 from copy import deepcopy
 
 
 import EI_plotting as EI
 from parameters  import JobTrialSpace2D, DataSpace
-from EI_plotting import plot2DTrial, plotACTrial
 from plotting.global_defs import globalAxesSettings
 from figures_shared import plotOneHist, NoiseDataSpaces
 import logging as lg
@@ -102,7 +97,7 @@ def drawColorbar(drawAx, label):
     globalAxesSettings(clba)
     clba.minorticks_on()
     cb = plt.colorbar(cax=clba, orientation='horizontal',
-            ticks=LinearLocator(2))
+            ticks=ti.LinearLocator(2))
     cb.set_label(label)
 
 
@@ -182,10 +177,10 @@ def plotThresholdComparison(spList, trialNumList, ACThrList):
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(0.3))
-    ax.yaxis.set_major_locator(MultipleLocator(0.5))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(3))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.xaxis.set_major_locator(ti.MultipleLocator(0.3))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(3))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.margins(0.025)
     
 
@@ -218,11 +213,11 @@ def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(20))
-    ax.yaxis.set_major_locator(MaxNLocator(4))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
-    f = ScalarFormatter(useMathText=True)
+    ax.xaxis.set_major_locator(ti.MultipleLocator(20))
+    ax.yaxis.set_major_locator(ti.MaxNLocator(4))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(2))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
+    f = ti.ScalarFormatter(useMathText=True)
     f.set_scientific(True)
     f.set_powerlimits([0, 3])
     ax.yaxis.set_major_formatter(f)
@@ -260,13 +255,13 @@ FVarList  = ['freq']
 
 AC_cbar_kw = dict(
         orientation='horizontal',
-        ticks=MultipleLocator(0.2),
+        ticks=ti.MultipleLocator(0.2),
         shrink=0.8,
         pad=0.2,
         label='Correlation')
 F_cbar_kw = dict(
         orientation='horizontal',
-        ticks=MultipleLocator(30),
+        ticks=ti.MultipleLocator(30),
         shrink=0.8,
         pad=0.2,
         label='Frequency',
@@ -292,10 +287,10 @@ annF[0]['txt'] = 'B'
 if (gammaSweep0):
 
     # noise_sigma = 0 pA
-    fig = figure(figsize=sweepFigSize)
+    fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    plotACTrial(ps.bumpGamma[0], ACVarList, iterList,
+    EI.plotACTrial(ps.bumpGamma[0], ACVarList, iterList,
             noise_sigma=ps.noise_sigmas[0],
             ax=ax,
             trialNumList=xrange(NTrials),
@@ -306,10 +301,10 @@ if (gammaSweep0):
     fname = outputDir + "/figure3_sweeps0.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
-    fig = figure(figsize=sweepFigSize)
+    fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    plotACTrial(ps.bumpGamma[0], FVarList, iterList,
+    EI.plotACTrial(ps.bumpGamma[0], FVarList, iterList,
             noise_sigma=ps.noise_sigmas[0],
             ax=ax,
             trialNumList=xrange(NTrials),
@@ -326,10 +321,10 @@ if (gammaSweep150):
     for a in ann:
         a['color'] = 'black'
     # noise_sigma = 0 pA
-    fig = figure(figsize=sweepFigSize)
+    fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    plotACTrial(ps.bumpGamma[1], ACVarList, iterList,
+    EI.plotACTrial(ps.bumpGamma[1], ACVarList, iterList,
             noise_sigma=ps.noise_sigmas[1],
             ax=ax,
             trialNumList=xrange(NTrials),
@@ -340,10 +335,10 @@ if (gammaSweep150):
     fname = outputDir + "/figure3_sweeps150.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
-    fig = figure(figsize=sweepFigSize)
+    fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    plotACTrial(ps.bumpGamma[1], FVarList, iterList,
+    EI.plotACTrial(ps.bumpGamma[1], FVarList, iterList,
             noise_sigma=ps.noise_sigmas[1],
             ax=ax,
             trialNumList=xrange(NTrials),
@@ -358,10 +353,10 @@ if (gammaSweep150):
         
 if (gammaSweep300):
     # noise_sigma = 0 pA
-    fig = figure(figsize=sweepFigSize)
+    fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    plotACTrial(ps.bumpGamma[2], ACVarList, iterList,
+    EI.plotACTrial(ps.bumpGamma[2], ACVarList, iterList,
             noise_sigma=ps.noise_sigmas[2],
             ax=ax,
             trialNumList=xrange(NTrials),
@@ -371,10 +366,10 @@ if (gammaSweep300):
     fname = outputDir + "/figure3_sweeps300.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
-    fig = figure(figsize=sweepFigSize)
+    fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    plotACTrial(ps.bumpGamma[2], FVarList, iterList,
+    EI.plotACTrial(ps.bumpGamma[2], FVarList, iterList,
             noise_sigma=ps.noise_sigmas[2],
             ax=ax,
             trialNumList=xrange(NTrials),
@@ -401,11 +396,11 @@ if (threshold):
 
 if (freqHist):
     ylabelPos = -0.16
-    fig = figure(figsize=(3.7, 2.5))
+    fig = plt.figure(figsize=(3.7, 2.5))
     plotFreqHistogram(ps.bumpGamma, range(NTrials), ylabelPos=ylabelPos)
     plt.tight_layout()
     fname = outputDir + "/figure3_freq_histograms.pdf"
-    savefig(fname, dpi=300, transparent=True)
+    plt.savefig(fname, dpi=300, transparent=True)
 
 
 ##############################################################################
@@ -463,7 +458,7 @@ if (examples):
             else:
                 nsAnn = None
             EI.plotGammaExample(ps.bumpGamma[nsIdx], ax=ax,
-                    r=exampleRC[0][0], c=exampleRC[0][1],
+                    r=exampleRC[idx][0], c=exampleRC[idx][1],
                     trialNum=exampleTrialNum,
                     tStart = 2e3, tEnd=2.25e3,
                     noise_sigma=nsAnn)
