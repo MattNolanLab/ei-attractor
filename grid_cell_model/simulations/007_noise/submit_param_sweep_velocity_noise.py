@@ -27,8 +27,8 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 # We are expecting 1-3 distinct simulation runs
-simLabel = 'EI-1_3'
-#simLabel = 'EI-3_3'
+#simLabel = 'EI-1_3'
+simLabel = 'EI-3_1'
 
 p = dp.copy()
 # Submitting
@@ -55,9 +55,9 @@ noiseParams = SweepParams(0, 300, 31)
 if (simLabel == 'EI-1_3'):
     gEParams = SweepParams(816, 1224, 3)
     gIParams = SweepParams(2856, 3264, 3)
-elif (simLabel == 'EI-3_3'):
+elif (simLabel == 'EI-3_1'):
     gEParams = SweepParams(2856, 3264, 3)
-    gIParams = SweepParams(2856, 3264, 3)
+    gIParams = SweepParams(816, 1224, 3)
 else:
     raise ValueError('Unknown simLabel!')
 
