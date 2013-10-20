@@ -190,12 +190,34 @@ class PopulationSpikes(SpikeTrain):
     on the *whole* population.
     '''
     def __init__(self, N, senders, times):
+        '''
+        Initialize the population of neurons emitting spikes.
+
+        Parameters
+        ----------
+        N : int
+            Number of neurons in the population
+        senders : 1D array
+            Neuron numbers corresponding to the spikes
+        times : 1D array
+            Spike times. The shape of this array must be the same as for
+            `senders`.
+        '''
         self._N       = N
         self._senders = senders
         self._times   = times
         if (N < 0):
-            raise ValueError("Number of neurons in the spike train must be " + 
-                    "non-negative! Got {0}.".format(N))
+            msg = "Number of neurons in the spike train must be " +\
+                    "non-negative! Got {0}."
+            raise ValueError(msg.format(N))
+
+
+    @property
+    def N(self):
+        '''
+        Number of neurons in the population
+        '''
+        return self._N
 
 
     def avgFiringRate(self, tStart, tEnd):
@@ -258,11 +280,53 @@ class PopulationSpikes(SpikeTrain):
             Lengths of the windowing function (rectangle)
         output : a tuple
             A pair (F, t), specifying the vector of firing rates and
-            corresponding times.
+            corresponding times. F is a 2D array of the shape (N, Ntimes), in
+            which N is the number of neurons and Ntimes is the number of time
+            steps. 't' is a vector of times corresponding to the time windows
+            taken.
         '''
         spikes = (self._senders, self._times)
         return slidingFiringRateTuple(spikes, self._N, tStart, tEnd, dt,
                 winLen)
+
+
+    def windowed(self, tLimits):
+        '''
+        Return population spikes restricted to tLimits.
+
+        Parameters
+        ----------
+        tLimits : a pair
+            A tuple (tStart, tEnd). The spikes in the population must satisfy
+            tStart >= t <= tEnd.
+        output : PopulationSpikes instance
+            A copy of self with only a subset of spikes, limited by the time
+            window.
+        '''
+        tStart = tLimits[0]
+        tEnd   = tLimits[1]
+        tIdx = np.logical_and(self._times >= tStart, self._times <= tEnd)
+        return PopulationSpikes(self._N, self._senders[tIdx],
+                self._times[tIdx])
+
+
+    def rasterData(self, neuronList=None):
+        '''
+        Extract the senders and corresponding spike times for a raster plot.
+        TODO: implement neuronList
+
+        Parameters
+        ==========
+        neuronList : list, optional
+            Extract only neurons given in this list
+        output : a tuple
+            A pair containing (senders, times).
+        '''
+        if (neuronList is not None):
+            raise NotImplementedError()
+
+        return self._senders, self._times
+
 
 
 
@@ -275,6 +339,12 @@ class TorusPopulationSpikes(PopulationSpikes):
         self._sheetSize = sheetSize
         N = sheetSize[0]*sheetSize[1]
         PopulationSpikes.__init__(self, N, senders, times)
+
+
+    def getXSize(self):
+        return self._sheetSize[0]
+    def getYSize(self):
+        return self._sheetSize[1]
 
     
     def populationVector(self, tStart, tEnd, dt, winLen):
@@ -300,8 +370,8 @@ class TorusPopulationSpikes(PopulationSpikes):
             vector for each time step of the windowing function, and t is a
             vector of times, of length the first dimension of r.
         '''
-        sheetSize_x = self._sheetSize[0]
-        sheetSize_y = self._sheetSize[1]
+        sheetSize_x = self.getXSize()
+        sheetSize_y = self.getYSize()
         N = sheetSize_x*sheetSize_y
         
         F, tsteps = self.slidingFiringRate(tStart, tEnd, dt, winLen)
@@ -314,6 +384,38 @@ class TorusPopulationSpikes(PopulationSpikes):
             P[t_it, 1] = np.dot(F[:, t_it], Y)
 
         return (np.angle(P)/2/np.pi*self._sheetSize, tsteps)
+
+
+    def slidingFiringRate(self, tStart, tEnd, dt, winLen):
+        '''
+        Compute a sliding firing rate over the population of spikes, by taking
+        a rectangular window of specified length. However, unlike the ancestor
+        method (PopulationSpikes.slidingFiringRate), return a 3D array, a
+        succession of 2D population firing rates in time.
+
+        Parameters
+        ----------
+        tStart : float
+            Start time of the firing rate analysis.
+        tEnd : float
+            End time of the analysis
+        dt : float
+            Firing rate window time step
+        winLen : float
+            Lengths of the windowing function (rectangle)
+        output : a tuple
+            A pair (F, t), specifying the vector of firing rates and
+            corresponding times. F is a 3D array of the shape (Nx, Ny, Ntimes),
+            in which Nx/Ny are the number of neurons in X and Y dimensions,
+            respectively, and Ntimes is the number of time steps. 't' is a
+            vector of times corresponding to the time windows taken.
+        '''
+        spikes = (self._senders, self._times)
+        F, Ft = slidingFiringRateTuple(spikes, self._N, tStart, tEnd, dt,
+                winLen)
+        Nx = self.getXSize()
+        Ny = self.getYSize()
+        return np.reshape(F, (Ny, Nx, len(Ft))), Ft
 
 
 

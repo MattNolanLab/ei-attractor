@@ -16,7 +16,7 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import os
+import os, subprocess
 import errno
 from datetime       import datetime
 from gc_exceptions  import SubmitError
@@ -31,8 +31,8 @@ class ProgramSubmitter(object):
     inherit from this class and implement/override the necessary methods.
     '''
 
-    def __init__(self, argCreator, output_dir, label, timePrefix,
-            forceExisting=True):
+    def __init__(self, argCreator, output_dir, label, timePrefix=False,
+            blocking=True, forceExisting=True, numCPU=1):
         '''
         Create the submitter object.
 
@@ -78,6 +78,11 @@ class ProgramSubmitter(object):
             else:
                 raise e
 
+        # process management
+        self._pList = []
+        self._blocking = blocking
+        self._numCPU = numCPU
+
 
     def _createOutputDir(self):
         if (self._timePrefix):
@@ -96,20 +101,53 @@ class ProgramSubmitter(object):
         raise NotImplementedError()
 
 
+    def _wait(self):
+        print self._numCPU
+        if (self._blocking == False or len(self._pList) < self._numCPU):
+            return None
+        p = self._pList.pop(0)
+        errno = p.wait()
+        if (errno is not None and errno != 0):
+            raise SubmitError()
+        
+
+    def _addProcess(self, p):
+        if (p is None):
+            return
+        self._pList.append(p)
+        print("  Process list length: {0}".format(len(self._pList)))
+
+
+    def _cleanup(self):
+        print("Waiting for the remaining processes...")
+        while (len(self._pList) != 0):
+            p = self._pList.pop(0)
+            p.wait()
+
+    def waitForProcesses(self):
+        self._cleanup()
+
     def submitAll(self, startJobNum, repeat=1, dry_run=False):
         '''
         Submits all the generated jobs. Parameters:
           startJobNum   Start job number index
           repeat        Number of repeats for each parameters dictionary
         '''
+
         prt = []
         curr_job_num = startJobNum
         for it in range(self._ac.listSize()):
             for rep in range(repeat):
+                self._wait()
                 print "Submitting simulation " + str(it)
-                self.RunProgram(self._ac.getArgString(it, curr_job_num ), curr_job_num, dry_run)
+                p = self.RunProgram(self._ac.getArgString(it, curr_job_num ),
+                        curr_job_num, dry_run)
+                self._addProcess(p)
                 prt.append((curr_job_num, self._ac.getPrintArgString(it)))
                 curr_job_num += 1
+
+        # Cleanup
+        self._cleanup()
 
         if (self._ac.printout):
             self._printStr = self.getPrintoutString(prt)
@@ -156,7 +194,9 @@ class ProgramSubmitter(object):
         curr_job_num = startJobNum
         for rep in range(repeat):
             print "Submitting simulation " + str(it)
-            self.RunProgram(self._ac.getArgString(it, curr_job_num), curr_job_num, dry_run)
+            p = self.RunProgram(self._ac.getArgString(it, curr_job_num),
+                    curr_job_num, dry_run)
+            self._addProcess(p)
             curr_job_num += 1
 
 
@@ -186,24 +226,19 @@ class GenericSubmitter(ProgramSubmitter):
     Submit jobs on a generic multiprocessor machine, either by blocking them, or
     concurrently.
     '''
-    def __init__(self, argCreator, appName, output_dir, label, timePrefix, blocking=True):
-        ProgramSubmitter.__init__(self, argCreator, output_dir, label,
-                timePrefix)
-        self._appName = appName
-        self._blocking = blocking
+    def __init__(self, argCreator, appName, output_dir, label, **kw):
+        ProgramSubmitter.__init__(self, argCreator, output_dir, label, **kw)
+        self._appName  = appName
 
     def RunProgram(self, args, job_num, dry_run):
-        if self._blocking:
-            postfix = ''
-        else:
-            postfix = '&'
-
-        cmdStr = self._appName + ' ' + args + postfix
+        cmdStr = self._appName + ' ' + args
         log_info('root.submitters', 'Submitting command: \n' + cmdStr)
-        if not dry_run:
-            err = os.system(cmdStr)
-            if err != 0:
-                raise SubmitError()
+        if dry_run:
+            p = None
+        else:
+            p = subprocess.Popen(cmdStr, shell=True)
+        return p
+
 
 
 class QsubSubmitter(ProgramSubmitter):
@@ -211,11 +246,10 @@ class QsubSubmitter(ProgramSubmitter):
     Submit jobs on a machine that supports qsub command (cluster)
     '''
     def __init__(self, argCreator, scriptName, qsub_params, output_dir, label,
-            timePrefix, blocking=True):
-        ProgramSubmitter.__init__(self, argCreator, output_dir, label,
-                timePrefix)
-        self._scriptName        = scriptName
-        self._qsub_params       = qsub_params
+            **kw):
+        ProgramSubmitter.__init__(self, argCreator, output_dir, label, **kw)
+        self._scriptName  = scriptName
+        self._qsub_params = qsub_params
 
     def RunProgram(self, args, job_num, dry_run):
         cmdStr = 'qsub ' + self._qsub_params + ' ' + \
@@ -223,9 +257,8 @@ class QsubSubmitter(ProgramSubmitter):
                 "-N job{0:05} ".format(job_num) + \
                 self._scriptName + ' ' + args
         log_info('root.submitters', 'Submitting command: \n' + cmdStr)
-        if not dry_run:
-            err = os.system(cmdStr)
-            if err != 0:
-                raise SubmitError()
-
-
+        if dry_run:
+            p = None
+        else:
+            p = subprocess.Popen(cmdStr, shell=True)
+        return p

@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 #
-#   submit_param_sweep.py
+#   submit_param_sweep_gamma_noise.py
 #
-#   Submit job(s) to the cluster/workstation: parameter sweep (noise)
+#   Submit job(s) to the cluster/workstation: gamma parameter sweep; detailed
+#   noise levels.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,37 +20,50 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from default_params import defaultParameters as p
-from param_sweep    import submitParamSweep
+from default_params    import defaultParameters as dp
+from param_sweep_noise import submitNoiseSweep, SweepParams
 import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
 
-p['noise_sigma']       = 300.0     # pA
+# We are expecting 1-3 distinct simulation runs
+#simLabel = 'EI-1_3'
+#simLabel = 'EI-3_3'
+simLabel = 'EI-5_08'
 
+p = dp.copy()
 # Submitting
 ENV         = 'cluster'
-simRootDir  = 'output/one_to_one'
-simLabel    = 'EI_param_sweep_{0}pA_big'.format(int(p['noise_sigma']))
+simRootDir  = 'output/detailed_noise/gamma_bump'
 appName     = 'simulation_stationary.py'
-rtLimit     = '00:20:00'
-numCPU      = 4
+rtLimit     = '00:45:00'
+numCPU      = 1
 blocking    = True
 timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
 p['time']              = 10e3  # ms
-p['nthreads']          = 4
+p['nthreads']          = 1
 p['ntrials']           = 5
 
 
-# Range of parameters around default values
-Nvals        = 40    # Number of values for each dimension
-startFrac    = 0.
-endFrac      = 2.8572
+# Range of noise and E/I synaptic conductances
+noiseParams = SweepParams(0, 300, 31)
+if (simLabel == 'EI-3_3'):
+    gEParams = SweepParams(2856, 3264, 3)
+    gIParams = SweepParams(2856, 3264, 3)
+elif (simLabel == 'EI-1_3'):
+    gEParams = SweepParams(816, 1224, 3)
+    gIParams = SweepParams(2856, 3264, 3)
+elif (simLabel == 'EI-5_08'):
+    gEParams = SweepParams(4896, 5304, 3)
+    gIParams = SweepParams(612, 1020, 3)
+else:
+    raise ValueError('Unknown simLabel!')
 
 ###############################################################################
+submitNoiseSweep(p, gEParams, gIParams, noiseParams,
+        ENV, simRootDir, simLabel, appName, rtLimit, numCPU, blocking,
+        timePrefix, numRepeat, dry_run)
 
-submitParamSweep(p, startFrac, endFrac, Nvals, ENV, simRootDir, simLabel,
-        appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run)

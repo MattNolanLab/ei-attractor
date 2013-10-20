@@ -26,7 +26,8 @@ from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 
 from fig_conn_func        import plotWeights
 from data_storage         import DataStorage
-from figures_shared       import plotStateSignal, plotThetaSignal, extractStateVars,\
+from data_storage.sim_models.ei import extractSummedSignals
+from figures_shared       import plotStateSignal, plotThetaSignal, \
         getOption, thetaLim
 from plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
 from plotting.global_defs import globalAxesSettings
@@ -109,7 +110,7 @@ def plotGamma(gs, data, gsRow, gsCol, plotTStart, plotTEnd, yLabelOn=True,
     # E cell Isyn
     labelYPos = -0.175
     ax0 = subplot(gs[gsRow,gsCol]) 
-    t, IsynMiddle = extractStateVars(mon_e, ['I_clamp_GABA_A'],
+    t, IsynMiddle = extractSummedSignals(mon_e, ['I_clamp_GABA_A'],
             plotTStart, plotTEnd)
     plotStateSignal(ax0, t, IsynMiddle*1e-3, labely=IsynText,
             labelyPos=labelYPos, color='red', scaleBar=scaleBar, scaleX=0.85,
@@ -188,25 +189,25 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
     mon_i = data['stateMon_i']
 
     ax0 = subplot(gs[0, colStart:colStart+ncols])
-    t, IStim_e = extractStateVars(mon_e, ['I_stim'], plotTStart,
+    t, IStim_e = extractSummedSignals(mon_e, ['I_stim'], plotTStart,
             plotTEnd)
     plotThetaSignal(ax0, t, IStim_e, noise_sigma, yLabelOn, thetaLim,
             color='red')
-    t, IStim_i = extractStateVars(mon_i, ['I_stim'], plotTStart,
+    t, IStim_i = extractSummedSignals(mon_i, ['I_stim'], plotTStart,
             plotTEnd)
     plotThetaSignal(ax0, t, IStim_i, noise_sigma, yLabelOn, thetaLim,
             color='blue')
 
     # E cell Vm
     ax1 = subplot(gs[1, colStart:colStart+ncols])
-    t, VmMiddle = extractStateVars(mon_e, ['V_m'], plotTStart,
+    t, VmMiddle = extractSummedSignals(mon_e, ['V_m'], plotTStart,
             plotTEnd)
     plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='red')
     ylim(stateYlim)
 
     # I cell Vm
     ax2 = subplot(gs[2, colStart:colStart+ncols])
-    t, VmMiddle = extractStateVars(mon_i, ['V_m'], plotTStart,
+    t, VmMiddle = extractSummedSignals(mon_i, ['V_m'], plotTStart,
             plotTEnd)
     plotStateSignal(ax2, t, VmMiddle, labely=VmText, color='blue',
             scaleBar=scaleBar)
@@ -214,13 +215,13 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, letter='',
 
     ## E cell Vm histogram
     #ax3 = subplot(gs[2, colStart:colStart+2])
-    #t, VmMiddle = extractStateVars(mon_e, ['V_m'], theta_start_t,
+    #t, VmMiddle = extractSummedSignals(mon_e, ['V_m'], theta_start_t,
     #        simTime)
     #plotHistogram(ax3, VmMiddle, labelx = histLabelX, labely=countText, color='red')
 
     ## I cell Vm histogram
     #ax4 = subplot(gs[2, colStart+2:colStart+4])
-    #t, VmMiddle = extractStateVars(mon_i, ['V_m'], theta_start_t,
+    #t, VmMiddle = extractSummedSignals(mon_i, ['V_m'], theta_start_t,
     #        simTime)
     #plotHistogram(ax4, VmMiddle, labelx = histLabelX, labely="", color='blue')
 

@@ -21,20 +21,14 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.pyplot   import figure, subplot, plot, savefig
-from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import MultipleLocator, AutoMinorLocator, LinearLocator, MaxNLocator, \
-        ScalarFormatter
-from matplotlib.colorbar import make_axes
+import matplotlib.ticker as ti
+from matplotlib.gridspec   import GridSpec
+from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
-from parameters  import JobTrialSpace2D
-from EI_plotting import plotGridTrial, computeYX, aggregate2DTrial, \
-        aggregate2D, drawGridExamples, drawEIRectSelection, \
-        plotSquareGridExample
-from plotting.grids import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
-from plotting.global_defs import globalAxesSettings, createColorbar
-from figures_shared import plotOneHist
+import EI_plotting as EI
+from plotting.global_defs import globalAxesSettings
+from figures_shared       import NoiseDataSpaces
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -44,7 +38,7 @@ from matplotlib import rc
 rc('pdf', fonttype=42)
 rc('mathtext', default='regular')
 
-plt.rcParams['font.size'] = 11
+plt.rcParams['font.size'] = 10
 
 outputDir = "."
 
@@ -52,144 +46,110 @@ NTrials=10
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
-exampleIdx   = [(1, 2), (11, 10), (0, 5)] # (row, col)
-gridsDataRoot= 'output_local/grids_50pA_Ivel'
-velDataRoot = 'output_local/velocity'
-shape = (30, 30)
+exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
+gridsDataRoot= 'output_local/even_spacing/grids'
+bumpDataRoot= 'output_local/even_spacing/gamma_bump'
+velDataRoot = 'output_local/even_spacing/velocity'
+shape = (31, 31)
 
-grid_examples = 1
-grids0        = 1
-grids150      = 1
-grids300      = 1
-hists         = 1
+bumpSweep         = 1
+bumpExamples      = 1
+velExamples       = 0
+velSweep0         = 0
+velSweep150       = 0
+velSweep300       = 0
+velLines          = 0
+gridness_vs_error = 0
 
 ##############################################################################
 
-def getNoiseRootDir(prefix, noise_sigma):
-    return  "{0}/EI_param_sweep_{1}pA".format(prefix, int(noise_sigma))
+def plotBumpExample(sp, rc, iterList, **kw):
+    #keyword
+    wspace    = kw.pop('wspace', 0)
+    hspace    = kw.pop('hspace', 0)
+    gsCoords  = kw.pop('exGsCoords', (0, 0, 1, 1))
+
+    r, c = rc[0], rc[1] 
+    spaceRect = [c, r, c, r]
+    return EI.drawBumpExamples(sp, spaceRect, iterList,
+            gsCoords=gsCoords,
+            xlabel=False, ylabel=False,
+            xlabel2=False, ylabel2=False,
+            fontsize='x-small',
+            rateYPos=1.05, rateXPos=0.98,
+            **kw)
 
 
-def getNoiseRoots(prefix, noise_sigmas):
-    roots = []
-    for s in noise_sigmas:
-        roots.append(getNoiseRootDir(prefix, s))
-    return roots
+def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
+    # kwargs
+    trialNum   = kw.pop('trialNum', 0)
+    markersize = kw.pop('markersize', 4)
+    color      = kw.pop('color', 'blue')
+    xlabel     = kw.pop('xlabel', 'Velocity current (pA)')
+    ylabel     = kw.pop('ylabel', 'Bump speed (neurons/s)')
+    xticks     = kw.pop('xticks', True)
+    yticks     = kw.pop('yticks', True)
+    g_ann      = kw.pop('g_ann', True)
+    sigma_ann  = kw.pop('sigma_ann', True)
+    kw['markeredgecolor'] = color
 
+    r = pos[0]
+    c = pos[1]
+    d = dataSpace[r][c].getAllTrialsAsDataSet().data
+    a = d['analysis']
+    IvelVec = dataSpace[r][c][trialNum].data['IvelVec']
+    slopes = a['bumpVelAll']
+    lineFit = a['lineFitLine']
+    fitIvelVec = a['fitIvelVec']
 
-
-def drawGridSweeps(ax, dataSpace, iterList, NTrials=1, r=0, c=0, xLabelOn=True,
-        xticks=True, exRows=[], exCols=[], exColor='white',
-        cbar=False):
-    yLabelText = '$w_E$ (nS)'
-    if (xLabelOn):
-        xLabelText = '$w_I$ (nS)'
-    else:
-        xLabelText = ''
+    nTrials = slopes.shape[0]
+    avgSlope = np.mean(slopes, axis=0)
+    stdSlope = np.std(slopes, axis=0)
 
     if (ax is None):
         ax = plt.gca()
-    G = plotGridTrial(dataSpace, ['gridnessScore'], iterList,
-            trialNumList=range(NTrials),
-            r=r,
-            c=c,
-            xlabel=xLabelText,
-            ylabel=yLabelText,
-            colorBar=False,
-            clBarLabel = "Gridness score",
-            clbarNTicks=3,
-            xticks=xticks,
-            vmin=-0.5,
-            vmax=1.15,
-            nansAs0=True)
-    cax, kw = make_axes(ax, orientation='horizontal', shrink=0.9,
-            pad=0.25)
-    globalAxesSettings(cax)
-    cb = plt.colorbar(ax=ax, cax=cax, ticks=MultipleLocator(0.5), **kw)
-    cb.set_label('Gridness score')
-    if (cbar == False):
-        cax.set_visible(False)
-
-    print("    max(G): {0}".format(np.max(G)))
-    print("    min(G): {0}".format(np.min(G)))
-    return ax, cax
-
-
-
-
-
-def plotGridnessThresholdComparison(spList, trialNumList, thrList, r=0, c=0,
-        ylabelPos=-0.2):
-    varList = ['gridnessScore']
-    #G = []
-    noise_sigma = [0, 150, 300]
-
-    ax = plt.gca()
     plt.hold('on')
     globalAxesSettings(ax)
 
-    for sp in spList:
-        G = aggregate2DTrial(sp, varList, trialNumList).flatten()
-        counts = []
-        for thr in thrList:
-            thrIdx = np.logical_and(G > thr, np.logical_not(np.isnan(G)))
-            counts.append(float(len(G[thrIdx])) / len(G))
-        plt.plot(thrList, counts, 'o-', markersize=4)
+    ax.plot(IvelVec, slopes.T, 'o', color='none', markersize=markersize, **kw)
+    #ax.errorbar(IvelVec, avgSlope, stdSlope, fmt='o-',
+    #        markersize=markersize, color=color, alpha=0.5, **kw)
+    ax.plot(fitIvelVec, lineFit, '-', linewidth=1, color=color, **kw)
 
-
-    plt.plot([0], [1], linestyle='None', marker='None')
-    ax.set_xlabel('Gridness score threshold')
-    ax.text(ylabelPos, 0.5, 'Count', rotation=90, transform=ax.transAxes,
-            va='center', ha='right')
-    leg = []
-    for s in noise_sigma:
-        leg.append("{0}".format(int(s)))
-    l = ax.legend(leg, loc=(0.8, 0.5), title='$\sigma$ (pA)', frameon=False,
-            fontsize='x-small', ncol=1)
-    plt.setp(l.get_title(), fontsize='x-small')
-
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(0.3))
-    ax.yaxis.set_major_locator(MultipleLocator(0.5))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(3))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.margins(0.02, 0.07)
+    ax.xaxis.set_major_locator(ti.MultipleLocator(50))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(5))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(20))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
+    ax.margins(0.05)
+
+    if (not xticks):
+        ax.xaxis.set_ticklabels([])
+    if (not yticks):
+        ax.yaxis.set_ticklabels([])
+
+    # Annotations
+    if (sigma_ann):
+        sigma_txt = '$\sigma$ = {0} pA'.format(noise_sigma)
+    else:
+        sigma_txt = ''
+
+    if (g_ann):
+        Y, X = EI.computeVelYX(dataSpace, iterList, r, c)
+        gE = Y[r, c]
+        gI = X[r, c]
+        g_txt = '$g_E$ = {0}, $g_I$ = {1} nS'.format(gE, gI)
+    else:
+        g_txt = ''
+
+    txt = '{0}\n{1}'.format(g_txt, sigma_txt)
+    ax.text(0.05, 0.85, txt, transform=ax.transAxes, va='bottom',
+            ha='left', size='x-small')
 
 
-def plotGridnessHistogram(spList, trialNumList, ylabelPos=-0.2):
-    varList = ['gridnessScore']
-    #G = []
-    noise_sigma = [0, 150, 300]
-    colors = ['red', 'green', 'blue']
-
-    ax = plt.gca()
-    plt.hold('on')
-    globalAxesSettings(ax)
-
-    for idx, sp in enumerate(spList):
-        G = aggregate2DTrial(sp, varList, trialNumList).flatten()
-        filtIdx = np.logical_not(np.isnan(G))
-        plotOneHist(G[filtIdx], normed=True)
-    leg = []
-    for s in noise_sigma:
-        leg.append("{0}".format(int(s)))
-    l = ax.legend(leg, loc=(0.8, 0.5), title='$\sigma$ (pA)', frameon=False,
-            fontsize='x-small', ncol=1)
-    plt.setp(l.get_title(), fontsize='x-small')
-
-    ax.set_xlabel("Gridness score")
-    ax.text(ylabelPos, 0.5, 'p(G)', rotation=90, transform=ax.transAxes,
-            va='center', ha='right')
-    #ax.set_ylabel("p(G)")
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(0.5))
-    ax.yaxis.set_major_locator(MultipleLocator(2))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.margins(0.05, 0.025)
-    
 
 
 def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
@@ -199,19 +159,25 @@ def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
     slopeVars = ['lineFitSlope']
     noise_sigma = [0, 150, 300]
     markers = ['o', '^', '*']
+    colors = ['blue', 'green', 'red']
+    errMins = []
+    errMaxs = []
 
     ax = plt.gca()
     plt.hold('on')
     globalAxesSettings(ax)
+    ax.set_yscale('log')
 
     for idx, (spGrids, spVel) in enumerate(zip(spListGrids, spListVelocity)):
-        G = aggregate2DTrial(spGrids, GVars, trialNumList).flatten()
-        errs = aggregate2D(spVel, errVars, funReduce=np.sum).flatten()
-        slopes = np.abs(aggregate2D(spVel, slopeVars,
-            funReduce=None).flatten())
-        i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(slopes)))
-        ax.scatter(G[i], slopes[i], c=errs[i], 
-                marker=markers[idx], edgecolors='None')
+        G = EI.aggregate2DTrial(spGrids, GVars, trialNumList).flatten()
+        errs = EI.aggregate2D(spVel, errVars, funReduce=np.sum).flatten()
+        #slopes = np.abs(EI.aggregate2D(spVel, slopeVars,
+        #    funReduce=None).flatten())
+        i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(errs)))
+        ax.scatter(G[i], errs[i],  s=5, marker=markers[idx], 
+                color=colors[idx], edgecolors='None')
+        errMins.append(np.min(errs[i]))
+        errMaxs.append(np.max(errs[i]))
 
     if (maxErr is not None):
         ax.set_ylim([0, maxErr])
@@ -221,161 +187,317 @@ def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
     leg = []
     for s in noise_sigma:
         leg.append("{0}".format(int(s)))
-    l = ax.legend(leg, loc=(0.8, 0.8), title='$\sigma$ (pA)', frameon=False,
-            fontsize='x-small', ncol=1)
-    plt.setp(l.get_title(), fontsize='x-small')
+    l = ax.legend(leg, loc=(0.3, 0.85), title='$\sigma$ (pA)', frameon=False,
+            fontsize='small', ncol=3, columnspacing=1.5)
+    plt.setp(l.get_title(), fontsize='small')
 
     ax.set_xlabel("Gridness score")
-    ax.text(ylabelPos, 0.5, 'Slope (nrns/s/pA)', rotation=90, transform=ax.transAxes,
-            va='center', ha='right')
+    ax.set_ylabel('Error (nrns/s/data point)')
+    #ax.text(ylabelPos, 0.5, 'Error (nrns/s/data point)', rotation=90, transform=ax.transAxes,
+    #        va='center', ha='right')
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(MultipleLocator(0.5))
-    ax.yaxis.set_major_locator(MultipleLocator(0.5))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
-    ax.margins(0.05, 0.025)
+    ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(2))
+    ax.set_xmargin(0.05)
+    ax.autoscale_view(tight=True)
+    ax.set_ylim(np.min(errMins), np.max(errMaxs)*1.5)
 
 
+###############################################################################
+roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
+ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
-
-gridRoots = getNoiseRoots(gridsDataRoot, noise_sigmas)
-gridDataSpace0   = JobTrialSpace2D(shape, gridRoots[0])
-gridDataSpace150 = JobTrialSpace2D(shape, gridRoots[1])
-gridDataSpace300 = JobTrialSpace2D(shape, gridRoots[2])
-
-velRoots = getNoiseRoots(velDataRoot, noise_sigmas)
-velDataSpace0   = JobTrialSpace2D(shape, velRoots[0])
-velDataSpace150 = JobTrialSpace2D(shape, velRoots[1])
-velDataSpace300 = JobTrialSpace2D(shape, velRoots[2])
-
-exSz = 4
-exMargin = 0.1
-exGsCoords = 0, 0.0, 1.0-exMargin, 1.0-exMargin
+exW = 4
+exH = 2
+exMargin = 0.075
 exWspace=0.2
-exHspace=0.2
+exHspace=0.15
 
-sweepFigSize = (2.7, 2.5)
-sweepLeft   = 0.2
-sweepBottom = 0.1
-sweepRight  = 0.99
-sweepTop    = 0.99
-if (grids0):
+sweepFigSize = (1.9, 2.6)
+sweepLeft    = 0.17
+sweepBottom  = 0.1
+sweepRight   = 0.95
+sweepTop     = 0.9
 
+velFigsize =(2.6, 2)
+velLeft    = 0.3
+velBottom  = 0.35
+velRight   = 0.95
+velTop     = 0.65
+
+
+##############################################################################
+sigmaVarList = ['bump_e', 'sigma']
+bumpTrialNumList = np.arange(5)
+bump_vmin = 0
+bump_vmax = 10
+bump_cbar_kw= dict(
+        orientation='horizontal',
+        shrink=0.8, pad=0.2,
+        ticks=ti.MultipleLocator(5),
+        label='Bump $\sigma$ (neurons)',
+        extend='max', extendfrac=0.1)
+
+exampleRC = ( (5, 15), (15, 5) )
+
+ann0 = dict(
+        txt='B',
+        rc=exampleRC[0],
+        xytext_offset=(1.5, 1),
+        color='white')
+ann1 = dict(
+        txt='C',
+        rc=exampleRC[1],
+        xytext_offset=(1.2, 1.1),
+        color='black')
+ann = [ann0, ann1]
+
+if (bumpSweep):
     # noise_sigma = 0 pA
-    fig = figure("sweeps0", figsize=sweepFigSize)
+    fig = plt.figure("sweeps0", figsize=sweepFigSize)
     exRows = [28, 15]
     exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    ax, cax = drawGridSweeps(ax, gridDataSpace0, iterList, NTrials=NTrials,
-            r=exampleIdx[0][0], c=exampleIdx[0][1], xLabelOn=False,
-            exRows=exRows, exCols=exCols, xticks=False)
-    if (grid_examples):
-        exLeft = 2
-        exBottom = 24
-        fname = outputDir + "/figure2_examples_0pA_0.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[0], ax,
-                gridDataSpace0, iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
-        
-        exLeft = 18
-        exBottom = 14
-        fname = outputDir + "/figure2_examples_0pA_1.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[0], ax,
-                gridDataSpace0, iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
+    EI.plotBumpSigmaTrial(ps.bumpGamma[0], sigmaVarList, iterList,
+            noise_sigma=ps.noise_sigmas[0],
+            ax=ax,
+            xlabel='', xticks=False,
+            trialNumList=bumpTrialNumList,
+            cbar=False, cbar_kw=bump_cbar_kw,
+            vmin=bump_vmin, vmax=bump_vmax,
+            annotations=ann)
     fname = outputDir + "/figure2_sweeps0.png"
     fig.savefig(fname, dpi=300, transparent=True)
 
-
-
-if (grids150):
     # noise_sigma = 150 pA
-    fig = figure("sweeps150", figsize=sweepFigSize)
+    for a in ann:
+        a['color'] = 'black'
+    fig = plt.figure("sweeps150", figsize=sweepFigSize)
     exRows = [8, 2]
     exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    ax, cax = drawGridSweeps(ax, gridDataSpace150, iterList, NTrials=NTrials,
-            r=exampleIdx[1][0], c=exampleIdx[1][1], xLabelOn=False,
-            xticks=False, exRows=exRows, exCols=exCols) 
-    if (grid_examples):
-        exLeft = 2
-        exBottom = 24
-        fname = outputDir + "/figure2_examples_150pA_0.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[1], ax,
-                gridDataSpace150, iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
-
-        exLeft = 18
-        exBottom = 14
-        fname = outputDir + "/figure2_examples_150pA_1.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[1], ax,
-                gridDataSpace150, iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
+    EI.plotBumpSigmaTrial(ps.bumpGamma[1], sigmaVarList, iterList,
+            noise_sigma=noise_sigmas[1],
+            ax=ax,
+            xlabel='', xticks=False,
+            trialNumList=bumpTrialNumList,
+            cbar=False, cbar_kw=bump_cbar_kw,
+            vmin=bump_vmin, vmax=bump_vmax,
+            annotations=ann)
     fname = outputDir + "/figure2_sweeps150.png"
     fig.savefig(fname, dpi=300, transparent=True)
 
-
-
-if (grids300):
     # noise_sigma = 300 pA
-    fig = figure("sweeps300", figsize=sweepFigSize)
+    fig = plt.figure("sweeps300", figsize=sweepFigSize)
     exRows = [16, 15]
     exCols = [6, 23]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    _, cax = drawGridSweeps(ax, gridDataSpace300, iterList, NTrials=NTrials,
-            r=exampleIdx[2][0], c=exampleIdx[2][1], xticks=True, exRows=exRows,
-            exCols=exCols, exColor='black', cbar=True)
-    if (grid_examples):
-        exLeft = 2
-        exBottom = 24
-        fname = outputDir + "/figure2_examples_300pA_0.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[2], ax,
-                gridDataSpace300, iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
-
-        exLeft = 18
-        exBottom = 14
-        fname = outputDir + "/figure2_examples_300pA_1.png"
-        plotSquareGridExample(exLeft, exBottom, exSz, fname, exampleIdx[2], ax,
-                gridDataSpace300, iterList, exGsCoords, xlabel2=False,
-                ylabel2=False, xlabel=False, ylabel=False, wspace=exWspace,
-                hspace=exHspace, maxRate=True, plotGScore=False)
-
+    ax.set_clip_on(False)
+    EI.plotBumpSigmaTrial(ps.bumpGamma[2], sigmaVarList, iterList,
+            noise_sigma=noise_sigmas[2],
+            ax=ax,
+            trialNumList=bumpTrialNumList,
+            cbar=True, cbar_kw=bump_cbar_kw,
+            vmin=bump_vmin, vmax=bump_vmax,
+            annotations=ann)
     fname = outputDir + "/figure2_sweeps300.png"
-    fig.savefig(fname, dpi=300, transparent=False)
+    fig.savefig(fname, dpi=300, transparent=True)
 
 
-# Stats
-if (hists):
-    ylabelPos = -0.16
-    gridSpList = [gridDataSpace0, gridDataSpace150, gridDataSpace300]
-    velSpList = [velDataSpace0, velDataSpace150, velDataSpace300]
-    fig = figure(figsize=(3.7, 6))
-    gs = GridSpec(3, 1, height_ratios=[0.8, 0.6, 1])
+##############################################################################
+# Bump examples
+exampleFName = outputDir + "/figure2_examples_{0}pA_{1}.png"
+bumpTrialNum = 0
+exTransparent = True
+exampleFigSize = (0.8, 0.8)
+exampleLeft   = 0.01
+exampleBottom = 0.01
+exampleRight  = 0.99
+exampleTop    = 0.85
 
-    ax_hist = subplot(gs[0, 0])
-    plotGridnessHistogram(gridSpList, range(NTrials), ylabelPos=ylabelPos)
+if (bumpExamples):
+    # noise sigma == 0 pA
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[0], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = plotBumpExample(ps.bumpGamma[0], rc, iterList,
+                exIdx=exampleIdx[0],
+                trialNum=bumpTrialNum)
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
 
-    ax_threshold = subplot(gs[1, 0])
-    plotGridnessThresholdComparison(gridSpList, range(NTrials),
-            thrList=np.arange(-0.4, 1.2, 0.05), ylabelPos=ylabelPos)
+    # noise sigma == 150 pA
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[1], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = plotBumpExample(ps.bumpGamma[1], rc, iterList,
+                exIdx=exampleIdx[1],
+                trialNum=bumpTrialNum)
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
 
-    #ax_grids_vel = subplot(gs[2, 0])
-    #plotGridnessVsFitErr(gridSpList, velSpList, range(NTrials),
-    #        ylabelPos=ylabelPos, maxErr=None)
+    # noise sigma == 300 pA
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[2], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = plotBumpExample(ps.bumpGamma[2], rc, iterList,
+                exIdx=exampleIdx[1],
+                trialNum=bumpTrialNum)
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
 
-    gs.tight_layout(fig, rect=[0.1, 0, 1, 1], h_pad=3.0, pad=0.5)
-    fname = outputDir + "/figure2_histograms.pdf"
-    savefig(fname, dpi=300, transparent=True)
 
+###############################################################################
+
+slopeVarList = ['lineFitSlope']
+slope_vmin = 0
+slope_vmax = 1.6
+std_vmin = 0
+std_vmax = 14
+
+slope_cbar_kw= dict(
+        orientation='vertical',
+        label='Slope (neurons/s/pA)',
+        ticks=ti.MultipleLocator(0.5),
+        extend='max', extendfrac=0.1)
+
+std_cbar_kw= dict(
+        orientation='vertical',
+        label='Mean $\sigma_{speed}$ (neurons/s)',
+        ticks=ti.MultipleLocator(4),
+        extend='max', extendfrac=0.1)
+
+
+def createSweepFig(name=None):
+    fig = plt.figure(name, figsize=sweepFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+        sweepTop))
+    return fig, ax
+
+if (velSweep0):
+    # noise_sigma = 0 pA
+    fig, ax = createSweepFig("velSlopeSweep0")
+    _, ax, cax = EI.plotVelTrial(ps.v[0], slopeVarList, iterList,
+            noise_sigmas[0],
+            ax=ax,
+            xlabel='', xticks=False,
+            cbar=False, cbar_kw=slope_cbar_kw,
+            vmin=slope_vmin, vmax=slope_vmax)
+    fname = outputDir + "/figure2_slope_sweeps0.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+    fig, ax = createSweepFig()
+    _, ax, cax = EI.plotVelStdSweep(ps.v[0], iterList,
+            noise_sigmas[0],
+            ax=ax,
+            sigmaTitle=False,
+            cbar=False, cbar_kw=std_cbar_kw,
+            vmin=std_vmin, vmax=std_vmax)
+    fname = outputDir + "/figure2_vel_std_sweeps0.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+
+
+if (velSweep150):
+    # noise_sigma = 150 pA
+    fig, ax = createSweepFig("velSlopeSweep150")
+    _, ax, cax = EI.plotVelTrial(ps.v[1], slopeVarList, iterList,
+            noise_sigma=noise_sigmas[1],
+            ax=ax,
+            xlabel='', xticks=False,
+            ylabel='', yticks=False,
+            cbar=False, cbar_kw=slope_cbar_kw,
+            vmin=slope_vmin, vmax=slope_vmax)
+    fname = outputDir + "/figure2_slope_sweeps150.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+    fig, ax = createSweepFig()
+    _, ax, cax = EI.plotVelStdSweep(ps.v[1], iterList,
+            noise_sigmas[1],
+            ax=ax,
+            ylabel='', yticks=False,
+            sigmaTitle=False,
+            cbar=False, cbar_kw=std_cbar_kw,
+            vmin=std_vmin, vmax=std_vmax)
+    fname = outputDir + "/figure2_vel_std_sweeps150.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+
+
+if (velSweep300):
+    # noise_sigma = 300 pA
+    fig, ax = createSweepFig("velSlopeSweep300")
+    _, ax, cax = EI.plotVelTrial(ps.v[2], slopeVarList, iterList,
+            noise_sigma=noise_sigmas[2],
+            ax=ax,
+            xlabel='', xticks=False,
+            ylabel='', yticks=False,
+            cbar=True, cbar_kw=slope_cbar_kw,
+            vmin=slope_vmin, vmax=slope_vmax)
+    fname = outputDir + "/figure2_slope_sweeps300.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+    fig, ax = createSweepFig()
+    _, ax, cax = EI.plotVelStdSweep(ps.v[2], iterList,
+            noise_sigmas[2],
+            ax=ax,
+            ylabel='', yticks=False,
+            sigmaTitle=False,
+            cbar=True, cbar_kw=std_cbar_kw,
+            vmin=std_vmin, vmax=std_vmax)
+    fname = outputDir + "/figure2_vel_std_sweeps300.png"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+
+if (velLines):
+    positions = ((4, 27), (4, 27), (4, 27))
+    #positions = ((15, 15), (15, 15), (15, 15))
+    fig = plt.figure(figsize=(2.5, velFigsize[1]))
+    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
+        velTop))
+    plotSlopes(ax, ps.v[0], positions[0], noise_sigma=ps.noise_sigmas[0],
+            xlabel='', xticks=False,
+            ylabel='',
+            color='blue')
+    fname = outputDir + "/figure2_slope_examples_0.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+
+    fig = plt.figure(figsize=(2.5, velFigsize[1]))
+    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
+        velTop))
+    plotSlopes(ax, ps.v[1], positions[1], noise_sigma=ps.noise_sigmas[1],
+            xlabel='', xticks=False,
+            g_ann=False,
+            color='green')
+    fname = outputDir + "/figure2_slope_examples_1.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+
+    fig = plt.figure(figsize=(2.5, velFigsize[1]))
+    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
+        velTop))
+    plotSlopes(ax, ps.v[2], positions[2], noise_sigma=ps.noise_sigmas[2],
+            ylabel='',
+            g_ann=False,
+            color='red')
+    fname = outputDir + "/figure2_slope_examples_2.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+
+
+if (gridness_vs_error):
+    fig = plt.figure(figsize=(3.4, 2.5))
+    plotGridnessVsFitErr(ps.grids, ps.v, range(NTrials), maxErr=None)
+    fig.tight_layout()
+    fname = outputDir + "/figure2_gridness_vs_error.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
 

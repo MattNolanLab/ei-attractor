@@ -39,7 +39,7 @@ import logging as lg
 lg.basicConfig(level=lg.WARN)
 #lg.basicConfig(level=lg.INFO)
 
-dir = ('EI_param_sweep_{0}pA', (30, 30))
+dir = ('{0}pA', (31, 31))
 
 
 def getAll(sp, varList, iterList):
@@ -75,7 +75,7 @@ def plotHistograms(sp, varList, iterList):
     ylabel("Count")
 
     ax = subplot(1, 2, 2)
-    plotOneHist(errs, range=[0, 130])
+    plotOneHist(errs)
     xlabel("Error of fit (nrns/s)")
     
 
@@ -89,7 +89,7 @@ noise_sigmas = [0, 150, 300]
 
 for noise_sigma in noise_sigmas:
     file = dir[0].format(int(noise_sigma))
-    rootDir = "output/velocity/{0}".format(file)
+    rootDir = "output/even_spacing/velocity/{0}".format(file)
     shape   = dir[1]
 
     sp = JobTrialSpace2D(shape, rootDir)
@@ -113,7 +113,7 @@ for noise_sigma in noise_sigmas:
             clBarLabel = "Line fit error",
             clbarNTicks=4,
             vmin=0,
-            vmax=50)
+            vmax=18)
 
     plt.tight_layout()
     noise_sigma = sp.getParam(sp[0][0][0].data['IvelData'][0], 'noise_sigma')

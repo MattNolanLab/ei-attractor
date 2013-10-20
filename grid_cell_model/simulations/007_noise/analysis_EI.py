@@ -33,15 +33,15 @@ lg.basicConfig(level=lg.INFO)
 
 ###############################################################################
 optParser = OptionParser()
-optParser.add_option('--row',         type="int")
-optParser.add_option('--col',         type="int")
-optParser.add_option('--shapeRows',   type="int")
-optParser.add_option('--shapeCols',   type="int")
-optParser.add_option('--forceUpdate', type="int")
-optParser.add_option("--output_dir",  type="string")
-optParser.add_option("--job_num",     type="int") # unused
-optParser.add_option("--type",        type="choice", choices=['gamma-bump',
-    'velocity', 'grids'])
+optParser.add_option('--row',          type="int")
+optParser.add_option('--col',          type="int")
+optParser.add_option('--shapeRows',    type="int")
+optParser.add_option('--shapeCols',    type="int")
+optParser.add_option('--forceUpdate',  type="int")
+optParser.add_option("--output_dir",   type="string")
+optParser.add_option("--job_num",      type="int") # unused
+optParser.add_option("--type",         type="choice", choices=['gamma-bump', 'velocity', 'grids'])
+optParser.add_option("--bumpSpeedMax", type="float")
 
 o, args = optParser.parse_args()
 
@@ -66,8 +66,7 @@ if (o.type == "gamma-bump"):
     sp.visit(bumpVisitor)
     sp.visit(FRVisitor)
 elif (o.type == "velocity"):
-    VelVisitor = BumpVelocityVisitor(forceUpdate=forceUpdate, printSlope=True,
-            lineFitMaxIdx=5)
+    VelVisitor = BumpVelocityVisitor(o.bumpSpeedMax, forceUpdate=forceUpdate, printSlope=True)
     sp.visit(VelVisitor, trialList='all-at-once')
 elif (o.type == 'grids'):
     spikeType = 'E'
