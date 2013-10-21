@@ -25,10 +25,10 @@ from matplotlib.ticker     import MultipleLocator, AutoMinorLocator, \
         MaxNLocator
 from matplotlib.transforms import Bbox
 
+import plotting.connections as pconn
 from EI_plotting            import computeYX
 from parameters.param_space import JobTrialSpace2D, DataSpace
 from plotting.global_defs   import globalAxesSettings
-from plotting.connections   import plot2DWeightMatrix
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -52,43 +52,11 @@ hists   = 1
 weights = 0
 ##############################################################################
 
-def plotConnHistogram(val, **kw):
-    # keyword arguments
-    kw['bins']      = kw.get('bins', 20)
-    #kw['edgecolor'] = kw.get('edgecolor', 'none')
-    ax              = kw.get('ax', plt.gca())
-    xlabel          = kw.pop('xlabel', 'g (nS)')
-    ylabel          = kw.pop('ylabel', 'Count')
-    title           = kw.pop('title', '')
-    locators        = kw.pop('locator', {})
-
-    globalAxesSettings(ax)
-    ax.hist(val, **kw)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.set_title(title)
-
-    # tick formatting
-    x_major = locators.get('x_major', MultipleLocator(1))
-    x_minor = locators.get('x_minor', AutoMinorLocator(2))
-    y_major = locators.get('y_major', MaxNLocator(4))
-    y_minor = locators.get('y_minor', AutoMinorLocator(2))
-    ax.xaxis.set_major_locator(x_major)
-    ax.yaxis.set_major_locator(y_major)
-    ax.xaxis.set_minor_locator(x_minor)
-    ax.yaxis.set_minor_locator(y_minor)
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-
-    return ax
-
-
 def plotEToI(sp, gIdx, neuronIdx, trialNum=0, **kw):
     gE, gI = computeYX(sp, iterList)
     M      = sp[0][gIdx][trialNum].data['g_IE']
     conns  = M[neuronIdx, :]
-    ax = plotConnHistogram(conns,
+    ax = pconn.plotConnHistogram(conns,
             title='I cell', **kw)
     annG = gE[0, gIdx]
     if (annG - int(annG) == 0):
@@ -101,7 +69,7 @@ def plotIToE(sp, gIdx, neuronIdx, trialNum=0, **kw):
     gE, gI = computeYX(sp, iterList)
     M      = sp[0][gIdx][trialNum].data['g_EI']
     conns  = M[neuronIdx, :]
-    ax = plotConnHistogram(conns,
+    ax = pconn.plotConnHistogram(conns,
             title='E cell', **kw)
     annG = gI[0, gIdx]
     if (annG - int(annG) == 0):
@@ -130,7 +98,7 @@ def plotOutgoing(sp, gIdx, type, neuronIdx, trialNum=0, **kw):
 
 
     conns = np.reshape(data[var][:, neuronIdx], (Ny, Nx))
-    plot2DWeightMatrix(conns, **kw)
+    pconn.plot2DWeightMatrix(conns, **kw)
 
 def plotIncoming(sp, gIdx, type, neuronIdx, trialNum=0, **kw):
     Nx = None
@@ -150,7 +118,7 @@ def plotIncoming(sp, gIdx, type, neuronIdx, trialNum=0, **kw):
         kw['title'] = 'I cells $\\rightarrow$ E cell'
 
     conns = np.reshape(data[var][neuronIdx, :], (Ny, Nx))
-    plot2DWeightMatrix(conns, **kw)
+    pconn.plot2DWeightMatrix(conns, **kw)
 
 
 
