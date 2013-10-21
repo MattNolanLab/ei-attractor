@@ -30,14 +30,14 @@ y_dim       = np.sqrt(3)/2.
 defaultParameters = {
         "Ne"                    :   68,
         "Ni"                    :   34,
-        "delay"                 :   1.0,          # ms
+        "delay"                 :   0.1,          # ms
         "nthreads"              :   1,
+        "printTime"             :   0,            # This is boolean
 
-        "rat_dt"                :   20.0,         # ms
         "ratVelFName"           : '../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
         #"ratVelFName"           : '../../../data/hafting_et_al_2005/rat_trajectory_original.mat',
 
-        "gridSep"               : 70,             # cm
+        "gridSep"               :   60,             # cm
 
         "pAMPA_mu"              :   y_dim/2.0,
         "pAMPA_sigma"           :   0.5/6,
@@ -47,27 +47,16 @@ defaultParameters = {
         "prefDirC_e"            :   4.0,
         "prefDirC_i"            :   0.0,
         "arenaSize"             :   180.0,        # cm
-        "Iplace"                :   250.0,        # pA
-        "placeDur"              :    100,         # ms
-        "placeSigma"            :      7,         # cm (CHECK)
 
         "NMDA_amount"           :   2.0,          # %
 
         "Iext_e_const"          :   300.0,        # pA
         "Iext_i_const"          :   200.0,        # pA
-        "Iext_start"            :   300.0,        # pA
-        "Iext_start_dur"        :   100.0,        # ms
         "Iext_e_theta"          :   375.0,        # pA
         "Iext_i_theta"          :    25.0,        # pA
-        "sigmaIextGaussian"     :     0.5,        # Normalised to <0, 1>
-        "shuffleIextGaussian"   :       0,        # 0 or 1
+
         "theta_start_t"         :   0.5e3,        # ms
         "theta_freq"            :   8,            # Hz
-        "theta_noise_sigma"     :   0.0,            # pA
-        "theta_ph_jit_mean_e"   :   0.0,          # rad
-        "theta_ph_jit_spread_e" :   0.0,            # rad
-        "theta_ph_jit_mean_i"   :   0.0,          # rad
-        "theta_ph_jit_spread_i" :   0.0,            # rad
 
         "taum_e"                :   9.3,          # ms
         "taum_e_spread"         :   0.31,         # ms
@@ -105,22 +94,21 @@ defaultParameters = {
         "tau_GABA_A_rise"       :   0.1,          # ms
         "tau_GABA_A_fall"       :   5,            # ms
         "g_GABA_total"          :   2160,         # nS
-        "g_uni_GABA_total"      :   28,           # nS
+        "g_uni_GABA_frac"       :   0.013,        # fraction of g_GABA_total
         "uni_GABA_density"      :   0.4,
 
-        "condAddPercSynapses_e" :   0.0,          # %
-        "condAdd_e"             :   0.0,          # nS
-    
         "E_AMPA"                :   0,            # mV
         "E_GABA_A"              :   -75,          # mV
-
-        "N_place_cells"         :   0,
-        "pc_max_rate"           :   100.0,         # Hz
-        "pc_field_std"          :   20.0,         # cm
-        "pc_conn_weight"        :   5.,          # nS
         
-        "noise_sigma"           :   100.0,        # pA
-        "sigma_init_cond"       :   10,           # mV
+        "N_place_cells"         :   30,           # sqrt(total PC number)
+        "pc_max_rate"           :   50.0,         # Hz
+        "pc_conn_weight"        :   0.5,          # nS
+        "pc_field_std"          :   20.0,         # cm
+        "bumpCurrentSlope"      :   0.53,         # neurons/s/pA, !! this will depend on prefDirC !!
+        "pc_start_max_rate"     :   100.0,        # Hz
+        "pc_start_conn_weight"  :   5.0,          # nS
+
+        "noise_sigma"           :   150.0,        # pA            
         
         "sim_dt"                :   0.1,          # ms
         "Vclamp"                :   -50,          # mV
@@ -129,7 +117,6 @@ defaultParameters = {
         
         "output_dir"            :   _defaultOutputDir,
         "stateMonDur"           :  20e3,          # ms
-
-        "stim_spread"           :  1.0}
+}
 
 
