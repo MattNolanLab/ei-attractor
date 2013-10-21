@@ -21,6 +21,7 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
 import plotting.connections as pconn
@@ -46,6 +47,13 @@ shape = (1, 1)
 
 hists   = 1
 weights = 1
+
+pcolorFigsize     = (1.5, 1.5)
+pcolorLeft        = 0.3
+pcolorBottom      = 0.3
+pcolorRight       = 0.92
+pcolorTop         = 0.85
+pcolorTransparent = True
 ##############################################################################
 
 
@@ -57,6 +65,7 @@ def plotHistogram(sp, neuronIdx, type, fname, trialNum=0, **kw):
     right       = kw.pop('right', 0.92)
     top         = kw.pop('top', 0.85)
     transparent = kw.pop('transparent', True)
+    xlim        = kw.pop('xlim', None)
     ylim        = kw.pop('ylim', [0, 900])
     xticks      = kw.pop('xticks', True)
     yticks      = kw.pop('yticks', True)
@@ -82,6 +91,7 @@ def plotHistogram(sp, neuronIdx, type, fname, trialNum=0, **kw):
     if (not yticks):
         ax.yaxis.set_ticklabels([])
 
+    ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     plt.savefig(fname, dpi=150, transparent=transparent)
 
@@ -89,12 +99,12 @@ def plotHistogram(sp, neuronIdx, type, fname, trialNum=0, **kw):
 
 def plotOutgoing(sp, type, neuronIdx, fname, trialNum=0, **kw):
     # kw arguments
-    figsize     = kw.pop('figsize', (1.75, 1.6))
-    left        = kw.pop('left', 0.35)
-    bottom      = kw.pop('bottom', 0.3)
-    right       = kw.pop('right', 0.9)
-    top         = kw.pop('top', 0.85)
-    transparent = kw.pop('transparent', True)
+    figsize     = kw.pop('figsize', pcolorFigsize)
+    left        = kw.pop('left', pcolorLeft)
+    bottom      = kw.pop('bottom', pcolorBottom)
+    right       = kw.pop('right', pcolorRight)
+    top         = kw.pop('top', pcolorTop)
+    transparent = kw.pop('transparent', pcolorTransparent)
 
     fig = plt.figure(figsize=figsize)
     ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
@@ -116,19 +126,20 @@ def plotOutgoing(sp, type, neuronIdx, fname, trialNum=0, **kw):
         kw['title'] = 'I cell $\\rightarrow$ E cells'
 
     conns = np.reshape(data[var][:, neuronIdx], (Ny, Nx))
-    pconn.plot2DWeightMatrix(conns, **kw)
+    pconn.plot2DWeightMatrix(conns, ax=ax, labelpad=1, **kw)
+    ax.tick_params(which='both', length=0, pad=0)
     plt.savefig(fname, dpi=150, transparent=transparent)
     plt.close()
 
 
 def plotIncoming(sp, type, neuronIdx, fname, trialNum=0, **kw):
     # kw arguments
-    figsize     = kw.pop('figsize', (1.75, 1.6))
-    left        = kw.pop('left', 0.35)
-    bottom      = kw.pop('bottom', 0.3)
-    right       = kw.pop('right', 0.9)
-    top         = kw.pop('top', 0.85)
-    transparent = kw.pop('transparent', True)
+    figsize     = kw.pop('figsize', pcolorFigsize)
+    left        = kw.pop('left', pcolorLeft)
+    bottom      = kw.pop('bottom', pcolorBottom)
+    right       = kw.pop('right', pcolorRight)
+    top         = kw.pop('top', pcolorTop)
+    transparent = kw.pop('transparent', pcolorTransparent)
 
     fig = plt.figure(figsize=figsize)
     ax = plt.gcf().add_axes(Bbox.from_extents(left, bottom, right, top))
@@ -150,7 +161,8 @@ def plotIncoming(sp, type, neuronIdx, fname, trialNum=0, **kw):
         kw['title'] = 'I cells$\\rightarrow$E cell'
 
     conns = np.reshape(data[var][neuronIdx, :], (Ny, Nx))
-    pconn.plot2DWeightMatrix(conns, **kw)
+    pconn.plot2DWeightMatrix(conns, ax=ax, **kw)
+    ax.tick_params(which='both', length=0, pad=0)
     plt.savefig(fname, dpi=150, transparent=transparent)
     plt.close()
 
@@ -160,44 +172,93 @@ def setFName(fname, outputRoot='output'):
     return "{0}/{1}".format(outputRoot, fname)
 
 ##############################################################################
-neuronIdx = 0
+EneuronIdx = 1937
+IneuronIdx = 492
 
 E_surrSp = JobTrialSpace2D(shape, E_surrRoot)
+I_surrSp = JobTrialSpace2D(shape, I_surrRoot)
 
 if (hists):
+    # E-surround
     fname = setFName("conn_histogram_E_surr_E2I.pdf")
-    plotHistogram(E_surrSp, neuronIdx, "E2I", fname)
+    plotHistogram(E_surrSp, IneuronIdx, "E2I", fname,
+            locators=dict(
+                x_major=ti.MultipleLocator(0.4),
+                x_minor=ti.MultipleLocator(0.1)))
 
     fname = setFName("conn_histogram_E_surr_I2E.pdf")
-    plotHistogram(E_surrSp, neuronIdx, "I2E", fname,
-            ylabel='', yticks=False)
+    plotHistogram(E_surrSp, EneuronIdx, "I2E", fname,
+            ylabel='', yticks=False,
+            locators=dict(
+                x_major=ti.MultipleLocator(1),
+                x_minor=ti.MultipleLocator(0.5)))
+
+    # I-surround
+    fname = setFName("conn_histogram_I_surr_E2I.pdf")
+    plotHistogram(I_surrSp, IneuronIdx, "E2I", fname,
+            locators=dict(
+                x_major=ti.MultipleLocator(1),
+                x_minor=ti.MultipleLocator(0.25)))
+
+    fname = setFName("conn_histogram_I_surr_I2E.pdf")
+    plotHistogram(I_surrSp, EneuronIdx, "I2E", fname,
+            ylabel='', yticks=False,
+            locators=dict(
+                x_major=ti.MultipleLocator(0.5),
+                x_minor=ti.MultipleLocator(0.25)))
 
 
 
 
 if (weights):
+    # E-surround ######
     # As a control: plot the weights from one neuron (outgoing)
     # E-->I
     fname = setFName("conn_pcolor_E_surr_out_E2I.pdf")
-    plotOutgoing(E_surrSp, "E", neuronIdx, fname,
+    plotOutgoing(E_surrSp, "E", EneuronIdx, fname,
             xlabel='')
 
     # I-->E
     fname = setFName("conn_pcolor_E_surr_out_I2E.pdf")
-    plotOutgoing(E_surrSp, "I", neuronIdx, fname,
+    plotOutgoing(E_surrSp, "I", IneuronIdx, fname,
             ylabel='',
             xlabel='')
 
     # Out of curiosity: plot the weights to one neuron (incoming)
     # E-->I
     fname = setFName("conn_pcolor_E_surr_in_E2I.pdf")
-    plotIncoming(E_surrSp, "I", neuronIdx, fname,
+    plotIncoming(E_surrSp, "I", IneuronIdx, fname,
             ylabel='',
             xlabel='')
 
     # I-->E
     fname = setFName("conn_pcolor_E_surr_in_I2E.pdf")
-    plotIncoming(E_surrSp, "E", neuronIdx, fname,
+    plotIncoming(E_surrSp, "E", EneuronIdx, fname,
+            ylabel='',
+            xlabel='')
+
+
+    # I-surround ######
+    fname = setFName("conn_pcolor_I_surr_out_E2I.pdf")
+    plotOutgoing(I_surrSp, "E", EneuronIdx, fname,
+            xlabel='')
+
+    # I-->E
+    fname = setFName("conn_pcolor_I_surr_out_I2E.pdf")
+    plotOutgoing(I_surrSp, "I", IneuronIdx, fname,
+            ylabel='',
+            xlabel='')
+
+    # Out of curiosity: plot the weights to one neuron (incoming)
+    # E-->I
+    fname = setFName("conn_pcolor_I_surr_in_E2I.pdf")
+    plotIncoming(I_surrSp, "I", IneuronIdx, fname,
+            ylabel='',
+            xlabel='')
+
+    # I-->E
+    fname = setFName("conn_pcolor_I_surr_in_I2E.pdf")
+    plotIncoming(I_surrSp, "E", EneuronIdx, fname,
             ylabel='',
             xlabel='')
 

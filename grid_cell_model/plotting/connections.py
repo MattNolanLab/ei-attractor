@@ -45,7 +45,7 @@ def plotConnHistogram(val, **kw):
     xlabel          = kw.pop('xlabel', 'g (nS)')
     ylabel          = kw.pop('ylabel', 'Count')
     title           = kw.pop('title', '')
-    locators        = kw.pop('locator', {})
+    locators        = kw.pop('locators', {})
     ylabelPos       = kw.pop('ylabelPos', -0.2)
 
     globalAxesSettings(ax)
@@ -56,7 +56,7 @@ def plotConnHistogram(val, **kw):
     ax.set_title(title)
 
     # tick formatting
-    x_major = locators.get('x_major', ti.MaxNLocator(2))
+    x_major = locators.get('x_major', ti.MaxNLocator(3))
     x_minor = locators.get('x_minor', ti.AutoMinorLocator(2))
     y_major = locators.get('y_major', ti.LinearLocator(2))
     y_minor = locators.get('y_minor', ti.AutoMinorLocator(4))
@@ -72,10 +72,11 @@ def plotConnHistogram(val, **kw):
 
 
 def plot2DWeightMatrix(C, **kw):
-    ax     = kw.pop('ax', plt.gca())
-    xlabel = kw.pop('xlabel', 'Neuron #')
-    ylabel = kw.pop('ylabel', 'Neuron #')
-    title  = kw.pop('title', '')
+    ax       = kw.pop('ax', plt.gca())
+    xlabel   = kw.pop('xlabel', 'Neuron #')
+    ylabel   = kw.pop('ylabel', 'Neuron #')
+    labelpad = kw.pop('labelpad', None)
+    title    = kw.pop('title', '')
     kw['rasterized'] = kw.get('rasterized', True)
 
     X = np.arange(C.shape[1] + 1)
@@ -88,8 +89,8 @@ def plot2DWeightMatrix(C, **kw):
     ax.set_yticklabels([1, Y[-1]])
     plt.axis('scaled')
 
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel, labelpad=labelpad)
+    ax.set_ylabel(ylabel, labelpad=labelpad)
     ax.set_title(title, size='small')
 
     return ax
