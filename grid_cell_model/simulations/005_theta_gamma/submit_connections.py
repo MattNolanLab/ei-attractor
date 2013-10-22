@@ -19,10 +19,9 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import numpy as np
 from submitting.factory   import SubmitterFactory
 from submitting.arguments import ArgumentCreator
-from default_params       import defaultParameters as dp
+from default_params       import decideParams
 import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
@@ -30,7 +29,7 @@ lg.basicConfig(level=lg.INFO)
 #simLabel    = 'E_surround'
 simLabel    = 'I_surround'
 
-p = dp.copy()
+p = decideParams(simLabel)
 # Submitting
 ENV         = 'workstation'
 simRootDir  = 'output_local/connections'
@@ -44,18 +43,6 @@ dry_run     = False
 p['time']     = 0.1 # unused
 p['nthreads'] = 1
 p['ntrials']  = 1
-
-
-if (simLabel == 'E_surround'):
-    pass
-elif (simLabel == 'I_surround'):
-    p['AMPA_gaussian']    = 1         # bool
-    p['pAMPA_mu']         = 1.2/0.6
-    p["g_AMPA_total"]     = 4500      # nS
-    p["g_GABA_total"]     = 400       # nS
-    p["g_uni_GABA_frac"]  = 0.3125    # nS
-else:
-    raise ValueError('Unknown simLabel') 
 
 ###############################################################################
 ac = ArgumentCreator(p, printout=True)
