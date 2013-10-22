@@ -44,7 +44,7 @@ for trial_idx in range(len(d['trials']), options.ntrials):
     try:
         ei_net = BasicGridCellNetwork(options, simulationOpts=None)
         
-        const_v = [00.0, 0.0]
+        const_v = [0.0, 0.0]
         ei_net.setConstantVelocityCurrent_e(const_v)
         
         

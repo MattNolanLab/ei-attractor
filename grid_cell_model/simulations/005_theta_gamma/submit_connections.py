@@ -34,7 +34,7 @@ p = dp.copy()
 # Submitting
 ENV         = 'workstation'
 simRootDir  = 'output_local/connections'
-appName     = 'simulation_connections.py'
+appName     = '../common/simulation_connections.py'
 numCPU      = 1
 blocking    = True
 timePrefix  = False
