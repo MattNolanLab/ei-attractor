@@ -26,8 +26,8 @@ import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
 
-simLabel    = 'E_surround'
-#simLabel    = 'I_surround'
+#simLabel    = 'E_surround'
+simLabel    = 'I_surround'
 
 p = decideParams(simLabel)
 # Submitting
