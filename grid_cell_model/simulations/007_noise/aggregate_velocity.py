@@ -26,16 +26,20 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 
-noise_sigmas = [0, 150, 300]
-dirs         = ('{0}pA', (31, 31))
-shape        = dirs[1]
+ns_all  = [0, 150, 300]
+ns_none = [-100]
 varListBase  = ['analysis']
 loadData     = True
+dirs = \
+    ('output/detailed_noise/velocity/EI-3_1', (31, 9), ns_all)
+    #('output/detailed_noise/velocity/EI-1_3', (31, 9), ns_all)
+    #('output/even_spacing/velocity/{0}pA', (31, 31), ns_all)
 
 ################################################################################
+shape        = dirs[1]
+noise_sigmas = dirs[2]
 for noise_sigma in noise_sigmas:
-    dir = dirs[0].format(int(noise_sigma))
-    rootDir = "output/even_spacing/velocity/{0}".format(dir)
+    rootDir = dirs[0].format(int(noise_sigma))
 
     sp = JobTrialSpace2D(shape, rootDir)
     sp.aggregateData(varListBase + ['lineFitErr'], funReduce=np.sum,
