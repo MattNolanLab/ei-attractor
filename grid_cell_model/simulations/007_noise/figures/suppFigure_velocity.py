@@ -21,13 +21,11 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.gridspec   import GridSpec
-from matplotlib.ticker     import MultipleLocator, AutoMinorLocator, \
-        MaxNLocator, ScalarFormatter
-from matplotlib.colorbar   import make_axes
+import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
 import EI_plotting as EI
+from parameters.param_space import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings
 from figures_shared       import plotOneHist, NoiseDataSpaces
 
@@ -53,10 +51,9 @@ bumpDataRoot= None
 velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-velSweep0         = 1
-velSweep150       = 1
-velSweep300       = 1
-hists             = 1
+velSweep       = 1
+hists          = 1
+detailed_noise = 1
 
 ##############################################################################
 
@@ -92,28 +89,28 @@ def plotVelHistogram(spList, varList, xlabel="", ylabel="", **kw):
     ax.set_ylabel(ylabel)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    f = ScalarFormatter(useMathText=True)
+    f = ti.ScalarFormatter(useMathText=True)
     f.set_scientific(True)
     f.set_powerlimits([0, 3])
     ax.yaxis.set_major_formatter(f)
-    ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     return ax
 
 def plotErrHistogram(spList, varList, **kw):
     ax = plotVelHistogram(spList, varList, range=[0, 10], **kw)
 
-    ax.xaxis.set_major_locator(MultipleLocator(2))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.yaxis.set_major_locator(MaxNLocator(4))
+    ax.xaxis.set_major_locator(ti.MultipleLocator(2))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(2))
+    ax.yaxis.set_major_locator(ti.MaxNLocator(4))
     ax.set_ylim([-0.0025, 2])
     #ax.margins(0.01)
     
 def plotSlopeHistogram(spList, varList, **kw):
     ax = plotVelHistogram(spList, varList, range=[0, 1.5], **kw)
 
-    ax.xaxis.set_major_locator(MultipleLocator(0.4))
-    ax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    ax.yaxis.set_major_locator(MaxNLocator(4))
+    ax.xaxis.set_major_locator(ti.MultipleLocator(0.4))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(2))
+    ax.yaxis.set_major_locator(ti.MaxNLocator(4))
     ax.set_ylim([-0.0025, 9])
     #ax.margins(0.01)
     
@@ -148,35 +145,57 @@ def createSweepFig(name):
         sweepTop))
     return fig, ax
 
-if (velSweep0):
+
+exampleRC = ( (5, 15), (15, 5) )
+ann0 = dict(
+        txt='D,E; black',
+        rc=exampleRC[0],
+        xytext_offset=(1.5, 1),
+        ha='center',
+        color='black')
+ann1 = dict(
+        txt='D,E; red',
+        rc=exampleRC[1],
+        xytext_offset=(0.5, 1.5),
+        ha='center',
+        color='red')
+ann = [ann0, ann1]
+cbar_kw = dict(
+    label = 'Fit error (neurons/s)',
+    orientation = 'vertical',
+    shrink = 0.8,
+    pad = 0.05,
+    ticks = ti.MultipleLocator(4),
+    rasterized = True)
+
+if (velSweep):
     # noise_sigma = 0 pA
     fig, ax = createSweepFig("velErrSweeps0")
     _, ax, cax = EI.plotVelTrial(ps.v[0], errVarList, iterList,
             noise_sigmas[0],
             ax=ax,
-            cbar=False,
+            cbar=False, cbar_kw=cbar_kw,
             xlabel='', xticks=False,
-            vmin=err_vmin, vmax=err_vmax)
-    fname = outputDir + "/suppFigure_velocity_err_sweeps0.png"
+            vmin=err_vmin, vmax=err_vmax,
+            annotations=ann)
+    fname = outputDir + "/suppFigure_velocity_err_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
-if (velSweep150):
     # noise_sigma = 150 pA
     fig, ax = createSweepFig("velErrSweeps150")
     _, ax, cax = EI.plotVelTrial(ps.v[1], errVarList, iterList,
             noise_sigma=noise_sigmas[1],
             ax=ax,
             ylabel='', yticks=False,
-            cbar=False,
+            cbar=False, cbar_kw=cbar_kw,
             xlabel='', xticks=False,
-            vmin=err_vmin, vmax=err_vmax)
-    fname = outputDir + "/suppFigure_velocity_err_sweeps150.png"
+            vmin=err_vmin, vmax=err_vmax,
+            annotations=ann)
+    fname = outputDir + "/suppFigure_velocity_err_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
-
-if (velSweep300):
     # noise_sigma = 300 pA
     fig, ax = createSweepFig("velErrSweeps300")
     _, ax, cax = EI.plotVelTrial(ps.v[2], errVarList, iterList,
@@ -186,8 +205,9 @@ if (velSweep300):
             cbar=True,
             xlabel='', xticks=False,
             vmin=err_vmin, vmax=err_vmax,
-            cbar_kw = {'label' : 'Fit error (neurons/s)'})
-    fname = outputDir + "/suppFigure_velocity_err_sweeps300.png"
+            cbar_kw = cbar_kw,
+            annotations=ann)
+    fname = outputDir + "/suppFigure_velocity_err_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
@@ -209,5 +229,63 @@ if (hists):
             ylabel='p(slope)', plotLegend=True)
     fname = outputDir + "/suppFigure_velocity_slope_histograms.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
+
+
+
+##############################################################################
+EI13Root  = 'output_local/detailed_noise/velocity/EI-1_3'
+EI31Root  = 'output_local/detailed_noise/velocity/EI-3_1'
+detailedShape = (31, 9)
+
+EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
+EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
+detailedNTrials = None
+
+
+sliceFigSize = (4.3, 2.5)
+sliceLeft   = 0.2
+sliceBottom = 0.3
+sliceRight  = 0.99
+sliceTop    = 0.8
+if (detailed_noise):
+    ylabelPos = -0.2
+
+    types = ('velocity', 'slope')
+    fig = plt.figure(figsize=sliceFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
+        sliceTop))
+    EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+            ylabelPos=ylabelPos,
+            xlabel='', xticks=False,
+            color='black')
+    EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+            xlabel='', xticks=False,
+            ylabel='Slope\n(neurons/s/pA)', ylabelPos=ylabelPos,
+            color='red')
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
+    ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
+
+    fname = "figure2_detailed_noise_slope.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+
+    types = ('velocity', 'fitErr')
+    fig = plt.figure(figsize=sliceFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
+        sliceTop))
+    EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+            ylabelPos=ylabelPos,
+            color='black')
+    EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+            ylabel='Fit error\n(neurons/s/trial)', ylabelPos=ylabelPos,
+            color='red')
+    ax.yaxis.set_major_locator(ti.MultipleLocator(4))
+    ax.yaxis.set_minor_locator(ti.MultipleLocator(2))
+
+    fname = "figure2_detailed_noise_error.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
 
 

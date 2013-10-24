@@ -63,10 +63,10 @@ shape    = (31, 31)
 gammaSweep0    = 1
 gammaSweep150  = 1
 gammaSweep300  = 1
-threshold      = 1
-freqHist       = 1
+threshold      = 0
+freqHist       = 0
 detailed_noise = 1
-examples       = 1
+examples       = 0
 
 ###############################################################################
 
@@ -239,7 +239,7 @@ exampleRC = ( (5, 15), (15, 5) )
 
 
 sweepFigSize = (2, 2.8)
-sweepLeft    = 0.17
+sweepLeft    = 0.2
 sweepBottom  = 0.1
 sweepRight   = 0.95
 sweepTop     = 0.9
@@ -255,7 +255,7 @@ FVarList  = ['freq']
 
 AC_cbar_kw = dict(
         orientation='horizontal',
-        ticks=ti.MultipleLocator(0.2),
+        ticks=ti.MultipleLocator(0.3),
         shrink=0.8,
         pad=0.2,
         label='Correlation')
@@ -298,7 +298,7 @@ if (gammaSweep0):
             cbar=False, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
-    fname = outputDir + "/figure3_sweeps0.png"
+    fname = outputDir + "/figure3_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = plt.figure(figsize=sweepFigSize)
@@ -314,7 +314,7 @@ if (gammaSweep0):
             sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
-    fname = outputDir + "/figure3_freq_sweeps0.png"
+    fname = outputDir + "/figure3_freq_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
 if (gammaSweep150):
@@ -332,7 +332,7 @@ if (gammaSweep150):
             cbar=False, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
-    fname = outputDir + "/figure3_sweeps150.png"
+    fname = outputDir + "/figure3_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = plt.figure(figsize=sweepFigSize)
@@ -348,7 +348,7 @@ if (gammaSweep150):
             sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
-    fname = outputDir + "/figure3_freq_sweeps150.png"
+    fname = outputDir + "/figure3_freq_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
 if (gammaSweep300):
@@ -363,7 +363,7 @@ if (gammaSweep300):
             cbar=True, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
-    fname = outputDir + "/figure3_sweeps300.png"
+    fname = outputDir + "/figure3_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = plt.figure(figsize=sweepFigSize)
@@ -378,7 +378,7 @@ if (gammaSweep300):
             sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
-    fname = outputDir + "/figure3_freq_sweeps300.png"
+    fname = outputDir + "/figure3_freq_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
 
@@ -412,28 +412,27 @@ nonmPS = JobTrialSpace2D(detailedShape, nonmRoot)
 EI33PS = JobTrialSpace2D(detailedShape, EI33Root)
 detailedNTrials = 5
 
-sliceFigSize = (4.3, 1.8)
-sliceLeft   = 0.15
+sliceFigSize = (4.3, 2.5)
+sliceLeft   = 0.2
 sliceBottom = 0.3
-sliceRight  = 0.95
-sliceTop    = 0.85
+sliceRight  = 0.99
+sliceTop    = 0.9
 if (detailed_noise):
-    ylabelPos = -0.13
+    ylabelPos = -0.17
+    types = ('gamma', 'acVal')
 
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
-    EI.plotDetailedNoise(nonmPS, detailedNTrials, ax=ax, ylabelPos=ylabelPos,
+    EI.plotDetailedNoise(nonmPS, detailedNTrials, types, ax=ax,
+            ylabelPos=ylabelPos,
             xlabel='', xticks=False)
-    fname = "figure3_detailed_noise_non_monotonic.pdf"
-    plt.savefig(fname, dpi=300, transparent=True)
-    plt.close()
+    EI.plotDetailedNoise(EI33PS, detailedNTrials, types, ax=ax,
+            ylabel='$1^{st}$ autocorrelation\npeak', ylabelPos=ylabelPos,
+            color='red')
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.1))
 
-    fig = plt.figure(figsize=sliceFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
-        sliceTop))
-    EI.plotDetailedNoise(EI33PS, detailedNTrials, ax=ax, ylabelPos=ylabelPos)
-    fname = "figure3_detailed_noise_EI33.pdf"
+    fname = "figure3_detailed_noise_non_monotonic.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 

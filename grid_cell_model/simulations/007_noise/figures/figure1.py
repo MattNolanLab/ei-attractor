@@ -55,11 +55,11 @@ gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 grids       = 1
-hists       = 0
-slices      = 0
-examples0   = 0
-examples150 = 0
-examples300 = 0
+hists       = 1
+slices      = 1
+examples0   = 1
+examples150 = 1
+examples300 = 1
 
 ##############################################################################
 
@@ -210,7 +210,8 @@ cbar_kw= {'label' : 'Gridness score',
     'orientation': 'vertical',
     'shrink': 0.8,
     'pad' : -0.05,
-    'ticks' : ti.MultipleLocator(0.5)}
+    'ticks' : ti.MultipleLocator(0.5),
+    'rasterized' : True}
 
 vmin = -0.5
 vmax = 1.1
@@ -260,7 +261,7 @@ if (grids):
             ignoreNaNs=True,
             annotations=ann,
             sliceAnn=sliceAnn)
-    fname = outputDir + "/figure1_sweeps0.png"
+    fname = outputDir + "/figure1_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
@@ -283,7 +284,7 @@ if (grids):
             ignoreNaNs=True,
             annotations=ann,
             sliceAnn=sliceAnn)
-    fname = outputDir + "/figure1_sweeps150.png"
+    fname = outputDir + "/figure1_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
@@ -304,7 +305,7 @@ if (grids):
             ignoreNaNs=True,
             annotations=ann,
             sliceAnn=sliceAnn)
-    fname = outputDir + "/figure1_sweeps300.png"
+    fname = outputDir + "/figure1_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
@@ -355,7 +356,7 @@ if (slices):
 
 ##############################################################################
 # Grid field examples
-exampleFName = outputDir + "/figure1_examples_{0}pA_{1}.png"
+exampleFName = outputDir + "/figure1_examples_{0}pA_{1}.pdf"
 exTransparent = True
 exampleFigSize = (1, 1.2)
 exampleLeft   = 0.01

@@ -23,9 +23,9 @@
 dst_dir=~/Dropbox/shared_data/noise/figures/
 
 files="
-    figure1.png
-    figure2.png
-    figure3.png
+    figure1.pdf
+    figure2.pdf
+    figure3.pdf
     figure4.png
     suppFigure_bumps0.png
     suppFigure_bumps1.png
@@ -46,7 +46,7 @@ files="
     suppFigure_grids7.png
     suppFigure_grids8.png
     suppFigure_model.png
-    suppFigure_velocity.png
+    suppFigure_velocity.pdf
     suppFigure_no_theta.png
     slices
     "

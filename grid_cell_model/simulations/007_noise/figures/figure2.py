@@ -27,8 +27,8 @@ from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
 import EI_plotting as EI
-from plotting.global_defs import globalAxesSettings
-from figures_shared       import NoiseDataSpaces
+from plotting.global_defs   import globalAxesSettings
+from figures_shared         import NoiseDataSpaces
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -52,12 +52,10 @@ bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-bumpSweep         = 1
-bumpExamples      = 1
+bumpSweep         = 0
+bumpExamples      = 0
 velExamples       = 0
-velSweep0         = 0
-velSweep150       = 0
-velSweep300       = 0
+velSweep          = 1
 velLines          = 0
 gridness_vs_error = 0
 
@@ -111,7 +109,7 @@ def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
     plt.hold('on')
     globalAxesSettings(ax)
 
-    ax.plot(IvelVec, slopes.T, 'o', color='none', markersize=markersize, **kw)
+    ax.plot(IvelVec, slopes.T, 'o', markerfacecolor='none', markersize=markersize, **kw)
     #ax.errorbar(IvelVec, avgSlope, stdSlope, fmt='o-',
     #        markersize=markersize, color=color, alpha=0.5, **kw)
     ax.plot(fitIvelVec, lineFit, '-', linewidth=1, color=color, **kw)
@@ -269,7 +267,7 @@ if (bumpSweep):
             cbar=False, cbar_kw=bump_cbar_kw,
             vmin=bump_vmin, vmax=bump_vmax,
             annotations=ann)
-    fname = outputDir + "/figure2_sweeps0.png"
+    fname = outputDir + "/figure2_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
     # noise_sigma = 150 pA
@@ -288,7 +286,7 @@ if (bumpSweep):
             cbar=False, cbar_kw=bump_cbar_kw,
             vmin=bump_vmin, vmax=bump_vmax,
             annotations=ann)
-    fname = outputDir + "/figure2_sweeps150.png"
+    fname = outputDir + "/figure2_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
     # noise_sigma = 300 pA
@@ -305,13 +303,13 @@ if (bumpSweep):
             cbar=True, cbar_kw=bump_cbar_kw,
             vmin=bump_vmin, vmax=bump_vmax,
             annotations=ann)
-    fname = outputDir + "/figure2_sweeps300.png"
+    fname = outputDir + "/figure2_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
 ##############################################################################
 # Bump examples
-exampleFName = outputDir + "/figure2_examples_{0}pA_{1}.png"
+exampleFName = outputDir + "/figure2_examples_{0}pA_{1}.pdf"
 bumpTrialNum = 0
 exTransparent = True
 exampleFigSize = (0.8, 0.8)
@@ -368,6 +366,8 @@ std_vmax = 14
 
 slope_cbar_kw= dict(
         orientation='vertical',
+        shrink = 0.8,
+        pad = 0.05,
         label='Slope (neurons/s/pA)',
         ticks=ti.MultipleLocator(0.5),
         extend='max', extendfrac=0.1)
@@ -375,17 +375,24 @@ slope_cbar_kw= dict(
 std_cbar_kw= dict(
         orientation='vertical',
         label='Mean $\sigma_{speed}$ (neurons/s)',
+        shrink = 0.8,
+        pad = 0.05,
         ticks=ti.MultipleLocator(4),
         extend='max', extendfrac=0.1)
 
 
 def createSweepFig(name=None):
+    sweepFigSize = (2.6, 1.9)
+    sweepLeft   = 0.15
+    sweepBottom = 0.2
+    sweepRight  = 0.87
+    sweepTop    = 0.85
     fig = plt.figure(name, figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     return fig, ax
 
-if (velSweep0):
+if (velSweep):
     # noise_sigma = 0 pA
     fig, ax = createSweepFig("velSlopeSweep0")
     _, ax, cax = EI.plotVelTrial(ps.v[0], slopeVarList, iterList,
@@ -394,7 +401,7 @@ if (velSweep0):
             xlabel='', xticks=False,
             cbar=False, cbar_kw=slope_cbar_kw,
             vmin=slope_vmin, vmax=slope_vmax)
-    fname = outputDir + "/figure2_slope_sweeps0.png"
+    fname = outputDir + "/figure2_slope_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
     fig, ax = createSweepFig()
@@ -404,12 +411,10 @@ if (velSweep0):
             sigmaTitle=False,
             cbar=False, cbar_kw=std_cbar_kw,
             vmin=std_vmin, vmax=std_vmax)
-    fname = outputDir + "/figure2_vel_std_sweeps0.png"
+    fname = outputDir + "/figure2_vel_std_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
-
-if (velSweep150):
     # noise_sigma = 150 pA
     fig, ax = createSweepFig("velSlopeSweep150")
     _, ax, cax = EI.plotVelTrial(ps.v[1], slopeVarList, iterList,
@@ -419,7 +424,7 @@ if (velSweep150):
             ylabel='', yticks=False,
             cbar=False, cbar_kw=slope_cbar_kw,
             vmin=slope_vmin, vmax=slope_vmax)
-    fname = outputDir + "/figure2_slope_sweeps150.png"
+    fname = outputDir + "/figure2_slope_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
     fig, ax = createSweepFig()
@@ -430,12 +435,10 @@ if (velSweep150):
             sigmaTitle=False,
             cbar=False, cbar_kw=std_cbar_kw,
             vmin=std_vmin, vmax=std_vmax)
-    fname = outputDir + "/figure2_vel_std_sweeps150.png"
+    fname = outputDir + "/figure2_vel_std_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
-
-if (velSweep300):
     # noise_sigma = 300 pA
     fig, ax = createSweepFig("velSlopeSweep300")
     _, ax, cax = EI.plotVelTrial(ps.v[2], slopeVarList, iterList,
@@ -445,7 +448,7 @@ if (velSweep300):
             ylabel='', yticks=False,
             cbar=True, cbar_kw=slope_cbar_kw,
             vmin=slope_vmin, vmax=slope_vmax)
-    fname = outputDir + "/figure2_slope_sweeps300.png"
+    fname = outputDir + "/figure2_slope_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
     fig, ax = createSweepFig()
@@ -456,7 +459,7 @@ if (velSweep300):
             sigmaTitle=False,
             cbar=True, cbar_kw=std_cbar_kw,
             vmin=std_vmin, vmax=std_vmax)
-    fname = outputDir + "/figure2_vel_std_sweeps300.png"
+    fname = outputDir + "/figure2_vel_std_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
@@ -500,4 +503,5 @@ if (gridness_vs_error):
     fig.tight_layout()
     fname = outputDir + "/figure2_gridness_vs_error.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
+
 
