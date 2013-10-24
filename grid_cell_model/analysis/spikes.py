@@ -374,7 +374,8 @@ class TorusPopulationSpikes(PopulationSpikes):
         sheetSize_y = self.getYSize()
         N = sheetSize_x*sheetSize_y
         
-        F, tsteps = self.slidingFiringRate(tStart, tEnd, dt, winLen)
+        F, tsteps = PopulationSpikes.slidingFiringRate(self, tStart, tEnd, dt,
+                winLen)
         P = np.ndarray((len(tsteps), 2), dtype=complex)
         X, Y = np.meshgrid(np.arange(sheetSize_x), np.arange(sheetSize_y))
         X = np.exp(1j*(X - sheetSize_x/2)/sheetSize_x*2*np.pi).ravel()

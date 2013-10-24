@@ -22,10 +22,10 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-root_dir="../output/even_spacing/velocity/"
-target_file="bump_slope_"
+root_dir="../output/detailed_noise/velocity/"
+target_file="bump_slope_detailed_noise_"
 
-I_vec="0pA 150pA 300pA"
+I_vec="EI-1_3 EI-3_1"
 for I in $I_vec; do
     src=${root_dir}${I}/reductions.h5
     dst=${target_file}${I}.h5
