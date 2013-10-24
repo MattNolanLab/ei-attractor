@@ -22,6 +22,8 @@
 import numpy as np
 from submitting.factory   import SubmitterFactory
 from submitting.arguments import ArgumentCreator
+from otherpkg.log         import log_info
+from data_storage         import DataStorage
 
 
 def submitNoiseSweep(p, gEp, gIp, noisep,
@@ -74,4 +76,15 @@ class SweepParams(object):
 
     def values(self):
         return np.linspace(self.start, self.end, self.nVals)
+
+
+def getBumpCurrentSlope(simLabel, threshold=0):
+    fileName = 'bump_slope_data/bump_slope_detailed_noise_{0}.h5'.format(simLabel)
+    msg = 'Loading bump vs. current slope from \'{0}\''.format(fileName)
+    log_info('getBumpCurrentlope (detailed)', msg)
+    ds = DataStorage.open(fileName, 'r')
+    slopes = ds['lineFitSlope'].flatten()
+    ds.close()
+    slopes[slopes < threshold] = np.nan
+    return slopes
 
