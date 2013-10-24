@@ -29,7 +29,9 @@ I_vec="0pA 150pA 300pA"
 for I in $I_vec; do
     src=${root_dir}${I}/reductions.h5
     dst=${target_file}${I}.h5
+    echo "removing $dst"
+    rm -f $dst
     echo "src: $src"
     echo "dst: $dst"
-    cp $src $dst
+    h5copy -i $src -o $dst -s /lineFitSlope -d /lineFitSlope
 done
