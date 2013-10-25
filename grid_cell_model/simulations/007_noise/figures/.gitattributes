@@ -1,1 +1,2 @@
 *.svg -diff -merge
+*.pdf -diff -crlf -merge

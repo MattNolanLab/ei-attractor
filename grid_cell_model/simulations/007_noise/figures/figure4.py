@@ -53,7 +53,7 @@ NTrials = 5
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas  = [0, 150, 300]
-rasterRC      = [(15, 15), (15, 15), (15, 15)] # (row, col)
+rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
 velDataRoot   = None
 gridsDataRoot = None

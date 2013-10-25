@@ -148,13 +148,13 @@ def createSweepFig(name):
 
 exampleRC = ( (5, 15), (15, 5) )
 ann0 = dict(
-        txt='D,E; black',
+        txt='D,E',
         rc=exampleRC[0],
         xytext_offset=(1.5, 1),
         ha='center',
         color='black')
 ann1 = dict(
-        txt='D,E; red',
+        txt='D,E',
         rc=exampleRC[1],
         xytext_offset=(0.5, 1.5),
         ha='center',
@@ -274,14 +274,17 @@ if (detailed_noise):
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
-    EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
-            ylabelPos=ylabelPos,
-            color='black')
-    EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+    _, p13, l13 = EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+            ylabelPos=ylabelPos, color='black')
+    _, p31, l31 = EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             ylabel='Fit error\n(neurons/s/trial)', ylabelPos=ylabelPos,
             color='red')
     ax.yaxis.set_major_locator(ti.MultipleLocator(4))
     ax.yaxis.set_minor_locator(ti.MultipleLocator(2))
+    leg = ['($g_E,\ g_I$) = (1, 3) nS',  '($g_E,\ g_I$) = (3, 1) nS',
+            'Mean', 'Mean']
+    ax.legend([p13, p31, l13, l31], leg, loc=(0.55, 0.3), fontsize='small', frameon=False,
+            numpoints=1)
 
     fname = "figure2_detailed_noise_error.pdf"
     plt.savefig(fname, dpi=300, transparent=True)

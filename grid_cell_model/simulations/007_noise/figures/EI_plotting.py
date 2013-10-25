@@ -29,6 +29,7 @@ from matplotlib.gridspec import GridSpec
 
 from plotting.global_defs import globalAxesSettings
 from plotting.grids       import plotGridRateMap
+from plotting.low_level   import xScaleBar
 from parameters import DataSpace
 from figures_shared       import plotBump, createColorbar
 from data_storage.sim_models.ei import extractSummedSignals
@@ -131,7 +132,7 @@ def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
 
     if (annotations is not None):
         for a in annotations:
-            plotSweepAnnotation(X=X, Y=Y, **a)
+            plotSweepAnnotation(X=X, Y=Y, ax=ax, **a)
 
     return C, ax, cax
 
@@ -156,7 +157,7 @@ def plotBumpSigmaTrial(sp, varList, iterList, noise_sigma, trialNumList=[0],
 
     if (annotations is not None):
         for a in annotations:
-            plotSweepAnnotation(X=X, Y=Y, **a)
+            plotSweepAnnotation(X=X, Y=Y, ax=ax, **a)
 
     return C, ax, cax
 
@@ -215,7 +216,7 @@ def plotGridTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
 
     if (annotations is not None):
         for a in annotations:
-            plotSweepAnnotation(X=X, Y=Y, **a)
+            plotSweepAnnotation(X=X, Y=Y, ax=ax, **a)
 
     return G, ax, cax
 
@@ -583,6 +584,8 @@ def drawEIRectSelection(ax, spaceRect, X, Y, color='black'):
 def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
     ax          = kw.pop('ax', plt.gca())
     noise_sigma = kw.pop('noise_sigma', None)
+    xscale_kw   = kw.pop('xscale_kw', None)
+    yscale_kw   = kw.pop('yscale_kw', None)
 
     globalAxesSettings(ax)
     ax.spines['top'].set_visible(False)
@@ -612,8 +615,14 @@ def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
 
     if (noise_sigma is not None):
         txt = '$\sigma$ = {0} pA'.format(noise_sigma)
-        ax.text(0.95, 1.01, txt, transform=ax.transAxes, va='bottom', ha='right',
+        ax.text(0.95, 0.85, txt, transform=ax.transAxes, va='bottom', ha='right',
                 size='x-small')
+
+    # Scale bars
+    if (xscale_kw is not None):
+        xscale_kw.update(ax=ax)
+        xScaleBar(**xscale_kw)
+
 
 
 
@@ -811,7 +820,10 @@ def aggregateType(sp, iterList, types, NTrials, **kw):
 
     elif (type == 'bump'):
         trialNumList  = np.arange(NTrials)
-        raise NotImplementedError()
+        if (subType == 'sigma'):
+            vars += ['bump_e', 'sigma']
+        else:
+            raise ValueError('Unknown bump subtype: {0}'.format(subType))
 
     elif (type == 'velocity'):
         if (subType == 'slope'):
@@ -825,7 +837,11 @@ def aggregateType(sp, iterList, types, NTrials, **kw):
 
     elif (type == 'grids'):
         trialNumList  = np.arange(NTrials)
-        raise NotImplementedError()
+        if (subType == 'gridnessScore'):
+            vars += ['gridnessScore']
+            funReduce = None
+        else:
+            raise ValueError('Unknown grids subtype: {0}'.format(subType))
 
     else:
         raise ValueError('Unknown aggregation type: {0}'.format(type))
@@ -852,11 +868,11 @@ def plotDetailedNoise(sp, NTrials, types, **kw):
     ax               = kw.pop('ax', plt.gca())
     markersize       = kw.pop('markersize', 4)
     color            = kw.pop('color', 'blue')
-    ignoreNaNs = kw.pop('ignoreNaNs', False)
+    ignoreNaNs = kw.pop('ignoreNaNs', True)
 
     iterList = ['noise_sigma', 'g_AMPA_total']
 
-    plt.hold('on')
+    ax.hold('on')
     data, X, Y = aggregateType(sp, iterList, types, NTrials, **kw)
     if (ignoreNaNs):
         nans = np.isnan(data)
@@ -865,9 +881,11 @@ def plotDetailedNoise(sp, NTrials, types, **kw):
     mean = np.mean(data, axis=1)
 
     globalAxesSettings(ax)
-    plt.plot(noise_sigma, data[:, :], 'o', markeredgecolor=color,
+    noise_sigma_all = np.repeat(np.reshape(noise_sigma, (1, len(noise_sigma))),
+            data.shape[1], axis=0).T
+    p1, = ax.plot(noise_sigma_all.ravel(), data.ravel(), 'o', markeredgecolor=color,
             markersize=markersize, markerfacecolor='none',  **kw)
-    plt.plot(noise_sigma, mean, '-', color=color, markersize=markersize, **kw)
+    l1, = ax.plot(noise_sigma, mean, '-', color=color, markersize=markersize, **kw)
     ax.set_xlabel(xlabel)
     ax.text(ylabelPos, 0.5, ylabel, va='center', ha='center',
             transform=ax.transAxes, rotation=90)
@@ -878,9 +896,9 @@ def plotDetailedNoise(sp, NTrials, types, **kw):
         ax.yaxis.set_ticklabels([])
     if (not xticks):
         ax.xaxis.set_ticklabels([])
-    ax.margins(0.05, 0.05)
+    ax.margins(0.03, 0.03)
 
-    return ax
+    return ax, p1, l1
        
 
         

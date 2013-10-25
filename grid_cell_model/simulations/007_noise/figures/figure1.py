@@ -30,6 +30,7 @@ from matplotlib.transforms import Bbox
 import EI_plotting as EI
 from plotting.global_defs import globalAxesSettings
 from figures_shared       import plotOneHist, NoiseDataSpaces
+from parameters           import JobTrialSpace2D
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -54,12 +55,13 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-grids       = 1
-hists       = 1
-slices      = 1
-examples0   = 1
-examples150 = 1
-examples300 = 1
+grids          = 1
+hists          = 0
+slices         = 0
+examples0      = 0
+examples150    = 0
+examples300    = 0
+detailed_noise = 1
 
 ##############################################################################
 
@@ -231,12 +233,12 @@ sliceAnn = [\
         letter=None)]
 
 ann0 = dict(
-        txt='B',
+        txt='B,D',
         rc=exampleRC[0],
         xytext_offset=(1.5, 1),
         color='black')
 ann1 = dict(
-        txt='C',
+        txt='C,D',
         rc=exampleRC[1],
         xytext_offset=(0.5, 1.5),
         color='black')
@@ -406,5 +408,47 @@ if (examples300):
         plt.savefig(fname, dpi=300, transparent=exTransparent)
         plt.close()
     
+
+
+##############################################################################
+# Detailed noise plots
+EI13Root  = 'output_local/detailed_noise/grids/EI-1_3'
+EI31Root  = 'output_local/detailed_noise/grids/EI-3_1'
+detailedShape = (31, 9)
+
+EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
+EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
+detailedNTrials = 1
+
+
+detailFigSize = (3.6, 2.8)
+detailLeft   = 0.22
+detailBottom = 0.2
+detailRight  = 0.95
+detailTop    = 0.8
+if (detailed_noise):
+    ylabelPos = -0.25
+
+    types = ('grids', 'gridnessScore')
+    fig = plt.figure(figsize=detailFigSize)
+    ax = fig.add_axes(Bbox.from_extents(detailLeft, detailBottom, detailRight,
+        detailTop))
+    _, p13, l13 = EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+            ylabelPos=ylabelPos,
+            color='black')
+    _, p31, l31 = EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+            ylabel='Gridness score', ylabelPos=ylabelPos,
+            color='red')
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
+    ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
+    ax.set_ylim([-0.6, 1.2])
+    leg = ['(1, 3)',  '(3, 1)']
+    l = ax.legend([p13, p31], leg, loc=(0.3, 1.1), fontsize='small', frameon=False,
+            numpoints=1, title='($g_E,\ g_I$) [nS]', ncol=2)
+    plt.setp(l.get_title(), fontsize='small')
+
+    fname = "figure1_detailed_noise_gscore.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
 
 
