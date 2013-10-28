@@ -53,7 +53,7 @@ bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-bumpSweep         = 1
+bumpSweep         = 0
 bumpExamples      = 0
 velExamples       = 0
 velSweep          = 0
@@ -243,12 +243,12 @@ bump_cbar_kw= dict(
 exampleRC = ( (5, 15), (15, 5) )
 
 ann0 = dict(
-        txt='B,D',
+        txt='B',
         rc=exampleRC[0],
         xytext_offset=(1.5, 1),
         color='white')
 ann1 = dict(
-        txt='C,D',
+        txt='C',
         rc=exampleRC[1],
         xytext_offset=(1.2, 1.1),
         color='black')
@@ -536,8 +536,8 @@ if (detailed_noise):
     _, p31, l31 = EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
             color='black')
-    ax.set_yscale("log")
-    ax.set_ylim([1.5, 300])
+    #ax.set_yscale("log")
+    #ax.set_ylim([1.5, 300])
     leg = ['(1, 3)',  '(3, 1)']
     l = ax.legend([p13, p31], leg, loc=(0.7, 0.7), fontsize='small', frameon=False,
             numpoints=1, title='($g_E,\ g_I$) [nS]')

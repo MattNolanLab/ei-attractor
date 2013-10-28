@@ -27,6 +27,7 @@ files="
     figure2.pdf
     figure3.pdf
     figure4.png
+    suppFigure_grid_sweeps.png
     suppFigure_model.pdf
     suppFigure_velocity.pdf
     suppFigure_no_theta.png
@@ -38,5 +39,5 @@ files="
 ls $dst_dir
 for f in $files
 do
-    cp -vr $f $dst_dir
+    cp -r $f $dst_dir
 done

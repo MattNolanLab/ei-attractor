@@ -23,13 +23,10 @@ import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
-from matplotlib.gridspec   import GridSpec
-from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
 import EI_plotting as EI
-from plotting.global_defs import globalAxesSettings
-from figures_shared       import plotOneHist, NoiseDataSpaces
+from figures_shared       import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
 
 import logging as lg
@@ -56,146 +53,10 @@ gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 grids          = 1
-hists          = 0
-slices         = 0
 examples0      = 0
 examples150    = 0
 examples300    = 0
 detailed_noise = 1
-
-##############################################################################
-
-
-
-def plotGridnessThresholdComparison(spList, trialNumList, thrList, r=0, c=0,
-        ylabelPos=-0.2):
-    varList = ['gridnessScore']
-    #G = []
-    noise_sigma = [0, 150, 300]
-
-    ax = plt.gca()
-    plt.hold('on')
-    globalAxesSettings(ax)
-
-    for sp in spList:
-        G = EI.aggregate2DTrial(sp, varList, trialNumList).flatten()
-        counts = []
-        for thr in thrList:
-            thrIdx = np.logical_and(G > thr, np.logical_not(np.isnan(G)))
-            counts.append(float(len(G[thrIdx])) / len(G))
-        plt.plot(thrList, counts, 'o-', markersize=4)
-
-
-    plt.plot([0], [1], linestyle='None', marker='None')
-    ax.set_xlabel('Gridness score threshold')
-    ax.text(ylabelPos, 0.5, 'Count', rotation=90, transform=ax.transAxes,
-            va='center', ha='right')
-    leg = []
-    for s in noise_sigma:
-        leg.append("{0}".format(int(s)))
-    l = ax.legend(leg, loc=(0.8, 0.5), title='$\sigma$ (pA)', frameon=False,
-            fontsize='x-small', ncol=1)
-    plt.setp(l.get_title(), fontsize='x-small')
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(ti.MultipleLocator(0.3))
-    ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(3))
-    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    ax.margins(0.02, 0.07)
-
-
-def plotGridnessHistogram(spList, trialNumList, ylabelPos=-0.2):
-    varList = ['gridnessScore']
-    #G = []
-    noise_sigma = [0, 150, 300]
-    colors = ['red', 'green', 'blue']
-
-    ax = plt.gca()
-    plt.hold('on')
-    globalAxesSettings(ax)
-
-    for idx, sp in enumerate(spList):
-        G = EI.aggregate2DTrial(sp, varList, trialNumList).flatten()
-        filtIdx = np.logical_not(np.isnan(G))
-        plotOneHist(G[filtIdx], normed=True)
-    leg = []
-    for s in noise_sigma:
-        leg.append("{0}".format(int(s)))
-    l = ax.legend(leg, loc=(0.8, 0.5), title='$\sigma$ (pA)', frameon=False,
-            fontsize='x-small', ncol=1)
-    plt.setp(l.get_title(), fontsize='x-small')
-
-    ax.set_xlabel("Gridness score")
-    ax.text(ylabelPos, 0.5, 'p(G)', rotation=90, transform=ax.transAxes,
-            va='center', ha='right')
-    #ax.set_ylabel("p(G)")
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
-    ax.yaxis.set_major_locator(ti.MultipleLocator(2))
-    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    ax.margins(0.05, 0.025)
-    
-
-def computeMarginal(G, type, X, Y, ignoreNaNs):
-    trials = []
-    for trialIdx in xrange(G.shape[2]):
-        trials.append(G[:, :, trialIdx])
-
-    res    = None
-    x      = None
-    xlabel = ''
-    if (type == 'horizontal'):
-        res = np.vstack(trials)
-        if (ignoreNaNs):
-            nans = np.isnan(res)
-            res = ma.MaskedArray(res, mask=nans)
-        res = res.T
-        x   = X[0, :]
-        xlabel = EI.xlabelText
-    elif (type == 'vertical'):
-        res = np.hstack(trials)
-        if (ignoreNaNs):
-            nans = np.isnan(res)
-            res = ma.MaskedArray(res, mask=nans)
-        x   = Y[:, 0]
-        xlabel = EI.ylabelText
-    else:
-        raise ValueError("Marginal type must be 'horizontal' or 'vertical'")
-    #import pdb; pdb.set_trace()
-    return res, x, xlabel
-
-
-def plotGridnessMarginal(paramSpaces, type, NTrials=1, **kw):
-    # kwargs
-    title        = kw.pop('title', True)
-    rcG          = kw.pop('rowsCols', [(1, 22), (1, 22), (1, 22)]) # (row, col)
-    ax           = kw.pop('ax', plt.gca())
-    iterList     = kw.pop('iterList', ['g_AMPA_total', 'g_GABA_total'])
-    kw['ylabel'] = kw.get('ylabel', 'Gridness score')
-    ignoreNaNs   = kw.get('ignoreNaNs', True)
-
-    GVars = ['gridnessScore']
-    trialNumList = range(NTrials)
-    sp = paramSpaces
-
-    # Gridness score
-    for idx, noise_sigma in enumerate(sp.noise_sigmas):
-        space = sp.grids[idx]
-        G = space.aggregateData(GVars, trialNumList, output_dtype='array',
-                loadData=True, saveData=False)
-        Y, X = EI.computeYX(space, iterList, r=rcG[idx][0], c=rcG[idx][1])
-        marginal, x, kw['xlabel'] = computeMarginal(G, type, X, Y, ignoreNaNs)
-        EI.plotOneSlice(ax, x, marginal, **kw)
-    ax.yaxis.set_major_locator(ti.MaxNLocator(4))
-
-    return ax
-        
-
 
 ##############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
@@ -233,12 +94,12 @@ sliceAnn = [\
         letter=None)]
 
 ann0 = dict(
-        txt='B,D',
+        txt='B',
         rc=exampleRC[0],
         xytext_offset=(1.5, 1),
         color='black')
 ann1 = dict(
-        txt='C,D',
+        txt='C',
         rc=exampleRC[1],
         xytext_offset=(0.5, 1.5),
         color='black')
@@ -309,50 +170,6 @@ if (grids):
             sliceAnn=sliceAnn)
     fname = outputDir + "/figure1_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
-    plt.close()
-
-
-# Stats
-sliceFigSize = (3.7, 2)
-sliceLeft   = 0.2
-sliceBottom = 0.3
-sliceRight  = 0.99
-sliceTop    = 0.85
-if (hists):
-    ylabelPos = -0.16
-    fig = plt.figure(figsize=sliceFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
-        sliceTop))
-    plotGridnessThresholdComparison(ps.grids, range(NTrials),
-            thrList=np.arange(-0.4, 1.2, 0.05), ylabelPos=ylabelPos)
-    fname = outputDir + "/figure1_threshold_comparison.pdf"
-    plt.savefig(fname, dpi=300, transparent=True)
-
-
-if (slices):
-    ylabelPos = -0.16
-    fig = plt.figure(figsize=sliceFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
-        sliceTop))
-    EI.plotGridnessSlice(ps, slice_horizontal, slice(None), type='horizontal',
-            ax=ax)
-    ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
-    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    ax.set_ylim([-0.5, 1.21])
-    fname = "figure1_slice_horizontal.pdf"
-    plt.savefig(fname, dpi=300, transparent=True)
-    plt.close()
-
-    fig = plt.figure(figsize=sliceFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
-        sliceTop))
-    EI.plotGridnessSlice(ps, slice(None), slice_vertical, type='vertical',
-            ax=ax)
-    ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
-    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    ax.set_ylim([-0.5, 1.21])
-    fname = "figure1_slice_vertical.pdf"
-    plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
 
