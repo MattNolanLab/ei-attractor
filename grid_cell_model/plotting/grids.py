@@ -94,12 +94,12 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
 
  
 def plotAutoCorrelation(ac, X, Y, diam=np.inf, ax=None, titleStr="",
-        scaleBar=None, scaleText=True):
+        scaleBar=None, scaleText=True, **kw):
     if (ax is None):
         ax = gca()
     ac = ma.masked_array(ac, mask = np.sqrt(X**2 + Y**2) > diam)
     globalAxesSettings(ax)
-    pcolor(X, Y, ac)
+    pcolor(X, Y, ac, **kw)
     axis('scaled')
     axis('off')
     title(titleStr, va='bottom')

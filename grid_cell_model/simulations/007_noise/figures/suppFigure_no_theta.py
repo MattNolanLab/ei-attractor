@@ -131,7 +131,7 @@ if (gammaSweep):
             cbar=False, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
-    fname = outputDir + "/suppFigure_no_theta_sweeps0.png"
+    fname = outputDir + "/suppFigure_no_theta_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = plt.figure(figsize=sweepFigSize)
@@ -148,7 +148,7 @@ if (gammaSweep):
             sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
-    fname = outputDir + "/suppFigure_no_theta_freq_sweeps0.png"
+    fname = outputDir + "/suppFigure_no_theta_freq_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
 
@@ -167,7 +167,7 @@ if (gammaSweep):
             cbar=False, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
-    fname = outputDir + "/suppFigure_no_theta_sweeps150.png"
+    fname = outputDir + "/suppFigure_no_theta_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = plt.figure(figsize=sweepFigSize)
@@ -184,7 +184,7 @@ if (gammaSweep):
             sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
-    fname = outputDir + "/suppFigure_no_theta_freq_sweeps150.png"
+    fname = outputDir + "/suppFigure_no_theta_freq_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
 
@@ -200,7 +200,7 @@ if (gammaSweep):
             cbar=True, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
-    fname = outputDir + "/suppFigure_no_theta_sweeps300.png"
+    fname = outputDir + "/suppFigure_no_theta_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = plt.figure(figsize=sweepFigSize)
@@ -216,7 +216,7 @@ if (gammaSweep):
             sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
-    fname = outputDir + "/suppFigure_no_theta_freq_sweeps300.png"
+    fname = outputDir + "/suppFigure_no_theta_freq_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
 
