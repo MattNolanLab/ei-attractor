@@ -27,27 +27,11 @@ files="
     figure2.pdf
     figure3.pdf
     figure4.png
-    suppFigure_bumps0.png
-    suppFigure_bumps1.png
-    suppFigure_bumps2.png
-    suppFigure_bumps3.png
-    suppFigure_bumps4.png
-    suppFigure_bumps5.png
-    suppFigure_bumps6.png
-    suppFigure_bumps7.png
-    suppFigure_bumps8.png
-    suppFigure_grids0.png
-    suppFigure_grids1.png
-    suppFigure_grids2.png
-    suppFigure_grids3.png
-    suppFigure_grids4.png
-    suppFigure_grids5.png
-    suppFigure_grids6.png
-    suppFigure_grids7.png
-    suppFigure_grids8.png
     suppFigure_model.pdf
     suppFigure_velocity.pdf
     suppFigure_no_theta.png
+    suppFigure_bumps
+    suppFigure_grids
     slices
     "
 

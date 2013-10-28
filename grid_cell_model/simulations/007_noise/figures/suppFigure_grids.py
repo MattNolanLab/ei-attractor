@@ -21,13 +21,10 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.pyplot   import figure, subplot, plot, savefig, close
-from matplotlib.colorbar import make_axes
+import matplotlib.ticker as ti
 
-from parameters  import JobTrialSpace2D
-from EI_plotting import plotGridTrial, computeYX, aggregate2D, \
-        drawGridExamples,  drawEIRectSelection
-from plotting.global_defs import globalAxesSettings, createColorbar
+import EI_plotting as EI
+from parameters     import JobTrialSpace2D
 from figures_shared import getNoiseRoots
 
 import logging as lg
@@ -40,7 +37,7 @@ rc('mathtext', default='regular')
 
 plt.rcParams['font.size'] = 12
 
-outputDir = "."
+outputDir = "suppFigure_grids"
 
 NTrials=10
 exampleIdx   = [(1, 22), (1, 22), (1, 22)] # (row, col)
@@ -54,39 +51,42 @@ shape = (31, 31)
 ##############################################################################
 
 def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0)):
+    cbar_kw= {'label' : 'Gridness score',
+        'orientation': 'vertical',
+        'shrink': 0.8,
+        'pad' : -0.05,
+        'ticks' : ti.MultipleLocator(0.5),
+        'rasterized' : True}
+
     exRow, exCol = exIdx
-    Y, X = computeYX(dataSpace, iterList, r=exRow, c=exCol)
+    Y, X = EI.computeYX(dataSpace, iterList, r=exRow, c=exCol)
+
 
     # Replot gridness score param. sweep
     ax0 = plt.gca()
-    G = plotGridTrial(dataSpace, ['gridnessScore'], iterList,
+    G = EI.plotGridTrial(dataSpace, ['gridnessScore'], iterList,
+            noise_sigma=None, sigmaTitle=False,
             trialNumList=range(NTrials),
+            ax=ax0,
             r=exRow,
             c=exCol,
             xlabel="$w_I$ (nS)",
             ylabel="$w_E$ (nS)",
-            colorBar=False,
-            clBarLabel = "Gridness score",
-            clbarNTicks=3,
+            cbar=True, cbar_kw=cbar_kw,
             vmin=None,
             vmax=None)
 
-    cax, kw = make_axes(ax0, orientation='vertical',
-            nticks=4, shrink=0.9)
-    globalAxesSettings(cax)
-    cb = createColorbar(ax, None, "Gridness score", cax=cax, **kw)
-
-    drawEIRectSelection(ax0, spaceRect, X, Y)
+    EI.drawEIRectSelection(ax0, spaceRect, X, Y)
 
 
 
 def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx):
-    fig = figure(figsize=(8.27, 11.69))
+    fig = plt.figure(figsize=(8.27, 11.69))
     margin    = 0.1
     sw_left   = margin
     sw_bottom = 0.82
     sw_right  = 0.4
-    sw_top    = 0.97
+    sw_top    = 0.96
     div       = 0.075
 
     letter_left = 0.03
@@ -105,7 +105,7 @@ def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx):
 
     gsCoords = 0.12, 0.075, 0.92, sw_bottom-div
     #gsCoords = margin, 0.46, 0.5, sw_bottom-div
-    gs = drawGridExamples(dataSpace, exRect, iterList, gsCoords=gsCoords,
+    gs = EI.drawGridExamples(dataSpace, exRect, iterList, gsCoords=gsCoords,
             exIdx=exIdx)
     fig.text(letter_left, sw_bottom-div+letter_top_off, "B", va=letter_va,
             ha=letter_ha, fontsize=19, fontweight='bold')
@@ -141,8 +141,8 @@ if (f0_0):
             exampleIdx[0])
 
     fname = outputDir + "/suppFigure_grids0.png"
-    savefig(fname, dpi=300, transparent=False)
-    close()
+    plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()
 
 
 
@@ -155,8 +155,8 @@ if (f0_1):
             exampleIdx[0])
 
     fname = outputDir + "/suppFigure_grids1.png"
-    savefig(fname, dpi=300, transparent=False)
-    close()
+    plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()
 
 if (f0_1):
     # Transition, low g_E - 0 pA
@@ -167,8 +167,8 @@ if (f0_1):
             exampleIdx[0])
 
     fname = outputDir + "/suppFigure_grids2.png"
-    savefig(fname, dpi=300, transparent=False)
-    close()
+    plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()
 
 
 if (f150_0):
@@ -180,8 +180,8 @@ if (f150_0):
             exampleIdx[1])
 
     fname = outputDir + "/suppFigure_grids3.png"
-    savefig(fname, dpi=300, transparent=False)
-    close()
+    plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()
 
 
 if (f150_1):
@@ -193,8 +193,8 @@ if (f150_1):
             exampleIdx[1])
 
     fname = outputDir + "/suppFigure_grids4.png"
-    savefig(fname, dpi=300, transparent=False)
-    close()
+    plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()
 
 
 if (f150_2):
@@ -206,8 +206,8 @@ if (f150_2):
             exampleIdx[1])
 
     fname = outputDir + "/suppFigure_grids5.png"
-    savefig(fname, dpi=300, transparent=False)
-    close()
+    plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()
 
 
 if (f300_0):
@@ -219,8 +219,8 @@ if (f300_0):
             exampleIdx[2])
 
     fname = outputDir + "/suppFigure_grids6.png"
-    savefig(fname, dpi=300, transparent=False)
-    close()
+    plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()
 
 
 if (f300_1):
@@ -232,8 +232,8 @@ if (f300_1):
             exampleIdx[2])
 
     fname = outputDir + "/suppFigure_grids7.png"
-    savefig(fname, dpi=300, transparent=False)
-    close()
+    plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()
 
 if (f300_2):
     # Transition, high g_E - 300 pA
@@ -244,8 +244,8 @@ if (f300_2):
             exampleIdx[2])
 
     fname = outputDir + "/suppFigure_grids8.png"
-    savefig(fname, dpi=300, transparent=False)
-    close()
+    plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()
 
 
 
