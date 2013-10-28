@@ -119,7 +119,7 @@ def plotSlopeHistogram(spList, varList, **kw):
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
-sweepFigSize = (2.5, 2.1)
+sweepFigSize = (2.6, 1.9)
 sweepLeft   = 0.15
 sweepBottom = 0.2
 sweepRight  = 0.87

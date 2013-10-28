@@ -56,10 +56,10 @@ shape = (31, 31)
 bumpSweep         = 0
 bumpExamples      = 0
 velExamples       = 0
-velSweep          = 0
+velSweep          = 1
 velLines          = 0
 gridness_vs_error = 0
-detailed_noise    = 1
+detailed_noise    = 0
 
 ##############################################################################
 
@@ -398,7 +398,7 @@ if (velSweep):
     # noise_sigma = 0 pA
     fig, ax = createSweepFig("velSlopeSweep0")
     _, ax, cax = EI.plotVelTrial(ps.v[0], slopeVarList, iterList,
-            noise_sigmas[0],
+            noise_sigmas[0], sigmaTitle=False,
             ax=ax,
             xlabel='', xticks=False,
             cbar=False, cbar_kw=slope_cbar_kw,
@@ -420,7 +420,7 @@ if (velSweep):
     # noise_sigma = 150 pA
     fig, ax = createSweepFig("velSlopeSweep150")
     _, ax, cax = EI.plotVelTrial(ps.v[1], slopeVarList, iterList,
-            noise_sigma=noise_sigmas[1],
+            noise_sigma=noise_sigmas[1], sigmaTitle=False,
             ax=ax,
             xlabel='', xticks=False,
             ylabel='', yticks=False,
@@ -444,7 +444,7 @@ if (velSweep):
     # noise_sigma = 300 pA
     fig, ax = createSweepFig("velSlopeSweep300")
     _, ax, cax = EI.plotVelTrial(ps.v[2], slopeVarList, iterList,
-            noise_sigma=noise_sigmas[2],
+            noise_sigma=noise_sigmas[2], sigmaTitle=False,
             ax=ax,
             xlabel='', xticks=False,
             ylabel='', yticks=False,

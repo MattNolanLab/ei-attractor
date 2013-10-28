@@ -8,3 +8,5 @@
 /*.eps
 /*.tmp$$
 /slices
+/suppFigure_bumps
+/suppFigure_grids
