@@ -187,11 +187,12 @@ def createColorbar(ax, **kwargs):
     cbLabel     = kwargs.pop('label', '')
     orientation = kwargs.get('orientation', 'horizontal')
     rasterized  = kwargs.pop('rasterized', None)
+    labelpad    = kwargs.pop('labelpad', None)
 
     cax, kwargs = make_axes(ax, **kwargs)
     globalAxesSettings(cax)
     cb = colorbar(ax=ax, cax=cax, **kwargs)
-    cb.set_label(cbLabel)
+    cb.set_label(cbLabel, labelpad=labelpad)
     cb.solids.set_rasterized(rasterized)
 
     if ('orientation' == 'horizontal'):

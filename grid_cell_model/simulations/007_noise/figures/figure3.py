@@ -64,7 +64,7 @@ gammaSweep     = 0
 threshold      = 0
 freqHist       = 0
 detailed_noise = 1
-examples       = 1
+examples       = 0
 
 ###############################################################################
 
@@ -236,11 +236,11 @@ ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 exampleRC = ( (5, 15), (15, 5) )
 
 
-sweepFigSize = (2, 2.8)
-sweepLeft    = 0.2
-sweepBottom  = 0.1
-sweepRight   = 0.95
-sweepTop     = 0.9
+sweepFigSize = (3.5, 2.5)
+sweepLeft   = 0.15
+sweepBottom = 0.2
+sweepRight  = 0.87
+sweepTop    = 0.85
 transparent  = True
 
 AC_vmin = -0.09
@@ -252,28 +252,32 @@ ACVarList = ['acVal']
 FVarList  = ['freq']
 
 AC_cbar_kw = dict(
-        orientation='horizontal',
+        orientation='vertical',
         ticks=ti.MultipleLocator(0.3),
+        fraction=0.25,
         shrink=0.8,
-        pad=0.2,
-        label='Correlation')
+        pad=0.05,
+        labelpad=8,
+        label='$1^{st}$ autocorrelation\npeak')
 F_cbar_kw = dict(
-        orientation='horizontal',
+        orientation='vertical',
         ticks=ti.MultipleLocator(30),
+        fraction=0.25,
         shrink=0.8,
-        pad=0.2,
+        pad=0.05,
+        labelpad=8,
         label='Frequency',
         extend='max', extendfrac=0.1)
 
 
 ann_color = 'white'
 ann0 = dict(
-        txt='B,D',
+        txt='B',
         rc=exampleRC[0],
         xytext_offset=(1.5, 0),
         color=ann_color)
 ann1 = dict(
-        txt='C,D',
+        txt='C',
         rc=exampleRC[1],
         xytext_offset=(1.5, 1),
         color=ann_color)
@@ -290,6 +294,7 @@ if (gammaSweep):
     EI.plotACTrial(ps.bumpGamma[0], ACVarList, iterList,
             noise_sigma=ps.noise_sigmas[0],
             ax=ax,
+            xlabel='', xticks=False,
             trialNumList=xrange(NTrials),
             cbar=False, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
@@ -304,9 +309,8 @@ if (gammaSweep):
             noise_sigma=ps.noise_sigmas[0],
             ax=ax,
             trialNumList=xrange(NTrials),
-            ylabel='', yticks=False,
+            sigmaTitle=False,
             cbar=False, cbar_kw=F_cbar_kw,
-            sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
     fname = outputDir + "/figure3_freq_sweeps0.pdf"
@@ -322,6 +326,7 @@ if (gammaSweep):
     EI.plotACTrial(ps.bumpGamma[1], ACVarList, iterList,
             noise_sigma=ps.noise_sigmas[1],
             ax=ax,
+            xlabel='', xticks=False,
             trialNumList=xrange(NTrials),
             ylabel='', yticks=False,
             cbar=False, cbar_kw=AC_cbar_kw,
@@ -338,8 +343,8 @@ if (gammaSweep):
             ax=ax,
             trialNumList=xrange(NTrials),
             ylabel='', yticks=False,
+            sigmaTitle=False,
             cbar=False, cbar_kw=F_cbar_kw,
-            sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
     fname = outputDir + "/figure3_freq_sweeps150.pdf"
@@ -353,6 +358,7 @@ if (gammaSweep):
     EI.plotACTrial(ps.bumpGamma[2], ACVarList, iterList,
             noise_sigma=ps.noise_sigmas[2],
             ax=ax,
+            xlabel='', xticks=False,
             trialNumList=xrange(NTrials),
             ylabel='', yticks=False,
             cbar=True, cbar_kw=AC_cbar_kw,
@@ -367,10 +373,10 @@ if (gammaSweep):
     EI.plotACTrial(ps.bumpGamma[2], FVarList, iterList,
             noise_sigma=ps.noise_sigmas[2],
             ax=ax,
+            sigmaTitle=False,
             trialNumList=xrange(NTrials),
             ylabel='', yticks=False,
             cbar=True, cbar_kw=F_cbar_kw,
-            sigmaTitle=True,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
     fname = outputDir + "/figure3_freq_sweeps300.pdf"
@@ -407,18 +413,18 @@ EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
 EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
 detailedNTrials = 5
 
-sliceFigSize = (3.3, 2.25)
-sliceLeft   = 0.2
-sliceBottom = 0.25
-sliceRight  = 0.95
-sliceTop    = 0.9
+detailFigSize = (4.25, 1.8)
+detailLeft   = 0.2
+detailBottom = 0.3
+detailRight  = 0.98
+detailTop    = 0.9
 if (detailed_noise):
     ylabelPos = -0.17
     types = ('gamma', 'acVal')
 
-    fig = plt.figure(figsize=sliceFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
-        sliceTop))
+    fig = plt.figure(figsize=detailFigSize)
+    ax = fig.add_axes(Bbox.from_extents(detailLeft, detailBottom, detailRight,
+        detailTop))
     _, p13, l13 = EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
             xlabel='',
@@ -430,9 +436,9 @@ if (detailed_noise):
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
     ax.set_ylim([-0.01, 0.61])
     leg = ['(1, 3)',  '(3, 1)']
-    l = ax.legend([p13, p33], leg, loc=(0.7, 0.7), fontsize='small', frameon=False,
+    l = ax.legend([p13, p33], leg, loc=(0.8, 0.65), fontsize='x-small', frameon=False,
             numpoints=1, title='($g_E,\ g_I$) [nS]')
-    plt.setp(l.get_title(), fontsize='small')
+    plt.setp(l.get_title(), fontsize='x-small')
 
 
     fname = "figure3_detailed_noise.pdf"
