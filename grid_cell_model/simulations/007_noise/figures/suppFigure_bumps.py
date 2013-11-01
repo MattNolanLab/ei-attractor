@@ -21,13 +21,10 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.pyplot   import figure, subplot, plot, savefig
-from matplotlib.colorbar import make_axes
+import matplotlib.ticker as ti
 
-from parameters  import JobTrialSpace2D
-from EI_plotting import plotBumpSigmaTrial, computeYX, aggregate2D, \
-        drawBumpExamples,  drawEIRectSelection
-from plotting.global_defs import globalAxesSettings, createColorbar
+import EI_plotting as EI
+from parameters     import JobTrialSpace2D
 from figures_shared import getNoiseRoots
 
 import logging as lg
@@ -40,7 +37,7 @@ rc('mathtext', default='regular')
 
 plt.rcParams['font.size'] = 12
 
-outputDir = "."
+outputDir = "suppFigure_bumps"
 
 NTrials=10
 exampleIdx = [(0, 0), (0, 0), (0, 0)] # (row, col)
@@ -56,38 +53,42 @@ shape = (31, 31)
 
 def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0), cmap='jet_r',
         rectColor='black'):
+    bump_cbar_kw= dict(
+            orientation='vertical',
+            shrink=0.8, pad=-0.05,
+            ticks=ti.MultipleLocator(5),
+            label='Bump $\sigma$ (neurons)',
+            extend='max', extendfrac=0.1)
+
     exRow, exCol = exIdx
-    Y, X = computeYX(dataSpace, iterList, r=exRow, c=exCol)
+    Y, X = EI.computeYX(dataSpace, iterList, r=exRow, c=exCol)
 
     # Replot gridness score param. sweep
     ax0 = plt.gca()
     varList = ['bump_e', 'sigma']
-    G = plotBumpSigmaTrial(dataSpace, varList, iterList,
+    G = EI.plotBumpSigmaTrial(dataSpace, varList, iterList,
+            noise_sigma=None, sigmaTitle=False,
             trialNumList=range(NTrials),
-            colorBar=False,
+            ax=ax,
+            cbar=True, cbar_kw=bump_cbar_kw,
             clbarNTicks=3,
             vmin=0,
             vmax=10,
             cmap=cmap)
     plt.set_cmap('jet_r')
 
-    cax, kw = make_axes(ax0, orientation='vertical',
-            nticks=4, shrink=0.9)
-    globalAxesSettings(cax)
-    cb = createColorbar(ax, None, "Bump $\sigma$ (neurons)", cax=cax, **kw)
-
-    drawEIRectSelection(ax0, spaceRect, X, Y, color=rectColor)
+    EI.drawEIRectSelection(ax0, spaceRect, X, Y, color=rectColor)
 
 
 
 def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx,
         rectColor='black'):
-    fig = figure(figsize=(8.27, 11.69))
+    fig = plt.figure(figsize=(8.27, 11.69))
     margin    = 0.1
     sw_left   = margin
     sw_bottom = 0.82
     sw_right  = 0.4
-    sw_top    = 0.97
+    sw_top    = 0.95
     div       = 0.075
 
     letter_left = 0.03
@@ -107,7 +108,7 @@ def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx,
 
     gsCoords = 0.12, 0.075, 0.95, sw_bottom-div
     #gsCoords = margin, 0.46, 0.5, sw_bottom-div
-    gs = drawBumpExamples(dataSpace, exRect, iterList, gsCoords=gsCoords,
+    gs = EI.drawBumpExamples(dataSpace, exRect, iterList, gsCoords=gsCoords,
             exIdx=exIdx, cmap='jet')
     fig.text(letter_left, sw_bottom-div+letter_top_off, "B", va=letter_va,
             ha=letter_ha, fontsize=19, fontweight='bold')
@@ -124,14 +125,14 @@ exWidth = 6
 exHeight = 8
 
 # Flags
-f0_0   = 0
-f0_1   = 0
-f0_2   = 0
-f150_0 = 0
-f150_1 = 0
-f150_2 = 0
-f300_0 = 0
-f300_1 = 0
+f0_0   = 1
+f0_1   = 1
+f0_2   = 1
+f150_0 = 1
+f150_1 = 1
+f150_2 = 1
+f300_0 = 1
+f300_1 = 1
 f300_2 = 1
 
 
@@ -144,7 +145,7 @@ if (f0_0):
             exampleIdx[0])
 
     fname = outputDir + "/suppFigure_bumps0.png"
-    savefig(fname, dpi=300, transparent=False)
+    plt.savefig(fname, dpi=300, transparent=False)
 
 
 if (f0_1):
@@ -156,7 +157,7 @@ if (f0_1):
             exampleIdx[0], rectColor='red')
 
     fname = outputDir + "/suppFigure_bumps1.png"
-    savefig(fname, dpi=300, transparent=False)
+    plt.savefig(fname, dpi=300, transparent=False)
 
 
 if (f0_2):
@@ -168,7 +169,7 @@ if (f0_2):
             exampleIdx[0], rectColor='red')
 
     fname = outputDir + "/suppFigure_bumps2.png"
-    savefig(fname, dpi=300, transparent=False)
+    plt.savefig(fname, dpi=300, transparent=False)
 
 
 if (f150_0):
@@ -180,7 +181,7 @@ if (f150_0):
             exampleIdx[1], rectColor='red')
 
     fname = outputDir + "/suppFigure_bumps3.png"
-    savefig(fname, dpi=300, transparent=False)
+    plt.savefig(fname, dpi=300, transparent=False)
 
 
 if (f150_1):
@@ -192,7 +193,7 @@ if (f150_1):
             exampleIdx[1])
 
     fname = outputDir + "/suppFigure_bumps4.png"
-    savefig(fname, dpi=300, transparent=False)
+    plt.savefig(fname, dpi=300, transparent=False)
 
 
 if (f150_2):
@@ -204,7 +205,7 @@ if (f150_2):
             exampleIdx[1], rectColor='red')
 
     fname = outputDir + "/suppFigure_bumps5.png"
-    savefig(fname, dpi=300, transparent=False)
+    plt.savefig(fname, dpi=300, transparent=False)
 
 
 if (f300_0):
@@ -216,7 +217,7 @@ if (f300_0):
             exampleIdx[2], rectColor='red')
 
     fname = outputDir + "/suppFigure_bumps6.png"
-    savefig(fname, dpi=300, transparent=False)
+    plt.savefig(fname, dpi=300, transparent=False)
 
 
 if (f300_1):
@@ -228,7 +229,7 @@ if (f300_1):
             exampleIdx[2])
 
     fname = outputDir + "/suppFigure_bumps7.png"
-    savefig(fname, dpi=300, transparent=False)
+    plt.savefig(fname, dpi=300, transparent=False)
 
 
 if (f300_2):
@@ -240,6 +241,6 @@ if (f300_2):
             exampleIdx[2])
 
     fname = outputDir + "/suppFigure_bumps8.png"
-    savefig(fname, dpi=300, transparent=False)
+    plt.savefig(fname, dpi=300, transparent=False)
 
 

@@ -34,7 +34,7 @@ p = dp.copy()
 # Submitting
 ENV         = 'cluster'
 simRootDir  = 'output/detailed_noise/gamma_bump'
-appName     = 'simulation_stationary.py'
+appName     = '../common/simulation_stationary.py'
 rtLimit     = '00:45:00'
 numCPU      = 1
 blocking    = True

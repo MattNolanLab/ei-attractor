@@ -1,5 +1,5 @@
 /*
- *   _signalmodule.c
+ *   _signalmodule.cpp
  *
  *   Advanced signal analysis
  *
@@ -23,14 +23,13 @@
 
 #include <Python.h>
 #include <numpy/arrayobject.h>
-#include <blitz/array.h>
 
 #include "signal.h"
 #include "python_converter.h"
+#include "definitions.h"
 
 extern "C" {
 
-typedef blitz::Array<double, 1> DblVector;
 
 static PyObject *
 _signal_correlation_function(PyObject *self, PyObject *args)
@@ -67,7 +66,6 @@ _signal_correlation_function(PyObject *self, PyObject *args)
     }
     Py_RETURN_NONE;
 }
-
 
 
 

@@ -1,5 +1,12 @@
 /*.pdf
+!/figure1.pdf
+!/figure2.pdf
+!/figure3.pdf
+!/figure4.pdf
+!/suppFigure_velocity.pdf
 /*.png
 /*.eps
 /*.tmp$$
 /slices
+/suppFigure_bumps
+/suppFigure_grids

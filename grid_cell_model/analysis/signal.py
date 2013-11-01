@@ -18,6 +18,22 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+'''
+.. currentmodule:: analysis.signal
+
+The :mod:`signal` module contains functions and classes for continuous signal
+analysis: e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
+
+.. autosummary::
+    autoCorrelation
+    corr
+    localExtrema
+
+----------------------
+
+
+'''
+
 import numpy as np
 import scipy.signal
 
@@ -188,7 +204,7 @@ def maxPowerFrequency(Pxx, F, Frange=None):
 
 def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
     '''
-    An enhanced correlation function of real signal, based on blitz++.
+    An enhanced correlation function of two real signals, based on blitz++.
     
     This function uses dot product instead of FFT to compute a correlation
     function with range restricted lags.
@@ -199,8 +215,8 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
     be much shorter than using convolution to calculate the full correlation
     function and taking a slice of it.
 
-    Parameters
-    ----------
+    Parameters:
+
     a, b : ndarray
         One dimensional numpy arrays (in the current implementation, they will
         be converted to dtype=double if not already of that type.
@@ -208,19 +224,27 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
     mode : str, optional
         A string indicating the size of the output:
 
-        ``onesided`` : range of lags is [0, b.size - 1]
-        ``twosided`` : range of lags is [-(a.size - 1), b.size - 1]
-        ``range``    : range of lags is [-lag_start, lag_end]
+          ``onesided`` : range of lags is [0, b.size - 1]
+
+          ``twosided`` : range of lags is [-(a.size - 1), b.size - 1]
+
+          ``range``    : range of lags is [-lag_start, lag_end]
 
     lag_start, lag_end : int, optional
         Initial and final lag value. Only used when mode == 'range'
 
     output : numpy.ndarray with shape (1, ) and dtype.float
         A 1D array of size depending on mode
+
+    .. note::
+        
+        This function always returns a numpy array with dtype=float.
+
+    .. seealso:: :py:func:`autoCorrelation`
     '''
     sz1 = a.size
     sz2 = b.size
-    if (sz1 == 0 and sz2 == 0):
+    if (sz1 == 0 or sz2 == 0):
         raise TypeError("Both input arrays must have non-zero size!")
 
     if (mode == 'onesided'):

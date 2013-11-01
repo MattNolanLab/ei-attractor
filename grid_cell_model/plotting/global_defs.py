@@ -34,7 +34,7 @@ def globalAxesSettings(ax, setTickPos=True):
             which='minor',
             direction='out',
             width=1,
-            length=4
+            length=3
     )
     if (setTickPos):
         ax.xaxis.set_ticks_position('bottom')

@@ -130,9 +130,9 @@ class DetailedPlotVisitor(DictDSVisitor):
         ax_Vm = subplot2grid((rows, cols), (1, 0), colspan=3)
         t, VmMiddle, VmEdge = self._extractStateVars(mon_e, ['V_m'], plotTStart,
                 plotTEnd)
-        signalPlot(t, VmMiddle, ax_Vm, labelx="", labely = 'E cell $V_m$',
+        signalPlot(t, VmMiddle, ax_Vm, xlabel="", ylabel = 'E cell $V_m$',
                 nThetaTicks=5)
-        signalPlot(t, VmEdge, ax_Vm, labelx="", labely = 'E cell $V_m$',
+        signalPlot(t, VmEdge, ax_Vm, xlabel="", ylabel = 'E cell $V_m$',
                 nThetaTicks=5)
         plt.xlim(x_lim)
 
@@ -140,9 +140,9 @@ class DetailedPlotVisitor(DictDSVisitor):
         ax_Vm = subplot2grid((rows, cols), (2, 0), colspan=3)
         t, VmMiddle, VmEdge = self._extractStateVars(mon_i, ['V_m'], plotTStart,
                 plotTEnd)
-        signalPlot(t, VmMiddle, ax_Vm, labelx='', labely = 'I cell $V_m$',
+        signalPlot(t, VmMiddle, ax_Vm, xlabel='', ylabel = 'I cell $V_m$',
                 nThetaTicks=5)
-        signalPlot(t, VmEdge, ax_Vm, labelx='', labely = 'I cell $V_m$',
+        signalPlot(t, VmEdge, ax_Vm, xlabel='', ylabel = 'I cell $V_m$',
             nThetaTicks=5)
         plt.xlim(x_lim)
 
@@ -150,9 +150,9 @@ class DetailedPlotVisitor(DictDSVisitor):
         ax_Isyn = subplot2grid((rows, cols), (1, 3), colspan=3)
         t, IsynMiddle, IsynEdge = self._extractStateVars(mon_e, \
                 ['I_clamp_GABA_A'], plotTStart, plotTEnd)
-        signalPlot(t, IsynMiddle, ax_Isyn, labelx="", labely =
+        signalPlot(t, IsynMiddle, ax_Isyn, xlabel="", ylabel =
                 'E cell $I_{\mathrm{syn}}$', nThetaTicks=5)
-        signalPlot(t, IsynEdge, ax_Isyn, labelx="", labely =
+        signalPlot(t, IsynEdge, ax_Isyn, xlabel="", ylabel =
                 'E cell $I_{\mathrm{syn}}$', nThetaTicks=5)
         plt.xlim(x_lim)
 
@@ -160,10 +160,10 @@ class DetailedPlotVisitor(DictDSVisitor):
         ax_Isyn = subplot2grid((rows, cols), (2, 3), colspan=3)
         t, IsynMiddle, IsynEdge = self._extractStateVars(mon_i, \
                 ['I_clamp_AMPA', 'I_clamp_NMDA'], plotTStart, plotTEnd)
-        signalPlot(t, IsynMiddle, ax_Isyn, labelx='',
-                labely = 'I cell $I_{syn}$', nThetaTicks=5)
-        signalPlot(t, IsynEdge, ax_Isyn, labelx='',
-                labely = 'I cell $I_{syn}$', nThetaTicks=5)
+        signalPlot(t, IsynMiddle, ax_Isyn, xlabel='',
+                ylabel = 'I cell $I_{syn}$', nThetaTicks=5)
+        signalPlot(t, IsynEdge, ax_Isyn, xlabel='',
+                ylabel = 'I cell $I_{syn}$', nThetaTicks=5)
         plt.xlim(x_lim)
 
 
@@ -204,8 +204,8 @@ class DetailedPlotVisitor(DictDSVisitor):
         acVec = a['acVec']
         acdt = data['stateMonF_e'][0]['interval']
         acTimes = np.arange(acVec.shape[1]) * acdt
-        signalPlot(acTimes, acVec[0], ax_AC, labelx=None,
-                labely = 'I correlation')
+        signalPlot(acTimes, acVec[0], ax_AC, xlabel=None,
+                ylabel = 'I correlation')
         plt.axis('tight')
         plt.ylim([-1, 1])
 
@@ -217,7 +217,7 @@ class DetailedPlotVisitor(DictDSVisitor):
         acTimes = np.arange(acVec.shape[1]) * acdt
         plt.hold('on')
         for nIdx in xrange(acVec.shape[0]):
-            signalPlot(acTimes, acVec[nIdx], ax_AC, labelx=None, labely = '')
+            signalPlot(acTimes, acVec[nIdx], ax_AC, xlabel=None, ylabel = '')
         plt.axis('tight')
         plt.ylim([-1, 1])
 

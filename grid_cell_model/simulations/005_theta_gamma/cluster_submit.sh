@@ -20,28 +20,31 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Initialise environment module
+#$ -P inf_ndtc
+#$ -cwd
+#$ -j y
 
+# Initialise environment module
 . /etc/profile.d/modules.sh
 
-# Use python 2.6
-
 module load python/2.6.6
-module load openmpi-gcc
 
 
-LOCAL_DIR=/exports/work/inf_ndtc/lsolanka/
 BASE=../../
-export PYTHONPATH="$LOCAL_DIR/usr/local/lib/python2.6/site-packages:$LOCAL_DIR/usr/local/lib64/python2.6/site-packages:$BASE:"
-
-
 export LOCAL_DIR=/exports/work/inf_ndtc/lsolanka
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib:$LOCAL_DIR/usr/local/lib/nest
+export PYTHONPATH=$PYTHONPATH:$LOCAL_DIR/GridCells/grid_cell_model
+export PYTHONUSERBASE=$LOCAL_DIR/usr/local/
+
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib/nest
+export LD_LIBRARY_PATH
 
 # OpenMP settings
 #export OMP_NUM_THREADS=$NSLOTS
 #echo OMP_NUM_THREADS=$OMP_NUM_THREADS
 echo PYTHONPATH=$PYTHONPATH
 
+trap 'echo catch signal USR2 at `date +"%D %T"`' usr2
+
 # Run the program
-python2.6 $* 
+python $* 

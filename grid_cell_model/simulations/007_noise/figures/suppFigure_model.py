@@ -245,14 +245,15 @@ def plotGrids(gs, data, gsRowStart=0, gsCol=0):
     ax1 = subplot(gs[gsRowStart+1, gsCol])
     X = a['rateMap_e_X']
     Y = a['rateMap_e_Y']
-    plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=50, scaleText=False)
+    plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=50,
+            scaleText=False, rasterized=True, maxRate=False)
 
     # Grid field autocorrelation
     ax2 = subplot(gs[gsRowStart+2, gsCol])
     X = a['corr_X']
     Y = a['corr_Y']
     ac = a['corr']
-    plotAutoCorrelation(ac, X, Y, diam=arenaDiam, scaleBar=50)
+    plotAutoCorrelation(ac, X, Y, diam=arenaDiam, scaleBar=50, rasterized=True)
 
 
 
@@ -332,7 +333,7 @@ if (grids):
     plotGrids(gs, grids_ds) 
     #fig.text(g_left-0.2*div, letter_top, "B", va=letter_va, ha=letter_ha, fontsize=19,
     #        fontweight='bold')
-    fname = outputDir + "/suppFigure_model_grids.png"
+    fname = outputDir + "/suppFigure_model_grids.pdf"
     savefig(fname, dpi=300, transparent=True)
 
 if (gamma):

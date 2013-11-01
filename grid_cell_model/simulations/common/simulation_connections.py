@@ -36,9 +36,6 @@ for trial_idx in range(o.ntrials):
     print("\n\t\tStarting trial no. {0}\n".format(trial_idx))
     ei_net = BasicGridCellNetwork(o, simulationOpts=None)
     
-    #Epost = choice(ei_net.E_pop, o.connNE, replace=False)
-    #Ipost = choice(ei_net.I_pop, o.connNI, replace=False)
-    
     ei_net.endConstruction()
     ei_net.beginSimulation() 
 

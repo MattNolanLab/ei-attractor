@@ -28,7 +28,7 @@ from submitting.arguments   import ArgumentCreator
 ENV         = 'workstation'
 simLabel    = 'correlation_1d'
 simRootDir  = 'output_local'
-appName     = 'simulation_stationary.py'
+appName     = '../common/simulation_stationary.py'
 rtLimit     = '00:05:00'
 numCPU      = 4
 blocking    = True
