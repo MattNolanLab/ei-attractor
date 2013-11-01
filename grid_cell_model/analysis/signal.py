@@ -224,19 +224,27 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
     mode : str, optional
         A string indicating the size of the output:
 
-        ``onesided`` : range of lags is [0, b.size - 1]
-        ``twosided`` : range of lags is [-(a.size - 1), b.size - 1]
-        ``range``    : range of lags is [-lag_start, lag_end]
+          ``onesided`` : range of lags is [0, b.size - 1]
+
+          ``twosided`` : range of lags is [-(a.size - 1), b.size - 1]
+
+          ``range``    : range of lags is [-lag_start, lag_end]
 
     lag_start, lag_end : int, optional
         Initial and final lag value. Only used when mode == 'range'
 
     output : numpy.ndarray with shape (1, ) and dtype.float
         A 1D array of size depending on mode
+
+    .. note::
+        
+        This function always returns a numpy array with dtype=float.
+
+    .. seealso:: :py:func:`autoCorrelation`
     '''
     sz1 = a.size
     sz2 = b.size
-    if (sz1 == 0 and sz2 == 0):
+    if (sz1 == 0 or sz2 == 0):
         raise TypeError("Both input arrays must have non-zero size!")
 
     if (mode == 'onesided'):

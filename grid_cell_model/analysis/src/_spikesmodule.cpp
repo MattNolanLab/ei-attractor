@@ -1,7 +1,7 @@
 /*
- *   _signalmodule.cpp
+ *   _spikesmodule.cpp
  *
- *   Advanced signal analysis
+ *   Advanced spike analysis
  *
  *       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
  *       
@@ -23,26 +23,25 @@
 
 #include <Python.h>
 #include <numpy/arrayobject.h>
+#include <blitz/array.h>
 
-#include "signal.h"
-#include "python_converter.h"
 #include "definitions.h"
+#include "spikes.h"
+#include "python_converter.h"
 
 extern "C" {
 
 
 static PyObject *
-_signal_correlation_function(PyObject *self, PyObject *args)
+_spikes_spike_time_diff(PyObject *self, PyObject *args)
 {
     PyObject *in1 = NULL;
     PyObject *in2 = NULL;
     PyArrayObject *arr1 = NULL;
     PyArrayObject *arr2 = NULL;
-    int lag_start;
-    int lag_end;
 
 
-    if (!PyArg_ParseTuple(args, "OOii", &in1, &in2, &lag_start, &lag_end)) {
+    if (!PyArg_ParseTuple(args, "OO", &in1, &in2)) {
         return NULL;
     }
 
@@ -50,11 +49,11 @@ _signal_correlation_function(PyObject *self, PyObject *args)
     try {
         arr1 = convertPyToNumpy<double, 1>(in1);
         arr2 = convertPyToNumpy<double, 1>(in2);
-        DblVector v1 = convertPyToBlitz<double, 1>(arr1);
-        DblVector v2 = convertPyToBlitz<double, 1>(arr2);
-        DblVector c = sig::correlation_function(v1, v2, lag_start, lag_end);
+        DblVector train1 = convertPyToBlitz<double, 1>(arr1);
+        DblVector train2 = convertPyToBlitz<double, 1>(arr2);
+        DblVector td = spikes::spike_time_diff(train1, train2);
 
-        PyObject *ret = convertBlitzToPy<double, 1>(c);
+        PyObject *ret = convertBlitzToPy<double, 1>(td);
 
         Py_XDECREF(arr1);
         Py_XDECREF(arr2);
@@ -68,19 +67,19 @@ _signal_correlation_function(PyObject *self, PyObject *args)
 }
 
 
+static PyMethodDef SpikesMethods[] = {
 
-static PyMethodDef SignalMethods[] = {
-
-    {"correlation_function", _signal_correlation_function, METH_VARARGS, "Correlation function"},
+    {"spike_time_diff", _spikes_spike_time_diff, METH_VARARGS, "Distribution of"
+       " spike time differences"},
 
     {NULL, NULL, 0, NULL}
 };
 
 
 PyMODINIT_FUNC
-init_signal(void)
+init_spikes(void)
 {
-    (void) Py_InitModule("_signal", SignalMethods);
+    (void) Py_InitModule("_spikes", SpikesMethods);
 
     import_array();
 }

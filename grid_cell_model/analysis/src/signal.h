@@ -79,6 +79,7 @@ correlation_function(const blitz::Array<T, 1> &v1, const blitz::Array<T, 1>
     return res;
 }
 
+
 } // namespace sig
 
 #endif // SIGNAL_H

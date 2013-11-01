@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 #   test_analysis.py
 #
@@ -33,13 +32,24 @@ A list of currently supported tests:
     TestPopulationSpikes
 '''
 import unittest as ut
+import collections
 import numpy as np
 from unittest.util import safe_repr
 
 import analysis.signal as asignal
+import analysis.spikes as aspikes
 
+notImplMsg = "Not implemented"
+
+
+##############################################################################
+# Continuous signal tests (analysis.signal)
 
 class TestCorrelation(ut.TestCase):
+    '''
+    Test the analysis.signal.corr function (and effectively the core of the
+    autoCorrelation) function.
+    '''
     def setUp(self):
         self.places = 10
         self.maxN = 1000
@@ -88,7 +98,7 @@ class TestCorrelation(ut.TestCase):
         raise self.failureException(msg)
 
 
-    def checkBlitzNumpyCorr(self, a1, a2, mode):
+    def checkBlitzNumpyCorr(self, a1, a2):
         c_blitz = asignal.corr(a1, a2, mode='twosided')
         c_np    = np.correlate(a1, a2, mode='full')[::-1]
         self.assertSequenceAlmostEqual(c_blitz, c_np, places=self.places) 
@@ -107,17 +117,17 @@ class TestCorrelation(ut.TestCase):
             self.checkBlitzNumpyCorr(a1, a2)
 
 
-    @ut.skip("Not implemented")
+    @ut.skip(notImplMsg)
     def test_onesided(self):
         pass
 
 
-    @ut.skip("Not implemented")
+    @ut.skip(notImplMsg)
     def test_twosided(self):
         pass
 
     
-    @ut.skip("Not implemented")
+    @ut.skip(notImplMsg)
     def test_range(self):
         pass
 
@@ -129,9 +139,143 @@ class TestCorrelation(ut.TestCase):
         lag_start = 0
         lag_end   = 0
         for mode in ("onesided", "twosided", "range"):
-            self.assertRaises(TypeError, asignal.corr, (a1, a2, mode, lag_start,
-                lag_end))
-            self.assertRaises(TypeError, asignal.corr, (a2, a1, mode, lag_start,
-                lag_end))
+            self.assertRaises(TypeError, asignal.corr, a1, a2, mode, lag_start,
+                lag_end)
+            self.assertRaises(TypeError, asignal.corr, a2, a1, mode, lag_start,
+                lag_end)
+            self.assertRaises(TypeError, asignal.corr, a1, a1, mode, lag_start,
+                lag_end)
     
+
+
+##############################################################################
+# Spike analysis tests (analysis.spikes)
+def _computeOutputSequence(train1, train2):
+    res = np.array([])
+    for t1 in train1:
+        res = np.hstack((res, train2 - t1))
+    return res
+
+def _createTestSequence(trainSize, N):
+    senders = np.random.randint(N, size=trainSize * N)
+    times   = np.random.rand(trainSize * N)
+    sp      = aspikes.PopulationSpikes(N, senders, times)
+    return senders, times, sp
+
+
+class TestPopulationSpikes(ut.TestCase):
+    '''
+    Unit tests of :class:`analysis.spikes.PopulationSpikes`.
+    '''
+
+    def test_negative_N(self):
+        self.assertRaises(ValueError, aspikes.PopulationSpikes, -10, [], [])
+
+    def test_zero_N(self):
+        aspikes.PopulationSpikes(0, [], [])
+    
+
+    @ut.skip(notImplMsg)
+    def testAvgFiringRate(self):
+        pass
+
+
+    @ut.skip(notImplMsg)
+    def test_slidingFiringRate(self):
+        pass
+
+
+    
+    def test_lists(self):
+        trainSize = 100
+        N = 10
+        senders = list(np.random.randint(N, size=trainSize * N))
+        times   = list(np.random.rand(trainSize * N))
+        sp      = aspikes.PopulationSpikes(N, senders, times)
+
+        # try to retrieve spike trains
+        for nIdx in xrange(N):
+            train = sp[nIdx]
+
+        # Try to run all the methods, None should raise an exception
+        sp.avgFiringRate(0, 1)
+        sp.slidingFiringRate(0, 1, 0.05, 0.1)
+        sp.windowed((0, 1))
+        sp.rasterData()
+        sp.spikeTrainDifference(range(N))
+
+
+
+
+class TestSpikeTrainDifference(ut.TestCase):
+
+    def test_full(self):
+        # full must be True
+        N       = 10
+        senders, times, sp = _createTestSequence(0, N)
+        std     = sp.spikeTrainDifference
+        self.assertRaises(NotImplementedError, std, 1, 10, False)
+
+    def test_empty(self):
+        # Empty spike trains
+        N = 10
+        senders, times, sp = _createTestSequence(0, N)
+        std = sp.spikeTrainDifference
+        res = std(1, 2, True)
+        self.assertIsInstance(res, collections.Sequence)
+        self.assertEqual(len(res), 1) #
+        self.assertEqual(res[0].shape[0], 0)
+
+    def test_out_of_bounds(self):
+        # Out of bounds spike trains
+        trainSize = 100
+        N         = 100
+        senders, times, sp = _createTestSequence(trainSize, N)
+        std       = sp.spikeTrainDifference
+
+        self.assertRaises(IndexError, std, N, 1)
+        self.assertRaises(IndexError, std, 1, N)
+
+        # boundaries
+        std(N - 1, 1)
+        std(1, N-1)
+        std(-1, 0)
+        std(0, -1)
+
+
+    def test_result_length(self):
+        trainSize = 100
+        N         = 100
+        senders, times, sp = _createTestSequence(trainSize, N)
+        std       = sp.spikeTrainDifference
+
+        # result length must be correct
+        trainLengths = [np.count_nonzero(senders == x) for x in xrange(N)]
+        res = std(range(N), None, True)
+        self.assertEqual(len(res), N)
+        for nIdx in xrange(N):
+            self.assertEqual(len(res[nIdx]), N)
+
+        for n1 in xrange(N):
+            for n2 in xrange(N):
+                expectedLen = trainLengths[n1] * trainLengths[n2]
+                self.assertEqual(len(res[n1][n2]), expectedLen)
+
+    def test_correct_values(self):
+        trainSize = 100
+        N         = 100
+        senders, times, sp = _createTestSequence(trainSize, N)
+        std       = sp.spikeTrainDifference
+        res       = std(range(N), None, True)
+
+        for n1 in xrange(N):
+            train1 = times[senders == n1]
+            for n2 in xrange(N):
+                train2 = times[senders == n2]
+                diff = res[n1][n2]
+                expectedDiff = _computeOutputSequence(train1, train2)
+                self.assertTrue(np.all(diff == expectedDiff))
+
+
+
 

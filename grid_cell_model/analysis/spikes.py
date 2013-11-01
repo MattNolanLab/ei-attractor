@@ -20,9 +20,10 @@
 #
 import numpy as np
 import scipy
-
+import collections
 from scipy import weave
 
+import _spikes
 from otherpkg.log import log_warn
 
 __all__ = ['firingRate', 'multipleFiringRate', 'firingRateFromPairs',
@@ -184,7 +185,7 @@ class SpikeTrain(object):
 
 
 
-class PopulationSpikes(SpikeTrain):
+class PopulationSpikes(SpikeTrain, collections.Sequence):
     '''
     Class to handle a population of spikes and a set of methods to do analysis
     on the *whole* population.
@@ -203,13 +204,21 @@ class PopulationSpikes(SpikeTrain):
             Spike times. The shape of this array must be the same as for
             `senders`.
         '''
-        self._N       = N
-        self._senders = senders
-        self._times   = times
+        self._N        = N
         if (N < 0):
             msg = "Number of neurons in the spike train must be " +\
                     "non-negative! Got {0}."
             raise ValueError(msg.format(N))
+
+        # We are expecting senders and times as numpy arrays, if they are not,
+        # convert them
+        if not isinstance(senders, np.ndarray):
+            senders = np.array(senders)
+        if not isinstance(times, np.ndarray):
+            times = np.array(times)
+        self._senders  = senders
+        self._times    = times
+        self._unpacked = [None] * self._N # unpacked version of spikes
 
 
     @property
@@ -326,6 +335,82 @@ class PopulationSpikes(SpikeTrain):
             raise NotImplementedError()
 
         return self._senders, self._times
+
+
+
+
+    def spikeTrainDifference(self, idx1, idx2=None, full=True):
+        '''
+        Compute time differences between pairs of spikes of two neurons or a
+        list of neurons.
+        
+        Parameters
+        ----------
+        idx1 : int, or a sequence of ints
+            Index of the first neuron or a list of neurons for which to compute
+            the correlation histogram.
+        idx2 : int, or a sequence of ints, or None
+            Index of the second neuron or a list of indexes for the second set
+            of spike trains.
+        output : A 2D or 1D array of spike train autocorrelation histograms for all
+            the pairs of neurons.
+        
+        The computation takes the following steps:
+        
+         * If ``idx1`` or ``idx2`` are integers, they will be converted to a list
+           of size 1.
+         * If ``idx2`` is None, then the result will be a list of lists of pairs
+           of cross-correlations between the neurons. Even if there is only one
+           neuron. If ``full == True``, the output will be an upper triangular
+           matrix of all the pairs, i.e. it will exclude the duplicated.
+           Otherwise there will be cross correlation histograms between all the
+           pairs.
+         * if ``idx2`` is not None, then ``idx1`` and ``idx2`` must be arrays
+           of the same length, specifying the pairs to compute autocorrelation
+           for
+        '''
+        if (full == False):
+            raise NotImplementedError()
+
+        if (not isinstance(idx1, collections.Iterable)):
+            idx1 = [idx1]
+
+        if (idx2 is None):
+            idx2 = idx1
+            res = [[] for x in idx1]
+            for n1 in idx1:
+                for n2 in idx2:
+                    res[n1].append(_spikes.spike_time_diff(self[n1], self[n2]))
+            return res
+        elif (not isinstance(idx2, collections.Iterable)):
+            idx2 = [idx2]
+
+        # Two arrays of pairs
+        if (len(idx1) != len(idx2)):
+            raise TypeError('Length of neuron indexes do not match!')
+
+        res = [None] * len(idx1)
+        for n in xrange(len(idx1)):
+            res[n] = _spikes.spike_time_diff(self[idx1[n]], self[idx2[n]])
+
+        return res
+
+        
+
+    #######################################################################
+    # Functions implementing collections.Sequence
+    def __getitem__(self, key):
+        '''Retrieve a spike train for one neuron.'''
+        if self._unpacked[key] is not None:
+            return self._unpacked[key]
+        ret = self._times[self._senders == key]
+        self._unpacked[key] = ret
+        return ret
+
+    def __len__(self):
+        return self._N
+
+
 
 
 
