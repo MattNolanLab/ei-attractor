@@ -19,7 +19,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-__all__ ['bumpVariancePos']
+__all__ = ['bumpVariancePos']
 
 
 def bumpVariancePos(dirName, fileNamePrefix, jobRange, trialRange, t_start):

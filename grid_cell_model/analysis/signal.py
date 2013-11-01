@@ -18,6 +18,22 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+'''
+.. currentmodule:: analysis.signal
+
+The :mod:`signal` module contains functions and classes for continuous signal
+analysis: e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
+
+.. autosummary::
+    autoCorrelation
+    corr
+    localExtrema
+
+----------------------
+
+
+'''
+
 import numpy as np
 import scipy.signal
 
@@ -188,7 +204,7 @@ def maxPowerFrequency(Pxx, F, Frange=None):
 
 def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
     '''
-    An enhanced correlation function of real signal, based on blitz++.
+    An enhanced correlation function of two real signals, based on blitz++.
     
     This function uses dot product instead of FFT to compute a correlation
     function with range restricted lags.
@@ -199,8 +215,8 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
     be much shorter than using convolution to calculate the full correlation
     function and taking a slice of it.
 
-    Parameters
-    ----------
+    Parameters:
+
     a, b : ndarray
         One dimensional numpy arrays (in the current implementation, they will
         be converted to dtype=double if not already of that type.

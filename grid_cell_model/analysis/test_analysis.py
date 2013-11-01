@@ -19,6 +19,19 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+'''
+.. currentmodule: analysis.test_analysis
+
+The :mod:`analysis.test_analysis` module defines a set of classes for unit
+testing of the most important functions and classes of this package.  The
+module is currently based on the unittest module.
+
+A list of currently supported tests:
+
+.. autosummary::
+    TestCorrelation
+    TestPopulationSpikes
+'''
 import unittest as ut
 import numpy as np
 from unittest.util import safe_repr
