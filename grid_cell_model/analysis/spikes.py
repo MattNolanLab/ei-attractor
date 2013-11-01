@@ -18,6 +18,31 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+'''
+Classes and functions for spike train analysis.
+
+.. currentmodule:: analysis.spikes
+
+Classes
+-------
+.. autosummary::
+
+    PopulationSpikes
+    TorusPopulationSpikes
+    ThetaSpikeAnalysis
+
+
+Functions
+---------
+These functions are deprecated and should not be used unless really needed.
+Please use the classes defined above.
+
+.. autosummary::
+    slidingFiringRateTuple
+    torusPopulationVector
+
+
+'''
 import numpy as np
 import scipy
 import collections
