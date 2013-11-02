@@ -287,10 +287,12 @@ class TestSpikeTrainXCorrelation(ut.TestCase):
         xcf = sp.spikeTrainXCorrelation
 
         trainLens = [np.count_nonzero(senders == x) for x in xrange(N)]
-        res, bin_edges = xcf(range(N), None, (0, 1), bins)
+        res, bin_centers, bin_edges = xcf(range(N), None, (0, 1), bins)
+        self.assertEqual(bins, len(bin_edges) - 1)
+        self.assertEqual(len(bin_centers), bins)
         for n1 in xrange(N):
             for n2 in xrange(N):
-                self.assertEqual(len(res[n1][n2]) + 1, len(bin_edges))
+                self.assertEqual(len(res[n1][n2]), bins)
 
 
     @ut.skip(notImplMsg)

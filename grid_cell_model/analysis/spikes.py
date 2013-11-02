@@ -401,6 +401,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             res = [[] for x in idx1]
             for n1 in idx1:
                 for n2 in idx2:
+                    print n1, n2, len(self[n1]), len(self[n2])
                     res[n1].append(reduceFun(_spikes.spike_time_diff(self[n1],
                         self[n2])))
             return res
@@ -451,10 +452,9 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         idx2 : int, or a sequence of ints, or None
             Index of the second neuron or a list of indexes for the second set
             of spike trains.
-        lag_start : float
-            Start lag of the crosscorrelation function.
-        lag_end : float
-            End lag of the crosscorrelation function.
+        range : (lag_start, lag_end)
+            Limits of the cross-correlation function. The bins will always be
+            **centered** on the values.
         bins : int, optional
             Number of bins
         kw : dict
@@ -463,12 +463,16 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         output : a 2D or 1D list
             see :meth:`~PopulationSpikes.spikeTrainDifference`.
         '''
-        kw['bins'] = kw.get('bins', bins)
-        kw['range'] = range
-        h = self.CallableHistogram(**kw)
+        lag_start = range[0]
+        lag_end   = range[1]
+        binWidth = (lag_end - lag_start) / (bins - 1)
+        bin_edges = np.linspace(lag_start - binWidth/2.0, lag_end +
+                binWidth/2.0, bins+1) 
+        h = self.CallableHistogram(bins=bin_edges, **kw)
         XC = self.spikeTrainDifference(idx1, idx2, full=True, reduceFun=h)
         bin_edges = h.get_bin_edges()
-        return XC, bin_edges
+        bin_centers = (bin_edges[0:-1] + bin_edges[1:])/2.0
+        return XC, bin_centers, bin_edges
         
         
         
