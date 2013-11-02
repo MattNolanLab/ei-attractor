@@ -51,71 +51,60 @@ from scipy import weave
 import _spikes
 from otherpkg.log import log_warn
 
-__all__ = ['firingRate', 'multipleFiringRate', 'firingRateFromPairs',
-        'firingRateSlidingWindow', 'slidingFiringRateTuple',
-        'torusPopulationVector', 'torusPopulationVectorFromRates',
-        'SpikeTrain', 'PopulationSpikes', 'ThetaSpikeAnalysis']
+__all__ = [ 'slidingFiringRateTuple', 'torusPopulationVector',
+        'torusPopulationVectorFromRates', 'SpikeTrain', 'PopulationSpikes',
+        'ThetaSpikeAnalysis', 'TorusPopulationSpikes']
 
 
-def firingRate(spikeTrain, tstart, tend):
-    '''
-    Compute an average firing rate of a spike train, between tstart and tend
-    spikeTrain      A list or a 1D array of spike times
-    tstart, tend    Must be the same units as spikeTrain
-    '''
-    return np.sum(np.logical_and(spikeTrain >= tstart, spikeTrain <= tend)) / \
-            (tend - tstart)
-
-
-def multipleFiringRate(spikeTrainArray, tstart, tend):
-    '''
-    Compute an average firing rate of an array of spike trains. For each spike
-    train, return the firing rate between tstart and tend. Thus, the result will
-    be of len(spikeTrainArray)
-    '''
-    aLen = len(spikeTrainArray)
-    result = np.ndarray((aLen, ))
-    for it in xrange(aLen):
-        result[it] = firingRate(spikeTrainArray[it].flatten(), tstart, tend)
-
-    return result
-
-#def firingRateFromPairs(N, N_ids, times, tstart, tend):
+#def firingRate(spikeTrain, tstart, tend):
 #    '''
-#    Compute average firing rate for all the neurons in the range <0, N), given
-#    two arrays: N_ids (neuron ids) and times of spikes corresponding to N_ids).
+#    Compute an average firing rate of a spike train, between tstart and tend
+#    spikeTrain      A list or a 1D array of spike times
+#    tstart, tend    Must be the same units as spikeTrain
 #    '''
-#    result = np.ndarray((N, ))
-#    for n_it in xrange(N):
-#        result[n_it] = firingRate(times[N_ids == n_it], tstart, tend)
+#    return np.sum(np.logical_and(spikeTrain >= tstart, spikeTrain <= tend)) / \
+#            (tend - tstart)
+#
+#
+#def multipleFiringRate(spikeTrainArray, tstart, tend):
+#    '''
+#    Compute an average firing rate of an array of spike trains. For each spike
+#    train, return the firing rate between tstart and tend. Thus, the result will
+#    be of len(spikeTrainArray)
+#    '''
+#    aLen = len(spikeTrainArray)
+#    result = np.ndarray((aLen, ))
+#    for it in xrange(aLen):
+#        result[it] = firingRate(spikeTrainArray[it].flatten(), tstart, tend)
+#
 #    return result
-
-
-
-def firingRateSlidingWindow(spikeTrain, tstart, tend, dt, winLen):
-    '''
-    Compute sliding window firing rate for the neuron
-    dt      resolution of firing rate
-    winLen  Length of the sliding window
-
-    The spikes are computed from tstart to tend, so that the resulting array
-    length is int((tend-tstart)/dt)+1 long.
-    dt does not have to be relevant to simulation dt at all
-    '''
-    #lg.debug('Start firing rate processing')
-    szRate = int((tend-tstart)/dt)+1
-    r = np.ndarray((len(spikeTrain), szRate))
-    times = np.ndarray(szRate)
-    for n_i in xrange(len(spikeTrain)):
-        tmp = np.array(spikeTrain[n_i])
-        for t_i in xrange(szRate):
-            t = tstart + t_i*dt
-            r[n_i][t_i] = np.sum(np.logical_and(tmp > t-winLen/2, tmp <
-                t+winLen/2))
-            times[t_i] = t
-
-    #lg.debug('End firing rate processing')
-    return (r/winLen, times)
+#
+#
+#
+#def firingRateSlidingWindow(spikeTrain, tstart, tend, dt, winLen):
+#    '''
+#    Compute sliding window firing rate for the neuron
+#    dt      resolution of firing rate
+#    winLen  Length of the sliding window
+#
+#    The spikes are computed from tstart to tend, so that the resulting array
+#    length is int((tend-tstart)/dt)+1 long.
+#    dt does not have to be relevant to simulation dt at all
+#    '''
+#    #lg.debug('Start firing rate processing')
+#    szRate = int((tend-tstart)/dt)+1
+#    r = np.ndarray((len(spikeTrain), szRate))
+#    times = np.ndarray(szRate)
+#    for n_i in xrange(len(spikeTrain)):
+#        tmp = np.array(spikeTrain[n_i])
+#        for t_i in xrange(szRate):
+#            t = tstart + t_i*dt
+#            r[n_i][t_i] = np.sum(np.logical_and(tmp > t-winLen/2, tmp <
+#                t+winLen/2))
+#            times[t_i] = t
+#
+#    #lg.debug('End firing rate processing')
+#    return (r/winLen, times)
 
 
 def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
@@ -217,10 +206,6 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
     '''
     def __init__(self, N, senders, times):
         '''
-        Initialize the population of neurons emitting spikes.
-
-        Parameters
-        ----------
         N : int
             Number of neurons in the population
         senders : 1D array
