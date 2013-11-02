@@ -910,7 +910,7 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
     ylabel           = kw.pop('ylabel', 'Neuron #')
     yticks           = kw.pop('yticks', True)
     yticks_style     = kw.pop('yticks_style', 'separate')
-    ylabelPos        = kw.pop('ylabelPos', -0.2)
+    ylabelPos        = kw.pop('ylabelPos', -0.22)
     EColor           = kw.pop('ecolor', 'red')
     IColor           = kw.pop('icolor', 'blue')
     kw['markersize'] = kw.get('markersize', 1.0)
@@ -939,7 +939,7 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
     if (yticks_style == 'separate'):
         ax.set_yticks([1, ESpikes.N, ESpikes.N+ISpikes.N])
     ax.invert_yaxis()
-    ax.text(ylabelPos, 0.5, ylabel, va='center', ha='right',
+    ax.text(ylabelPos, 0.5, ylabel, va='center', ha='center',
             transform=ax.transAxes, rotation=90)
     if (not yticks):
         ax.yaxis.set_ticklabels([])
