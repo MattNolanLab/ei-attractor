@@ -349,7 +349,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
 
 
 
-    def spikeTrainDifference(self, idx1, idx2=None, full=True):
+    def spikeTrainDifference(self, idx1, idx2=None, full=True, reduceFun=None):
         '''
         Compute time differences between pairs of spikes of two neurons or a
         list of neurons.
@@ -362,6 +362,14 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         idx2 : int, or a sequence of ints, or None
             Index of the second neuron or a list of indexes for the second set
             of spike trains.
+        full : bool, optional
+            Not fully implemented yet. Must be set to True.
+        reduceFun : callable, optional
+            Any callable object that computes a function over an array of each
+            spike train difference. The function must take one input argument,
+            which will be the array of spike time differences for a pair of
+            neurons. The output of this function will be stored instead of the
+            default output.
         output : A 2D or 1D array of spike train autocorrelation histograms for all
             the pairs of neurons.
         
@@ -382,6 +390,9 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         if (full == False):
             raise NotImplementedError()
 
+        if (reduceFun is None):
+            reduceFun = lambda x: x
+
         if (not isinstance(idx1, collections.Iterable)):
             idx1 = [idx1]
 
@@ -390,7 +401,8 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             res = [[] for x in idx1]
             for n1 in idx1:
                 for n2 in idx2:
-                    res[n1].append(_spikes.spike_time_diff(self[n1], self[n2]))
+                    res[n1].append(reduceFun(_spikes.spike_time_diff(self[n1],
+                        self[n2])))
             return res
         elif (not isinstance(idx2, collections.Iterable)):
             idx2 = [idx2]
@@ -401,10 +413,65 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
 
         res = [None] * len(idx1)
         for n in xrange(len(idx1)):
-            res[n] = _spikes.spike_time_diff(self[idx1[n]], self[idx2[n]])
+            res[n] = reduceFun(_spikes.spike_time_diff(self[idx1[n]],
+                self[idx2[n]]))
 
         return res
 
+
+    class CallableHistogram(object):
+        def __init__(self, **kw):
+            self.kw = kw
+
+        def __call__(self, x):
+            '''
+            Perform the histogram on x and return the result of
+            numpy.histogram, without bin_edges
+            '''
+            res, _ = np.histogram(x, **self.kw)
+            return res
+
+        def get_bin_edges(self):
+            _, bin_edges = np.histogram([], **self.kw)
+            return bin_edges
+
+
+    def spikeTrainXCorrelation(self, idx1, idx2, range, bins=50,
+            **kw):
+        '''
+        Compute the spike train crosscorrelation function for all pairs of
+        spike trains in the population.
+
+        Parameters (for explanation of how ``idx1`` and ``idx2`` are treated,
+        see :meth:`~PopulationSpikes.spikeTrainDifference`):
+
+        idx1 : int, or a sequence of ints
+            Index of the first neuron or a list of neurons for which to compute
+            the correlation histogram.
+        idx2 : int, or a sequence of ints, or None
+            Index of the second neuron or a list of indexes for the second set
+            of spike trains.
+        lag_start : float
+            Start lag of the crosscorrelation function.
+        lag_end : float
+            End lag of the crosscorrelation function.
+        bins : int, optional
+            Number of bins
+        kw : dict
+            Keyword arguments passed on to the numpy.histogram function
+
+        output : a 2D or 1D list
+            see :meth:`~PopulationSpikes.spikeTrainDifference`.
+        '''
+        kw['bins'] = kw.get('bins', bins)
+        kw['range'] = range
+        h = self.CallableHistogram(**kw)
+        XC = self.spikeTrainDifference(idx1, idx2, full=True, reduceFun=h)
+        bin_edges = h.get_bin_edges()
+        return XC, bin_edges
+        
+        
+        
         
 
     #######################################################################
