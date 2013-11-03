@@ -83,23 +83,24 @@ vmax = 1.1
 exampleRC = ( (5, 15), (15, 5) )
 slice_horizontal = slice(13, 18)
 slice_vertical = slice(13, 18)
-sliceAnn = [\
-    dict(
-        sliceSpan=slice_horizontal,
-        type='horizontal',
-        letter=None),
-    dict(
-        sliceSpan=slice_vertical,
-        type='vertical',
-        letter=None)]
+#sliceAnn = [\
+#    dict(
+#        sliceSpan=slice_horizontal,
+#        type='horizontal',
+#        letter=None),
+#    dict(
+#        sliceSpan=slice_vertical,
+#        type='vertical',
+#        letter=None)]
+sliceAnn = None
 
 ann0 = dict(
-        txt='B',
+        txt='C',
         rc=exampleRC[0],
         xytext_offset=(1.5, 1),
         color='black')
 ann1 = dict(
-        txt='C',
+        txt='B',
         rc=exampleRC[1],
         xytext_offset=(0.5, 1.5),
         color='black')
@@ -130,8 +131,8 @@ if (grids):
 
 
     # noise_sigma = 150 pA
-    for a in sliceAnn:
-        a['letterColor'] = 'black'
+    #for a in sliceAnn:
+    #    a['letterColor'] = 'black'
     fig = plt.figure("sweeps150", figsize=sweepFigSize)
     exRows = [8, 2]
     exCols = [10, 9]
@@ -252,17 +253,17 @@ if (detailed_noise):
         detailTop))
     _, p13, l13 = EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
-            color='black')
+            color='red')
     _, p31, l31 = EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             ylabel='Gridness score', ylabelPos=ylabelPos,
-            color='red')
+            color='black')
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
     ax.set_ylim([-0.6, 1.2])
-    leg = ['(1, 3)',  '(3, 1)']
-    l = ax.legend([p13, p31], leg, loc=(0.3, 1.1), fontsize='small', frameon=False,
+    leg = ['B',  'C']
+    l = ax.legend([p31, p13], leg, loc=(0.5, 1.1), fontsize='small', frameon=False,
             numpoints=1, title='($g_E,\ g_I$) [nS]', ncol=2)
-    plt.setp(l.get_title(), fontsize='small')
+    plt.setp(l.get_title(), fontsize='small', ha='left')
 
     fname = "figure1_detailed_noise_gscore.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
