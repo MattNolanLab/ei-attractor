@@ -471,7 +471,7 @@ if (examplesFlag):
                 exampleRight, exampleTop))
             nsAnn = None
             xscale_kw = None
-            if (idx == 1):
+            if (idx == 0):
                 nsAnn = ns
                 if (nsIdx == len(ps.noise_sigmas)-1):
                     xscale_kw = example_xscale_kw
