@@ -28,12 +28,10 @@ from matplotlib.transforms import Bbox
 from copy import deepcopy
 
 
-import EI_plotting as EI
-from parameters  import JobTrialSpace2D, DataSpace
+from EI_plotting import sweeps, examples, details
+from parameters           import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings
-from figures_shared import plotOneHist, NoiseDataSpaces
-from data_storage.sim_models.ei import MonitoredSpikes
-from plotting.signal import signalPlot
+from figures_shared       import plotOneHist, NoiseDataSpaces
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -370,7 +368,7 @@ if (gammaSweep):
     fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotACTrial(ps.bumpGamma[0], ACVarList, iterList,
+    sweeps.plotACTrial(ps.bumpGamma[0], ACVarList, iterList,
             noise_sigma=ps.noise_sigmas[0],
             ax=ax,
             xlabel='', xticks=False,
@@ -384,7 +382,7 @@ if (gammaSweep):
     fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotACTrial(ps.bumpGamma[0], FVarList, iterList,
+    sweeps.plotACTrial(ps.bumpGamma[0], FVarList, iterList,
             noise_sigma=ps.noise_sigmas[0],
             ax=ax,
             trialNumList=xrange(NTrials),
@@ -402,7 +400,7 @@ if (gammaSweep):
     fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotACTrial(ps.bumpGamma[1], ACVarList, iterList,
+    sweeps.plotACTrial(ps.bumpGamma[1], ACVarList, iterList,
             noise_sigma=ps.noise_sigmas[1],
             ax=ax,
             xlabel='', xticks=False,
@@ -417,7 +415,7 @@ if (gammaSweep):
     fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotACTrial(ps.bumpGamma[1], FVarList, iterList,
+    sweeps.plotACTrial(ps.bumpGamma[1], FVarList, iterList,
             noise_sigma=ps.noise_sigmas[1],
             ax=ax,
             trialNumList=xrange(NTrials),
@@ -434,7 +432,7 @@ if (gammaSweep):
     fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotACTrial(ps.bumpGamma[2], ACVarList, iterList,
+    sweeps.plotACTrial(ps.bumpGamma[2], ACVarList, iterList,
             noise_sigma=ps.noise_sigmas[2],
             ax=ax,
             xlabel='', xticks=False,
@@ -449,7 +447,7 @@ if (gammaSweep):
     fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotACTrial(ps.bumpGamma[2], FVarList, iterList,
+    sweeps.plotACTrial(ps.bumpGamma[2], FVarList, iterList,
             noise_sigma=ps.noise_sigmas[2],
             ax=ax,
             sigmaTitle=False,
@@ -504,19 +502,19 @@ if (detailed_noise):
     fig = plt.figure(figsize=detailFigSize)
     ax = fig.add_axes(Bbox.from_extents(detailLeft, detailBottom, detailRight,
         detailTop))
-    _, p13, l13 = EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+    _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
             xlabel='',
             color='black')
-    _, p33, l33 = EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+    _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             ylabel='$1^{st}$ autocorrelation\npeak', ylabelPos=ylabelPos,
             color='red')
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.6))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
     ax.set_ylim([-0.01, 0.61])
-    leg = ['(1, 3)',  '(3, 1)']
-    l = ax.legend([p13, p33], leg, loc=(0.8, 0.65), fontsize='x-small', frameon=False,
-            numpoints=1, title='($g_E,\ g_I$) [nS]')
+    leg = ['B', 'C']
+    l = ax.legend([p13, p31], leg, loc=(0.85, 0.7), fontsize='x-small', frameon=False,
+            numpoints=1, handletextpad=0.05)
     plt.setp(l.get_title(), fontsize='x-small')
 
 
@@ -538,7 +536,7 @@ example_xscale_kw = dict(
         x=0.75, y=-0.1,
         size='x-small')
 
-if (examples):
+if (examplesFlag):
     for nsIdx, ns in enumerate(ps.noise_sigmas):
         for idx, rc in enumerate(exampleRC):
             fname = exampleFName.format(ns, idx)
@@ -551,7 +549,7 @@ if (examples):
                 nsAnn = ns
                 if (nsIdx == len(ps.noise_sigmas)-1):
                     xscale_kw = example_xscale_kw
-            EI.plotGammaExample(ps.bumpGamma[nsIdx], ax=ax,
+            examples.plotGammaExample(ps.bumpGamma[nsIdx], ax=ax,
                     r=exampleRC[idx][0], c=exampleRC[idx][1],
                     trialNum=exampleTrialNum,
                     tStart = 2e3, tEnd=2.25e3,

@@ -26,10 +26,13 @@ from matplotlib.gridspec   import GridSpec
 from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
-import EI_plotting as EI
-from plotting.global_defs import globalAxesSettings
-from figures_shared       import NoiseDataSpaces
-from parameters           import JobTrialSpace2D
+from EI_plotting                import sweeps, details, examples, rasters
+from EI_plotting                import aggregate as aggr
+from plotting.global_defs       import globalAxesSettings
+from figures_shared             import NoiseDataSpaces
+from parameters                 import JobTrialSpace2D
+from data_storage.sim_models.ei import MonitoredSpikes
+from plotting.signal            import signalPlot
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -59,6 +62,8 @@ velExamples       = 1
 velSweep          = 1
 gridness_vs_error = 1
 detailed_noise    = 1
+rastersFlag       = 1
+rates             = 1
 
 ##############################################################################
 
@@ -70,7 +75,7 @@ def plotBumpExample(sp, rc, iterList, **kw):
 
     r, c = rc[0], rc[1] 
     spaceRect = [c, r, c, r]
-    return EI.drawBumpExamples(sp, spaceRect, iterList,
+    return examples.drawBumpExamples(sp, spaceRect, iterList,
             gsCoords=gsCoords,
             xlabel=False, ylabel=False,
             xlabel2=False, ylabel2=False,
@@ -96,9 +101,9 @@ def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
     ax.set_yscale('log')
 
     for idx, (spGrids, spVel) in enumerate(zip(spListGrids, spListVelocity)):
-        G = EI.aggregate2DTrial(spGrids, GVars, trialNumList).flatten()
-        errs = EI.aggregate2D(spVel, errVars, funReduce=np.sum).flatten()
-        #slopes = np.abs(EI.aggregate2D(spVel, slopeVars,
+        G = aggr.aggregate2DTrial(spGrids, GVars, trialNumList).flatten()
+        errs = aggr.aggregate2D(spVel, errVars, funReduce=np.sum).flatten()
+        #slopes = np.abs(aggr.aggregate2D(spVel, slopeVars,
         #    funReduce=None).flatten())
         i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(errs)))
         ax.scatter(G[i], errs[i],  s=5, marker=markers[idx], 
@@ -182,7 +187,7 @@ if (bumpSweep):
     exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotBumpSigmaTrial(ps.bumpGamma[0], sigmaVarList, iterList,
+    sweeps.plotBumpSigmaTrial(ps.bumpGamma[0], sigmaVarList, iterList,
             noise_sigma=ps.noise_sigmas[0],
             ax=ax,
             trialNumList=bumpTrialNumList,
@@ -200,7 +205,7 @@ if (bumpSweep):
     exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotBumpSigmaTrial(ps.bumpGamma[1], sigmaVarList, iterList,
+    sweeps.plotBumpSigmaTrial(ps.bumpGamma[1], sigmaVarList, iterList,
             noise_sigma=noise_sigmas[1],
             ax=ax,
             ylabel='', yticks=False,
@@ -218,7 +223,7 @@ if (bumpSweep):
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     ax.set_clip_on(False)
-    EI.plotBumpSigmaTrial(ps.bumpGamma[2], sigmaVarList, iterList,
+    sweeps.plotBumpSigmaTrial(ps.bumpGamma[2], sigmaVarList, iterList,
             noise_sigma=noise_sigmas[2],
             ax=ax,
             trialNumList=bumpTrialNumList,
@@ -328,7 +333,7 @@ if (velSweep):
     fig.savefig(fname, dpi=300, transparent=True)
 
     fig, ax = createSweepFig()
-    _, ax, cax = EI.plotVelStdSweep(ps.v[0], iterList,
+    _, ax, cax = sweeps.plotVelStdSweep(ps.v[0], iterList,
             noise_sigmas[0],
             ax=ax,
             sigmaTitle=False,
@@ -351,7 +356,7 @@ if (velSweep):
     fig.savefig(fname, dpi=300, transparent=True)
 
     fig, ax = createSweepFig()
-    _, ax, cax = EI.plotVelStdSweep(ps.v[1], iterList,
+    _, ax, cax = sweeps.plotVelStdSweep(ps.v[1], iterList,
             noise_sigmas[1],
             ax=ax,
             ylabel='', yticks=False,
@@ -375,7 +380,7 @@ if (velSweep):
     fig.savefig(fname, dpi=300, transparent=True)
 
     fig, ax = createSweepFig()
-    _, ax, cax = EI.plotVelStdSweep(ps.v[2], iterList,
+    _, ax, cax = sweeps.plotVelStdSweep(ps.v[2], iterList,
             noise_sigmas[2],
             ax=ax,
             ylabel='', yticks=False,

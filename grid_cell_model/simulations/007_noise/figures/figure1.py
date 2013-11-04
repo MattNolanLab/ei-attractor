@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-import EI_plotting as EI
+from EI_plotting import sweeps, examples, details
 from figures_shared       import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
 
@@ -116,7 +116,7 @@ if (grids):
     exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotGridTrial(ps.grids[0], varList, iterList, ps.noise_sigmas[0],
+    sweeps.plotGridTrial(ps.grids[0], varList, iterList, ps.noise_sigmas[0],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[0][0], c=exampleIdx[0][1],
@@ -138,7 +138,7 @@ if (grids):
     exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotGridTrial(ps.grids[1], varList, iterList, ps.noise_sigmas[1],
+    sweeps.plotGridTrial(ps.grids[1], varList, iterList, ps.noise_sigmas[1],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[1][0], c=exampleIdx[1][1],
@@ -159,7 +159,7 @@ if (grids):
     exCols = [6, 23]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
+    sweeps.plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[2][0], c=exampleIdx[2][1],
@@ -188,7 +188,7 @@ if (examples0):
     for idx, rc in enumerate(exampleRC):
         fname = exampleFName.format(ps.noise_sigmas[0], idx)
         plt.figure(figsize=exampleFigSize)
-        gs = EI.plotOneGridExample(ps.grids[0], rc, iterList,
+        gs = examples.plotOneGridExample(ps.grids[0], rc, iterList,
                 exIdx=exampleIdx[0],
                 xlabel=False, ylabel=False,
                 xlabel2=False, ylabel2=False, 
@@ -202,7 +202,7 @@ if (examples150):
     for idx, rc in enumerate(exampleRC):
         fname = exampleFName.format(ps.noise_sigmas[1], idx)
         plt.figure(figsize=exampleFigSize)
-        gs = EI.plotOneGridExample(ps.grids[1], rc, iterList,
+        gs = examples.plotOneGridExample(ps.grids[1], rc, iterList,
                 exIdx=exampleIdx[1],
                 xlabel=False, ylabel=False,
                 xlabel2=False, ylabel2=False, 
@@ -216,7 +216,7 @@ if (examples300):
     for idx, rc in enumerate(exampleRC):
         fname = exampleFName.format(ps.noise_sigmas[2], idx)
         plt.figure(figsize=exampleFigSize)
-        gs = EI.plotOneGridExample(ps.grids[2], rc, iterList,
+        gs = examples.plotOneGridExample(ps.grids[2], rc, iterList,
                 exIdx=exampleIdx[2],
                 xlabel=False, ylabel=False,
                 xlabel2=False, ylabel2=False, 
@@ -251,10 +251,10 @@ if (detailed_noise):
     fig = plt.figure(figsize=detailFigSize)
     ax = fig.add_axes(Bbox.from_extents(detailLeft, detailBottom, detailRight,
         detailTop))
-    _, p13, l13 = EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+    _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
             color='red')
-    _, p31, l31 = EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+    _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             ylabel='Gridness score', ylabelPos=ylabelPos,
             color='black')
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
