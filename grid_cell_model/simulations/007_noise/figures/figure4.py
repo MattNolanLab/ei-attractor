@@ -446,7 +446,7 @@ if (slope_sweeps):
 #                           Raster and rate plots
 ##############################################################################
 rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
-tLimits = [1e3, 2.5e3] # ms
+tLimits = [1e3, 2e3] # ms
 
 rasterFigSize = (3.75, 1.9)
 transparent   = True
