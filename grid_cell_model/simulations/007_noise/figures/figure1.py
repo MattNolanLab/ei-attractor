@@ -261,9 +261,8 @@ if (detailed_noise):
     ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
     ax.set_ylim([-0.6, 1.2])
     leg = ['B',  'C']
-    l = ax.legend([p31, p13], leg, loc=(0.5, 1.1), fontsize='small', frameon=False,
-            numpoints=1, title='($g_E,\ g_I$) [nS]', ncol=2)
-    plt.setp(l.get_title(), fontsize='small', ha='left')
+    l = ax.legend([p31, p13], leg, loc=(0.8, 1), fontsize='small', frameon=False,
+            numpoints=1, handletextpad=0.05)
 
     fname = "figure1_detailed_noise_gscore.pdf"
     plt.savefig(fname, dpi=300, transparent=True)

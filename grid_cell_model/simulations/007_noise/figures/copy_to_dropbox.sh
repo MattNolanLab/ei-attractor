@@ -26,7 +26,7 @@ files="
     figure1.pdf
     figure2.pdf
     figure3.pdf
-    figure4.png
+    figure4.pdf
     suppFigure_grid_sweeps.png
     suppFigure_model.pdf
     suppFigure_velocity.pdf
