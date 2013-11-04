@@ -61,13 +61,11 @@ velDataRoot   = None
 gridsDataRoot = None
 shape    = (31, 31)
 
-gammaSweep     = 0
-threshold      = 0
-freqHist       = 0
-detailed_noise = 0
-examples       = 0
-rasters        = 1
-rates          = 1
+gammaSweep     = 1
+threshold      = 1
+freqHist       = 1
+detailed_noise = 1
+examplesFlag   = 1
 
 ###############################################################################
 
@@ -229,78 +227,6 @@ def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
             ha='right')
     
 
-def getSpikes(space, noise_sigma, r, c, trialNum):
-    data = space[r][c][trialNum].data
-    ESpikes = MonitoredSpikes(data, 'spikeMon_e', 'net_Ne')
-    ISpikes = MonitoredSpikes(data, 'spikeMon_i', 'net_Ni')
-    return ESpikes, ISpikes
-
-
-def rasterPlot(dataSpaces, noise_sigma_idx, r, c, tLimits, trialNum=0, **kw):
-    title   = kw.pop('title', True)
-    ann     = kw.pop('ann', False)
-    ann_EI  = kw.pop('ann_EI', False)
-    sigmaTitle = kw.pop('sigmaTitle', False)
-
-    space = dataSpaces.bumpGamma[noise_sigma_idx]
-    noise_sigma = dataSpaces.noise_sigmas[noise_sigma_idx]
-    ESpikes, ISpikes = getSpikes(space, noise_sigma, r, c, trialNum)
-    ax = EI.plotEIRaster(ESpikes, ISpikes, tLimits, **kw) 
-
-    if (sigmaTitle):
-        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)), x=0.02, y=1.02,
-                va='bottom', ha='left')
-    if (ann):
-        Y, X = EI.computeYX(space, iterList, r=r, c=c)
-        gE = Y[r, c]
-        gI = X[r, c]
-        txt = '$g_E$ = {0} nS\n$g_I$ = {1} nS'.format(gE, gI)
-        ax.text(0.99, 1.02, txt, va='bottom', ha='right', size='small',
-                transform=ax.transAxes)
-
-    if (ann_EI):
-        ax.text(-0.05, 0.75, 'E', va='center', ha='center', size='small',
-                transform=ax.transAxes, color='red', weight='bold')
-        ax.text(-0.05, 0.25, 'I', va='center', ha='center', size='small',
-                transform=ax.transAxes, color='blue', weight='bold')
-
-
-    return ax
-
-
-def plotAvgFiringRate(dataSpaces, noise_sigma_idx, r, c, trialNum=0, **kw):
-    # keyword arguments
-    ax = kw.pop('ax', plt.gca())
-    kw['xlabel'] = False
-    kw['ylabel'] = kw.get('ylabel', 'r (Hz)')
-
-    space = dataSpaces.bumpGamma[noise_sigma_idx]
-    noise_sigma = dataSpaces.noise_sigmas[noise_sigma_idx]
-    ESpikes, ISpikes = getSpikes(space, noise_sigma, r, c, trialNum)
-
-    tStart = tLimits[0]
-    tEnd   = tLimits[1]
-    dt     = 0.5  # ms
-    winLen = 2.0 # ms
-
-    ERate, eTimes = ESpikes.slidingFiringRate(tStart, tEnd, dt, winLen)
-    IRate, iTimes = ISpikes.slidingFiringRate(tStart, tEnd, dt, winLen)
-    meanERate = np.mean(ERate, axis=0)
-    meanIRate = np.mean(IRate, axis=0)
-
-    signalPlot(eTimes, meanERate, ax, color='red', **kw)
-    signalPlot(iTimes, meanIRate, ax, color='blue', **kw)
-
-    ax.set_ylim([0, None])
-    #ax.spines['left'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.xaxis.set_visible(False)
-    #ax.yaxis.set_visible(False)
-    ax.yaxis.set_major_locator(ti.LinearLocator(2))
-    print eTimes, iTimes
-
-    return ax
-
 
 
 
@@ -349,12 +275,12 @@ F_cbar_kw = dict(
 
 ann_color = 'white'
 ann0 = dict(
-        txt='B',
+        txt='C',
         rc=exampleRC[0],
         xytext_offset=(1.5, 0),
         color=ann_color)
 ann1 = dict(
-        txt='C',
+        txt='B',
         rc=exampleRC[1],
         xytext_offset=(1.5, 1),
         color=ann_color)
@@ -557,88 +483,5 @@ if (examplesFlag):
                     xscale_kw=xscale_kw)
             plt.savefig(fname, dpi=300, transparent=True)
             plt.close()
-
-
-##############################################################################
-rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
-tLimits = [2e3, 2.25e3] # ms
-
-rasterFigSize = (3.5, 1.9)
-transparent   = True
-rasterLeft    = 0.2
-rasterBottom  = 0.1
-rasterRight   = 0.95
-rasterTop     = 0.8
-
-ylabelPos   = -0.2
-
-
-if (rasters):
-    # noise_sigma = 0 pA
-    fig = plt.figure("rasters0", figsize=rasterFigSize)
-    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-        rasterTop))
-    rasterPlot(ps, 
-            noise_sigma_idx=0,
-            r=rasterRC[0][0], c=rasterRC[0][1],
-            tLimits=tLimits,
-            ann_EI=True)
-    fname = outputDir + "/figure2_raster0.png"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-    plt.close()
-        
-
-    # noise_sigma = 150 pA
-    fig = plt.figure("rasters150", figsize=rasterFigSize)
-    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-        rasterTop))
-    rasterPlot(ps, 
-            noise_sigma_idx=1,
-            r=rasterRC[1][0], c=rasterRC[1][1],
-            tLimits=tLimits,
-            ylabel='', yticks=False)
-    fname = outputDir + "/figure2_raster150.png"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-    plt.close()
-        
-
-    # noise_sigma = 300 pA
-    fig = plt.figure("rasters300", figsize=rasterFigSize)
-    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-        rasterTop))
-    rasterPlot(ps, 
-            noise_sigma_idx=2,
-            r=rasterRC[2][0], c=rasterRC[2][1],
-            tLimits=tLimits,
-            ylabel='', yticks=False)
-    fname = outputDir + "/figure2_raster300.png"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-    plt.close()
-        
-
-##############################################################################
-rateFigSize   = (rasterFigSize[0], 0.65)
-rateLeft    = rasterLeft
-rateBottom  = 0.2
-rateRight   = rasterRight
-rateTop     = 0.9
-
-
-if (rates):
-    for idx, noise_sigma in enumerate(ps.noise_sigmas):
-        fig = plt.figure(figsize=rateFigSize)
-        ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
-            rateTop))
-        kw = {}
-        if (idx != 0):
-            kw['ylabel'] = ''
-
-        plotAvgFiringRate(ps, noise_sigma_idx=idx,
-                r=rasterRC[idx][0], c=rasterRC[idx][1],
-                ax=ax, **kw)
-        fname = outputDir + "/figure2_rate{0}.pdf".format(noise_sigma)
-        fig.savefig(fname, dpi=300, transparent=transparent)
-        plt.close()
-
 
 

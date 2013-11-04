@@ -24,7 +24,8 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-import EI_plotting as EI
+from EI_plotting import sweeps, details, rasters
+from EI_plotting import aggregate as aggr
 from figures_shared import NoiseDataSpaces
 from plotting.global_defs import globalAxesSettings
 from analysis.visitors import SpikeTrainXCVisitor
@@ -60,8 +61,11 @@ shape = (31, 31)
 
 ccExamples      = 0
 spikeCCExamples = 0
-velLines        = 1
-detailed_noise  = 1
+velLines        = 0
+detailed_noise  = 0
+slope_sweeps    = 0
+rastersFlag     = 1
+rates           = 1
 
 ###############################################################################
 
@@ -126,7 +130,7 @@ def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
     markersize = kw.pop('markersize', 4)
     color      = kw.pop('color', 'blue')
     xlabel     = kw.pop('xlabel', 'Velocity current (pA)')
-    ylabel     = kw.pop('ylabel', 'Bump speed (neurons/s)')
+    ylabel     = kw.pop('ylabel', 'Bump speed\n(neurons/s)')
     xticks     = kw.pop('xticks', True)
     yticks     = kw.pop('yticks', True)
     g_ann      = kw.pop('g_ann', True)
@@ -163,7 +167,7 @@ def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
     ax.xaxis.set_major_locator(ti.MultipleLocator(50))
     ax.xaxis.set_minor_locator(ti.AutoMinorLocator(5))
     ax.yaxis.set_major_locator(ti.MultipleLocator(20))
-    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
+    ax.yaxis.set_minor_locator(ti.MultipleLocator(10))
     ax.margins(0.05)
 
     if (not xticks):
@@ -178,7 +182,7 @@ def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
         sigma_txt = ''
 
     if (g_ann):
-        Y, X = EI.computeVelYX(dataSpace, iterList, r, c)
+        Y, X = aggr.computeVelYX(dataSpace, iterList, r, c)
         gE = Y[r, c]
         gI = X[r, c]
         g_txt = '$g_E$ = {0}, $g_I$ = {1} nS'.format(gE, gI)
@@ -207,14 +211,13 @@ velRight   = 0.95
 velTop     = 0.65
 
 if (velLines):
-    positions = ((4, 27), (4, 27), (4, 27))
-    #positions = ((15, 15), (15, 15), (15, 15))
+    #positions = ((4, 27), (4, 27), (4, 27))
+    positions = ((5, 15), (5, 15), (5, 15))
     fig = plt.figure(figsize=(2.5, velFigsize[1]))
     ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
         velTop))
     plotSlopes(ax, ps.v[0], positions[0], noise_sigma=ps.noise_sigmas[0],
-            xlabel='', xticks=False,
-            ylabel='',
+            xlabel='',
             color='blue')
     fname = outputDir + "/figure4_slope_examples_0.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
@@ -223,7 +226,7 @@ if (velLines):
     ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
         velTop))
     plotSlopes(ax, ps.v[1], positions[1], noise_sigma=ps.noise_sigmas[1],
-            xlabel='', xticks=False,
+            ylabel='',
             g_ann=False,
             color='green')
     fname = outputDir + "/figure4_slope_examples_1.pdf"
@@ -233,6 +236,7 @@ if (velLines):
     ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
         velTop))
     plotSlopes(ax, ps.v[2], positions[2], noise_sigma=ps.noise_sigmas[2],
+            xlabel='',
             ylabel='',
             g_ann=False,
             color='red')
@@ -250,26 +254,26 @@ EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
 detailedNTrials = None
 
 
-sliceFigSize = (4.3, 2.5)
-sliceLeft   = 0.2
+sliceFigSize = (3.5, 2.5)
+sliceLeft   = 0.25
 sliceBottom = 0.3
-sliceRight  = 0.99
+sliceRight  = 0.95
 sliceTop    = 0.8
 if (detailed_noise):
-    ylabelPos = -0.2
+    ylabelPos = -0.25
 
     types = ('velocity', 'slope')
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
-    EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+    details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
             xlabel='', xticks=False,
-            color='black')
-    EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+            color='red')
+    details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             xlabel='', xticks=False,
             ylabel='Slope\n(neurons/s/pA)', ylabelPos=ylabelPos,
-            color='red')
+            color='black')
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
 
@@ -282,17 +286,18 @@ if (detailed_noise):
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
-    _, p13, l13 = EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
-            ylabelPos=ylabelPos, color='black')
-    _, p31, l31 = EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
-            ylabel='Fit error\n(neurons/s/trial)', ylabelPos=ylabelPos,
+    _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+            ylabelPos=ylabelPos,
             color='red')
+    _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+            ylabel='Fit error\n(neurons/s/trial)', ylabelPos=ylabelPos,
+            color='black')
     ax.yaxis.set_major_locator(ti.MultipleLocator(4))
     ax.yaxis.set_minor_locator(ti.MultipleLocator(2))
-    leg = ['($g_E,\ g_I$) = (1, 3) nS',  '($g_E,\ g_I$) = (3, 1) nS',
-            'Mean', 'Mean']
-    ax.legend([p13, p31, l13, l31], leg, loc=(0.55, 0.3), fontsize='small', frameon=False,
-            numpoints=1)
+    leg = ['(1, 3)',  '(3, 1)']
+    l = ax.legend([p13, p31], leg, loc=(0.55, 0.3), fontsize='small', frameon=False,
+            numpoints=1, title='($g_E,\ g_I$) (nS)')
+    plt.setp(l.get_title(), fontsize='x-small')
 
     fname = "figure4_detailed_noise_error.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
@@ -372,4 +377,187 @@ if (spikeCCExamples):
         fname = outputDir + "/figure4_spike_xc_I_examples{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
         plt.close()
+
+
+##############################################################################
+slopeVarList = ['lineFitSlope']
+slope_vmin = 0
+slope_vmax = 1.6
+
+slope_cbar_kw= dict(
+        location='left',
+        fraction=0.25,
+        shrink = 0.8,
+        pad = 0.2,
+        labelpad=8,
+        label='Slope\n(neurons/s/pA)',
+        ticks=ti.MultipleLocator(0.5),
+        extend='max', extendfrac=0.1)
+
+
+def createSweepFig(name=None):
+    sweepFigSize = (3.2, 1.9)
+    sweepLeft   = 0.15
+    sweepBottom = 0.2
+    sweepRight  = 0.95
+    sweepTop    = 0.95
+    fig = plt.figure(name, figsize=sweepFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+        sweepTop))
+    return fig, ax
+
+if (slope_sweeps):
+    # noise_sigma = 0 pA
+    fig, ax = createSweepFig("velSlopeSweep0")
+    _, ax, cax = sweeps.plotVelTrial(ps.v[0], slopeVarList, iterList,
+            noise_sigmas[0], sigmaTitle=False,
+            ax=ax,
+            cbar=True, cbar_kw=slope_cbar_kw,
+            #cax.yaxis.tick_left()
+            vmin=slope_vmin, vmax=slope_vmax)
+    fname = outputDir + "/figure4_slope_sweeps0.pdf"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+    # noise_sigma = 150 pA
+    fig, ax = createSweepFig("velSlopeSweep150")
+    _, ax, cax = sweeps.plotVelTrial(ps.v[1], slopeVarList, iterList,
+            noise_sigma=noise_sigmas[1], sigmaTitle=False,
+            ax=ax,
+            ylabel='', yticks=False,
+            cbar=False, cbar_kw=slope_cbar_kw,
+            vmin=slope_vmin, vmax=slope_vmax)
+    fname = outputDir + "/figure4_slope_sweeps150.pdf"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+    # noise_sigma = 300 pA
+    fig, ax = createSweepFig("velSlopeSweep300")
+    _, ax, cax = sweeps.plotVelTrial(ps.v[2], slopeVarList, iterList,
+            noise_sigma=noise_sigmas[2], sigmaTitle=False,
+            ax=ax,
+            ylabel='', yticks=False,
+            cbar=False, cbar_kw=slope_cbar_kw,
+            vmin=slope_vmin, vmax=slope_vmax)
+    fname = outputDir + "/figure4_slope_sweeps300.pdf"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+
+
+##############################################################################
+#                           Raster and rate plots
+##############################################################################
+rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
+tLimits = [1e3, 2.5e3] # ms
+
+rasterFigSize = (3.75, 1.9)
+transparent   = True
+rasterLeft    = 0.2
+rasterBottom  = 0.1
+rasterRight   = 0.99
+rasterTop     = 0.8
+
+ylabelPos   = -0.22
+
+
+if (rastersFlag):
+    # noise_sigma = 0 pA
+    fig = plt.figure("rasters0", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.v[0], 
+            noise_sigma=ps.noise_sigmas[0],
+            spaceType='velocity',
+            r=rasterRC[0][0], c=rasterRC[0][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ann_EI=True)
+    fname = outputDir + "/figure4_raster0.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+        
+
+    # noise_sigma = 150 pA
+    fig = plt.figure("rasters150", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.v[1], 
+            noise_sigma=ps.noise_sigmas[1],
+            spaceType='velocity',
+            r=rasterRC[1][0], c=rasterRC[1][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ylabel='', yticks=False)
+    fname = outputDir + "/figure4_raster150.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+        
+
+    # noise_sigma = 300 pA
+    fig = plt.figure("rasters300", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.v[2], 
+            noise_sigma=ps.noise_sigmas[2],
+            spaceType='velocity',
+            r=rasterRC[2][0], c=rasterRC[2][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ylabel='', yticks=False)
+    fname = outputDir + "/figure4_raster300.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+        
+
+##############################################################################
+rateFigSize   = (rasterFigSize[0], 0.65)
+rateLeft    = rasterLeft
+rateBottom  = 0.2
+rateRight   = rasterRight
+rateTop     = 0.9
+
+
+if (rates):
+    for idx, noise_sigma in enumerate(ps.noise_sigmas):
+        # E cells
+        fig = plt.figure(figsize=rateFigSize)
+        ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
+            rateTop))
+        kw = {}
+        if (idx != 0):
+            kw['ylabel'] = ''
+
+        rasters.plotAvgFiringRate(ps.v[idx],
+                spaceType='velocity',
+                noise_sigma=ps.noise_sigmas[idx],
+                popType='E',
+                r=rasterRC[idx][0], c=rasterRC[idx][1],
+                ylabelPos=ylabelPos,
+                color='red',
+                tLimits=tLimits,
+                ax=ax, **kw)
+        fname = outputDir + "/figure4_rate_e{0}.pdf".format(noise_sigma)
+        fig.savefig(fname, dpi=300, transparent=transparent)
+        plt.close()
+
+        # I cells
+        fig = plt.figure(figsize=rateFigSize)
+        ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
+            rateTop))
+        kw = {}
+        if (idx != 0):
+            kw['ylabel'] = ''
+
+        rasters.plotAvgFiringRate(ps.v[idx],
+                spaceType='velocity',
+                noise_sigma=ps.noise_sigmas[idx],
+                popType='I', 
+                r=rasterRC[idx][0], c=rasterRC[idx][1],
+                ylabelPos=ylabelPos,
+                color='blue',
+                tLimits=tLimits,
+                ax=ax, **kw)
+        fname = outputDir + "/figure4_rate_i{0}.pdf".format(noise_sigma)
+        fig.savefig(fname, dpi=300, transparent=transparent)
+        plt.close()
+
+
 

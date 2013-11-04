@@ -52,7 +52,7 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-grids          = 1
+grids          = 0
 examples0      = 0
 examples150    = 0
 examples300    = 0

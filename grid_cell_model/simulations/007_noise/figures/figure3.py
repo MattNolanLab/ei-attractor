@@ -31,8 +31,6 @@ from EI_plotting                import aggregate as aggr
 from plotting.global_defs       import globalAxesSettings
 from figures_shared             import NoiseDataSpaces
 from parameters                 import JobTrialSpace2D
-from data_storage.sim_models.ei import MonitoredSpikes
-from plotting.signal            import signalPlot
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -56,12 +54,12 @@ bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-bumpSweep         = 1
-bumpExamples      = 1
-velExamples       = 1
-velSweep          = 1
-gridness_vs_error = 1
-detailed_noise    = 1
+bumpSweep         = 0
+bumpExamples      = 0
+velExamples       = 0
+velSweep          = 0
+gridness_vs_error = 0
+detailed_noise    = 0
 rastersFlag       = 1
 rates             = 1
 
@@ -155,26 +153,27 @@ sweepTop    = 0.85
 
 
 ##############################################################################
+sigmaBumpText = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
 sigmaVarList = ['bump_e', 'sigma']
 bumpTrialNumList = np.arange(5)
 bump_vmin = 0
-bump_vmax = 10
+bump_vmax = 0.58
 bump_cbar_kw= dict(
         orientation='vertical',
         shrink=0.8, pad=-0.05,
-        ticks=ti.MultipleLocator(5),
-        label='Bump $\sigma$ (neurons)',
+        ticks=ti.MultipleLocator(0.25),
+        label=sigmaBumpText,
         extend='max', extendfrac=0.1)
 
 exampleRC = ( (5, 15), (15, 5) )
 
 ann0 = dict(
-        txt='B',
+        txt='C',
         rc=exampleRC[0],
-        xytext_offset=(1.5, 1),
+        xytext_offset=(1.5, 0.5),
         color='white')
 ann1 = dict(
-        txt='C',
+        txt='B',
         rc=exampleRC[1],
         xytext_offset=(1.2, 1.1),
         color='black')
@@ -286,19 +285,8 @@ if (bumpExamples):
 
 ###############################################################################
 
-slopeVarList = ['lineFitSlope']
-slope_vmin = 0
-slope_vmax = 1.6
 std_vmin = 0
 std_vmax = 14
-
-slope_cbar_kw= dict(
-        orientation='vertical',
-        shrink = 0.8,
-        pad = 0.05,
-        label='Slope (neurons/s/pA)',
-        ticks=ti.MultipleLocator(0.5),
-        extend='max', extendfrac=0.1)
 
 std_cbar_kw= dict(
         orientation='vertical',
@@ -322,16 +310,6 @@ def createSweepFig(name=None):
 
 if (velSweep):
     # noise_sigma = 0 pA
-    fig, ax = createSweepFig("velSlopeSweep0")
-    _, ax, cax = EI.plotVelTrial(ps.v[0], slopeVarList, iterList,
-            noise_sigmas[0], sigmaTitle=False,
-            ax=ax,
-            xlabel='', xticks=False,
-            cbar=False, cbar_kw=slope_cbar_kw,
-            vmin=slope_vmin, vmax=slope_vmax)
-    fname = outputDir + "/figure3_slope_sweeps0.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-
     fig, ax = createSweepFig()
     _, ax, cax = sweeps.plotVelStdSweep(ps.v[0], iterList,
             noise_sigmas[0],
@@ -344,17 +322,6 @@ if (velSweep):
 
 
     # noise_sigma = 150 pA
-    fig, ax = createSweepFig("velSlopeSweep150")
-    _, ax, cax = EI.plotVelTrial(ps.v[1], slopeVarList, iterList,
-            noise_sigma=noise_sigmas[1], sigmaTitle=False,
-            ax=ax,
-            xlabel='', xticks=False,
-            ylabel='', yticks=False,
-            cbar=False, cbar_kw=slope_cbar_kw,
-            vmin=slope_vmin, vmax=slope_vmax)
-    fname = outputDir + "/figure3_slope_sweeps150.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-
     fig, ax = createSweepFig()
     _, ax, cax = sweeps.plotVelStdSweep(ps.v[1], iterList,
             noise_sigmas[1],
@@ -368,17 +335,6 @@ if (velSweep):
 
 
     # noise_sigma = 300 pA
-    fig, ax = createSweepFig("velSlopeSweep300")
-    _, ax, cax = EI.plotVelTrial(ps.v[2], slopeVarList, iterList,
-            noise_sigma=noise_sigmas[2], sigmaTitle=False,
-            ax=ax,
-            xlabel='', xticks=False,
-            ylabel='', yticks=False,
-            cbar=True, cbar_kw=slope_cbar_kw,
-            vmin=slope_vmin, vmax=slope_vmax)
-    fname = outputDir + "/figure3_slope_sweeps300.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-
     fig, ax = createSweepFig()
     _, ax, cax = sweeps.plotVelStdSweep(ps.v[2], iterList,
             noise_sigmas[2],
@@ -410,33 +366,150 @@ EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
 detailedNTrials = 5
 
 
-detailFigSize = (4, 2)
+detailFigSize = (3.8, 2)
 detailLeft   = 0.18
 detailBottom = 0.26
 detailRight  = 0.95
 detailTop    = 0.95
 if (detailed_noise):
-    ylabelPos = -0.2
+    ylabelPos = -0.17
 
     types = ('bump', 'sigma')
     fig = plt.figure(figsize=detailFigSize)
     ax = fig.add_axes(Bbox.from_extents(detailLeft, detailBottom, detailRight,
         detailTop))
-    _, p13, l13 = EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
-            ylabel='Bump $\sigma$ (neurons)', ylabelPos=ylabelPos,
+    _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+            ylabel=sigmaBumpText, ylabelPos=ylabelPos,
             color='red')
-    _, p31, l31 = EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+    _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
             color='black')
     #ax.set_yscale("log")
     #ax.set_ylim([1.5, 300])
-    leg = ['(1, 3)',  '(3, 1)']
-    l = ax.legend([p13, p31], leg, loc=(0.7, 0.7), fontsize='small', frameon=False,
-            numpoints=1, title='($g_E,\ g_I$) [nS]')
+    leg = ['B',  'C']
+    l = ax.legend([p31, p13], leg, loc=(0.85, 0.1), fontsize='small', frameon=False,
+            numpoints=1, handletextpad=0.05)
     plt.setp(l.get_title(), fontsize='small')
 
     fname = "figure3_detailed_noise_sigma.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
+
+
+##############################################################################
+rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
+tLimits = [2e3, 2.25e3] # ms
+
+rasterFigSize = (2.7, 1.9)
+transparent   = True
+rasterLeft    = 0.28
+rasterBottom  = 0.1
+rasterRight   = 0.95
+rasterTop     = 0.8
+
+ylabelPos   = -0.35
+
+
+if (rastersFlag):
+    # noise_sigma = 0 pA
+    fig = plt.figure("rasters0", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.bumpGamma[0], 
+            noise_sigma=ps.noise_sigmas[0],
+            spaceType='bump',
+            r=rasterRC[0][0], c=rasterRC[0][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ann_EI=True)
+    fname = outputDir + "/figure3_raster0.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+        
+
+    # noise_sigma = 150 pA
+    fig = plt.figure("rasters150", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.bumpGamma[1], 
+            noise_sigma=ps.noise_sigmas[1],
+            spaceType='bump',
+            r=rasterRC[1][0], c=rasterRC[1][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ylabel='', yticks=False)
+    fname = outputDir + "/figure3_raster150.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+        
+
+    # noise_sigma = 300 pA
+    fig = plt.figure("rasters300", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.bumpGamma[2], 
+            noise_sigma=ps.noise_sigmas[2],
+            spaceType='bump',
+            r=rasterRC[2][0], c=rasterRC[2][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ylabel='', yticks=False)
+    fname = outputDir + "/figure3_raster300.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+        
+
+##############################################################################
+rateFigSize   = (rasterFigSize[0], 0.65)
+rateLeft    = rasterLeft
+rateBottom  = 0.2
+rateRight   = rasterRight
+rateTop     = 0.9
+
+
+if (rates):
+    for idx, noise_sigma in enumerate(ps.noise_sigmas):
+        # E cells
+        fig = plt.figure(figsize=rateFigSize)
+        ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
+            rateTop))
+        kw = {}
+        if (idx != 0):
+            kw['ylabel'] = ''
+
+        rasters.plotAvgFiringRate(ps.bumpGamma[idx],
+                spaceType='bump',
+                noise_sigma=ps.noise_sigmas[idx],
+                popType='E',
+                r=rasterRC[idx][0], c=rasterRC[idx][1],
+                ylabelPos=ylabelPos,
+                color='red',
+                tLimits=tLimits,
+                ax=ax, **kw)
+        fname = outputDir + "/figure3_rate_e{0}.pdf".format(noise_sigma)
+        fig.savefig(fname, dpi=300, transparent=transparent)
+        plt.close()
+
+        # I cells
+        fig = plt.figure(figsize=rateFigSize)
+        ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
+            rateTop))
+        kw = {}
+        if (idx != 0):
+            kw['ylabel'] = ''
+
+        rasters.plotAvgFiringRate(ps.bumpGamma[idx],
+                spaceType='bump',
+                noise_sigma=ps.noise_sigmas[idx],
+                popType='I', 
+                r=rasterRC[idx][0], c=rasterRC[idx][1],
+                ylabelPos=ylabelPos,
+                color='blue',
+                tLimits=tLimits,
+                ax=ax, **kw)
+        fname = outputDir + "/figure3_rate_i{0}.pdf".format(noise_sigma)
+        fig.savefig(fname, dpi=300, transparent=transparent)
+        plt.close()
+
 
 
