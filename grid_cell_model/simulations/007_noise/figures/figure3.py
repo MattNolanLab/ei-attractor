@@ -40,7 +40,7 @@ from matplotlib import rc
 rc('pdf', fonttype=42)
 rc('mathtext', default='regular')
 
-plt.rcParams['font.size'] = 10
+plt.rcParams['font.size'] = 11
 
 outputDir = "."
 
@@ -54,12 +54,12 @@ bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-bumpSweep         = 0
-bumpExamples      = 0
-velExamples       = 0
-velSweep          = 0
-gridness_vs_error = 0
-detailed_noise    = 0
+bumpSweep         = 1
+bumpExamples      = 1
+velExamples       = 1
+velSweep          = 1
+gridness_vs_error = 1
+detailed_noise    = 1
 rastersFlag       = 1
 rates             = 1
 

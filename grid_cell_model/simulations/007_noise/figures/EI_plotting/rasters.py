@@ -139,7 +139,8 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
 def plotAvgFiringRate(space, spaceType, noise_sigma, popType, r, c, tLimits,
         trialNum=0, **kw):
     # keyword arguments
-    ax = kw.pop('ax', plt.gca())
+    ax           = kw.pop('ax', plt.gca())
+    sigmaTitle   = kw.pop('sigmaTitle', False)
     kw['xlabel'] = False
     kw['ylabel'] = kw.get('ylabel', 'r (Hz)')
 
@@ -165,6 +166,11 @@ def plotAvgFiringRate(space, spaceType, noise_sigma, popType, r, c, tLimits,
     ax.xaxis.set_visible(False)
     #ax.yaxis.set_visible(False)
     ax.yaxis.set_major_locator(ti.LinearLocator(2))
+
+    # Annotations
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)), y=1.02,
+                va='bottom', ha='center')
 
     return ax
 

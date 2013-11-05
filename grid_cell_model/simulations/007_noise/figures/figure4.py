@@ -44,9 +44,6 @@ rc('mathtext', default='regular')
 plt.rcParams['font.size'] = 11
 
 ###############################################################################
-cFreq = 'blue'
-cAC = 'green'
-cCount = 'red'
 
 outputDir = "."
 NTrials = 5
@@ -64,8 +61,8 @@ spikeCCExamples = 0
 velLines        = 0
 detailed_noise  = 1
 slope_sweeps    = 0
-rastersFlag     = 1
-rates           = 1
+rastersFlag     = 0
+rates           = 0
 
 ###############################################################################
 
@@ -178,19 +175,18 @@ def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
     # Annotations
     if (sigma_ann):
         sigma_txt = '$\sigma$ = {0} pA'.format(noise_sigma)
-    else:
-        sigma_txt = ''
+        ax.set_title(sigma_txt, y=1.1, va='bottom')
 
     if (g_ann):
         Y, X = aggr.computeVelYX(dataSpace, iterList, r, c)
         gE = Y[r, c]
         gI = X[r, c]
-        g_txt = '$g_E$ = {0}, $g_I$ = {1} nS'.format(gE, gI)
+        g_txt = '$g_E$ = {0}\n$g_I$ = {1} nS'.format(gE, gI)
     else:
         g_txt = ''
 
-    txt = '{0}\n{1}'.format(g_txt, sigma_txt)
-    ax.text(0.05, 0.85, txt, transform=ax.transAxes, va='bottom',
+    txt = '{0}'.format(g_txt)
+    ax.text(0.05, 1.1, txt, transform=ax.transAxes, va='top',
             ha='left', size='x-small')
 
 
@@ -260,7 +256,7 @@ sliceBottom = 0.3
 sliceRight  = 0.95
 sliceTop    = 0.8
 if (detailed_noise):
-    ylabelPos = -0.25
+    ylabelPos = -0.27
 
     types = ('velocity', 'slope')
     fig = plt.figure(figsize=sliceFigSize)
@@ -525,11 +521,11 @@ if (rastersFlag):
         
 
 ##############################################################################
-rateFigSize   = (rasterFigSize[0], 0.65)
+rateFigSize   = (rasterFigSize[0], 1)
 rateLeft    = rasterLeft
 rateBottom  = 0.2
 rateRight   = rasterRight
-rateTop     = 0.9
+rateTop     = 0.7
 
 
 if (rates):
@@ -551,6 +547,7 @@ if (rates):
                 color='red',
                 tLimits=tLimits,
                 trialNum=trialNum,
+                sigmaTitle=True,
                 ax=ax, **kw)
         fname = outputDir + "/figure4_rate_e{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)

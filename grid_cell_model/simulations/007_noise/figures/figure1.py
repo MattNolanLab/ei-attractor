@@ -52,11 +52,11 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-grids          = 0
+grids          = 1
 examples0      = 0
 examples150    = 0
 examples300    = 0
-detailed_noise = 1
+detailed_noise = 0
 
 ##############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
@@ -159,7 +159,7 @@ if (grids):
     exCols = [6, 23]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    sweeps.plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
+    _, _, cax = sweeps.plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[2][0], c=exampleIdx[2][1],
@@ -169,6 +169,9 @@ if (grids):
             ignoreNaNs=True,
             annotations=ann,
             sliceAnn=sliceAnn)
+    for label in cax.yaxis.get_ticklabels():
+        label.set_ha('right')
+    cax.tick_params(pad=30)
     fname = outputDir + "/figure1_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
