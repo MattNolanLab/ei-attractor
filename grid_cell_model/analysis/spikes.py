@@ -221,13 +221,9 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             raise ValueError(msg.format(N))
 
         # We are expecting senders and times as numpy arrays, if they are not,
-        # convert them
-        if not isinstance(senders, np.ndarray):
-            senders = np.array(senders)
-        if not isinstance(times, np.ndarray):
-            times = np.array(times)
-        self._senders  = senders
-        self._times    = times
+        # convert them. Moreover, senders.dtype must be int, for indexing.
+        self._senders  = np.asarray(senders, dtype=int)
+        self._times    = np.asarray(times)
         self._unpacked = [None] * self._N # unpacked version of spikes
 
 
