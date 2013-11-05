@@ -431,15 +431,15 @@ if (detailed_noise):
     _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
             xlabel='',
-            color='black')
+            color='red')
     _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             ylabel='$1^{st}$ autocorrelation\npeak', ylabelPos=ylabelPos,
-            color='red')
+            color='black')
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.6))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
     ax.set_ylim([-0.01, 0.61])
     leg = ['B', 'C']
-    l = ax.legend([p13, p31], leg, loc=(0.85, 0.7), fontsize='x-small', frameon=False,
+    l = ax.legend([p31, p13], leg, loc=(0.85, 0.7), fontsize='x-small', frameon=False,
             numpoints=1, handletextpad=0.05)
     plt.setp(l.get_title(), fontsize='x-small')
 

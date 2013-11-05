@@ -62,7 +62,7 @@ shape = (31, 31)
 ccExamples      = 0
 spikeCCExamples = 0
 velLines        = 0
-detailed_noise  = 0
+detailed_noise  = 1
 slope_sweeps    = 0
 rastersFlag     = 1
 rates           = 1
@@ -294,8 +294,8 @@ if (detailed_noise):
             color='black')
     ax.yaxis.set_major_locator(ti.MultipleLocator(4))
     ax.yaxis.set_minor_locator(ti.MultipleLocator(2))
-    leg = ['(1, 3)',  '(3, 1)']
-    l = ax.legend([p13, p31], leg, loc=(0.55, 0.3), fontsize='small', frameon=False,
+    leg = ['(3, 1)',  '(1, 3)']
+    l = ax.legend([p31, p13], leg, loc=(0.55, 0.3), fontsize='small', frameon=False,
             numpoints=1, title='($g_E,\ g_I$) (nS)')
     plt.setp(l.get_title(), fontsize='x-small')
 
@@ -380,6 +380,10 @@ if (spikeCCExamples):
 
 
 ##############################################################################
+#                           Velocity (slope) sweeps
+
+# This should be corresponding to the velLine examples as well !!
+rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 slopeVarList = ['lineFitSlope']
 slope_vmin = 0
 slope_vmax = 1.6
@@ -394,6 +398,13 @@ slope_cbar_kw= dict(
         ticks=ti.MultipleLocator(0.5),
         extend='max', extendfrac=0.1)
 
+ann0 = dict(
+        txt='A',
+        rc=rasterRC[0],
+        xytext_offset=(1.5, 0.5),
+        color='white')
+
+ann = [ann0]
 
 def createSweepFig(name=None):
     sweepFigSize = (3.2, 1.9)
@@ -414,7 +425,8 @@ if (slope_sweeps):
             ax=ax,
             cbar=True, cbar_kw=slope_cbar_kw,
             #cax.yaxis.tick_left()
-            vmin=slope_vmin, vmax=slope_vmax)
+            vmin=slope_vmin, vmax=slope_vmax,
+            annotations=ann)
     fname = outputDir + "/figure4_slope_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
@@ -425,7 +437,8 @@ if (slope_sweeps):
             ax=ax,
             ylabel='', yticks=False,
             cbar=False, cbar_kw=slope_cbar_kw,
-            vmin=slope_vmin, vmax=slope_vmax)
+            vmin=slope_vmin, vmax=slope_vmax,
+            annotations=ann)
     fname = outputDir + "/figure4_slope_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
@@ -436,7 +449,8 @@ if (slope_sweeps):
             ax=ax,
             ylabel='', yticks=False,
             cbar=False, cbar_kw=slope_cbar_kw,
-            vmin=slope_vmin, vmax=slope_vmax)
+            vmin=slope_vmin, vmax=slope_vmax,
+            annotations=ann)
     fname = outputDir + "/figure4_slope_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
@@ -445,8 +459,8 @@ if (slope_sweeps):
 ##############################################################################
 #                           Raster and rate plots
 ##############################################################################
-rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
-tLimits = [1e3, 2e3] # ms
+tLimits  = [2e3, 3e3] # ms
+trialNum = 10
 
 rasterFigSize = (3.75, 1.9)
 transparent   = True
@@ -469,6 +483,7 @@ if (rastersFlag):
             r=rasterRC[0][0], c=rasterRC[0][1],
             ylabelPos=ylabelPos,
             tLimits=tLimits,
+            trialNum=trialNum,
             ann_EI=True)
     fname = outputDir + "/figure4_raster0.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
@@ -485,6 +500,7 @@ if (rastersFlag):
             r=rasterRC[1][0], c=rasterRC[1][1],
             ylabelPos=ylabelPos,
             tLimits=tLimits,
+            trialNum=trialNum,
             ylabel='', yticks=False)
     fname = outputDir + "/figure4_raster150.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
@@ -501,6 +517,7 @@ if (rastersFlag):
             r=rasterRC[2][0], c=rasterRC[2][1],
             ylabelPos=ylabelPos,
             tLimits=tLimits,
+            trialNum=trialNum,
             ylabel='', yticks=False)
     fname = outputDir + "/figure4_raster300.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
@@ -533,6 +550,7 @@ if (rates):
                 ylabelPos=ylabelPos,
                 color='red',
                 tLimits=tLimits,
+                trialNum=trialNum,
                 ax=ax, **kw)
         fname = outputDir + "/figure4_rate_e{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
@@ -554,6 +572,7 @@ if (rates):
                 ylabelPos=ylabelPos,
                 color='blue',
                 tLimits=tLimits,
+                trialNum=trialNum,
                 ax=ax, **kw)
         fname = outputDir + "/figure4_rate_i{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
