@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-import EI_plotting as EI
+from EI_plotting import sweeps, examples, details
 from figures_shared       import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
 
@@ -52,7 +52,7 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-grids          = 1
+grids          = 0
 examples0      = 0
 examples150    = 0
 examples300    = 0
@@ -83,23 +83,24 @@ vmax = 1.1
 exampleRC = ( (5, 15), (15, 5) )
 slice_horizontal = slice(13, 18)
 slice_vertical = slice(13, 18)
-sliceAnn = [\
-    dict(
-        sliceSpan=slice_horizontal,
-        type='horizontal',
-        letter=None),
-    dict(
-        sliceSpan=slice_vertical,
-        type='vertical',
-        letter=None)]
+#sliceAnn = [\
+#    dict(
+#        sliceSpan=slice_horizontal,
+#        type='horizontal',
+#        letter=None),
+#    dict(
+#        sliceSpan=slice_vertical,
+#        type='vertical',
+#        letter=None)]
+sliceAnn = None
 
 ann0 = dict(
-        txt='B',
+        txt='C',
         rc=exampleRC[0],
         xytext_offset=(1.5, 1),
         color='black')
 ann1 = dict(
-        txt='C',
+        txt='B',
         rc=exampleRC[1],
         xytext_offset=(0.5, 1.5),
         color='black')
@@ -115,7 +116,7 @@ if (grids):
     exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotGridTrial(ps.grids[0], varList, iterList, ps.noise_sigmas[0],
+    sweeps.plotGridTrial(ps.grids[0], varList, iterList, ps.noise_sigmas[0],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[0][0], c=exampleIdx[0][1],
@@ -130,14 +131,14 @@ if (grids):
 
 
     # noise_sigma = 150 pA
-    for a in sliceAnn:
-        a['letterColor'] = 'black'
+    #for a in sliceAnn:
+    #    a['letterColor'] = 'black'
     fig = plt.figure("sweeps150", figsize=sweepFigSize)
     exRows = [8, 2]
     exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotGridTrial(ps.grids[1], varList, iterList, ps.noise_sigmas[1],
+    sweeps.plotGridTrial(ps.grids[1], varList, iterList, ps.noise_sigmas[1],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[1][0], c=exampleIdx[1][1],
@@ -158,7 +159,7 @@ if (grids):
     exCols = [6, 23]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
+    sweeps.plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[2][0], c=exampleIdx[2][1],
@@ -187,7 +188,7 @@ if (examples0):
     for idx, rc in enumerate(exampleRC):
         fname = exampleFName.format(ps.noise_sigmas[0], idx)
         plt.figure(figsize=exampleFigSize)
-        gs = EI.plotOneGridExample(ps.grids[0], rc, iterList,
+        gs = examples.plotOneGridExample(ps.grids[0], rc, iterList,
                 exIdx=exampleIdx[0],
                 xlabel=False, ylabel=False,
                 xlabel2=False, ylabel2=False, 
@@ -201,7 +202,7 @@ if (examples150):
     for idx, rc in enumerate(exampleRC):
         fname = exampleFName.format(ps.noise_sigmas[1], idx)
         plt.figure(figsize=exampleFigSize)
-        gs = EI.plotOneGridExample(ps.grids[1], rc, iterList,
+        gs = examples.plotOneGridExample(ps.grids[1], rc, iterList,
                 exIdx=exampleIdx[1],
                 xlabel=False, ylabel=False,
                 xlabel2=False, ylabel2=False, 
@@ -215,7 +216,7 @@ if (examples300):
     for idx, rc in enumerate(exampleRC):
         fname = exampleFName.format(ps.noise_sigmas[2], idx)
         plt.figure(figsize=exampleFigSize)
-        gs = EI.plotOneGridExample(ps.grids[2], rc, iterList,
+        gs = examples.plotOneGridExample(ps.grids[2], rc, iterList,
                 exIdx=exampleIdx[2],
                 xlabel=False, ylabel=False,
                 xlabel2=False, ylabel2=False, 
@@ -250,19 +251,18 @@ if (detailed_noise):
     fig = plt.figure(figsize=detailFigSize)
     ax = fig.add_axes(Bbox.from_extents(detailLeft, detailBottom, detailRight,
         detailTop))
-    _, p13, l13 = EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+    _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
-            color='black')
-    _, p31, l31 = EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
-            ylabel='Gridness score', ylabelPos=ylabelPos,
             color='red')
+    _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+            ylabel='Gridness score', ylabelPos=ylabelPos,
+            color='black')
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
     ax.set_ylim([-0.6, 1.2])
-    leg = ['(1, 3)',  '(3, 1)']
-    l = ax.legend([p13, p31], leg, loc=(0.3, 1.1), fontsize='small', frameon=False,
-            numpoints=1, title='($g_E,\ g_I$) [nS]', ncol=2)
-    plt.setp(l.get_title(), fontsize='small')
+    leg = ['B',  'C']
+    l = ax.legend([p31, p13], leg, loc=(0.8, 1), fontsize='small', frameon=False,
+            numpoints=1, handletextpad=0.05)
 
     fname = "figure1_detailed_noise_gscore.pdf"
     plt.savefig(fname, dpi=300, transparent=True)

@@ -263,7 +263,7 @@ class TestSpikeTrainDifference(ut.TestCase):
 
     def test_correct_values(self):
         trainSize = 100
-        N         = 100
+        N         = 50
         senders, times, sp = _createTestSequence(trainSize, N)
         std       = sp.spikeTrainDifference
         res       = std(range(N), None, True)
@@ -277,5 +277,29 @@ class TestSpikeTrainDifference(ut.TestCase):
                 self.assertTrue(np.all(diff == expectedDiff))
 
 
+class TestSpikeTrainXCorrelation(ut.TestCase):
 
+    def test_bin_edges(self):
+        trainSize = 100
+        N = 50
+        bins = 37
+        senders, times, sp = _createTestSequence(trainSize, N)
+        xcf = sp.spikeTrainXCorrelation
+
+        trainLens = [np.count_nonzero(senders == x) for x in xrange(N)]
+        res, bin_centers, bin_edges = xcf(range(N), None, (0, 1), bins)
+        self.assertEqual(bins, len(bin_edges) - 1)
+        self.assertEqual(len(bin_centers), bins)
+        for n1 in xrange(N):
+            for n2 in xrange(N):
+                self.assertEqual(len(res[n1][n2]), bins)
+
+
+    @ut.skip(notImplMsg)
+    def test_correct_values(self):
+        '''
+        Since we are running this on numpy.histogram, it should be ok for these
+        purposes.
+        '''
+        pass
 

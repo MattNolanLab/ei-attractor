@@ -185,7 +185,7 @@ def plotOneHist(data, bins=40, normed=False, **kw):
 # Parameter sweep plotting
 def createColorbar(ax, **kwargs):
     cbLabel     = kwargs.pop('label', '')
-    orientation = kwargs.get('orientation', 'horizontal')
+    #orientation = kwargs.get('orientation', 'horizontal')
     rasterized  = kwargs.pop('rasterized', None)
     labelpad    = kwargs.pop('labelpad', None)
 
@@ -195,8 +195,8 @@ def createColorbar(ax, **kwargs):
     cb.set_label(cbLabel, labelpad=labelpad)
     cb.solids.set_rasterized(rasterized)
 
-    if ('orientation' == 'horizontal'):
-        cax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    else:
-        cax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    #if ('orientation' == 'horizontal'):
+    #    cax.xaxis.set_minor_locator(AutoMinorLocator(2))
+    #else:
+    #    cax.yaxis.set_minor_locator(AutoMinorLocator(2))
     return cax

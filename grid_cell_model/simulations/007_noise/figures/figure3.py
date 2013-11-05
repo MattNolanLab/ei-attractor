@@ -2,10 +2,9 @@
 #
 #   figure3.py
 #
-#   Theta/gamma analysis using a custom "peak" method - E/I coupling parameter
-#   sweep.
+#   Noise publication Figure 3.
 #
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
+#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
 #       This program is free software: you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
@@ -21,390 +20,343 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
+from matplotlib.gridspec   import GridSpec
+from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
-from copy import deepcopy
 
+from EI_plotting                import sweeps, details, examples, rasters
+from EI_plotting                import aggregate as aggr
+from plotting.global_defs       import globalAxesSettings
+from figures_shared             import NoiseDataSpaces
+from parameters                 import JobTrialSpace2D
 
-import EI_plotting as EI
-from parameters  import JobTrialSpace2D, DataSpace
-from plotting.global_defs import globalAxesSettings
-from figures_shared import plotOneHist, NoiseDataSpaces
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)
 
-
-# Other
 from matplotlib import rc
 rc('pdf', fonttype=42)
 rc('mathtext', default='regular')
 
-plt.rcParams['font.size'] = 11
-
-###############################################################################
-cFreq = 'blue'
-cAC = 'green'
-cCount = 'red'
+plt.rcParams['font.size'] = 10
 
 outputDir = "."
-NTrials = 5
+
+NTrials=10
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
-noise_sigmas  = [0, 150, 300]
-exampleIdx    = [(0, 0), (0, 0), (0, 0)] # (row, col)
-bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
-velDataRoot   = None
-gridsDataRoot = None
-shape    = (31, 31)
+noise_sigmas = [0, 150, 300]
+exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
+gridsDataRoot= 'output_local/even_spacing/grids'
+bumpDataRoot= 'output_local/even_spacing/gamma_bump'
+velDataRoot = 'output_local/even_spacing/velocity'
+shape = (31, 31)
 
-gammaSweep     = 0
-threshold      = 0
-freqHist       = 0
-detailed_noise = 1
-examples       = 0
+bumpSweep         = 0
+bumpExamples      = 0
+velExamples       = 0
+velSweep          = 0
+gridness_vs_error = 0
+detailed_noise    = 0
+rastersFlag       = 1
+rates             = 1
 
-###############################################################################
+##############################################################################
 
-def aggregate2DTrial(sp, varList, trialNumList):
-    varList = ['analysis'] + varList
-    retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean,
-            saveData=True)
-    return np.mean(retVar, 2)
+def plotBumpExample(sp, rc, iterList, **kw):
+    #keyword
+    wspace    = kw.pop('wspace', 0)
+    hspace    = kw.pop('hspace', 0)
+    gsCoords  = kw.pop('exGsCoords', (0, 0, 1, 1))
 
-
-
-def computeYX(sp, iterList):
-    E, I = sp.getIteratedParameters(iterList)
-    Ne = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ne')
-    Ni = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ni')
-    return E/Ne, I/Ni
-
-
-def drawColorbar(drawAx, label):
-    pos = drawAx.get_position()
-    pos.y0 -= 0.12
-    pos.y1 -= 0.12
-    pos.y1 = pos.y0 + 0.1*(pos.y1 - pos.y0)
-    w = pos.x1 - pos.x0
-    pos.x0 += 0.1*w
-    pos.x1 -= 0.1*w
-    clba = plt.gcf().add_axes(pos)
-    globalAxesSettings(clba)
-    clba.minorticks_on()
-    cb = plt.colorbar(cax=clba, orientation='horizontal',
-            ticks=ti.LinearLocator(2))
-    cb.set_label(label)
+    r, c = rc[0], rc[1] 
+    spaceRect = [c, r, c, r]
+    return examples.drawBumpExamples(sp, spaceRect, iterList,
+            gsCoords=gsCoords,
+            xlabel=False, ylabel=False,
+            xlabel2=False, ylabel2=False,
+            fontsize='x-small',
+            rateYPos=1.05, rateXPos=0.98,
+            **kw)
 
 
-def extractACExample(sp, r, c, trialNum):
-    data = sp[r][c][trialNum].data
-    ac = data['analysis']['acVec'][0]
-    dt = data['stateMonF_e'][0]['interval']
-    freq = data['analysis']['freq'][0]
-    acVal = data['analysis']['acVal'][0]
-    noise_sigma = data['options']['noise_sigma']
-    return ac, dt, freq, acVal, noise_sigma
-
-
-def aggregateBar2(spList, varLists, trialNumList, func=(None, None)):
-    vars = ([], [])
-    noise_sigma = []
-    for idx in xrange(len(spList)):
-        for varIdx in range(len(varLists)):
-            f = func[varIdx]
-            if f is None:
-                f = lambda x: x
-            vars[varIdx].append(f(aggregate2DTrial(spList[idx], varLists[varIdx],
-                trialNumList).flatten()))
-        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
-
-    noise_sigma = np.array(noise_sigma, dtype=int)
-    return vars, noise_sigma
- 
-
-
-def getACFreqThreshold(spList, trialNumList, ACThr):
-    varLists = [['acVal'], ['freq']]
-    vars, noise_sigma = aggregateBar2(spList, varLists, trialNumList)
-    AC = vars[0]
-    freq = vars[1]
-    ACMean   = []
-    freqMean = []
-    ACStd    = []
-    freqStd  = []
-    thrCount = []
-    for spIdx in range(len(spList)):
-        thrIdx = np.logical_and(AC[spIdx] >= ACThr,
-                np.logical_not(np.isnan(AC[spIdx])))
-        ac_filt = AC[spIdx][thrIdx]
-        ACMean.append(np.mean(ac_filt))
-        ACStd.append(np.std(ac_filt))
-        freq_filt = freq[spIdx][thrIdx]
-        freqMean.append(np.mean(freq_filt))
-        freqStd.append(np.std(freq_filt))
-        thrCount.append(float(len(AC[spIdx][thrIdx])) / len (AC[spIdx]))
-
-    return (ACMean, ACStd), (freqMean, freqStd), thrCount, noise_sigma
-
-
-def plotThresholdComparison(spList, trialNumList, ACThrList):
-    counts = []
-    noise_sigma = None
-    for ACThr in ACThrList:
-        _, _, thrCount, noise_sigma = getACFreqThreshold(spList, trialNumList,
-                ACThr)
-        counts.append(thrCount)
-    counts = np.array(counts)
-
-    print ACThrList, counts
-
-    ax = plt.gca()
-    globalAxesSettings(ax)
-    plt.plot(ACThrList, counts, 'o-')
-    plt.plot([0], [1], linestyle='None', marker='None')
-    ax.set_xlabel('Correlation threshold', labelpad=5)
-    ax.set_ylabel('Count', labelpad=5)
-    leg = []
-    for s in noise_sigma:
-        leg.append("{0}".format(int(s)))
-    ax.legend(leg, loc=(0.8, 0.5), title='$\sigma$ (pA)', frameon=False,
-            fontsize='small')
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(ti.MultipleLocator(0.3))
-    ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(3))
-    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    ax.margins(0.025)
-    
-
-def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
-    FVarList = ['freq']
-    CVarList = ['acVal']
+def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
+        ylabelPos=-0.2, maxErr=None):
+    GVars = ['gridnessScore']
+    errVars = ['lineFitErr']
+    slopeVars = ['lineFitSlope']
     noise_sigma = [0, 150, 300]
-    colors = ['red', 'green', 'blue']
+    markers = ['o', '^', '*']
+    colors = ['blue', 'green', 'red']
+    errMins = []
+    errMaxs = []
 
     ax = plt.gca()
     plt.hold('on')
     globalAxesSettings(ax)
+    ax.set_yscale('log')
 
-    for idx, sp in enumerate(spList):
-        F = aggregate2DTrial(sp, FVarList, trialNumList).flatten()
-        C = aggregate2DTrial(sp, CVarList, trialNumList).flatten()
-        filtIdx = np.logical_and(np.logical_not(np.isnan(F)), C > CThreshold)
-        plotOneHist(F[filtIdx], bins=20, normed=True)
+    for idx, (spGrids, spVel) in enumerate(zip(spListGrids, spListVelocity)):
+        G = aggr.aggregate2DTrial(spGrids, GVars, trialNumList).flatten()
+        errs = aggr.aggregate2D(spVel, errVars, funReduce=np.sum).flatten()
+        #slopes = np.abs(aggr.aggregate2D(spVel, slopeVars,
+        #    funReduce=None).flatten())
+        i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(errs)))
+        ax.scatter(G[i], errs[i],  s=5, marker=markers[idx], 
+                color=colors[idx], edgecolors='None')
+        errMins.append(np.min(errs[i]))
+        errMaxs.append(np.max(errs[i]))
+
+    if (maxErr is not None):
+        ax.set_ylim([0, maxErr])
+    else:
+        ax.set_ylim([0, None])
+
     leg = []
     for s in noise_sigma:
         leg.append("{0}".format(int(s)))
-    l = ax.legend(leg, loc=(0.8, 0.5), title='$\sigma$ (pA)', frameon=False,
-            fontsize='x-small', ncol=1)
-    plt.setp(l.get_title(), fontsize='x-small')
+    l = ax.legend(leg, loc=(0.3, 0.85), title='$\sigma$ (pA)', frameon=False,
+            fontsize='small', ncol=3, columnspacing=1.5)
+    plt.setp(l.get_title(), fontsize='small')
 
-    ax.set_xlabel("Oscillation frequency (Hz)")
-    #ax.text(ylabelPos, 0.5, 'p(F)', rotation=90, transform=ax.transAxes,
+    ax.set_xlabel("Gridness score")
+    ax.set_ylabel('Error (nrns/s/data point)')
+    #ax.text(ylabelPos, 0.5, 'Error (nrns/s/data point)', rotation=90, transform=ax.transAxes,
     #        va='center', ha='right')
-    ax.set_ylabel('p(Frequency)')
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(ti.MultipleLocator(20))
-    ax.yaxis.set_major_locator(ti.MaxNLocator(4))
+    ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
     ax.xaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    f = ti.ScalarFormatter(useMathText=True)
-    f.set_scientific(True)
-    f.set_powerlimits([0, 3])
-    ax.yaxis.set_major_formatter(f)
-    #ax.margins(0.01, 0.00)
-
-    thStr = 'Frequencies with C > {0}'.format(CThreshold)
-    ax.text(0.99, 1.1, thStr, transform=ax.transAxes, va='bottom',
-            ha='right')
-    
-
+    ax.set_xmargin(0.05)
+    ax.autoscale_view(tight=True)
+    ax.set_ylim(np.min(errMins), np.max(errMaxs)*1.5)
 
 
 ###############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
-# gamma example rows and columns
-exampleRC = ( (5, 15), (15, 5) )
-
+exW = 4
+exH = 2
+exMargin = 0.075
+exWspace=0.2
+exHspace=0.15
 
 sweepFigSize = (3.5, 2.5)
 sweepLeft   = 0.15
 sweepBottom = 0.2
 sweepRight  = 0.87
 sweepTop    = 0.85
-transparent  = True
 
-AC_vmin = -0.09
-AC_vmax = 0.675
-F_vmin  = 30
-F_vmax  = 120
 
-ACVarList = ['acVal']
-FVarList  = ['freq']
-
-AC_cbar_kw = dict(
+##############################################################################
+sigmaBumpText = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
+sigmaVarList = ['bump_e', 'sigma']
+bumpTrialNumList = np.arange(5)
+bump_vmin = 0
+bump_vmax = 0.58
+bump_cbar_kw= dict(
         orientation='vertical',
-        ticks=ti.MultipleLocator(0.3),
-        fraction=0.25,
-        shrink=0.8,
-        pad=0.05,
-        labelpad=8,
-        label='$1^{st}$ autocorrelation\npeak')
-F_cbar_kw = dict(
-        orientation='vertical',
-        ticks=ti.MultipleLocator(30),
-        fraction=0.25,
-        shrink=0.8,
-        pad=0.05,
-        labelpad=8,
-        label='Frequency',
+        shrink=0.8, pad=-0.05,
+        ticks=ti.MultipleLocator(0.25),
+        label=sigmaBumpText,
         extend='max', extendfrac=0.1)
 
+exampleRC = ( (5, 15), (15, 5) )
 
-ann_color = 'white'
 ann0 = dict(
-        txt='B',
-        rc=exampleRC[0],
-        xytext_offset=(1.5, 0),
-        color=ann_color)
-ann1 = dict(
         txt='C',
+        rc=exampleRC[0],
+        xytext_offset=(1.5, 0.5),
+        color='white')
+ann1 = dict(
+        txt='B',
         rc=exampleRC[1],
-        xytext_offset=(1.5, 1),
-        color=ann_color)
+        xytext_offset=(1.2, 1.1),
+        color='black')
 ann = [ann0, ann1]
-annF = [deepcopy(ann0), deepcopy(ann1)]
 
-
-if (gammaSweep):
-
+if (bumpSweep):
     # noise_sigma = 0 pA
-    fig = plt.figure(figsize=sweepFigSize)
+    fig = plt.figure("sweeps0", figsize=sweepFigSize)
+    exRows = [28, 15]
+    exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotACTrial(ps.bumpGamma[0], ACVarList, iterList,
+    sweeps.plotBumpSigmaTrial(ps.bumpGamma[0], sigmaVarList, iterList,
             noise_sigma=ps.noise_sigmas[0],
             ax=ax,
-            xlabel='', xticks=False,
-            trialNumList=xrange(NTrials),
-            cbar=False, cbar_kw=AC_cbar_kw,
-            vmin=AC_vmin, vmax=AC_vmax,
+            trialNumList=bumpTrialNumList,
+            cbar=False, cbar_kw=bump_cbar_kw,
+            vmin=bump_vmin, vmax=bump_vmax,
             annotations=ann)
     fname = outputDir + "/figure3_sweeps0.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    EI.plotACTrial(ps.bumpGamma[0], FVarList, iterList,
-            noise_sigma=ps.noise_sigmas[0],
-            ax=ax,
-            trialNumList=xrange(NTrials),
-            sigmaTitle=False,
-            cbar=False, cbar_kw=F_cbar_kw,
-            vmin=F_vmin, vmax=F_vmax,
-            annotations=annF)
-    fname = outputDir + "/figure3_freq_sweeps0.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
+    fig.savefig(fname, dpi=300, transparent=True)
 
     # noise_sigma = 150 pA
     for a in ann:
         a['color'] = 'black'
-    fig = plt.figure(figsize=sweepFigSize)
+    fig = plt.figure("sweeps150", figsize=sweepFigSize)
+    exRows = [8, 2]
+    exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotACTrial(ps.bumpGamma[1], ACVarList, iterList,
-            noise_sigma=ps.noise_sigmas[1],
+    sweeps.plotBumpSigmaTrial(ps.bumpGamma[1], sigmaVarList, iterList,
+            noise_sigma=noise_sigmas[1],
             ax=ax,
-            xlabel='', xticks=False,
-            trialNumList=xrange(NTrials),
             ylabel='', yticks=False,
-            cbar=False, cbar_kw=AC_cbar_kw,
-            vmin=AC_vmin, vmax=AC_vmax,
+            trialNumList=bumpTrialNumList,
+            cbar=False, cbar_kw=bump_cbar_kw,
+            vmin=bump_vmin, vmax=bump_vmax,
             annotations=ann)
     fname = outputDir + "/figure3_sweeps150.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    EI.plotACTrial(ps.bumpGamma[1], FVarList, iterList,
-            noise_sigma=ps.noise_sigmas[1],
-            ax=ax,
-            trialNumList=xrange(NTrials),
-            ylabel='', yticks=False,
-            sigmaTitle=False,
-            cbar=False, cbar_kw=F_cbar_kw,
-            vmin=F_vmin, vmax=F_vmax,
-            annotations=annF)
-    fname = outputDir + "/figure3_freq_sweeps150.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
+    fig.savefig(fname, dpi=300, transparent=True)
 
     # noise_sigma = 300 pA
-    fig = plt.figure(figsize=sweepFigSize)
+    fig = plt.figure("sweeps300", figsize=sweepFigSize)
+    exRows = [16, 15]
+    exCols = [6, 23]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotACTrial(ps.bumpGamma[2], ACVarList, iterList,
-            noise_sigma=ps.noise_sigmas[2],
+    ax.set_clip_on(False)
+    sweeps.plotBumpSigmaTrial(ps.bumpGamma[2], sigmaVarList, iterList,
+            noise_sigma=noise_sigmas[2],
             ax=ax,
-            xlabel='', xticks=False,
-            trialNumList=xrange(NTrials),
+            trialNumList=bumpTrialNumList,
             ylabel='', yticks=False,
-            cbar=True, cbar_kw=AC_cbar_kw,
-            vmin=AC_vmin, vmax=AC_vmax,
+            cbar=True, cbar_kw=bump_cbar_kw,
+            vmin=bump_vmin, vmax=bump_vmax,
             annotations=ann)
     fname = outputDir + "/figure3_sweeps300.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
-    fig = plt.figure(figsize=sweepFigSize)
+    fig.savefig(fname, dpi=300, transparent=True)
+
+
+##############################################################################
+# Bump examples
+exampleFName = outputDir + "/figure3_examples_{0}pA_{1}.pdf"
+bumpTrialNum = 0
+exTransparent = True
+exampleFigSize = (0.8, 0.8)
+exampleLeft   = 0.01
+exampleBottom = 0.01
+exampleRight  = 0.99
+exampleTop    = 0.85
+
+if (bumpExamples):
+    # noise sigma == 0 pA
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[0], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = plotBumpExample(ps.bumpGamma[0], rc, iterList,
+                exIdx=exampleIdx[0],
+                trialNum=bumpTrialNum)
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
+
+    # noise sigma == 150 pA
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[1], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = plotBumpExample(ps.bumpGamma[1], rc, iterList,
+                exIdx=exampleIdx[1],
+                trialNum=bumpTrialNum)
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
+
+    # noise sigma == 300 pA
+    for idx, rc in enumerate(exampleRC):
+        fname = exampleFName.format(ps.noise_sigmas[2], idx)
+        plt.figure(figsize=exampleFigSize)
+        gs = plotBumpExample(ps.bumpGamma[2], rc, iterList,
+                exIdx=exampleIdx[1],
+                trialNum=bumpTrialNum)
+        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                top=exampleTop)
+        plt.savefig(fname, dpi=300, transparent=exTransparent)
+        plt.close()
+
+
+###############################################################################
+
+std_vmin = 0
+std_vmax = 14
+
+std_cbar_kw= dict(
+        orientation='vertical',
+        label='Mean $\sigma_{speed}$ (neurons/s)',
+        shrink = 0.8,
+        pad = 0.05,
+        ticks=ti.MultipleLocator(4),
+        extend='max', extendfrac=0.1)
+
+
+def createSweepFig(name=None):
+    sweepFigSize = (2.6, 1.9)
+    sweepLeft   = 0.15
+    sweepBottom = 0.2
+    sweepRight  = 0.87
+    sweepTop    = 0.85
+    fig = plt.figure(name, figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotACTrial(ps.bumpGamma[2], FVarList, iterList,
-            noise_sigma=ps.noise_sigmas[2],
+    return fig, ax
+
+if (velSweep):
+    # noise_sigma = 0 pA
+    fig, ax = createSweepFig()
+    _, ax, cax = sweeps.plotVelStdSweep(ps.v[0], iterList,
+            noise_sigmas[0],
             ax=ax,
             sigmaTitle=False,
-            trialNumList=xrange(NTrials),
+            cbar=False, cbar_kw=std_cbar_kw,
+            vmin=std_vmin, vmax=std_vmax)
+    fname = outputDir + "/figure3_vel_std_sweeps0.pdf"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+
+    # noise_sigma = 150 pA
+    fig, ax = createSweepFig()
+    _, ax, cax = sweeps.plotVelStdSweep(ps.v[1], iterList,
+            noise_sigmas[1],
+            ax=ax,
             ylabel='', yticks=False,
-            cbar=True, cbar_kw=F_cbar_kw,
-            vmin=F_vmin, vmax=F_vmax,
-            annotations=annF)
-    fname = outputDir + "/figure3_freq_sweeps300.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
+            sigmaTitle=False,
+            cbar=False, cbar_kw=std_cbar_kw,
+            vmin=std_vmin, vmax=std_vmax)
+    fname = outputDir + "/figure3_vel_std_sweeps150.pdf"
+    fig.savefig(fname, dpi=300, transparent=True)
 
 
-if (threshold):
-    ###############################################################################
-    plt.figure(figsize=(3.5, 2))
-    plotThresholdComparison(ps.bumpGamma,
-            trialNumList=range(NTrials),
-            ACThrList=np.arange(0, 0.65, 0.05))
-    plt.tight_layout()
-    fname = 'figure3_AC_threshold_comparison.pdf'
-    plt.savefig(fname, transparent=True, dpi=300)
+    # noise_sigma = 300 pA
+    fig, ax = createSweepFig()
+    _, ax, cax = sweeps.plotVelStdSweep(ps.v[2], iterList,
+            noise_sigmas[2],
+            ax=ax,
+            ylabel='', yticks=False,
+            sigmaTitle=False,
+            cbar=True, cbar_kw=std_cbar_kw,
+            vmin=std_vmin, vmax=std_vmax)
+    fname = outputDir + "/figure3_vel_std_sweeps300.pdf"
+    fig.savefig(fname, dpi=300, transparent=True)
 
 
-if (freqHist):
-    ylabelPos = -0.16
-    fig = plt.figure(figsize=(3.7, 2.5))
-    plotFreqHistogram(ps.bumpGamma, range(NTrials), ylabelPos=ylabelPos)
-    plt.tight_layout()
-    fname = outputDir + "/figure3_freq_histograms.pdf"
+if (gridness_vs_error):
+    fig = plt.figure(figsize=(3.4, 2.5))
+    plotGridnessVsFitErr(ps.grids, ps.v, range(NTrials), maxErr=None)
+    fig.tight_layout()
+    fname = outputDir + "/figure3_gridness_vs_error.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
 
 
 ##############################################################################
+# Detailed noise plots
 EI13Root  = 'output_local/detailed_noise/gamma_bump/EI-1_3'
 EI31Root  = 'output_local/detailed_noise/gamma_bump/EI-3_1'
 detailedShape = (31, 9)
@@ -413,73 +365,151 @@ EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
 EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
 detailedNTrials = 5
 
-detailFigSize = (4.25, 1.8)
-detailLeft   = 0.2
-detailBottom = 0.3
-detailRight  = 0.98
-detailTop    = 0.9
+
+detailFigSize = (3.8, 2)
+detailLeft   = 0.18
+detailBottom = 0.26
+detailRight  = 0.95
+detailTop    = 0.95
 if (detailed_noise):
     ylabelPos = -0.17
-    types = ('gamma', 'acVal')
 
+    types = ('bump', 'sigma')
     fig = plt.figure(figsize=detailFigSize)
     ax = fig.add_axes(Bbox.from_extents(detailLeft, detailBottom, detailRight,
         detailTop))
-    _, p13, l13 = EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
-            ylabelPos=ylabelPos,
-            xlabel='',
-            color='black')
-    _, p33, l33 = EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
-            ylabel='$1^{st}$ autocorrelation\npeak', ylabelPos=ylabelPos,
+    _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+            ylabel=sigmaBumpText, ylabelPos=ylabelPos,
             color='red')
-    ax.yaxis.set_major_locator(ti.MultipleLocator(0.6))
-    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
-    ax.set_ylim([-0.01, 0.61])
-    leg = ['(1, 3)',  '(3, 1)']
-    l = ax.legend([p13, p33], leg, loc=(0.8, 0.65), fontsize='x-small', frameon=False,
-            numpoints=1, title='($g_E,\ g_I$) [nS]')
-    plt.setp(l.get_title(), fontsize='x-small')
+    _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+            ylabelPos=ylabelPos,
+            color='black')
+    #ax.set_yscale("log")
+    #ax.set_ylim([1.5, 300])
+    leg = ['B',  'C']
+    l = ax.legend([p31, p13], leg, loc=(0.85, 0.1), fontsize='small', frameon=False,
+            numpoints=1, handletextpad=0.05)
+    plt.setp(l.get_title(), fontsize='small')
 
-
-    fname = "figure3_detailed_noise.pdf"
+    fname = "figure3_detailed_noise_sigma.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
 
 ##############################################################################
-exampleFName = outputDir + "/figure3_example{0}_{1}.pdf"
-exampleTrialNum = 0
-exampleFigSize = (2, 1.1)
-exampleLeft   = 0.08
-exampleBottom = 0.2
-exampleRight  = 0.99
-exampleTop    = 0.85
-example_xscale_kw = dict(
-        scaleLen=50,
-        x=0.75, y=-0.1,
-        size='x-small')
+rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
+tLimits = [2e3, 2.25e3] # ms
 
-if (examples):
-    for nsIdx, ns in enumerate(ps.noise_sigmas):
-        for idx, rc in enumerate(exampleRC):
-            fname = exampleFName.format(ns, idx)
-            fig = plt.figure(figsize=exampleFigSize)
-            ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
-                exampleRight, exampleTop))
-            nsAnn = None
-            xscale_kw = None
-            if (idx == 1):
-                nsAnn = ns
-                if (nsIdx == len(ps.noise_sigmas)-1):
-                    xscale_kw = example_xscale_kw
-            EI.plotGammaExample(ps.bumpGamma[nsIdx], ax=ax,
-                    r=exampleRC[idx][0], c=exampleRC[idx][1],
-                    trialNum=exampleTrialNum,
-                    tStart = 2e3, tEnd=2.25e3,
-                    noise_sigma=nsAnn,
-                    xscale_kw=xscale_kw)
-            plt.savefig(fname, dpi=300, transparent=True)
-            plt.close()
+rasterFigSize = (2.7, 1.9)
+transparent   = True
+rasterLeft    = 0.28
+rasterBottom  = 0.1
+rasterRight   = 0.95
+rasterTop     = 0.8
+
+ylabelPos   = -0.35
+
+
+if (rastersFlag):
+    # noise_sigma = 0 pA
+    fig = plt.figure("rasters0", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.bumpGamma[0], 
+            noise_sigma=ps.noise_sigmas[0],
+            spaceType='bump',
+            r=rasterRC[0][0], c=rasterRC[0][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ann_EI=True)
+    fname = outputDir + "/figure3_raster0.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+        
+
+    # noise_sigma = 150 pA
+    fig = plt.figure("rasters150", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.bumpGamma[1], 
+            noise_sigma=ps.noise_sigmas[1],
+            spaceType='bump',
+            r=rasterRC[1][0], c=rasterRC[1][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ylabel='', yticks=False)
+    fname = outputDir + "/figure3_raster150.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+        
+
+    # noise_sigma = 300 pA
+    fig = plt.figure("rasters300", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.bumpGamma[2], 
+            noise_sigma=ps.noise_sigmas[2],
+            spaceType='bump',
+            r=rasterRC[2][0], c=rasterRC[2][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ylabel='', yticks=False)
+    fname = outputDir + "/figure3_raster300.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+        
+
+##############################################################################
+rateFigSize   = (rasterFigSize[0], 0.65)
+rateLeft    = rasterLeft
+rateBottom  = 0.2
+rateRight   = rasterRight
+rateTop     = 0.9
+
+
+if (rates):
+    for idx, noise_sigma in enumerate(ps.noise_sigmas):
+        # E cells
+        fig = plt.figure(figsize=rateFigSize)
+        ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
+            rateTop))
+        kw = {}
+        if (idx != 0):
+            kw['ylabel'] = ''
+
+        rasters.plotAvgFiringRate(ps.bumpGamma[idx],
+                spaceType='bump',
+                noise_sigma=ps.noise_sigmas[idx],
+                popType='E',
+                r=rasterRC[idx][0], c=rasterRC[idx][1],
+                ylabelPos=ylabelPos,
+                color='red',
+                tLimits=tLimits,
+                ax=ax, **kw)
+        fname = outputDir + "/figure3_rate_e{0}.pdf".format(noise_sigma)
+        fig.savefig(fname, dpi=300, transparent=transparent)
+        plt.close()
+
+        # I cells
+        fig = plt.figure(figsize=rateFigSize)
+        ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
+            rateTop))
+        kw = {}
+        if (idx != 0):
+            kw['ylabel'] = ''
+
+        rasters.plotAvgFiringRate(ps.bumpGamma[idx],
+                spaceType='bump',
+                noise_sigma=ps.noise_sigmas[idx],
+                popType='I', 
+                r=rasterRC[idx][0], c=rasterRC[idx][1],
+                ylabelPos=ylabelPos,
+                color='blue',
+                tLimits=tLimits,
+                ax=ax, **kw)
+        fname = outputDir + "/figure3_rate_i{0}.pdf".format(noise_sigma)
+        fig.savefig(fname, dpi=300, transparent=transparent)
+        plt.close()
 
 
 

@@ -49,10 +49,11 @@ def signalPlot(t, sig, ax, timeUnits="ms", nticks=3, nThetaTicks=None, **kw):
     nticks : int
         Number of ticks on the yaxis
     '''
-    xlabel   = kw.pop('xlabel', 'Time (%s)' % timeUnits)
-    ylabel   = kw.pop('ylabel', '')
-    xmargin  = kw.pop('xmargin', 0)
-    zeroLine = kw.pop('zeroLine', True)
+    xlabel    = kw.pop('xlabel', 'Time (%s)' % timeUnits)
+    ylabel    = kw.pop('ylabel', '')
+    ylabelPos = kw.pop('ylabelPos', -0.22)
+    xmargin   = kw.pop('xmargin', 0)
+    zeroLine  = kw.pop('zeroLine', True)
 
     plt.hold('on')
     globalAxesSettings(ax)
@@ -64,9 +65,10 @@ def signalPlot(t, sig, ax, timeUnits="ms", nticks=3, nThetaTicks=None, **kw):
         ax.xaxis.set_major_locator(ti.MaxNLocator(4))
     ax.yaxis.set_major_locator(ti.MaxNLocator(nticks-1))
     ax.xaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    plt.plot(t, sig, **kw)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    ax.plot(t, sig, **kw)
+    ax.set_xlabel(xlabel)
+    ax.text(ylabelPos, 0.5, ylabel, va='center', ha='center',
+            transform=ax.transAxes, rotation=90)
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)

@@ -22,6 +22,7 @@ import numpy as np
 from scipy.optimize import leastsq
 from os.path        import splitext
 
+import analysis.signal as asignal
 from interface        import DictDSVisitor 
 from data_storage.sim_models.ei import sumAllVariables, extractStateVariable
 from otherpkg.log     import log_info, log_warn
@@ -29,11 +30,12 @@ from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 from analysis.image   import Position2D, fitGaussianBumpTT
 from analysis.spikes  import slidingFiringRateTuple, ThetaSpikeAnalysis, \
         TorusPopulationSpikes
-from data_storage.sim_models.ei import extractSpikes
+from data_storage.sim_models.ei import extractSpikes, MonitoredSpikes
 
 
-__all__ = ['AutoCorrelationVisitor', 'BumpFittingVisitor', 'FiringRateVisitor',
-        'BumpVelocityVisitor']
+__all__ = ['AutoCorrelationVisitor', 'CrossCorrelationVisitor',
+        'BumpFittingVisitor', 'FiringRateVisitor', 'BumpVelocityVisitor',
+        'SpikeTrainXCVisitor']
 
 
 def findFreq(ac, dt, ext_idx, ext_t):
@@ -203,6 +205,131 @@ class AutoCorrelationVisitor(DictDSVisitor):
             a['ac_dt'] = dt
         else:
             log_info("AutoCorrelationVisitor", "Data present. Skipping analysis.")
+
+
+
+class CrossCorrelationVisitor(DictDSVisitor):
+    '''
+    A visitor that computes a cross-correlation function between a set of state
+    monitors.
+
+    The crosscorrelation visitor takes a list of state monitors, each monitor
+    collecting data from one neuron (Vm, Isyn, etc.) and computes the cross
+    correlation function between all the pairs of these signals.
+
+    The results will be stored to the input data dictionary.
+    '''
+    def __init__(self, monName, stateList, maxLag=None, tStart=None, tEnd=None,
+            norm=True, forceUpdate=False):
+        '''
+        Initialise the visitor.
+
+        Parameters
+        ----------
+        monName : string
+            Name of the monitor; key in the data set dictionary
+        stateList : list of strings
+            A list of strings naming the state variables to extract (and sum)
+        maxLag : int
+            Maximal lag (positive and negative) of the cross-correlation
+            function.
+        tStart : float, optional
+            Start time of the analysis. If None, the signal will not be
+            cropped. The first value of the signal array is treated as time
+            zero.
+        tEnd : float, optional
+            End time of the analysis. If None, the signal will not be cropped.
+        norm : bool, optional
+            Whether the cross-correlation function should be normalized
+        forceUpdate : bool
+            Whether to compute and store all the data even if they already
+            exist in the data set.
+        '''
+        self.monName     = monName
+        self.stateList   = stateList
+        self.maxLag      = maxLag
+        self.tStart      = tStart
+        self.tEnd        = tEnd
+        self.norm        = norm
+        self.forceUpdate = forceUpdate
+
+
+    def extractCCStat(self, mon, out):
+        '''
+        Extract x-correlation statistics from a monitor.
+
+        For each pair of monitored neurons    
+        Parameters
+        ----------
+        mon : list of dicts
+            A list of (NEST) state monitors' status dictionaries
+        out : dictionary
+            Output data dictionary.
+        '''
+        out['x-corr'] = dict(
+                correlations=[])
+        xcOut = out['x-corr']['correlations']
+        for n_id1 in range(len(mon)):
+            sig1, dt1 = sumAllVariables(mon, n_id1, self.stateList)
+            xcOut.append([])
+            xcOut2 = xcOut[n_id1]
+            for n_id2 in range(len(mon)):
+                print('n_id1, n_id2 = {0}, {1}'.format(n_id1, n_id2))
+                sig2, dt2 = sumAllVariables(mon, n_id2, self.stateList)
+                if (dt1 != dt2):
+                    raise ValueError('dt1 != dt2')
+
+                dt        = dt1
+                startIdx  = 0
+                lag_start = -int(self.maxLag/dt)
+                lag_end   = -lag_start
+                endIdx1   = len(sig1)
+                endIdx2   = len(sig2)
+
+                if (self.tStart is not None):
+                    startIdx = int(self.tStart / dt)
+                if (self.tEnd is not None):
+                    endIdx1 = int(self.tEnd / dt)
+                    endIdx2 = endIdx1
+                sig1 = sig1[startIdx:endIdx1]
+                sig2 = sig2[startIdx:endIdx2]
+                C = asignal.corr(sig1, sig2, mode='range',
+                        lag_start=lag_start, lag_end=lag_end)
+                if (self.norm):
+                    C /= np.max(C)
+                xcOut2.append(C)
+        out['x-corr']['lags'] = np.arange(lag_start, lag_end+1) * dt
+        
+        
+
+
+    def visitDictDataSet(self, ds, **kw):
+        '''
+        Visit the dictionary data set and extract the cross-correlation
+        functions, for all pairs of the monitored neurons monitored neurons.
+        The parameters are defined by the constructor of the object.
+
+        If the analysed data is already present, the analysis and storage of
+        the data will be skipped.
+
+        Parameters
+        ----------
+        ds : a dict-like object
+            A data set to perform analysis on.
+        '''
+        data = ds.data
+        if (not self.folderExists(data, ['analysis'])):
+            data['analysis'] = {}
+        a = data['analysis']
+
+        if (('x-corr' not in a.keys()) or self.forceUpdate):
+            log_info("CrossCorrelationVisitor", "Analysing a dataset")
+            o = data['options']
+            if (self.maxLag is None):
+                self.maxLag = 1. / (o['theta_freq'] * 1e-3)
+            self.extractCCStat(data[self.monName], a)
+        else:
+            log_info("CrossCorrelationVisitor", "Data present. Skipping analysis.")
 
 
 
@@ -557,3 +684,74 @@ class BumpVelocityVisitor(DictDSVisitor):
             })
 
         data['analysis'] = analysisTop
+
+
+        
+##############################################################################
+
+class SpikeTrainXCVisitor(DictDSVisitor):
+    '''
+    Compute spike train crosscorrelations between spikes of neuron of a
+    population.
+    '''
+
+    def __init__(self, monitorName, bins, lagRange=None, neuronIdx=None,
+            forceUpdate=False):
+        '''
+        Parameters:
+
+        monitorName : string
+            Name of the monitor in the data hierarchy.
+        bins : int
+            Number of bins for the cross-correlation histogram. Bin centers
+        lagRange : (tStart, tEnd)
+            Start/end time of the lags in histograms. This values will define
+            the left and right edges of the histogram. All the values outside
+            this range will be ignored.
+        neuronIdx : list of ints or None
+            List of neurons for which to compute the pairwise
+            cross-correlation. If None, use all the neurons.
+        '''
+        self.allowedMonitors = ['spikeMon_e', 'spikeMon_i']
+        if (not monitorName in self.allowedMonitors):
+            msg = "monitorName must be one of {0}".format(allowedMonitors)
+            raise ValueError(msg)
+
+        self.monitorName = monitorName
+        self.lagRange    = lagRange
+        self.bins        = bins
+        self.forceUpdate = forceUpdate
+        self.neuronIdx   = neuronIdx
+
+        if (self.monitorName == "spikeMon_e"):
+            self.NName = "net_Ne"
+            self.outputName = "XCorrelation_e"
+        elif (self.monitorName == "spikeMon_i"):
+            self.NName = "net_Ni"
+            self.outputName = "XCorrelation_i"
+
+
+    def visitDictDataSet(self, ds, **kw):
+        data = ds.data
+        
+        if (not self.folderExists(data, ['analysis'])):
+            data['analysis'] = {}
+        a = data['analysis']
+
+        if (self.outputName in a.keys() and not self.forceUpdate):
+            log_info("SpikeTrainXCorrelation", "Data present. Skipping analysis.")
+            return
+
+        spikes = MonitoredSpikes(data, self.monitorName, self.NName)
+        if (self.neuronIdx is None):
+            idx1 = range(spikes.N)
+        else:
+            idx1 = self.neuronIdx
+        correlations, bin_centers, bin_edges = spikes.spikeTrainXCorrelation(idx1, None,
+                self.lagRange, self.bins)
+
+        a[self.outputName] = dict(
+                neuronIdx    = idx1,
+                correlations = correlations,
+                bin_edges    = bin_edges,
+                bin_centers  = bin_centers)

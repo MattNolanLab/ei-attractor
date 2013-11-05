@@ -53,7 +53,6 @@ shape = (31, 31)
 
 velSweep       = 1
 hists          = 1
-detailed_noise = 1
 
 ##############################################################################
 
@@ -229,66 +228,6 @@ if (hists):
             ylabel='p(slope)', plotLegend=True)
     fname = outputDir + "/suppFigure_velocity_slope_histograms.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
-
-
-
-##############################################################################
-EI13Root  = 'output_local/detailed_noise/velocity/EI-1_3'
-EI31Root  = 'output_local/detailed_noise/velocity/EI-3_1'
-detailedShape = (31, 9)
-
-EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
-EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
-detailedNTrials = None
-
-
-sliceFigSize = (4.3, 2.5)
-sliceLeft   = 0.2
-sliceBottom = 0.3
-sliceRight  = 0.99
-sliceTop    = 0.8
-if (detailed_noise):
-    ylabelPos = -0.2
-
-    types = ('velocity', 'slope')
-    fig = plt.figure(figsize=sliceFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
-        sliceTop))
-    EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
-            ylabelPos=ylabelPos,
-            xlabel='', xticks=False,
-            color='black')
-    EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
-            xlabel='', xticks=False,
-            ylabel='Slope\n(neurons/s/pA)', ylabelPos=ylabelPos,
-            color='red')
-    ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
-    ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
-
-    fname = "figure2_detailed_noise_slope.pdf"
-    plt.savefig(fname, dpi=300, transparent=True)
-    plt.close()
-
-
-    types = ('velocity', 'fitErr')
-    fig = plt.figure(figsize=sliceFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
-        sliceTop))
-    _, p13, l13 = EI.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
-            ylabelPos=ylabelPos, color='black')
-    _, p31, l31 = EI.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
-            ylabel='Fit error\n(neurons/s/trial)', ylabelPos=ylabelPos,
-            color='red')
-    ax.yaxis.set_major_locator(ti.MultipleLocator(4))
-    ax.yaxis.set_minor_locator(ti.MultipleLocator(2))
-    leg = ['($g_E,\ g_I$) = (1, 3) nS',  '($g_E,\ g_I$) = (3, 1) nS',
-            'Mean', 'Mean']
-    ax.legend([p13, p31, l13, l31], leg, loc=(0.55, 0.3), fontsize='small', frameon=False,
-            numpoints=1)
-
-    fname = "figure2_detailed_noise_error.pdf"
-    plt.savefig(fname, dpi=300, transparent=True)
-    plt.close()
 
 
 
