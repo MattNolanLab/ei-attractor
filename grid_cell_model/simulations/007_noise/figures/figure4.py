@@ -270,8 +270,11 @@ if (detailed_noise):
             xlabel='', xticks=False,
             ylabel='Slope\n(neurons/s/pA)', ylabelPos=ylabelPos,
             color='black')
+    ax.xaxis.set_visible(False)
+    ax.spines['bottom'].set_visible(False)
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
+    ax.spines['bottom'].set_visible(False)
 
     fname = "figure4_detailed_noise_slope.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
