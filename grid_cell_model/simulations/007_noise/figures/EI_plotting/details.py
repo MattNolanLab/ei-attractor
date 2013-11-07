@@ -279,6 +279,8 @@ def plotDetailedNoise(sp, NTrials, types, **kw):
     if (ignoreNaNs):
         nans = np.isnan(data)
         data = ma.MaskedArray(data, mask=nans)
+    print("    max(data): {0}".format(np.max(data)))
+    print("    min(data): {0}".format(np.min(data)))
     noise_sigma = Y[:, 0]
     mean = np.mean(data, axis=1)
 

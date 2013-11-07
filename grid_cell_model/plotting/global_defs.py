@@ -53,3 +53,7 @@ def createColorbar(ax, data=None, label="", nticks=2, **kw):
         cb.set_label(label)
     return cb
 
+
+def prepareLims(lim, margin=0.01):
+    w = lim[1] - lim[0]
+    return (lim[0] - margin*w, lim[1] + margin*w)

@@ -247,10 +247,11 @@ def drawEIRectSelection(ax, spaceRect, X, Y, color='black'):
 
 
 def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
-    ax          = kw.pop('ax', plt.gca())
-    noise_sigma = kw.pop('noise_sigma', None)
-    xscale_kw   = kw.pop('xscale_kw', None)
-    yscale_kw   = kw.pop('yscale_kw', None)
+    ax             = kw.pop('ax', plt.gca())
+    noise_sigma    = kw.pop('noise_sigma', None)
+    noise_sigma_xy = kw.pop('noise_sigma_xy', (0.95, 0.85))
+    xscale_kw      = kw.pop('xscale_kw', None)
+    yscale_kw      = kw.pop('yscale_kw', None)
 
     globalAxesSettings(ax)
     ax.spines['top'].set_visible(False)
@@ -280,7 +281,8 @@ def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
 
     if (noise_sigma is not None):
         txt = '$\sigma$ = {0} pA'.format(noise_sigma)
-        ax.text(0.95, 0.85, txt, transform=ax.transAxes, va='bottom', ha='right',
+        ns_x, ns_y = noise_sigma_xy[0], noise_sigma_xy[1]
+        ax.text(ns_x, ns_y, txt, transform=ax.transAxes, va='bottom', ha='right',
                 size='x-small')
 
     # Scale bars
