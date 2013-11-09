@@ -23,6 +23,7 @@ import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 
+from . import xlabelText, ylabelText
 from . import aggregate as aggr
 from plotting.global_defs import globalAxesSettings
 

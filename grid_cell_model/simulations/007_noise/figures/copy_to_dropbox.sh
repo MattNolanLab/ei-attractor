@@ -27,15 +27,17 @@ files="
     figure2.pdf
     figure3.pdf
     figure4.pdf
-    suppFigure_grid_sweeps.png
-    suppFigure_model.pdf
+    figureS1.pdf
+    figureS2.pdf
+    figureS3.pdf
+    suppFigure_bumps.pdf
     suppFigure_velocity.pdf
     suppFigure_no_theta.png
-    suppFigure_bumps
-    suppFigure_grids
     slices
     "
 
+echo $files
+echo
 ls $dst_dir
 for f in $files
 do

@@ -27,6 +27,7 @@ from matplotlib.patches  import Rectangle
 from matplotlib.gridspec import GridSpec
 
 
+from . import xlabelText, ylabelText
 from . import aggregate as aggr
 from plotting.global_defs import globalAxesSettings
 from plotting.grids       import plotGridRateMap

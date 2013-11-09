@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#   suppFigure_grid_sweeps.py
+#   figureS3.py
 #
 #   Supplementary figure for the gridness score parameter sweeps.
 #
@@ -25,7 +25,8 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-import EI_plotting as EI
+from EI_plotting          import details
+from EI_plotting          import aggregate as aggr
 from plotting.global_defs import globalAxesSettings
 from figures_shared       import plotOneHist, NoiseDataSpaces
 from parameters           import JobTrialSpace2D
@@ -71,7 +72,7 @@ def plotGridnessThresholdComparison(spList, trialNumList, thrList, r=0, c=0,
     globalAxesSettings(ax)
 
     for sp in spList:
-        G = EI.aggregate2DTrial(sp, varList, trialNumList).flatten()
+        G = aggr.aggregate2DTrial(sp, varList, trialNumList).flatten()
         counts = []
         for thr in thrList:
             thrIdx = np.logical_and(G > thr, np.logical_not(np.isnan(G)))
@@ -110,7 +111,7 @@ def plotGridnessHistogram(spList, trialNumList, ylabelPos=-0.2):
     globalAxesSettings(ax)
 
     for idx, sp in enumerate(spList):
-        G = EI.aggregate2DTrial(sp, varList, trialNumList).flatten()
+        G = aggr.aggregate2DTrial(sp, varList, trialNumList).flatten()
         filtIdx = np.logical_not(np.isnan(G))
         plotOneHist(G[filtIdx], normed=True)
     leg = []
@@ -181,9 +182,9 @@ def plotGridnessMarginal(paramSpaces, type, NTrials=1, **kw):
         space = sp.grids[idx]
         G = space.aggregateData(GVars, trialNumList, output_dtype='array',
                 loadData=True, saveData=False)
-        Y, X = EI.computeYX(space, iterList, r=rcG[idx][0], c=rcG[idx][1])
+        Y, X = aggr.computeYX(space, iterList, r=rcG[idx][0], c=rcG[idx][1])
         marginal, x, kw['xlabel'] = computeMarginal(G, type, X, Y, ignoreNaNs)
-        EI.plotOneSlice(ax, x, marginal, **kw)
+        details.plotOneSlice(ax, x, marginal, **kw)
     ax.yaxis.set_major_locator(ti.MaxNLocator(4))
 
     return ax
@@ -226,7 +227,7 @@ if (hists):
         sliceTop))
     plotGridnessThresholdComparison(ps.grids, range(NTrials),
             thrList=np.arange(-0.4, 1.2, 0.05), ylabelPos=ylabelPos)
-    fname = outputDir + "/suppFigure_grid_sweeps_threshold_comparison.pdf"
+    fname = outputDir + "/figureS3_threshold_comparison.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
 
 
@@ -235,24 +236,24 @@ if (slices):
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
-    EI.plotGridnessSlice(ps, slice_horizontal, slice(None), type='horizontal',
+    details.plotGridnessSlice(ps, slice_horizontal, slice(None), type='horizontal',
             ax=ax)
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.set_ylim([-0.5, 1.21])
-    fname = "suppFigure_grid_sweeps_slice_horizontal.pdf"
+    fname = "figureS3_slice_horizontal.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
         sliceTop))
-    EI.plotGridnessSlice(ps, slice(None), slice_vertical, type='vertical',
+    details.plotGridnessSlice(ps, slice(None), slice_vertical, type='vertical',
             ax=ax)
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.set_ylim([-0.5, 1.21])
-    fname = "suppFigure_grid_sweeps_slice_vertical.pdf"
+    fname = "figureS3_slice_vertical.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
