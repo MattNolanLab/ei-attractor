@@ -1,2 +1,2 @@
 *.mat -crlf -diff -merge
-*.ai binary
+*.ai -crlf -diff -merge

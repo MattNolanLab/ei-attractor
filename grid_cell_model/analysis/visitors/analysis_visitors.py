@@ -22,17 +22,20 @@ import numpy as np
 from scipy.optimize import leastsq
 from os.path        import splitext
 
-from interface        import DictDSVisitor, extractStateVariable, \
-        extractSpikes, sumAllVariables
-from otherpkg.log     import log_info
+import analysis.signal as asignal
+from interface        import DictDSVisitor 
+from data_storage.sim_models.ei import sumAllVariables, extractStateVariable
+from otherpkg.log     import log_info, log_warn
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 from analysis.image   import Position2D, fitGaussianBumpTT
 from analysis.spikes  import slidingFiringRateTuple, ThetaSpikeAnalysis, \
         TorusPopulationSpikes
+from data_storage.sim_models.ei import extractSpikes, MonitoredSpikes
 
 
-__all__ = ['AutoCorrelationVisitor', 'BumpFittingVisitor', 'FiringRateVisitor',
-        'BumpVelocityVisitor']
+__all__ = ['AutoCorrelationVisitor', 'CrossCorrelationVisitor',
+        'BumpFittingVisitor', 'FiringRateVisitor', 'BumpVelocityVisitor',
+        'SpikeTrainXCVisitor']
 
 
 def findFreq(ac, dt, ext_idx, ext_t):
@@ -151,13 +154,11 @@ class AutoCorrelationVisitor(DictDSVisitor):
             sig, dt = sumAllVariables(mon, n_id, self.stateList)
             startIdx = 0
             endIdx   = len(sig)
-            print(len(sig))
             if (self.tStart is not None):
                 startIdx = int(self.tStart / dt)
             if (self.tEnd is not None):
                 endIdx = int(self.tEnd / dt)
             sig = sig[startIdx:endIdx]
-            print(len(sig))
             sig = butterBandPass(sig, dt*self.dtMult, self.bandStart,
                     self.bandEnd)
             ac = autoCorrelation(sig - np.mean(sig), max_lag=self.maxLag/dt,
@@ -204,6 +205,131 @@ class AutoCorrelationVisitor(DictDSVisitor):
             a['ac_dt'] = dt
         else:
             log_info("AutoCorrelationVisitor", "Data present. Skipping analysis.")
+
+
+
+class CrossCorrelationVisitor(DictDSVisitor):
+    '''
+    A visitor that computes a cross-correlation function between a set of state
+    monitors.
+
+    The crosscorrelation visitor takes a list of state monitors, each monitor
+    collecting data from one neuron (Vm, Isyn, etc.) and computes the cross
+    correlation function between all the pairs of these signals.
+
+    The results will be stored to the input data dictionary.
+    '''
+    def __init__(self, monName, stateList, maxLag=None, tStart=None, tEnd=None,
+            norm=True, forceUpdate=False):
+        '''
+        Initialise the visitor.
+
+        Parameters
+        ----------
+        monName : string
+            Name of the monitor; key in the data set dictionary
+        stateList : list of strings
+            A list of strings naming the state variables to extract (and sum)
+        maxLag : int
+            Maximal lag (positive and negative) of the cross-correlation
+            function.
+        tStart : float, optional
+            Start time of the analysis. If None, the signal will not be
+            cropped. The first value of the signal array is treated as time
+            zero.
+        tEnd : float, optional
+            End time of the analysis. If None, the signal will not be cropped.
+        norm : bool, optional
+            Whether the cross-correlation function should be normalized
+        forceUpdate : bool
+            Whether to compute and store all the data even if they already
+            exist in the data set.
+        '''
+        self.monName     = monName
+        self.stateList   = stateList
+        self.maxLag      = maxLag
+        self.tStart      = tStart
+        self.tEnd        = tEnd
+        self.norm        = norm
+        self.forceUpdate = forceUpdate
+
+
+    def extractCCStat(self, mon, out):
+        '''
+        Extract x-correlation statistics from a monitor.
+
+        For each pair of monitored neurons    
+        Parameters
+        ----------
+        mon : list of dicts
+            A list of (NEST) state monitors' status dictionaries
+        out : dictionary
+            Output data dictionary.
+        '''
+        out['x-corr'] = dict(
+                correlations=[])
+        xcOut = out['x-corr']['correlations']
+        for n_id1 in range(len(mon)):
+            sig1, dt1 = sumAllVariables(mon, n_id1, self.stateList)
+            xcOut.append([])
+            xcOut2 = xcOut[n_id1]
+            for n_id2 in range(len(mon)):
+                print('n_id1, n_id2 = {0}, {1}'.format(n_id1, n_id2))
+                sig2, dt2 = sumAllVariables(mon, n_id2, self.stateList)
+                if (dt1 != dt2):
+                    raise ValueError('dt1 != dt2')
+
+                dt        = dt1
+                startIdx  = 0
+                lag_start = -int(self.maxLag/dt)
+                lag_end   = -lag_start
+                endIdx1   = len(sig1)
+                endIdx2   = len(sig2)
+
+                if (self.tStart is not None):
+                    startIdx = int(self.tStart / dt)
+                if (self.tEnd is not None):
+                    endIdx1 = int(self.tEnd / dt)
+                    endIdx2 = endIdx1
+                sig1 = sig1[startIdx:endIdx1]
+                sig2 = sig2[startIdx:endIdx2]
+                C = asignal.corr(sig1, sig2, mode='range',
+                        lag_start=lag_start, lag_end=lag_end)
+                if (self.norm):
+                    C /= np.max(C)
+                xcOut2.append(C)
+        out['x-corr']['lags'] = np.arange(lag_start, lag_end+1) * dt
+        
+        
+
+
+    def visitDictDataSet(self, ds, **kw):
+        '''
+        Visit the dictionary data set and extract the cross-correlation
+        functions, for all pairs of the monitored neurons monitored neurons.
+        The parameters are defined by the constructor of the object.
+
+        If the analysed data is already present, the analysis and storage of
+        the data will be skipped.
+
+        Parameters
+        ----------
+        ds : a dict-like object
+            A data set to perform analysis on.
+        '''
+        data = ds.data
+        if (not self.folderExists(data, ['analysis'])):
+            data['analysis'] = {}
+        a = data['analysis']
+
+        if (('x-corr' not in a.keys()) or self.forceUpdate):
+            log_info("CrossCorrelationVisitor", "Analysing a dataset")
+            o = data['options']
+            if (self.maxLag is None):
+                self.maxLag = 1. / (o['theta_freq'] * 1e-3)
+            self.extractCCStat(data[self.monName], a)
+        else:
+            log_info("CrossCorrelationVisitor", "Data present. Skipping analysis.")
 
 
 
@@ -381,16 +507,32 @@ def fitCircularSlope(bumpPos, times, normFac):
     return x[0][0] / 2. / np.pi * normFac
     
 
-def getLineFit(Y):
+def getLineFit(X, Y):
     '''
     Fit a line to data
     '''
-    X = np.arange(len(Y))
-    
     func = lambda P: P[0]*X  - Y
     P0 = np.array([0.0]) # slope
     P = leastsq(func, P0)
     return P[0][0]*X, P[0][0]
+
+
+def fitBumpSpeed(IvelVec, bumpSpeed, fitRange):
+    '''
+    Fit a line to bumpSpeed vs IvelVec, useing IvelVec[0:fitRange+1]
+    '''
+    fitSpeed    = np.array(bumpSpeed)[:, 0:fitRange+1]
+    fitIvelVec  = np.repeat([IvelVec[0:fitRange+1]], fitSpeed.shape[0],
+            axis=0)
+    fitSpeed    = fitSpeed.flatten()
+    fitIvelVec   = fitIvelVec.flatten()
+    line, slope = getLineFit(fitIvelVec, fitSpeed)
+    lineFitErr  = np.abs(line - fitSpeed) / len(fitIvelVec)
+
+    # Compose return values; as a function of IvelVec[0:fitRange+1]
+    retLine = np.array(IvelVec[0:fitRange+1]) * slope
+    retIvelVec = IvelVec[0:fitRange+1]
+    return retLine, slope, lineFitErr, retIvelVec
 
 
 class BumpVelocityVisitor(DictDSVisitor):
@@ -399,13 +541,15 @@ class BumpVelocityVisitor(DictDSVisitor):
     and bump speed.
     '''
 
-    def __init__(self, win_dt=20.0, winLen=250.0, forceUpdate=False,
-            printSlope=False):
+    def __init__(self, bumpSpeedMax, win_dt=20.0, winLen=250.0,
+            forceUpdate=False, printSlope=False):
+        self.bumpSpeedMax = bumpSpeedMax # cm/s
         self.win_dt = win_dt
         self.winLen = winLen
         self.forceUpdate = forceUpdate
         self.printSlope = printSlope
 
+        assert(self.bumpSpeedMax is not None)
 
     def _getSpikeTrain(self, data, monName, dimList):
         N_x = self.getNetParam(data, dimList[0])
@@ -428,9 +572,10 @@ class BumpVelocityVisitor(DictDSVisitor):
             IvelVec = trials[trialNum]['IvelVec']
             for IvelIdx in xrange(len(IvelVec)):
                 iData = trials[trialNum]['IvelData'][IvelIdx]
-                #if 'analysis' in iData.keys() and not self.forceUpdate:
-                #    log_info('BumpVelocityVisitor', "Data present. Skipping analysis.")
-                #    continue
+                if 'analysis' in iData.keys() and not self.forceUpdate:
+                    log_info('BumpVelocityVisitor', "Data present. Skipping analysis.")
+                    slopes[trialNum].append(iData['analysis']['slope'])
+                    continue
 
                 senders, times, sheetSize =  self._getSpikeTrain(iData,
                         'spikeMon_e', ['Ne_x', 'Ne_y'])
@@ -439,7 +584,9 @@ class BumpVelocityVisitor(DictDSVisitor):
                 tEnd   = self.getOption(iData, 'time')
                 bumpPos, bumpPos_t = pop.populationVector(tStart, tEnd,
                         self.win_dt, self.winLen)
-                slope = fitCircularSlope(bumpPos[:, 0], bumpPos_t,
+                # NOTE: the bump moves in an opposite direction; we have to
+                # negate the speed
+                slope = -fitCircularSlope(bumpPos[:, 0], bumpPos_t,
                         sheetSize[0]/2.0)*1e3
                 slopes[trialNum].append(slope)
                 iData['analysis'] = {
@@ -450,7 +597,6 @@ class BumpVelocityVisitor(DictDSVisitor):
         slopes = np.array(slopes)
 
         analysisTop = {'bumpVelAll' : slopes}
-
 
         if (self.printSlope and 'fileName' not in kw.keys()):
             msg = 'printSlope requested, but did not receive the fileName ' + \
@@ -464,8 +610,9 @@ class BumpVelocityVisitor(DictDSVisitor):
                 return
 
 
+            # Plot the estimated bump velocities (nrns/s)
             from matplotlib.pyplot import figure, errorbar, xlabel, ylabel, \
-                    plot, title, savefig
+                    plot, title, savefig, legend
             figure()
             IvelVec = trials[0]['IvelVec'] # All the same
             avgSlope = np.mean(slopes, axis=0)
@@ -474,11 +621,57 @@ class BumpVelocityVisitor(DictDSVisitor):
             xlabel('Velocity current (pA)')
             ylabel('Bump velocity (neurons/s)')
 
-            line, slope = getLineFit(avgSlope)
-            lineFitErr = np.abs(line - avgSlope)
-            slope = slope/(IvelVec[1] - IvelVec[0])
-            plot(IvelVec, line)
-            title("Line fit slope: " + str(slope) + ' nrns/s/pA')
+            # Fit a line (nrns/s/pA)
+            # results
+            line       = None
+            lineFitErr = None
+            slope      = None
+            fitIvelVec = None
+            errSum     = None
+            # All, in case we need the one with max range
+            line_all       = []
+            lineFitErr_all = []
+            slope_all      = []
+            fitIvelVec_all = []
+            maxRange_all   = []
+            for fitRange in xrange(1, len(IvelVec)):
+                log_info('BumpVelocityVisitor', "fitRange: {0}".format(fitRange))
+                newLine, newSlope, newErr, newIvelVecRange = \
+                        fitBumpSpeed(IvelVec, slopes, fitRange)
+                line_all.append(newLine)
+                lineFitErr_all.append(newErr)
+                slope_all.append(newSlope)
+                fitIvelVec_all.append(newIvelVecRange)
+                maxRange_all.append(newLine[-1])
+                # Keep only lines that covers the desired range and have a
+                # minimal error of fit
+                if ((newLine[-1] >= self.bumpSpeedMax)):
+                    errSumNew = np.sum(newErr)
+                    if ((line is None) or (errSumNew <= errSum)):
+                        line       = newLine
+                        lineFitErr = newErr
+                        slope      = newSlope
+                        fitIvelVec = newIvelVecRange
+                        errSum     = errSumNew
+
+            if (line is None):
+                msg = 'No suitable fits that cover <0, {0:.2f}> neurons/s.' +\
+                ' Using the fit with the max. bump speed range.'
+                log_info('BumpVelocityVisitor', msg.format(self.bumpSpeedMax))
+                msg = "Bump speed maxima: {0}".format(maxRange_all)
+                log_info('BumpVelocityVisitor', msg.format(self.bumpSpeedMax))
+                maxRangeIdx = np.argmax(maxRange_all)
+                line        = line_all[maxRangeIdx]
+                lineFitErr  = lineFitErr_all[maxRangeIdx]
+                slope       = slope_all[maxRangeIdx]
+                fitIvelVec  = fitIvelVec_all[maxRangeIdx]
+
+            plot(fitIvelVec, line, 'o-')
+            plot(IvelVec, slopes.T, 'o', color='blue', alpha=0.4)
+            t = "Line fit slope: {0:.3f} nrns/s/pA, error: {1:.3f} " + \
+                    "neurons/s (norm)"
+            title(t.format(slope, np.sum(lineFitErr)))
+            legend(['Average bump speed', 'Line fit', 'Estimated bump speed'], loc='best')
             
             fileName = splitext(kw['fileName'])[0] + '.pdf'
             savefig(fileName)
@@ -486,7 +679,79 @@ class BumpVelocityVisitor(DictDSVisitor):
             analysisTop.update({
                 'lineFitLine'  : line,
                 'lineFitSlope' : slope,
-                'lineFitErr'   : lineFitErr
+                'lineFitErr'   : lineFitErr,
+                'fitIvelVec'   : fitIvelVec
             })
 
         data['analysis'] = analysisTop
+
+
+        
+##############################################################################
+
+class SpikeTrainXCVisitor(DictDSVisitor):
+    '''
+    Compute spike train crosscorrelations between spikes of neuron of a
+    population.
+    '''
+
+    def __init__(self, monitorName, bins, lagRange=None, neuronIdx=None,
+            forceUpdate=False):
+        '''
+        Parameters:
+
+        monitorName : string
+            Name of the monitor in the data hierarchy.
+        bins : int
+            Number of bins for the cross-correlation histogram. Bin centers
+        lagRange : (tStart, tEnd)
+            Start/end time of the lags in histograms. This values will define
+            the left and right edges of the histogram. All the values outside
+            this range will be ignored.
+        neuronIdx : list of ints or None
+            List of neurons for which to compute the pairwise
+            cross-correlation. If None, use all the neurons.
+        '''
+        self.allowedMonitors = ['spikeMon_e', 'spikeMon_i']
+        if (not monitorName in self.allowedMonitors):
+            msg = "monitorName must be one of {0}".format(allowedMonitors)
+            raise ValueError(msg)
+
+        self.monitorName = monitorName
+        self.lagRange    = lagRange
+        self.bins        = bins
+        self.forceUpdate = forceUpdate
+        self.neuronIdx   = neuronIdx
+
+        if (self.monitorName == "spikeMon_e"):
+            self.NName = "net_Ne"
+            self.outputName = "XCorrelation_e"
+        elif (self.monitorName == "spikeMon_i"):
+            self.NName = "net_Ni"
+            self.outputName = "XCorrelation_i"
+
+
+    def visitDictDataSet(self, ds, **kw):
+        data = ds.data
+        
+        if (not self.folderExists(data, ['analysis'])):
+            data['analysis'] = {}
+        a = data['analysis']
+
+        if (self.outputName in a.keys() and not self.forceUpdate):
+            log_info("SpikeTrainXCorrelation", "Data present. Skipping analysis.")
+            return
+
+        spikes = MonitoredSpikes(data, self.monitorName, self.NName)
+        if (self.neuronIdx is None):
+            idx1 = range(spikes.N)
+        else:
+            idx1 = self.neuronIdx
+        correlations, bin_centers, bin_edges = spikes.spikeTrainXCorrelation(idx1, None,
+                self.lagRange, self.bins)
+
+        a[self.outputName] = dict(
+                neuronIdx    = idx1,
+                correlations = correlations,
+                bin_edges    = bin_edges,
+                bin_centers  = bin_centers)

@@ -1,8 +1,7 @@
-#!/bin/sh
 #
-#   cluster_submit.sh
+#   __init__.py
 #
-#   Submit job to the cluster.
+#   Package initialization.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -19,29 +18,12 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+'''
+====================
+sim_models package
+====================
 
-# Initialise environment module
+See README.rst for more information
 
-. /etc/profile.d/modules.sh
+'''
 
-# Use python 2.6
-
-module load python/2.6.6
-module load openmpi-gcc
-
-
-LOCAL_DIR=/exports/work/inf_ndtc/lsolanka/
-BASE=../../
-export PYTHONPATH="$LOCAL_DIR/usr/local/lib/python2.6/site-packages:$LOCAL_DIR/usr/local/lib64/python2.6/site-packages:$BASE:"
-
-
-export LOCAL_DIR=/exports/work/inf_ndtc/lsolanka
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib:$LOCAL_DIR/usr/local/lib/nest
-
-# OpenMP settings
-#export OMP_NUM_THREADS=$NSLOTS
-#echo OMP_NUM_THREADS=$OMP_NUM_THREADS
-echo PYTHONPATH=$PYTHONPATH
-
-# Run the program
-python2.6 $* 

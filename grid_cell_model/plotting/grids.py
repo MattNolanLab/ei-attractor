@@ -63,7 +63,7 @@ def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, diam=np.inf, ax=None,
 
 
 def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
-        scaleText=True):
+        scaleText=True, maxRate=True, G=None, **kw):
     '''
     Plot the grid-like rate map into the current axis
     '''
@@ -71,7 +71,7 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
         ax = gca()
     rateMap = ma.masked_array(rateMap, mask = np.sqrt(X**2 + Y**2) > diam/2.0)
     globalAxesSettings(ax)
-    pcolor(X, Y, rateMap)
+    pcolor(X, Y, rateMap, **kw)
     axis('scaled')
     axis('off')
     title(titleStr, va='bottom')
@@ -79,15 +79,27 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
         xlim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
         ylim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
     gridScaleBar(scaleBar, scaleText, ax)
+    if (maxRate):
+        rStr = '{0:.1f} Hz'.format(np.max(rateMap.flatten()))
+        ax.text(1.0, 1.025, rStr, ha="right", va='bottom', fontsize='xx-small',
+                transform=ax.transAxes)
+    if (G is not None):
+        if (int(G*100)/100.0 == int(G)):
+            gStr = '{0}'.format(int(G))
+        else:
+            gStr = '{0:.2f}'.format(G)
+        ax.text(0, 1.025, gStr, ha="left", va='bottom', fontsize='xx-small',
+                transform=ax.transAxes)
+
 
  
 def plotAutoCorrelation(ac, X, Y, diam=np.inf, ax=None, titleStr="",
-        scaleBar=None, scaleText=True):
+        scaleBar=None, scaleText=True, **kw):
     if (ax is None):
         ax = gca()
     ac = ma.masked_array(ac, mask = np.sqrt(X**2 + Y**2) > diam)
     globalAxesSettings(ax)
-    pcolor(X, Y, ac)
+    pcolor(X, Y, ac, **kw)
     axis('scaled')
     axis('off')
     title(titleStr, va='bottom')

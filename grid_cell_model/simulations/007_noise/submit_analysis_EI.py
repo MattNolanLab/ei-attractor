@@ -20,15 +20,17 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from submitting.factory     import SubmitterFactory
-from submitting.arguments   import ArgumentCreator
+from submitting.factory   import SubmitterFactory
+from submitting.arguments import ArgumentCreator
+from param_sweep          import getSpeedPercentile
+from default_params       import defaultParameters as dp
 import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
 ENV         = 'cluster'
 appName     = 'analysis_EI.py'
-rtLimit     = '00:01:00'
+rtLimit     = '00:02:00'
 numCPU      = 1
 blocking    = True
 timePrefix  = False
@@ -64,6 +66,8 @@ for noise_sigma in noise_sigma_all:
     iterparams = {
             'row' : np.arange(rowN),
             'col' : np.arange(colN)
+            #'row' : [10],
+            #'col' : [10]
     }
     ac.insertDict(iterparams, mult=True)
 

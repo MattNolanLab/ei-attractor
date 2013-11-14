@@ -23,9 +23,10 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot   import figure, subplot, savefig
 from matplotlib.gridspec import GridSpec
 
-from data_storage          import DataStorage
-from figures_shared        import plotThetaSignal, thetaLim, extractStateVars,\
-        plotStateSignal, plotEIRaster
+from data_storage    import DataStorage
+from data_storage.sim_models.ei import extractSummedSignals
+from figures_shared  import plotThetaSignal, thetaLim, plotStateSignal
+
 
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
@@ -75,38 +76,37 @@ def drawSignals(gs, data, colStart, noise_sigma, yLabelOn=True, scaleBar=None):
     mon_i = data['stateMon_i']
 
     ax0 = subplot(gs[0, colStart:colStart+ncols])
-    t, IStim = extractStateVars(mon_e, ['I_stim'], plotTStart,
-            plotTEnd)
+    t, IStim = extractSummedSignals(mon_e, ['I_stim'], plotTStart, plotTEnd)
     plotThetaSignal(ax0, t, IStim, noise_sigma, yLabelOn, thetaLim)
 
     # E cell Vm
     ax1 = subplot(gs[1, colStart:colStart+ncols])
-    t, VmMiddle = extractStateVars(mon_e, ['V_m'], plotTStart,
-            plotTEnd)
+    t, VmMiddle = extractSummedSignals(mon_e, ['V_m'], plotTStart, plotTEnd)
     plotStateSignal(ax1, t, VmMiddle, labely=VmText, color='red',
             scaleBar=scaleBar)
 
     # E cell Isyn
     ax2 = subplot(gs[2, colStart:colStart+ncols])
-    t, IsynMiddle = extractStateVars(mon_e, ['I_clamp_GABA_A'],
-            plotTStart, plotTEnd)
+    t, IsynMiddle = extractSummedSignals(mon_e, ['I_clamp_GABA_A'], plotTStart,
+            plotTEnd)
     plotStateSignal(ax2, t, IsynMiddle*1e-3, labely=IsynText, color='red')
 
     # I cell Vm
     ax3 = subplot(gs[3, colStart:colStart+ncols])
-    t, VmMiddle = extractStateVars(mon_i, ['V_m'], plotTStart,
-            plotTEnd)
+    t, VmMiddle = extractSummedSignals(mon_i, ['V_m'], plotTStart, plotTEnd)
     plotStateSignal(ax3, t, VmMiddle, labely=VmText, color='blue')
 
     # I cell Isyn
     ax4 = subplot(gs[4, colStart:colStart+ncols])
-    t, IsynMiddle = extractStateVars(mon_i, ['I_clamp_AMPA',
+    t, IsynMiddle = extractSummedSignals(mon_i, ['I_clamp_AMPA',
         'I_clamp_NMDA'], plotTStart, plotTEnd)
     plotStateSignal(ax4, t, IsynMiddle*1e-3, labely=IsynText, color='blue')
 
-    ax5 = subplot(gs[5, colStart:colStart+ncols])
-    plotEIRaster(ax5, data, 'spikeMon_e', 'spikeMon_i', (plotTStart, plotTEnd),
-            labely=rasterText)
+
+    # TODO: use EI_plotting.plotEIRaster
+    #ax5 = subplot(gs[5, colStart:colStart+ncols])
+    #plotEIRaster(ax5, data, 'spikeMon_e', 'spikeMon_i', (plotTStart, plotTEnd),
+    #        labely=rasterText)
 
 
     if (yLabelOn):
@@ -180,6 +180,6 @@ drawSignals(gs, ds, colStart=0, yLabelOn=False, noise_sigma=300, scaleBar=50)
 fig.text(letter_left+margin+2*width+1.5*div, top+letter_div, "C", va=letter_va,
         ha=letter_ha, fontsize=19, fontweight='bold')
 
-fname = outputDir + "/figure2.png"
+fname = outputDir + "/figure_gamma_examples.png"
 savefig(fname, dpi=300)
 

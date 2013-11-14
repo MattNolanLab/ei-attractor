@@ -153,6 +153,8 @@ def getOptParser():
     optParser.add_option("--job_num",           type="int",    help="Use argument of this option to specify the output file name number, instead of using time")
 
     optParser.add_option("--gammaNSample",      type="int",    help="Number of neurons in the network to sample from, for the frequency analysis.")
+    optParser.add_option("--connNE",            type="int",    help="Number of E neurons to sample from, to save input connection weights.")
+    optParser.add_option("--connNI",            type="int",    help="Number of I neurons to sample from, to save input connection weights.")
     return optParser
 
 

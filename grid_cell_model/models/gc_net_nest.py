@@ -177,7 +177,7 @@ class NestGridCellNetwork(GridCellNetwork):
                     "label"     : "I spikes",
                     'withtime'  : True,
                     'withgid'   : True})
-                print src
+                #print src
                 nest.ConvergentConnect(src, self.spikeMon_i)
                 return self.spikeMon_i
         else:
@@ -256,6 +256,60 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.DivergentConnect([self.I_pop[0] + pre], post_global, model='E_GABA_A',
                 weight=list(weights), delay=[self.no.delay]*len(weights))
 
+
+    def getConnMatrix(self, popType):
+        '''
+        Return all *input* connections to neuron with index post from the
+        specified popType.
+
+        Parameters
+        ----------
+        popType : string, 'E' or 'I'
+            Type of the population. If popType == 'E', return connection
+            weights for AMPA connections only. The NMDA connections will be a
+            fraction of the AMPA connection strength specified by the
+            NMDA_amount parameter.
+
+            If popType == 'I' the connection weights returned will be for
+            GABA_A connections.
+        output : a 2D numpy array
+            An array containing the connections. The shape is (post,
+            pre)/(target, source).
+        '''
+        EStart = np.min(self.E_pop)
+        IStart = np.min(self.I_pop)
+        print("EStart: {0}".format(EStart))
+        print("IStart: {0}".format(IStart))
+        print("len(self.E_pop): {0}".format(len(self.E_pop)))
+        print("len(self.I_pop): {0}".format(len(self.I_pop)))
+        if (popType == 'E'):
+            W_IE = np.zeros((len(self.I_pop), len(self.E_pop)))
+            for e in xrange(len(self.E_pop)):
+                print("E neuron {0} --> I neurons".format(e))
+                conns = nest.FindConnections([self.E_pop[e]])
+                for i in xrange(len(conns)):
+                    target = nest.GetStatus([conns[i]], 'target')
+                    if (target[0] in self.I_pop):
+                        W_IE[target[0] - IStart, e] = \
+                                nest.GetStatus([conns[i]], 'weight')[0]
+            return W_IE
+        elif (popType == 'I'):
+            W_EI = np.zeros((len(self.E_pop), len(self.I_pop)))
+            for i in xrange(len(self.I_pop)):
+                print("I neuron {0} --> E neurons".format(i))
+                conns = nest.FindConnections([self.I_pop[i]])
+                for e in xrange(len(conns)):
+                    target = nest.GetStatus([conns[e]], 'target')
+                    if (target[0] in self.E_pop):
+                        W_EI[target[0] - EStart, i] = \
+                                nest.GetStatus([conns[e]], 'weight')[0]
+            return W_EI
+
+        else:
+            msg = 'popType must be either \'E\' or \'I\'. Got {0}'
+            raise ValueError(msg.format(popType))
+
+         
 
 
     ############################################################################ 
@@ -489,10 +543,10 @@ class NestGridCellNetwork(GridCellNetwork):
         d['PC_start'       ] = np.array(self.PC_start)
         d['net_Ne'         ] = self.net_Ne
         d['net_Ni'         ] = self.net_Ni
-        d['rat_pos_x'      ] = self.rat_pos_x
-        d['rat_pos_y'      ] = self.rat_pos_y
-        d['rat_dt'         ] = self.rat_dt
-        d['velC'           ] = self.velC
+        d['rat_pos_x'      ] = getattr(self, 'rat_pos_x', np.nan)
+        d['rat_pos_y'      ] = getattr(self, 'rat_pos_y', np.nan)
+        d['rat_dt'         ] = getattr(self, 'rat_dt', np.nan)
+        d['velC'           ] = getattr(self, 'velC', np.nan)
         d['Ne_x'           ] = self.Ne_x
         d['Ne_y'           ] = self.Ne_y
         d['Ni_x'           ] = self.Ni_x
@@ -700,14 +754,14 @@ class ConstantVelocityNetwork(BasicGridCellNetwork):
 
         self.setConstantVelocityCurrent_e(vel)
 
-    def getSpikes(self):
-        '''
-        Return a dictionary of spike monitor data.
-        '''
-        out = {}
-        out['spikeMon_e'] = self.getSpikeMonData(self.spikeMon_e,
-                self.E_pop[0])
-        return out
+    #def getSpikes(self):
+    #    '''
+    #    Return a dictionary of spike monitor data.
+    #    '''
+    #    out = dict(
+    #        spikeMon_e=self.getSpikeMonData(self.spikeMon_e, self.E_pop[0]),
+    #        spikeMon_i=self.getSpikeMonData(self.spikeMon_i, self.I_pop[0]))
+    #    return out
 
 
     def getMinimalSaveData(self):

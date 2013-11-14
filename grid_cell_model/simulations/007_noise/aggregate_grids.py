@@ -25,26 +25,35 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 
-noise_sigmas = [0, 150, 300]
+ns_all  = [0, 150, 300]
+ns_none = [-100]
 dirs = \
-    ('EI_param_sweep_{0}pA',    (30, 30))
+    ('output/detailed_noise/grids/EI-3_1', (31, 9), ns_none, 1)
+    #('output/detailed_noise/grids/EI-1_3', (31, 9), ns_none, 1)
+    #('output/even_spacing/grids/{0}pA',    (31, 31), ns_all, 3)
 
-NTrials = 10
-trialNumList = xrange(NTrials)
-shape   = dirs[1]
 varListBase = ['analysis']
+loadData = False
 
 ################################################################################
+shape        = dirs[1]
+noise_sigmas = dirs[2]
+trialNumList = xrange(dirs[3])
 for noise_sigma in noise_sigmas:
-    dir = dirs[0].format(int(noise_sigma))
-    rootDir = "output/grids/{0}".format(dir)
+    rootDir = dirs[0].format(int(noise_sigma))
 
     sp = JobTrialSpace2D(shape, rootDir)
     sp.aggregateData(varListBase + ['rateMap_e'], trialNumList, funReduce=None,
-            saveData=True, output_dtype='list')
+            saveData=True, loadData=loadData, output_dtype='list')
     sp.aggregateData(varListBase + ['rateMap_e_X'], [trialNumList[0]],
-            funReduce=None, saveData=True, output_dtype='list')
+            funReduce=None, saveData=True, loadData=loadData,
+            output_dtype='list')
     sp.aggregateData(varListBase + ['rateMap_e_Y'], [trialNumList[0]],
-            funReduce=None, saveData=True, output_dtype='list')
+            funReduce=None, saveData=True, loadData=loadData,
+            output_dtype='list')
+    sp.aggregateData(varListBase + ['gridnessScore'], trialNumList,
+            funReduce=None, saveData=True, loadData=loadData,
+            output_dtype='array')
     sp.aggregateData(['options', 'arenaSize'], [trialNumList[0]],
-            funReduce=None, saveData=True, output_dtype='array')
+            funReduce=None, saveData=True, loadData=loadData,
+            output_dtype='array')

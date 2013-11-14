@@ -35,7 +35,7 @@ defaultParameters = {
         "printTime"             :   0,            # This is boolean
 
         "ratVelFName"           : '../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
-        #"ratVelFName"           : '../../../data/hafting_et_al_2006/rat_trajectory_original.mat',
+        #"ratVelFName"           : '../../../data/hafting_et_al_2005/rat_trajectory_original.mat',
 
         "gridSep"               :   60,             # cm
 

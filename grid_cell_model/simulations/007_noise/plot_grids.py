@@ -33,30 +33,31 @@ lg.basicConfig(level=lg.INFO)
 # Other
 plt.rcParams['font.size'] = 11
 
-noise_sigma = 300
+noise_sigma_all = [0., 150.0, 300.0] # pA
 dirs = \
-    ('EI_param_sweep_{0}pA',    (30, 30))
+    ('{0}pA',    (31, 31))
+NTrials = 1
 
-NTrials = 10
-dir = dirs[0].format(int(noise_sigma))
-rootDir = "output/grids/{0}".format(dir)
-shape   = dirs[1]
+for noise_sigma in noise_sigma_all:
+    dir = dirs[0].format(int(noise_sigma))
+    rootDir = "output/even_spacing/grids/{0}".format(dir)
+    shape   = dirs[1]
 
-sp = JobTrialSpace2D(shape, rootDir)
-iterList  = ['g_AMPA_total', 'g_GABA_total']
-    
-################################################################################
-plt.figure(figsize=(2.9, 2.9))
-G = plotGridTrial(sp, ['gridnessScore'], iterList,
-        trialNumList=range(NTrials),
-        r=0,
-        c=5,
-        xlabel="I (nS)",
-        ylabel='E (nS)',
-        clBarLabel = "Gridness score",
-        clbarNTicks=3)
-###############################################################################
-plt.tight_layout()
-plt.savefig(sp.rootDir +
-        '/../analysis_EI_gridness_{0}pA.png'.format(int(noise_sigma)))
+    sp = JobTrialSpace2D(shape, rootDir)
+    iterList  = ['g_AMPA_total', 'g_GABA_total']
+        
+    ################################################################################
+    plt.figure(figsize=(2.9, 2.9))
+    G = plotGridTrial(sp, ['gridnessScore'], iterList,
+            trialNumList=range(NTrials),
+            r=1,
+            c=22,
+            xlabel="I (nS)",
+            ylabel='E (nS)',
+            clBarLabel = "Gridness score",
+            clbarNTicks=3)
+    ###############################################################################
+    plt.tight_layout()
+    plt.savefig(sp.rootDir +
+            '/../analysis_EI_gridness_{0}pA.png'.format(int(noise_sigma)))
 

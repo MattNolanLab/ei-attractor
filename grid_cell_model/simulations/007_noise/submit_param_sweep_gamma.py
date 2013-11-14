@@ -35,7 +35,7 @@ for noise_sigma in noise_sigma_all:
     ENV         = 'cluster'
     simRootDir  = 'output/no_theta/gamma_bump'
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
-    appName     = 'simulation_stationary.py'
+    appName     = '../common/simulation_stationary.py'
     rtLimit     = '00:45:00'
     numCPU      = 1
     blocking    = True

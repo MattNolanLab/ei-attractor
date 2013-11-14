@@ -34,7 +34,7 @@ def globalAxesSettings(ax, setTickPos=True):
             which='minor',
             direction='out',
             width=1,
-            length=4
+            length=3
     )
     if (setTickPos):
         ax.xaxis.set_ticks_position('bottom')
@@ -51,4 +51,5 @@ def createColorbar(ax, data=None, label="", nticks=2, **kw):
     cb = plt.colorbar(ax=ax, ticks=MaxNLocator(nticks+1), **kw)
     if (label != ""):
         cb.set_label(label)
+    return cb
 

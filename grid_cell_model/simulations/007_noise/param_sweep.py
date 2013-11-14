@@ -19,9 +19,10 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from submitting.factory     import SubmitterFactory
-from submitting.arguments   import ArgumentCreator
-from data_storage           import DataStorage
+from submitting.factory   import SubmitterFactory
+from submitting.arguments import ArgumentCreator
+from data_storage         import DataStorage
+from otherpkg.log         import log_info
 
 
 def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
@@ -35,7 +36,6 @@ def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
 
     g_AMPA_total_arr     = []
     g_GABA_total_arr     = []
-    g_uni_GABA_total_arr = []
     for E_coupling in GArr:
         for I_coupling in GArr:
             g_AMPA_total_arr.append(E_coupling)
@@ -70,4 +70,44 @@ def getBumpCurrentSlope(noise_sigma, threshold=0):
     ds.close()
     slopes[slopes < threshold] = np.nan
     return slopes
+
+def getSpeedPercentile(p, path, grid_lambda, Nx):
+    '''
+    Retrieve the file containing animal positions and calculate the bump
+    speed value at the specified percentile.
+
+    Parameters
+    ----------
+    p : float
+        The specified percentile.
+    path : string
+        Path to the file containing rat velocities
+    grid_lambda : float
+        Grid field spacing (cm)
+    Nx : int
+        Neural sheet size (neurons). THe bump has to travel this distance (in
+        units of neurons) in order to return back to its original position,
+        i.e. form a grid field.
+    output : float
+        The bump speed at the p-th percentile
+    '''
+    from scipy.io import loadmat
+    data  = loadmat(path)
+    dt    = float(data['dt'])
+    pos_x = data['pos_x'].flatten()
+    pos_y = data['pos_y'].flatten()
+    vel_x = np.diff(pos_x)/dt
+    vel_y = np.diff(pos_y)/dt
+    animal_s = np.abs(np.hstack((vel_x, vel_y)))
+    bump_s = float(Nx) / grid_lambda * animal_s
+    res   = np.percentile(bump_s, p)
+
+    msg = "Loaded velocity data from: {0}".format(path)
+    log_info("getAnimalSpeedPercentile", msg)
+    msg = "{0:.2f}th percentile: {1:.3f}".format(p, res)
+    log_info("getAnimalSpeedPercentile", msg)
+
+    return res
+
+
 

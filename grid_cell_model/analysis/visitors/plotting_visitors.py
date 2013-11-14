@@ -25,8 +25,8 @@ from matplotlib.pyplot import figure, plot, pcolormesh, subplot2grid, savefig,\
 import os
 import errno
 
-from interface       import DictDSVisitor, sumAllVariables, \
-        extractStateVariable
+from interface       import DictDSVisitor
+from data_storage.sim_models.ei import extractStateVariable, sumAllVariables
 from plotting.signal import signalPlot
 from analysis.spikes import PopulationSpikes
 from analysis.grid_cells import extractSpikePositions2D, SNSpatialRate2D, \
@@ -130,9 +130,9 @@ class DetailedPlotVisitor(DictDSVisitor):
         ax_Vm = subplot2grid((rows, cols), (1, 0), colspan=3)
         t, VmMiddle, VmEdge = self._extractStateVars(mon_e, ['V_m'], plotTStart,
                 plotTEnd)
-        signalPlot(t, VmMiddle, ax_Vm, labelx="", labely = 'E cell $V_m$',
+        signalPlot(t, VmMiddle, ax_Vm, xlabel="", ylabel = 'E cell $V_m$',
                 nThetaTicks=5)
-        signalPlot(t, VmEdge, ax_Vm, labelx="", labely = 'E cell $V_m$',
+        signalPlot(t, VmEdge, ax_Vm, xlabel="", ylabel = 'E cell $V_m$',
                 nThetaTicks=5)
         plt.xlim(x_lim)
 
@@ -140,9 +140,9 @@ class DetailedPlotVisitor(DictDSVisitor):
         ax_Vm = subplot2grid((rows, cols), (2, 0), colspan=3)
         t, VmMiddle, VmEdge = self._extractStateVars(mon_i, ['V_m'], plotTStart,
                 plotTEnd)
-        signalPlot(t, VmMiddle, ax_Vm, labelx='', labely = 'I cell $V_m$',
+        signalPlot(t, VmMiddle, ax_Vm, xlabel='', ylabel = 'I cell $V_m$',
                 nThetaTicks=5)
-        signalPlot(t, VmEdge, ax_Vm, labelx='', labely = 'I cell $V_m$',
+        signalPlot(t, VmEdge, ax_Vm, xlabel='', ylabel = 'I cell $V_m$',
             nThetaTicks=5)
         plt.xlim(x_lim)
 
@@ -150,9 +150,9 @@ class DetailedPlotVisitor(DictDSVisitor):
         ax_Isyn = subplot2grid((rows, cols), (1, 3), colspan=3)
         t, IsynMiddle, IsynEdge = self._extractStateVars(mon_e, \
                 ['I_clamp_GABA_A'], plotTStart, plotTEnd)
-        signalPlot(t, IsynMiddle, ax_Isyn, labelx="", labely =
+        signalPlot(t, IsynMiddle, ax_Isyn, xlabel="", ylabel =
                 'E cell $I_{\mathrm{syn}}$', nThetaTicks=5)
-        signalPlot(t, IsynEdge, ax_Isyn, labelx="", labely =
+        signalPlot(t, IsynEdge, ax_Isyn, xlabel="", ylabel =
                 'E cell $I_{\mathrm{syn}}$', nThetaTicks=5)
         plt.xlim(x_lim)
 
@@ -160,10 +160,10 @@ class DetailedPlotVisitor(DictDSVisitor):
         ax_Isyn = subplot2grid((rows, cols), (2, 3), colspan=3)
         t, IsynMiddle, IsynEdge = self._extractStateVars(mon_i, \
                 ['I_clamp_AMPA', 'I_clamp_NMDA'], plotTStart, plotTEnd)
-        signalPlot(t, IsynMiddle, ax_Isyn, labelx='',
-                labely = 'I cell $I_{syn}$', nThetaTicks=5)
-        signalPlot(t, IsynEdge, ax_Isyn, labelx='',
-                labely = 'I cell $I_{syn}$', nThetaTicks=5)
+        signalPlot(t, IsynMiddle, ax_Isyn, xlabel='',
+                ylabel = 'I cell $I_{syn}$', nThetaTicks=5)
+        signalPlot(t, IsynEdge, ax_Isyn, xlabel='',
+                ylabel = 'I cell $I_{syn}$', nThetaTicks=5)
         plt.xlim(x_lim)
 
 
@@ -204,8 +204,8 @@ class DetailedPlotVisitor(DictDSVisitor):
         acVec = a['acVec']
         acdt = data['stateMonF_e'][0]['interval']
         acTimes = np.arange(acVec.shape[1]) * acdt
-        signalPlot(acTimes, acVec[0], ax_AC, labelx=None,
-                labely = 'I correlation')
+        signalPlot(acTimes, acVec[0], ax_AC, xlabel=None,
+                ylabel = 'I correlation')
         plt.axis('tight')
         plt.ylim([-1, 1])
 
@@ -217,7 +217,7 @@ class DetailedPlotVisitor(DictDSVisitor):
         acTimes = np.arange(acVec.shape[1]) * acdt
         plt.hold('on')
         for nIdx in xrange(acVec.shape[0]):
-            signalPlot(acTimes, acVec[nIdx], ax_AC, labelx=None, labely = '')
+            signalPlot(acTimes, acVec[nIdx], ax_AC, xlabel=None, ylabel = '')
         plt.axis('tight')
         plt.ylim([-1, 1])
 
@@ -309,7 +309,7 @@ class GridPlotVisitor(DictDSVisitor):
 
     def __init__(self, rootDir, spikeType='E', neuronNum=0, arenaDiam=180.0,
             smoothingSigma=3.0, bumpTStart=None, bumpTEnd=None,
-            minGridnessT=0.0, plotOptions=PlotOptions()):
+            minGridnessT=0.0, plotOptions=PlotOptions(), forceUpdate=False):
         '''
         Parameters
         ----------
@@ -335,17 +335,24 @@ class GridPlotVisitor(DictDSVisitor):
             Minimal time (determined by the time of last spike of an E cell) to
             consider the simulation for gridness score (if less than this time,
             gridness score will be NaN).
+        plotOptions : PlotOptions
+            A set of flags that specify what should be plotted. TODO: this is
+            broken now, since there are dependencies.
+        forceUpdate : bool
+            Whether to force data analysis and saving of the results even when
+            they already exist.
         '''
-        self.rootDir = rootDir
-        self.setSpikeType(spikeType)
-        self.neuronNum = neuronNum
-        self.outputDir = 'grids'
-        self.arenaDiam = arenaDiam
+        self.rootDir        = rootDir
+        self.neuronNum      = neuronNum
+        self.outputDir      = 'grids'
+        self.arenaDiam      = arenaDiam
         self.smoothingSigma = smoothingSigma
-        self.bumpTStart = bumpTStart
-        self.bumpTEnd = bumpTEnd
-        self.po = plotOptions
-        self.minGridnessT = minGridnessT
+        self.bumpTStart     = bumpTStart
+        self.bumpTEnd       = bumpTEnd
+        self.po             = plotOptions
+        self.minGridnessT   = minGridnessT
+        self.forceUpdate    = forceUpdate
+        self.setSpikeType(spikeType)
 
 
 
@@ -384,6 +391,11 @@ class GridPlotVisitor(DictDSVisitor):
 
     def visitDictDataSet(self, ds, **kw):
         data = ds.data
+
+        if ('analysis' in data.keys() and not self.forceUpdate):
+            log_info("GridPlotVisitor", "Data present. Skipping analysis.")
+            return
+
         simT = self.getOption(data, 'time') # ms
         jobNum = self.getOption(data, 'job_num')
         if ('trialNum' in kw.keys()):

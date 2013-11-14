@@ -2,7 +2,7 @@
 #
 #   figure4.py
 #
-#   Noise paper figure 4.
+#   Final figure: network mechanisms
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -21,21 +21,15 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import LinearLocator, NullLocator
+import matplotlib.ticker as ti
+from matplotlib.transforms import Bbox
 
-import numpy.ma as ma
-
-from parameters      import JobTrialSpace2D, DataSpace
-from analysis.visitors.interface import EmptyDSVisitor
-from analysis.spikes import PopulationSpikes
-from EI_plotting     import plot2DTrial
+from EI_plotting import sweeps, details, rasters
+from EI_plotting import aggregate as aggr
+from figures_shared import NoiseDataSpaces
 from plotting.global_defs import globalAxesSettings
-from plotting.bumps  import torusFiringRate
-from EI_plotting     import plotBumpSigmaTrial, plotBumpErrTrial
-from figures_shared  import _getSpikeTrain
-from figure3         import plot2AxisBar, plot1AxisBar
-
+from analysis.visitors import SpikeTrainXCVisitor
+from parameters import JobTrialSpace2D
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -44,257 +38,526 @@ lg.basicConfig(level=lg.INFO)
 
 # Other
 from matplotlib import rc
-#rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-## for Palatino and other serif fonts use:
-#rc('font',**{'family':'serif','serif':['Palatino']})
-#rc('text', usetex=True)
 rc('pdf', fonttype=42)
+rc('mathtext', default='regular')
 
-plt.rcParams['font.size'] = 25
+plt.rcParams['font.size'] = 11
 
 ###############################################################################
 cFreq = 'blue'
 cAC = 'green'
 cCount = 'red'
 
-###############################################################################
+outputDir = "."
+NTrials = 5
+iterList  = ['g_AMPA_total', 'g_GABA_total']
 
-def aggregate2DTrial(sp, varList, trialNumList):
-    varList = ['analysis'] + varList
-    retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean,
-            saveData=True)
-    return np.mean(retVar, 2)
+noise_sigmas  = [0, 150, 300]
+rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
+bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
+velDataRoot   = 'output_local/even_spacing/velocity'
+gridsDataRoot = 'output_local/even_spacing/grids'
+shape = (31, 31)
 
-
-
-def computeYX(sp, iterList):
-    E, I = sp.getIteratedParameters(iterList)
-    Ne = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ne')
-    Ni = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ni')
-    return E/Ne, I/Ni
-
-
- 
-def drawColorbar(drawAx, label):
-    pos = drawAx.get_position()
-    pos.y0 -= 0.12
-    pos.y1 -= 0.12
-    pos.y1 = pos.y0 + 0.1*(pos.y1 - pos.y0)
-    w = pos.x1 - pos.x0
-    pos.x0 += 0.1*w
-    pos.x1 -= 0.1*w
-    clba = plt.gcf().add_axes(pos)
-    globalAxesSettings(clba)
-    clba.minorticks_on()
-    cb = plt.colorbar(cax=clba, orientation='horizontal',
-            ticks=LinearLocator(2))
-    cb.set_label(label)
-
-
-def plot2DNoiseBumps(spList, iterList, trialNumList=[0]):
-    NSp = len(spList)
-    Sz2D = 1.
-    clBarSz = 0.1
-    hr = [Sz2D]*NSp + [clBarSz]
-    gs = GridSpec(len(spList), 2, wspace=0.15, hspace=0.15, height_ratios=hr,
-            bottom=0.22)
-    for spIdx in range(NSp):
-        if (spIdx == NSp - 1):
-            xlabel = "I (nS)"
-            xticks = True
-            clbar = True
-        else:
-            xlabel = ""
-            xticks = False
-            clbar = False
-
-
-        bumpSigmaThreshold = 10
-        ax_sigma = plt.subplot(gs[spIdx, 0])
-        bump_sigma = plotBumpSigmaTrial(spList[spIdx], ['bump_e', 'sigma'], iterList,
-                thr=bumpSigmaThreshold,
-                trialNumList=range(NTrials),
-                xlabel=xlabel,
-                ylabel='E (nS)',
-                colorBar=False,
-                vmin=0,
-                vmax=bumpSigmaThreshold,
-                xticks=xticks,
-                clbarNTicks=4)
-        if (clbar):
-            drawColorbar(ax_sigma, 'Bump $\sigma$ (nrns)')
-
-        ax_err = plt.subplot(gs[spIdx, 1])
-        bump_err2 = plotBumpErrTrial(spList[spIdx], ['bump_e', 'err2'], iterList,
-                trialNumList=range(NTrials),
-                mask=bump_sigma.mask,
-                xlabel=xlabel,
-                colorBar=False,
-                clbarNTicks=3,
-                xticks=xticks,
-                yticks=False,
-                vmin=0,
-                vmax=200)
-        if (clbar):
-            drawColorbar(ax_err, 'Error of fit (Hz)')
-
-
-
+ccExamples      = 0
+spikeCCExamples = 0
+velLines        = 0
+detailed_noise  = 0
+slope_sweeps    = 0
+rastersFlag     = 1
+rates           = 1
 
 ###############################################################################
-def aggregateBarBumps(spList, varLists, trialNumList, thresholds=(np.infty, \
-        np.infty), func=(None, None)):
-    # Ugly hack!!!
-    # asusming sigma is first, err2 is second
-    means = ([], [])
-    errs  = ([], [])
-    noise_sigma = []
-    counts = ([], [])
-    for idx in xrange(len(spList)):
-        mask = False
-        for varIdx in range(len(varLists)):
-            f = func[varIdx]
-            if f is None:
-                f = lambda x: x
-            var = f(aggregate2DTrial(spList[idx], varLists[varIdx],
-                trialNumList).flatten())
-            mask = np.logical_or(np.logical_or(np.isnan(var), var >
-                thresholds[varIdx]), mask)
-            var = ma.MaskedArray(var, mask=mask)
-            means[varIdx].append(np.mean(var))
-            errs[varIdx].append(np.std(var))
-            counts[varIdx].append(1. * np.sum(np.logical_not(mask)) / len(var))
 
-        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
+def plotCCExamples(dataSpaces, ns_idx, r, c, trialNum=0, **kw):
+    nPairs = kw.pop('npairs', 5)
+    ax     = kw.pop('ax', plt.gca())
 
-    noise_sigma = np.array(noise_sigma, dtype=int)
-    return means, errs, noise_sigma, counts
+    kw['xlabel'] = kw.get('xlabel', 'Lag (ms)')
+    kw['ylabel'] = kw.get('ylabel', 'C')
+    kw['nticks'] = 2
+    ylabel = kw.get('ylabel', 'C')
 
+    space = dataSpaces.bumpGamma[ns_idx]
+    noise_sigma = dataSpaces.noise_sigmas[ns_idx]
+    data = space[r][c][trialNum].data
+    xcIn = data['analysis']['x-corr'] 
+    CCs =  xcIn['correlations']
+    lags = xcIn['lags']
+    for idx in xrange(nPairs):
+        cc = CCs[idx][2*idx+1]
+        signalPlot(lags, cc, ax, zeroLine=False, xmargin=0.02, nThetaTicks=2, **kw)
+    ax.set_yticks([0, 1])
+    ax.set_ylim([-0.02, 1.02])
+    ax.grid(False)
+    ax.xaxis.labelpad = 0.8
 
+    
+def plotSpikeXCExamples(dataSpaces, ns_idx, r, c, neuronIdx, nOthers, popType,
+        trialNum=0, **kw):
+    ax = kw.pop('ax', plt.gca())
+    xlabel = kw.pop('xlabel', 'Lag (ms)')
 
-def plotAggregateBarBumps(spList, trialNumList, ylabels, sigmaTh=10,
-        errTh=np.infty):
-    varLists = [['bump_e', 'sigma'], ['bump_e', 'err2']]
-    (sigmaMean, err2Mean), (sigmaStd, err2Std), noise_sigma, (sigmaCnt,
-            err2Cnt) = \
-            aggregateBarBumps(spList, varLists, trialNumList, thresholds=(sigmaTh,
-                errTh), func=(None, np.sqrt))
+    if (popType == 'E'):
+        XCName = 'XCorrelation_e'
+    elif (popType == 'I'):
+        XCName = 'XCorrelation_i'
+    else:
+        raise ValueError()
+
+    space = dataSpaces.grids[ns_idx]
+    noise_sigma = dataSpaces.noise_sigmas[ns_idx]
+    data = space[r][c][trialNum].data['analysis'][XCName]
+    bin_centers = data['bin_centers']
+    CCs = data['correlations']
+
+    for other in xrange(nOthers):
+        C = CCs[neuronIdx][1 + other]
+        ax.plot(bin_centers, C, '-', **kw)
+
+    globalAxesSettings(ax)
+    ax.set_xticks([bin_centers[0], 0, bin_centers[-1]])
+    ax.yaxis.set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+
     
 
-    print sigmaMean, err2Mean
+def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
+    # kwargs
+    trialNum   = kw.pop('trialNum', 0)
+    markersize = kw.pop('markersize', 4)
+    color      = kw.pop('color', 'blue')
+    xlabel     = kw.pop('xlabel', 'Velocity current (pA)')
+    ylabel     = kw.pop('ylabel', 'Bump speed\n(neurons/s)')
+    xticks     = kw.pop('xticks', True)
+    yticks     = kw.pop('yticks', True)
+    g_ann      = kw.pop('g_ann', True)
+    sigma_ann  = kw.pop('sigma_ann', True)
+    kw['markeredgecolor'] = color
 
-    ax_thr = plt.subplot(2, 1, 1)
-    plot1AxisBar(noise_sigma, sigmaCnt, [np.nan]*len(sigmaCnt),
-            xlabel='', ylabel = 'Count', color=cCount,
-            xTickLabels=False)
+    r = pos[0]
+    c = pos[1]
+    d = dataSpace[r][c].getAllTrialsAsDataSet().data
+    a = d['analysis']
+    IvelVec = dataSpace[r][c][trialNum].data['IvelVec']
+    slopes = a['bumpVelAll']
+    lineFit = a['lineFitLine']
+    fitIvelVec = a['fitIvelVec']
 
-    ax_bumps = plt.subplot(2, 1, 2)
-    plot2AxisBar(noise_sigma,
-            (sigmaMean, err2Mean),
-            (sigmaStd,  err2Std),
-            xlabel='$\sigma$ (pA)',
-            ylabels=ylabels,
-            colors=(cAC, cFreq))
+    nTrials = slopes.shape[0]
+    avgSlope = np.mean(slopes, axis=0)
+    stdSlope = np.std(slopes, axis=0)
+
+    if (ax is None):
+        ax = plt.gca()
+    plt.hold('on')
+    globalAxesSettings(ax)
+
+    ax.plot(IvelVec, slopes.T, 'o', markerfacecolor='none', markersize=markersize, **kw)
+    #ax.errorbar(IvelVec, avgSlope, stdSlope, fmt='o-',
+    #        markersize=markersize, color=color, alpha=0.5, **kw)
+    ax.plot(fitIvelVec, lineFit, '-', linewidth=1, color=color, **kw)
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.xaxis.set_major_locator(ti.MultipleLocator(50))
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(5))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(20))
+    ax.yaxis.set_minor_locator(ti.MultipleLocator(10))
+    ax.margins(0.05)
+
+    if (not xticks):
+        ax.xaxis.set_ticklabels([])
+    if (not yticks):
+        ax.yaxis.set_ticklabels([])
+
+    # Annotations
+    if (sigma_ann):
+        sigma_txt = '$\sigma$ = {0} pA'.format(noise_sigma)
+    else:
+        sigma_txt = ''
+
+    if (g_ann):
+        Y, X = aggr.computeVelYX(dataSpace, iterList, r, c)
+        gE = Y[r, c]
+        gI = X[r, c]
+        g_txt = '$g_E$ = {0}, $g_I$ = {1} nS'.format(gE, gI)
+    else:
+        g_txt = ''
+
+    txt = '{0}\n{1}'.format(g_txt, sigma_txt)
+    ax.text(0.05, 0.85, txt, transform=ax.transAxes, va='bottom',
+            ha='left', size='x-small')
 
 
-def drawBumpColorbar(drawAx):
-    pos = drawAx.get_position()
-    pos.x0 += 0.05
-    pos.x1 += 0.05
-    pos.x0 = pos.x1 - 0.1*(pos.x1 - pos.x0)
-    h = pos.y1 - pos.y0
-    pos.y0 += 0.1*h
-    pos.y1 -= 0.1*h
-    clba = plt.gcf().add_axes(pos)
-    globalAxesSettings(clba)
-    cb = plt.colorbar(cax=clba, orientation='vertical',
-            ticks=NullLocator())
-    #clba.yaxis.set_ticklabels(['min'], ['max'])
-    cb.set_label('F (Hz)', fontsize='small')
 
-def plotBumps(spList, r, c, trialNum=0):
-    N = len(spList)
-    gs = GridSpec(1, len(spList), wspace=0.15, left=0.01, right=0.85,
-            bottom=0.01, top=0.99)
-    for spIdx in range(len(spList)):
-        ax = plt.subplot(gs[0, spIdx])
-        data = spList[spIdx][r][c][trialNum].data
-        v = EmptyDSVisitor()
-        tStart = v.getOption(data, 'theta_start_t')
-        tEnd   = v.getOption(data, 'time')
-        ESenders, ETimes, EN = v._getSpikeTrain(data, 'spikeMon_e', ('Ne_x',
-            'Ne_y'))
-        s = PopulationSpikes(EN, ESenders, ETimes)
-        Fe = s.avgFiringRate(tStart, tEnd)
-        Ne_x = v.getNetParam(data, 'Ne_x')
-        Ne_y = v.getNetParam(data, 'Ne_y')
-        bump_e = np.reshape(Fe, (Ne_y, Ne_x))
 
-        if (spIdx == 0):
-            yTickLabels = True
-        else:
-            yTickLabels = False
-        torusFiringRate(
-                rateMap  = bump_e,
-                labelx   = '',
-                labely   = '',
-                titleStr = '',
-                clbar    = False,
-                xTicks   = False,
-                yTicks   = False,
-                xTickLabels = False,
-                yTickLabels = False)
-
-    drawBumpColorbar(ax)
 
 
 ###############################################################################
-            
-if (__name__ == '__main__'):
+roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
+ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
-    NTrials = 5
-    iterList  = ['g_AMPA_total', 'g_GABA_total']
-    r = 14
-    c = 13
 
-    baseDir = 'output_local/one_to_one'
-    dirs = [ \
-        ('EI_param_sweep_0pA',    (40, 40)),
-        ('EI_param_sweep_150pA',  (40, 40)),
-        ('EI_param_sweep_300pA',  (40, 40))
-    ]
+##############################################################################
+velFigsize =(2.6, 2)
+velLeft    = 0.3
+velBottom  = 0.35
+velRight   = 0.95
+velTop     = 0.65
 
-    dataSpaces = []
-    for (dir, shape) in dirs:
-        rootDir = "{0}/{1}".format(baseDir, dir)
-        dataSpaces.append(JobTrialSpace2D(shape, rootDir))
+if (velLines):
+    #positions = ((4, 27), (4, 27), (4, 27))
+    positions = ((5, 15), (5, 15), (5, 15))
+    fig = plt.figure(figsize=(2.5, velFigsize[1]))
+    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
+        velTop))
+    plotSlopes(ax, ps.v[0], positions[0], noise_sigma=ps.noise_sigmas[0],
+            xlabel='',
+            color='blue')
+    fname = outputDir + "/figure4_slope_examples_0.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+
+    fig = plt.figure(figsize=(2.5, velFigsize[1]))
+    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
+        velTop))
+    plotSlopes(ax, ps.v[1], positions[1], noise_sigma=ps.noise_sigmas[1],
+            ylabel='',
+            g_ann=False,
+            color='green')
+    fname = outputDir + "/figure4_slope_examples_1.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+
+    fig = plt.figure(figsize=(2.5, velFigsize[1]))
+    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
+        velTop))
+    plotSlopes(ax, ps.v[2], positions[2], noise_sigma=ps.noise_sigmas[2],
+            xlabel='',
+            ylabel='',
+            g_ann=False,
+            color='red')
+    fname = outputDir + "/figure4_slope_examples_2.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+
+
+##############################################################################
+EI13Root  = 'output_local/detailed_noise/velocity/EI-1_3'
+EI31Root  = 'output_local/detailed_noise/velocity/EI-3_1'
+detailedShape = (31, 9)
+
+EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
+EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
+detailedNTrials = None
+
+
+sliceFigSize = (3.5, 2.5)
+sliceLeft   = 0.25
+sliceBottom = 0.3
+sliceRight  = 0.95
+sliceTop    = 0.8
+if (detailed_noise):
+    ylabelPos = -0.25
+
+    types = ('velocity', 'slope')
+    fig = plt.figure(figsize=sliceFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
+        sliceTop))
+    details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+            ylabelPos=ylabelPos,
+            xlabel='', xticks=False,
+            color='red')
+    details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+            xlabel='', xticks=False,
+            ylabel='Slope\n(neurons/s/pA)', ylabelPos=ylabelPos,
+            color='black')
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
+    ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
+
+    fname = "figure4_detailed_noise_slope.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+
+    types = ('velocity', 'fitErr')
+    fig = plt.figure(figsize=sliceFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
+        sliceTop))
+    _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+            ylabelPos=ylabelPos,
+            color='red')
+    _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+            ylabel='Fit error\n(neurons/s/trial)', ylabelPos=ylabelPos,
+            color='black')
+    ax.yaxis.set_major_locator(ti.MultipleLocator(4))
+    ax.yaxis.set_minor_locator(ti.MultipleLocator(2))
+    leg = ['(1, 3)',  '(3, 1)']
+    l = ax.legend([p13, p31], leg, loc=(0.55, 0.3), fontsize='small', frameon=False,
+            numpoints=1, title='($g_E,\ g_I$) (nS)')
+    plt.setp(l.get_title(), fontsize='x-small')
+
+    fname = "figure4_detailed_noise_error.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+
+
+
+
+##############################################################################
+##############################################################################
+boxFigSize = (1.75, 1.5)
+boxLeft    = 0.25
+boxBottom  = 0.32
+boxRight   = 0.9
+boxTop     = 0.93
+
+if (ccExamples):
+    for idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=boxFigSize)
+        ax = fig.add_axes(Bbox.from_extents(boxLeft, boxBottom, boxRight,
+            boxTop))
+        kw = {}
+        if (idx != 0):
+            kw['ylabel'] = ''
+
+        plotCCExamples(ps, ns_idx=idx,
+                r=rasterRC[idx][0], c=rasterRC[idx][1],
+                ax=ax, **kw)
+        fname = outputDir + "/figure4_cc_examples{0}.pdf".format(noise_sigma)
+        fig.savefig(fname, dpi=300, transparent=transparent)
+        plt.close()
+
+
+if (spikeCCExamples):
+    lagRange    = (-125, 125)
+    bins        = 251
+    neuronIdx   = np.arange(4)
+    plotIdx     = 0
+    nOthers     = 3
+    forceUpdate = False
+    for idx, noise_sigma in enumerate(ps.noise_sigmas):
+        r, c = rasterRC[idx][0], rasterRC[idx][1]
+        trialNum = 0
+
+        # E cells
+        fig = plt.figure(figsize=boxFigSize)
+        ax = fig.add_axes(Bbox.from_extents(boxLeft, boxBottom, boxRight,
+            boxTop))
+
+        visitor_e = SpikeTrainXCVisitor("spikeMon_e", bins,
+                lagRange=lagRange, 
+                neuronIdx=neuronIdx,
+                forceUpdate=forceUpdate)
+        dataSet_e = ps.grids[idx][r][c][trialNum]
+        visitor_e.visitDictDataSet(dataSet_e)
+
+        plotSpikeXCExamples(ps, idx, r, c, plotIdx, nOthers, 'E')
+
+        fname = outputDir + "/figure4_spike_xc_E_examples{0}.pdf".format(noise_sigma)
+        fig.savefig(fname, dpi=300, transparent=transparent)
+        plt.close()
+
+        # Icells
+        fig = plt.figure(figsize=boxFigSize)
+        ax = fig.add_axes(Bbox.from_extents(boxLeft, boxBottom, boxRight,
+            boxTop))
+        visitor_i = SpikeTrainXCVisitor("spikeMon_i", bins,
+                lagRange=lagRange, 
+                neuronIdx=neuronIdx,
+                forceUpdate=forceUpdate)
+        dataSet_i = ps.grids[idx][r][c][trialNum]
+        visitor_i.visitDictDataSet(dataSet_i)
+
+        plotSpikeXCExamples(ps, idx, r, c, plotIdx, nOthers, 'I')
+
+        fname = outputDir + "/figure4_spike_xc_I_examples{0}.pdf".format(noise_sigma)
+        fig.savefig(fname, dpi=300, transparent=transparent)
+        plt.close()
+
+
+##############################################################################
+slopeVarList = ['lineFitSlope']
+slope_vmin = 0
+slope_vmax = 1.6
+
+slope_cbar_kw= dict(
+        location='left',
+        fraction=0.25,
+        shrink = 0.8,
+        pad = 0.2,
+        labelpad=8,
+        label='Slope\n(neurons/s/pA)',
+        ticks=ti.MultipleLocator(0.5),
+        extend='max', extendfrac=0.1)
+
+
+def createSweepFig(name=None):
+    sweepFigSize = (3.2, 1.9)
+    sweepLeft   = 0.15
+    sweepBottom = 0.2
+    sweepRight  = 0.95
+    sweepTop    = 0.95
+    fig = plt.figure(name, figsize=sweepFigSize)
+    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+        sweepTop))
+    return fig, ax
+
+if (slope_sweeps):
+    # noise_sigma = 0 pA
+    fig, ax = createSweepFig("velSlopeSweep0")
+    _, ax, cax = sweeps.plotVelTrial(ps.v[0], slopeVarList, iterList,
+            noise_sigmas[0], sigmaTitle=False,
+            ax=ax,
+            cbar=True, cbar_kw=slope_cbar_kw,
+            #cax.yaxis.tick_left()
+            vmin=slope_vmin, vmax=slope_vmax)
+    fname = outputDir + "/figure4_slope_sweeps0.pdf"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+    # noise_sigma = 150 pA
+    fig, ax = createSweepFig("velSlopeSweep150")
+    _, ax, cax = sweeps.plotVelTrial(ps.v[1], slopeVarList, iterList,
+            noise_sigma=noise_sigmas[1], sigmaTitle=False,
+            ax=ax,
+            ylabel='', yticks=False,
+            cbar=False, cbar_kw=slope_cbar_kw,
+            vmin=slope_vmin, vmax=slope_vmax)
+    fname = outputDir + "/figure4_slope_sweeps150.pdf"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+    # noise_sigma = 300 pA
+    fig, ax = createSweepFig("velSlopeSweep300")
+    _, ax, cax = sweeps.plotVelTrial(ps.v[2], slopeVarList, iterList,
+            noise_sigma=noise_sigmas[2], sigmaTitle=False,
+            ax=ax,
+            ylabel='', yticks=False,
+            cbar=False, cbar_kw=slope_cbar_kw,
+            vmin=slope_vmin, vmax=slope_vmax)
+    fname = outputDir + "/figure4_slope_sweeps300.pdf"
+    fig.savefig(fname, dpi=300, transparent=True)
+
+
+
+##############################################################################
+#                           Raster and rate plots
+##############################################################################
+rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
+tLimits = [1e3, 2.5e3] # ms
+
+rasterFigSize = (3.75, 1.9)
+transparent   = True
+rasterLeft    = 0.2
+rasterBottom  = 0.1
+rasterRight   = 0.99
+rasterTop     = 0.8
+
+ylabelPos   = -0.22
+
+
+if (rastersFlag):
+    # noise_sigma = 0 pA
+    fig = plt.figure("rasters0", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.v[0], 
+            noise_sigma=ps.noise_sigmas[0],
+            spaceType='velocity',
+            r=rasterRC[0][0], c=rasterRC[0][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ann_EI=True)
+    fname = outputDir + "/figure4_raster0.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
         
 
-    ##########################################################################
-    plt.figure(figsize=(6.5, 8))
-    plot2DNoiseBumps(dataSpaces, iterList)
-    #plt.tight_layout()
-    plt.savefig('{0}/noise_bumps_2d.pdf'.format(baseDir), transparent=True,
-            dpi=300)
-    ##########################################################################
-    plt.figure(figsize=(5.5, 6))
-    plotAggregateBarBumps(dataSpaces,
-            trialNumList= range(NTrials),
-            ylabels=('Bump $\sigma$\n(neurons)', 'Error of fit (Hz)'))
-    plt.tight_layout()
-    plt.savefig('{0}/aggregateBar_bump.pdf'.format(baseDir), transparent=True,
-            dpi=300)
-    ##########################################################################
-    plt.figure(figsize=(5, 1.5))
-    plotBumps(dataSpaces, r, c)
-    plt.savefig('{0}/bumps_example.pdf'.format(baseDir), transparent=False,
-            dpi=300)
-    ##########################################################################
-    rc('text', usetex=True)
-    fig = plt.figure(figsize=(5.5, 1.5))
-    fig.text(0.5, 0.5,
-            '$G(x, y) = A \exp\left(\\frac{(x - \mu_x)^2 + (y - ' +
-            ' \mu_y)^2}{2\sigma^2}\\right)$',
-            ha='center', va='center', fontsize=plt.rcParams['font.size'] + 3)
-    plt.savefig('{0}/gaussian_equation.pdf'.format(baseDir), transparent=True)
+    # noise_sigma = 150 pA
+    fig = plt.figure("rasters150", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.v[1], 
+            noise_sigma=ps.noise_sigmas[1],
+            spaceType='velocity',
+            r=rasterRC[1][0], c=rasterRC[1][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ylabel='', yticks=False)
+    fname = outputDir + "/figure4_raster150.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+        
+
+    # noise_sigma = 300 pA
+    fig = plt.figure("rasters300", figsize=rasterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+        rasterTop))
+    rasters.EIRaster(ps.v[2], 
+            noise_sigma=ps.noise_sigmas[2],
+            spaceType='velocity',
+            r=rasterRC[2][0], c=rasterRC[2][1],
+            ylabelPos=ylabelPos,
+            tLimits=tLimits,
+            ylabel='', yticks=False)
+    fname = outputDir + "/figure4_raster300.png"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+        
+
+##############################################################################
+rateFigSize   = (rasterFigSize[0], 0.65)
+rateLeft    = rasterLeft
+rateBottom  = 0.2
+rateRight   = rasterRight
+rateTop     = 0.9
+
+
+if (rates):
+    for idx, noise_sigma in enumerate(ps.noise_sigmas):
+        # E cells
+        fig = plt.figure(figsize=rateFigSize)
+        ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
+            rateTop))
+        kw = {}
+        if (idx != 0):
+            kw['ylabel'] = ''
+
+        rasters.plotAvgFiringRate(ps.v[idx],
+                spaceType='velocity',
+                noise_sigma=ps.noise_sigmas[idx],
+                popType='E',
+                r=rasterRC[idx][0], c=rasterRC[idx][1],
+                ylabelPos=ylabelPos,
+                color='red',
+                tLimits=tLimits,
+                ax=ax, **kw)
+        fname = outputDir + "/figure4_rate_e{0}.pdf".format(noise_sigma)
+        fig.savefig(fname, dpi=300, transparent=transparent)
+        plt.close()
+
+        # I cells
+        fig = plt.figure(figsize=rateFigSize)
+        ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
+            rateTop))
+        kw = {}
+        if (idx != 0):
+            kw['ylabel'] = ''
+
+        rasters.plotAvgFiringRate(ps.v[idx],
+                spaceType='velocity',
+                noise_sigma=ps.noise_sigmas[idx],
+                popType='I', 
+                r=rasterRC[idx][0], c=rasterRC[idx][1],
+                ylabelPos=ylabelPos,
+                color='blue',
+                tLimits=tLimits,
+                ax=ax, **kw)
+        fname = outputDir + "/figure4_rate_i{0}.pdf".format(noise_sigma)
+        fig.savefig(fname, dpi=300, transparent=transparent)
+        plt.close()
+
+
 
