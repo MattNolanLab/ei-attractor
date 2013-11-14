@@ -48,7 +48,7 @@ for noise_sigma in noise_sigma_all:
 
     p['time']     = 10e3  # ms
     p['nthreads'] = 1
-    p['ntrials']  = 10
+    p['ntrials']  = 11
 
     p['IvelMax']  = 100
     p['dIvel']    = 10

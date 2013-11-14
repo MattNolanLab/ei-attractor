@@ -43,11 +43,11 @@ velocityType  = 'velocity'
 gridsType     = 'grids'
 
 dirs = \
-    ('output/detailed_noise/grids',      gridsType,     'EI-3_1', (31, 9))
+    ('output/detailed_noise/gamma_bump', gammaBumpType, 'EI-3_1', (31, 9))
+    #('output/detailed_noise/grids',      gridsType,     'EI-3_1', (31, 9))
     #('output/detailed_noise/grids',      gridsType,     'EI-1_3', (31, 9))
     #('output/detailed_noise/velocity',   velocityType,  'EI-3_1', (31, 9))
     #('output/detailed_noise/velocity',   velocityType,  'EI-1_3', (31, 9))
-    #('output/detailed_noise/gamma_bump', gammaBumpType, 'EI-3_3', (31, 9))
     #('output/detailed_noise/gamma_bump', gammaBumpType, 'EI-1_3', (31, 9))
 
 p = {}
