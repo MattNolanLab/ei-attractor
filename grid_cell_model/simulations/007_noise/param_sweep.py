@@ -45,8 +45,8 @@ def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
     iterparams = {
         'g_AMPA_total'      : np.array(g_AMPA_total_arr),
         'g_GABA_total'      : np.array(g_GABA_total_arr),
-        #g_AMPA_total'      : [1400],
-        #g_GABA_total'      : [2160]
+        #'g_AMPA_total'      : [1400],
+        #'g_GABA_total'      : [2160]
     }
     iterparams.update(extraIterparams)
     ac.insertDict(iterparams, mult=False)

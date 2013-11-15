@@ -35,7 +35,7 @@ for noise_sigma in noise_sigma_all:
 
     # Submitting
     ENV         = 'cluster'
-    simRootDir  = 'output/even_spacing/velocity'
+    simRootDir  = 'output/no_theta/velocity'
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
     appName     = 'simulation_velocity.py'
     rtLimit     = '08:00:00'
@@ -48,10 +48,18 @@ for noise_sigma in noise_sigma_all:
 
     p['time']     = 10e3  # ms
     p['nthreads'] = 1
-    p['ntrials']  = 11
+    p['ntrials']  = 10
+    p['ispikes']  = 0    # bool
 
     p['IvelMax']  = 100
     p['dIvel']    = 10
+
+
+    # No theta parameters
+    p['Iext_e_const'] = 487.5   # pA
+    p['Iext_i_const'] = 212.5   # pA
+    p['Iext_e_theta'] = 0       # pA
+    p['Iext_i_theta'] = 0       # pA
 
 
     # Range of E/I synaptic conductances

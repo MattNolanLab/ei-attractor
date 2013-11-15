@@ -754,19 +754,33 @@ class ConstantVelocityNetwork(BasicGridCellNetwork):
 
         self.setConstantVelocityCurrent_e(vel)
 
-    #def getSpikes(self):
-    #    '''
-    #    Return a dictionary of spike monitor data.
-    #    '''
-    #    out = dict(
-    #        spikeMon_e=self.getSpikeMonData(self.spikeMon_e, self.E_pop[0]),
-    #        spikeMon_i=self.getSpikeMonData(self.spikeMon_i, self.I_pop[0]))
-    #    return out
+    def getSpikes(self, **kw):
+        '''
+        Return a dictionary of spike monitor data.
+        For keyword arguments description, see
+        :meth:`~ConstantVelocityNetwork.getMinimalSaveData`
+        '''
+        espikes = kw.get('espikes', True)
+        ispikes = kw.get('ispikes', False)
+
+        out = {}
+        if (espikes):
+            out['spikeMon_e'] = self.getSpikeMonData(self.spikeMon_e, self.E_pop[0])
+        if (ispikes):
+            out['spikeMon_i'] = self.getSpikeMonData(self.spikeMon_i, self.I_pop[0])
+        return out
 
 
-    def getMinimalSaveData(self):
+    def getMinimalSaveData(self, **kw):
+        '''
+        Keyword arguments:
+        ``espikes`` : bool
+            Whether to return spikes from the E population. Defaults to True.
+        ``ispikes`` : bool
+            Whether to return spikes from the I population. Defaults to False.
+        '''
         out = self.getNetParams()
-        out.update(self.getSpikes())
+        out.update(self.getSpikes(**kw))
         return out
 
 
