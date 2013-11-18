@@ -43,9 +43,9 @@ gridsType = 'grids'
 
 noise_sigma_all = [0.0, 150.0, 300.0] # pA
 dirs = \
-    ('output/no_theta/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
+    ('output/no_theta/velocity',   velocityType,  '{0}pA', (31, 31))
+    #('output/no_theta/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
     #('output/grids',      gridsType,     '{0}pA', (30, 30))
-    #('output/velocity',   velocityType,  '{0}pA', (30, 30))
 
 for noise_sigma in noise_sigma_all:
     p = {}
@@ -59,6 +59,11 @@ for noise_sigma in noise_sigma_all:
     p['shapeCols'] = colN
     p['forceUpdate'] = 0
 
+    if (p['type'] == velocityType):
+        percentile = 99.0
+        p['bumpSpeedMax'] = getSpeedPercentile(percentile, dp['ratVelFName'],
+                dp['gridSep'], dp['Ne'])
+
     ###############################################################################
 
     ac = ArgumentCreator(p, printout=True)
@@ -66,8 +71,8 @@ for noise_sigma in noise_sigma_all:
     iterparams = {
             'row' : np.arange(rowN),
             'col' : np.arange(colN)
-            #'row' : [10],
-            #'col' : [10]
+            #'row' : [0],
+            #'col' : [0]
     }
     ac.insertDict(iterparams, mult=True)
 
