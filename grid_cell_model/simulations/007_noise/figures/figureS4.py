@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#   suppFigure_bumps.py
+#   figureS4.py
 #
 #   Supplementary figure: bump examples
 #
@@ -138,7 +138,7 @@ enable = [
 #        [0, 0, 0],
 #        [0, 0, 0]]
 
-fname = outputDir + "/suppFigure_bumps.pdf"
+fname = outputDir + "/figureS4.pdf"
 outputPDF = PdfPages(fname)
 strIdx = 0
 for noise_idx, noise_sigma in enumerate(noise_sigmas):

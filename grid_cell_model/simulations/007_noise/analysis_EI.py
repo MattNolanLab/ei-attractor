@@ -24,9 +24,9 @@ from optparse import OptionParser
 import matplotlib
 matplotlib.use('agg')
 
-from analysis.visitors    import AutoCorrelationVisitor, BumpFittingVisitor, \
-        FiringRateVisitor, BumpVelocityVisitor, GridPlotVisitor
-from parameters           import JobTrialSpace2D
+import analysis.visitors as vis
+from parameters import JobTrialSpace2D
+
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)
@@ -58,20 +58,24 @@ if (o.type == "gamma-bump"):
     monName   = 'stateMonF_e'
     stateList = ['I_clamp_GABA_A']
     iterList  = ['g_AMPA_total', 'g_GABA_total']
-    ACVisitor = AutoCorrelationVisitor(monName, stateList, forceUpdate=forceUpdate)
-    bumpVisitor = BumpFittingVisitor(forceUpdate=forceUpdate)
-    FRVisitor = FiringRateVisitor(forceUpdate=forceUpdate)
+    ACVisitor = vis.AutoCorrelationVisitor(monName, stateList,
+            forceUpdate=forceUpdate)
+    bumpVisitor = vis.BumpFittingVisitor(forceUpdate=forceUpdate)
+    FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
+    CCVisitor = vis.CrossCorrelationVisitor(monName, stateList,
+            forceUpdate=forceUpdate)
 
-    sp.visit(ACVisitor)
-    sp.visit(bumpVisitor)
-    sp.visit(FRVisitor)
+    #sp.visit(ACVisitor)
+    #sp.visit(bumpVisitor)
+    #sp.visit(FRVisitor)
+    sp.visit(CCVisitor)
 elif (o.type == "velocity"):
-    VelVisitor = BumpVelocityVisitor(o.bumpSpeedMax, forceUpdate=forceUpdate, printSlope=True)
+    VelVisitor = vis.BumpVelocityVisitor(o.bumpSpeedMax, forceUpdate=forceUpdate, printSlope=True)
     sp.visit(VelVisitor, trialList='all-at-once')
 elif (o.type == 'grids'):
     spikeType = 'E'
-    po = GridPlotVisitor.PlotOptions()
-    visitor = GridPlotVisitor(o.output_dir, spikeType=spikeType,
+    po = vis.GridPlotVisitor.PlotOptions()
+    visitor = vis.GridPlotVisitor(o.output_dir, spikeType=spikeType,
             plotOptions=po, minGridnessT=300e3)
     sp.visit(visitor)
 else:

@@ -30,7 +30,7 @@ files="
     figureS1.pdf
     figureS2.pdf
     figureS3.pdf
-    suppFigure_bumps.pdf
+    figureS4.pdf
     suppFigure_velocity.pdf
     suppFigure_no_theta.png
     slices
