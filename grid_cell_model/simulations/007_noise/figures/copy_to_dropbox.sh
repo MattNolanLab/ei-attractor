@@ -25,6 +25,7 @@ dst_dir=~/Dropbox/shared_data/noise/figures/
 files="
     figure1.pdf
     figure2.pdf
+    figure2_scatter_gamma_grids.pdf
     figure3.pdf
     figure4.pdf
     figureS1.pdf

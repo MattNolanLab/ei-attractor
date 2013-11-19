@@ -79,7 +79,7 @@ def aggregate2D(sp, varList, funReduce=None):
 
 
 
-def computeYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True):
+def computeYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True, **kw):
     E, I = sp.getIteratedParameters(iterList)
     if (normalize):
         Ne = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ne')
@@ -91,7 +91,7 @@ def computeYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True):
 
 
 
-def computeVelYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True):
+def computeVelYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True, **kw):
     E, I = sp.getIteratedParameters(iterList)
     if (normalize):
         Ne = DataSpace.getNetParam(sp[r][c][trialNum].data['IvelData'][0],

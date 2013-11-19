@@ -59,14 +59,15 @@ noise_sigmas  = [0, 150, 300]
 exampleIdx    = [(0, 0), (0, 0), (0, 0)] # (row, col)
 bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
 velDataRoot   = None
-gridsDataRoot = None
+gridsDataRoot = 'output_local/even_spacing/grids'
 shape    = (31, 31)
 
 gammaSweep     = 0
 threshold      = 0
 freqHist       = 0
 detailed_noise = 0
-examplesFlag   = 1
+examplesFlag   = 0
+scatterPlot    = 1
 
 ###############################################################################
 
@@ -479,4 +480,42 @@ if (examplesFlag):
             plt.savefig(fname, dpi=300, transparent=True)
             plt.close()
 
+
+##############################################################################
+# Scatter plot of gridness score vs. gamma power
+scatterFigSize = detailFigSize
+scatterLeft   = detailLeft
+scatterBottom = detailBottom
+scatterRight  = 0.9
+scatterTop    = detailTop
+
+if (scatterPlot):
+    fig = plt.figure(figsize=scatterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
+        scatterTop))
+
+    NTrialsGamma = 5
+    NTrialsGrids = 3
+    typesGamma = ['gamma', 'acVal']
+    typesGrids = ['grids', 'gridnessScore']
+    ax.hold('on')
+    scatterColors = ['blue', 'green', 'red']
+
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        color = scatterColors[ns_idx]
+        sweeps.plotScatter(ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
+                typesGrids, iterList, NTrialsGamma, NTrialsGrids,
+                color=color,
+                s=0.5,
+                xlabel='$1^{st}$ autocorrelation peak',
+                ylabel='Gridness score')
+    ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+    leg = ['0', '150', '300']
+    l = ax.legend(leg, loc=(0.9, 0.4), fontsize='small', frameon=False,
+            numpoints=1, title='$\sigma$ (pA)')
+    plt.setp(l.get_title(), size='small')
+
+    fname = outputDir + "/figure2_scatter_gamma_grids.pdf"
+    fig.savefig(fname, dpi=300, transparent=transparent)
 
