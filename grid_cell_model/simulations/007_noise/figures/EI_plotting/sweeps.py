@@ -158,6 +158,7 @@ def plotVelTrial(sp, varList, iterList, noise_sigma, **kw):
     C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kw)
 
     print("plotVelTrial: max(C): {0}".format(np.max(C.ravel())))
+    print("plotVelTrial: min(C): {0}".format(np.min(C.ravel())))
 
     if (sigmaTitle):
         ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))

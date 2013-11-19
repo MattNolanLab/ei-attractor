@@ -63,17 +63,18 @@ roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
 
-sweepFigSize = (3.5, 2.5)
-sweepLeft   = 0.15
-sweepBottom = 0.2
+sweepFigSize = (2.8, 3.5)
+sweepLeft   = 0.2
+sweepBottom = 0.1
 sweepRight  = 0.87
-sweepTop    = 0.85
+sweepTop    = 0.95
 
-cbar_kw= {'label' : 'Gridness score',
-    'orientation': 'vertical',
-    'shrink': 0.8,
-    'pad' : -0.05,
-    'ticks' : ti.MultipleLocator(0.5),
+cbar_kw= {
+    'label'      : 'Gridness score',
+    'location'   : 'bottom',
+    'shrink'     : 0.8,
+    'pad'        : 0.15,
+    'ticks'      : ti.MultipleLocator(0.5),
     'rasterized' : True}
 
 vmin = -0.5
@@ -142,7 +143,6 @@ if (grids):
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[1][0], c=exampleIdx[1][1],
-            ylabel='', yticks=False,
             cbar=False, cbar_kw=cbar_kw,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
@@ -163,15 +163,14 @@ if (grids):
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[2][0], c=exampleIdx[2][1],
-            ylabel='', yticks=False,
             cbar_kw=cbar_kw,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
             annotations=ann,
             sliceAnn=sliceAnn)
-    for label in cax.yaxis.get_ticklabels():
-        label.set_ha('right')
-    cax.tick_params(pad=30)
+    #for label in cax.yaxis.get_ticklabels():
+    #    label.set_ha('right')
+    #cax.tick_params(pad=30)
     fname = outputDir + "/figure1_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()

@@ -43,3 +43,5 @@ for f in $files
 do
     cp -r $f $dst_dir
 done
+
+cp -r *.pdf $dst_dir/separate_panels

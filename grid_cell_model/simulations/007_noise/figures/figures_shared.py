@@ -195,8 +195,4 @@ def createColorbar(ax, **kwargs):
     cb.set_label(cbLabel, labelpad=labelpad)
     cb.solids.set_rasterized(rasterized)
 
-    #if ('orientation' == 'horizontal'):
-    #    cax.xaxis.set_minor_locator(AutoMinorLocator(2))
-    #else:
-    #    cax.yaxis.set_minor_locator(AutoMinorLocator(2))
     return cax
