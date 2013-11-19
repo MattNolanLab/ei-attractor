@@ -195,73 +195,6 @@ def plotSliceAnnotation(ax, X, Y, sliceSpan, type, **kw):
 
 ##############################################################################
 # Detailed noise levels
-def aggregateType(sp, iterList, types, NTrials, **kw):
-    type, subType = types
-    vars          = ['analysis']
-    output_dtype  = 'array'
-    funReduce     = None
-
-    if (type == 'gamma'):
-        # Gamma oscillation analyses
-        if (subType == 'acVal'):
-            # Autocorrelation first local maximum
-            vars += ['acVal']
-        elif (subType == 'freq'):
-            # Gamm frequency
-            vars += ['freq']
-        elif (subType == 'acVec'):
-            # All the autocorrelations
-            vars += ['acVec']
-            output_dtype = 'list'
-        else:
-            raise ValueError('Unknown gamma subtype: {0}'.format(subType))
-        trialNumList  = np.arange(NTrials)
-
-    elif (type == 'bump'):
-        trialNumList  = np.arange(NTrials)
-        if (subType == 'sigma'):
-            vars += ['bump_e', 'sigma']
-        else:
-            raise ValueError('Unknown bump subtype: {0}'.format(subType))
-
-    elif (type == 'velocity'):
-        if (subType == 'slope'):
-            vars += ['lineFitSlope']
-        elif (subType == 'fitErr'):
-            vars += ['lineFitErr']
-            funReduce = np.sum
-        else:
-            raise ValueError('Unknown velocity subtype: {0}'.format(subType))
-        trialNumList = 'all-at-once'
-
-    elif (type == 'grids'):
-        trialNumList  = np.arange(NTrials)
-        if (subType == 'gridnessScore'):
-            vars += ['gridnessScore']
-            funReduce = None
-        else:
-            raise ValueError('Unknown grids subtype: {0}'.format(subType))
-
-    else:
-        raise ValueError('Unknown aggregation type: {0}'.format(type))
-
-
-    data = sp.aggregateData(vars, trialNumList, output_dtype=output_dtype,
-            loadData=True, saveData=False, funReduce=funReduce)
-    if (type == 'velocity'):
-        Y, X = aggr.computeVelYX(sp, iterList, normalize=False, **kw)
-    else:
-        Y, X = aggr.computeYX(sp, iterList, normalize=False, **kw)
-        data = np.mean(data, axis=2) # TODO: fix the trials, stack them
-        # bump sigma is a reciprocal
-        if (type == 'bump'):
-            if (subType == 'sigma'):
-                data = 1./data
-
-    return data, X, Y
-
-
-
 def plotDetailedNoise(sp, NTrials, types, **kw):
     xlabel           = kw.pop('xlabel', '$\sigma_{noise}$ (pA)')
     ylabel           = kw.pop('ylabel', '')
@@ -276,7 +209,7 @@ def plotDetailedNoise(sp, NTrials, types, **kw):
     iterList = ['noise_sigma', 'g_AMPA_total']
 
     ax.hold('on')
-    data, X, Y = aggregateType(sp, iterList, types, NTrials, **kw)
+    data, X, Y = aggr.aggregateType(sp, iterList, types, NTrials, **kw)
     if (ignoreNaNs):
         nans = np.isnan(data)
         data = ma.MaskedArray(data, mask=nans)
