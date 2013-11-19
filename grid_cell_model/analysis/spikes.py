@@ -221,13 +221,9 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             raise ValueError(msg.format(N))
 
         # We are expecting senders and times as numpy arrays, if they are not,
-        # convert them
-        if not isinstance(senders, np.ndarray):
-            senders = np.array(senders)
-        if not isinstance(times, np.ndarray):
-            times = np.array(times)
-        self._senders  = senders
-        self._times    = times
+        # convert them. Moreover, senders.dtype must be int, for indexing.
+        self._senders  = np.asarray(senders, dtype=int)
+        self._times    = np.asarray(times)
         self._unpacked = [None] * self._N # unpacked version of spikes
 
 
@@ -401,7 +397,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             res = [[] for x in idx1]
             for n1 in idx1:
                 for n2 in idx2:
-                    print n1, n2, len(self[n1]), len(self[n2])
+                    #print n1, n2, len(self[n1]), len(self[n2])
                     res[n1].append(reduceFun(_spikes.spike_time_diff(self[n1],
                         self[n2])))
             return res
@@ -474,9 +470,71 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         bin_centers = (bin_edges[0:-1] + bin_edges[1:])/2.0
         return XC, bin_centers, bin_edges
         
-        
-        
-        
+
+    def ISINeuron(self, n):
+        '''
+        Compute all interspike intervals of one neuron with ID ``n``. If the
+        number of spikes is less than 2, returns an empty array.
+        .. todo::
+            
+            Works on sorted spike trains only!
+
+        .. note::
+            If you get negative interspike intervals, you will need to sort
+            your spike times (per each neuron).
+        '''
+        spikes = self[n]
+        if (len(spikes) < 2):
+            return np.array([])
+        return spikes[1:] - spikes[0:-1]
+
+
+    def ISI(self, n=None, reduceFun=None):
+        '''
+        Return interspike interval of one or more neurons.
+
+        *Parameters:*
+
+        n : None, int, or sequence 
+            Neuron numbers. If ``n`` is None, then compute ISI stats for all
+            neurons in the population. If ``n`` is an int, compute ISIs for
+            just neuron indexed by ``n``. Otherwise ``n`` is expected to be a
+            sequence of neuron indices.
+        reduceFun : callable or None
+            A reduction function (callable object) that performs an operation
+            on all the ISIs of the population. If ``None``, nothing is done.
+            The callable has to take one input parameter, which is the sequence
+            of ISIs. This allows to cascade data processing without the need
+            for duplicating spike timing data.
+
+        output: list
+            A list of outputs (depending on parameters) for each neuron, even if ``n``
+            is an int.
+        '''
+        if (reduceFun is None):
+            reduceFun = lambda x: x
+
+        res = []
+        if (n is None):
+            for n_id in xrange(len(self)):
+                res.append(reduceFun(self.ISINeuron(n_id)))
+        elif (isinstance(n, int)):
+            res.append(reduceFun(self.ISINeuron(n)))
+        else:
+            for n_id in n:
+                res.append(reduceFun(self.ISINeuron(n_id)))
+
+        return res
+
+
+    def ISICV(self, n=None):
+        '''
+        Coefficients of variation of inter-spike intervals of one or more
+        neurons in the population. For the description of parameters and
+        outputs and their semantics see :meth:`~PopulationSpikes.ISI`.
+        '''
+        return self.ISI(n, scipy.stats.variation)
+
 
     #######################################################################
     # Functions implementing collections.Sequence

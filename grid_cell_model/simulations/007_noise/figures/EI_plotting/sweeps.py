@@ -158,6 +158,7 @@ def plotVelTrial(sp, varList, iterList, noise_sigma, **kw):
     C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kw)
 
     print("plotVelTrial: max(C): {0}".format(np.max(C.ravel())))
+    print("plotVelTrial: min(C): {0}".format(np.min(C.ravel())))
 
     if (sigmaTitle):
         ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
@@ -274,7 +275,33 @@ def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
 
 
 
+##############################################################################
+# Scatter plots
+def plotScatter(space1, space2, types1, types2, iterList, NTrials1, NTrials2,
+        **kw):
+    ax = kw.pop('ax', plt.gca())
+    xlabel = kw.pop('xlabel', '')
+    ylabel = kw.pop('ylabel', '')
 
+    X, _, _ = aggr.aggregateType(space1, iterList, types1, NTrials1,
+            **kw)
+    Y, _, _  = aggr.aggregateType(space2, iterList, types2, NTrials2,
+            **kw)
+    #i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(errs)))
 
+    globalAxesSettings(ax)
+    ax.scatter(X.flatten(), Y.flatten(),  **kw)
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    #ax.text(ylabelPos, 0.5, 'Error (nrns/s/data point)', rotation=90, transform=ax.transAxes,
+    #        va='center', ha='right')
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.margins(0.05)
+    ax.autoscale_view(tight=True)
+
+    return ax
 
 

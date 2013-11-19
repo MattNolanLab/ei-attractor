@@ -54,17 +54,17 @@ def EIRaster(space, noise_sigma, spaceType, r, c, tLimits, trialNum=0, **kw):
 
 def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
     # kw arguments 
-    ax           = kw.pop('ax'           , plt.gca())
-    ylabel       = kw.pop('ylabel'       , 'Neuron #')
-    yticks       = kw.pop('yticks'       , True)
-    yticks_style = kw.pop('yticks_style' , 'separate')
-    ylabelPos    = kw.pop('ylabelPos'    , -0.22)
-    EColor       = kw.pop('ecolor'       , 'red')
-    IColor       = kw.pop('icolor'       , 'blue')
-    title        = kw.pop('title'        , True)
-    ann          = kw.pop('ann'          , False)
-    ann_EI       = kw.pop('ann_EI'       , False)
-    sigmaTitle   = kw.pop('sigmaTitle'   , False)
+    ax           = kw.pop('ax', plt.gca())
+    ylabel       = kw.pop('ylabel', 'Neuron #')
+    yticks       = kw.pop('yticks', True)
+    yticks_style = kw.pop('yticks_style', 'separate')
+    ylabelPos    = kw.pop('ylabelPos', -0.22)
+    EColor       = kw.pop('ecolor', 'red')
+    IColor       = kw.pop('icolor', 'blue')
+    title        = kw.pop('title', True)
+    ann          = kw.pop('ann', False)
+    ann_EI       = kw.pop('ann_EI', False)
+    sigmaTitle   = kw.pop('sigmaTitle', False)
     kw['markersize'] = kw.get('markersize', 1.0)
 
     ESpikes = ESpikes.windowed(tLimits)
@@ -72,6 +72,21 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
 
     ESenders, ETimes = ESpikes.rasterData()
     ISenders, ITimes = ISpikes.rasterData()
+
+    # TO REMOVE: this is to transform the neuron number from row-wise to column
+    # wise indexes. A better solution has to be devised in the future
+    Nx, Ny = 34, 30
+    N = Nx * Ny
+    if (N != ESpikes.N or N != ISpikes.N):
+        raise ValueError("Fix the number of neurons in plotEIRaster")
+    Ex = ESenders % Nx
+    Ey = ESenders // Ny
+    ESenders = Ey + Ex * Ny
+    Ix = ISenders % Nx
+    Iy = ISenders // Ny
+    ISenders = Iy + Ix * Ny
+
+
     ISenders += ESpikes.N
 
     globalAxesSettings(ax)
@@ -124,7 +139,8 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
 def plotAvgFiringRate(space, spaceType, noise_sigma, popType, r, c, tLimits,
         trialNum=0, **kw):
     # keyword arguments
-    ax = kw.pop('ax', plt.gca())
+    ax           = kw.pop('ax', plt.gca())
+    sigmaTitle   = kw.pop('sigmaTitle', False)
     kw['xlabel'] = False
     kw['ylabel'] = kw.get('ylabel', 'r (Hz)')
 
@@ -150,6 +166,11 @@ def plotAvgFiringRate(space, spaceType, noise_sigma, popType, r, c, tLimits,
     ax.xaxis.set_visible(False)
     #ax.yaxis.set_visible(False)
     ax.yaxis.set_major_locator(ti.LinearLocator(2))
+
+    # Annotations
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)), y=1.02,
+                va='bottom', ha='center')
 
     return ax
 
