@@ -341,6 +341,22 @@ class TestISI(unittest.TestCase):
             self.assertTrue(np.all(ISIs >=0))
 
 
+    def test_constant_ISI(self):
+        '''
+        .. todo::
+
+            this will only work if dt = 2^x. For now it should be enough.
+        '''
+        maxSize = 1011
+        dt = 0.25
+        for trainSize in xrange(2, maxSize):
+            senders = [0] * trainSize
+            times   = np.arange(trainSize, dtype=float) * dt
+            sp = aspikes.PopulationSpikes(1, senders, times)
+            res = sp.ISI(n=0)
+            self.assertTrue(np.all(res[0] == dt))
+
+
 
 class TestISICV(unittest.TestCase):
 
