@@ -35,7 +35,7 @@ from data_storage.sim_models.ei import extractSpikes, MonitoredSpikes
 
 __all__ = ['AutoCorrelationVisitor', 'CrossCorrelationVisitor',
         'BumpFittingVisitor', 'FiringRateVisitor', 'BumpVelocityVisitor',
-        'SpikeTrainXCVisitor']
+        'SpikeTrainXCVisitor', 'SpikeStatsVisitor']
 
 
 def findFreq(ac, dt, ext_idx, ext_t):
@@ -755,3 +755,42 @@ class SpikeTrainXCVisitor(DictDSVisitor):
                 correlations = correlations,
                 bin_edges    = bin_edges,
                 bin_centers  = bin_centers)
+
+
+class SpikeStatsVisitor(DictDSVisitor):
+    def __init__(self, monitorName, forceUpdate=False):
+        '''
+        Parameters:
+
+        monitorName : string
+            Name of the monitor in the data hierarchy.
+        '''
+        self.allowedMonitors = ['spikeMon_e', 'spikeMon_i']
+        if (not monitorName in self.allowedMonitors):
+            msg = "monitorName must be one of {0}".format(allowedMonitors)
+            raise ValueError(msg)
+
+        self.monitorName = monitorName
+        self.forceUpdate = forceUpdate
+
+        if (self.monitorName == "spikeMon_e"):
+            self.NName = "net_Ne"
+            self.outputName = "CV_e"
+        elif (self.monitorName == "spikeMon_i"):
+            self.NName = "net_Ni"
+            self.outputName = "CV_i"
+
+
+    def visitDictDataSet(self, ds, **kw):
+        data = ds.data
+        
+        if (not self.folderExists(data, ['analysis'])):
+            data['analysis'] = {}
+        a = data['analysis']
+
+        if (self.outputName in a.keys() and not self.forceUpdate):
+            log_info("SpikeStatsVisitor", "Data present. Skipping analysis.")
+            return
+
+        spikes = MonitoredSpikes(data, self.monitorName, self.NName)
+        a[self.outputName] = np.array(spikes.ISICV())

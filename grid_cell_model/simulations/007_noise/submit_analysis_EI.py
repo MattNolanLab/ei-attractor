@@ -28,10 +28,10 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'cluster'
+ENV         = 'workstation'
 appName     = 'analysis_EI.py'
 rtLimit     = '00:02:00'
-numCPU      = 1
+numCPU      = 4
 blocking    = True
 timePrefix  = False
 numRepeat   = 1
@@ -57,7 +57,7 @@ for noise_sigma in noise_sigma_all:
 
     p['shapeRows'] = rowN
     p['shapeCols'] = colN
-    p['forceUpdate'] = 0
+    p['forceUpdate'] = 1
 
     if (p['type'] == velocityType):
         percentile = 99.0

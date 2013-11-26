@@ -23,10 +23,17 @@ import numpy as np
 import sys
 import os
 
+import matplotlib.pyplot as plt
 from matplotlib.pyplot  import figure, subplot, hold, plot, xlabel, ylabel, \
         gca, legend, setp, xlim, annotate, tight_layout, rcParams, savefig
 
 from plotting.global_defs import globalAxesSettings, createColorbar
+
+from matplotlib import rc
+rc('pdf', fonttype=42)
+rc('mathtext', default='regular')
+
+plt.rcParams['font.size'] = 11
 
 linewidth=1
 
@@ -63,7 +70,7 @@ def plotWeights(ax):
     plot(d, [pGABA_const]*len(d), ':', color='red')
     plot(d, ES_inh_profile, linewidth=linewidth, color='blue', label="I")
     xlabel('Distance')
-    ylabel('G/G$_\mathrm{max}$')
+    ylabel('$G/G_{max}$')
     gca().yaxis.set_ticks([0, 1])
     gca().xaxis.set_ticks([x0, 0, x1])
     #legend(bbox_to_anchor=(0., 1.05, 1., 1.05), ncol=2, loc=3, mode='expand', borderaxespad=0.)

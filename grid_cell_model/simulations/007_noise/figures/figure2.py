@@ -28,9 +28,10 @@ from matplotlib.transforms import Bbox
 from copy import deepcopy
 
 
-from EI_plotting import sweeps, examples, details
+from EI_plotting          import sweeps, examples, details
+from EI_plotting          import aggregate as aggr
 from parameters           import JobTrialSpace2D, DataSpace
-from plotting.global_defs import globalAxesSettings
+from plotting.global_defs import globalAxesSettings, prepareLims
 from figures_shared       import plotOneHist, NoiseDataSpaces
 
 import logging as lg
@@ -58,47 +59,17 @@ noise_sigmas  = [0, 150, 300]
 exampleIdx    = [(0, 0), (0, 0), (0, 0)] # (row, col)
 bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
 velDataRoot   = None
-gridsDataRoot = None
+gridsDataRoot = 'output_local/even_spacing/grids'
 shape    = (31, 31)
 
-gammaSweep     = 1
-threshold      = 1
-freqHist       = 1
-detailed_noise = 1
-examplesFlag   = 1
+gammaSweep     = 0
+threshold      = 0
+freqHist       = 0
+detailed_noise = 0
+examplesFlag   = 0
+scatterPlot    = 1
 
 ###############################################################################
-
-def aggregate2DTrial(sp, varList, trialNumList):
-    varList = ['analysis'] + varList
-    retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean,
-            saveData=True)
-    return np.mean(retVar, 2)
-
-
-
-def computeYX(sp, iterList):
-    E, I = sp.getIteratedParameters(iterList)
-    Ne = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ne')
-    Ni = DataSpace.getNetParam(sp[0][0][0].data, 'net_Ni')
-    return E/Ne, I/Ni
-
-
-def drawColorbar(drawAx, label):
-    pos = drawAx.get_position()
-    pos.y0 -= 0.12
-    pos.y1 -= 0.12
-    pos.y1 = pos.y0 + 0.1*(pos.y1 - pos.y0)
-    w = pos.x1 - pos.x0
-    pos.x0 += 0.1*w
-    pos.x1 -= 0.1*w
-    clba = plt.gcf().add_axes(pos)
-    globalAxesSettings(clba)
-    clba.minorticks_on()
-    cb = plt.colorbar(cax=clba, orientation='horizontal',
-            ticks=ti.LinearLocator(2))
-    cb.set_label(label)
-
 
 def extractACExample(sp, r, c, trialNum):
     data = sp[r][c][trialNum].data
@@ -118,7 +89,7 @@ def aggregateBar2(spList, varLists, trialNumList, func=(None, None)):
             f = func[varIdx]
             if f is None:
                 f = lambda x: x
-            vars[varIdx].append(f(aggregate2DTrial(spList[idx], varLists[varIdx],
+            vars[varIdx].append(f(aggr.aggregate2DTrial(spList[idx], varLists[varIdx],
                 trialNumList).flatten()))
         noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
 
@@ -194,8 +165,8 @@ def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
     globalAxesSettings(ax)
 
     for idx, sp in enumerate(spList):
-        F = aggregate2DTrial(sp, FVarList, trialNumList).flatten()
-        C = aggregate2DTrial(sp, CVarList, trialNumList).flatten()
+        F = aggr.aggregate2DTrial(sp, FVarList, trialNumList).flatten()
+        C = aggr.aggregate2DTrial(sp, CVarList, trialNumList).flatten()
         filtIdx = np.logical_and(np.logical_not(np.isnan(F)), C > CThreshold)
         plotOneHist(F[filtIdx], bins=20, normed=True)
     leg = []
@@ -422,31 +393,56 @@ detailBottom = 0.3
 detailRight  = 0.98
 detailTop    = 0.9
 if (detailed_noise):
-    ylabelPos = -0.17
-    types = ('gamma', 'acVal')
+    ylabelPos = -0.15
 
+    # 1st autocorrelation peak (gamma power)
+    types = ('gamma', 'acVal')
+    fig = plt.figure(figsize=detailFigSize)
+    ax = fig.add_axes(Bbox.from_extents(detailLeft, detailBottom, detailRight,
+        detailTop))
+    _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
+            ylabelPos=ylabelPos,
+            xlabel='', xticks=False,
+            color='red')
+    _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+            xlabel='', xticks=False,
+            ylabel='$1^{st}$\nautocorrelation\npeak', ylabelPos=ylabelPos,
+            color='black')
+    ax.xaxis.set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.6))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
+    ax.set_ylim(prepareLims((0, 0.6), margin=0.03))
+    leg = ['B', 'C']
+    l = ax.legend([p31, p13], leg, loc=(0.85, 0.7), fontsize='x-small', frameon=False,
+            numpoints=1, handletextpad=0.05)
+    plt.setp(l.get_title(), fontsize='x-small')
+
+
+    fname = "figure2_detailed_noise_power.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+
+    # Gamma frequency
+    types = ('gamma', 'freq')
     fig = plt.figure(figsize=detailFigSize)
     ax = fig.add_axes(Bbox.from_extents(detailLeft, detailBottom, detailRight,
         detailTop))
     _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
             xlabel='',
-            color='black')
-    _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
-            ylabel='$1^{st}$ autocorrelation\npeak', ylabelPos=ylabelPos,
             color='red')
-    ax.yaxis.set_major_locator(ti.MultipleLocator(0.6))
-    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
-    ax.set_ylim([-0.01, 0.61])
-    leg = ['B', 'C']
-    l = ax.legend([p13, p31], leg, loc=(0.85, 0.7), fontsize='x-small', frameon=False,
-            numpoints=1, handletextpad=0.05)
-    plt.setp(l.get_title(), fontsize='x-small')
+    _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
+            ylabel='Frequency (Hz)', ylabelPos=ylabelPos,
+            color='black')
+    ax.yaxis.set_major_locator(ti.MultipleLocator(30))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(3))
+    ax.set_ylim(prepareLims((30, 90), margin=0.03))
 
-
-    fname = "figure2_detailed_noise.pdf"
+    fname = "figure2_detailed_noise_freq.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
+
 
 
 ##############################################################################
@@ -471,7 +467,7 @@ if (examplesFlag):
                 exampleRight, exampleTop))
             nsAnn = None
             xscale_kw = None
-            if (idx == 1):
+            if (idx == 0):
                 nsAnn = ns
                 if (nsIdx == len(ps.noise_sigmas)-1):
                     xscale_kw = example_xscale_kw
@@ -479,9 +475,47 @@ if (examplesFlag):
                     r=exampleRC[idx][0], c=exampleRC[idx][1],
                     trialNum=exampleTrialNum,
                     tStart = 2e3, tEnd=2.25e3,
-                    noise_sigma=nsAnn,
+                    noise_sigma=nsAnn, noise_sigma_xy=(0.95, 1),
                     xscale_kw=xscale_kw)
             plt.savefig(fname, dpi=300, transparent=True)
             plt.close()
 
+
+##############################################################################
+# Scatter plot of gridness score vs. gamma power
+scatterFigSize = detailFigSize
+scatterLeft   = detailLeft
+scatterBottom = detailBottom
+scatterRight  = 0.9
+scatterTop    = detailTop
+
+if (scatterPlot):
+    fig = plt.figure(figsize=scatterFigSize)
+    ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
+        scatterTop))
+
+    NTrialsGamma = 5
+    NTrialsGrids = 3
+    typesGamma = ['gamma', 'acVal']
+    typesGrids = ['grids', 'gridnessScore']
+    ax.hold('on')
+    scatterColors = ['blue', 'green', 'red']
+
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        color = scatterColors[ns_idx]
+        sweeps.plotScatter(ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
+                typesGrids, iterList, NTrialsGamma, NTrialsGrids,
+                color=color,
+                s=0.5,
+                xlabel='$1^{st}$ autocorrelation peak',
+                ylabel='Gridness score')
+    ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+    leg = ['0', '150', '300']
+    l = ax.legend(leg, loc=(0.9, 0.4), fontsize='small', frameon=False,
+            numpoints=1, title='$\sigma$ (pA)')
+    plt.setp(l.get_title(), size='small')
+
+    fname = outputDir + "/figure2_scatter_gamma_grids.pdf"
+    fig.savefig(fname, dpi=300, transparent=transparent)
 
