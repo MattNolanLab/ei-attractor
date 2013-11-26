@@ -39,7 +39,7 @@ rc('mathtext', default='regular')
 
 plt.rcParams['font.size'] = 11
 
-outputDir = "."
+outputDir = "panels/"
 
 NTrials=3
 gridTrialNumList = np.arange(NTrials)
@@ -53,10 +53,10 @@ gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 grids          = 1
-examples0      = 0
-examples150    = 0
-examples300    = 0
-detailed_noise = 0
+examples0      = 1
+examples150    = 1
+examples300    = 1
+detailed_noise = 1
 
 ##############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
@@ -96,12 +96,12 @@ slice_vertical = slice(13, 18)
 sliceAnn = None
 
 ann0 = dict(
-        txt='C',
+        txt='b',
         rc=exampleRC[0],
         xytext_offset=(1.5, 1),
         color='black')
 ann1 = dict(
-        txt='B',
+        txt='a',
         rc=exampleRC[1],
         xytext_offset=(0.5, 1.5),
         color='black')
@@ -126,7 +126,7 @@ if (grids):
             ignoreNaNs=True,
             annotations=ann,
             sliceAnn=sliceAnn)
-    fname = outputDir + "/figure1_sweeps0.pdf"
+    fname = outputDir + "/grids_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
@@ -148,7 +148,7 @@ if (grids):
             ignoreNaNs=True,
             annotations=ann,
             sliceAnn=sliceAnn)
-    fname = outputDir + "/figure1_sweeps150.pdf"
+    fname = outputDir + "/grids_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
@@ -171,14 +171,14 @@ if (grids):
     #for label in cax.yaxis.get_ticklabels():
     #    label.set_ha('right')
     #cax.tick_params(pad=30)
-    fname = outputDir + "/figure1_sweeps300.pdf"
+    fname = outputDir + "/grids_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
 
 ##############################################################################
 # Grid field examples
-exampleFName = outputDir + "/figure1_examples_{0}pA_{1}.pdf"
+exampleFName = outputDir + "/grids_examples_{0}pA_{1}.pdf"
 exTransparent = True
 exampleFigSize = (1, 1.2)
 exampleLeft   = 0.01
@@ -255,10 +255,10 @@ if (detailed_noise):
         detailTop))
     _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
-            color='red')
+            color='red', markerfacecolor='red', zorder=10)
     _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             ylabel='Gridness score', ylabelPos=ylabelPos,
-            color='black')
+            color='#505050')
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
     ax.set_ylim([-0.6, 1.2])
@@ -266,7 +266,7 @@ if (detailed_noise):
     l = ax.legend([p31, p13], leg, loc=(0.8, 1), fontsize='small', frameon=False,
             numpoints=1, handletextpad=0.05)
 
-    fname = "figure1_detailed_noise_gscore.pdf"
+    fname = outputDir + "/grids_detailed_noise_gscore.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 

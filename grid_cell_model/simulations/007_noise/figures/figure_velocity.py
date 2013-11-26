@@ -45,7 +45,7 @@ plt.rcParams['font.size'] = 11
 
 ###############################################################################
 
-outputDir = "."
+outputDir = "panels"
 NTrials = 5
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
@@ -58,11 +58,11 @@ shape = (31, 31)
 
 ccExamples      = 0
 spikeCCExamples = 0
-velLines        = 0
+velLines        = 1
 detailed_noise  = 1
-slope_sweeps    = 0
-rastersFlag     = 0
-rates           = 0
+slope_sweeps    = 1
+rastersFlag     = 1
+rates           = 1
 
 ###############################################################################
 
@@ -215,7 +215,7 @@ if (velLines):
     plotSlopes(ax, ps.v[0], positions[0], noise_sigma=ps.noise_sigmas[0],
             xlabel='',
             color='blue')
-    fname = outputDir + "/figure4_slope_examples_0.pdf"
+    fname = outputDir + "/velocity_slope_examples_0.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
 
     fig = plt.figure(figsize=(2.5, velFigsize[1]))
@@ -225,7 +225,7 @@ if (velLines):
             ylabel='',
             g_ann=False,
             color='green')
-    fname = outputDir + "/figure4_slope_examples_1.pdf"
+    fname = outputDir + "/velocity_slope_examples_1.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
 
     fig = plt.figure(figsize=(2.5, velFigsize[1]))
@@ -236,7 +236,7 @@ if (velLines):
             ylabel='',
             g_ann=False,
             color='red')
-    fname = outputDir + "/figure4_slope_examples_2.pdf"
+    fname = outputDir + "/velocity_slope_examples_2.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
 
 
@@ -276,7 +276,7 @@ if (detailed_noise):
     ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
     ax.spines['bottom'].set_visible(False)
 
-    fname = "figure4_detailed_noise_slope.pdf"
+    fname = outputDir + "/velocity_detailed_noise_slope.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
@@ -298,7 +298,7 @@ if (detailed_noise):
             numpoints=1, title='($g_E,\ g_I$) (nS)')
     plt.setp(l.get_title(), fontsize='x-small')
 
-    fname = "figure4_detailed_noise_error.pdf"
+    fname = outputDir + "/velocity_detailed_noise_error.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
@@ -326,7 +326,7 @@ if (ccExamples):
         plotCCExamples(ps, ns_idx=idx,
                 r=rasterRC[idx][0], c=rasterRC[idx][1],
                 ax=ax, **kw)
-        fname = outputDir + "/figure4_cc_examples{0}.pdf".format(noise_sigma)
+        fname = outputDir + "/velocity_cc_examples{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
         plt.close()
 
@@ -356,7 +356,7 @@ if (spikeCCExamples):
 
         plotSpikeXCExamples(ps, idx, r, c, plotIdx, nOthers, 'E')
 
-        fname = outputDir + "/figure4_spike_xc_E_examples{0}.pdf".format(noise_sigma)
+        fname = outputDir + "/velocity_spike_xc_E_examples{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
         plt.close()
 
@@ -373,7 +373,7 @@ if (spikeCCExamples):
 
         plotSpikeXCExamples(ps, idx, r, c, plotIdx, nOthers, 'I')
 
-        fname = outputDir + "/figure4_spike_xc_I_examples{0}.pdf".format(noise_sigma)
+        fname = outputDir + "/velocity_spike_xc_I_examples{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
         plt.close()
 
@@ -426,7 +426,7 @@ if (slope_sweeps):
             #cax.yaxis.tick_left()
             vmin=slope_vmin, vmax=slope_vmax,
             annotations=ann)
-    fname = outputDir + "/figure4_slope_sweeps0.pdf"
+    fname = outputDir + "/velocity_slope_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
     # noise_sigma = 150 pA
@@ -438,7 +438,7 @@ if (slope_sweeps):
             cbar=False, cbar_kw=slope_cbar_kw,
             vmin=slope_vmin, vmax=slope_vmax,
             annotations=ann)
-    fname = outputDir + "/figure4_slope_sweeps150.pdf"
+    fname = outputDir + "/velocity_slope_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
     # noise_sigma = 300 pA
@@ -450,7 +450,7 @@ if (slope_sweeps):
             cbar=False, cbar_kw=slope_cbar_kw,
             vmin=slope_vmin, vmax=slope_vmax,
             annotations=ann)
-    fname = outputDir + "/figure4_slope_sweeps300.pdf"
+    fname = outputDir + "/velocity_slope_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
@@ -484,7 +484,7 @@ if (rastersFlag):
             tLimits=tLimits,
             trialNum=trialNum,
             ann_EI=True)
-    fname = outputDir + "/figure4_raster0.png"
+    fname = outputDir + "/velocity_raster0.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
         
@@ -501,7 +501,7 @@ if (rastersFlag):
             tLimits=tLimits,
             trialNum=trialNum,
             ylabel='', yticks=False)
-    fname = outputDir + "/figure4_raster150.png"
+    fname = outputDir + "/velocity_raster150.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
         
@@ -518,7 +518,7 @@ if (rastersFlag):
             tLimits=tLimits,
             trialNum=trialNum,
             ylabel='', yticks=False)
-    fname = outputDir + "/figure4_raster300.png"
+    fname = outputDir + "/velocity_raster300.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
         
@@ -552,7 +552,7 @@ if (rates):
                 trialNum=trialNum,
                 sigmaTitle=True,
                 ax=ax, **kw)
-        fname = outputDir + "/figure4_rate_e{0}.pdf".format(noise_sigma)
+        fname = outputDir + "/velocity_rate_e{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
         plt.close()
 
@@ -574,7 +574,7 @@ if (rates):
                 tLimits=tLimits,
                 trialNum=trialNum,
                 ax=ax, **kw)
-        fname = outputDir + "/figure4_rate_i{0}.pdf".format(noise_sigma)
+        fname = outputDir + "/velocity_rate_i{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
         plt.close()
 

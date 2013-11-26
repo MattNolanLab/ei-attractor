@@ -27,7 +27,6 @@ from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
 from EI_plotting                import sweeps, details, examples, rasters
-from EI_plotting                import aggregate as aggr
 from plotting.global_defs       import globalAxesSettings
 from figures_shared             import NoiseDataSpaces
 from parameters                 import JobTrialSpace2D
@@ -42,7 +41,7 @@ rc('mathtext', default='regular')
 
 plt.rcParams['font.size'] = 11
 
-outputDir = "."
+outputDir = "panels/"
 
 NTrials=10
 iterList  = ['g_AMPA_total', 'g_GABA_total']
@@ -80,59 +79,6 @@ def plotBumpExample(sp, rc, iterList, **kw):
             fontsize='x-small',
             rateYPos=1.05, rateXPos=0.98,
             **kw)
-
-
-def plotGridnessVsFitErr(spListGrids, spListVelocity, trialNumList,
-        ylabelPos=-0.2, maxErr=None):
-    GVars = ['gridnessScore']
-    errVars = ['lineFitErr']
-    slopeVars = ['lineFitSlope']
-    noise_sigma = [0, 150, 300]
-    markers = ['o', '^', '*']
-    colors = ['blue', 'green', 'red']
-    errMins = []
-    errMaxs = []
-
-    ax = plt.gca()
-    plt.hold('on')
-    globalAxesSettings(ax)
-    ax.set_yscale('log')
-
-    for idx, (spGrids, spVel) in enumerate(zip(spListGrids, spListVelocity)):
-        G = aggr.aggregate2DTrial(spGrids, GVars, trialNumList).flatten()
-        errs = aggr.aggregate2D(spVel, errVars, funReduce=np.sum).flatten()
-        #slopes = np.abs(aggr.aggregate2D(spVel, slopeVars,
-        #    funReduce=None).flatten())
-        i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(errs)))
-        ax.scatter(G[i], errs[i],  s=5, marker=markers[idx], 
-                color=colors[idx], edgecolors='None')
-        errMins.append(np.min(errs[i]))
-        errMaxs.append(np.max(errs[i]))
-
-    if (maxErr is not None):
-        ax.set_ylim([0, maxErr])
-    else:
-        ax.set_ylim([0, None])
-
-    leg = []
-    for s in noise_sigma:
-        leg.append("{0}".format(int(s)))
-    l = ax.legend(leg, loc=(0.3, 0.85), title='$\sigma$ (pA)', frameon=False,
-            fontsize='small', ncol=3, columnspacing=1.5)
-    plt.setp(l.get_title(), fontsize='small')
-
-    ax.set_xlabel("Gridness score")
-    ax.set_ylabel('Error (nrns/s/data point)')
-    #ax.text(ylabelPos, 0.5, 'Error (nrns/s/data point)', rotation=90, transform=ax.transAxes,
-    #        va='center', ha='right')
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
-    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    ax.set_xmargin(0.05)
-    ax.autoscale_view(tight=True)
-    ax.set_ylim(np.min(errMins), np.max(errMaxs)*1.5)
 
 
 ###############################################################################
@@ -193,7 +139,7 @@ if (bumpSweep):
             cbar=False, cbar_kw=bump_cbar_kw,
             vmin=bump_vmin, vmax=bump_vmax,
             annotations=ann)
-    fname = outputDir + "/figure3_sweeps0.pdf"
+    fname = outputDir + "/bumps_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
     # noise_sigma = 150 pA
@@ -212,7 +158,7 @@ if (bumpSweep):
             cbar=False, cbar_kw=bump_cbar_kw,
             vmin=bump_vmin, vmax=bump_vmax,
             annotations=ann)
-    fname = outputDir + "/figure3_sweeps150.pdf"
+    fname = outputDir + "/bumps_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
     # noise_sigma = 300 pA
@@ -230,13 +176,13 @@ if (bumpSweep):
             cbar=True, cbar_kw=bump_cbar_kw,
             vmin=bump_vmin, vmax=bump_vmax,
             annotations=ann)
-    fname = outputDir + "/figure3_sweeps300.pdf"
+    fname = outputDir + "/bumps_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
 ##############################################################################
 # Bump examples
-exampleFName = outputDir + "/figure3_examples_{0}pA_{1}.pdf"
+exampleFName = outputDir + "/bumps_examples_{0}pA_{1}.pdf"
 bumpTrialNum = 0
 exTransparent = True
 exampleFigSize = (0.8, 0.8)
@@ -317,7 +263,7 @@ if (velSweep):
             sigmaTitle=False,
             cbar=False, cbar_kw=std_cbar_kw,
             vmin=std_vmin, vmax=std_vmax)
-    fname = outputDir + "/figure3_vel_std_sweeps0.pdf"
+    fname = outputDir + "/bumps_vel_std_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
@@ -330,7 +276,7 @@ if (velSweep):
             sigmaTitle=False,
             cbar=False, cbar_kw=std_cbar_kw,
             vmin=std_vmin, vmax=std_vmax)
-    fname = outputDir + "/figure3_vel_std_sweeps150.pdf"
+    fname = outputDir + "/bumps_vel_std_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
@@ -343,16 +289,16 @@ if (velSweep):
             sigmaTitle=False,
             cbar=True, cbar_kw=std_cbar_kw,
             vmin=std_vmin, vmax=std_vmax)
-    fname = outputDir + "/figure3_vel_std_sweeps300.pdf"
+    fname = outputDir + "/bumps_vel_std_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
-if (gridness_vs_error):
-    fig = plt.figure(figsize=(3.4, 2.5))
-    plotGridnessVsFitErr(ps.grids, ps.v, range(NTrials), maxErr=None)
-    fig.tight_layout()
-    fname = outputDir + "/figure3_gridness_vs_error.pdf"
-    plt.savefig(fname, dpi=300, transparent=True)
+#if (gridness_vs_error):
+#    fig = plt.figure(figsize=(3.4, 2.5))
+#    plotGridnessVsFitErr(ps.grids, ps.v, range(NTrials), maxErr=None)
+#    fig.tight_layout()
+#    fname = outputDir + "/bumps_gridness_vs_error.pdf"
+#    plt.savefig(fname, dpi=300, transparent=True)
 
 
 ##############################################################################
@@ -391,7 +337,7 @@ if (detailed_noise):
             numpoints=1, handletextpad=0.05)
     plt.setp(l.get_title(), fontsize='small')
 
-    fname = "figure3_detailed_noise_sigma.pdf"
+    fname = outputDir + "/bumps_detailed_noise_sigma.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
@@ -422,7 +368,7 @@ if (rastersFlag):
             ylabelPos=ylabelPos,
             tLimits=tLimits,
             ann_EI=True)
-    fname = outputDir + "/figure3_raster0.png"
+    fname = outputDir + "/bumps_raster0.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
         
@@ -438,7 +384,7 @@ if (rastersFlag):
             ylabelPos=ylabelPos,
             tLimits=tLimits,
             ylabel='', yticks=False)
-    fname = outputDir + "/figure3_raster150.png"
+    fname = outputDir + "/bumps_raster150.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
         
@@ -454,7 +400,7 @@ if (rastersFlag):
             ylabelPos=ylabelPos,
             tLimits=tLimits,
             ylabel='', yticks=False)
-    fname = outputDir + "/figure3_raster300.png"
+    fname = outputDir + "/bumps_raster300.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
         
@@ -486,7 +432,7 @@ if (rates):
                 color='red',
                 tLimits=tLimits,
                 ax=ax, **kw)
-        fname = outputDir + "/figure3_rate_e{0}.pdf".format(noise_sigma)
+        fname = outputDir + "/bumps_rate_e{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
         plt.close()
 
@@ -507,7 +453,7 @@ if (rates):
                 color='blue',
                 tLimits=tLimits,
                 ax=ax, **kw)
-        fname = outputDir + "/figure3_rate_i{0}.pdf".format(noise_sigma)
+        fname = outputDir + "/bumps_rate_i{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
         plt.close()
 

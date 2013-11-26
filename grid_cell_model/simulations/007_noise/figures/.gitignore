@@ -1,6 +1,6 @@
-/*.pdf
-/*.png
-/*.eps
+*.pdf
+*.png
+*.eps
 /*.tmp$$
 /slices
 /suppFigure_bumps

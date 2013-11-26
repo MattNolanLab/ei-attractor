@@ -51,7 +51,7 @@ cFreq = 'blue'
 cAC = 'green'
 cCount = 'red'
 
-outputDir = "."
+outputDir = "panels"
 NTrials = 5
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
@@ -62,11 +62,11 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape    = (31, 31)
 
-gammaSweep     = 0
-threshold      = 0
-freqHist       = 0
-detailed_noise = 0
-examplesFlag   = 0
+gammaSweep     = 1
+threshold      = 1
+freqHist       = 1
+detailed_noise = 1
+examplesFlag   = 1
 scatterPlot    = 1
 
 ###############################################################################
@@ -273,7 +273,7 @@ if (gammaSweep):
             cbar=False, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
-    fname = outputDir + "/figure2_sweeps0.pdf"
+    fname = outputDir + "/gamma_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = plt.figure(figsize=sweepFigSize)
@@ -287,7 +287,7 @@ if (gammaSweep):
             cbar=False, cbar_kw=F_cbar_kw,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
-    fname = outputDir + "/figure2_freq_sweeps0.pdf"
+    fname = outputDir + "/gamma_freq_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
 
@@ -306,7 +306,7 @@ if (gammaSweep):
             cbar=False, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
-    fname = outputDir + "/figure2_sweeps150.pdf"
+    fname = outputDir + "/gamma_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = plt.figure(figsize=sweepFigSize)
@@ -321,7 +321,7 @@ if (gammaSweep):
             cbar=False, cbar_kw=F_cbar_kw,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
-    fname = outputDir + "/figure2_freq_sweeps150.pdf"
+    fname = outputDir + "/gamma_freq_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
 
@@ -338,7 +338,7 @@ if (gammaSweep):
             cbar=True, cbar_kw=AC_cbar_kw,
             vmin=AC_vmin, vmax=AC_vmax,
             annotations=ann)
-    fname = outputDir + "/figure2_sweeps300.pdf"
+    fname = outputDir + "/gamma_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
     fig = plt.figure(figsize=sweepFigSize)
@@ -353,7 +353,7 @@ if (gammaSweep):
             cbar=True, cbar_kw=F_cbar_kw,
             vmin=F_vmin, vmax=F_vmax,
             annotations=annF)
-    fname = outputDir + "/figure2_freq_sweeps300.pdf"
+    fname = outputDir + "/gamma_freq_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
         
 
@@ -365,7 +365,7 @@ if (threshold):
             trialNumList=range(NTrials),
             ACThrList=np.arange(0, 0.65, 0.05))
     plt.tight_layout()
-    fname = 'figure2_AC_threshold_comparison.pdf'
+    fname = outputDir + '/gamma_AC_threshold_comparison.pdf'
     plt.savefig(fname, transparent=True, dpi=300)
 
 
@@ -374,7 +374,7 @@ if (freqHist):
     fig = plt.figure(figsize=(3.7, 2.5))
     plotFreqHistogram(ps.bumpGamma, range(NTrials), ylabelPos=ylabelPos)
     plt.tight_layout()
-    fname = outputDir + "/figure2_freq_histograms.pdf"
+    fname = outputDir + "/gamma_freq_histograms.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
 
 
@@ -419,7 +419,7 @@ if (detailed_noise):
     plt.setp(l.get_title(), fontsize='x-small')
 
 
-    fname = "figure2_detailed_noise_power.pdf"
+    fname = outputDir + "/gamma_detailed_noise_power.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
@@ -439,14 +439,14 @@ if (detailed_noise):
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(3))
     ax.set_ylim(prepareLims((30, 90), margin=0.03))
 
-    fname = "figure2_detailed_noise_freq.pdf"
+    fname = outputDir + "/gamma_detailed_noise_freq.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
 
 
 ##############################################################################
-exampleFName = outputDir + "/figure2_example{0}_{1}.pdf"
+exampleFName = outputDir + "/gamma_example{0}_{1}.pdf"
 exampleTrialNum = 0
 exampleFigSize = (2, 1.1)
 exampleLeft   = 0.08
@@ -516,6 +516,6 @@ if (scatterPlot):
             numpoints=1, title='$\sigma$ (pA)')
     plt.setp(l.get_title(), size='small')
 
-    fname = outputDir + "/figure2_scatter_gamma_grids.pdf"
+    fname = outputDir + "/gamma_scatter_gamma_grids.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
 

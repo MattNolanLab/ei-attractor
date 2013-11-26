@@ -25,7 +25,7 @@ dst_dir=~/Dropbox/shared_data/noise/figures/
 files="
     figure1.pdf
     figure2.pdf
-    figure2_scatter_gamma_grids.pdf
+    panels/gamma_scatter_gamma_grids.pdf
     figure3.pdf
     figure4.pdf
     figureS1.pdf
@@ -45,4 +45,4 @@ do
     cp -r $f $dst_dir
 done
 
-cp -r *.pdf $dst_dir/separate_panels
+cp -r panels $dst_dir/

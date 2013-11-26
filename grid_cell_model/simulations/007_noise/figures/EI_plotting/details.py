@@ -196,15 +196,16 @@ def plotSliceAnnotation(ax, X, Y, sliceSpan, type, **kw):
 ##############################################################################
 # Detailed noise levels
 def plotDetailedNoise(sp, NTrials, types, **kw):
-    xlabel           = kw.pop('xlabel', '$\sigma_{noise}$ (pA)')
-    ylabel           = kw.pop('ylabel', '')
-    ylabelPos        = kw.pop('ylabelPos', -0.4)
-    xticks           = kw.pop('xticks', True)
-    yticks           = kw.pop('yticks', True)
-    ax               = kw.pop('ax', plt.gca())
-    markersize       = kw.pop('markersize', 4)
-    color            = kw.pop('color', 'blue')
-    ignoreNaNs = kw.pop('ignoreNaNs', True)
+    xlabel                = kw.pop('xlabel', '$\sigma_{noise}$ (pA)')
+    ylabel                = kw.pop('ylabel', '')
+    ylabelPos             = kw.pop('ylabelPos', -0.4)
+    xticks                = kw.pop('xticks', True)
+    yticks                = kw.pop('yticks', True)
+    ax                    = kw.pop('ax', plt.gca())
+    markersize            = kw.pop('markersize', 4)
+    kw['markerfacecolor'] = kw.get('markerfacecolor', 'none')
+    color                 = kw.pop('color', 'blue')
+    ignoreNaNs            = kw.pop('ignoreNaNs', True)
 
     iterList = ['noise_sigma', 'g_AMPA_total']
 
@@ -222,7 +223,7 @@ def plotDetailedNoise(sp, NTrials, types, **kw):
     noise_sigma_all = np.repeat(np.reshape(noise_sigma, (1, len(noise_sigma))),
             data.shape[1], axis=0).T
     p1, = ax.plot(noise_sigma_all.ravel(), data.ravel(), 'o', markeredgecolor=color,
-            markersize=markersize, markerfacecolor='none',  **kw)
+            markersize=markersize, **kw)
     l1, = ax.plot(noise_sigma, mean, '-', color=color, markersize=markersize, **kw)
     ax.set_xlabel(xlabel)
     ax.text(ylabelPos, 0.5, ylabel, va='center', ha='center',
