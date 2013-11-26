@@ -63,8 +63,21 @@ def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
 
 ###############################################################################
 
-def getBumpCurrentSlope(noise_sigma, threshold=0):
-    fileName = 'bump_slope_data/bump_slope_{0}pA.h5'.format(int(noise_sigma))
+def getBumpCurrentSlope(noise_sigma, threshold=0, type=None):
+    '''
+    type : string, optional
+        If ``None`` the regular bump slope files will be used. If ``no_theta``,
+        the bump slope files specific for the simulations wihtout theta
+        oscillations will be used.
+    '''
+    if (type is None):
+        fileName = 'bump_slope_data/bump_slope_{0}pA.h5'.format(int(noise_sigma))
+    elif (type == 'no_theta'):
+        fileName = 'bump_slope_data/bump_slope_no_theta_{0}pA.h5'.format(int(noise_sigma))
+
+    log_msg = 'Using the following file for bump slope data:\n  {0}'
+    log_info("getBumpCurrentSlope", log_msg.format(fileName))
+
     ds = DataStorage.open(fileName, 'r')
     slopes = np.abs(ds['lineFitSlope'].flatten())
     ds.close()

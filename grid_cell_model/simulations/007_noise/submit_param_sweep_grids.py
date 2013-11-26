@@ -36,7 +36,7 @@ for noise_sigma in noise_sigma_all:
 
     # Submitting
     ENV         = 'cluster'
-    simRootDir  = 'output/even_spacing/grids'
+    simRootDir  = 'output/no_theta/grids'
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
     appName     = 'simulation_grids.py'
     rtLimit     = '05:00:00'
@@ -48,7 +48,7 @@ for noise_sigma in noise_sigma_all:
 
     p['time']              = 600e3  # ms
     p['nthreads']          = 1
-    p['ntrials']           = 3
+    p['ntrials']           = 1
     p['velON']             = 1
 
 
@@ -57,8 +57,9 @@ for noise_sigma in noise_sigma_all:
     startG = 0.0     # nS
     endG   = 6120.0  # nS
 
-    extraIterparams = {'bumpCurrentSlope' : getBumpCurrentSlope(p['noise_sigma'],
-        threshold=0.05)}
+    bumpCurrentSlope = getBumpCurrentSlope(p['noise_sigma'],
+            threshold=-np.infty, type='no_theta')
+    extraIterparams = {'bumpCurrentSlope' : bumpCurrentSlope}
     #extraIterparams['bumpCurrentSlope'] = [1.0]
 
     ###############################################################################
