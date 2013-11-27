@@ -527,13 +527,27 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         return res
 
 
-    def ISICV(self, n=None):
+    def ISICV(self, n=None, winLen=None):
         '''
         Coefficients of variation of inter-spike intervals of one or more
         neurons in the population. For the description of parameters and
-        outputs and their semantics see :meth:`~PopulationSpikes.ISI`.
+        outputs and their semantics see also :meth:`~PopulationSpikes.ISI`.
+
+        **Parameters**:
+        ``winLen`` : float, list of floats, or ``None``
+            Specify the maximal ISI value, i.e. use windowed coefficient of
+            variation. If ``None``, use the whole range.
         '''
-        return self.ISI(n, scipy.stats.variation)
+        cvfunc = scipy.stats.variation
+        if (winLen is None):
+            f = scipy.stats.variation
+        elif (isinstance(winLen, collections.Sequence) or
+                isinstance(winLen, np.ndarray)):
+            f = lambda x: np.asarray([cvfunc(x[x <= wl]) for wl in winLen])
+        else:
+            f = lambda x: cvfunc(x[x <= winLen])
+        return self.ISI(n, f)
+
 
 
     #######################################################################
