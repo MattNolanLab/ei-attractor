@@ -22,11 +22,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure, plot, pcolormesh, subplot2grid, savefig,\
         colorbar, axis, xlabel, ylabel
+import matplotlib.ticker as ti
 import os
 import errno
 
 from interface       import DictDSVisitor
-from data_storage.sim_models.ei import extractStateVariable, sumAllVariables
+from data_storage.sim_models.ei import extractStateVariable, sumAllVariables, \
+        MonitoredSpikes
 from plotting.signal import signalPlot
 from analysis.spikes import PopulationSpikes
 from analysis.grid_cells import extractSpikePositions2D, SNSpatialRate2D, \
@@ -35,7 +37,7 @@ from plotting.bumps  import torusFiringRate
 from plotting.grids  import plotSpikes2D
 from otherpkg.log    import log_warn, log_info
 
-__all__ = ['DetailedPlotVisitor', 'GridPlotVisitor']
+__all__ = ['DetailedPlotVisitor', 'GridPlotVisitor', 'ISIPlotVisitor']
 
 
 class DetailedPlotVisitor(DictDSVisitor):
@@ -532,3 +534,129 @@ class GridPlotVisitor(DictDSVisitor):
         data['analysis'] = out
 
 
+
+###############################################################################
+class ISIPlotVisitor(DictDSVisitor):
+    def __init__(self, rootDir, spikeType, nCols, nRows, **kw):
+        '''
+        Parameters
+        ----------
+        rootDir : string
+            Root output directory where to store the output figures.
+        spikeType : string
+            Type of the analysis, can be either 'E' - to plot grid field data
+            for E cells, or 'I' to plot them for the I cells.
+        nCols : int
+            Number of columns in the grid plot
+        nRows : int
+            Number of rows in the grid plot
+        '''
+        self.rootDir   = rootDir
+        self.outputDir = 'ISI_statistics'
+        self.setSpikeType(spikeType)
+        self.nCols     = nCols
+        self.nRows     = nRows
+
+        self.ISINWindows = kw.pop('ISINWindows', 0)
+
+        self.hist_kw   = kw
+
+
+    def _checkSpikeType(self, t):
+        if (t == 'E' or t == 'I'):
+            return True
+        msg = "spikeType must be 'E' or 'I'. Got '{0}'".format(spikeType)
+        raise ValueError(msg)
+
+    def setSpikeType(self, t):
+        self._checkSpikeType(t)
+        self._spikeType = t
+
+
+    def createOutputDirs(self):
+        # Create output directory(ies)
+        try:
+            os.makedirs('{0}/{1}'.format(self.rootDir, self.outputDir))
+        except OSError as e:
+            if (e.errno == errno.EEXIST):
+                log_warn("GridPlotVisitor", 'Output directory already ' +
+                        'exists. This might overwrite files.')
+            else:
+                raise e
+
+
+    def visitDictDataSet(self, ds, **kw):
+        data = ds.data
+
+        simT = self.getOption(data, 'time') # ms
+        thetaT = 1e3 / self.getOption(data, 'theta_freq')
+        jobNum = self.getOption(data, 'job_num')
+        if ('trialNum' in kw.keys()):
+            trialNum = kw['trialNum']
+        else:
+            trialNum = 0
+        self.createOutputDirs()
+        fileNameTemplate = "{0}/{1}/job{2:05}_trial{3:03}_{4}".format(self.rootDir,
+                self.outputDir, jobNum, trialNum, self._spikeType)
+
+        if self._spikeType == 'E':
+            monName = 'spikeMon_e'
+            NName   = 'net_Ne'
+        if self._spikeType == 'I':
+            monName = 'spikeMon_i'
+            NName   = 'net_Ni'
+
+         
+        # Pick the most-spiking neurons
+        spikes = MonitoredSpikes(data, monName, NName)
+        rate = spikes.avgFiringRate(0, simT)
+        maxRateIdx = np.argsort(rate)
+        ISIs = spikes.ISI(maxRateIdx[0:self.nRows*self.nCols])
+        
+        ## ISI histogram plots
+        #fig = plt.figure(figsize=(11.69, 6.57))
+        #gs = plt.GridSpec(self.nRows, self.nCols)
+        #it = 0
+        #for r in xrange(self.nRows):
+        #    for c in xrange(self.nCols):
+        #        if (it >= spikes.N):
+        #            break
+
+        #        ax = plt.subplot(gs[r, c]) 
+        #        ax.hist(ISIs[it], **self.hist_kw)
+        #        if (r == self.nRows - 1):
+        #            ax.set_xlabel('ISI (ms)')
+        #        ax.xaxis.set_major_locator(ti.LinearLocator(2))
+        #        ax.set_yticks([])
+        #        it += 1
+
+        #gs.tight_layout(fig)
+        #fname = '{0}_isi_histograms.pdf'.format(fileNameTemplate)
+        #fig.savefig(fname)
+
+        # CV plots, as a function of window length
+        if (self.ISINWindows != 0):
+            winLens = np.arange(1, self.ISINWindows+1)*thetaT
+            CVs = spikes.ISICV(n=maxRateIdx[0:self.nRows*self.nCols],
+                    winLen=winLens)
+            fig = plt.figure(figsize=(11.69, 6.57))
+            gs = plt.GridSpec(self.nRows, self.nCols)
+            it = 0
+            for r in xrange(self.nRows):
+                for c in xrange(self.nCols):
+                    if (it >= spikes.N):
+                        break
+
+                    ax = plt.subplot(gs[r, c]) 
+                    ax.plot(winLens, CVs[it])
+                    if (r == self.nRows - 1):
+                        ax.set_xlabel('Window (ms)')
+                    ax.xaxis.set_major_locator(ti.LinearLocator(2))
+                    ax.yaxis.set_major_locator(ti.MaxNLocator(3))
+                    it += 1
+
+            gs.tight_layout(fig)
+            fname = '{0}_isi_CV_window.pdf'.format(fileNameTemplate)
+            fig.savefig(fname)
+
+        
