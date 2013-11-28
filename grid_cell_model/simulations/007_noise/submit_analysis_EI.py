@@ -28,10 +28,10 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'workstation'
+ENV         = 'cluster'
 appName     = 'analysis_EI.py'
 rtLimit     = '00:02:00'
-numCPU      = 4
+numCPU      = 1
 blocking    = True
 timePrefix  = False
 numRepeat   = 1
@@ -43,9 +43,9 @@ gridsType = 'grids'
 
 noise_sigma_all = [0.0, 150.0, 300.0] # pA
 dirs = \
-    ('output/no_theta/velocity',   velocityType,  '{0}pA', (31, 31))
+    ('output/no_theta/grids',      gridsType,     '{0}pA', (31, 31))
+    #('output/no_theta/velocity',   velocityType,  '{0}pA', (31, 31))
     #('output/no_theta/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
-    #('output/grids',      gridsType,     '{0}pA', (30, 30))
 
 for noise_sigma in noise_sigma_all:
     p = {}
@@ -57,7 +57,7 @@ for noise_sigma in noise_sigma_all:
 
     p['shapeRows'] = rowN
     p['shapeCols'] = colN
-    p['forceUpdate'] = 1
+    p['forceUpdate'] = 0
 
     if (p['type'] == velocityType):
         percentile = 99.0
