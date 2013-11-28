@@ -33,7 +33,7 @@ files="
     figureS3.pdf
     figureS4.pdf
     suppFigure_velocity.pdf
-    suppFigure_no_theta.png
+    suppFigure_no_theta.pdf
     slices
     "
 

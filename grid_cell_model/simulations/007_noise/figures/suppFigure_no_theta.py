@@ -27,7 +27,7 @@ from matplotlib.transforms import Bbox
 from copy import deepcopy
 
 
-import EI_plotting as EI
+from EI_plotting import sweeps, examples
 from parameters  import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings
 from figures_shared import plotOneHist, NoiseDataSpaces
@@ -48,19 +48,25 @@ cFreq = 'blue'
 cAC = 'green'
 cCount = 'red'
 
-outputDir = "."
+outputDir = "panels"
 NTrials = 5
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas  = [0, 150, 300]
-gammaRC    = [(0, 0), (0, 1), (0, 0)] # (row, col)
+gammaRC = [(0, 0), (0, 1), (0, 0)] # (row, col)
+gridRC  = [(0, 0), (0, 0), (0, 0)] # (row, col)
 bumpDataRoot  = 'output_local/no_theta/gamma_bump'
-velDataRoot   = None
-gridsDataRoot = None
+velDataRoot   = 'output_local/no_theta/velocity'
+gridsDataRoot = 'output_local/no_theta/grids'
 shape    = (31, 31)
 
-gammaSweep = 1
-examples   = 1
+grids           = 0
+bumpSweep       = 0
+slopeSweeps     = 0
+slopeErrSweeps  = 1
+gammaPowerSweep = 0
+gammaFreqSweep  = 0
+gammaExamples   = 0
 
 
 ###############################################################################
@@ -70,14 +76,183 @@ ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 # gamma example rows and columns
 exampleRC = ( (5, 5), (15, 15) )
 
-
-sweepFigSize = (2, 2.8)
-sweepLeft    = 0.17
-sweepBottom  = 0.1
-sweepRight   = 0.95
-sweepTop     = 0.9
+sweepFigSize = (3.5, 2.5)
+sweepLeft    = 0.15
+sweepBottom  = 0.2
+sweepRight   = 0.87
+sweepTop     = 0.85
 transparent  = True
 
+##############################################################################
+gridNTrials = 3
+gridTrialNumList = np.arange(gridNTrials)
+varList = ['gridnessScore']
+
+grid_cbar_kw= {
+    'label'      : 'Gridness score',
+    'location'   : 'right',
+    'shrink'     : 0.8,
+    'pad'        : -0.05,
+    'ticks'      : ti.MultipleLocator(0.5),
+    'rasterized' : True}
+
+grid_vmin = -0.57
+grid_vmax = 1.048
+
+if (grids):
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=sweepFigSize)
+        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+            sweepTop))
+        if (ns_idx == 2):
+            cbar = True
+        else:
+            cbar = False
+        kw = {}
+        if (ns_idx != 0):
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        sweeps.plotGridTrial(ps.grids[ns_idx], varList, iterList,
+                noise_sigma=noise_sigma,
+                trialNumList=gridTrialNumList,
+                ax=ax,
+                r=gridRC[ns_idx][0], c=gridRC[ns_idx][1],
+                cbar=cbar, cbar_kw=grid_cbar_kw,
+                vmin=grid_vmin, vmax=grid_vmax,
+                xlabel='', xticks=False,
+                ignoreNaNs=False,
+                **kw)
+        fname = outputDir + "/suppFigure_no_theta_grids{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                transparent=transparent)
+        plt.close()
+
+
+
+
+##############################################################################
+sigmaBumpText = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
+sigmaVarList = ['bump_e', 'sigma']
+bumpTrialNumList = np.arange(5)
+bump_vmin = 0
+bump_vmax = 0.516
+bump_cbar_kw= dict(
+        orientation='vertical',
+        shrink=0.8, pad=-0.05,
+        ticks=ti.MultipleLocator(0.25),
+        label=sigmaBumpText)
+
+if (bumpSweep):
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=sweepFigSize)
+        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+            sweepTop))
+        if (ns_idx == 2):
+            cbar = True
+        else:
+            cbar = False
+        kw = {}
+        if (ns_idx != 0):
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        sweeps.plotBumpSigmaTrial(ps.bumpGamma[ns_idx], sigmaVarList, iterList,
+                noise_sigma=noise_sigma,
+                r=gammaRC[ns_idx][0], c=gammaRC[ns_idx][1],
+                ax=ax,
+                trialNumList=bumpTrialNumList,
+                cbar=cbar, cbar_kw=bump_cbar_kw,
+                sigmaTitle=False,
+                xlabel='', xticks=False,
+                vmin=bump_vmin, vmax=bump_vmax,
+                **kw)
+
+        fname = outputDir + "/suppFigure_no_theta_bump_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                transparent=transparent)
+        plt.close()
+
+
+##############################################################################
+slopeVarList = ['lineFitSlope']
+slope_vmin = 0
+slope_vmax = 3.64
+
+slope_cbar_kw= dict(
+        location='right',
+        shrink = 0.8,
+        pad = -0.05,
+        labelpad=8,
+        label='Slope\n(neurons/s/pA)',
+        ticks=ti.MultipleLocator(1))
+
+if (slopeSweeps):
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=sweepFigSize)
+        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+            sweepTop))
+        if (ns_idx == 2):
+            cbar = True
+        else:
+            cbar = False
+        kw = {}
+        if (ns_idx != 0):
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        _, ax, cax = sweeps.plotVelTrial(ps.v[ns_idx], slopeVarList, iterList,
+                noise_sigma, sigmaTitle=False,
+                ax=ax,
+                cbar=cbar, cbar_kw=slope_cbar_kw,
+                vmin=slope_vmin, vmax=slope_vmax,
+                xlabel='', xticks=False,
+                **kw)
+        fname = outputDir + "/suppFigure_no_theta_slope_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
+
+##############################################################################
+errVarList = ['lineFitErr']
+err_vmin = 0
+err_vmax = 10
+
+err_cbar_kw = dict(
+    label = 'Fit error (neurons/s)',
+    orientation = 'vertical',
+    shrink = 0.8,
+    pad = -0.05,
+    ticks = ti.MultipleLocator(4),
+    rasterized = True,
+    extend='max', extendfrac=0.1)
+
+
+if (slopeErrSweeps):
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=sweepFigSize)
+        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+            sweepTop))
+        if (ns_idx == 2):
+            cbar = True
+        else:
+            cbar = False
+        kw = {}
+        if (ns_idx != 0):
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        _, ax, cax = sweeps.plotVelTrial(ps.v[ns_idx], errVarList, iterList,
+                noise_sigma=noise_sigma,
+                ax=ax,
+                cbar=cbar, cbar_kw=err_cbar_kw,
+                xlabel='', xticks=False,
+                vmin=err_vmin, vmax=err_vmax,
+                sigmaTitle=False,
+                **kw)
+        fname = outputDir + "/suppFigure_no_theta_err_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                transparent=transparent)
+
+
+
+##############################################################################
 AC_vmin = -0.21
 AC_vmax = 0.96
 F_vmin  = 25
@@ -87,137 +262,75 @@ ACVarList = ['acVal']
 FVarList  = ['freq']
 
 AC_cbar_kw = dict(
-        orientation='horizontal',
+        orientation='vertical',
         ticks=ti.MultipleLocator(0.3),
         shrink=0.8,
-        pad=0.2,
+        pad=-0.05,
         label='Correlation')
 F_cbar_kw = dict(
-        orientation='horizontal',
+        orientation='vertical',
         ticks=ti.MultipleLocator(30),
         shrink=0.8,
-        pad=0.2,
+        pad=-0.05,
         label='Frequency',
         extend='max', extendfrac=0.1)
 
 
-ann_color = 'black'
-ann0 = dict(
-        txt='B',
-        rc=exampleRC[0],
-        xytext_offset=(1.5, 0),
-        color=ann_color)
-ann1 = dict(
-        txt='C',
-        rc=exampleRC[1],
-        xytext_offset=(1.5, 1),
-        color=ann_color)
-ann = [ann0, ann1]
-annF = [deepcopy(ann0), deepcopy(ann1)]
-annF[0]['txt'] = 'B'
-
-
-if (gammaSweep):
-    # noise_sigma = 0 pA
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    EI.plotACTrial(ps.bumpGamma[0], ACVarList, iterList,
-            noise_sigma=ps.noise_sigmas[0],
-            r=gammaRC[0][0], c=gammaRC[0][1],
-            ax=ax,
-            trialNumList=xrange(NTrials),
-            xlabel='', xticks=False,
-            cbar=False, cbar_kw=AC_cbar_kw,
-            vmin=AC_vmin, vmax=AC_vmax,
-            annotations=ann)
-    fname = outputDir + "/suppFigure_no_theta_sweeps0.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    EI.plotACTrial(ps.bumpGamma[0], FVarList, iterList,
-            noise_sigma=ps.noise_sigmas[0],
-            r=gammaRC[0][0], c=gammaRC[0][1],
-            ax=ax,
-            trialNumList=xrange(NTrials),
-            xlabel='', xticks=False,
-            ylabel='', yticks=False,
-            cbar=False, cbar_kw=F_cbar_kw,
-            sigmaTitle=True,
-            vmin=F_vmin, vmax=F_vmax,
-            annotations=annF)
-    fname = outputDir + "/suppFigure_no_theta_freq_sweeps0.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
+if (gammaPowerSweep):
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=sweepFigSize)
+        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+            sweepTop))
+        if (ns_idx == 2):
+            cbar = True
+        else:
+            cbar = False
+        kw = {}
+        if (ns_idx != 0):
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        sweeps.plotACTrial(ps.bumpGamma[ns_idx], ACVarList, iterList,
+                noise_sigma=noise_sigma,
+                r=gammaRC[ns_idx][0], c=gammaRC[ns_idx][1],
+                ax=ax,
+                trialNumList=xrange(NTrials),
+                xlabel='', xticks=False,
+                sigmaTitle=False,
+                cbar=cbar, cbar_kw=AC_cbar_kw,
+                vmin=AC_vmin, vmax=AC_vmax,
+                **kw)
+        fname = outputDir + "/suppFigure_no_theta_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                transparent=transparent)
+        plt.close()
         
 
-    # noise_sigma = 150 pA
-    for a in ann:
-        a['color'] = 'black'
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+if (gammaFreqSweep):
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=sweepFigSize)
+        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    EI.plotACTrial(ps.bumpGamma[1], ACVarList, iterList,
-            noise_sigma=ps.noise_sigmas[1],
-            r=gammaRC[1][0], c=gammaRC[1][1],
-            ax=ax,
-            trialNumList=xrange(NTrials),
-            xlabel='', xticks=False,
-            cbar=False, cbar_kw=AC_cbar_kw,
-            vmin=AC_vmin, vmax=AC_vmax,
-            annotations=ann)
-    fname = outputDir + "/suppFigure_no_theta_sweeps150.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    EI.plotACTrial(ps.bumpGamma[1], FVarList, iterList,
-            noise_sigma=ps.noise_sigmas[1],
-            r=gammaRC[1][0], c=gammaRC[1][1],
-            ax=ax,
-            trialNumList=xrange(NTrials),
-            xlabel='', xticks=False,
-            ylabel='', yticks=False,
-            cbar=False, cbar_kw=F_cbar_kw,
-            sigmaTitle=True,
-            vmin=F_vmin, vmax=F_vmax,
-            annotations=annF)
-    fname = outputDir + "/suppFigure_no_theta_freq_sweeps150.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
-
-    # noise_sigma = 300 pA
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    EI.plotACTrial(ps.bumpGamma[2], ACVarList, iterList,
-            noise_sigma=ps.noise_sigmas[2],
-            r=gammaRC[2][0], c=gammaRC[2][1],
-            ax=ax,
-            trialNumList=xrange(NTrials),
-            cbar=True, cbar_kw=AC_cbar_kw,
-            vmin=AC_vmin, vmax=AC_vmax,
-            annotations=ann)
-    fname = outputDir + "/suppFigure_no_theta_sweeps300.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    EI.plotACTrial(ps.bumpGamma[2], FVarList, iterList,
-            noise_sigma=ps.noise_sigmas[2],
-            r=gammaRC[2][0], c=gammaRC[2][1],
-            ax=ax,
-            trialNumList=xrange(NTrials),
-            ylabel='', yticks=False,
-            cbar=True, cbar_kw=F_cbar_kw,
-            sigmaTitle=True,
-            vmin=F_vmin, vmax=F_vmax,
-            annotations=annF)
-    fname = outputDir + "/suppFigure_no_theta_freq_sweeps300.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
+        if (ns_idx == 2):
+            cbar = True
+        else:
+            cbar = False
+        kw = {}
+        if (ns_idx != 0):
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        sweeps.plotACTrial(ps.bumpGamma[ns_idx], FVarList, iterList,
+                noise_sigma=noise_sigma,
+                r=gammaRC[ns_idx][0], c=gammaRC[ns_idx][1],
+                ax=ax,
+                trialNumList=xrange(NTrials),
+                cbar=cbar, cbar_kw=F_cbar_kw,
+                sigmaTitle=False,
+                vmin=F_vmin, vmax=F_vmax,
+                **kw)
+        fname = outputDir + "/suppFigure_no_theta_freq_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                transparent=transparent)
+        plt.close()
         
 
 
@@ -229,7 +342,7 @@ exampleLeft   = 0.01
 exampleBottom = 0.01
 exampleRight  = 0.99
 exampleTop    = 0.82
-if (examples):
+if (gammaExamples):
     for nsIdx, ns in enumerate(ps.noise_sigmas):
         for idx, rc in enumerate(exampleRC):
             fname = exampleFName.format(ns, idx)
@@ -240,7 +353,7 @@ if (examples):
                 nsAnn = ns
             else:
                 nsAnn = None
-            EI.plotGammaExample(ps.bumpGamma[nsIdx], ax=ax,
+            examples.plotGammaExample(ps.bumpGamma[nsIdx], ax=ax,
                     r=exampleRC[idx][0], c=exampleRC[idx][1],
                     trialNum=exampleTrialNum,
                     tStart = 2e3, tEnd=2.25e3,
