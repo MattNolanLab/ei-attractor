@@ -25,20 +25,22 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 
-noise_sigmas = [0, 150, 300]
+ns_all  = [0, 150, 300]
+ns_none = [-100]
 dirs = \
-    ('{0}pA',    (31, 31))
+    ('output/detailed_noise/grids/EI-3_1', (31, 9), ns_none, 1)
+    #('output/detailed_noise/grids/EI-1_3', (31, 9), ns_none, 1)
+    #('output/even_spacing/grids/{0}pA',    (31, 31), ns_all, 3)
 
-NTrials = 3
-trialNumList = xrange(NTrials)
-shape   = dirs[1]
 varListBase = ['analysis']
 loadData = False
 
 ################################################################################
+shape        = dirs[1]
+noise_sigmas = dirs[2]
+trialNumList = xrange(dirs[3])
 for noise_sigma in noise_sigmas:
-    dir = dirs[0].format(int(noise_sigma))
-    rootDir = "output/even_spacing/grids/{0}".format(dir)
+    rootDir = dirs[0].format(int(noise_sigma))
 
     sp = JobTrialSpace2D(shape, rootDir)
     sp.aggregateData(varListBase + ['rateMap_e'], trialNumList, funReduce=None,

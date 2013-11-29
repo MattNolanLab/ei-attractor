@@ -754,14 +754,14 @@ class ConstantVelocityNetwork(BasicGridCellNetwork):
 
         self.setConstantVelocityCurrent_e(vel)
 
-    def getSpikes(self):
-        '''
-        Return a dictionary of spike monitor data.
-        '''
-        out = {}
-        out['spikeMon_e'] = self.getSpikeMonData(self.spikeMon_e,
-                self.E_pop[0])
-        return out
+    #def getSpikes(self):
+    #    '''
+    #    Return a dictionary of spike monitor data.
+    #    '''
+    #    out = dict(
+    #        spikeMon_e=self.getSpikeMonData(self.spikeMon_e, self.E_pop[0]),
+    #        spikeMon_i=self.getSpikeMonData(self.spikeMon_i, self.I_pop[0]))
+    #    return out
 
 
     def getMinimalSaveData(self):

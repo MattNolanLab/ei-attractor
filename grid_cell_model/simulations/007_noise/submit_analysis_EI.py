@@ -31,7 +31,7 @@ lg.basicConfig(level=lg.DEBUG)
 ENV         = 'workstation'
 appName     = 'analysis_EI.py'
 rtLimit     = '00:02:00'
-numCPU      = 4
+numCPU      = 1
 blocking    = True
 timePrefix  = False
 numRepeat   = 1
@@ -43,8 +43,8 @@ gridsType = 'grids'
 
 noise_sigma_all = [0.0, 150.0, 300.0] # pA
 dirs = \
-    ('output_local/even_spacing/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
-    #('output/even_spacing/grids',      gridsType,     '{0}pA', (31, 31))
+    ('output/even_spacing/grids',      gridsType,     '{0}pA', (31, 31))
+    #('output_local/even_spacing/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
     #('output/even_spacing/velocity',   velocityType,  '{0}pA', (31, 31))
 
 for noise_sigma in noise_sigma_all:

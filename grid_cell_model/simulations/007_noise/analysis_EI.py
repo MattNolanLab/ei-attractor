@@ -75,8 +75,14 @@ elif (o.type == "velocity"):
 elif (o.type == 'grids'):
     spikeType = 'E'
     po = vis.GridPlotVisitor.PlotOptions()
-    visitor = vis.GridPlotVisitor(o.output_dir, spikeType=spikeType,
+    gridVisitor = vis.GridPlotVisitor(o.output_dir, spikeType=spikeType,
             plotOptions=po, minGridnessT=300e3)
-    sp.visit(visitor)
+    ISIVisitor = vis.ISIPlotVisitor(o.output_dir,
+            spikeType = spikeType,
+            nRows = 5, nCols = 5, range=[0, 1000], bins=40,
+            ISINWindows=20)
+
+    #sp.visit(gridVisitor)
+    sp.visit(ISIVisitor)
 else:
     raise ValueError("Unknown analysis type option: {0}".format(o.type))
