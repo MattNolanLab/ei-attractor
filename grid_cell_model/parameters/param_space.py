@@ -369,13 +369,12 @@ class JobTrialSpace2D(DataSpace):
         # Try to load data
         if (loadData):
             try:
-                msg = 'Loading aggregated data from file: {0}, var: {1}'
+                msg = 'Loading aggregated data from file: {0}, vars: {1}'
                 log_info('JobTrialSpace2D', msg.format(self.saveDataFileName,
-                    varList[-1]))
+                    varList))
                 inData = self._getAggregationDS()
                 if (inData is not None):
-                    retVar = inData[varList[-1]]
-                    return retVar
+                    return inData.getItemChained(varList)
                 else:
                     io_err = 'Could not open file: {0}. Performing the reduction.'
                     log_info('JobTrialSpace2D', io_err.format(self.saveDataFileName))
@@ -397,13 +396,14 @@ class JobTrialSpace2D(DataSpace):
             for c in xrange(cols):
                 self._aggregateItem(retVar, r, c, trialNumList, varList, funReduce)
 
+
         if (saveData):
-            msg = 'Saving aggregated data into file: {0}, var: {1}'
+            msg = 'Saving aggregated data into file: {0}, vars: {1}'
             log_info('JobTrialSpace2D', msg.format(self.saveDataFileName,
-                varList[-1]))
+                varList))
             outData = self._getAggregationDS()
             if (outData is not None):
-                outData[varList[-1]] = retVar
+                outData.setItemChained(varList, retVar)
             else:
                 io_err = 'Could not open file: {0}. Not saving the reduced data!'
                 log_warn('JobTrialSpace2D', io_err.format(self.saveDataFileName))
