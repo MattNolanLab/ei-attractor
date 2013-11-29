@@ -178,6 +178,19 @@ class HDF5DataStorage(DataStorage):
             raise
 
 
+    def getItemChained(self, keyTuple):
+        '''
+        Return an item at the and of a chain of keys, defined in ``keyTuple``
+        '''
+        l = len(keyTuple)
+        if (l == 0):
+            raise ValueError('Cannot chain index with an empty list of keys.')
+        elif (l == 1):
+            return self[keyTuple[0]]
+        else:
+            return self[keyTuple[0]].getItemChained(keyTuple[1:])
+
+
     def close(self):
         '''
         Close the file associated with this object.
@@ -224,6 +237,38 @@ class HDF5MapStorage(HDF5DataStorage, MutableMapping):
         return iter(self._group.keys())
 
 
+    def setItemChained(self, keyTuple, value):
+        '''
+        Set ``value`` into ``keyTuple[-1]``. ``keyTuple`` must contain only
+        strings, specifying dictionary keys. The semantic of this method is the
+        following:
+
+         * ``value`` can be of any supported types. It will simply be assigned
+           as the last item in ``keyTuple``. If it already exists, it will be
+           overwritten.
+         * If ``keyTuple[0:-1]`` don't exist, create all of them as
+           dictionaries. If they exist, do not overwrite.
+        '''
+        l = len(keyTuple)
+        if (l == 0):
+            raise ValueError("keyTuple must contain at least one item")
+        elif (l == 1):
+            if (not isinstance(keyTuple[0], str)):
+                raise TypeError('All the keys in the keyTuple list must be strings.')
+            self[keyTuple[0]] = value
+        else:
+            firstKey = keyTuple[0]
+            if (not isinstance(firstKey, str)):
+                raise TypeError('All the keys in the keyTuple list must be strings.')
+            if firstKey in self.keys():
+                self[firstKey].setItemChained(keyTuple[1:], value)
+            else:
+                self[firstKey] = {}
+                self[firstKey].setItemChained(keyTuple[1:], value) 
+
+
+
+
 
 class HDF5ListStorage(HDF5DataStorage, MutableSequence):
     '''
@@ -260,6 +305,15 @@ class HDF5ListStorage(HDF5DataStorage, MutableSequence):
     def append(self, value):
         index = len(self)
         self._createDataMember(str(index), value, self._group)
+
+
+    def setItemChained(self, keyTuple, value):
+        '''
+        This method does not make sence in HDF5ListStorage. Its semantic is
+        only to create a hiearchy of dictionaries, e.g. as in
+        :meth:`HDF5MapStorage.setItemChained`.
+        '''
+        raise RuntimeError("setItemChained() cannot be used here.")
 
 
     def __len__(self):
