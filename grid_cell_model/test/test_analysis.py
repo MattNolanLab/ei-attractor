@@ -19,9 +19,9 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 '''
-.. currentmodule: analysis.test_analysis
+.. currentmodule: test.test_analysis
 
-The :mod:`analysis.test_analysis` module defines a set of classes for unit
+The :mod:`~test.test_analysis` module defines a set of classes for unit
 testing of the most important functions and classes of this package.  The
 module is currently based on the unittest module.
 
@@ -39,8 +39,8 @@ from unittest.util import safe_repr
 import analysis.signal as asignal
 import analysis.spikes as aspikes
 
-notImplMsg = "Not implemented"
 
+notImplMsg = "Not implemented"
 
 ##############################################################################
 # Continuous signal tests (analysis.signal)
