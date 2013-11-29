@@ -34,7 +34,15 @@ A list of currently supported tests:
 import unittest
 import collections
 import numpy as np
-from unittest.util import safe_repr
+import sys
+import warnings
+req_version = (2, 7)
+if (sys.version_info >= req_version):
+    from unittest.util import safe_repr
+else:
+    safe_repr = lambda x: x
+    warnings.warn('It is better to use unittest from python >= 2.7. Consider upgrading.')
+
 
 import analysis.signal as asignal
 import analysis.spikes as aspikes

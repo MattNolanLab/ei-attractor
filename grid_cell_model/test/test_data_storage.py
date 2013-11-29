@@ -45,7 +45,7 @@ class TestHDF5Storage(unittest.TestCase):
         return d[key]
 
     def test_basic_types(self):
-        ds = DataStorage.open('test.h5', 'w')
+        ds = DataStorage.open('test_basic_types.h5', 'w')
 
         test_int      = 124
         test_float    = 0.1
@@ -99,7 +99,7 @@ class TestHDF5Storage(unittest.TestCase):
         ds.close()
 
         # ds should be empty now
-        ds = DataStorage.open('test.h5', 'r')
+        ds = DataStorage.open('test_basic_types.h5', 'r')
         self.assertEqual(len(ds), 0)
 
         ds.close()
@@ -111,7 +111,7 @@ class TestHDF5Storage(unittest.TestCase):
             test_l.append(item)
             self.assertEqual(test_l, ds[key])
 
-        ds = DataStorage.open('list.h5', 'w')
+        ds = DataStorage.open('test_lists.h5', 'w')
 
         d1 = {
                 "hola" : [10, 20, 30],
@@ -121,7 +121,7 @@ class TestHDF5Storage(unittest.TestCase):
         ds['list'] = test_list
         ds.close()
 
-        ds = DataStorage.open('list.h5', 'r+')
+        ds = DataStorage.open('test_lists.h5', 'r+')
         appendListAndTest(ds, 'list', test_list, 10)
         appendListAndTest(ds, 'list', test_list, 23.5)
         appendListAndTest(ds, 'list', test_list, [1, 2, 3])
@@ -131,7 +131,7 @@ class TestHDF5Storage(unittest.TestCase):
 
 
     def test_iterator(self):
-        ds = DataStorage.open('list.h5', 'w')
+        ds = DataStorage.open('test_iterator.h5', 'w')
 
         test_list = list(np.arange(100))
         ds['list'] = test_list 
@@ -153,11 +153,76 @@ class TestHDF5Storage(unittest.TestCase):
     def test_empty_arr(self):
         arr = np.array([])
 
-        ds = DataStorage.open('empty.h5', 'w')
+        ds = DataStorage.open('test_empty_arr.h5', 'w')
         ds['empty'] = arr
         ds.close()
 
-        ds = DataStorage.open('empty.h5', 'r')
+        ds = DataStorage.open('test_empty_arr.h5', 'r')
         self.assertTrue(np.all(arr == ds['empty']))
         self.assertEqual(len(ds['empty']), 0)
 
+
+    def test_chained_getter(self):
+        test_dict     = dict(
+                int=123,
+                float=111.1,
+                list=[1, 2, 3, dict(
+                    a='blabla',
+                    b=10,
+                    c=np.random.rand(10))])
+
+        ds = DataStorage.open('test_chained_getter.h5', 'w')
+        ds['nested'] = test_dict
+
+        ds_nested = ds['nested']
+        self.assertEqual(ds_nested.getItemChained(('int',)), test_dict['int'])
+        self.assertEqual(ds_nested.getItemChained(('list', 0)),
+                test_dict['list'][0])
+        self.assertEqual(ds_nested.getItemChained(('list', 3, 'a')),
+                test_dict['list'][3]['a'])
+        
+        # The same test but with a list as an index
+        self.assertEqual(ds_nested.getItemChained(['list', 3, 'a']),
+                test_dict['list'][3]['a'])
+
+        ds.close()
+
+
+    def test_chained_setter(self):
+        def testChain(ds, keyList, testValue):
+            val = ds
+            for key in keyList[0:-1]:
+                val = val[key]
+                self.assertTrue(isinstance(val, collections.MutableMapping))
+            self.assertEqual(val[keyList[-1]], testValue)
+
+        keyList = ['a', 'b', 'c', 'd']
+        testValue = [1, 2, 3, 4]
+        ds = DataStorage.open('test_chained_setter.h5', 'w')
+        
+
+        # Initial test
+        ds.setItemChained(keyList, testValue)
+        testChain(ds, keyList, testValue)
+
+        # Over-write test
+        newTestValue = 'Over-write test string'
+        ds.setItemChained(keyList, newTestValue)
+        testChain(ds, keyList, newTestValue)
+
+        # ['a', 'b', 'another', 'xxx']
+        otherKeyList = ['a', 'b', 'another', 'xxx']
+        otherTestValue = [1, 2, 3, 'ahoy']
+        ds.setItemChained(otherKeyList, otherTestValue)
+        testChain(ds, otherKeyList, otherTestValue)
+        testChain(ds, keyList, newTestValue) # Should not be overwritten
+
+        # Single item in keyList
+        singleList = ['single']
+        ds.setItemChained(singleList, otherTestValue)
+        testChain(ds, singleList, otherTestValue)
+
+        # Test using getItemChained()
+        self.assertEqual(ds.getItemChained(keyList), newTestValue)
+        self.assertEqual(ds.getItemChained(otherKeyList), otherTestValue)
+        self.assertEqual(ds.getItemChained(singleList), otherTestValue)
