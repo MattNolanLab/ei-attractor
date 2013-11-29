@@ -64,11 +64,14 @@ if (o.type == "gamma-bump"):
     FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
     CCVisitor = vis.CrossCorrelationVisitor(monName, stateList,
             forceUpdate=forceUpdate)
+    spikeVisitor_e = vis.SpikeStatsVisitor("spikeMon_e",
+            forceUpdate=forceUpdate)
 
     #sp.visit(ACVisitor)
     #sp.visit(bumpVisitor)
     #sp.visit(FRVisitor)
-    sp.visit(CCVisitor)
+    #sp.visit(CCVisitor)
+    sp.visit(spikeVisitor_e)
 elif (o.type == "velocity"):
     VelVisitor = vis.BumpVelocityVisitor(o.bumpSpeedMax, forceUpdate=forceUpdate, printSlope=True)
     sp.visit(VelVisitor, trialList='all-at-once')
