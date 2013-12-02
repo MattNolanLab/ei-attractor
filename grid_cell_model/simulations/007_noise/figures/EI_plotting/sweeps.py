@@ -279,14 +279,15 @@ def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
 # Scatter plots
 def plotScatter(space1, space2, types1, types2, iterList, NTrials1, NTrials2,
         **kw):
-    ax = kw.pop('ax', plt.gca())
-    xlabel = kw.pop('xlabel', '')
-    ylabel = kw.pop('ylabel', '')
+    ax         = kw.pop('ax', plt.gca())
+    ignoreNaNs = kw.pop('ignoreNaNs', False)
+    xlabel     = kw.pop('xlabel', '')
+    ylabel     = kw.pop('ylabel', '')
 
     X, _, _ = aggr.aggregateType(space1, iterList, types1, NTrials1,
-            **kw)
+            ignoreNaNs=ignoreNaNs, **kw)
     Y, _, _  = aggr.aggregateType(space2, iterList, types2, NTrials2,
-            **kw)
+            ignoreNaNs=ignoreNaNs, **kw)
     #i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(errs)))
 
     globalAxesSettings(ax)
