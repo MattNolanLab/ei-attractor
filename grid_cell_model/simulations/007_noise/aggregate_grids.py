@@ -33,7 +33,7 @@ dirs = \
     #('output/even_spacing/grids/{0}pA',    (31, 31), ns_all, 3)
 
 varListBase = ['analysis']
-loadData = False
+loadData = True
 
 ################################################################################
 shape        = dirs[1]
@@ -49,6 +49,14 @@ for noise_sigma in noise_sigmas:
             funReduce=None, saveData=True, loadData=loadData,
             output_dtype='list')
     sp.aggregateData(varListBase + ['rateMap_e_Y'], [trialNumList[0]],
+            funReduce=None, saveData=True, loadData=loadData,
+            output_dtype='list')
+    sp.aggregateData(varListBase + ['corr'], trialNumList, funReduce=None,
+            saveData=True, loadData=loadData, output_dtype='list')
+    sp.aggregateData(varListBase + ['corr_X'], [trialNumList[0]],
+            funReduce=None, saveData=True, loadData=loadData,
+            output_dtype='list')
+    sp.aggregateData(varListBase + ['corr_Y'], [trialNumList[0]],
             funReduce=None, saveData=True, loadData=loadData,
             output_dtype='list')
     sp.aggregateData(varListBase + ['gridnessScore'], trialNumList,
