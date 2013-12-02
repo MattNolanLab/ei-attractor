@@ -55,11 +55,13 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
     top    = spaceRect[3]
     exRow, exCol = exIdx
 
-    rateMaps   = aggr.aggregate2D(dataSpace, ['analysis', 'rateMap_e'])
-    rateMaps_X = aggr.aggregate2D(dataSpace, ['analysis', 'rateMap_e_X'])
-    rateMaps_Y = aggr.aggregate2D(dataSpace, ['analysis', 'rateMap_e_Y'])
-    arenaDiams = aggr.aggregate2D(dataSpace, ['options', 'arenaSize'])
-    G          = aggr.aggregate2D(dataSpace, ['analysis', 'gridnessScore'])
+    rateMaps   = aggr.aggregate2D(dataSpace, ['rateMap_e'])
+    rateMaps_X = aggr.aggregate2D(dataSpace, ['rateMap_e_X'])
+    rateMaps_Y = aggr.aggregate2D(dataSpace, ['rateMap_e_Y'])
+    arenaDiams = dataSpace.aggregateData(['options', 'arenaSize'],
+            trialNumList=[0], saveData=False, loadData=True,
+            output_dtype='array')
+    G          = aggr.aggregate2D(dataSpace, ['gridnessScore'])
 
     scaleBar = None
     exRows = top - bottom + 1
@@ -149,7 +151,7 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, **kw):
     top    = spaceRect[3]
     exRow, exCol = exIdx
 
-    bumps = aggr.aggregate2D(dataSpace, ['analysis', 'bump_e', 'bump_e_rateMap'])
+    bumps = aggr.aggregate2D(dataSpace, ['bump_e', 'bump_e_rateMap'])
 
     scaleBar = None
     exRows = top - bottom + 1
