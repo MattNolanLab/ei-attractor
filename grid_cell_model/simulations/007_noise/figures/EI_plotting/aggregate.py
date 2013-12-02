@@ -21,7 +21,8 @@
 import numpy as np
 import numpy.ma as ma
 
-from parameters           import DataSpace
+from parameters import DataSpace
+from otherpkg.log import log_warn
 
 
 def aggregate2DTrial(sp, varList, trialNumList, fReduce=np.mean,
@@ -106,7 +107,7 @@ def computeVelYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True, **kw):
 
 
 
-def aggregateType(sp, iterList, types, NTrials, **kw):
+def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
     '''
     Automatically aggregate data according to the type of the data.
     '''
@@ -162,6 +163,11 @@ def aggregateType(sp, iterList, types, NTrials, **kw):
 
     data = sp.aggregateData(vars, trialNumList, output_dtype=output_dtype,
             loadData=True, saveData=False, funReduce=funReduce)
+    if (ignoreNaNs):
+        log_warn('aggregateType', 'Ignoring NaNs')
+        nans = np.isnan(data)
+        data = ma.MaskedArray(data, mask=nans)
+
     if (type == 'velocity'):
         Y, X = computeVelYX(sp, iterList, normalize=False, **kw)
     else:
