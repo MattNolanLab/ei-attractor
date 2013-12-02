@@ -30,7 +30,7 @@ from matplotlib.gridspec import GridSpec
 from . import xlabelText, ylabelText
 from . import aggregate as aggr
 from plotting.global_defs import globalAxesSettings
-from plotting.grids       import plotGridRateMap
+from plotting.grids       import plotGridRateMap, plotAutoCorrelation
 from plotting.low_level   import xScaleBar
 from figures_shared       import plotBump
 from data_storage.sim_models.ei import extractSummedSignals
@@ -43,6 +43,31 @@ def plotOneGridExample(dataSpace, rc, iterList, **kw):
     gsCoords  = (0, 0, 1, 1)
     return drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, **kw)
 
+
+def plotOneGridACorrExample(dataSpace, rc, trialNum=0, **kw):
+    ax = kw.pop('ax', plt.gca())
+    kw['rasterized'] = True
+
+    r, c, = rc[0], rc[1]
+    trialNumList = None
+
+    corr = dataSpace.aggregateData(['analysis', 'corr'],
+            trialNumList=trialNumList, saveData=False, loadData=True,
+            output_dtype='list')
+    corr_X = dataSpace.aggregateData(['analysis', 'corr_X'], trialNumList=[0],
+            saveData=False, loadData=True, output_dtype='list')
+    corr_Y = dataSpace.aggregateData(['analysis', 'corr_Y'], trialNumList=[0],
+            saveData=False, loadData=True, output_dtype='list')
+    arenaDiams = dataSpace.aggregateData(['options', 'arenaSize'],
+            trialNumList=[0], saveData=False, loadData=True,
+            output_dtype='array')
+
+    corr      = corr[r][c][trialNum]
+    corr_X    = corr_X[r][c][0]
+    corr_Y    = corr_Y[r][c][0]
+    arenaDiam = arenaDiams[r][c][0]
+
+    plotAutoCorrelation(corr, corr_X, corr_Y, diam=arenaDiam, ax=ax, **kw)
 
 
 def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,

@@ -52,10 +52,8 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-grids          = 1
-examples0      = 1
-examples150    = 1
-examples300    = 1
+grids          = 0
+examplesFlag   = 0
 detailed_noise = 1
 
 ##############################################################################
@@ -178,7 +176,8 @@ if (grids):
 
 ##############################################################################
 # Grid field examples
-exampleFName = outputDir + "/grids_examples_{0}pA_{1}.pdf"
+exampleGridFName = outputDir + "/grids_examples_{0}pA_{1}.pdf"
+exampleACFName = outputDir + "/grids_examples_acorr_{0}pA_{1}.pdf"
 exTransparent = True
 exampleFigSize = (1, 1.2)
 exampleLeft   = 0.01
@@ -186,49 +185,31 @@ exampleBottom = 0.01
 exampleRight  = 0.99
 exampleTop    = 0.85
 
-if (examples0):
-    for idx, rc in enumerate(exampleRC):
-        fname = exampleFName.format(ps.noise_sigmas[0], idx)
-        plt.figure(figsize=exampleFigSize)
-        gs = examples.plotOneGridExample(ps.grids[0], rc, iterList,
-                exIdx=exampleIdx[0],
-                xlabel=False, ylabel=False,
-                xlabel2=False, ylabel2=False, 
-                maxRate=True, plotGScore=False)
-        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
-                top=exampleTop)
-        plt.savefig(fname, dpi=300, transparent=exTransparent)
-        plt.close()
-    
-if (examples150):
-    for idx, rc in enumerate(exampleRC):
-        fname = exampleFName.format(ps.noise_sigmas[1], idx)
-        plt.figure(figsize=exampleFigSize)
-        gs = examples.plotOneGridExample(ps.grids[1], rc, iterList,
-                exIdx=exampleIdx[1],
-                xlabel=False, ylabel=False,
-                xlabel2=False, ylabel2=False, 
-                maxRate=True, plotGScore=False)
-        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
-                top=exampleTop)
-        plt.savefig(fname, dpi=300, transparent=exTransparent)
-        plt.close()
-    
-if (examples300):
-    for idx, rc in enumerate(exampleRC):
-        fname = exampleFName.format(ps.noise_sigmas[2], idx)
-        plt.figure(figsize=exampleFigSize)
-        gs = examples.plotOneGridExample(ps.grids[2], rc, iterList,
-                exIdx=exampleIdx[2],
-                xlabel=False, ylabel=False,
-                xlabel2=False, ylabel2=False, 
-                maxRate=True, plotGScore=False)
-        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
-                top=exampleTop)
-        plt.savefig(fname, dpi=300, transparent=exTransparent)
-        plt.close()
-    
+if (examplesFlag):
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        for idx, rc in enumerate(exampleRC):
+            # Grid field
+            fname = exampleGridFName.format(noise_sigma, idx)
+            plt.figure(figsize=exampleFigSize)
+            gs = examples.plotOneGridExample(ps.grids[ns_idx], rc, iterList,
+                    exIdx=exampleIdx[idx],
+                    xlabel=False, ylabel=False,
+                    xlabel2=False, ylabel2=False, 
+                    maxRate=True, plotGScore=False)
+            gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
+                    top=exampleTop)
+            plt.savefig(fname, dpi=300, transparent=exTransparent)
+            plt.close()
 
+            # Autocorrelation
+            fname = exampleACFName.format(noise_sigma, idx)
+            fig= plt.figure(figsize=exampleFigSize)
+            ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
+                exampleRight, exampleTop))
+            gs = examples.plotOneGridACorrExample(ps.grids[ns_idx], rc, ax=ax)
+            plt.savefig(fname, dpi=300, transparent=exTransparent)
+            plt.close()
+    
 
 ##############################################################################
 # Detailed noise plots
@@ -241,13 +222,13 @@ EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
 detailedNTrials = 1
 
 
-detailFigSize = (3.6, 2.8)
-detailLeft   = 0.22
+detailFigSize = (4.5, 2.8)
+detailLeft   = 0.15
 detailBottom = 0.2
 detailRight  = 0.95
 detailTop    = 0.8
 if (detailed_noise):
-    ylabelPos = -0.25
+    ylabelPos = -0.15
 
     types = ('grids', 'gridnessScore')
     fig = plt.figure(figsize=detailFigSize)
@@ -262,7 +243,7 @@ if (detailed_noise):
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
     ax.set_ylim([-0.6, 1.2])
-    leg = ['B',  'C']
+    leg = ['a',  'b']
     l = ax.legend([p31, p13], leg, loc=(0.8, 1), fontsize='small', frameon=False,
             numpoints=1, handletextpad=0.05)
 
