@@ -21,19 +21,20 @@
 #
 
 dst_dir=~/Dropbox/shared_data/noise/figures/
+output_fig_dir='output_figures'
 
 files="
-    figure1.pdf
-    figure2.pdf
+    $output_fig_dir/figure1.pdf
+    $output_fig_dir/figure2.pdf
     panels/gamma_scatter_gamma_grids.pdf
-    figure3.pdf
-    figure4.pdf
-    figureS1.pdf
-    figureS2.pdf
-    figureS3.pdf
-    figureS4.pdf
-    suppFigure_velocity.pdf
-    suppFigure_no_theta.pdf
+    $output_fig_dir/figure3.pdf
+    $output_fig_dir/figure4.pdf
+    $output_fig_dir/figureS1.pdf
+    $output_fig_dir/figureS2.pdf
+    $output_fig_dir/figureS3.pdf
+    $output_fig_dir/figureS4.pdf
+    $output_fig_dir/suppFigure_velocity.pdf
+    $output_fig_dir/suppFigure_no_theta.pdf
     slices
     "
 
