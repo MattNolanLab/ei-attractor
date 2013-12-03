@@ -150,7 +150,7 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
     return gs
 
 
-def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, **kw):
+def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, EIType, **kw):
     '''
     TODO: code duplication
     '''
@@ -168,6 +168,7 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, **kw):
     fontSize   = kw.pop('fontSize', 'medium')
     # + plotBump() kwargs
     kw['rasterized'] = kw.pop('rasterized', True)
+    kw['vmin']       = kw.get('vmin', 0)
 
 
     left   = spaceRect[0]
@@ -176,7 +177,15 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, **kw):
     top    = spaceRect[3]
     exRow, exCol = exIdx
 
-    bumps = aggr.aggregate2D(dataSpace, ['bump_e', 'bump_e_rateMap'])
+    if EIType == 'E':
+        varList = ['analysis', 'bump_e', 'bump_e_rateMap']
+    elif EIType == 'I':
+        varList = ['analysis', 'bump_i', 'bump_i_rateMap']
+    else:
+        raise ValueError("Unknown EIType! Must be 'E' or 'I'.")
+
+    bumps = dataSpace.aggregateData(varList, trialNumList=range(trialNum+1),
+            funReduce=None, loadData=True, saveData=False, output_dtype='list')
 
     scaleBar = None
     exRows = top - bottom + 1
