@@ -99,17 +99,32 @@ def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
     return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
 
-def plotFRTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
-        trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
-        vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
-        yticks=True):
-    FR = aggr.aggregate2DTrial(sp, varList, trialNumList)
-    if mask is None:
-        mask = False
-    FR = ma.MaskedArray(FR, mask=np.logical_or(FR > thr, mask))
+def plotFRTrial(sp, varList, iterList, noise_sigma, trialNumList=[0],
+        thr=np.infty, **kw):
+    r           = kw.pop('r', 0)
+    c           = kw.pop('c', 0)
+    ignoreNaNs  = kw.pop('ignoreNaNs', False)
+    sigmaTitle  = kw.pop('sigmaTitle', True)
+    cbar        = kw.pop('cbar', True)
+    annotations = kw.pop('annotations', None)
+
+    C = aggr.aggregate2DTrial(sp, varList, trialNumList,
+            ignoreNaNs=ignoreNaNs)
+    C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
     Y, X = aggr.computeYX(sp, iterList, r=r, c=c)
-    return plot2DTrial(X, Y, FR, xlabel, ylabel, colorBar, clBarLabel, vmin,
-            vmax, title, clbarNTicks, xticks, yticks)
+    C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kw)
+
+    print("    max(C): {0}".format(np.max(C)))
+    print("    min(C): {0}".format(np.min(C)))
+
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+
+    if (annotations is not None):
+        for a in annotations:
+            plotSweepAnnotation(X=X, Y=Y, ax=ax, **a)
+
+    return C, ax, cax
             
 
 def plotGridTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):

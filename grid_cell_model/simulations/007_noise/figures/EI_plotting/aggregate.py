@@ -156,6 +156,16 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
             funReduce = None
         else:
             raise ValueError('Unknown grids subtype: {0}'.format(subType))
+    elif type == 'FR':
+        trialNumList = np.arange(NTrials)
+        if subType == 'E':
+            vars += ['FR_e', 'avg']
+            funReduce = None
+        elif subType == 'I_10': # user should be aware of 10 neurons limitation
+            vars += ['FR_i', 'all']
+            funReduce = None
+        else:
+            raise ValueError('Unknown FR subtype: {0}'.format(subType))
 
     else:
         raise ValueError('Unknown aggregation type: {0}'.format(type))

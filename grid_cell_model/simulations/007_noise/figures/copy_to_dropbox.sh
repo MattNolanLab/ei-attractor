@@ -35,6 +35,7 @@ files="
     $output_fig_dir/figureS4.pdf
     $output_fig_dir/suppFigure_velocity.pdf
     $output_fig_dir/suppFigure_no_theta.pdf
+    $output_fig_dir/suppFigure_grids_firing_rate.pdf
     slices
     "
 
