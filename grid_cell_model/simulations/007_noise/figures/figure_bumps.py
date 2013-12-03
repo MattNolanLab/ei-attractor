@@ -53,18 +53,18 @@ bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-bumpSweep         = 1
+bumpSweep         = 0
 bumpExamples      = 1
-velExamples       = 1
-velSweep          = 1
-gridness_vs_error = 1
+velExamples       = 0
+velSweep          = 0
+gridness_vs_error = 0
 detailed_noise    = 1
-rastersFlag       = 1
-rates             = 1
+rastersFlag       = 0
+rates             = 0
 
 ##############################################################################
 
-def plotBumpExample(sp, rc, iterList, **kw):
+def plotBumpExample(sp, rc, iterList, EIType, **kw):
     #keyword
     wspace    = kw.pop('wspace', 0)
     hspace    = kw.pop('hspace', 0)
@@ -72,8 +72,7 @@ def plotBumpExample(sp, rc, iterList, **kw):
 
     r, c = rc[0], rc[1] 
     spaceRect = [c, r, c, r]
-    return examples.drawBumpExamples(sp, spaceRect, iterList,
-            gsCoords=gsCoords,
+    return examples.drawBumpExamples(sp, spaceRect, iterList, gsCoords, EIType,
             xlabel=False, ylabel=False,
             xlabel2=False, ylabel2=False,
             fontsize='x-small',
@@ -91,11 +90,11 @@ exMargin = 0.075
 exWspace=0.2
 exHspace=0.15
 
-sweepFigSize = (3.5, 2.5)
-sweepLeft   = 0.15
-sweepBottom = 0.2
+sweepFigSize = (2.4, 2.9)
+sweepLeft   = 0.2
+sweepBottom = 0.1
 sweepRight  = 0.87
-sweepTop    = 0.85
+sweepTop    = 0.9
 
 
 ##############################################################################
@@ -104,22 +103,25 @@ sigmaVarList = ['bump_e', 'sigma']
 bumpTrialNumList = np.arange(5)
 bump_vmin = 0
 bump_vmax = 0.58
-bump_cbar_kw= dict(
-        orientation='vertical',
-        shrink=0.8, pad=-0.05,
-        ticks=ti.MultipleLocator(0.25),
-        label=sigmaBumpText,
-        extend='max', extendfrac=0.1)
+bump_cbar_kw = dict(
+        label       = sigmaBumpText,
+        location    = 'bottom',
+        shrink      = 0.8,
+        pad         = 0.18,
+        ticks       = ti.MultipleLocator(0.25),
+        extend      = 'max',
+        extendfrac  = 0.1,
+        rasterized  = True)
 
 exampleRC = ( (5, 15), (15, 5) )
 
 ann0 = dict(
-        txt='C',
+        txt='b',
         rc=exampleRC[0],
         xytext_offset=(1.5, 0.5),
         color='white')
 ann1 = dict(
-        txt='B',
+        txt='a',
         rc=exampleRC[1],
         xytext_offset=(1.2, 1.1),
         color='black')
@@ -172,7 +174,6 @@ if (bumpSweep):
             noise_sigma=noise_sigmas[2],
             ax=ax,
             trialNumList=bumpTrialNumList,
-            ylabel='', yticks=False,
             cbar=True, cbar_kw=bump_cbar_kw,
             vmin=bump_vmin, vmax=bump_vmax,
             annotations=ann)
@@ -182,51 +183,35 @@ if (bumpSweep):
 
 ##############################################################################
 # Bump examples
-exampleFName = outputDir + "/bumps_examples_{0}pA_{1}.pdf"
+exampleEFName = outputDir + "/bumps_examples_E_{0}pA_{1}.pdf"
+exampleIFName = outputDir + "/bumps_examples_I_{0}pA_{1}.pdf"
 bumpTrialNum = 0
 exTransparent = True
 exampleFigSize = (0.8, 0.8)
 exampleLeft   = 0.01
 exampleBottom = 0.01
 exampleRight  = 0.99
-exampleTop    = 0.85
+exampleTop    = 0.82
 
 if (bumpExamples):
-    # noise sigma == 0 pA
-    for idx, rc in enumerate(exampleRC):
-        fname = exampleFName.format(ps.noise_sigmas[0], idx)
-        plt.figure(figsize=exampleFigSize)
-        gs = plotBumpExample(ps.bumpGamma[0], rc, iterList,
-                exIdx=exampleIdx[0],
-                trialNum=bumpTrialNum)
-        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
-                top=exampleTop)
-        plt.savefig(fname, dpi=300, transparent=exTransparent)
-        plt.close()
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        for idx, rc in enumerate(exampleRC):
+            for EIType in ['E', 'I']:
+                if EIType == 'E':
+                    fnameTemplate =exampleEFName
+                else:
+                    fnameTemplate =exampleIFName
+                fname = fnameTemplate.format(noise_sigma, idx)
+                plt.figure(figsize=exampleFigSize)
+                gs = plotBumpExample(ps.bumpGamma[ns_idx], rc, iterList,
+                        EIType,
+                        exIdx=exampleIdx[ns_idx],
+                        trialNum=bumpTrialNum)
+                gs.update(left=exampleLeft, bottom=exampleBottom,
+                        right=exampleRight, top=exampleTop)
+                plt.savefig(fname, dpi=300, transparent=exTransparent)
+                plt.close()
 
-    # noise sigma == 150 pA
-    for idx, rc in enumerate(exampleRC):
-        fname = exampleFName.format(ps.noise_sigmas[1], idx)
-        plt.figure(figsize=exampleFigSize)
-        gs = plotBumpExample(ps.bumpGamma[1], rc, iterList,
-                exIdx=exampleIdx[1],
-                trialNum=bumpTrialNum)
-        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
-                top=exampleTop)
-        plt.savefig(fname, dpi=300, transparent=exTransparent)
-        plt.close()
-
-    # noise sigma == 300 pA
-    for idx, rc in enumerate(exampleRC):
-        fname = exampleFName.format(ps.noise_sigmas[2], idx)
-        plt.figure(figsize=exampleFigSize)
-        gs = plotBumpExample(ps.bumpGamma[2], rc, iterList,
-                exIdx=exampleIdx[1],
-                trialNum=bumpTrialNum)
-        gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
-                top=exampleTop)
-        plt.savefig(fname, dpi=300, transparent=exTransparent)
-        plt.close()
 
 
 ###############################################################################
@@ -312,7 +297,7 @@ EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
 detailedNTrials = 5
 
 
-detailFigSize = (3.8, 2)
+detailFigSize = (3.8, 2.6)
 detailLeft   = 0.18
 detailBottom = 0.26
 detailRight  = 0.95
@@ -326,13 +311,13 @@ if (detailed_noise):
         detailTop))
     _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabel=sigmaBumpText, ylabelPos=ylabelPos,
-            color='red')
+            color='red', markerfacecolor='red', zorder=10)
     _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
-            color='black')
+            color='#505050')
     #ax.set_yscale("log")
     #ax.set_ylim([1.5, 300])
-    leg = ['B',  'C']
+    leg = ['a',  'b']
     l = ax.legend([p31, p13], leg, loc=(0.85, 0.1), fontsize='small', frameon=False,
             numpoints=1, handletextpad=0.05)
     plt.setp(l.get_title(), fontsize='small')
@@ -346,7 +331,7 @@ if (detailed_noise):
 rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 tLimits = [2e3, 2.25e3] # ms
 
-rasterFigSize = (2.7, 1.9)
+rasterFigSize = (3, 1.9)
 transparent   = True
 rasterLeft    = 0.28
 rasterBottom  = 0.1
