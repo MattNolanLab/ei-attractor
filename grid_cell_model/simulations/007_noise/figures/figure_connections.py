@@ -26,7 +26,7 @@ from matplotlib.ticker     import MultipleLocator, AutoMinorLocator, \
 from matplotlib.transforms import Bbox
 
 import plotting.connections as pconn
-from EI_plotting            import computeYX
+from EI_plotting            import aggregate as aggr
 from parameters.param_space import JobTrialSpace2D, DataSpace
 from plotting.global_defs   import globalAxesSettings
 
@@ -39,6 +39,7 @@ rc('pdf', fonttype=42)
 rc('mathtext', default='regular')
 
 plt.rcParams['font.size'] = 11
+outputDir = "panels"
 
 
 DS = DataSpace
@@ -53,7 +54,7 @@ weights = 0
 ##############################################################################
 
 def plotEToI(sp, gIdx, neuronIdx, trialNum=0, **kw):
-    gE, gI = computeYX(sp, iterList)
+    gE, gI = aggr.computeYX(sp, iterList)
     M      = sp[0][gIdx][trialNum].data['g_IE']
     conns  = M[neuronIdx, :]
     ax = pconn.plotConnHistogram(conns,
@@ -66,7 +67,7 @@ def plotEToI(sp, gIdx, neuronIdx, trialNum=0, **kw):
             transform=ax.transAxes)
 
 def plotIToE(sp, gIdx, neuronIdx, trialNum=0, **kw):
-    gE, gI = computeYX(sp, iterList)
+    gE, gI = aggr.computeYX(sp, iterList)
     M      = sp[0][gIdx][trialNum].data['g_EI']
     conns  = M[neuronIdx, :]
     ax = pconn.plotConnHistogram(conns,
@@ -142,7 +143,7 @@ if (hists):
     ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
     plotEToI(sp, gIdx, neuronIdx)
     #fig.tight_layout(rect=[0.01, 0.01, 0.99, 0.99], pad=0)
-    fname = "figure_connections_E2I.pdf"
+    fname = outputDir + "/figure_connections_E2I.pdf"
     plt.savefig(fname, dpi=300, transparent=transparent)
 
 
@@ -150,7 +151,7 @@ if (hists):
     ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
     plotIToE(sp, gIdx, neuronIdx, ylabel='')
     #fig.tight_layout(rect=[0.01, 0.01, 0.99, 0.99], pad=0)
-    fname = "figure_connections_I2E.pdf"
+    fname = outputDir + "/figure_connections_I2E.pdf"
     plt.savefig(fname, dpi=300, transparent=transparent)
 
 
@@ -160,14 +161,14 @@ if (weights):
     fig = plt.figure('g_out_E2I', figsize=figSize)
     plotOutgoing(sp, gIdx, "E", neuronIdx)
     fig.tight_layout()
-    fname = "figure_connections_pcolor_out_E2I.png"
+    fname = outputDir + "/figure_connections_pcolor_out_E2I.png"
     plt.savefig(fname, dpi=300, transparent=False)
 
     # I-->E
     fig = plt.figure('g_out_I2E', figsize=figSize)
     plotOutgoing(sp, gIdx, "I", neuronIdx)
     fig.tight_layout()
-    fname = "figure_connections_pcolor_out_I2E.png"
+    fname = outputDir + "/figure_connections_pcolor_out_I2E.png"
     plt.savefig(fname, dpi=300, transparent=False)
 
 
@@ -176,14 +177,14 @@ if (weights):
     fig = plt.figure('g_in_E2I', figsize=figSize)
     plotIncoming(sp, gIdx, "I", neuronIdx)
     fig.tight_layout()
-    fname = "figure_connections_pcolor_in_E2I.png"
+    fname = outputDir + "/figure_connections_pcolor_in_E2I.png"
     plt.savefig(fname, dpi=300, transparent=False)
 
     # I-->E
     fig = plt.figure('g_in_I2E', figsize=figSize)
     plotIncoming(sp, gIdx, "E", neuronIdx)
     fig.tight_layout()
-    fname = "figure_connections_pcolor_in_I2E.png"
+    fname = outputDir + "/figure_connections_pcolor_in_I2E.png"
     plt.savefig(fname, dpi=300, transparent=False)
 
 

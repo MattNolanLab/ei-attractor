@@ -40,7 +40,7 @@ rc('pdf', fonttype=42)
 rc('mathtext', default='regular')
 plt.rcParams['font.size'] = 11
 
-outputDir = "."
+outputDir = "panels"
 
 trialNum = 0
 jobNum = 573
