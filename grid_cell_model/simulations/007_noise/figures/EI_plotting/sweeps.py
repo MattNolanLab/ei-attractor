@@ -294,29 +294,31 @@ def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
 # Scatter plots
 def plotScatter(space1, space2, types1, types2, iterList, NTrials1, NTrials2,
         **kw):
-    ax         = kw.pop('ax', plt.gca())
-    ignoreNaNs = kw.pop('ignoreNaNs', False)
-    xlabel     = kw.pop('xlabel', '')
-    ylabel     = kw.pop('ylabel', '')
+    ax          = kw.pop('ax', plt.gca())
+    ignoreNaNs  = kw.pop('ignoreNaNs', False)
+    xlabel      = kw.pop('xlabel', '')
+    ylabel      = kw.pop('ylabel', '')
+    sigmaTitle  = kw.pop('sigmaTitle', False)
+    noise_sigma = kw.pop('noise_sigma', None)
 
     X, _, _ = aggr.aggregateType(space1, iterList, types1, NTrials1,
             ignoreNaNs=ignoreNaNs, **kw)
     Y, _, _  = aggr.aggregateType(space2, iterList, types2, NTrials2,
             ignoreNaNs=ignoreNaNs, **kw)
-    #i = np.logical_not(np.logical_and(np.isnan(G), np.isnan(errs)))
 
     globalAxesSettings(ax)
     ax.scatter(X.flatten(), Y.flatten(),  **kw)
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    #ax.text(ylabelPos, 0.5, 'Error (nrns/s/data point)', rotation=90, transform=ax.transAxes,
-    #        va='center', ha='right')
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.margins(0.05)
     ax.autoscale_view(tight=True)
+
+    if sigmaTitle and noise_sigma is not None:
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
 
     return ax
 

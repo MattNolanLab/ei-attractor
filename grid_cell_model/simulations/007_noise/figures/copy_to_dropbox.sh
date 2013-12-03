@@ -26,7 +26,6 @@ output_fig_dir='output_figures'
 files="
     $output_fig_dir/figure1.pdf
     $output_fig_dir/figure2.pdf
-    panels/gamma_scatter_gamma_grids.pdf
     $output_fig_dir/figure3.pdf
     $output_fig_dir/figure4.pdf
     $output_fig_dir/figureS1.pdf

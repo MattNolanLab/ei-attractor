@@ -62,12 +62,13 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape    = (31, 31)
 
-gammaSweep     = 1
-threshold      = 1
-freqHist       = 1
-detailed_noise = 1
-examplesFlag   = 1
-scatterPlot    = 1
+gammaSweep      = 0
+threshold       = 0
+freqHist        = 0
+detailed_noise  = 1
+examplesFlag    = 0
+scatterPlot     = 0
+scatterPlot_all = 0
 
 ###############################################################################
 
@@ -210,7 +211,7 @@ ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 exampleRC = ( (5, 15), (15, 5) )
 
 
-sweepFigSize = (3.5, 2.5)
+sweepFigSize = (3.15, 2.25)
 sweepLeft   = 0.15
 sweepBottom = 0.2
 sweepRight  = 0.87
@@ -240,18 +241,18 @@ F_cbar_kw = dict(
         shrink=0.8,
         pad=0.05,
         labelpad=8,
-        label='Frequency',
+        label='Oscillation frequency',
         extend='max', extendfrac=0.1)
 
 
 ann_color = 'white'
 ann0 = dict(
-        txt='C',
+        txt='b',
         rc=exampleRC[0],
         xytext_offset=(1.5, 0),
         color=ann_color)
 ann1 = dict(
-        txt='B',
+        txt='a',
         rc=exampleRC[1],
         xytext_offset=(1.5, 1),
         color=ann_color)
@@ -260,7 +261,6 @@ annF = [deepcopy(ann0), deepcopy(ann1)]
 
 
 if (gammaSweep):
-
     # noise_sigma = 0 pA
     fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -393,7 +393,7 @@ detailBottom = 0.3
 detailRight  = 0.98
 detailTop    = 0.9
 if (detailed_noise):
-    ylabelPos = -0.15
+    ylabelPos = -0.17
 
     # 1st autocorrelation peak (gamma power)
     types = ('gamma', 'acVal')
@@ -403,20 +403,20 @@ if (detailed_noise):
     _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
             xlabel='', xticks=False,
-            color='red')
+            color='red', markerfacecolor='red', zorder=10)
     _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             xlabel='', xticks=False,
             ylabel='$1^{st}$\nautocorrelation\npeak', ylabelPos=ylabelPos,
-            color='black')
+            color='#505050')
     ax.xaxis.set_visible(False)
     ax.spines['bottom'].set_visible(False)
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.6))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
     ax.set_ylim(prepareLims((0, 0.6), margin=0.03))
-    leg = ['B', 'C']
-    l = ax.legend([p31, p13], leg, loc=(0.85, 0.7), fontsize='x-small', frameon=False,
+    leg = ['a', 'b']
+    l = ax.legend([p31, p13], leg, loc=(0.85, 0.7), fontsize='small', frameon=False,
             numpoints=1, handletextpad=0.05)
-    plt.setp(l.get_title(), fontsize='x-small')
+    plt.setp(l.get_title(), fontsize='small')
 
 
     fname = outputDir + "/gamma_detailed_noise_power.pdf"
@@ -431,10 +431,10 @@ if (detailed_noise):
     _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
             xlabel='',
-            color='red')
+            color='red', markerfacecolor='red', zorder=10)
     _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
-            ylabel='Frequency (Hz)', ylabelPos=ylabelPos,
-            color='black')
+            ylabel='Oscillation\nfrequency (Hz)', ylabelPos=ylabelPos,
+            color='#505050')
     ax.yaxis.set_major_locator(ti.MultipleLocator(30))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(3))
     ax.set_ylim(prepareLims((30, 90), margin=0.03))
@@ -482,14 +482,59 @@ if (examplesFlag):
 
 
 ##############################################################################
-# Scatter plot of gridness score vs. gamma power
-scatterFigSize = detailFigSize
-scatterLeft   = detailLeft
-scatterBottom = detailBottom
-scatterRight  = 0.9
-scatterTop    = detailTop
+# Separate scatter plot of gridness score vs. gamma power
+scatterFigSize = (3.8, 1.8)
+scatterLeft   = 0.2
+scatterBottom = 0.32
+scatterRight  = 0.98
+scatterTop    = 0.87
+
+ignoreNaNs = True
 
 if (scatterPlot):
+    NTrialsGamma = 5
+    NTrialsGrids = 3
+    typesGamma = ['gamma', 'acVal']
+    typesGrids = ['grids', 'gridnessScore']
+
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=scatterFigSize)
+        ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
+            scatterTop))
+
+        if (ns_idx != 0):
+            ylabel = ''
+        else:
+            ylabel = 'Gridness score'
+        if (ns_idx == 1):
+            xlabel = '$1^{st}$ autocorrelation peak'
+        else:
+            xlabel = ''
+
+        sweeps.plotScatter(ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
+                typesGrids, iterList, NTrialsGamma, NTrialsGrids,
+                s=0.5,
+                color='blue',
+                xlabel=xlabel,
+                ylabel=ylabel,
+                sigmaTitle=True,
+                noise_sigma=noise_sigma,
+                ignoreNaNs=ignoreNaNs)
+        ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
+        ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+        ax.set_ylim(prepareLims((-0.5, 1.2), margin=0.02))
+
+
+        fname = outputDir + "/gamma_scatter_gamma_grids{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                transparent=transparent)
+
+
+
+##############################################################################
+# Scatter plot of gridness score vs. gamma power 
+# All in one plot
+if (scatterPlot_all):
     fig = plt.figure(figsize=scatterFigSize)
     ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
         scatterTop))
@@ -516,6 +561,6 @@ if (scatterPlot):
             numpoints=1, title='$\sigma$ (pA)')
     plt.setp(l.get_title(), size='small')
 
-    fname = outputDir + "/gamma_scatter_gamma_grids.pdf"
+    fname = outputDir + "/gamma_scatter_gamma_grids_all.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
 
