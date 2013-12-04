@@ -21,5 +21,6 @@
 
 xlabelText = '$g_I$ (nS)'
 ylabelText = '$g_E$ (nS)'
-
+xlabelTextShort = '$g_I$'
+ylabelTextShort = '$g_E$'
 
