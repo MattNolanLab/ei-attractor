@@ -23,14 +23,12 @@ from scipy.optimize import leastsq
 from os.path        import splitext
 
 import analysis.signal as asignal
+import analysis.spikes as aspikes
+import data_storage.sim_models.ei as simei
 from interface        import DictDSVisitor 
-from data_storage.sim_models.ei import sumAllVariables, extractStateVariable
 from otherpkg.log     import log_info, log_warn
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 from analysis.image   import Position2D, fitGaussianBumpTT
-from analysis.spikes  import slidingFiringRateTuple, ThetaSpikeAnalysis, \
-        TorusPopulationSpikes
-from data_storage.sim_models.ei import extractSpikes, MonitoredSpikes
 
 
 __all__ = ['AutoCorrelationVisitor', 'CrossCorrelationVisitor',
@@ -151,7 +149,7 @@ class AutoCorrelationVisitor(DictDSVisitor):
         for n_id in range(len(mon)):
         #for n_id in range(5):
             #print "n_id: ", n_id
-            sig, dt = sumAllVariables(mon, n_id, self.stateList)
+            sig, dt = simei.sumAllVariables(mon, n_id, self.stateList)
             startIdx = 0
             endIdx   = len(sig)
             if (self.tStart is not None):
@@ -270,12 +268,12 @@ class CrossCorrelationVisitor(DictDSVisitor):
                 correlations=[])
         xcOut = out['x-corr']['correlations']
         for n_id1 in range(len(mon)):
-            sig1, dt1 = sumAllVariables(mon, n_id1, self.stateList)
+            sig1, dt1 = simei.sumAllVariables(mon, n_id1, self.stateList)
             xcOut.append([])
             xcOut2 = xcOut[n_id1]
             for n_id2 in range(len(mon)):
                 print('n_id1, n_id2 = {0}, {1}'.format(n_id1, n_id2))
-                sig2, dt2 = sumAllVariables(mon, n_id2, self.stateList)
+                sig2, dt2 = simei.sumAllVariables(mon, n_id2, self.stateList)
                 if (dt1 != dt2):
                     raise ValueError('dt1 != dt2')
 
@@ -359,8 +357,8 @@ class BumpFittingVisitor(DictDSVisitor):
         '''
         N = Nx * Ny
 
-        senders, times = extractSpikes(mon)
-        F, Ft = slidingFiringRateTuple((senders, times), N, tstart, tend,
+        senders, times = simei.extractSpikes(mon)
+        F, Ft = aspikes.slidingFiringRateTuple((senders, times), N, tstart, tend,
                 self.dt, self.winLen)
             
         bumpT = tend - 2*self.winLen
@@ -384,7 +382,7 @@ class BumpFittingVisitor(DictDSVisitor):
         tstart = 0.0
         tend   = self.getOption(data, 'time')
         if (('bump_e' not in a.keys()) or self.forceUpdate):
-            log_info("BumpFittingVisitor", "Analysing a dataset")
+            log_info("BumpFittingVisitor", "Analysing an E dataset")
             # Fit the Gaussian onto E neurons
             Nx  = self.getNetParam(data, 'Ne_x')
             Ny  = self.getNetParam(data, 'Ne_y')
@@ -399,11 +397,28 @@ class BumpFittingVisitor(DictDSVisitor):
                     'err2'  : np.sum(err2),
                     'bump_e_rateMap' : bump
             }
-
-            # Fit the Gaussian onto I neurons
-            # TODO
         else:
-            log_info("BumpFittingVisitor", "Data present. Skipping analysis.")
+            log_info("BumpFittingVisitor", "E data present. Skipping analysis.")
+
+        # Only export population firing rates of I neurons
+        if ('bump_i' not in a.keys() or self.forceUpdate):
+            log_info("BumpFittingVisitor", "Analysing an I dataset")
+            Nx  = simei.getNetParam(data, 'Ni_x')
+            Ny  = simei.getNetParam(data, 'Ni_y')
+            senders, times = simei.extractSpikes(data['spikeMon_i'])
+            sheetSize = (Nx, Ny)
+            spikes = aspikes.TorusPopulationSpikes(senders, times, sheetSize)
+
+            F, Ft = spikes.slidingFiringRate(tstart, tend, self.dt,
+                    self.winLen)
+            bumpT = tend - 2*self.winLen
+            bumpI = bumpT / self.dt
+            bump = F[:, :, bumpI]
+
+            a['bump_i'] = dict(
+                    bump_i_rateMap=bump)
+        else:
+            log_info("BumpFittingVisitor", "I data present. Skipping analysis.")
 
 
 class FiringRateVisitor(DictDSVisitor):
@@ -447,7 +462,7 @@ class FiringRateVisitor(DictDSVisitor):
     def _getSpikeTrain(self, data, monName, dimList):
         senders, times, N = DictDSVisitor._getSpikeTrain(self, data, monName,
                 dimList)
-        return ThetaSpikeAnalysis(N, senders, times)
+        return aspikes.ThetaSpikeAnalysis(N, senders, times)
 
     def visitDictDataSet(self, ds, **kw):
         data = ds.data
@@ -554,7 +569,7 @@ class BumpVelocityVisitor(DictDSVisitor):
     def _getSpikeTrain(self, data, monName, dimList):
         N_x = self.getNetParam(data, dimList[0])
         N_y = self.getNetParam(data, dimList[1])
-        senders, times = extractSpikes(data[monName])
+        senders, times = simei.extractSpikes(data[monName])
         return senders, times, (N_x, N_y)
 
 
@@ -579,7 +594,7 @@ class BumpVelocityVisitor(DictDSVisitor):
 
                 senders, times, sheetSize =  self._getSpikeTrain(iData,
                         'spikeMon_e', ['Ne_x', 'Ne_y'])
-                pop = TorusPopulationSpikes(senders, times, sheetSize)
+                pop = aspikes.TorusPopulationSpikes(senders, times, sheetSize)
                 tStart = self.getOption(iData, 'theta_start_t')
                 tEnd   = self.getOption(iData, 'time')
                 bumpPos, bumpPos_t = pop.populationVector(tStart, tEnd,
@@ -742,7 +757,7 @@ class SpikeTrainXCVisitor(DictDSVisitor):
             log_info("SpikeTrainXCorrelation", "Data present. Skipping analysis.")
             return
 
-        spikes = MonitoredSpikes(data, self.monitorName, self.NName)
+        spikes = simei.MonitoredSpikes(data, self.monitorName, self.NName)
         if (self.neuronIdx is None):
             idx1 = range(spikes.N)
         else:
@@ -792,5 +807,5 @@ class SpikeStatsVisitor(DictDSVisitor):
             log_info("SpikeStatsVisitor", "Data present. Skipping analysis.")
             return
 
-        spikes = MonitoredSpikes(data, self.monitorName, self.NName)
+        spikes = simei.MonitoredSpikes(data, self.monitorName, self.NName)
         a[self.outputName] = np.array(spikes.ISICV())
