@@ -29,9 +29,9 @@ lg.basicConfig(level=lg.INFO)
 ns_all  = [0, 150, 300]
 ns_none = [-100]
 dirs = \
-    ("output/detailed_noise/gamma_bump/EI-1_3",  (31, 9),  ns_none)
+    ("output/even_spacing/gamma_bump/{0}pA",     (31, 31), ns_all)
     #("output/detailed_noise/gamma_bump/EI-3_1",  (31, 9),  ns_none)
-    #("output/even_spacing/gamma_bump/{0}pA",     (31, 31), ns_all)
+    #("output/detailed_noise/gamma_bump/EI-1_3",  (31, 9),  ns_none)
 
 NTrials = 5
 trialNumList = xrange(NTrials)
@@ -52,6 +52,9 @@ for noise_sigma in noise_sigmas:
             funReduce=None, loadData=loadData, saveData=True,
             output_dtype='array')
     sp.aggregateData(varListBase + ['bump_e', 'bump_e_rateMap'], trialNumList,
+            funReduce=None, loadData=loadData, saveData=True,
+            output_dtype='list')
+    sp.aggregateData(varListBase + ['bump_i', 'bump_i_rateMap'], trialNumList,
             funReduce=None, loadData=loadData, saveData=True,
             output_dtype='list')
 
