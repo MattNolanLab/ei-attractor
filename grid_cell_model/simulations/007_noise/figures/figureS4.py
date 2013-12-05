@@ -108,7 +108,7 @@ def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx,
 
     gsCoords = 0.12, 0.075, 0.95, sw_bottom-div
     #gsCoords = margin, 0.46, 0.5, sw_bottom-div
-    gs = examples.drawBumpExamples(dataSpace, exRect, iterList, gsCoords=gsCoords,
+    gs = examples.drawBumpExamples(dataSpace, exRect, iterList, gsCoords, 'E',
             exIdx=exIdx, cmap='jet')
     noise_sigma_txt = "$\sigma_{{noise}}$ = {0} pA".format(int(noise_sigma))
     fig.text(nsX, nsY, noise_sigma_txt, va='center', ha='right', fontsize=19)
