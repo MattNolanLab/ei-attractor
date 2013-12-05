@@ -217,6 +217,9 @@ class JobTrialSpace2D(DataSpace):
     def getShape(self):
         return self._shape
 
+    @property
+    def shape(self):
+        return self._shape
 
     def getIteratedParameters(self, nameList):
         if (len(nameList) != 2):

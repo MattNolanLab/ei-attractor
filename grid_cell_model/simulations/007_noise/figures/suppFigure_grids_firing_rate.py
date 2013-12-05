@@ -161,7 +161,7 @@ if (scatterPlot):
         if EIType == 'E':
             fname = outputDir + "/suppFigure_grids_FR-scatter_FRE_vs_grids.pdf"
             xlabel='Mean firing rate of E cells (Hz)'
-            legLoc = (0.8, 0.4)
+            legLoc = (0.8, 0.6)
         else:
             fname = outputDir + "/suppFigure_grids_FR-scatter_FRI_vs_grids.pdf"
             xlabel='Mean firing rate of I cells (Hz)'
@@ -179,13 +179,16 @@ if (scatterPlot):
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             color = scatterColors[ns_idx]
-            sweeps.plotScatter(ps.grids[ns_idx], ps.grids[ns_idx], typesFR,
+            scatterPlot = sweeps.ScatterPlot(
+                    ps.grids[ns_idx], ps.grids[ns_idx], typesFR,
                     typesGrids, iterList, NTrialsGrids, NTrialsGrids,
-                    color=color,
-                    s=0.5,
+                    c=color,
+                    s=15,
+                    linewidth=0.3,
                     xlabel=xlabel,
                     ylabel='Gridness score',
                     ignoreNaNs=ignoreNaNs)
+            scatterPlot.plot()
         ax.xaxis.set_major_locator(ti.MultipleLocator(10))
         ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
         ax.yaxis.set_minor_locator(ti.MultipleLocator(0.25))

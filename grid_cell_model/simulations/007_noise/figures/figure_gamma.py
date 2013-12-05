@@ -65,10 +65,10 @@ shape    = (31, 31)
 gammaSweep      = 0
 threshold       = 0
 freqHist        = 0
-detailed_noise  = 1
+detailed_noise  = 0
 examplesFlag    = 0
 scatterPlot     = 0
-scatterPlot_all = 0
+scatterPlot_all = 1
 
 ###############################################################################
 
@@ -211,7 +211,7 @@ ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 exampleRC = ( (5, 15), (15, 5) )
 
 
-sweepFigSize = (3.15, 2.25)
+sweepFigSize = (2.8, 2)
 sweepLeft   = 0.15
 sweepBottom = 0.2
 sweepRight  = 0.87
@@ -241,7 +241,7 @@ F_cbar_kw = dict(
         shrink=0.8,
         pad=0.05,
         labelpad=8,
-        label='Oscillation frequency',
+        label='Oscillation\nfrequency (Hz)',
         extend='max', extendfrac=0.1)
 
 
@@ -483,11 +483,13 @@ if (examplesFlag):
 
 ##############################################################################
 # Separate scatter plot of gridness score vs. gamma power
-scatterFigSize = (3.8, 1.8)
+scatterFigSize = (3.8, 3.2)
 scatterLeft   = 0.2
 scatterBottom = 0.32
 scatterRight  = 0.98
 scatterTop    = 0.87
+
+scatterColorFigSize = (0.75, 0.75)
 
 ignoreNaNs = True
 
@@ -511,15 +513,18 @@ if (scatterPlot):
         else:
             xlabel = ''
 
-        sweeps.plotScatter(ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
+        scatterPlot = sweeps.ScatterPlot(
+                ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
                 typesGrids, iterList, NTrialsGamma, NTrialsGrids,
-                s=0.5,
-                color='blue',
+                s=15,
+                linewidth=0.3,
+                color2D=True,
                 xlabel=xlabel,
                 ylabel=ylabel,
                 sigmaTitle=True,
                 noise_sigma=noise_sigma,
                 ignoreNaNs=ignoreNaNs)
+        scatterPlot.plot()
         ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
         ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
         ax.set_ylim(prepareLims((-0.5, 1.2), margin=0.02))
@@ -528,6 +533,13 @@ if (scatterPlot):
         fname = outputDir + "/gamma_scatter_gamma_grids{0}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300,
                 transparent=transparent)
+
+    fig = plt.figure(figsize=scatterColorFigSize)
+    ax = fig.gca()
+    scatterPlot.plotColorbar(ax)
+    fig.tight_layout(pad=0)
+    fname = outputDir + "/gamma_scatter_gamma_grids_colorbar.pdf"
+    fig.savefig(fname, dpi=300, transparent=transparent)
 
 
 
@@ -548,12 +560,15 @@ if (scatterPlot_all):
 
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         color = scatterColors[ns_idx]
-        sweeps.plotScatter(ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
+        scatterPlot = sweeps.ScatterPlot(
+                ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
                 typesGrids, iterList, NTrialsGamma, NTrialsGrids,
-                color=color,
-                s=0.5,
+                c=color,
+                s=15,
+                linewidth=0.3,
                 xlabel='$1^{st}$ autocorrelation peak',
                 ylabel='Gridness score')
+        scatterPlot.plot()
     ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
     leg = ['0', '150', '300']
