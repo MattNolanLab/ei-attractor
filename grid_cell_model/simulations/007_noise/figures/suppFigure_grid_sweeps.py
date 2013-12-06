@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
-#   figureS4.py
+#   suppFigure_grid_sweeps.py
 #
-#   Supplementary figure: bump examples
+#   Supplementary figure: grid field examples
 #
 #       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -40,55 +40,57 @@ rc('mathtext', default='regular')
 
 plt.rcParams['font.size'] = 12
 
-outputDir = "."
+outputDir = "output_figures"
 
 NTrials=10
-YXRC = [(0, 0), (0, 0), (0, 0)] # (row, col)
+YXRC   = [(1, 22), (1, 22), (1, 22)] # (row, col)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
-bumpsDataRoot= 'output_local/even_spacing/gamma_bump'
+gridsDataRoot= 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 
 ##############################################################################
 
-
-def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0), cmap='jet',
-        rectColor='black'):
-    sigmaBumpText = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
-    bump_cbar_kw= dict(
-            orientation='vertical',
-            shrink=0.8, pad=-0.05,
-            ticks=ti.MultipleLocator(0.1),
-            label=sigmaBumpText)
+def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0)):
+    cbar_kw= {'label' : 'Gridness score',
+        'orientation': 'vertical',
+        'shrink': 0.8,
+        'pad' : -0.05,
+        'ticks' : ti.MultipleLocator(0.5),
+        'rasterized' : True}
 
     exRow, exCol = exIdx
     Y, X = aggr.computeYX(dataSpace, iterList, r=exRow, c=exCol)
 
+
     # Replot gridness score param. sweep
     ax0 = plt.gca()
-    varList = ['bump_e', 'sigma']
-    _, _, cax = sweeps.plotBumpSigmaTrial(dataSpace, varList, iterList,
+    G = sweeps.plotGridTrial(dataSpace, ['gridnessScore'], iterList,
             noise_sigma=None, sigmaTitle=False,
             trialNumList=range(NTrials),
-            ax=ax,
-            cbar=True, cbar_kw=bump_cbar_kw,
-            cmap=cmap)
-    cax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
+            ax=ax0,
+            r=exRow,
+            c=exCol,
+            xlabel="$w_I$ (nS)",
+            ylabel="$w_E$ (nS)",
+            cbar=True, cbar_kw=cbar_kw,
+            vmin=None,
+            vmax=None)
 
-    examples.drawEIRectSelection(ax0, spaceRect, X, Y, color=rectColor)
+    examples.drawEIRectSelection(ax0, spaceRect, X, Y)
 
 
 
 def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx,
-        rectColor='black', letter=''):
+        letter=''):
     fig = plt.figure(figsize=(8.27, 11.69))
     margin    = 0.1
     sw_left   = margin
     sw_bottom = 0.82
     sw_right  = 0.4
-    sw_top    = 0.95
+    sw_top    = 0.96
     div       = 0.075
 
     letter_left = 0.03
@@ -101,56 +103,52 @@ def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx,
 
     sweepsRect = sw_left, sw_bottom, sw_right-sw_left, sw_top-sw_bottom
     ax_sweeps = fig.add_axes(sweepsRect)
-    drawSweep(ax_sweeps, dataSpace, iterList, exRect, exIdx,
-            rectColor=rectColor)
+    drawSweep(ax_sweeps, dataSpace, iterList, exRect, exIdx)
     fig.text(letter_left, sw_top+letter_top_off, letter, va=letter_va, ha=letter_ha,
             fontsize=19, fontweight='bold')
 
-    gsCoords = 0.12, 0.075, 0.95, sw_bottom-div
+    gsCoords = 0.12, 0.075, 0.92, sw_bottom-div
     #gsCoords = margin, 0.46, 0.5, sw_bottom-div
-    gs = examples.drawBumpExamples(dataSpace, exRect, iterList, gsCoords, 'E',
-            exIdx=exIdx, cmap='jet')
+    gs = examples.drawGridExamples(dataSpace, exRect, iterList, gsCoords=gsCoords,
+            exIdx=exIdx)
+    #fig.text(letter_left, sw_bottom-div+letter_top_off, "B", va=letter_va,
+    #        ha=letter_ha, fontsize=19, fontweight='bold')
     noise_sigma_txt = "$\sigma_{{noise}}$ = {0} pA".format(int(noise_sigma))
     fig.text(nsX, nsY, noise_sigma_txt, va='center', ha='right', fontsize=19)
 
 
-bumpRoots = getNoiseRoots(bumpsDataRoot, noise_sigmas)
-bumpSpace0   = JobTrialSpace2D(shape, bumpRoots[0])
-bumpSpace150 = JobTrialSpace2D(shape, bumpRoots[1])
-bumpSpace300 = JobTrialSpace2D(shape, bumpRoots[2])
-bumpSpaces = [bumpSpace0, bumpSpace150, bumpSpace300]
+gridRoots = getNoiseRoots(gridsDataRoot, noise_sigmas)
+gridSpace0   = JobTrialSpace2D(shape, gridRoots[0])
+gridSpace150 = JobTrialSpace2D(shape, gridRoots[1])
+gridSpace300 = JobTrialSpace2D(shape, gridRoots[2])
+gridSpaces = [gridSpace0, gridSpace150, gridSpace300]
 
 exWidth = 6
 exHeight = 8
 
 exampleRC = [
-        [[3, 19], [0, 3],   [18, 3]],
-        [[5, 2],  [15, 10], [1, 20]],
-        [[5, 3],  [15, 10], [1, 11]]]
-
+        [[1, 20], [20, 10], [3, 6]],
+        [[5, 2],  [15, 15], [1, 15]],
+        [[3, 7], [15, 15], [1, 20]]]
 enable = [
         [1, 1, 1],
         [1, 1, 1],
         [1, 1, 1]]
 
-#enable = [
-#        [1, 0, 0],
-#        [0, 0, 0],
-#        [0, 0, 0]]
 
-fname = outputDir + "/figureS4.pdf"
+
+
+fname = outputDir + "/figureS3.pdf"
 outputPDF = PdfPages(fname)
 strIdx = 0
 for noise_idx, noise_sigma in enumerate(noise_sigmas):
     for exampleIdx, RC in enumerate(exampleRC[noise_idx]):
-        if (not enable[noise_idx][exampleIdx]):
-            continue
         print noise_idx, exampleIdx, RC
 
         exLeft   = RC[0]
         exBottom = RC[1]
         exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-        drawA4RectExamples(bumpSpaces[noise_idx], noise_sigma, iterList,
+        drawA4RectExamples(gridSpaces[noise_idx], noise_sigma, iterList,
                 exRect, YXRC[noise_idx], letter=string.ascii_uppercase[strIdx])
         
         outputPDF.savefig(dpi=300, transparent=False)
@@ -158,6 +156,4 @@ for noise_idx, noise_sigma in enumerate(noise_sigmas):
         strIdx += 1
 
 outputPDF.close()
-
-
 

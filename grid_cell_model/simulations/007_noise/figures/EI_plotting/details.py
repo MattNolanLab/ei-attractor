@@ -124,7 +124,7 @@ def plotGridnessSlice(paramSpaces, rowSlice, colSlice, type, NTrials=1, **kw):
     kw['xlabel'] = kw.get('xlabel', labels['xlabel'])
     ignoreNaNs   = kw.get('ignoreNaNs', True)
 
-    GVars = ['gridnessScore']
+    GVars = ['analysis', 'gridnessScore']
     trialNumList = range(NTrials)
     sp = paramSpaces
 

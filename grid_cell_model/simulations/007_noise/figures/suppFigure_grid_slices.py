@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#   figureS3.py
+#   suppFigure_grid_slices.py
 #
 #   Supplementary figure for the gridness score parameter sweeps.
 #
@@ -41,7 +41,7 @@ rc('mathtext', default='regular')
 
 plt.rcParams['font.size'] = 11
 
-outputDir = "."
+outputDir = "panels"
 
 NTrials=3
 gridTrialNumList = np.arange(NTrials)
@@ -227,7 +227,7 @@ if (hists):
         sliceTop))
     plotGridnessThresholdComparison(ps.grids, range(NTrials),
             thrList=np.arange(-0.4, 1.2, 0.05), ylabelPos=ylabelPos)
-    fname = outputDir + "/figureS3_threshold_comparison.pdf"
+    fname = outputDir + "/suppFigure_grid_slices_threshold_comparison.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
 
 
@@ -241,7 +241,7 @@ if (slices):
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.set_ylim([-0.5, 1.21])
-    fname = "figureS3_slice_horizontal.pdf"
+    fname = outputDir + "/suppFigure_grid_slices_slice_horizontal.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
@@ -253,7 +253,7 @@ if (slices):
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.set_ylim([-0.5, 1.21])
-    fname = "figureS3_slice_vertical.pdf"
+    fname = outputDir + "/suppFigure_grid_slices_slice_vertical.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
