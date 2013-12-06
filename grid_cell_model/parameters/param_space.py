@@ -310,8 +310,8 @@ class JobTrialSpace2D(DataSpace):
 
     def _reductionFailureMsg(self, e, r, c):
         msg = 'Reduction step failed at (r, c) == ({0}, '+\
-            '{1}). Setting value as NaN.'.format(r, c)
-        log_warn('JobTrialSpace2D', msg)
+            '{1}). Setting value as NaN.'
+        log_warn('JobTrialSpace2D', msg.format(r, c))
         log_warn("JobTrialSpace2D", "Error message: {0}".format(str(e)))
 
 

@@ -68,7 +68,7 @@ if (o.type == "gamma-bump"):
             forceUpdate=forceUpdate)
 
     #sp.visit(ACVisitor)
-    #sp.visit(bumpVisitor)
+    sp.visit(bumpVisitor)
     #sp.visit(FRVisitor)
     #sp.visit(CCVisitor)
     sp.visit(spikeVisitor_e)
@@ -84,8 +84,10 @@ elif (o.type == 'grids'):
             spikeType = spikeType,
             nRows = 5, nCols = 5, range=[0, 1000], bins=40,
             ISINWindows=20)
+    FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
 
     #sp.visit(gridVisitor)
-    sp.visit(ISIVisitor)
+    #sp.visit(ISIVisitor)
+    sp.visit(FRVisitor)
 else:
     raise ValueError("Unknown analysis type option: {0}".format(o.type))

@@ -7,6 +7,11 @@ import numpy as np
 from analysis import spikes
 
 
+def getNetParam(data, p):
+    '''Extract a network parameter (p) from the data dictionary'''
+    return data['net_attr'][p]
+
+
 def extractSpikes(mon):
     '''
     Extract spikes from a spike monitor (a dict-like object), that contains the
