@@ -30,6 +30,7 @@ from EI_plotting import sweeps
 from EI_plotting import aggregate as aggr
 from figures_shared       import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
+from plotting.global_defs import globalAxesSettings
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -55,12 +56,57 @@ gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 
-FRSweeps    = 0
-scatterPlot = 1
+FRSweeps     = 0
+scatterPlot  = 0
+FRHistograms = 1
 
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
+##############################################################################
+def plotThresholdHist(var1, threshold1, var2, **kw):
+    ax = kw.pop('ax', plt.gca())
+    xlabel      = kw.pop('xlabel', '')
+    ylabel      = kw.pop('ylabel', 'p($\cdot$)')
+    sigmaTitle  = kw.pop('sigmaTitle', False)
+    noise_sigma = kw.pop('noise_sigma', None)
+
+    grp1Idx = var1 < threshold1
+    grp2Idx = np.logical_not(grp1Idx)
+
+    globalAxesSettings(ax)
+    ax.hold('on')
+    #import pdb; pdb.set_trace()
+    grp1 = var2[grp1Idx]
+    grp2 = var2[grp2Idx]
+    h1 = ax.hist(grp1, **kw)
+    h2 = ax.hist(grp2, **kw)
+
+    print("mean(grp1): {0}".format(np.mean(grp1)))
+    print("mean(grp2): {0}".format(np.mean(grp2)))
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+
+    if sigmaTitle and noise_sigma is not None:
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+    
+    return h1, h2
+
+
+def plotFRGridThresholded(dataSpace, threshold, FRTypes, iterList, NTrials, **kw):
+    ignoreNaNs  = kw.pop('ignoreNaNs', False)
+
+    typesGrids = ['grids', 'gridnessScore']
+     
+    GS, _, _ = aggr.aggregateType(dataSpace, iterList, typesGrids, NTrials,
+            ignoreNaNs=ignoreNaNs, **kw)
+    FR, _, _  = aggr.aggregateType(dataSpace, iterList, FRTypes, NTrials,
+            ignoreNaNs=ignoreNaNs, **kw)
+
+    return plotThresholdHist(GS.flatten(), threshold, FR.flatten(), **kw)
+
+    
 
 ##############################################################################
 # Parameter sweeps of E and I firing rates
@@ -201,4 +247,64 @@ if (scatterPlot):
         plt.setp(l.get_title(), size='small')
 
         fig.savefig(fname, dpi=300, transparent=scatterTransparent)
+
+
+##############################################################################
+histFigSize     = (3.75, 2.2)
+histLeft    = 0.25
+histBottom  = 0.3
+histRight   = 0.95
+histTop     = 0.8
+histTransparent = True
+
+if FRHistograms:
+    for EIType in ['E', 'I_10']:
+        if EIType == 'E':
+            fname = outputDir + "/suppFigure_grids_FR-histogram_FRE{0}.pdf"
+            xlabel='Firing rate of E cells (Hz)'
+            legLoc = (0.8, 0.6)
+            dataRange = (0, 10)
+            sigmaTitle = True
+        else:
+            fname = outputDir + "/suppFigure_grids_FR-histogram_FRI{0}.pdf"
+            xlabel='Firing rate of I cells (Hz)'
+            legLoc = (0.1, 0.6)
+            dataRange = (0, 200)
+            sigmaTitle = False
+
+        NTrialsGrids = 3
+        typesFR = ['FR', EIType]
+        threshold = 0.20 # Gridness score threshold
+        kw = {}
+        kw['range'] = dataRange
+        kw['bins'] = 20
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fig = plt.figure(figsize=histFigSize)
+            ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
+                histTop))
+
+            plotFRGridThresholded(
+                    ps.grids[ns_idx], threshold, typesFR,
+                    iterList, NTrialsGrids,
+                    xlabel=xlabel,
+                    ignoreNaNs=ignoreNaNs, 
+                    sigmaTitle=sigmaTitle,
+                    noise_sigma=noise_sigma,
+                    alpha=0.5,
+                    normed=True,
+                    **kw)
+            #ax.xaxis.set_major_locator(ti.MultipleLocator(10))
+            #ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+            #ax.yaxis.set_minor_locator(ti.MultipleLocator(0.25))
+
+            if (ns_idx == 0 and EIType == 'E'):
+                leg = ['$gridness < {0}$'.format(threshold),
+                        '$gridness \geq {0}$'.format(threshold)]
+                l = ax.legend(leg, loc=(0.5, 0.5), fontsize='small',
+                        frameon=False)
+
+            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                    transparent=histTransparent)
+            plt.close()
 
