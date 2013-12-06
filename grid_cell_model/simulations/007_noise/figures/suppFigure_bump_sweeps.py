@@ -138,7 +138,7 @@ enable = [
 #        [0, 0, 0],
 #        [0, 0, 0]]
 
-fname = outputDir + "/suppFigure_bump_sweeps.pdf"
+fname = outputDir + "/figureS3.pdf"
 outputPDF = PdfPages(fname)
 strIdx = 0
 for noise_idx, noise_sigma in enumerate(noise_sigmas):

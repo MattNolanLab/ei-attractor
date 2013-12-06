@@ -30,7 +30,7 @@ files="
     $output_fig_dir/figure4.pdf
     $output_fig_dir/figureS1.pdf
     $output_fig_dir/figureS2.pdf
-    $output_fig_dir/suppFigure_bump_sweeps.pdf
+    $output_fig_dir/figureS3.pdf
     $output_fig_dir/suppFigure_grids_FR-histograms.pdf
     $output_fig_dir/suppFigure_grids_firing_rate.pdf
     $output_fig_dir/suppFigure_no_theta.pdf
