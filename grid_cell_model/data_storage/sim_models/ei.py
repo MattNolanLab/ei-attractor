@@ -11,6 +11,8 @@ def getNetParam(data, p):
     '''Extract a network parameter (p) from the data dictionary'''
     return data['net_attr'][p]
 
+def getOption(data, o):
+    return data['options'][o]
 
 def extractSpikes(mon):
     '''
