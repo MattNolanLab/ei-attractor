@@ -237,8 +237,8 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=xlabelText, ylabel=ylabelText,
 
     globalAxesSettings(ax)
     ax.minorticks_on()
-    plt.pcolor(X, Y, C, vmin=vmin, vmax=vmax, cmap=cmap, **kw)
-    cax = createColorbar(ax, **cbar_kw)
+    mappable = ax.pcolor(X, Y, C, vmin=vmin, vmax=vmax, cmap=cmap, **kw)
+    cax = createColorbar(ax, mappable=mappable, **cbar_kw)
     if (colorBar == False):
         cax.set_visible(False)
     if (xlabel != ""):

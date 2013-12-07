@@ -188,10 +188,12 @@ def createColorbar(ax, **kwargs):
     #orientation = kwargs.get('orientation', 'horizontal')
     rasterized  = kwargs.pop('rasterized', None)
     labelpad    = kwargs.pop('labelpad', None)
+    mappable    = kwargs.pop('mappable', None)
 
     cax, kwargs = make_axes(ax, **kwargs)
     globalAxesSettings(cax)
-    cb = colorbar(ax=ax, cax=cax, **kwargs)
+    fig = ax.figure
+    cb = fig.colorbar(mappable, ax=ax, cax=cax, **kwargs)
     cb.set_label(cbLabel, labelpad=labelpad)
     cb.solids.set_rasterized(rasterized)
 

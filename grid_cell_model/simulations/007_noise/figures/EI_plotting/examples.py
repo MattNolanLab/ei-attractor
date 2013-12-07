@@ -73,7 +73,7 @@ def plotOneGridACorrExample(dataSpace, rc, trialNum=0, **kw):
 def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
         exIdx=(0, 0), xlabel=True, ylabel=True, xlabelPos=-0.2, xlabel2=True,
         ylabel2=True, ylabelPos=-0.2, xlabel2Pos=-0.6, ylabel2Pos=-0.6,
-        fontSize=None, maxRate=True, plotGScore=True):
+        fontSize=None, maxRate=True, plotGScore=True, fig=plt.gcf()):
     left   = spaceRect[0]
     bottom = spaceRect[1]
     right  = spaceRect[2]
@@ -109,7 +109,7 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
 
             gsRow = top - r
             gsCol = c - left
-            ax = plt.subplot(gs[gsRow, gsCol]) 
+            ax = fig.add_subplot(gs[gsRow, gsCol]) 
             X         = rateMaps_X[r][c][0]
             Y         = rateMaps_Y[r][c][0]
             arenaDiam = arenaDiams[r][c][0]
@@ -118,7 +118,8 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
             else:
                 gScore = None
             plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=scaleBar,
-                    scaleText=False, maxRate=maxRate, G=gScore, rasterized=True)
+                    scaleText=False, maxRate=maxRate, G=gScore,
+                    rasterized=True, ax=ax)
 
             if (ylabel and gsCol == 0):
                 label = "{0:.2f}".format(we[r][c])
