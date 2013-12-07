@@ -48,7 +48,7 @@ def aggregate2DTrial(sp, varList, trialNumList, fReduce=np.mean,
     '''
     varList = ['analysis'] + varList
     retVar = sp.aggregateData(varList, trialNumList, funReduce=np.mean,
-            saveData=True)
+            saveData=False)
     if (ignoreNaNs):
         nans = np.isnan(retVar)
         retVar = ma.MaskedArray(retVar, mask=nans)
