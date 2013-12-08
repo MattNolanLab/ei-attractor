@@ -62,24 +62,6 @@ detailed_noise    = 1
 rastersFlag       = 0
 rates             = 0
 
-##############################################################################
-
-def plotBumpExample(sp, rc, iterList, EIType, **kw):
-    #keyword
-    wspace    = kw.pop('wspace', 0)
-    hspace    = kw.pop('hspace', 0)
-    gsCoords  = kw.pop('exGsCoords', (0, 0, 1, 1))
-
-    r, c = rc[0], rc[1] 
-    spaceRect = [c, r, c, r]
-    return examples.drawBumpExamples(sp, spaceRect, iterList, gsCoords, EIType,
-            xlabel=False, ylabel=False,
-            xlabel2=False, ylabel2=False,
-            fontsize='x-small',
-            rateYPos=1.05, rateXPos=0.98,
-            **kw)
-
-
 ###############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
@@ -203,7 +185,7 @@ if (bumpExamples):
                     fnameTemplate =exampleIFName
                 fname = fnameTemplate.format(noise_sigma, idx)
                 plt.figure(figsize=exampleFigSize)
-                gs = plotBumpExample(ps.bumpGamma[ns_idx], rc, iterList,
+                gs = examples.plotOneBumpExample(ps.bumpGamma[ns_idx], rc, iterList,
                         EIType,
                         exIdx=exampleIdx[ns_idx],
                         trialNum=bumpTrialNum)

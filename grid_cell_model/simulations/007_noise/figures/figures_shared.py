@@ -162,8 +162,8 @@ def plotBump(ax, rateMap, cmap='jet', maxRate=True, **kw):
     rx = kw.pop('rateXPos', 0.95)
     ry = kw.pop('rateYPos', 1.025)
     ax.pcolormesh(rateMap, cmap=cmap, **kw)
-    axis("scaled")
-    axis('off')
+    ax.axis("scaled")
+    ax.axis('off')
     if (maxRate):
         rStr = '{0:.1f} Hz'.format(np.max(rateMap.flatten()))
         ax.text(rx, ry, rStr, ha="right", va='bottom', fontsize=fs,

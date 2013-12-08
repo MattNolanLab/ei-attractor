@@ -70,6 +70,25 @@ def plotOneGridACorrExample(dataSpace, rc, trialNum=0, **kw):
     plotAutoCorrelation(corr, corr_X, corr_Y, diam=arenaDiam, ax=ax, **kw)
 
 
+def plotOneBumpExample(sp, rc, iterList, EIType, **kw):
+    #keyword
+    wspace    = kw.pop('wspace', 0)
+    hspace    = kw.pop('hspace', 0)
+    gsCoords  = kw.pop('exGsCoords', (0, 0, 1, 1))
+
+    r, c = rc[0], rc[1] 
+    spaceRect = [c, r, c, r]
+    return drawBumpExamples(sp, spaceRect, iterList, gsCoords, EIType,
+            xlabel=False, ylabel=False,
+            xlabel2=False, ylabel2=False,
+            fontsize='x-small',
+            rateYPos=1.05, rateXPos=0.98,
+            **kw)
+
+
+
+##############################################################################
+
 def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
         exIdx=(0, 0), xlabel=True, ylabel=True, xlabelPos=-0.2, xlabel2=True,
         ylabel2=True, ylabelPos=-0.2, xlabel2Pos=-0.6, ylabel2Pos=-0.6,
@@ -167,6 +186,7 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, EIType, **kw):
     xlabel2Pos = kw.pop('xlabel2os', -0.6)
     ylabel2Pos = kw.pop('ylabel2os', -0.6)
     fontSize   = kw.pop('fontSize', 'medium')
+    fig        = kw.pop('fig', plt.gcf())
     # + plotBump() kwargs
     kw['rasterized'] = kw.pop('rasterized', True)
     kw['vmin']       = kw.get('vmin', 0)
@@ -209,7 +229,7 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, EIType, **kw):
 
             gsRow = top - r
             gsCol = c - left
-            ax = plt.subplot(gs[gsRow, gsCol]) 
+            ax = fig.add_subplot(gs[gsRow, gsCol]) 
             plotBump(ax, bump, **kw)
 
             if (ylabel and gsCol == 0):

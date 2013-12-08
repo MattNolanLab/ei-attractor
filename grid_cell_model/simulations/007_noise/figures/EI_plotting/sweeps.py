@@ -65,10 +65,11 @@ def plotBumpSigmaTrial(sp, varList, iterList, noise_sigma, trialNumList=[0],
     c           = kw.pop('c', 0)
     cbar        = kw.pop('cbar', True)
     kw['cmap']  = kw.get('cmap', 'jet')
+    ignoreNaNs  = kw.pop('ignoreNaNs', False)
     sigmaTitle  = kw.pop('sigmaTitle', True)
     annotations = kw.pop('annotations', None)
 
-    C = aggr.aggregate2DTrial(sp, varList, trialNumList)
+    C = aggr.aggregate2DTrial(sp, varList, trialNumList, ignoreNaNs=ignoreNaNs)
     C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
     C = 1. / C
     print("min(C): {0}".format(np.min(C)))
