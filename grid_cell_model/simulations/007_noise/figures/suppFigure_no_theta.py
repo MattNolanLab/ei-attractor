@@ -60,13 +60,13 @@ velDataRoot   = 'output_local/no_theta/velocity'
 gridsDataRoot = 'output_local/no_theta/grids'
 shape    = (31, 31)
 
-grids           = 0
-bumpSweep       = 0
-slopeSweeps     = 0
+grids           = 1
+bumpSweep       = 1
+slopeSweeps     = 1
 slopeErrSweeps  = 1
-gammaPowerSweep = 0
-gammaFreqSweep  = 0
-gammaExamples   = 0
+gammaPowerSweep = 1
+gammaFreqSweep  = 1
+gammaExamples   = 1
 
 
 ###############################################################################

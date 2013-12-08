@@ -110,7 +110,7 @@ def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx,
     gsCoords = 0.12, 0.075, 0.92, sw_bottom-div
     #gsCoords = margin, 0.46, 0.5, sw_bottom-div
     gs = examples.drawGridExamples(dataSpace, exRect, iterList, gsCoords=gsCoords,
-            exIdx=exIdx)
+            exIdx=exIdx, fig=fig)
     #fig.text(letter_left, sw_bottom-div+letter_top_off, "B", va=letter_va,
     #        ha=letter_ha, fontsize=19, fontweight='bold')
     noise_sigma_txt = "$\sigma_{{noise}}$ = {0} pA".format(int(noise_sigma))

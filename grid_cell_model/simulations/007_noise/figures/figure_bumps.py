@@ -53,14 +53,14 @@ bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-bumpSweep         = 0
+bumpSweep         = 1
 bumpExamples      = 1
-velExamples       = 0
-velSweep          = 0
-gridness_vs_error = 0
+velExamples       = 1
+velSweep          = 1
+gridness_vs_error = 1
 detailed_noise    = 1
-rastersFlag       = 0
-rates             = 0
+rastersFlag       = 1
+rates             = 1
 
 ###############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)

@@ -52,8 +52,8 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-grids          = 0
-examplesFlag   = 0
+grids          = 1
+examplesFlag   = 1
 detailed_noise = 1
 
 ##############################################################################
@@ -190,12 +190,13 @@ if (examplesFlag):
         for idx, rc in enumerate(exampleRC):
             # Grid field
             fname = exampleGridFName.format(noise_sigma, idx)
-            plt.figure(figsize=exampleFigSize)
+            fig = plt.figure(figsize=exampleFigSize)
             gs = examples.plotOneGridExample(ps.grids[ns_idx], rc, iterList,
                     exIdx=exampleIdx[idx],
                     xlabel=False, ylabel=False,
                     xlabel2=False, ylabel2=False, 
-                    maxRate=True, plotGScore=False)
+                    maxRate=True, plotGScore=False,
+                    fig=fig)
             gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
                     top=exampleTop)
             plt.savefig(fname, dpi=300, transparent=exTransparent)

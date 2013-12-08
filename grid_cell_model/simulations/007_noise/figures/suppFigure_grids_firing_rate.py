@@ -56,8 +56,8 @@ gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 
-FRSweeps     = 0
-scatterPlot  = 0
+FRSweeps     = 1
+scatterPlot  = 1
 FRHistograms = 1
 
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
