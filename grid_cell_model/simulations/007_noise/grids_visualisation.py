@@ -37,4 +37,5 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = GridsMainWindow()
     window.show()
+    window.raise_()
     sys.exit(app.exec_())

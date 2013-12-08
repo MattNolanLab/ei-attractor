@@ -23,6 +23,7 @@ from matplotlib import rcParams
 rcParams['backend.qt4'] = 'PySide'
 
 import sys
+from PySide import QtCore
 from PySide.QtCore import SIGNAL
 from PySide.QtCore import QObject
 from PySide.QtGui import QMainWindow, QFileDialog
@@ -30,44 +31,107 @@ from PySide.QtGui import QMainWindow, QFileDialog
 from ui_gridsmainwindow import Ui_GridsMainWindow
 
 
-defaultDir = './output_local/even_spacing/grids/0pA'
-
 class GridsMainWindow(QMainWindow, Ui_GridsMainWindow):
+    defaultBaseDir = './output_local/even_spacing'
+    gridsSubDir = 'grids'
+    bumpsSubDir = 'bumps'
+
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent) 
         self.setupUi(self)
 
         # Connections
+        self.gridSweepWidget.dataRenewed.connect(self.gridFieldWidget.updateData)
+        self.gridSweepWidget.dataRenewed.connect(self.aCorrWidget.updateData)
+        self.bumpSweepWidget.dataRenewed.connect(self.eFRExampleWidget.updateData)
+        self.bumpSweepWidget.dataRenewed.connect(self.iFRExampleWidget.updateData)
+        self.gridSweepWidget.positionPicked.connect(self.updateRC)
+        self.bumpSweepWidget.positionPicked.connect(self.updateRC)
+        self.tabWidget.currentChanged.connect(self.updateExamples)
+        self.noise_sigmaSpinBox.valueChanged.connect(self.changeNoiseSigma)
+
+        self.selectButton.clicked.connect(self.select_dir)
         self.loadButton.clicked.connect(self.load_dir)
-        self.sweepWidget.dataRenewed.connect(self.gridFieldWidget.updateData)
-        self.sweepWidget.dataRenewed.connect(self.aCorrWidget.updateData)
-        self.gESpinBox.valueChanged.connect(self.gridFieldWidget.changeRow)
-        self.gESpinBox.valueChanged.connect(self.aCorrWidget.changeRow)
-        self.gISpinBox.valueChanged.connect(self.gridFieldWidget.changeCol)
-        self.gISpinBox.valueChanged.connect(self.aCorrWidget.changeCol)
 
         # Default states of widgets
-        self.loadLineEdit.setText(defaultDir)
-        self.gridFieldWidget.changeRow(self.gESpinBox.value())
-        self.gridFieldWidget.changeCol(self.gISpinBox.value())
-        self.aCorrWidget.changeRow(self.gESpinBox.value())
-        self.aCorrWidget.changeCol(self.gISpinBox.value())
-
-        # Internal states
-        self.inputDir = None
+        self.loadLineEdit.setText(self.defaultBaseDir)
+        self.useNoiseSigmaCheckBox.setCheckState(QtCore.Qt.Checked)
+        self.r = self.gESpinBox.value()
+        self.c = self.gISpinBox.value()
 
 
-    def load_dir(self):
+
+    def constructFinalDir(self, dirType):
+        baseDir = self.loadLineEdit.text()
+        subDir = self.decideSubDir()
+        return "{0}/{1}/{2}pA".format(baseDir, dirType, subDir)
+
+
+    def constructFinalDirs(self):
+        class FinalDirs(object):
+            pass
+        retVal = FinalDirs()
+        for dirType in ['gamma_bump', 'grids', 'velocity']:
+            finalDir = self.constructFinalDir(dirType)
+            print finalDir
+            setattr(retVal, dirType, finalDir)
+        return retVal
+
+
+    #########################################################################
+    # Slots
+    def select_dir(self):
         '''
         Opens a dialog box and selects a directory
         '''
         startDir = self.loadLineEdit.text()
         directory = QFileDialog.getExistingDirectory(dir=startDir)
         if (directory):
-            self.inputDir = directory
-            self.loadLineEdit.setText(self.inputDir)
-            shape = (self.ySizeSpinBox.value(),  self.xSizeSpinBox.value())
-            self.sweepWidget.setDirectory(self.inputDir, shape)
+            self.loadLineEdit.setText(directory)
 
+    @QtCore.Slot(int, int)
+    def updateRC(self, r, c):
+        self.gESpinBox.setValue(r)
+        self.gISpinBox.setValue(c)
+        self.gridSweepWidget.setPickPosition(r, c)
+        self.bumpSweepWidget.setPickPosition(r, c)
+        self.r, self.c = r, c
+        self.updateExamples()
+
+    def updateExamples(self):
+        r = self.r
+        c = self.c
+        currentTab = self.tabWidget.currentIndex()
+        if (currentTab == 0):
+            self.gridFieldWidget.changeRC(r, c)
+            self.aCorrWidget.changeRC(r, c)
+        elif (currentTab == 1):
+            self.eFRExampleWidget.changeRC(r, c)
+            self.iFRExampleWidget.changeRC(r, c)
+        else:
+            raise ValueError('No such tab with index: {0}'.format(currentTab))
+
+
+    def load_dir(self):
+        allDirs = self.constructFinalDirs() 
+        shape = (self.ySizeSpinBox.value(),  self.xSizeSpinBox.value())
+        self.gridSweepWidget.setDirectory(allDirs.grids, shape)
+        self.bumpSweepWidget.setDirectory(allDirs.gamma_bump, shape)
+        self.updateRC(self.r, self.c)
+
+    def decideSubDir(self):
+        if self.useNoiseSigmaCheckBox.checkState() == QtCore.Qt.Checked:
+            return self.noise_sigmaSpinBox.value()
+        else:
+            return self.subDirLineEdit.text()
+
+
+    #########################################################################
+    @QtCore.Slot(int)
+    def changeNoiseSigma(self, ns):
+        if (self.autoLoadCheckBox.checkState() == QtCore.Qt.Checked and
+                self.useNoiseSigmaCheckBox.checkState() == QtCore.Qt.Checked):
+            self.load_dir()
+            self.updateRC(self.r, self.c)
 
