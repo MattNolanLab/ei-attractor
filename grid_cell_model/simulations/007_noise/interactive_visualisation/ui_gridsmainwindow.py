@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gridsmainwindow.ui'
 #
-# Created: Sun Dec  8 19:18:45 2013
+# Created: Mon Dec  9 11:05:25 2013
 #      by: pyside-uic 0.2.15 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -48,7 +48,7 @@ class Ui_GridsMainWindow(object):
         self.ySizeSpinBox.setObjectName("ySizeSpinBox")
         self.gridLayout.addWidget(self.ySizeSpinBox, 1, 5, 1, 1)
         self.gISpinBox = QtGui.QSpinBox(self.centralWidget)
-        self.gISpinBox.setReadOnly(True)
+        self.gISpinBox.setReadOnly(False)
         self.gISpinBox.setProperty("value", 15)
         self.gISpinBox.setObjectName("gISpinBox")
         self.gridLayout.addWidget(self.gISpinBox, 1, 2, 1, 1)
@@ -70,7 +70,7 @@ class Ui_GridsMainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.gESpinBox.sizePolicy().hasHeightForWidth())
         self.gESpinBox.setSizePolicy(sizePolicy)
-        self.gESpinBox.setReadOnly(True)
+        self.gESpinBox.setReadOnly(False)
         self.gESpinBox.setProperty("value", 5)
         self.gESpinBox.setObjectName("gESpinBox")
         self.gridLayout.addWidget(self.gESpinBox, 0, 2, 1, 1)
@@ -245,7 +245,7 @@ class Ui_GridsMainWindow(object):
         GridsMainWindow.setCentralWidget(self.centralWidget)
 
         self.retranslateUi(GridsMainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.useNoiseSigmaCheckBox, QtCore.SIGNAL("toggled(bool)"), self.noise_sigmaSpinBox.setEnabled)
         QtCore.QObject.connect(self.useNoiseSigmaCheckBox, QtCore.SIGNAL("toggled(bool)"), self.subDirLineEdit.setDisabled)
         QtCore.QMetaObject.connectSlotsByName(GridsMainWindow)

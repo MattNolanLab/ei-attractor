@@ -50,6 +50,8 @@ class GridsMainWindow(QMainWindow, Ui_GridsMainWindow):
         self.bumpSweepWidget.positionPicked.connect(self.updateRC)
         self.tabWidget.currentChanged.connect(self.updateExamples)
         self.noise_sigmaSpinBox.valueChanged.connect(self.changeNoiseSigma)
+        self.gESpinBox.valueChanged.connect(self.gESpinBoxChange)
+        self.gISpinBox.valueChanged.connect(self.gISpinBoxChange)
 
         self.selectButton.clicked.connect(self.select_dir)
         self.loadButton.clicked.connect(self.load_dir)
@@ -90,14 +92,26 @@ class GridsMainWindow(QMainWindow, Ui_GridsMainWindow):
         if (directory):
             self.loadLineEdit.setText(directory)
 
+
+    def gESpinBoxChange(self, newVal):
+        if (self.r != newVal):
+            self.r = self.gESpinBox.value()
+            self.updateRC(self.r, self.c)
+
+    def gISpinBoxChange(self, newVal):
+        if (self.c != newVal):
+            self.c = self.gISpinBox.value()
+            self.updateRC(self.r, self.c)
+        
+
     @QtCore.Slot(int, int)
     def updateRC(self, r, c):
-        self.gESpinBox.setValue(r)
-        self.gISpinBox.setValue(c)
+        self.r, self.c = r, c
         self.gridSweepWidget.setPickPosition(r, c)
         self.bumpSweepWidget.setPickPosition(r, c)
-        self.r, self.c = r, c
         self.updateExamples()
+        self.gESpinBox.setValue(r)
+        self.gISpinBox.setValue(c)
 
     def updateExamples(self):
         r = self.r

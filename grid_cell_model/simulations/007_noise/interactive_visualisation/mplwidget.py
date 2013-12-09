@@ -87,7 +87,6 @@ class SweepWidget(MplWidget):
             del ax.lines[0]
         x = (c + 0.5)*self.dx
         y = (r + 0.5)*self.dy
-        print x, y
         self.pickAnnotation, = ax.plot([x], [y], 'o', color='black',
                 markerfacecolor='black', markeredgecolor='white', zorder=2)
         self.canvas.draw()
@@ -102,6 +101,7 @@ class SweepWidget(MplWidget):
             c = int(xd / self.gIMax * (self.dataSpace.shape[1] - 1))
             print r, c
             self.setPickPosition(r, c)
+            self.positionPicked.emit(r, c)
 
     @QtCore.Slot(int, int)
     def setPickPosition(self, r, c):
@@ -109,7 +109,6 @@ class SweepWidget(MplWidget):
         if (r != self.r or c != self.c):
             self.r = r
             self.c = c
-            self.positionPicked.emit(r, c)
 
 
   
@@ -227,9 +226,12 @@ class GridFieldWidget(ExampleWidget):
     def update(self):
         self.clear()
         rc = (self.r, self.c)
+        gsCoords = (0.01, 0.01, 0.99, 0.85)
         if self.dataSpace is not None and rc < tuple(self.dataSpace.shape):
-            examples.plotOneGridExample(self.dataSpace, rc, self.iterList,
+            gs = examples.plotOneGridExample(self.dataSpace, rc, self.iterList,
                     fig=self.canvas.fig,
+                    gsCoords=gsCoords,
+                    xlabel=False, ylabel=False,
                     xlabel2=False, ylabel2=False)
         self.canvas.draw()
        
@@ -242,12 +244,11 @@ class ACorrelationWidget(ExampleWidget):
     def update(self):
         self.clear()
         rc = (self.r, self.c)
-        print(rc)
         if self.dataSpace is not None and rc < tuple(self.dataSpace.shape):
             ax = self.canvas.fig.add_subplot(111)
             examples.plotOneGridACorrExample(self.dataSpace, rc, 
                     ax=ax)
-        self.canvas.fig.subplots_adjust(bottom=0, left=0, right=1, top=1)
+        self.canvas.fig.subplots_adjust(bottom=0, left=0, right=0.99, top=0.85)
         self.canvas.draw()
        
 
