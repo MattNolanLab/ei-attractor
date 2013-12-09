@@ -44,10 +44,13 @@ class GridsMainWindow(QMainWindow, Ui_GridsMainWindow):
         # Connections
         self.gridSweepWidget.dataRenewed.connect(self.gridFieldWidget.updateData)
         self.gridSweepWidget.dataRenewed.connect(self.aCorrWidget.updateData)
+        self.gridSweepWidget.positionPicked.connect(self.updateRC)
+
         self.bumpSweepWidget.dataRenewed.connect(self.eFRExampleWidget.updateData)
         self.bumpSweepWidget.dataRenewed.connect(self.iFRExampleWidget.updateData)
-        self.gridSweepWidget.positionPicked.connect(self.updateRC)
         self.bumpSweepWidget.positionPicked.connect(self.updateRC)
+        self.bumpSweepWidget.bumpSigmaUpdate.connect(self.bumpSigmaLabel.setText)
+
         self.tabWidget.currentChanged.connect(self.updateExamples)
         self.noise_sigmaSpinBox.valueChanged.connect(self.changeNoiseSigma)
         self.gESpinBox.valueChanged.connect(self.gESpinBoxChange)
@@ -56,11 +59,18 @@ class GridsMainWindow(QMainWindow, Ui_GridsMainWindow):
         self.selectButton.clicked.connect(self.select_dir)
         self.loadButton.clicked.connect(self.load_dir)
 
+        self.trialNumSpinBox.valueChanged.connect(self.bumpSweepWidget.setTrial)
+        self.trialNumSpinBox.valueChanged.connect(self.updateExamples)
+
         # Default states of widgets
         self.loadLineEdit.setText(self.defaultBaseDir)
         self.useNoiseSigmaCheckBox.setCheckState(QtCore.Qt.Checked)
         self.r = self.gESpinBox.value()
         self.c = self.gISpinBox.value()
+        self.bumpSigmaLabel.setText("???")
+
+        # Initial signal distribution
+        self.trialNumSpinBox.valueChanged.emit(self.trialNumSpinBox.value())
 
 
 
@@ -113,14 +123,20 @@ class GridsMainWindow(QMainWindow, Ui_GridsMainWindow):
         self.gESpinBox.setValue(r)
         self.gISpinBox.setValue(c)
 
+
     def updateExamples(self):
         r = self.r
         c = self.c
+        trial = self.trialNumSpinBox.value()
         currentTab = self.tabWidget.currentIndex()
         if (currentTab == 0):
+            self.gridFieldWidget.changeTrial(trial) # Must be first
+            self.aCorrWidget.changeTrial(trial)
             self.gridFieldWidget.changeRC(r, c)
             self.aCorrWidget.changeRC(r, c)
         elif (currentTab == 1):
+            self.eFRExampleWidget.changeTrial(trial)
+            self.iFRExampleWidget.changeTrial(trial)
             self.eFRExampleWidget.changeRC(r, c)
             self.iFRExampleWidget.changeRC(r, c)
         else:

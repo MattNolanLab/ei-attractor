@@ -68,6 +68,7 @@ class SweepWidget(MplWidget):
         self.pickAnnotation = None
         self.r = None
         self.c = None
+        self.ax = None
 
 
     def setDirectory(self, rootPath, shape):
@@ -83,13 +84,14 @@ class SweepWidget(MplWidget):
 
     def plotPickAnnotation(self, r, c):
         ax = self.ax
-        if (len(ax.lines) != 0):
-            del ax.lines[0]
-        x = (c + 0.5)*self.dx
-        y = (r + 0.5)*self.dy
-        self.pickAnnotation, = ax.plot([x], [y], 'o', color='black',
-                markerfacecolor='black', markeredgecolor='white', zorder=2)
-        self.canvas.draw()
+        if (ax is not None):
+            if (len(ax.lines) != 0):
+                del ax.lines[0]
+            x = (c + 0.5)*self.dx
+            y = (r + 0.5)*self.dy
+            self.pickAnnotation, = ax.plot([x], [y], 'o', color='black',
+                    markerfacecolor='black', markeredgecolor='white', zorder=2)
+            self.canvas.draw()
 
     def onpick(self, event):
         me = event.mouseevent # should be collection
@@ -150,18 +152,27 @@ class GridSweepWidget(SweepWidget):
 
 
 class BumpSweepWidget(SweepWidget):
+    bumpSigmaUpdate = QtCore.Signal(str)
+
     def __init__(self, parent=None):
         SweepWidget.__init__(self, parent)
         self.varList = ['bump_e', 'sigma']
+        self.bumpSigma = None
+        self.trial = None
 
 
     def setDirectory(self, rootPath, shape):
         super(BumpSweepWidget, self).setDirectory(rootPath, shape)
 
+        varList = ['analysis', 'bump_e', 'sigma']
+        self.bumpSigma = self.dataSpace.aggregateData(varList, trialNumList=[],
+                funReduce=None, loadData=True, saveData=False,
+                output_dtype='array')
+
         sigmaBumpText = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
         self.cbar_kw.update(dict(
                 label       = sigmaBumpText,
-                ticks       = ti.MultipleLocator(0.25)))
+                ticks       = ti.MultipleLocator(0.1)))
 
         self.canvas.fig.clear()
         self.ax = self.canvas.fig.add_axes(
@@ -169,7 +180,8 @@ class BumpSweepWidget(SweepWidget):
                                   self.sweepTop))
        
 
-        sweeps.plotBumpSigmaTrial(self.dataSpace, self.varList, self.iterList,
+        sweeps.plotBumpSigmaTrial(self.dataSpace,
+                self.varList, self.iterList,
                 self.noise_sigma,
                 trialNumList=[],
                 sigmaTitle=False,
@@ -187,6 +199,20 @@ class BumpSweepWidget(SweepWidget):
         self.dataRenewed.emit(self.dataSpace)
 
 
+    @QtCore.Slot(int)
+    def setTrial(self, newTrial):
+        self.trial = newTrial
+        self.setPickPosition(self.r, self.c)
+
+    @QtCore.Slot(int, int)
+    def setPickPosition(self, r, c):
+        super(BumpSweepWidget, self).setPickPosition(r, c)
+        if (r is not None and c is not None and self.bumpSigma is not None):
+            print "emitting..."
+            self.bumpSigmaUpdate.emit("{0:.3f}".format(self.bumpSigma[r, c,
+                self.trial]))
+
+
 ##############################################################################
 # Examples
 
@@ -197,9 +223,14 @@ class ExampleWidget(MplWidget):
         self.dataSpace = None
         self.r = None
         self.c = None
+        self.trial = None
         self.iterList  = ['g_AMPA_total', 'g_GABA_total']
 
+    def clear(self):
+        self.canvas.fig.clear()
     
+
+    ########################################################################
     @QtCore.Slot(JobTrialSpace2D)
     def updateData(self, dataSpace):
         self.dataSpace = dataSpace
@@ -214,8 +245,12 @@ class ExampleWidget(MplWidget):
             self.c = c
             self.update()
 
-    def clear(self):
-        self.canvas.fig.clear()
+    @QtCore.Slot(int)
+    def changeTrial(self, newTrial):
+        if (self.trial != newTrial):
+            self.trial = newTrial
+            self.update()
+
 
 
 class GridFieldWidget(ExampleWidget):
@@ -229,6 +264,7 @@ class GridFieldWidget(ExampleWidget):
         gsCoords = (0.01, 0.01, 0.99, 0.85)
         if self.dataSpace is not None and rc < tuple(self.dataSpace.shape):
             gs = examples.plotOneGridExample(self.dataSpace, rc, self.iterList,
+                    trialNum=self.trial,
                     fig=self.canvas.fig,
                     gsCoords=gsCoords,
                     xlabel=False, ylabel=False,
@@ -247,12 +283,14 @@ class ACorrelationWidget(ExampleWidget):
         if self.dataSpace is not None and rc < tuple(self.dataSpace.shape):
             ax = self.canvas.fig.add_subplot(111)
             examples.plotOneGridACorrExample(self.dataSpace, rc, 
+                    trialNum=self.trial,
                     ax=ax)
         self.canvas.fig.subplots_adjust(bottom=0, left=0, right=0.99, top=0.85)
         self.canvas.draw()
        
 
 class PopulationFRWidget(ExampleWidget):
+
     def __init__(self, EIType, parent=None):
         if (EIType not in ['E', 'I']):
             raise ValueError("Population type must be 'E' or 'I'")
@@ -267,6 +305,7 @@ class PopulationFRWidget(ExampleWidget):
         if (self.dataSpace is not None and rc < tuple(self.dataSpace.shape)):
             examples.plotOneBumpExample(self.dataSpace, rc, self.iterList,
                     self.EIType,
+                    trialNum=self.trial,
                     exGsCoords=gsCoords,
                     fig=self.canvas.fig)
         self.canvas.draw()

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>625</width>
-    <height>808</height>
+    <width>703</width>
+    <height>834</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -213,7 +213,17 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="7">
+      <item row="1" column="11">
+       <widget class="QCheckBox" name="useNoiseSigmaCheckBox">
+        <property name="text">
+         <string>Use noise sigma value</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="7">
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>Sub-directory</string>
@@ -223,16 +233,26 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="8">
+      <item row="2" column="8">
        <widget class="QLineEdit" name="subDirLineEdit"/>
       </item>
-      <item row="1" column="11">
-       <widget class="QCheckBox" name="useNoiseSigmaCheckBox">
-        <property name="text">
-         <string>Use noise sigma value</string>
+      <item row="1" column="8">
+       <widget class="QSpinBox" name="trialNumSpinBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <property name="checked">
-         <bool>false</bool>
+       </widget>
+      </item>
+      <item row="1" column="7">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Trial no.</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -277,7 +297,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -478,6 +498,9 @@
         </item>
         <item>
          <layout class="QHBoxLayout" name="bumpExamplesLayout">
+          <property name="topMargin">
+           <number>5</number>
+          </property>
           <item>
            <widget class="EFRWidget" name="eFRExampleWidget" native="true">
             <property name="sizePolicy">
@@ -523,7 +546,46 @@
            </widget>
           </item>
           <item>
-           <spacer name="horizontalSpacer_8">
+           <layout class="QFormLayout" name="formLayout">
+            <property name="topMargin">
+             <number>10</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_8">
+              <property name="text">
+               <string>Bump sigma:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="bumpSigmaLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>75</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
