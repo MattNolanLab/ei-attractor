@@ -4,6 +4,7 @@
 #
 #   Supplementary figure: scatter plots of gridness score vs. bump width.
 #
+import sys
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
@@ -95,7 +96,8 @@ if (scatterPlot):
                 ylabel=ylabel,
                 sigmaTitle=True,
                 noise_sigma=noise_sigma,
-                ignoreNaNs=ignoreNaNs)
+                ignoreNaNs=ignoreNaNs,
+                ax=ax)
         scatterPlot.plot()
 
         #ax.xaxis.set_major_locator(ti.MultipleLocator(10))
@@ -106,6 +108,7 @@ if (scatterPlot):
 
         fig.savefig(fname.format(int(noise_sigma)), dpi=300,
                 transparent=scatterTransparent)
+        #plt.show()
 
     fig = plt.figure(figsize=scatterColorFigSize)
     ax = fig.gca()

@@ -321,8 +321,8 @@ class ScatterPlot(object):
     def resolveColors(self):
         CX, CY = None, None
         if self.color2D:
-            CX, CY = np.meshgrid(np.linspace(0, 1, self.xSize),
-                    np.linspace(0, 1, self.ySize))
+            CX, CY = np.meshgrid(np.linspace(0, self.xSize-1, self.xSize),
+                    np.linspace(0, self.ySize-1, self.ySize))
             if (self.colormap2D is None):
                 xColor = [1, 0, 0]
                 yColor = [0, 1, 0]
@@ -359,6 +359,10 @@ class ScatterPlot(object):
         if (self.colors is not None):
             kw['c'] = self.colors
         kw['cmap'] = self.cmap
+        kw['picker'] = True
+        kw['vmin'] = 0
+        kw['vmax'] = self.xSize * self.ySize - 1
+
         collection = ax.scatter(X.flatten(), Y.flatten(), **kw)
 
         ax.set_xlabel(xlabel)
@@ -371,6 +375,9 @@ class ScatterPlot(object):
 
         if sigmaTitle and noise_sigma is not None:
             ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+
+        # Picking - for interactive mode
+        ax.figure.canvas.mpl_connect('pick_event', self.onpick)
 
         return ax
 
@@ -385,4 +392,11 @@ class ScatterPlot(object):
         ax.axis('scaled')
         return collection
 
+    def onpick(self, event):
+        idx = event.ind
+        colors = event.artist.get_array()
+        r = colors[idx] // self.xSize
+        c = colors[idx] % self.xSize
+        print idx
+        print("r: {0}, c: {1}".format(r, c))
 

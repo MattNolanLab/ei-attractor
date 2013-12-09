@@ -62,13 +62,13 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape    = (31, 31)
 
-gammaSweep      = 1
-threshold       = 1
-freqHist        = 1
-detailed_noise  = 1
-examplesFlag    = 1
+gammaSweep      = 0
+threshold       = 0
+freqHist        = 0
+detailed_noise  = 0
+examplesFlag    = 0
 scatterPlot     = 1
-scatterPlot_all = 1
+scatterPlot_all = 0
 
 ###############################################################################
 
