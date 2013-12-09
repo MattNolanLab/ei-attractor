@@ -59,7 +59,7 @@ def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
 
 
 def plotBumpSigmaTrial(sp, varList, iterList, noise_sigma, trialNumList=[0],
-        thr=np.infty, **kw):
+        **kw):
     #kw arguments
     r           = kw.pop('r', 0)
     c           = kw.pop('c', 0)
@@ -69,9 +69,11 @@ def plotBumpSigmaTrial(sp, varList, iterList, noise_sigma, trialNumList=[0],
     sigmaTitle  = kw.pop('sigmaTitle', True)
     annotations = kw.pop('annotations', None)
 
-    C = aggr.aggregate2DTrial(sp, varList, trialNumList, ignoreNaNs=ignoreNaNs)
-    C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
-    C = 1. / C
+    types = ('bump', 'sigma')
+    C, _, _ = aggr.aggregateType(sp, iterList, types, 0, ignoreNaNs=ignoreNaNs, **kw)
+    #C = aggr.aggregate2DTrial(sp, varList, trialNumList, ignoreNaNs=ignoreNaNs)
+    #C = ma.MaskedArray(C, mask=np.logical_or(np.isnan(C), C > thr))
+    #C = 1. / C
     print("min(C): {0}".format(np.min(C)))
     print("max(C): {0}".format(np.max(C)))
     Y, X = aggr.computeYX(sp, iterList, r=r, c=c)

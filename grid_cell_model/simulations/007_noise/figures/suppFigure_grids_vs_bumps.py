@@ -50,9 +50,9 @@ ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
 ##############################################################################
 # Scatter plot of gridness score vs. bump sigma^-1
-scatterFigSize = (6.5, 3.6)
+scatterFigSize = (8, 3.6)
 scatterLeft   = 0.12
-scatterBottom = 0.15
+scatterBottom = 0.17
 scatterRight  = 0.98
 scatterTop    = 0.92
 scatterTransparent = True
@@ -64,7 +64,8 @@ ignoreNaNs = True
 if (scatterPlot):
     fname = outputDir + "/suppFigure_grids_vs_bumps{0}.pdf"
 
-    ylabel = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
+    ylabel = 'Gridness score'
+
 
     fig = plt.figure(figsize=scatterFigSize)
     ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
@@ -78,7 +79,7 @@ if (scatterPlot):
 
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         if (ns_idx == 2):
-            xlabel = 'Gridness score'
+            xlabel = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
         else:
             xlabel = ''
 
@@ -87,8 +88,8 @@ if (scatterPlot):
             scatterRight, scatterTop))
 
         scatterPlot = sweeps.ScatterPlot(
-                ps.grids[ns_idx], ps.bumpGamma[ns_idx], typesGrids,
-                typesBumps, iterList, NTrialsBumps, NTrialsGrids,
+                ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesBumps,
+                typesGrids, iterList, NTrialsBumps, NTrialsGrids,
                 s=25,
                 linewidth=0.3,
                 color2D=True,
@@ -104,7 +105,6 @@ if (scatterPlot):
         #ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
         #ax.yaxis.set_minor_locator(ti.MultipleLocator(0.25))
         ax.set_title(ax.get_title(), size='16')
-        ax.axhline(y=0.1, linestyle=':', zorder=-1, color='black')
 
         fig.savefig(fname.format(int(noise_sigma)), dpi=300,
                 transparent=scatterTransparent)

@@ -171,22 +171,25 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
         raise ValueError('Unknown aggregation type: {0}'.format(type))
 
 
-    data = sp.aggregateData(vars, trialNumList, output_dtype=output_dtype,
-            loadData=True, saveData=False, funReduce=funReduce)
+    data = ma.MaskedArray(sp.aggregateData(vars, trialNumList,
+        output_dtype=output_dtype, loadData=True, saveData=False,
+        funReduce=funReduce))
     if (ignoreNaNs):
         log_warn('aggregateType', 'Ignoring NaNs')
         nans = np.isnan(data)
-        data = ma.MaskedArray(data, mask=nans)
+        data.mask = nans
 
     if (type == 'velocity'):
         Y, X = computeVelYX(sp, iterList, normalize=False, **kw)
     else:
-        Y, X = computeYX(sp, iterList, normalize=False, **kw)
-        data = np.mean(data, axis=2) # TODO: fix the trials, stack them
-        # bump sigma is a reciprocal
         if (type == 'bump'):
             if (subType == 'sigma'):
                 data = 1./data
+                ignoreThreshold = 1.0
+                data.mask = np.logical_or(data.mask, data > ignoreThreshold)
+        Y, X = computeYX(sp, iterList, normalize=False, **kw)
+        data = np.mean(data, axis=2) # TODO: fix the trials, stack them
+        # bump sigma is a reciprocal
 
     return data, X, Y
 
