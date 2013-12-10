@@ -40,7 +40,7 @@ from data_storage.sim_models.ei import extractSummedSignals
 def plotOneGridExample(dataSpace, rc, iterList, **kw):
     r, c = rc[0], rc[1]
     spaceRect = (c, r, c, r)
-    gsCoords  = (0, 0, 1, 1)
+    gsCoords  = kw.pop('gsCoords', (0, 0, 1, 1))
     return drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, **kw)
 
 
