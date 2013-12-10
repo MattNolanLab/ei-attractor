@@ -32,7 +32,7 @@ from . import aggregate as aggr
 from plotting.global_defs import globalAxesSettings
 from plotting.grids       import plotGridRateMap, plotAutoCorrelation
 from plotting.low_level   import xScaleBar
-from figures_shared       import plotBump
+from plotting.bumps       import plotBump
 from data_storage.sim_models.ei import extractSummedSignals
 
 

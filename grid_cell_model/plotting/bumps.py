@@ -110,3 +110,22 @@ def flatFiringRate(FR, times, labely=None, labelx=None, units="ms",
     tight_layout()
 
 
+def plotBump(ax, rateMap, cmap='jet', minRate=False, maxRate=True, **kw):
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
+    fs = kw.pop('fontsize', 'small')
+    rx = kw.pop('rateXPos', 0.95)
+    ry = kw.pop('rateYPos', 1.025)
+    ax.pcolormesh(rateMap, cmap=cmap, **kw)
+    ax.axis("scaled")
+    ax.axis('off')
+    if (minRate):
+        minrStr = '{0:.1f} Hz'.format(np.min(rateMap.flatten()))
+        ax.text(0.1, ry, minrStr, ha="left", va='bottom', fontsize=fs,
+                transform=ax.transAxes)
+    if (maxRate):
+        maxrStr = '{0:.1f} Hz'.format(np.max(rateMap.flatten()))
+        ax.text(rx, ry, maxrStr, ha="right", va='bottom', fontsize=fs,
+                transform=ax.transAxes)
+
+
