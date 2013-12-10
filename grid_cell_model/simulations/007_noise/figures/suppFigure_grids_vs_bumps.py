@@ -12,7 +12,7 @@ import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 from copy import deepcopy
 
-from EI_plotting          import sweeps
+from EI_plotting          import sweeps, scatter
 from EI_plotting          import aggregate as aggr
 from EI_plotting.base     import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
@@ -87,7 +87,7 @@ if (scatterPlot):
         ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom,
             scatterRight, scatterTop))
 
-        scatterPlot = sweeps.ScatterPlot(
+        scatterPlot = scatter.ScatterPlot(
                 ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesBumps,
                 typesGrids, iterList, NTrialsBumps, NTrialsGrids,
                 s=25,

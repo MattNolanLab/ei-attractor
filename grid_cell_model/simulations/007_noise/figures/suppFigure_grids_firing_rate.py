@@ -26,7 +26,7 @@ import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 from copy import deepcopy
 
-from EI_plotting          import sweeps
+from EI_plotting          import sweeps, scatter
 from EI_plotting          import aggregate as aggr
 from EI_plotting.base     import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
@@ -225,7 +225,7 @@ if (scatterPlot):
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             color = scatterColors[ns_idx]
-            scatterPlot = sweeps.ScatterPlot(
+            scatterPlot = scatter.ScatterPlot(
                     ps.grids[ns_idx], ps.grids[ns_idx], typesFR,
                     typesGrids, iterList, NTrialsGrids, NTrialsGrids,
                     c=color,

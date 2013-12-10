@@ -28,7 +28,7 @@ from matplotlib.transforms import Bbox
 from copy import deepcopy
 
 
-from EI_plotting          import sweeps, examples, details
+from EI_plotting          import sweeps, examples, details, scatter
 from EI_plotting          import aggregate as aggr
 from parameters           import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings, prepareLims
@@ -513,7 +513,7 @@ if (scatterPlot):
         else:
             xlabel = ''
 
-        scatterPlot = sweeps.ScatterPlot(
+        scatterPlot = scatter.ScatterPlot(
                 ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
                 typesGrids, iterList, NTrialsGamma, NTrialsGrids,
                 s=15,
@@ -560,7 +560,7 @@ if (scatterPlot_all):
 
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         color = scatterColors[ns_idx]
-        scatterPlot = sweeps.ScatterPlot(
+        scatterPlot = scatter.ScatterPlot(
                 ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
                 typesGrids, iterList, NTrialsGamma, NTrialsGrids,
                 c=color,
