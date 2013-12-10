@@ -25,10 +25,10 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.backends.backend_pdf import PdfPages
 
-from EI_plotting    import sweeps, examples
-from EI_plotting    import aggregate as aggr
-from parameters     import JobTrialSpace2D
-from figures_shared import getNoiseRoots
+from EI_plotting      import sweeps, examples
+from EI_plotting      import aggregate as aggr
+from EI_plotting.base import getNoiseRoots
+from parameters       import JobTrialSpace2D
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)

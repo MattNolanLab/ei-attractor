@@ -20,18 +20,18 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.pyplot   import figure, plot, savefig
-from matplotlib.transforms import Bbox
-from matplotlib.ticker import MaxNLocator, MultipleLocator
-
 import numpy.ma as ma
+import matplotlib.pyplot as plt
+from matplotlib.pyplot     import figure, plot, savefig
+from matplotlib.transforms import Bbox
+from matplotlib.ticker     import MaxNLocator, MultipleLocator
 
-from parameters  import JobTrialSpace2D, DataSpace
-from EI_plotting import aggregate2DTrial, computeYX
-from plotting.global_defs import globalAxesSettings
+from parameters              import JobTrialSpace2D, DataSpace
+from EI_plotting             import aggregate2DTrial, computeYX
+from plotting.global_defs    import globalAxesSettings
 from plotting.parameterscape import parameterScape
-from figures_shared import getNoiseRoots, plotOneHist
+from EI_plotting.base        import getNoiseRoots, plotOneHist
+
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)

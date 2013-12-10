@@ -26,10 +26,10 @@ from matplotlib.gridspec   import GridSpec
 from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
-from EI_plotting                import sweeps, details, examples, rasters
-from plotting.global_defs       import globalAxesSettings
-from figures_shared             import NoiseDataSpaces
-from parameters                 import JobTrialSpace2D
+from EI_plotting          import sweeps, details, examples, rasters
+from plotting.global_defs import globalAxesSettings
+from EI_plotting.base     import NoiseDataSpaces
+from parameters           import JobTrialSpace2D
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)

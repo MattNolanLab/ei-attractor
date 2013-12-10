@@ -26,11 +26,11 @@ import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 from copy import deepcopy
 
-
-from EI_plotting import sweeps, examples
-from parameters  import JobTrialSpace2D, DataSpace
+from EI_plotting          import sweeps, examples
+from parameters           import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings
-from figures_shared import plotOneHist, NoiseDataSpaces
+from EI_plotting.base     import plotOneHist, NoiseDataSpaces
+
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
 lg.basicConfig(level=lg.INFO)

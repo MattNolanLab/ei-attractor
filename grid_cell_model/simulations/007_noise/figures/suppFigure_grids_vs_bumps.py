@@ -12,9 +12,9 @@ import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 from copy import deepcopy
 
-from EI_plotting import sweeps
-from EI_plotting import aggregate as aggr
-from figures_shared       import NoiseDataSpaces
+from EI_plotting          import sweeps
+from EI_plotting          import aggregate as aggr
+from EI_plotting.base     import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings
 

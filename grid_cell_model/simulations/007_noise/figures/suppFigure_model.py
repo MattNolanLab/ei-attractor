@@ -27,7 +27,7 @@ from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 from fig_conn_func        import plotWeights
 from data_storage         import DataStorage
 from data_storage.sim_models.ei import extractSummedSignals
-from figures_shared       import plotStateSignal, plotThetaSignal, \
+from EI_plotting.base     import plotStateSignal, plotThetaSignal, \
         getOption, thetaLim
 from plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
 from plotting.global_defs import globalAxesSettings

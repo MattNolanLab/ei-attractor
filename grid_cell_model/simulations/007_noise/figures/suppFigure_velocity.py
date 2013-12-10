@@ -24,10 +24,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-import EI_plotting as EI
+from EI_plotting            import sweeps
+from EI_plotting            import aggregate as aggr
+from EI_plotting.base       import plotOneHist, NoiseDataSpaces
 from parameters.param_space import JobTrialSpace2D
-from plotting.global_defs import globalAxesSettings
-from figures_shared       import plotOneHist, NoiseDataSpaces
+from plotting.global_defs   import globalAxesSettings
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)

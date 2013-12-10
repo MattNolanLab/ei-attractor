@@ -32,7 +32,7 @@ from EI_plotting          import sweeps, examples, details
 from EI_plotting          import aggregate as aggr
 from parameters           import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings, prepareLims
-from figures_shared       import plotOneHist, NoiseDataSpaces
+from EI_plotting.base     import plotOneHist, NoiseDataSpaces
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)

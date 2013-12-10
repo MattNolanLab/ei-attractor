@@ -32,7 +32,7 @@ from EI_plotting          import aggregate2DTrial, aggregate2D, computeYX, \
         computeVelYX
 from plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
 from plotting.global_defs import globalAxesSettings
-from figures_shared       import NoiseDataSpaces
+from EI_plotting.base     import NoiseDataSpaces
 
 import logging as lg
 lg.basicConfig(level=lg.WARN)

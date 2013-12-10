@@ -26,7 +26,7 @@ from matplotlib.transforms import Bbox
 
 from EI_plotting import sweeps, details, rasters
 from EI_plotting import aggregate as aggr
-from figures_shared import NoiseDataSpaces
+from EI_plotting.base import NoiseDataSpaces
 from plotting.global_defs import globalAxesSettings
 from analysis.visitors import SpikeTrainXCVisitor
 from parameters import JobTrialSpace2D

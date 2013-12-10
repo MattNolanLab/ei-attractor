@@ -25,7 +25,7 @@ from matplotlib.gridspec import GridSpec
 
 from data_storage    import DataStorage
 from data_storage.sim_models.ei import extractSummedSignals
-from figures_shared  import plotThetaSignal, thetaLim, plotStateSignal
+from EI_plotting.base import plotThetaSignal, thetaLim, plotStateSignal
 
 
 from matplotlib import rc

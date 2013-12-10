@@ -24,8 +24,8 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 
 from plotting.global_defs import globalAxesSettings
-from figures_shared       import createColorbar
 from plotting.colors      import Colormap2D
+from base                 import createColorbar
 
 from . import xlabelText, ylabelText, xlabelTextShort, ylabelTextShort
 from . import aggregate as aggr

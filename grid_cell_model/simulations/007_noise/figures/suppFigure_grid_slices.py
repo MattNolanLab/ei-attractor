@@ -28,7 +28,7 @@ from matplotlib.transforms import Bbox
 from EI_plotting          import details
 from EI_plotting          import aggregate as aggr
 from plotting.global_defs import globalAxesSettings
-from figures_shared       import plotOneHist, NoiseDataSpaces
+from EI_plotting.base     import plotOneHist, NoiseDataSpaces
 from parameters           import JobTrialSpace2D
 
 import logging as lg

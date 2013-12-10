@@ -29,11 +29,11 @@ from matplotlib.pyplot import figure, plot, xlabel, ylabel, hold, hist, \
 from matplotlib.ticker  import MaxNLocator, AutoMinorLocator
 import numpy.ma          as ma
 
-from plotting.global_defs import globalAxesSettings
-from figures.EI_plotting import plot2DTrial
-from parameters.param_space import JobTrialSpace2D, DataSpace
-from figures.figures_shared import plotOneHist
-from figures.EI_plotting    import aggregate2D, plotVelTrial
+from plotting.global_defs     import globalAxesSettings
+from figures.EI_plotting      import plot2DTrial
+from parameters.param_space   import JobTrialSpace2D, DataSpace
+from figures.EI_plotting.base import plotOneHist
+from figures.EI_plotting      import aggregate2D, plotVelTrial
 
 import logging as lg
 lg.basicConfig(level=lg.WARN)

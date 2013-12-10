@@ -26,8 +26,8 @@ import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
 from EI_plotting import sweeps, examples, details
-from figures_shared       import NoiseDataSpaces
-from parameters           import JobTrialSpace2D
+from EI_plotting.base import NoiseDataSpaces
+from parameters       import JobTrialSpace2D
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
