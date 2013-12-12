@@ -34,6 +34,9 @@ files="
     $output_fig_dir/figureS4.pdf
     $output_fig_dir/suppFigure_grid_sweeps.pdf
     $output_fig_dir/suppFigure_grids_FR-histograms.pdf
+    $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf
+    $output_fig_dir/suppFigure_grids_vs_line_slope.pdf
+    $output_fig_dir/suppFigure_line_fit_error_vs_slope.pdf
     $output_fig_dir/suppFigure_no_theta.pdf
     $output_fig_dir/suppFigure_velocity.pdf
     "
