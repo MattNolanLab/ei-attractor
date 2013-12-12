@@ -7,6 +7,7 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.transforms import Bbox
 from copy import deepcopy
 
 from plotting.global_defs import globalAxesSettings
@@ -124,4 +125,55 @@ class ScatterPlot(object):
         print idx
         print("r: {0}, c: {1}".format(r, c))
 
+
+class FullScatterPlot(object):
+    '''
+    Create a figure with scatter plots for all noise levels, plus a 2D colorbar
+    '''
+    def __init__(self, spaces1, spaces2, types1, types2, iterList, NTrials1,
+            NTrials2, **kw):
+        self.noise_sigmas   = kw.pop('noise_sigmas', None)
+        self.fig            = kw.pop('fig', plt.gcf())
+        self.captionLetters = kw.pop('captionLetters', None)
+
+        self.scatterPlots = []
+        self.axes = []
+        if (len(spaces1) != len(spaces2)):
+            raise RuntimeError("len(spaces1) != len(spaces2)")
+        for spIdx, (sp1, sp2) in enumerate(zip(spaces1, spaces2)):
+            currentAx = self.fig.add_subplot(len(spaces1), 1, spIdx+1)
+            self.axes.append(currentAx)
+            currentKw = kw.copy()
+            currentKw['ax'] = currentAx
+            if (self.noise_sigmas is not None):
+                currentKw['noise_sigma'] = self.noise_sigmas[spIdx]
+            if (spIdx != len(spaces1) - 1):
+                currentKw['xlabel'] = ''
+           
+            self.scatterPlots.append(ScatterPlot(
+                sp1, sp2, types1, types2, iterList, NTrials1,
+                NTrials2, **currentKw))
+
+    def plot(self, plotcolorbar=True, captionLeft=-0.075):
+        for idx, scatterPlot in enumerate(self.scatterPlots):
+            scatterPlot.plot()
+            if (self.captionLetters is not None):
+                ax = self.axes[idx]
+                ax.text(captionLeft, 1.0, self.captionLetters[idx], va='bottom',
+                        ha='center', transform=ax.transAxes, size=14,
+                        fontweight='bold')
+
+        self.fig.tight_layout(h_pad=2.5)
+        if (plotcolorbar):
+            self.plotColorbar()
+
+
+    def set_titleSizes(self, sz):
+        for ax in self.axes:
+            ax.set_title(ax.get_title(), size=sz)
+
+    def plotColorbar(self, left=0.825, bottom=0.85, right=0.99, top=0.95):
+        self.colorBarAx = self.fig.add_axes(Bbox.from_extents(left, bottom,
+            right, top))
+        self.scatterPlots[0].plotColorbar(self.colorBarAx)
 
