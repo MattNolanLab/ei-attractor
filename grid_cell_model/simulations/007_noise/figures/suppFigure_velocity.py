@@ -53,7 +53,7 @@ velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
 velSweep       = 1
-hists          = 1
+hists          = 0
 
 ##############################################################################
 
@@ -70,7 +70,7 @@ def plotVelHistogram(spList, varList, xlabel="", ylabel="", **kw):
     globalAxesSettings(ax)
 
     for idx, sp in enumerate(spList):
-        var = np.abs(EI.aggregate2D(sp, varList, funReduce=None))
+        var = np.abs(aggr.aggregate2D(sp, varList, funReduce=None))
         filtIdx = np.logical_not(np.isnan(var))
         if (range is not None):
             var[var < range[0]] = range[0]
@@ -147,66 +147,52 @@ def createSweepFig(name):
 
 
 exampleRC = ( (5, 15), (15, 5) )
-ann0 = dict(
-        txt='D,E',
-        rc=exampleRC[0],
-        xytext_offset=(1.5, 1),
-        ha='center',
-        color='black')
-ann1 = dict(
-        txt='D,E',
-        rc=exampleRC[1],
-        xytext_offset=(0.5, 1.5),
-        ha='center',
-        color='red')
-ann = [ann0, ann1]
 cbar_kw = dict(
-    label = 'Fit error (neurons/s)',
+    label       = 'Fit error (neurons/s)',
     orientation = 'vertical',
-    shrink = 0.8,
-    pad = 0.05,
-    ticks = ti.MultipleLocator(4),
-    rasterized = True)
+    shrink      = 0.8,
+    pad         = 0.05,
+    ticks       = ti.MultipleLocator(4),
+    extend      = 'max',
+    extendfrac  = 0.1,
+    rasterized  = True)
 
 if (velSweep):
     # noise_sigma = 0 pA
     fig, ax = createSweepFig("velErrSweeps0")
-    _, ax, cax = EI.plotVelTrial(ps.v[0], errVarList, iterList,
+    _, ax, cax = sweeps.plotVelTrial(ps.v[0], errVarList, iterList,
             noise_sigmas[0],
             ax=ax,
             cbar=False, cbar_kw=cbar_kw,
             xlabel='', xticks=False,
-            vmin=err_vmin, vmax=err_vmax,
-            annotations=ann)
+            vmin=err_vmin, vmax=err_vmax)
     fname = outputDir + "/suppFigure_velocity_err_sweeps0.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
     # noise_sigma = 150 pA
     fig, ax = createSweepFig("velErrSweeps150")
-    _, ax, cax = EI.plotVelTrial(ps.v[1], errVarList, iterList,
+    _, ax, cax = sweeps.plotVelTrial(ps.v[1], errVarList, iterList,
             noise_sigma=noise_sigmas[1],
             ax=ax,
             ylabel='', yticks=False,
             cbar=False, cbar_kw=cbar_kw,
             xlabel='', xticks=False,
-            vmin=err_vmin, vmax=err_vmax,
-            annotations=ann)
+            vmin=err_vmin, vmax=err_vmax)
     fname = outputDir + "/suppFigure_velocity_err_sweeps150.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
 
     # noise_sigma = 300 pA
     fig, ax = createSweepFig("velErrSweeps300")
-    _, ax, cax = EI.plotVelTrial(ps.v[2], errVarList, iterList,
+    _, ax, cax = sweeps.plotVelTrial(ps.v[2], errVarList, iterList,
             noise_sigma=noise_sigmas[2],
             ax=ax,
             ylabel='', yticks=False,
             cbar=True,
             xlabel='', xticks=False,
             vmin=err_vmin, vmax=err_vmax,
-            cbar_kw = cbar_kw,
-            annotations=ann)
+            cbar_kw = cbar_kw)
     fname = outputDir + "/suppFigure_velocity_err_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 
