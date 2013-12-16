@@ -138,7 +138,7 @@ enable = [
 
 
 
-fname = outputDir + "/figureS3.pdf"
+fname = outputDir + "/suppFigure_grid_sweeps.pdf"
 outputPDF = PdfPages(fname)
 strIdx = 0
 for noise_idx, noise_sigma in enumerate(noise_sigmas):
