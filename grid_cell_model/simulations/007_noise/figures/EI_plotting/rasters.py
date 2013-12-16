@@ -45,7 +45,7 @@ def getSpikes(space, spaceType, r, c, trialNum, **kw):
     return ESpikes, ISpikes
 
 
-def EIRaster(space, noise_sigma, spaceType, r, c, tLimits, trialNum=0, **kw):
+def EIRaster(space, spaceType, r, c, tLimits, trialNum=0, **kw):
     ESpikes, ISpikes = getSpikes(space, spaceType, r, c, trialNum, **kw)
     ax = plotEIRaster(ESpikes, ISpikes, tLimits, **kw) 
 
@@ -64,7 +64,8 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
     title        = kw.pop('title', True)
     ann          = kw.pop('ann', False)
     ann_EI       = kw.pop('ann_EI', False)
-    sigmaTitle   = kw.pop('sigmaTitle', False)
+    sigmaTitle   = kw.pop('sigmaTitle', True)
+    noise_sigma  = kw.pop('noise_sigma', None)
     kw['markersize'] = kw.get('markersize', 1.0)
 
     ESpikes = ESpikes.windowed(tLimits)
@@ -113,8 +114,8 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
 
     # Annotations
     if (sigmaTitle):
-        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)), x=0.02, y=1.02,
-                va='bottom', ha='left')
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)), y=1.02,
+                va='bottom', ha='center')
     if (ann):
         Y, X = aggr.computeYX(space, iterList, r=r, c=c)
         gE = Y[r, c]

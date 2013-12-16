@@ -58,9 +58,9 @@ shape = (31, 31)
 
 ccExamples      = 0
 spikeCCExamples = 0
-velLines        = 1
-detailed_noise  = 1
-slope_sweeps    = 1
+velLines        = 0
+detailed_noise  = 0
+slope_sweeps    = 0
 rastersFlag     = 1
 rates           = 1
 
@@ -265,11 +265,11 @@ if (detailed_noise):
     details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
             xlabel='', xticks=False,
-            color='red')
+            color='red', markerfacecolor='red', zorder=10)
     details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             xlabel='', xticks=False,
             ylabel='Slope\n(neurons/s/pA)', ylabelPos=ylabelPos,
-            color='black')
+            color='#505050')
     ax.xaxis.set_visible(False)
     ax.spines['bottom'].set_visible(False)
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
@@ -287,10 +287,10 @@ if (detailed_noise):
         sliceTop))
     _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
             ylabelPos=ylabelPos,
-            color='red')
+            color='red', markerfacecolor='red', zorder=10)
     _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
             ylabel='Fit error\n(neurons/s/trial)', ylabelPos=ylabelPos,
-            color='black')
+            color='#505050')
     ax.yaxis.set_major_locator(ti.MultipleLocator(4))
     ax.yaxis.set_minor_locator(ti.MultipleLocator(2))
     leg = ['(3, 1)',  '(1, 3)']
@@ -472,55 +472,27 @@ ylabelPos   = -0.22
 
 
 if (rastersFlag):
-    # noise_sigma = 0 pA
-    fig = plt.figure("rasters0", figsize=rasterFigSize)
-    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-        rasterTop))
-    rasters.EIRaster(ps.v[0], 
-            noise_sigma=ps.noise_sigmas[0],
-            spaceType='velocity',
-            r=rasterRC[0][0], c=rasterRC[0][1],
-            ylabelPos=ylabelPos,
-            tLimits=tLimits,
-            trialNum=trialNum,
-            ann_EI=True)
-    fname = outputDir + "/velocity_raster0.png"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-    plt.close()
+    for idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=rasterFigSize)
+        ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+            rasterTop))
+        kw = {}
+        if (idx != 0):
+            kw['ylabel'] = ''
+        rasters.EIRaster(ps.v[idx], 
+                noise_sigma=noise_sigma,
+                spaceType='velocity',
+                r=rasterRC[idx][0], c=rasterRC[idx][1],
+                ylabelPos=ylabelPos,
+                tLimits=tLimits,
+                trialNum=trialNum,
+                ann_EI=True,
+                **kw)
+        fname = outputDir + "/velocity_raster{0}.png"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                transparent=transparent)
+        plt.close()
         
-
-    # noise_sigma = 150 pA
-    fig = plt.figure("rasters150", figsize=rasterFigSize)
-    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-        rasterTop))
-    rasters.EIRaster(ps.v[1], 
-            noise_sigma=ps.noise_sigmas[1],
-            spaceType='velocity',
-            r=rasterRC[1][0], c=rasterRC[1][1],
-            ylabelPos=ylabelPos,
-            tLimits=tLimits,
-            trialNum=trialNum,
-            ylabel='', yticks=False)
-    fname = outputDir + "/velocity_raster150.png"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-    plt.close()
-        
-
-    # noise_sigma = 300 pA
-    fig = plt.figure("rasters300", figsize=rasterFigSize)
-    ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-        rasterTop))
-    rasters.EIRaster(ps.v[2], 
-            noise_sigma=ps.noise_sigmas[2],
-            spaceType='velocity',
-            r=rasterRC[2][0], c=rasterRC[2][1],
-            ylabelPos=ylabelPos,
-            tLimits=tLimits,
-            trialNum=trialNum,
-            ylabel='', yticks=False)
-    fname = outputDir + "/velocity_raster300.png"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-    plt.close()
         
 
 ##############################################################################
@@ -543,14 +515,14 @@ if (rates):
 
         rasters.plotAvgFiringRate(ps.v[idx],
                 spaceType='velocity',
-                noise_sigma=ps.noise_sigmas[idx],
+                noise_sigma=noise_sigma,
                 popType='E',
                 r=rasterRC[idx][0], c=rasterRC[idx][1],
                 ylabelPos=ylabelPos,
                 color='red',
                 tLimits=tLimits,
                 trialNum=trialNum,
-                sigmaTitle=True,
+                sigmaTitle=False,
                 ax=ax, **kw)
         fname = outputDir + "/velocity_rate_e{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
@@ -566,13 +538,14 @@ if (rates):
 
         rasters.plotAvgFiringRate(ps.v[idx],
                 spaceType='velocity',
-                noise_sigma=ps.noise_sigmas[idx],
+                noise_sigma=noise_sigma,
                 popType='I', 
                 r=rasterRC[idx][0], c=rasterRC[idx][1],
                 ylabelPos=ylabelPos,
                 color='blue',
                 tLimits=tLimits,
                 trialNum=trialNum,
+                sigmaTitle=False,
                 ax=ax, **kw)
         fname = outputDir + "/velocity_rate_i{0}.pdf".format(noise_sigma)
         fig.savefig(fname, dpi=300, transparent=transparent)
