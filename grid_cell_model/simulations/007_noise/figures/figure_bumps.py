@@ -53,14 +53,14 @@ bumpDataRoot= 'output_local/even_spacing/gamma_bump'
 velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-bumpSweep         = 1
+bumpSweep         = 0
 bumpExamples      = 1
-velExamples       = 1
-velSweep          = 1
-gridness_vs_error = 1
-detailed_noise    = 1
-rastersFlag       = 1
-rates             = 1
+velExamples       = 0
+velSweep          = 0
+gridness_vs_error = 0
+detailed_noise    = 0
+rastersFlag       = 0
+rates             = 0
 
 ###############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
@@ -84,13 +84,13 @@ sigmaBumpText = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
 sigmaVarList = ['bump_e', 'sigma']
 bumpTrialNumList = np.arange(5)
 bump_vmin = 0
-bump_vmax = 0.58
+bump_vmax = 0.48
 bump_cbar_kw = dict(
         label       = sigmaBumpText,
         location    = 'bottom',
         shrink      = 0.8,
         pad         = 0.18,
-        ticks       = ti.MultipleLocator(0.25),
+        ticks       = ti.MultipleLocator(0.2),
         extend      = 'max',
         extendfrac  = 0.1,
         rasterized  = True)
