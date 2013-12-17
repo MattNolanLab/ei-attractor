@@ -56,9 +56,9 @@ gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 
-FRSweeps     = 1
+FRSweeps     = 0
 scatterPlot  = 1
-FRHistograms = 1
+FRHistograms = 0
 
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
@@ -164,7 +164,7 @@ if FRSweeps:
                 r=exampleIdx[ns_idx][0], c=exampleIdx[ns_idx][1],
                 cbar=cbar, cbar_kw=FR_e_cbar_kw,
                 vmin=FR_e_vmin, vmax=FR_e_vmax,
-                ignoreNaNs=False,
+                ignoreNaNs=True,
                 **kw)
         fname = outputDir + "/suppFigure_grids_FR_E{0}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300,
@@ -183,7 +183,7 @@ if FRSweeps:
                 cbar=cbar, cbar_kw=FR_i_cbar_kw,
                 vmin=FR_i_vmin, vmax=FR_i_vmax,
                 sigmaTitle=False,
-                ignoreNaNs=False,
+                ignoreNaNs=True,
                 **kw)
         fname = outputDir + "/suppFigure_grids_FR_I{0}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300,
@@ -239,7 +239,9 @@ if (scatterPlot):
         ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
         ax.yaxis.set_minor_locator(ti.MultipleLocator(0.25))
         ax.set_xscale('log')
-        if EIType != 'E':
+        if EIType == 'E':
+            ax.set_xlim([0.1, None])
+        else:
             ax.set_xlim([2, 300])
         leg = ['0', '150', '300']
         l = ax.legend(leg, loc=legLoc, fontsize='small', frameon=False,
