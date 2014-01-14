@@ -58,7 +58,7 @@ for noise_sigma in noise_sigma_all:
     endG   = 6120.0  # nS
 
     extraIterparams = {'bumpCurrentSlope' : getBumpCurrentSlope(p['noise_sigma'],
-        threshold=0.05)}
+        threshold=-np.infty)}
     #extraIterparams['bumpCurrentSlope'] = [1.0]
 
     ###############################################################################

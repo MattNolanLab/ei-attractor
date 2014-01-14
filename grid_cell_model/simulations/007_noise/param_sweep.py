@@ -63,7 +63,7 @@ def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
 
 ###############################################################################
 
-def getBumpCurrentSlope(noise_sigma, threshold=0):
+def getBumpCurrentSlope(noise_sigma, threshold=-np.infty):
     fileName = 'bump_slope_data/bump_slope_{0}pA.h5'.format(int(noise_sigma))
     ds = DataStorage.open(fileName, 'r')
     slopes = np.abs(ds['lineFitSlope'].flatten())
