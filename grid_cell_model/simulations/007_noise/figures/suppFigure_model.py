@@ -42,7 +42,6 @@ plt.rcParams['font.size'] = 11
 
 outputDir = "panels"
 
-trialNum = 0
 jobNum = 573
 dataRootDir = 'output_local'
 root0   = "{0}/single_neuron".format(dataRootDir)

@@ -25,9 +25,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-from EI_plotting import sweeps, examples, details
-from EI_plotting.base import NoiseDataSpaces
+from EI_plotting      import sweeps, examples, details
+from EI_plotting.base import NoiseDataSpaces, getOption, plotStateSignal
 from parameters       import JobTrialSpace2D
+from data_storage     import DataStorage
+from data_storage.sim_models.ei import extractSummedSignals
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -45,33 +47,36 @@ NTrials=3
 gridTrialNumList = np.arange(NTrials)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
-noise_sigmas  = [0, 150, 300]
-exampleIdx    = [(1, 22), (1, 22), (1, 22)] # (row, col)
-bumpDataRoot  = None
-velDataRoot   = None
-gridsDataRoot = 'output_local/even_spacing/grids'
+noise_sigmas   = [0, 150, 300]
+exampleIdx     = [(1, 22), (1, 22), (1, 22)] # (row, col)
+bumpDataRoot   = None
+velDataRoot    = None
+gridsDataRoot  = 'output_local/even_spacing/grids'
+singleDataRoot = 'output_local/single_neuron'
 shape = (31, 31)
 
-grids          = 1
-examplesFlag   = 1
-detailed_noise = 1
+grids          = 0
+examplesFlag   = 0
+detailed_noise = 0
+Vm_examples    = 1
 
 ##############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
 
-sweepFigSize = (2.8, 3.5)
-sweepLeft   = 0.2
-sweepBottom = 0.1
-sweepRight  = 0.87
-sweepTop    = 0.95
+sweepFigSize = (3.7, 2.6)
+sweepLeft   = 0.08
+sweepBottom = 0.2
+sweepRight  = 0.8
+sweepTop    = 0.85
+transparent  = True
 
 cbar_kw= {
     'label'      : 'Gridness score',
-    'location'   : 'bottom',
+    'location'   : 'right',
     'shrink'     : 0.8,
-    'pad'        : 0.15,
+    'pad'        : -0.05,
     'ticks'      : ti.MultipleLocator(0.5),
     'rasterized' : True}
 
@@ -80,17 +85,6 @@ vmax = 1.1
 
 ##############################################################################
 exampleRC = ( (5, 15), (15, 5) )
-slice_horizontal = slice(13, 18)
-slice_vertical = slice(13, 18)
-#sliceAnn = [\
-#    dict(
-#        sliceSpan=slice_horizontal,
-#        type='horizontal',
-#        letter=None),
-#    dict(
-#        sliceSpan=slice_vertical,
-#        type='vertical',
-#        letter=None)]
 sliceAnn = None
 
 ann0 = dict(
@@ -144,6 +138,7 @@ if (grids):
             cbar=False, cbar_kw=cbar_kw,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
+            ylabel='', yticks=False,
             annotations=ann,
             sliceAnn=sliceAnn)
     fname = outputDir + "/grids_sweeps150.pdf"
@@ -164,6 +159,7 @@ if (grids):
             cbar_kw=cbar_kw,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
+            ylabel='', yticks=False,
             annotations=ann,
             sliceAnn=sliceAnn)
     #for label in cax.yaxis.get_ticklabels():
@@ -251,5 +247,67 @@ if (detailed_noise):
     fname = outputDir + "/grids_detailed_noise_gscore.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
+
+
+##############################################################################
+# Membrane potential examples
+
+def openJob(rootDir, noise_sigma):
+    fileTemplate = "noise_sigma{0}_output.h5"
+    fileName = rootDir + '/' + fileTemplate.format(int(noise_sigma))
+    return DataStorage.open(fileName, 'r')
+
+def drawVm(data, noise_sigma, yLabelOn=True, scaleBar=None, ax=plt.gca()):
+    if (yLabelOn):
+        VmText = "V (mV)"
+        IsynText = "I (nA)"
+        countText = None
+    else:
+        VmText = ""
+        IsynText = ""
+        countText = ""
+
+    plotTStart = 5e3
+    plotTEnd   = 5.25e3
+
+    stateYlim = [-80, -40]
+
+    theta_start_t = getOption(data, 'theta_start_t')
+    #theta_start_t = 1e3
+    simTime = getOption(data, 'time')
+
+    mon_e = data['stateMon_e']
+
+    # E cell Vm
+    t, VmMiddle = extractSummedSignals(mon_e, ['V_m'], plotTStart,
+            plotTEnd)
+    plotStateSignal(ax, t, VmMiddle, labely=VmText, color='red',
+            scaleBar=scaleBar, scaleText="ms", scaleY=0.085)
+    plt.ylim(stateYlim)
+
+
+VmExampleFigSize = (3.6, 0.9)
+VmExampleLeft   = 0.21
+VmExampleBottom = 0.12
+VmExampleRight  = 0.999
+VmExampleTop    = 0.9
+VmExampleScalebar = 50 # ms
+
+if (Vm_examples):
+    for ns_idx, noise_sigma in enumerate(noise_sigmas):
+        fig = plt.figure(figsize=VmExampleFigSize)
+        ax = fig.add_axes(Bbox.from_extents(VmExampleLeft, VmExampleBottom,
+            VmExampleRight, VmExampleTop))
+        ds = openJob(singleDataRoot, noise_sigma)
+        kw = {}
+        if (ns_idx != 1):
+            kw['yLabelOn'] = False
+        if (ns_idx == 2):
+            kw['scaleBar'] = VmExampleScalebar
+        drawVm(ds, noise_sigma=noise_sigma, ax=ax, **kw)
+
+        fname = outputDir + "/grids_Vm_example_{0}.pdf"
+        plt.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
 
 
