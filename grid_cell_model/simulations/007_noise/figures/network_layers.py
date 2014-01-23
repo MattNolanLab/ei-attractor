@@ -18,11 +18,14 @@ ZE = np.zeros(nX * nY)
 ZI = np.zeros(nX * nY) + ZOffset
 
 mlab.figure(bgcolor=(1, 1, 1), size=(610*2, 582*2))
+
+# Layers
 mlab.points3d(X, Y, ZE, scale_factor=scale_factor, color=(1, 0, 0),
         resolution=resolution)
 mlab.points3d(X, Y, ZI, scale_factor=scale_factor, color=(0, 0, 1),
         resolution=resolution)
 
+# gE, gI arrows
 x = [ao * nX, (0.9-ao)*nX]
 y = [ao * nY, (0.9-ao)*nY]
 zStart = [0.2 * ZOffset, 0.8 * ZOffset]
@@ -36,6 +39,19 @@ mlab.text3d(x[0] - 0.075*nX, y[0] - 0.075*nY, ZOffset/2, "gE", orientation=[0, 0
 
 mlab.text3d(x[1] + 0.075*nX, y[1] + 0.075*nY, ZOffset/2, "gI", orientation=[0, 0, 0],
         orient_to_camera=True, color=(0, 0, 0), line_width=3, scale=textScale)
+
+# Neuron labels
+startLabelOffset = 1
+labelScale = 1.5
+mlab.text3d(-startLabelOffset, -startLabelOffset, ZOffset - 1,
+        str(nX), orientation=[0, 0, 0], orient_to_camera=True, color=(0, 0, 0),
+        line_width=3, scale=labelScale)
+mlab.text3d(nX, -startLabelOffset, ZOffset - 1,
+        "1", orientation=[0, 0, 0], orient_to_camera=True, color=(0, 0, 0),
+        line_width=3, scale=labelScale)
+mlab.text3d(nX - 1, nY + 1, ZOffset + 0.5,
+        str(nY), orientation=[0, 0, 0], orient_to_camera=True, color=(0, 0, 0),
+        line_width=3, scale=labelScale)
 
 roll = 177.9584710619396
 view = (-20.96663248113742,
