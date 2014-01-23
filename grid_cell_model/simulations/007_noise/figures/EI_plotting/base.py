@@ -109,7 +109,8 @@ def setSignalAxes(ax, leftSpineOn):
     ax.yaxis.set_minor_locator(AutoMinorLocator(2))
 
 def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
-        color='black', scaleBar=None, scaleX=0.75, scaleY=0.05, scaleText='ms'):
+        color='black', scaleBar=None, scaleX=0.75, scaleY=0.05, scaleText='ms',
+        scaleTextSize='small'):
     setSignalAxes(ax, leftSpineOn)
 
     if (sig is not None):
@@ -123,7 +124,7 @@ def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
     ax.set_xlim([t[0], t[-1]])
 
     if (scaleBar is not None):
-        xScaleBar(scaleBar, x=scaleX, y=scaleY, ax=ax, size='small',
+        xScaleBar(scaleBar, x=scaleX, y=scaleY, ax=ax, size=scaleTextSize,
                 unitsText=scaleText)
 
 

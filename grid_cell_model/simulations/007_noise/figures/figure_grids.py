@@ -26,10 +26,12 @@ import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
 from EI_plotting      import sweeps, examples, details
+from EI_plotting      import aggregate as aggr
 from EI_plotting.base import NoiseDataSpaces, getOption, plotStateSignal
 from parameters       import JobTrialSpace2D
 from data_storage     import DataStorage
 from data_storage.sim_models.ei import extractSummedSignals
+import plotting.low_level
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -55,10 +57,11 @@ gridsDataRoot  = 'output_local/even_spacing/grids'
 singleDataRoot = 'output_local/single_neuron'
 shape = (31, 31)
 
-grids          = 0
-examplesFlag   = 0
-detailed_noise = 0
-Vm_examples    = 1
+grids            = 0
+examplesFlag     = 0
+detailed_noise   = 0
+Vm_examples      = 1
+collapsed_sweeps = 0
 
 ##############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
@@ -209,6 +212,77 @@ if (examplesFlag):
     
 
 ##############################################################################
+# Membrane potential examples
+
+def openJob(rootDir, noise_sigma):
+    fileTemplate = "noise_sigma{0}_output.h5"
+    fileName = rootDir + '/' + fileTemplate.format(int(noise_sigma))
+    return DataStorage.open(fileName, 'r')
+
+def drawVm(data, noise_sigma, xScaleBar=None, yScaleBar=None,
+        ax=plt.gca(), sigmaTitle=True):
+    yScaleX = 0.5
+    yScaleY = 1.1
+    yScaleXOffset = 0.06
+    scaleTextSize = 'x-small'
+
+    plotTStart = 5e3
+    plotTEnd   = 5.25e3
+
+    stateYlim = [-80, -40]
+
+    theta_start_t = getOption(data, 'theta_start_t')
+    #theta_start_t = 1e3
+    simTime = getOption(data, 'time')
+
+    mon_e = data['stateMon_e']
+
+    # E cell Vm
+    t, VmMiddle = extractSummedSignals(mon_e, ['V_m'], plotTStart,
+            plotTEnd)
+    plotStateSignal(ax, t, VmMiddle, labely='', color='red',
+            scaleBar=xScaleBar, scaleText="ms", scaleX=0.5, scaleY=1.1,
+            scaleTextSize=scaleTextSize)
+    if (yScaleBar is not None):
+        plotting.low_level.yScaleBar(yScaleBar, yScaleX, yScaleY,
+                ax=ax,
+                unitsText='mV', textXOffset=yScaleXOffset,
+                size='x-small')
+    ax.yaxis.set_visible(False)
+    ax.spines['left'].set_visible(False)
+    plt.ylim(stateYlim)
+
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)), loc='left',
+                size=scaleTextSize, y=0.9)
+
+
+VmExampleFigSize = (2.5, 1.25)
+VmExampleLeft   = 0.01
+VmExampleBottom = 0.01
+VmExampleRight  = 0.999
+VmExampleTop    = 0.6
+VmExampleXScalebar = 50 # ms
+VmExampleYScalebar = 10 # mV
+
+if (Vm_examples):
+    for ns_idx, noise_sigma in enumerate(noise_sigmas):
+        fig = plt.figure(figsize=VmExampleFigSize)
+        ax = fig.add_axes(Bbox.from_extents(VmExampleLeft, VmExampleBottom,
+            VmExampleRight, VmExampleTop))
+        ds = openJob(singleDataRoot, noise_sigma)
+        kw = {}
+        if (ns_idx == 2):
+            kw['xScaleBar'] = VmExampleXScalebar
+            kw['yScaleBar'] = VmExampleYScalebar
+        drawVm(ds, noise_sigma=noise_sigma, ax=ax, **kw)
+
+        fname = outputDir + "/grids_Vm_example_{0}.pdf"
+        plt.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
+
+##############################################################################
 # Detailed noise plots
 EI13Root  = 'output_local/detailed_noise/grids/EI-1_3'
 EI31Root  = 'output_local/detailed_noise/grids/EI-3_1'
@@ -250,64 +324,34 @@ if (detailed_noise):
 
 
 ##############################################################################
-# Membrane potential examples
+# Collapsed sweep plots
+collapsedFigSize = (3.5, detailFigSize[1])
+collapsedLeft   = 0.1
+collapsedBottom = detailBottom
+collapsedRight  = 0.95
+collapsedTop    = detailTop
 
-def openJob(rootDir, noise_sigma):
-    fileTemplate = "noise_sigma{0}_output.h5"
-    fileName = rootDir + '/' + fileTemplate.format(int(noise_sigma))
-    return DataStorage.open(fileName, 'r')
+gridTypes = ['grids', 'gridnessScore']
+NGridTrials = 3
 
-def drawVm(data, noise_sigma, yLabelOn=True, scaleBar=None, ax=plt.gca()):
-    if (yLabelOn):
-        VmText = "V (mV)"
-        IsynText = "I (nA)"
-        countText = None
-    else:
-        VmText = ""
-        IsynText = ""
-        countText = ""
+if collapsed_sweeps:
+    fig = plt.figure(figsize=collapsedFigSize)
+    ax = fig.add_axes(Bbox.from_extents(collapsedLeft, collapsedBottom,
+        collapsedRight, collapsedTop))
 
-    plotTStart = 5e3
-    plotTEnd   = 5.25e3
-
-    stateYlim = [-80, -40]
-
-    theta_start_t = getOption(data, 'theta_start_t')
-    #theta_start_t = 1e3
-    simTime = getOption(data, 'time')
-
-    mon_e = data['stateMon_e']
-
-    # E cell Vm
-    t, VmMiddle = extractSummedSignals(mon_e, ['V_m'], plotTStart,
-            plotTEnd)
-    plotStateSignal(ax, t, VmMiddle, labely=VmText, color='red',
-            scaleBar=scaleBar, scaleText="ms", scaleY=0.085)
-    plt.ylim(stateYlim)
-
-
-VmExampleFigSize = (3.6, 0.9)
-VmExampleLeft   = 0.21
-VmExampleBottom = 0.12
-VmExampleRight  = 0.999
-VmExampleTop    = 0.9
-VmExampleScalebar = 50 # ms
-
-if (Vm_examples):
-    for ns_idx, noise_sigma in enumerate(noise_sigmas):
-        fig = plt.figure(figsize=VmExampleFigSize)
-        ax = fig.add_axes(Bbox.from_extents(VmExampleLeft, VmExampleBottom,
-            VmExampleRight, VmExampleTop))
-        ds = openJob(singleDataRoot, noise_sigma)
-        kw = {}
-        if (ns_idx != 1):
-            kw['yLabelOn'] = False
-        if (ns_idx == 2):
-            kw['scaleBar'] = VmExampleScalebar
-        drawVm(ds, noise_sigma=noise_sigma, ax=ax, **kw)
-
-        fname = outputDir + "/grids_Vm_example_{0}.pdf"
-        plt.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
-        plt.close()
+    data = []
+    for ns_idx, _ in enumerate(ps.noise_sigmas):
+        d, _, _ = aggr.aggregateType(ps.grids[ns_idx], iterList, gridTypes,
+                NTrials)
+        data.append(d)
+    sweeps.plotCollapsedSweeps(ps.noise_sigmas, data,
+        ylabel='', yticks=False)
+    ax.set_ylim([-0.6, 1.2])
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
+    ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
+    
+    fname = outputDir + "/grids_collapsed_sweeps.pdf"
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
 
 

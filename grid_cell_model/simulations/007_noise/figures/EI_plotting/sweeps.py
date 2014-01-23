@@ -292,4 +292,37 @@ def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
         zorder=10, **kw)
 
 
+##############################################################################
+# Parameter sweeps collapsed into noise-dependent lines
 
+def plotCollapsedSweeps(noise_sigmas, data, **kw):
+    ax          = kw.pop('ax', plt.gca())
+    xlabel      = kw.pop('xlabel', "$\sigma_{noise}$")
+    ylabel      = kw.pop('ylabel', '')
+    xticks      = kw.pop('xticks', True)
+    yticks      = kw.pop('yticks', True)
+    #kw['color'] = kw.get('color', 'black')
+    
+    if (len(noise_sigmas) != len(data)):
+        raise ValueError("len(noise_sigmas) != len(data)")
+
+    stackedData = []
+    for ns_idx, _ in enumerate(noise_sigmas):
+        stackedData.append(data[ns_idx].ravel())
+
+    stackedData = np.vstack(stackedData)
+    globalAxesSettings(ax)
+    ax.plot(noise_sigmas, stackedData, "o-", **kw)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.margins(0.03, 0.03)
+    ax.set_xticks(noise_sigmas)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    if (not xticks):
+        ax.xaxis.set_ticklabels([])
+    if (not yticks):
+        ax.yaxis.set_ticklabels([])
+
+    return ax
