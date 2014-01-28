@@ -2,7 +2,7 @@
 #
 #   figure_grids_segmentation.py
 #
-#   Gridness score segmentation plots
+#   Gridness score segmentation plots.
 #
 #       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
@@ -59,9 +59,9 @@ gridsDataRoot  = 'output_local/even_spacing/grids'
 singleDataRoot = 'output_local/single_neuron'
 shape = (31, 31)
 
-collapsed_sweeps   = 1
-diff_distrib       = 1
-diff_scatter       = 1
+collapsed_sweeps   = 0
+diff_distrib       = 0
+diff_scatter       = 0
 diff_all           = 1
 sweep_segmentation = 1
 
@@ -217,11 +217,14 @@ diffAllBins   = 40
 
 segThresholds = [
         [-np.infty, -0.2, 0.2, np.infty],
-        [-np.infty, -0.1, 0.1, np.infty]]
-#segMergeInfo = [
-#        [0, 1, 3],
-#        [6, 7, 8]]
-segMergeInfo = None
+        [-np.infty, -0.2, 0.2, np.infty]]
+segMergeInfo = [
+        [0, 1, 3],
+        [6, 7]]
+
+#segMergeInfo = None
+gridnessThreshold = 0
+
 
 if diff_all:
     fig = plt.figure(figsize=diffAllFigSize)
@@ -242,6 +245,7 @@ if diff_all:
             xlabel=diffAllXLabel,
             ylabel=diffAllYLabel,
             cmap='Set1',
+            filterThreshold=gridnessThreshold, 
             doSegmentation=True, thresholds=segThresholds, mergeInfo=segMergeInfo)
     ax_scatter.set_xlim(diffAllXlim)
     ax_scatter.set_ylim(diffAllXlim)
@@ -262,6 +266,7 @@ if diff_all:
             ax=ax_XHist, which=0,
             bins=diffAllBins,
             range=diffXlim,
+            filterThreshold=gridnessThreshold, 
             xlabel='', ylabel='')
     ax_XHist.set_xlim(diffAllXlim)
     ax_XHist.xaxis.set_major_locator(ti.MultipleLocator(1.5))
@@ -277,6 +282,7 @@ if diff_all:
             bins=diffAllBins,
             range=diffXlim,
             orientation='horizontal',
+            filterThreshold=gridnessThreshold, 
             xlabel='', ylabel='')
     ax_YHist.set_ylim(diffAllXlim)
     ax_YHist.yaxis.set_major_locator(ti.MultipleLocator(1.5))
@@ -310,6 +316,7 @@ if sweep_segmentation:
             NTrials,
             cmap='Set1',
             ax=ax,
+            filterThreshold=gridnessThreshold, 
             mergeInfo=segMergeInfo)
 
     fname = outputDir + "/grids_diff_sweep_segments.pdf"

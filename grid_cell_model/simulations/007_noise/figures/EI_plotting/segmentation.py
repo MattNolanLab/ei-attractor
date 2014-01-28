@@ -29,6 +29,17 @@ from analysis             import clustering
 from . import sweeps
 from . import aggregate as aggr
 
+def filterGridness(stackedData, threshold):
+    '''
+    Gridness must be more than the threshold in at least one of the noise
+    levels, otherwise the values will be masked.
+    '''
+    for dataIdx in xrange(stackedData.shape[1]):
+        if not np.any(stackedData[:, dataIdx] > threshold):
+            stackedData.mask[:, dataIdx] = True
+    return stackedData
+
+
 def plotDiffHistograms(data, noise_sigmas, **kw):
     '''
     **Parameters:**
@@ -38,10 +49,11 @@ def plotDiffHistograms(data, noise_sigmas, **kw):
     noise_sigmas : sequence of floats
         Noise sigma values, must be of the same length as data
     '''
-    ax     = kw.pop('ax', plt.gca())
-    which  = kw.pop('which', None)
-    xlabel = kw.pop('xlabel', '')
-    ylabel = kw.pop('ylabel', 'p($\cdot$)')
+    ax              = kw.pop('ax', plt.gca())
+    which           = kw.pop('which', None)
+    xlabel          = kw.pop('xlabel', '')
+    ylabel          = kw.pop('ylabel', 'p($\cdot$)')
+    filterThreshold = kw.pop('filterThreshold', -np.infty)
     kw['linewidth'] = kw.get('linewidth', 0.01)
     kw['edgecolor'] = kw.get('edgecolor', 'white')
     kw['rwidth']    = kw.get('rwidth', 0.8)
@@ -51,6 +63,7 @@ def plotDiffHistograms(data, noise_sigmas, **kw):
 
     #import pdb; pdb.set_trace()
     stackedData = aggr.collapseSweeps(data)
+    stackedData = filterGridness(stackedData, filterThreshold)
     diffData = np.diff(stackedData, axis=0)
 
     if which is None:
@@ -84,19 +97,21 @@ def plotDiffScatter(data, noise_sigmas, **kw):
     doSegmentation : bool, optional
         Whether to do segmentation or not
     '''
-    ax             = kw.pop('ax', plt.gca())
-    xlabel         = kw.pop('xlabel', '')
-    ylabel         = kw.pop('ylabel', '')
-    zerolines      = kw.pop('zerolines', True)
-    doSegmentation = kw.pop('doSegmentation', False)
-    thresholds     = kw.pop('thresholds', None)
-    mergeInfo      = kw.pop('mergeInfo', None)
+    ax              = kw.pop('ax', plt.gca())
+    xlabel          = kw.pop('xlabel', '')
+    ylabel          = kw.pop('ylabel', '')
+    zerolines       = kw.pop('zerolines', True)
+    doSegmentation  = kw.pop('doSegmentation', False)
+    thresholds      = kw.pop('thresholds', None)
+    mergeInfo       = kw.pop('mergeInfo', None)
+    filterThreshold = kw.pop('filterThreshold', -np.infty)
     kw['edgecolor'] = kw.get('edgecolor', 'white')
 
     if (len(noise_sigmas) != len(data)):
         raise ValueError("len(noise_sigmas) != len(data)")
 
     stackedData = aggr.collapseSweeps(data)
+    stackedData = filterGridness(stackedData, filterThreshold)
     diffData = np.diff(stackedData, axis=0)
 
     if doSegmentation:
@@ -128,9 +143,10 @@ def plotDiffScatter(data, noise_sigmas, **kw):
 
 def plotSweepSegments(ps, iterList, thresholds, aggrTypes, NTrials, **kw):
     #kw arguments
-    r           = kw.pop('r', 0)
-    c           = kw.pop('c', 0)
-    mergeInfo   = kw.pop('mergeInfo', None)
+    r               = kw.pop('r', 0)
+    c               = kw.pop('c', 0)
+    mergeInfo       = kw.pop('mergeInfo', None)
+    filterThreshold = kw.pop('filterThreshold', -np.infty)
 
     # Prepare data
     data = []
@@ -141,6 +157,7 @@ def plotSweepSegments(ps, iterList, thresholds, aggrTypes, NTrials, **kw):
 
     # Clustering
     stackedData = aggr.collapseSweeps(data)
+    stackedData = filterGridness(stackedData, filterThreshold)
     diffData = np.diff(stackedData, axis=0)
     differences = [
             diffData[0, :],
