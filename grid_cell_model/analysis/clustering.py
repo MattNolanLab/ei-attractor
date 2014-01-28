@@ -29,6 +29,9 @@ import numpy as np
 import collections
 from abc import ABCMeta, abstractmethod
 
+import logging
+_logger = logging.getLogger(__name__)
+
 
 class ClusteredData(collections.Sequence):
     '''
@@ -36,16 +39,119 @@ class ClusteredData(collections.Sequence):
     '''
     __metaclass__ = ABCMeta
 
-    def __init__(self, data):
+    def __init__(self, data, _clusters=None):
         '''
-        That that has been clustered.
+        Data and clusters that has been clustered.
         '''
         self._data = data
+        self._set_clusters(_clusters)
+
+
+    def _set_clusters(self, c):
+        self._clusters = c
+
+
+    @staticmethod
+    def _isClusterMerged(c, mergeInfo):
+        for mergeList in mergeInfo:
+            if (c in mergeList):
+                return True
+        return False
+
+
+    def mergeClusters(self, mergeInfo):
+        '''
+        Merge the specified clusters into one.
+
+        **Parameters:**
+
+        mergeInfo : a list of lists
+            Each list in mergeInfo specifies which clusters to merge
+
+        **Returns:**
+
+        A :py:class:`~analysis.clustering.MergedClusters` instance.
+        '''
+        _logger.warn("mergeClusters() currently does not check for " + \
+                "consistency of mergeInfo parameter")
+
+        #import pdb; pdb.set_trace()
+
+        mergedClusters = []
+        # Add clusters not being merged
+        for cIdx, c in enumerate(self):
+            if not ClusteredData._isClusterMerged(cIdx, mergeInfo):
+                mergedClusters.append(np.copy(c))
+
+        # Add merged clusters
+        for mergeList in mergeInfo:
+            clusterList = [self[c] for c in mergeList]
+            mergedClusters.append(np.concatenate(clusterList))
+
+        return MergedClusters(self._data, mergedClusters, self)
+
+
+    def assignClusters(self):
+        '''
+        Assign clusters to data.
+
+        Create an array of the same size as items from the ``data`` list, and
+        fill it with cluster IDs, so that one can easily identify which cluster
+        each data item belongs to.
+
+        **Returns:**
+            An array of the same size as all the items in the ``data`` list,
+            filled with cluster numbers. Unclustered data points will be NaNs.
+
+        .. todo::
+
+            Check that ``len(data)`` > 0. In the constructor of course
+        '''
+        result = np.ma.zeros(len(self._data[0]))
+        result.mask = True
+        for cIdx, c in enumerate(self):
+            result[c] = cIdx
+        return result
+
+
+
+
+
+        
+    ##########################################################################
+    # collections.Sequence method implementations
+    def __getitem__(self, key):
+        return self._clusters[key]
+
+    def __len__(self):
+        return len(self._clusters)
+
+    def __repr__(self):
+        return self._clusters.__repr__()
+
+    def __str__(self):
+        ret = ""
+        for idx, c in enumerate(self):
+            ret += "Cluster {0}: {1}\n".format(idx, c)
+        return ret
+
+
+class MergedClusters(ClusteredData):
+    '''
+    Result of a clustering procedure in which clusters have been merged.
+    '''
+    def __init__(self, data, _clusters, parent):
+        ClusteredData.__init__(self, data, _clusters)
+        self._parent = parent
+
+    @property
+    def parent(self):
+        return self._parent
 
 
 class ThresholdClusters(ClusteredData):
 
-    def __init__(self, data, thresholds):
+    def __init__(self, data, thresholds, doClustering=True, frozen=False):
         '''
         **Parameters**
 
@@ -65,15 +171,15 @@ class ThresholdClusters(ClusteredData):
             will be one less than the number of threshold items in each
             dimension.
         '''
+        ClusteredData.__init__(self, data)
+
         self.checkSizes(data, thresholds)
         self.checkThresholds(thresholds)
 
-        ClusteredData.__init__(self, data)
         self._thresholds = thresholds
-
-        self._nClusters = self._numClusters()
         self._ndims = len(self._data)
-        self._clusters = self._doClustering(True, 0)
+        
+        self._set_clusters(self._doClustering(True, 0))
 
 
     def checkSizes(self, data, thresholds):
@@ -112,42 +218,3 @@ class ThresholdClusters(ClusteredData):
         return nClusters
 
     
-    def assignClusters(self):
-        '''
-        Assign clusters to data.
-
-        Create an array of the same size as items from the ``data`` list, and
-        fill it with cluster IDs, so that one can easily identify which cluster
-        each data item belongs to.
-
-        **Returns:**
-            An array of the same size as all the items in the ``data`` list,
-            filled with cluster numbers. Unclustered data points will be NaNs.
-
-        .. todo::
-
-            Check that ``len(data)`` > 0. In the constructor of course
-        '''
-        result = np.zeros(len(self._data[0])) * np.nan
-        for cIdx, c in enumerate(self):
-            result[c] = cIdx
-        return result
-
-
-    ##########################################################################
-    # collections.Sequence method implementations
-    def __getitem__(self, key):
-        return self._clusters[key]
-
-    def __len__(self):
-        return self._nClusters
-
-    def __repr__(self):
-        return self._clusters.__repr__()
-
-    def __str__(self):
-        ret = ""
-        for idx, c in enumerate(self):
-            ret += "Cluster {0}: {1}\n".format(idx, c)
-        return ret
-

@@ -194,4 +194,13 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
     return data, X, Y
 
 
+def collapseSweeps(data):
+    '''
+    Take a list of 2D parameter sweep results, flatten all of them, and stack
+    them vertically.
+    '''
+    stackedData = []
+    for idx in xrange(len(data)):
+        stackedData.append(data[idx].ravel())
+    return np.ma.vstack(stackedData)
 

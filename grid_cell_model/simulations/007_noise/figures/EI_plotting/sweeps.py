@@ -306,11 +306,8 @@ def plotCollapsedSweeps(noise_sigmas, data, **kw):
     if (len(noise_sigmas) != len(data)):
         raise ValueError("len(noise_sigmas) != len(data)")
 
-    stackedData = []
-    for ns_idx, _ in enumerate(noise_sigmas):
-        stackedData.append(data[ns_idx].ravel())
+    stackedData = aggr.collapseSweeps(data)
 
-    stackedData = np.vstack(stackedData)
     globalAxesSettings(ax)
     ax.plot(noise_sigmas, stackedData, "o-", **kw)
 

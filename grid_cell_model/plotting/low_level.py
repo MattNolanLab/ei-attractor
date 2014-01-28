@@ -107,3 +107,8 @@ def yScaleBar(scaleLen, x, y, ax=m.gca(), width=0.0075, color='black',
                 textTemplate.format(scaleLen, unitsText),
                 va='center', ha='left', transform=ax.transAxes, size=size,
                 rotation=90)
+
+
+def removeAllSpines(ax):
+    for spine in ax.spines.itervalues():
+        spine.set_visible(False)
