@@ -312,8 +312,8 @@ if sweep_segmentation:
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
 
-    segmentation.plotSweepSegments(ps, iterList, segThresholds, gridTypes,
-            NTrials,
+    segmentation.plotSweepSegments(ps.grids, ps.noise_sigmas, iterList,
+            segThresholds, gridTypes, NTrials,
             cmap='Set1',
             ax=ax,
             filterThreshold=gridnessThreshold, 

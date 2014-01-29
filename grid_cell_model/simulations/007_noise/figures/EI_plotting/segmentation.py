@@ -141,7 +141,8 @@ def plotDiffScatter(data, noise_sigmas, **kw):
     return ax
 
 
-def plotSweepSegments(ps, iterList, thresholds, aggrTypes, NTrials, **kw):
+def plotSweepSegments(spaceList, noise_sigmas, iterList, thresholds, aggrTypes,
+        NTrials, **kw):
     #kw arguments
     r               = kw.pop('r', 0)
     c               = kw.pop('c', 0)
@@ -150,8 +151,8 @@ def plotSweepSegments(ps, iterList, thresholds, aggrTypes, NTrials, **kw):
 
     # Prepare data
     data = []
-    for ns_idx, _ in enumerate(ps.noise_sigmas):
-        d, _, _ = aggr.aggregateType(ps.grids[ns_idx], iterList, aggrTypes,
+    for ns_idx, _ in enumerate(noise_sigmas):
+        d, _, _ = aggr.aggregateType(spaceList[ns_idx], iterList, aggrTypes,
                 NTrials, ignoreNaNs=True)
         data.append(d)
 
@@ -168,7 +169,7 @@ def plotSweepSegments(ps, iterList, thresholds, aggrTypes, NTrials, **kw):
 
 
     # Plot
-    space0 = ps.grids[0]
+    space0 = spaceList[0]
     Y, X = aggr.computeYX(space0, iterList, r=r, c=c)
     sweepSegments = np.reshape(clusters.assignClusters(), data[0].shape)
     S, ax, cax = sweeps.plot2DTrial(X, Y, sweepSegments, **kw)
