@@ -28,6 +28,7 @@ from base                 import createColorbar
 
 from . import xlabelText, ylabelText
 from . import aggregate as aggr
+from .base import filterData
 
 ##############################################################################
 # Parameter sweeps
@@ -220,6 +221,33 @@ def plotVelStdSweep(sp, iterList, noise_sigma, **kw):
         ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
     
     return C, ax, cax
+
+
+
+def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
+    r          = kw.pop('r', 0)
+    c          = kw.pop('c', 0)
+    cbar       = kw.pop('cbar', True)
+    ignoreNaNs = kw.pop('ignoreNaNs', False)
+    filterThreshold = kw.pop('filterThreshold', -np.infty)
+
+
+    stackedData = aggr.collapseNoise(spList, iterList, types, NTrials,
+            ignoreNaNs=ignoreNaNs)
+    stackedData, _ = filterData(stackedData, filterThreshold)
+    diffData = np.diff(stackedData, axis=0)[which, :]
+
+    space0 = spList[0]
+    Y, X = aggr.computeYX(space0, iterList, r=r, c=c)
+    nY, nX = Y.shape
+    diffData, ax, cax = plot2DTrial(X, Y, np.reshape(diffData, (nY, nX)),
+            colorBar=cbar, **kw)
+
+    print("plotDiffTrial: max(diffData): {0}".format(np.max(diffData.ravel())))
+    print("plotDiffTrial: min(diffData): {0}".format(np.min(diffData.ravel())))
+
+    return diffData, ax, cax
+
 
 
 

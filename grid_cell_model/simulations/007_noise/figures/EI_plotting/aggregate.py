@@ -210,3 +210,12 @@ def collapseSweeps(data):
         stackedData.append(data[idx].ravel())
     return np.ma.vstack(stackedData)
 
+
+def collapseNoise(dataSpaces, iterList, types, NTrials, **kw):
+    data = []
+    for ns_idx, _ in enumerate(dataSpaces):
+        d, _, _ = aggregateType(dataSpaces[ns_idx], iterList, types, NTrials,
+                **kw)
+        data.append(d)
+
+    return collapseSweeps(data)
