@@ -154,11 +154,15 @@ def plotSweepSegments(spaceList, noise_sigmas, iterList, thresholds, aggrTypes,
     if mergeInfo is not None:
         clusters = clusters.mergeClusters(mergeInfo)
 
+    # Add another segment - filtered data
+    #nClusters  = len(clusters) + 1
+    clusterIdx = clusters.assignClusters()
+    #clusterIdx[filterIdx.filtered] = nClusters - 1
 
     # Plot
     space0 = spaceList[0]
     Y, X = aggr.computeYX(space0, iterList, r=r, c=c)
-    sweepSegments = np.reshape(clusters.assignClusters(), data[0].shape)
+    sweepSegments = np.reshape(clusterIdx, data[0].shape)
     S, ax, cax = sweeps.plot2DTrial(X, Y, sweepSegments, **kw)
 
     return S, ax, cax

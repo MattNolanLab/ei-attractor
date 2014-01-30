@@ -1,24 +1,7 @@
 #!/usr/bin/env python
-#
-#   figure_grids_segmentation.py
-#
-#   Gridness score segmentation plots.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Gridness score segmentation plots.
+'''
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -216,13 +199,13 @@ histRatio     = 0.2
 diffAllBins   = 40
 
 segThresholds = [
-        [-np.infty, -0.2, 0.2, np.infty],
-        [-np.infty, -0.2, 0.2, np.infty]]
-segMergeInfo = [
-        [0, 1, 3],
-        [6, 7]]
+        [-np.infty, 0, np.infty],
+        [-np.infty, 0, np.infty]]
+#segMergeInfo = [
+#        [0, 1, 3],
+#        [6, 7]]
 
-#segMergeInfo = None
+segMergeInfo = None
 gridnessThreshold = 0
 
 
