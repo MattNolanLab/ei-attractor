@@ -136,6 +136,12 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
         trialNumList  = np.arange(NTrials)
         if (subType == 'sigma'):
             vars += ['bump_e', 'sigma']
+        elif (subType == 'rateMap_e'):
+            vars += ['bump_e', 'bump_e_rateMap']
+            output_dtype = 'list'
+        elif (subType == 'rateMap_i'):
+            vars += ['bump_i', 'bump_i_rateMap']
+            output_dtype = 'list'
         else:
             raise ValueError('Unknown bump subtype: {0}'.format(subType))
 

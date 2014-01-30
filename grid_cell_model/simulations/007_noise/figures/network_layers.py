@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+'''
+Create a 3D plot of network layers.
+'''
+
 import numpy as np
 import mayavi.mlab as mlab
 
