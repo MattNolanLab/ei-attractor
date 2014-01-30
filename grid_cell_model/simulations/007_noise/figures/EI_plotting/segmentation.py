@@ -24,20 +24,12 @@ import matplotlib.pyplot as plt
 
 from matplotlib           import rcParams as rcp
 from plotting.global_defs import globalAxesSettings
+from plotting.low_level   import zeroLines
 from analysis             import clustering
 
 from . import sweeps
 from . import aggregate as aggr
-
-def filterGridness(stackedData, threshold):
-    '''
-    Gridness must be more than the threshold in at least one of the noise
-    levels, otherwise the values will be masked.
-    '''
-    for dataIdx in xrange(stackedData.shape[1]):
-        if not np.any(stackedData[:, dataIdx] > threshold):
-            stackedData.mask[:, dataIdx] = True
-    return stackedData
+from .base import filterData
 
 
 def plotDiffHistograms(data, noise_sigmas, **kw):
@@ -63,7 +55,7 @@ def plotDiffHistograms(data, noise_sigmas, **kw):
 
     #import pdb; pdb.set_trace()
     stackedData = aggr.collapseSweeps(data)
-    stackedData = filterGridness(stackedData, filterThreshold)
+    stackedData, _ = filterData(stackedData, filterThreshold)
     diffData = np.diff(stackedData, axis=0)
 
     if which is None:
@@ -111,7 +103,7 @@ def plotDiffScatter(data, noise_sigmas, **kw):
         raise ValueError("len(noise_sigmas) != len(data)")
 
     stackedData = aggr.collapseSweeps(data)
-    stackedData = filterGridness(stackedData, filterThreshold)
+    stackedData, _ = filterData(stackedData, filterThreshold)
     diffData = np.diff(stackedData, axis=0)
 
     if doSegmentation:
@@ -131,12 +123,7 @@ def plotDiffScatter(data, noise_sigmas, **kw):
     ax.axis('scaled')
 
     if (zerolines):
-        color  = rcp['grid.color']
-        ls     = rcp['grid.linestyle']
-        lw     = rcp['grid.linewidth']
-        alphsa = rcp['grid.alpha']
-        ax.axhline(0, ls=ls, lw=lw, color=color, zorder=-10)
-        ax.axvline(0, ls=ls, lw=lw, color=color, zorder=-10)
+        zeroLines(ax)
 
     return ax
 
@@ -158,7 +145,7 @@ def plotSweepSegments(spaceList, noise_sigmas, iterList, thresholds, aggrTypes,
 
     # Clustering
     stackedData = aggr.collapseSweeps(data)
-    stackedData = filterGridness(stackedData, filterThreshold)
+    stackedData, filterIdx = filterData(stackedData, filterThreshold)
     diffData = np.diff(stackedData, axis=0)
     differences = [
             diffData[0, :],

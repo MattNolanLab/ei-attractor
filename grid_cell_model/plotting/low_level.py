@@ -22,6 +22,8 @@ import matplotlib.pyplot     as m
 import matplotlib.transforms as transforms
 import matplotlib.patches    as patches
 
+from matplotlib import rcParams as rcp
+
 def xScaleBar(scaleLen, x, y, ax=m.gca(), height=0.02, color='black',
         unitsText='ms', size='medium', textYOffset=0.075):
     '''
@@ -112,3 +114,16 @@ def yScaleBar(scaleLen, x, y, ax=m.gca(), width=0.0075, color='black',
 def removeAllSpines(ax):
     for spine in ax.spines.itervalues():
         spine.set_visible(False)
+
+
+def zeroLines(ax, which='both'):
+    color  = rcp['grid.color']
+    ls     = rcp['grid.linestyle']
+    lw     = rcp['grid.linewidth']
+    alphsa = rcp['grid.alpha']
+
+    if (which == 'x' or which == 'both'):
+        ax.axvline(0, ls=ls, lw=lw, color=color, zorder=-10)
+
+    if (which == 'y' or which == 'both'):
+        ax.axhline(0, ls=ls, lw=lw, color=color, zorder=-10)
