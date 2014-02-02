@@ -8,14 +8,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-from EI_plotting      import sweeps, examples, details, segmentation
+from EI_plotting      import sweeps, segmentation, scatter
 from EI_plotting      import aggregate as aggr
-from EI_plotting.base import NoiseDataSpaces, getOption, plotStateSignal
-from parameters       import JobTrialSpace2D
-from data_storage     import DataStorage
-from data_storage.sim_models.ei import extractSummedSignals
+from EI_plotting.base import NoiseDataSpaces
 from plotting.low_level   import zeroLines
-from plotting.global_defs import prepareLims, globalAxesSettings
+from plotting.global_defs import prepareLims
 from analysis         import clustering
 
 import logging as lg
@@ -44,9 +41,10 @@ velDataRoot    = None
 gridsDataRoot  = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-diff_all                = 1
-diff_sweep              = 1
-scatter_diff_bump_grids = 1
+diff_all                    = 0
+diff_sweep                  = 0
+scatter_diff_bump_grids     = 1
+scatter_diff_bump_grids_seg = 1
 
 ##############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
@@ -202,33 +200,7 @@ segGridThresholds = [ # TODO: merge this with figure_grids_segmentation.py
         [-np.infty, 0, np.infty],
         [-np.infty, 0, np.infty]]
 
-if (scatter_diff_bump_grids):
-    fig = plt.Figure(corrDiffFigsize)
-    ax = fig.add_subplot(111)
-    globalAxesSettings(ax)
-
-    gridData = aggr.collapseNoise(ps.grids, iterList, gridTypes, gridNTrials,
-            ignoreNaNs=True)
-    bumpData = aggr.collapseNoise(ps.bumpGamma, iterList, bumpTypes, bumpNTrials)
-    
-    gridData = np.diff(gridData, axis=0)
-    bumpData = np.diff(bumpData, axis=0)
-
-    if includeGridSegmentation:
-        differences = [
-                gridData[0, :],
-                gridData[1, :]]
-        clusters = clustering.ThresholdClusters(differences, segGridThresholds)
-        colors = clusters.assignClusters()
-
-    ax.scatter(bumpData[0, :], gridData[0, :],
-            s=15,
-            linewidth=0.3,
-            edgecolor='white',
-            c=colors,
-            cmap='Set1')
-    ax.set_xlabel(corrDiffXLabel)
-    ax.set_ylabel(corrDiffYLabel)
+def setCorrAxes(ax):
     ax.set_xlim(prepareLims([-0.2, 0.4]))
     ax.set_ylim(prepareLims([-1.5, 1.5]))
     ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
@@ -236,10 +208,78 @@ if (scatter_diff_bump_grids):
     ax.xaxis.set_minor_locator(ti.MultipleLocator(0.1))
     ax.yaxis.set_minor_locator(ti.MultipleLocator(0.25))
     zeroLines(ax)
+
+# Highlight segmented points
+if (scatter_diff_bump_grids_seg):
+    fig = plt.Figure(corrDiffFigsize)
+    ax = fig.add_subplot(111)
+
+    which = 0
+    scatterPlot = scatter.DiffScatterPlot(
+            ps.bumpGamma, ps.grids, bumpTypes, gridTypes, iterList,
+            bumpNTrials, gridNTrials, which,
+            s=15,
+            linewidth=0.3,
+            edgecolor='white',
+            xlabel = corrDiffXLabel,
+            ylabel = corrDiffYLabel,
+            sigmaTitle=False,
+            ignoreNaNs=True,
+            cmap='Set1',
+            ax=ax)
+
+    if includeGridSegmentation:
+        gridData = scatterPlot.diffData2
+        differences = [
+                gridData[0, :],
+                gridData[1, :]]
+        clusters = clustering.ThresholdClusters(differences, segGridThresholds)
+        scatterPlot.setColors(clusters.assignClusters())
+
+    scatterPlot.plot()
     ax.set_title('Difference\n $\sigma_{noise} = 150\ -\ \sigma_{noise} = 0$ pA')
+    setCorrAxes(ax)
+
+    fig.tight_layout()
+    fname = outputDir + "/bumps_scatter_diff_bump_grids_segments.pdf"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()
+
+
+# Color coding according to E/I position
+scatterColorFigSize = (1.5, 1.5)
+scatterTransparent = True
+
+if (scatter_diff_bump_grids):
+    fig = plt.Figure(corrDiffFigsize)
+    ax = fig.add_subplot(111)
+
+    which = 0
+    scatterPlot = scatter.DiffScatterPlot(
+            ps.bumpGamma, ps.grids, bumpTypes, gridTypes, iterList,
+            bumpNTrials, gridNTrials, which,
+            s=15,
+            linewidth=0.3,
+            edgecolor='white',
+            color2D=True,
+            xlabel = corrDiffXLabel,
+            ylabel = corrDiffYLabel,
+            sigmaTitle=False,
+            ignoreNaNs=True,
+            ax=ax)
+
+    scatterPlot.plot()
+    setCorrAxes(ax)
 
     fig.tight_layout()
     fname = outputDir + "/bumps_scatter_diff_bump_grids.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
+
+    fig = plt.figure(figsize=scatterColorFigSize)
+    ax = fig.gca()
+    scatterPlot.plotColorbar(ax)
+    fig.tight_layout(pad=0)
+    fname = outputDir + "/bumps_scatter_diff_bump_grids_colorbar.pdf"
+    fig.savefig(fname, dpi=300, transparent=scatterTransparent)
 
