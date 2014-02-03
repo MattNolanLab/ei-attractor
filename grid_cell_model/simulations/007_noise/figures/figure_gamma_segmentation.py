@@ -29,6 +29,7 @@ from EI_plotting          import segmentation
 from EI_plotting          import aggregate as aggr
 from plotting.global_defs import prepareLims
 from EI_plotting.base     import NoiseDataSpaces
+import flagparse
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -62,9 +63,10 @@ shape    = (31, 31)
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
-diff_all           = 1
-sweep_segmentation = 1
-
+parser = flagparse.FlagParser()
+parser.add_flag('--diff_all')
+parser.add_flag('--sweep_segmentation')
+args = parser.parse_args()
 
 ##############################################################################
 # Scatter plot with histograms all in one plot
@@ -95,7 +97,7 @@ gammaThreshold = -np.infty
 gammaTypes = ['gamma', 'acVal']
 
 
-if diff_all:
+if args.diff_all or args.all:
     fig = plt.figure(figsize=diffAllFigSize)
 
     data = []
@@ -176,7 +178,7 @@ sweepRight  = 0.8
 sweepTop    = 0.85
 transparent  = True
 
-if sweep_segmentation:
+if args.sweep_segmentation or args.all:
     fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))

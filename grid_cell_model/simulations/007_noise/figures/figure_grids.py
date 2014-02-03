@@ -33,6 +33,7 @@ from data_storage.sim_models.ei import extractSummedSignals
 import plotting.low_level
 from plotting.global_defs import prepareLims
 from analysis         import clustering
+import flagparse
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -58,15 +59,12 @@ gridsDataRoot  = 'output_local/even_spacing/grids'
 singleDataRoot = 'output_local/single_neuron'
 shape = (31, 31)
 
-grids              = 0
-examplesFlag       = 0
-detailed_noise     = 0
-Vm_examples        = 0
-collapsed_sweeps   = 0
-diff_distrib       = 0
-diff_scatter       = 0
-diff_all           = 1
-sweep_segmentation = 1
+parser = flagparse.FlagParser()
+parser.add_flag('--grids')
+parser.add_flag('--examplesFlag')
+parser.add_flag('--detailed_noise')
+parser.add_flag('--Vm_examples')
+args = parser.parse_args()
 
 ##############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
@@ -110,7 +108,7 @@ ann = [ann0, ann1]
 
 varList = ['gridnessScore']
 
-if (grids):
+if args.grids or args.all:
     # noise_sigma = 0 pA
     fig = plt.figure("sweeps0", figsize=sweepFigSize)
     exRows = [28, 15]
@@ -189,7 +187,7 @@ exampleBottom = 0.01
 exampleRight  = 0.99
 exampleTop    = 0.85
 
-if (examplesFlag):
+if args.examplesFlag or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         for idx, rc in enumerate(exampleRC):
             # Grid field
@@ -270,7 +268,7 @@ VmExampleTop    = 0.6
 VmExampleXScalebar = 50 # ms
 VmExampleYScalebar = 10 # mV
 
-if (Vm_examples):
+if args.Vm_examples or args.all:
     for ns_idx, noise_sigma in enumerate(noise_sigmas):
         fig = plt.figure(figsize=VmExampleFigSize)
         ax = fig.add_axes(Bbox.from_extents(VmExampleLeft, VmExampleBottom,
@@ -303,7 +301,7 @@ detailLeft   = 0.15
 detailBottom = 0.2
 detailRight  = 0.95
 detailTop    = 0.8
-if (detailed_noise):
+if args.detailed_noise or args.all:
     ylabelPos = -0.15
 
     types = ('grids', 'gridnessScore')

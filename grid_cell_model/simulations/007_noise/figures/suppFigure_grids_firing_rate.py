@@ -31,6 +31,7 @@ from EI_plotting          import aggregate as aggr
 from EI_plotting.base     import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings
+import flagparse
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -56,9 +57,11 @@ gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 
-FRSweeps     = 0
-scatterPlot  = 1
-FRHistograms = 0
+parser = flagparse.FlagParser()
+parser.add_flag('--FRSweeps')
+parser.add_flag('--scatterPlot')
+parser.add_flag('--FRHistograms')
+args = parser.parse_args()
 
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
@@ -110,7 +113,7 @@ def plotFRGridThresholded(dataSpace, threshold, FRTypes, iterList, NTrials, **kw
 
 ##############################################################################
 # Parameter sweeps of E and I firing rates
-if FRSweeps:
+if args.FRSweeps or args.all:
     varList_e = ['FR_e',  'avg']
     varList_i = ['FR_i',  'all']
 
@@ -202,7 +205,7 @@ scatterTransparent = True
 
 ignoreNaNs = True
 
-if (scatterPlot):
+if args.scatterPlot or args.all:
     for EIType in ['E', 'I_10']:
         if EIType == 'E':
             fname = outputDir + "/suppFigure_grids_FR-scatter_FRE_vs_grids.pdf"
@@ -259,7 +262,7 @@ histRight   = 0.95
 histTop     = 0.8
 histTransparent = True
 
-if FRHistograms:
+if args.FRHistograms or args.all:
     for EIType in ['E', 'I_10']:
         if EIType == 'E':
             fname = outputDir + "/suppFigure_grids_FR-histogram_FRE{0}.pdf"

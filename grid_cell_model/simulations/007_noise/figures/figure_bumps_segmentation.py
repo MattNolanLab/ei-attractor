@@ -14,6 +14,7 @@ from EI_plotting.base import NoiseDataSpaces
 from plotting.low_level   import zeroLines
 from plotting.global_defs import prepareLims
 from analysis         import clustering
+import flagparse
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -41,10 +42,13 @@ velDataRoot    = None
 gridsDataRoot  = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-diff_all                    = 0
-diff_sweep                  = 0
-scatter_diff_bump_grids     = 1
-scatter_diff_bump_grids_seg = 1
+parser = flagparse.FlagParser()
+parser.add_flag('-a', '--diff_all')
+parser.add_flag('-s', '--diff_sweep')
+parser.add_flag('--scatter_diff_bump_grids')
+parser.add_flag('--scatter_diff_bump_grids_seg')
+args = parser.parse_args()
+
 
 ##############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
@@ -81,7 +85,7 @@ segThresholds = None
 segMergeInfo = None
 
 
-if diff_all:
+if args.diff_all or args.all:
     fig = plt.figure(figsize=diffAllFigSize)
 
     data = []
@@ -168,7 +172,7 @@ bumpDiff_cbar_kw = dict(
 bumpDiff_vmin = None #-0.2
 bumpDiff_vmax = None #0.4
 
-if diff_sweep:
+if args.diff_sweep or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas[0:-1]):
         fig = plt.figure(figsize=sweepFigSize)
         ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -250,7 +254,7 @@ if (scatter_diff_bump_grids_seg):
 scatterColorFigSize = (1.5, 1.5)
 scatterTransparent = True
 
-if (scatter_diff_bump_grids):
+if args.scatter_diff_bump_grids or args.all:
     fig = plt.Figure(corrDiffFigsize)
     ax = fig.add_subplot(111)
 

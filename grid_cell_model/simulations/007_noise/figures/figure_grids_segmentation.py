@@ -17,6 +17,7 @@ from data_storage.sim_models.ei import extractSummedSignals
 import plotting.low_level
 from plotting.global_defs import prepareLims
 from analysis         import clustering
+import flagparse
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -42,11 +43,13 @@ gridsDataRoot  = 'output_local/even_spacing/grids'
 singleDataRoot = 'output_local/single_neuron'
 shape = (31, 31)
 
-collapsed_sweeps   = 0
-diff_distrib       = 0
-diff_scatter       = 0
-diff_all           = 1
-sweep_segmentation = 1
+
+parser = flagparse.FlagParser()
+parser.add_flag('-c', '--collapsed_sweeps')
+parser.add_flag('-d', '--diff_all')
+parser.add_flag('-s', '--sweep_segmentation')
+args = parser.parse_args()
+
 
 ##############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
@@ -64,7 +67,7 @@ collapsedTop    = 0.8
 gridTypes = ['grids', 'gridnessScore']
 NGridTrials = 3
 
-if collapsed_sweeps:
+if args.collapsed_sweeps or args.all:
     fig = plt.figure(figsize=collapsedFigSize)
     ax = fig.add_axes(Bbox.from_extents(collapsedLeft, collapsedBottom,
         collapsedRight, collapsedTop))
@@ -87,103 +90,9 @@ if collapsed_sweeps:
 
 
 ##############################################################################
-# Distribution of differences
-diffFigSize = (5, 3)
-diffLeft   = 0.15
-diffBottom = 0.2
-diffRight  = 0.9
-diffTop    = 0.9
-diffXlim = [-1.5, 1.5]
-diffLegend = ['$G_{150}$ -  $G_{0}$', '$G_{300}$ -  $G_{150}$']
-
-
-if (diff_distrib):
-
-    data = []
-    for ns_idx, _ in enumerate(ps.noise_sigmas):
-        d, _, _ = aggr.aggregateType(ps.grids[ns_idx], iterList, gridTypes,
-                NTrials, ignoreNaNs=True)
-        data.append(d)
-
-    for ns_idx in xrange(len(ps.noise_sigmas) - 1):
-        fig = plt.figure(figsize=diffFigSize)
-        ax = fig.add_axes(Bbox.from_extents(diffLeft, diffBottom, diffRight,
-            diffTop))
-
-        segmentation.plotDiffHistograms(data, ps.noise_sigmas,
-                ax=ax, which=ns_idx,
-                bins=80,
-                range=diffXlim,
-                xlabel='Gridness score difference')
-        ax.set_xlim(diffXlim)
-        l = ax.legend([diffLegend[ns_idx]], loc='best', fontsize='small',
-                frameon=False)
-
-        fname = outputDir + "/grids_diff_histograms_{0}pA.pdf"
-        plt.savefig(fname.format(int(ps.noise_sigmas[ns_idx])), dpi=300, transparent=True)
-        plt.close()
-
-    # Plot them all in one plot
-    fig = plt.figure(figsize=diffFigSize)
-    ax = fig.add_axes(Bbox.from_extents(diffLeft, diffBottom, diffRight,
-        diffTop))
-
-    segmentation.plotDiffHistograms(data, ps.noise_sigmas,
-            ax=ax, which=None,
-            bins=80,
-            range=diffXlim,
-            xlabel='Gridness score difference')
-    ax.set_xlim(diffXlim)
-    l = ax.legend(diffLegend, loc='best', fontsize='small', frameon=False)
-
-    fname = outputDir + "/grids_diff_histograms_all_in_one.pdf"
-    plt.savefig(fname, dpi=300, transparent=True)
-    plt.close()
-
-
-##############################################################################
-# Scatter plot of differences
-diffScatterFigSize = (10, 10)
-diffScatterLeft   = 0.1
-diffScatterBottom = 0.1
-diffScatterRight  = 0.95
-diffScatterTop    = 0.95
-diffScatterXlim   = [-1.5, 1.5]
-diffScatterXLabel = '$G_{150}$ -  $G_{0}$'
-diffScatterYLabel = '$G_{300}$ -  $G_{150}$'
-
-
-if (diff_scatter):
-
-    data = []
-    for ns_idx, _ in enumerate(ps.noise_sigmas):
-        d, _, _ = aggr.aggregateType(ps.grids[ns_idx], iterList, gridTypes,
-                NTrials, ignoreNaNs=True)
-        data.append(d)
-
-    fig = plt.figure(figsize=diffScatterFigSize)
-    ax = fig.add_axes(Bbox.from_extents(diffScatterLeft, diffScatterBottom,
-        diffScatterRight, diffScatterTop))
-
-    segmentation.plotDiffScatter(data, ps.noise_sigmas,
-            ax=ax,
-            s=25,
-            linewidth=0.3,
-            xlabel=diffScatterXLabel,
-            ylabel=diffScatterYLabel)
-    ax.set_xlim(prepareLims(diffScatterXlim))
-    ax.set_ylim(prepareLims(diffScatterXlim))
-    ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
-    ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-
-    fname = outputDir + "/grids_diff_scatter.pdf"
-    plt.savefig(fname, dpi=300, transparent=True)
-    plt.close()
-
-
-
-##############################################################################
 # Scatter plot with histograms all in one plot
+diffXlim = [-1.5, 1.5]
+
 diffAllFigSize = (6, 6)  # Must be square
 diffAllLeft = 0.2
 diffAllBottom = 0.15
@@ -209,7 +118,7 @@ segMergeInfo = None
 gridnessThreshold = 0
 
 
-if diff_all:
+if args.diff_all or args.all:
     fig = plt.figure(figsize=diffAllFigSize)
 
     data = []
@@ -290,7 +199,7 @@ sweepRight  = 0.8
 sweepTop    = 0.85
 transparent  = True
 
-if sweep_segmentation:
+if args.sweep_segmentation or args.all:
     fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))

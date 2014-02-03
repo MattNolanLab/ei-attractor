@@ -33,6 +33,7 @@ from EI_plotting          import aggregate as aggr
 from parameters           import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings, prepareLims
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
+import flagparse
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)
@@ -62,13 +63,15 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape    = (31, 31)
 
-gammaSweep      = 0
-threshold       = 0
-freqHist        = 0
-detailed_noise  = 0
-examplesFlag    = 0
-scatterPlot     = 1
-scatterPlot_all = 0
+parser = flagparse.FlagParser()
+parser.add_flag('--gammaSweep')
+parser.add_flag('--threshold')
+parser.add_flag('--freqHist')
+parser.add_flag('--detailed_noise')
+parser.add_flag('--examplesFlag')
+parser.add_flag('--scatterPlot')
+parser.add_flag('--scatterPlot_all')
+args = parser.parse_args()
 
 ###############################################################################
 
@@ -260,7 +263,7 @@ ann = [ann0, ann1]
 annF = [deepcopy(ann0), deepcopy(ann1)]
 
 
-if (gammaSweep):
+if args.gammaSweep or args.all:
     # noise_sigma = 0 pA
     fig = plt.figure(figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -358,7 +361,7 @@ if (gammaSweep):
         
 
 
-if (threshold):
+if args.threshold or args.all:
     ###############################################################################
     plt.figure(figsize=(3.5, 2))
     plotThresholdComparison(ps.bumpGamma,
@@ -369,7 +372,7 @@ if (threshold):
     plt.savefig(fname, transparent=True, dpi=300)
 
 
-if (freqHist):
+if args.freqHist or args.all:
     ylabelPos = -0.16
     fig = plt.figure(figsize=(3.7, 2.5))
     plotFreqHistogram(ps.bumpGamma, range(NTrials), ylabelPos=ylabelPos)
@@ -392,7 +395,7 @@ detailLeft   = 0.2
 detailBottom = 0.3
 detailRight  = 0.98
 detailTop    = 0.9
-if (detailed_noise):
+if args.detailed_noise or args.all:
     ylabelPos = -0.17
 
     # 1st autocorrelation peak (gamma power)
@@ -458,7 +461,7 @@ example_xscale_kw = dict(
         x=0.75, y=-0.1,
         size='x-small')
 
-if (examplesFlag):
+if args.examplesFlag or args.all:
     for nsIdx, ns in enumerate(ps.noise_sigmas):
         for idx, rc in enumerate(exampleRC):
             fname = exampleFName.format(ns, idx)
@@ -493,7 +496,7 @@ scatterColorFigSize = (0.75, 0.75)
 
 ignoreNaNs = True
 
-if (scatterPlot):
+if args.scatterPlot or args.all:
     NTrialsGamma = 5
     NTrialsGrids = 3
     typesGamma = ['gamma', 'acVal']
@@ -546,7 +549,7 @@ if (scatterPlot):
 ##############################################################################
 # Scatter plot of gridness score vs. gamma power 
 # All in one plot
-if (scatterPlot_all):
+if args.scatterPlot_all or args.all:
     fig = plt.figure(figsize=scatterFigSize)
     ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
         scatterTop))
