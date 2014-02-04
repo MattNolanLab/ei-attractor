@@ -18,17 +18,22 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import logging 
+
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 
 from plotting.global_defs import globalAxesSettings
+from plotting.low_level   import symmetricDataLimits
 from base                 import createColorbar
 
 from . import xlabelText, ylabelText
 from . import aggregate as aggr
 from .base import filterData
+
+logger = logging.getLogger(__name__)
 
 ##############################################################################
 # Parameter sweeps
@@ -225,10 +230,12 @@ def plotVelStdSweep(sp, iterList, noise_sigma, **kw):
 
 
 def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
-    r          = kw.pop('r', 0)
-    c          = kw.pop('c', 0)
-    cbar       = kw.pop('cbar', True)
-    ignoreNaNs = kw.pop('ignoreNaNs', False)
+    r           = kw.pop('r', 0)
+    c           = kw.pop('c', 0)
+    cbar        = kw.pop('cbar', True)
+    ignoreNaNs  = kw.pop('ignoreNaNs', False)
+    annotations = kw.pop('annotations', None)
+    symmetricLimits = kw.pop('symmetricLimits', True)
     filterThreshold = kw.pop('filterThreshold', -np.infty)
 
 
@@ -236,6 +243,12 @@ def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
             ignoreNaNs=ignoreNaNs)
     stackedData, _ = filterData(stackedData, filterThreshold)
     diffData = np.diff(stackedData, axis=0)[which, :]
+    if symmetricLimits:
+        if 'vmin' in kw.keys() or 'vmax' in kw.keys():
+            logger.warn('Overriding vmin and vmax by making data limits symmetric')
+        kw['vmin'], kw['vmax'] = symmetricDataLimits(diffData)
+        info_msg = 'vmin: {}, vmax: {}'.format(kw['vmin'], kw['vmax'])
+        logger.info(info_msg)
 
     space0 = spList[0]
     Y, X = aggr.computeYX(space0, iterList, r=r, c=c)
@@ -245,6 +258,10 @@ def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
 
     print("plotDiffTrial: max(diffData): {0}".format(np.max(diffData.ravel())))
     print("plotDiffTrial: min(diffData): {0}".format(np.min(diffData.ravel())))
+
+    if (annotations is not None):
+        for a in annotations:
+            plotSweepAnnotation(X=X, Y=Y, ax=ax, **a)
 
     return diffData, ax, cax
 

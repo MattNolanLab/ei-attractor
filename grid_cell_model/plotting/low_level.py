@@ -1,23 +1,10 @@
-#
-#   low_level.py
-#
-#   Low level plotting functions.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+.. currentmodule:: plotting.low_level
+
+Low level plotting sub-routines.
+'''
+import numpy as np
+
 import matplotlib.pyplot     as m
 import matplotlib.transforms as transforms
 import matplotlib.patches    as patches
@@ -127,3 +114,9 @@ def zeroLines(ax, which='both'):
 
     if (which == 'y' or which == 'both'):
         ax.axhline(0, ls=ls, lw=lw, color=color, zorder=-10)
+
+
+def symmetricDataLimits(data):
+    absmax = np.max(np.abs(data.flatten()))
+    return (-absmax, absmax)
+

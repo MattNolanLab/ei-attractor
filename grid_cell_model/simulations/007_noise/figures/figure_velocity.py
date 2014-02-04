@@ -58,13 +58,13 @@ gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 parser = flagparse.FlagParser()
-parser.add_flag('ccExamples')
-parser.add_flag('spikeCCExamples')
-parser.add_flag('velLines')
-parser.add_flag('detailed_noise')
-parser.add_flag('slope_sweeps')
-parser.add_flag('rasters')
-parser.add_flag('rates')
+parser.add_flag('--ccExamples')
+parser.add_flag('--spikeCCExamples')
+parser.add_flag('--velLines')
+parser.add_flag('--detailed_noise')
+parser.add_flag('--slope_sweeps')
+parser.add_flag('--rasters')
+parser.add_flag('--rates')
 args = parser.parse_args()
 
 ###############################################################################
@@ -389,6 +389,7 @@ rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 slopeVarList = ['lineFitSlope']
 slope_vmin = 0
 slope_vmax = 1.6
+velSweep_cmap = 'jet'
 
 slope_cbar_kw= dict(
         location='left',
@@ -426,6 +427,7 @@ if args.slope_sweeps or args.all:
             noise_sigmas[0], sigmaTitle=False,
             ax=ax,
             cbar=True, cbar_kw=slope_cbar_kw,
+            cmap=velSweep_cmap,
             #cax.yaxis.tick_left()
             vmin=slope_vmin, vmax=slope_vmax,
             annotations=ann)
@@ -439,6 +441,7 @@ if args.slope_sweeps or args.all:
             ax=ax,
             ylabel='', yticks=False,
             cbar=False, cbar_kw=slope_cbar_kw,
+            cmap=velSweep_cmap,
             vmin=slope_vmin, vmax=slope_vmax,
             annotations=ann)
     fname = outputDir + "/velocity_slope_sweeps150.pdf"
@@ -451,6 +454,7 @@ if args.slope_sweeps or args.all:
             ax=ax,
             ylabel='', yticks=False,
             cbar=False, cbar_kw=slope_cbar_kw,
+            cmap=velSweep_cmap,
             vmin=slope_vmin, vmax=slope_vmax,
             annotations=ann)
     fname = outputDir + "/velocity_slope_sweeps300.pdf"

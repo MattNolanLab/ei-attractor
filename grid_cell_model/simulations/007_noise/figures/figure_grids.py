@@ -86,12 +86,13 @@ cbar_kw= {
     'ticks'      : ti.MultipleLocator(0.5),
     'rasterized' : True}
 
-vmin = -0.5
+vmin = -1.1
 vmax = 1.1
 
 ##############################################################################
 exampleRC = ( (5, 15), (15, 5) )
 sliceAnn = None
+grids_cmap = 'RdBu_r'
 
 ann0 = dict(
         txt='b',
@@ -111,8 +112,6 @@ varList = ['gridnessScore']
 if args.grids or args.all:
     # noise_sigma = 0 pA
     fig = plt.figure("sweeps0", figsize=sweepFigSize)
-    exRows = [28, 15]
-    exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     sweeps.plotGridTrial(ps.grids[0], varList, iterList, ps.noise_sigmas[0],
@@ -120,6 +119,7 @@ if args.grids or args.all:
             ax=ax,
             r=exampleIdx[0][0], c=exampleIdx[0][1],
             cbar=False, cbar_kw=cbar_kw,
+            cmap=grids_cmap,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
             annotations=ann,
@@ -133,8 +133,6 @@ if args.grids or args.all:
     #for a in sliceAnn:
     #    a['letterColor'] = 'black'
     fig = plt.figure("sweeps150", figsize=sweepFigSize)
-    exRows = [8, 2]
-    exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     sweeps.plotGridTrial(ps.grids[1], varList, iterList, ps.noise_sigmas[1],
@@ -142,6 +140,7 @@ if args.grids or args.all:
             ax=ax,
             r=exampleIdx[1][0], c=exampleIdx[1][1],
             cbar=False, cbar_kw=cbar_kw,
+            cmap=grids_cmap,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
             ylabel='', yticks=False,
@@ -154,8 +153,6 @@ if args.grids or args.all:
 
     # noise_sigma = 300 pA
     fig = plt.figure("sweeps300", figsize=sweepFigSize)
-    exRows = [16, 15]
-    exCols = [6, 23]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     _, _, cax = sweeps.plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
@@ -163,6 +160,7 @@ if args.grids or args.all:
             ax=ax,
             r=exampleIdx[2][0], c=exampleIdx[2][1],
             cbar_kw=cbar_kw,
+            cmap=grids_cmap,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
             ylabel='', yticks=False,

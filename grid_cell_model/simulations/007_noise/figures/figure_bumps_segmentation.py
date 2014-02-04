@@ -167,10 +167,8 @@ bumpDiff_cbar_kw = dict(
         location    = 'right',
         shrink      = 0.8,
         pad         = -0.05,
-        ticks       = ti.MultipleLocator(0.1),
+        ticks       = ti.MultipleLocator(0.3),
         rasterized  = True)
-bumpDiff_vmin = None #-0.2
-bumpDiff_vmax = None #0.4
 
 if args.diff_sweep or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas[0:-1]):
@@ -181,8 +179,10 @@ if args.diff_sweep or args.all:
         which = ns_idx
         sweeps.plotDiffTrial(ps.bumpGamma, iterList, which, bumpNTrials, bumpTypes,
                 ax=ax,
-                vmin=bumpDiff_vmin, vmax=bumpDiff_vmax,
-                cbar=True, cbar_kw=bumpDiff_cbar_kw)
+                cbar=True, cbar_kw=bumpDiff_cbar_kw,
+                symmetricLimits=True,
+                annotations=ann,
+                cmap='RdBu_r')
 
         fname = outputDir + "/bumps_diff_sweep{0}.pdf"
         plt.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
@@ -214,7 +214,7 @@ def setCorrAxes(ax):
     zeroLines(ax)
 
 # Highlight segmented points
-if (scatter_diff_bump_grids_seg):
+if args.scatter_diff_bump_grids_seg or args.all:
     fig = plt.Figure(corrDiffFigsize)
     ax = fig.add_subplot(111)
 
@@ -251,7 +251,7 @@ if (scatter_diff_bump_grids_seg):
 
 
 # Color coding according to E/I position
-scatterColorFigSize = (1.5, 1.5)
+scatterColorFigSize = (1, 1)
 scatterTransparent = True
 
 if args.scatter_diff_bump_grids or args.all:
