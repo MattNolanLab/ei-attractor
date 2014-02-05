@@ -44,6 +44,7 @@ parser = flagparse.FlagParser()
 parser.add_flag('-c', '--collapsed_sweeps')
 parser.add_flag('-d', '--diff_all')
 parser.add_flag('-s', '--sweep_segmentation')
+parser.add_flag('--diff_sweep')
 args = parser.parse_args()
 
 
@@ -210,3 +211,42 @@ if args.sweep_segmentation or args.all:
     fname = outputDir + "/grids_diff_sweep_segments.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
+
+
+
+##############################################################################
+# Parameter sweep of the difference between noise_150 and noise_0
+sweepFigSize = (3.7, 2.6)
+sweepLeft   = 0.08
+sweepBottom = 0.2
+sweepRight  = 0.8
+sweepTop    = 0.85
+transparent  = True
+gridDiffText = '$\Delta_{150 - 0}$(Gridness score)'
+gridDiff_cbar_kw = dict(
+        label       = gridDiffText,
+        location    = 'right',
+        shrink      = 0.8,
+        pad         = -0.05,
+        ticks       = ti.MultipleLocator(0.5),
+        rasterized  = True)
+
+if args.diff_sweep or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas[0:-1]):
+        fig = plt.figure(figsize=sweepFigSize)
+        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+            sweepTop))
+
+        which = ns_idx
+        sweeps.plotDiffTrial(ps.grids, iterList, which, NGridTrials, gridTypes,
+                ax=ax,
+                ignoreNaNs=True,
+                cbar=True, cbar_kw=gridDiff_cbar_kw,
+                symmetricLimits=True,
+                cmap='RdBu_r')
+
+        fname = outputDir + "/grids_diff_sweep{0}.pdf"
+        plt.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
+
