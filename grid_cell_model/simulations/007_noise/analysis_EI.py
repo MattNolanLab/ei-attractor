@@ -20,30 +20,27 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from optparse import OptionParser
 import matplotlib
 matplotlib.use('agg')
 
 import analysis.visitors as vis
 from parameters import JobTrialSpace2D
-
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+from submitting import flagparse
 
 ###############################################################################
-optParser = OptionParser()
-optParser.add_option('--row',          type="int")
-optParser.add_option('--col',          type="int")
-optParser.add_option('--shapeRows',    type="int")
-optParser.add_option('--shapeCols',    type="int")
-optParser.add_option('--forceUpdate',  type="int")
-optParser.add_option("--output_dir",   type="string")
-optParser.add_option("--job_num",      type="int") # unused
-optParser.add_option("--type",         type="choice", choices=['gamma-bump', 'velocity', 'grids'])
-optParser.add_option("--bumpSpeedMax", type="float")
+parser = flagparse.FlagParser()
+parser.add_argument('--row',          type=int, required=True)
+parser.add_argument('--col',          type=int, required=True)
+parser.add_argument('--shapeRows',    type=int, required=True)
+parser.add_argument('--shapeCols',    type=int, required=True)
+parser.add_argument('--forceUpdate',  type=int, required=True)
+parser.add_argument("--output_dir",   type=str, required=True)
+parser.add_argument("--job_num",      type=int) # unused
+parser.add_argument("--type",         type=str,
+        choices=['gamma-bump', 'velocity', 'grids'], required=True)
+parser.add_argument("--bumpSpeedMax", type=float)
 
-o, args = optParser.parse_args()
+o = parser.parse_args()
 
 ###############################################################################
 
@@ -60,7 +57,11 @@ if (o.type == "gamma-bump"):
     iterList  = ['g_AMPA_total', 'g_GABA_total']
     ACVisitor = vis.AutoCorrelationVisitor(monName, stateList,
             forceUpdate=forceUpdate)
-    bumpVisitor = vis.BumpFittingVisitor(forceUpdate=forceUpdate)
+    bumpVisitor = vis.BumpFittingVisitor(forceUpdate=forceUpdate,
+            tstart='full',
+            readme='Bump fitting. Whole simulation, starting at the start of theta stimulation.',
+            bumpERoot='bump_e_full',
+            bumpIRoot='bump_i_full')
     FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
     CCVisitor = vis.CrossCorrelationVisitor(monName, stateList,
             forceUpdate=forceUpdate)
@@ -71,7 +72,7 @@ if (o.type == "gamma-bump"):
     sp.visit(bumpVisitor)
     #sp.visit(FRVisitor)
     #sp.visit(CCVisitor)
-    sp.visit(spikeVisitor_e)
+    #sp.visit(spikeVisitor_e)
 elif (o.type == "velocity"):
     VelVisitor = vis.BumpVelocityVisitor(o.bumpSpeedMax, forceUpdate=forceUpdate, printSlope=True)
     sp.visit(VelVisitor, trialList='all-at-once')
@@ -86,8 +87,8 @@ elif (o.type == 'grids'):
             ISINWindows=20)
     FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
 
-    #sp.visit(gridVisitor)
-    #sp.visit(ISIVisitor)
+    sp.visit(gridVisitor)
+    sp.visit(ISIVisitor)
     sp.visit(FRVisitor)
 else:
     raise ValueError("Unknown analysis type option: {0}".format(o.type))

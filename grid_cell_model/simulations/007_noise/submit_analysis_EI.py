@@ -1,24 +1,9 @@
 #!/usr/bin/env python
 #
-#   submit_analysis_EI.py
-#
-#   Submit job(s) to the cluster/workstation: parameter sweep analysis (noise)
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Submit EI analysis jobs.
+'''
+
 import numpy as np
 from submitting.factory   import SubmitterFactory
 from submitting.arguments import ArgumentCreator
@@ -43,8 +28,8 @@ gridsType = 'grids'
 
 noise_sigma_all = [0.0, 150.0, 300.0] # pA
 dirs = \
-    ('output/even_spacing/grids',      gridsType,     '{0}pA', (31, 31))
-    #('output/even_spacing/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
+    ('output/even_spacing/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
+    #('output/even_spacing/grids',      gridsType,     '{0}pA', (31, 31))
     #('output/even_spacing/velocity',   velocityType,  '{0}pA', (31, 31))
 
 for noise_sigma in noise_sigma_all:
@@ -54,6 +39,7 @@ for noise_sigma in noise_sigma_all:
     simLabel   = dirs[2].format(int(noise_sigma))
     rowN       = dirs[3][0]
     colN       = dirs[3][1]
+    p['verbosity'] = 'DEBUG'
 
     p['shapeRows'] = rowN
     p['shapeCols'] = colN
