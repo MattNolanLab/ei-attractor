@@ -20,18 +20,20 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-from EI_plotting import sweeps, examples, details
-from EI_plotting.base import NoiseDataSpaces
+from EI_plotting      import sweeps, examples, details, segmentation
+from EI_plotting      import aggregate as aggr
+from EI_plotting.base import NoiseDataSpaces, getOption, plotStateSignal
 from parameters       import JobTrialSpace2D
-
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+from data_storage     import DataStorage
+from data_storage.sim_models.ei import extractSummedSignals
+import plotting.low_level
+from plotting.global_defs import prepareLims
+from analysis         import clustering
+import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)
@@ -45,33 +47,38 @@ NTrials=3
 gridTrialNumList = np.arange(NTrials)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
-noise_sigmas  = [0, 150, 300]
-exampleIdx    = [(1, 22), (1, 22), (1, 22)] # (row, col)
-bumpDataRoot  = None
-velDataRoot   = None
-gridsDataRoot = 'output_local/even_spacing/grids'
+noise_sigmas   = [0, 150, 300]
+exampleIdx     = [(1, 22), (1, 22), (1, 22)] # (row, col)
+bumpDataRoot   = None
+velDataRoot    = None
+gridsDataRoot  = 'output_local/even_spacing/grids'
+singleDataRoot = 'output_local/single_neuron'
 shape = (31, 31)
 
-grids          = 1
-examplesFlag   = 1
-detailed_noise = 1
+parser = flagparse.FlagParser()
+parser.add_flag('--grids')
+parser.add_flag('--examplesFlag')
+parser.add_flag('--detailed_noise')
+parser.add_flag('--Vm_examples')
+args = parser.parse_args()
 
 ##############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
 
-sweepFigSize = (2.8, 3.5)
-sweepLeft   = 0.2
-sweepBottom = 0.1
-sweepRight  = 0.87
-sweepTop    = 0.95
+sweepFigSize = (3.7, 2.6)
+sweepLeft   = 0.08
+sweepBottom = 0.2
+sweepRight  = 0.8
+sweepTop    = 0.85
+transparent  = True
 
 cbar_kw= {
     'label'      : 'Gridness score',
-    'location'   : 'bottom',
+    'location'   : 'right',
     'shrink'     : 0.8,
-    'pad'        : 0.15,
+    'pad'        : -0.05,
     'ticks'      : ti.MultipleLocator(0.5),
     'rasterized' : True}
 
@@ -80,18 +87,8 @@ vmax = 1.1
 
 ##############################################################################
 exampleRC = ( (5, 15), (15, 5) )
-slice_horizontal = slice(13, 18)
-slice_vertical = slice(13, 18)
-#sliceAnn = [\
-#    dict(
-#        sliceSpan=slice_horizontal,
-#        type='horizontal',
-#        letter=None),
-#    dict(
-#        sliceSpan=slice_vertical,
-#        type='vertical',
-#        letter=None)]
 sliceAnn = None
+grids_cmap = 'jet'
 
 ann0 = dict(
         txt='b',
@@ -108,11 +105,9 @@ ann = [ann0, ann1]
 
 varList = ['gridnessScore']
 
-if (grids):
+if args.grids or args.all:
     # noise_sigma = 0 pA
     fig = plt.figure("sweeps0", figsize=sweepFigSize)
-    exRows = [28, 15]
-    exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     sweeps.plotGridTrial(ps.grids[0], varList, iterList, ps.noise_sigmas[0],
@@ -120,6 +115,7 @@ if (grids):
             ax=ax,
             r=exampleIdx[0][0], c=exampleIdx[0][1],
             cbar=False, cbar_kw=cbar_kw,
+            cmap=grids_cmap,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
             annotations=ann,
@@ -133,8 +129,6 @@ if (grids):
     #for a in sliceAnn:
     #    a['letterColor'] = 'black'
     fig = plt.figure("sweeps150", figsize=sweepFigSize)
-    exRows = [8, 2]
-    exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     sweeps.plotGridTrial(ps.grids[1], varList, iterList, ps.noise_sigmas[1],
@@ -142,8 +136,10 @@ if (grids):
             ax=ax,
             r=exampleIdx[1][0], c=exampleIdx[1][1],
             cbar=False, cbar_kw=cbar_kw,
+            cmap=grids_cmap,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
+            ylabel='', yticks=False,
             annotations=ann,
             sliceAnn=sliceAnn)
     fname = outputDir + "/grids_sweeps150.pdf"
@@ -153,8 +149,6 @@ if (grids):
 
     # noise_sigma = 300 pA
     fig = plt.figure("sweeps300", figsize=sweepFigSize)
-    exRows = [16, 15]
-    exCols = [6, 23]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     _, _, cax = sweeps.plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
@@ -162,8 +156,10 @@ if (grids):
             ax=ax,
             r=exampleIdx[2][0], c=exampleIdx[2][1],
             cbar_kw=cbar_kw,
+            cmap=grids_cmap,
             vmin=vmin, vmax=vmax,
             ignoreNaNs=True,
+            ylabel='', yticks=False,
             annotations=ann,
             sliceAnn=sliceAnn)
     #for label in cax.yaxis.get_ticklabels():
@@ -185,7 +181,7 @@ exampleBottom = 0.01
 exampleRight  = 0.99
 exampleTop    = 0.85
 
-if (examplesFlag):
+if args.examplesFlag or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         for idx, rc in enumerate(exampleRC):
             # Grid field
@@ -213,6 +209,77 @@ if (examplesFlag):
     
 
 ##############################################################################
+# Membrane potential examples
+
+def openJob(rootDir, noise_sigma):
+    fileTemplate = "noise_sigma{0}_output.h5"
+    fileName = rootDir + '/' + fileTemplate.format(int(noise_sigma))
+    return DataStorage.open(fileName, 'r')
+
+def drawVm(data, noise_sigma, xScaleBar=None, yScaleBar=None,
+        ax=plt.gca(), sigmaTitle=True):
+    yScaleX = 0.5
+    yScaleY = 1.1
+    yScaleXOffset = 0.06
+    scaleTextSize = 'x-small'
+
+    plotTStart = 5e3
+    plotTEnd   = 5.25e3
+
+    stateYlim = [-80, -40]
+
+    theta_start_t = getOption(data, 'theta_start_t')
+    #theta_start_t = 1e3
+    simTime = getOption(data, 'time')
+
+    mon_e = data['stateMon_e']
+
+    # E cell Vm
+    t, VmMiddle = extractSummedSignals(mon_e, ['V_m'], plotTStart,
+            plotTEnd)
+    plotStateSignal(ax, t, VmMiddle, labely='', color='red',
+            scaleBar=xScaleBar, scaleText="ms", scaleX=0.5, scaleY=1.1,
+            scaleTextSize=scaleTextSize)
+    if (yScaleBar is not None):
+        plotting.low_level.yScaleBar(yScaleBar, yScaleX, yScaleY,
+                ax=ax,
+                unitsText='mV', textXOffset=yScaleXOffset,
+                size='x-small')
+    ax.yaxis.set_visible(False)
+    ax.spines['left'].set_visible(False)
+    plt.ylim(stateYlim)
+
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)), loc='left',
+                size=scaleTextSize, y=0.9)
+
+
+VmExampleFigSize = (2.5, 1.25)
+VmExampleLeft   = 0.01
+VmExampleBottom = 0.01
+VmExampleRight  = 0.999
+VmExampleTop    = 0.6
+VmExampleXScalebar = 50 # ms
+VmExampleYScalebar = 10 # mV
+
+if args.Vm_examples or args.all:
+    for ns_idx, noise_sigma in enumerate(noise_sigmas):
+        fig = plt.figure(figsize=VmExampleFigSize)
+        ax = fig.add_axes(Bbox.from_extents(VmExampleLeft, VmExampleBottom,
+            VmExampleRight, VmExampleTop))
+        ds = openJob(singleDataRoot, noise_sigma)
+        kw = {}
+        if (ns_idx == 2):
+            kw['xScaleBar'] = VmExampleXScalebar
+            kw['yScaleBar'] = VmExampleYScalebar
+        drawVm(ds, noise_sigma=noise_sigma, ax=ax, **kw)
+
+        fname = outputDir + "/grids_Vm_example_{0}.pdf"
+        plt.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
+
+##############################################################################
 # Detailed noise plots
 EI13Root  = 'output_local/detailed_noise/grids/EI-1_3'
 EI31Root  = 'output_local/detailed_noise/grids/EI-3_1'
@@ -228,7 +295,7 @@ detailLeft   = 0.15
 detailBottom = 0.2
 detailRight  = 0.95
 detailTop    = 0.8
-if (detailed_noise):
+if args.detailed_noise or args.all:
     ylabelPos = -0.15
 
     types = ('grids', 'gridnessScore')
@@ -251,5 +318,6 @@ if (detailed_noise):
     fname = outputDir + "/grids_detailed_noise_gscore.pdf"
     plt.savefig(fname, dpi=300, transparent=True)
     plt.close()
+
 
 

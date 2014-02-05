@@ -29,10 +29,7 @@ import plotting.connections as pconn
 from EI_plotting            import aggregate as aggr
 from parameters.param_space import JobTrialSpace2D, DataSpace
 from plotting.global_defs   import globalAxesSettings
-
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)
@@ -45,12 +42,16 @@ outputDir = "panels"
 DS = DataSpace
 
 ##############################################################################
+
 connDataRoot= 'output_local/even_spacing/connections'
 shape = (1, 31)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
-hists   = 1
-weights = 0
+parser = flagparse.FlagParser()
+parser.add_flag('--hists')
+parser.add_flag('-w', '--weights')
+args = parser.parse_args()
+
 ##############################################################################
 
 def plotEToI(sp, gIdx, neuronIdx, trialNum=0, **kw):
@@ -138,7 +139,7 @@ transparent = True
 
 sp = JobTrialSpace2D(shape, connDataRoot)
 
-if (hists):
+if args.hists or args.all:
     fig = plt.figure('E2I', figsize=figSize)
     ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
     plotEToI(sp, gIdx, neuronIdx)
@@ -155,7 +156,7 @@ if (hists):
     plt.savefig(fname, dpi=300, transparent=transparent)
 
 
-if (weights):
+if args.weights or args.all:
     # As a control: plot the weights from one neuron (outgoing)
     # E-->I
     fig = plt.figure('g_out_E2I', figsize=figSize)

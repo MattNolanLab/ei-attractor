@@ -109,7 +109,8 @@ def setSignalAxes(ax, leftSpineOn):
     ax.yaxis.set_minor_locator(AutoMinorLocator(2))
 
 def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
-        color='black', scaleBar=None, scaleX=0.75, scaleY=0.05, scaleText='ms'):
+        color='black', scaleBar=None, scaleX=0.75, scaleY=0.05, scaleText='ms',
+        scaleTextSize='small'):
     setSignalAxes(ax, leftSpineOn)
 
     if (sig is not None):
@@ -123,7 +124,7 @@ def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
     ax.set_xlim([t[0], t[-1]])
 
     if (scaleBar is not None):
-        xScaleBar(scaleBar, x=scaleX, y=scaleY, ax=ax, size='small',
+        xScaleBar(scaleBar, x=scaleX, y=scaleY, ax=ax, size=scaleTextSize,
                 unitsText=scaleText)
 
 
@@ -170,3 +171,48 @@ def createColorbar(ax, **kwargs):
     cb.solids.set_rasterized(rasterized)
 
     return cax
+
+
+
+##############################################################################
+# Filtering
+class FilteringResult(object):
+    def __init__(self, filteredIndexes, retainedIndexes, missing=None):
+        self._filtered = filteredIndexes
+        self._retained = retainedIndexes
+        self._missing  = missing
+
+    @property
+    def filtered(self):
+        return self._filtered
+
+    @property
+    def retained(self):
+        return self._retained
+
+    @property
+    def missing(self):
+        return self._missing
+
+
+def filterData(stackedData, threshold):
+    '''
+    Gridness must be more than the threshold in at least one of the noise
+    levels, otherwise the values will be masked.
+    '''
+    retainedIndexes = []
+    filteredIndexes = []
+    missingIndexes = []
+    for dataIdx in xrange(stackedData.shape[1]):
+        if np.all(stackedData.mask[:, dataIdx] == False):
+            if not np.any(stackedData[:, dataIdx] > threshold):
+                stackedData.mask[:, dataIdx] = True
+                filteredIndexes.append(dataIdx)
+            else:
+                retainedIndexes.append(dataIdx)
+        else:
+            missingIndexes.append(dataIdx)
+    return stackedData, FilteringResult(filteredIndexes, retainedIndexes,
+            missingIndexes)
+
+

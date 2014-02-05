@@ -115,6 +115,7 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
     vars          = ['analysis']
     output_dtype  = 'array'
     funReduce     = None
+    normalizeTicks = kw.pop('normalizeTicks', False)
 
     if (type == 'gamma'):
         # Gamma oscillation analyses
@@ -136,6 +137,12 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
         trialNumList  = np.arange(NTrials)
         if (subType == 'sigma'):
             vars += ['bump_e', 'sigma']
+        elif (subType == 'rateMap_e'):
+            vars += ['bump_e', 'bump_e_rateMap']
+            output_dtype = 'list'
+        elif (subType == 'rateMap_i'):
+            vars += ['bump_i', 'bump_i_rateMap']
+            output_dtype = 'list'
         else:
             raise ValueError('Unknown bump subtype: {0}'.format(subType))
 
@@ -180,18 +187,36 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
         data.mask = nans
 
     if (type == 'velocity'):
-        Y, X = computeVelYX(sp, iterList, normalize=False, **kw)
+        Y, X = computeVelYX(sp, iterList, normalize=normalizeTicks, **kw)
     else:
         if (type == 'bump'):
             if (subType == 'sigma'):
                 data = 1./data
                 ignoreThreshold = 1.0
                 data.mask = np.logical_or(data.mask, data > ignoreThreshold)
-        Y, X = computeYX(sp, iterList, normalize=False, **kw)
+        Y, X = computeYX(sp, iterList, normalize=normalizeTicks, **kw)
         data = np.mean(data, axis=2) # TODO: fix the trials, stack them
         # bump sigma is a reciprocal
 
     return data, X, Y
 
 
+def collapseSweeps(data):
+    '''
+    Take a list of 2D parameter sweep results, flatten all of them, and stack
+    them vertically.
+    '''
+    stackedData = []
+    for idx in xrange(len(data)):
+        stackedData.append(data[idx].ravel())
+    return np.ma.vstack(stackedData)
 
+
+def collapseNoise(dataSpaces, iterList, types, NTrials, **kw):
+    data = []
+    for ns_idx, _ in enumerate(dataSpaces):
+        d, X, Y = aggregateType(dataSpaces[ns_idx], iterList, types, NTrials,
+                **kw)
+        data.append(d)
+
+    return collapseSweeps(data), X, Y

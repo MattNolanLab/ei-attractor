@@ -30,10 +30,7 @@ from EI_plotting          import aggregate as aggr
 from plotting.global_defs import globalAxesSettings
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
 from parameters           import JobTrialSpace2D
-
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)
@@ -54,8 +51,10 @@ velDataRoot   = None
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
-hists          = 1
-slices         = 1
+parser = flagparse.FlagParser()
+parser.add_flag('--hists')
+parser.add_flag('--slices')
+args = parser.parse_args()
 
 ##############################################################################
 
@@ -220,7 +219,7 @@ sliceLeft   = 0.2
 sliceBottom = 0.3
 sliceRight  = 0.99
 sliceTop    = 0.85
-if (hists):
+if args.hists or args.all:
     ylabelPos = -0.16
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,
@@ -231,7 +230,7 @@ if (hists):
     plt.savefig(fname, dpi=300, transparent=True)
 
 
-if (slices):
+if args.slices or args.all:
     ylabelPos = -0.16
     fig = plt.figure(figsize=sliceFigSize)
     ax = fig.add_axes(Bbox.from_extents(sliceLeft, sliceBottom, sliceRight,

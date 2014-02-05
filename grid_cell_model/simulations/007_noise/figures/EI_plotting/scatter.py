@@ -5,6 +5,8 @@
 #
 #       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #
+from abc import ABCMeta, abstractmethod
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Bbox
@@ -18,28 +20,23 @@ from . import aggregate as aggr
 
 
 
-class ScatterPlot(object):
+class ScatterPlotBase(object):
+    __metaclass = ABCMeta
 
-    def __init__(self, space1, space2, types1, types2, iterList, NTrials1,
-            NTrials2, **kw):
-        if (not np.all(space1.shape == space2.shape)):
-            raise ValueError('space1.shape != space2.shape!')
-
-        self.space1   = space1
-        self.space2   = space2
-        self.types1   = types1
-        self.types2   = types2
-        self.iterList = iterList
-        self.NTrials1 = NTrials1
-        self.NTrials2 = NTrials2
+    def __init__(self, spaceSizes, **kw):
         self.kw       = kw
-
-        self.xSize = self.space1.shape[1] # sp.shape is (r, c)
-        self.ySize = self.space1.shape[0]
+        self.xSize, self.ySize = spaceSizes
 
         self.color2D     = self.kw.pop('color2D', False)
-        self.colormap2D  = self.kw.pop('colormap2d', None)
+        self.colormap2D  = self.kw.pop('colormap2D', None)
         self.resolveColors()
+
+
+    @staticmethod
+    def determineSpaceSizes(space):
+        xSize = space.shape[1] # sp.shape is (r, c)
+        ySize = space.shape[0]
+        return (xSize, ySize)
 
 
     def resolveColors(self):
@@ -55,37 +52,34 @@ class ScatterPlot(object):
                 cmap = colormap2D
             colors = (CX + CY*self.xSize).flatten()
         else:
-            cmap = None
-            colors = None
+            cmap = self.kw.get('cmap', None)
+            colors = self.kw.get('colors', None)
 
         self.cmap = cmap
         self.colors = colors
         self.CX, self.CY = CX, CY
 
-    def plot(self):
-        kw = self.kw
+
+    def setColors(self, c):
+        self.colors = c
+
+    def _plot(self, X, Y, **kw):
         ax          = kw.pop('ax', plt.gca())
-        ignoreNaNs  = kw.pop('ignoreNaNs', False)
         xlabel      = kw.pop('xlabel', '')
         ylabel      = kw.pop('ylabel', '')
         sigmaTitle  = kw.pop('sigmaTitle', False)
         noise_sigma = kw.pop('noise_sigma', None)
 
-        X, _, _ = aggr.aggregateType(self.space1, self.iterList, self.types1,
-                self.NTrials1, ignoreNaNs=ignoreNaNs, **kw)
-        Y, _, _  = aggr.aggregateType(self.space2, self.iterList, self.types2,
-                self.NTrials2, ignoreNaNs=ignoreNaNs, **kw)
-
         globalAxesSettings(ax)
-
                 
         kw['edgecolor'] = 'white'
         if (self.colors is not None):
             kw['c'] = self.colors
         kw['cmap'] = self.cmap
         kw['picker'] = True
-        kw['vmin'] = 0
-        kw['vmax'] = self.xSize * self.ySize - 1
+        if (self.colormap2D):
+            kw['vmin'] = 0
+            kw['vmax'] = self.xSize * self.ySize - 1
 
         collection = ax.scatter(X.flatten(), Y.flatten(), **kw)
 
@@ -101,10 +95,20 @@ class ScatterPlot(object):
             ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
 
         # Picking - for interactive mode
-        ax.figure.canvas.mpl_connect('pick_event', self.onpick)
+        #ax.figure.canvas.mpl_connect('pick_event', self.onpick)
 
         self.ax = ax
         return ax
+
+
+    @abstractmethod
+    def plot(self):
+        '''
+        Plot the scatter plot with parameters defined in the keyword arguments
+        in the constructor.
+        '''
+        raise NotImplementedError()
+
 
     def plotColorbar(self, ax):
         globalAxesSettings(ax)
@@ -124,6 +128,42 @@ class ScatterPlot(object):
         c = colors[idx] % self.xSize
         print idx
         print("r: {0}, c: {1}".format(r, c))
+
+
+
+class RawScatterPlot(ScatterPlotBase):
+    def __init__(self, templateSpace, X, Y, **kw):
+        spaceSizes = ScatterPlotBase.determineSpaceSizes(templateSpace)
+        ScatterPlotBase.__init__(self, spaceSizes, **kw)
+
+        self.X = X
+        self.Y = Y
+
+    def plot(self):
+        return self._plot(self.X, self.Y, **self.kw)
+
+
+class ScatterPlot(RawScatterPlot):
+    def __init__(self, space1, space2, types1, types2, iterList, NTrials1,
+            NTrials2, **kw):
+        if (not np.all(space1.shape == space2.shape)):
+            raise ValueError('space1.shape != space2.shape!')
+
+        self.space1   = space1
+        self.space2   = space2
+        self.types1   = types1
+        self.types2   = types2
+        self.iterList = iterList
+        self.NTrials1 = NTrials1
+        self.NTrials2 = NTrials2
+
+        ignoreNaNs  = kw.pop('ignoreNaNs', False)
+        X, _, _ = aggr.aggregateType(self.space1, self.iterList, self.types1,
+                self.NTrials1, ignoreNaNs=ignoreNaNs, **kw)
+        Y, _, _  = aggr.aggregateType(self.space2, self.iterList, self.types2,
+                self.NTrials2, ignoreNaNs=ignoreNaNs, **kw)
+        RawScatterPlot.__init__(self, self.space1, X, Y, **kw)
+
 
 
 class FullScatterPlot(object):
@@ -176,4 +216,45 @@ class FullScatterPlot(object):
         self.colorBarAx = self.fig.add_axes(Bbox.from_extents(left, bottom,
             right, top))
         self.scatterPlots[0].plotColorbar(self.colorBarAx)
+
+
+
+class DiffScatterPlot(RawScatterPlot):
+    '''
+    Plot a scatter plot of differences between the spaces, i.e. noise levels.
+    '''
+    def __init__(self, spaces1, spaces2, types1, types2, iterList, NTrials1,
+            NTrials2, which, **kw):
+        '''
+        **Parameters:**
+
+        which : int
+            Index into the difference array. Value of `0` means ``diffArray[1]
+            - diffArray[0]``.
+        '''
+        if (len(spaces1) != len(spaces2)):
+            raise RuntimeError("len(spaces1) != len(spaces2)")
+
+        self.spaces1  = spaces1
+        self.spaces2  = spaces2
+        self.types1   = types1
+        self.types2   = types2
+        self.iterList = iterList
+        self.NTrials1 = NTrials1
+        self.NTrials2 = NTrials2
+        self.which    = which
+
+        ignoreNaNs  = kw.pop('ignoreNaNs', False)
+
+        data1, _, _ = aggr.collapseNoise(self.spaces1, iterList, self.types1,
+                self.NTrials1, ignoreNaNs=ignoreNaNs)
+        data2, _, _ = aggr.collapseNoise(self.spaces2, iterList, self.types2,
+                self.NTrials2, ignoreNaNs=ignoreNaNs)
+
+        self.diffData1 = np.diff(data1, axis=0)
+        self.diffData2 = np.diff(data2, axis=0)
+
+        X = self.diffData1[self.which, :]
+        Y = self.diffData2[self.which, :]
+        RawScatterPlot.__init__(self, self.spaces1[0], X, Y, **kw)
 

@@ -17,10 +17,12 @@ from EI_plotting          import aggregate as aggr
 from EI_plotting.base     import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings
+import flagparse
 
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+parser = flagparse.FlagParser()
+parser.add_flag('--scatterPlot')
+args = parser.parse_args()
+
 
 from matplotlib import rc
 rc('pdf', fonttype=42)
@@ -42,7 +44,6 @@ gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 
-scatterPlot  = 1
 
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
@@ -61,7 +62,7 @@ scatterColorFigSize = (1.5, 1.5)
 
 ignoreNaNs = True
 
-if (scatterPlot):
+if args.scatterPlot or args.all:
     fname = outputDir + "/suppFigure_grids_vs_bumps{0}.pdf"
 
     ylabel = 'Gridness score'

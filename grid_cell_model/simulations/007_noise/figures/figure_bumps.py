@@ -1,24 +1,9 @@
 #!/usr/bin/env python
 #
-#   figure3.py
-#
-#   Noise publication Figure 3.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Noise publication Figure 3.
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
@@ -27,13 +12,12 @@ from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
 from EI_plotting          import sweeps, details, examples, rasters
-from plotting.global_defs import globalAxesSettings
+from EI_plotting          import aggregate as aggr
+from plotting.global_defs import globalAxesSettings, prepareLims
 from EI_plotting.base     import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
-
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+from analysis             import clustering
+import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)
@@ -48,19 +32,21 @@ iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
 exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
-gridsDataRoot= 'output_local/even_spacing/grids'
-bumpDataRoot= 'output_local/even_spacing/gamma_bump'
-velDataRoot = 'output_local/even_spacing/velocity'
+gridsDataRoot = 'output_local/even_spacing/grids'
+bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
+velDataRoot   = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-bumpSweep         = 0
-bumpExamples      = 1
-velExamples       = 0
-velSweep          = 0
-gridness_vs_error = 0
-detailed_noise    = 0
-rastersFlag       = 0
-rates             = 0
+parser = flagparse.FlagParser()
+parser.add_flag('--bumpSweep')
+parser.add_flag('--bumpExamples')
+parser.add_flag('--velExamples')
+parser.add_flag('--velSweep')
+parser.add_flag('--gridness_vs_error')
+parser.add_flag('--detailed_noise')
+parser.add_flag('--rastersFlag')
+parser.add_flag('--rates')
+args = parser.parse_args()
 
 ###############################################################################
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
@@ -72,11 +58,12 @@ exMargin = 0.075
 exWspace=0.2
 exHspace=0.15
 
-sweepFigSize = (2.4, 2.9)
-sweepLeft   = 0.2
-sweepBottom = 0.1
-sweepRight  = 0.87
-sweepTop    = 0.9
+sweepFigSize = (3.7, 2.6)
+sweepLeft   = 0.08
+sweepBottom = 0.2
+sweepRight  = 0.8
+sweepTop    = 0.85
+transparent  = True
 
 
 ##############################################################################
@@ -87,9 +74,9 @@ bump_vmin = 0
 bump_vmax = 0.48
 bump_cbar_kw = dict(
         label       = sigmaBumpText,
-        location    = 'bottom',
+        location    = 'right',
         shrink      = 0.8,
-        pad         = 0.18,
+        pad         = -0.05,
         ticks       = ti.MultipleLocator(0.2),
         extend      = 'max',
         extendfrac  = 0.1,
@@ -109,7 +96,7 @@ ann1 = dict(
         color='black')
 ann = [ann0, ann1]
 
-if (bumpSweep):
+if args.bumpSweep or args.all:
     # noise_sigma = 0 pA
     fig = plt.figure("sweeps0", figsize=sweepFigSize)
     exRows = [28, 15]
@@ -156,6 +143,7 @@ if (bumpSweep):
             noise_sigma=noise_sigmas[2],
             ax=ax,
             trialNumList=bumpTrialNumList,
+            ylabel='', yticks=False,
             cbar=True, cbar_kw=bump_cbar_kw,
             vmin=bump_vmin, vmax=bump_vmax,
             annotations=ann)
@@ -175,7 +163,7 @@ exampleBottom = 0.01
 exampleRight  = 0.99
 exampleTop    = 0.82
 
-if (bumpExamples):
+if args.bumpExamples or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         for idx, rc in enumerate(exampleRC):
             for EIType in ['E', 'I']:
@@ -221,7 +209,7 @@ def createSweepFig(name=None):
         sweepTop))
     return fig, ax
 
-if (velSweep):
+if args.velSweep or args.all:
     # noise_sigma = 0 pA
     fig, ax = createSweepFig()
     _, ax, cax = sweeps.plotVelStdSweep(ps.v[0], iterList,
@@ -260,7 +248,7 @@ if (velSweep):
     fig.savefig(fname, dpi=300, transparent=True)
 
 
-#if (gridness_vs_error):
+#if args.gridness_vs_error or args.all:
 #    fig = plt.figure(figsize=(3.4, 2.5))
 #    plotGridnessVsFitErr(ps.grids, ps.v, range(NTrials), maxErr=None)
 #    fig.tight_layout()
@@ -284,7 +272,7 @@ detailLeft   = 0.18
 detailBottom = 0.26
 detailRight  = 0.95
 detailTop    = 0.95
-if (detailed_noise):
+if args.detailed_noise or args.all:
     ylabelPos = -0.17
 
     types = ('bump', 'sigma')
@@ -323,7 +311,7 @@ rasterTop     = 0.8
 ylabelPos   = -0.35
 
 
-if (rastersFlag):
+if args.rastersFlag or args.all:
     # noise_sigma = 0 pA
     fig = plt.figure("rasters0", figsize=rasterFigSize)
     ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
@@ -380,7 +368,7 @@ rateRight   = rasterRight
 rateTop     = 0.9
 
 
-if (rates):
+if args.rates or args.all:
     for idx, noise_sigma in enumerate(ps.noise_sigmas):
         # E cells
         fig = plt.figure(figsize=rateFigSize)

@@ -1,24 +1,9 @@
 #!/usr/bin/env python
 #
-#   suppFigure_velocity.py
-#
-#   Noise publication: supplementary figure: bump speed/velocity estimations.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Noise publication: supplementary figure: bump speed/velocity estimations.
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
@@ -29,10 +14,7 @@ from EI_plotting            import aggregate as aggr
 from EI_plotting.base       import plotOneHist, NoiseDataSpaces
 from parameters.param_space import JobTrialSpace2D
 from plotting.global_defs   import globalAxesSettings
-
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)
@@ -52,8 +34,11 @@ bumpDataRoot= None
 velDataRoot = 'output_local/even_spacing/velocity'
 shape = (31, 31)
 
-velSweep       = 1
-hists          = 0
+
+parser = flagparse.FlagParser()
+parser.add_flag('--velSweep')
+parser.add_flag('--hists')
+args = parser.parse_args()
 
 ##############################################################################
 
@@ -157,49 +142,28 @@ cbar_kw = dict(
     extendfrac  = 0.1,
     rasterized  = True)
 
-if (velSweep):
-    # noise_sigma = 0 pA
-    fig, ax = createSweepFig("velErrSweeps0")
-    _, ax, cax = sweeps.plotVelTrial(ps.v[0], errVarList, iterList,
-            noise_sigmas[0],
-            ax=ax,
-            cbar=False, cbar_kw=cbar_kw,
-            xlabel='', xticks=False,
-            vmin=err_vmin, vmax=err_vmax)
-    fname = outputDir + "/suppFigure_velocity_err_sweeps0.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-
-
-    # noise_sigma = 150 pA
-    fig, ax = createSweepFig("velErrSweeps150")
-    _, ax, cax = sweeps.plotVelTrial(ps.v[1], errVarList, iterList,
-            noise_sigma=noise_sigmas[1],
-            ax=ax,
-            ylabel='', yticks=False,
-            cbar=False, cbar_kw=cbar_kw,
-            xlabel='', xticks=False,
-            vmin=err_vmin, vmax=err_vmax)
-    fname = outputDir + "/suppFigure_velocity_err_sweeps150.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-
-
-    # noise_sigma = 300 pA
-    fig, ax = createSweepFig("velErrSweeps300")
-    _, ax, cax = sweeps.plotVelTrial(ps.v[2], errVarList, iterList,
-            noise_sigma=noise_sigmas[2],
-            ax=ax,
-            ylabel='', yticks=False,
-            cbar=True,
-            xlabel='', xticks=False,
-            vmin=err_vmin, vmax=err_vmax,
-            cbar_kw = cbar_kw)
-    fname = outputDir + "/suppFigure_velocity_err_sweeps300.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-
+if args.velSweep or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig, ax = createSweepFig(None)
+        kw = {'cbar': False}
+        if (ns_idx != 0):
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        if (ns_idx == 2):
+            kw['cbar'] = True
+        _, ax, cax = sweeps.plotVelTrial(ps.v[ns_idx], errVarList, iterList,
+                noise_sigma,
+                ax=ax,
+                cbar_kw=cbar_kw,
+                xlabel='', xticks=False,
+                vmin=err_vmin, vmax=err_vmax,
+                **kw)
+        fname = outputDir + "/suppFigure_velocity_err_sweeps{}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
 
 
 # Stats
-if (hists):
+if args.hists or args.all:
     fig = plt.figure(figsize=histFigsize)
     ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
         histTop))

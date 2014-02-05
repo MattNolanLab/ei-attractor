@@ -1,24 +1,7 @@
 #!/usr/bin/env python
-#
-#   suppFigure_model.py
-#
-#   Supplementary figure: model description and output.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Supplementary figure: model description and output.
+'''
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import *
 from matplotlib.gridspec import GridSpec
@@ -34,6 +17,13 @@ from plotting.global_defs import globalAxesSettings
 from plotting.low_level   import xScaleBar
 from analysis.visitors    import AutoCorrelationVisitor
 from parameters           import DictDataSet
+import flagparse
+
+parser = flagparse.FlagParser()
+parser.add_flag('--examples')
+parser.add_flag('--grids')
+parser.add_flag('--gamma')
+args = parser.parse_args()
 
 from matplotlib import rc
 rc('pdf', fonttype=42)
@@ -42,7 +32,6 @@ plt.rcParams['font.size'] = 11
 
 outputDir = "panels"
 
-trialNum = 0
 jobNum = 573
 dataRootDir = 'output_local'
 root0   = "{0}/single_neuron".format(dataRootDir)
@@ -51,9 +40,6 @@ root300 = "{0}/single_neuron".format(dataRootDir)
 gridRootDir = '{0}/grids'.format(dataRootDir)
 fileTemplate = "noise_sigma{0}_output.h5"
 
-examples = 1
-grids    = 1
-gamma    = 1
 
 ##############################################################################
 
@@ -283,7 +269,7 @@ gs_rows = 3
 gs_cols = 4
 
 
-if (examples):
+if args.examples or args.all:
     fig_examples = figure(figsize=(9.6, 2.6))
 
     # noise_sigm = 0 pA
@@ -325,7 +311,7 @@ if (examples):
 
 
 grids_ds = openGridJob(gridRootDir, noise_sigma=150, jobNum=340)
-if (grids):
+if args.grids or args.all:
     ## Grid fields and gamma
     fig_grids = figure(figsize=(1.3, 2.6))
     gs = GridSpec(3, 1)
@@ -336,7 +322,7 @@ if (grids):
     fname = outputDir + "/suppFigure_model_grids.pdf"
     savefig(fname, dpi=300, transparent=True)
 
-if (gamma):
+if args.gamma or args.all:
     fig_grids = figure(figsize=(4, 2.6))
     gs = GridSpec(2, 1, height_ratios=[1, 0.8])
     gs.update(left=0, right=1, bottom=0.1, top=1)
