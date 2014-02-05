@@ -29,10 +29,10 @@ from EI_plotting      import sweeps, examples
 from EI_plotting      import aggregate as aggr
 from EI_plotting.base import getNoiseRoots
 from parameters       import JobTrialSpace2D
+import flagparse
 
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+parser = flagparse.FlagParser()
+args = parser.parse_args()
 
 from matplotlib import rc
 rc('pdf', fonttype=42)

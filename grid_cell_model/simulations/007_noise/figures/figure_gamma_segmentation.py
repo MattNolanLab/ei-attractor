@@ -31,11 +31,6 @@ from plotting.global_defs import prepareLims
 from EI_plotting.base     import NoiseDataSpaces
 import flagparse
 
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
-
-
 # Other
 from matplotlib import rc
 rc('pdf', fonttype=42)

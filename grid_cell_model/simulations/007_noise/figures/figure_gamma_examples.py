@@ -28,15 +28,6 @@ from data_storage.sim_models.ei import extractSummedSignals
 from EI_plotting.base import plotThetaSignal, thetaLim, plotStateSignal
 
 
-from matplotlib import rc
-rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-## for Palatino and other serif fonts use:
-#rc('font',**{'family':'serif','serif':['Palatino']})
-#rc('text', usetex=True)
-rc('pdf', fonttype=42)
-
-plt.rcParams['font.size'] = 12
-
 outputDir = "."
 figSize = (12, 8)
 

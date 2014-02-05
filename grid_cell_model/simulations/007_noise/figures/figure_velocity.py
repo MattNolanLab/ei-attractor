@@ -16,11 +16,6 @@ from analysis.visitors import SpikeTrainXCVisitor
 from parameters import JobTrialSpace2D
 import flagparse
 
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
-
-
 # Other
 from matplotlib import rc
 rc('pdf', fonttype=42)

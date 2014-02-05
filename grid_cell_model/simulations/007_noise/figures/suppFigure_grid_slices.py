@@ -32,10 +32,6 @@ from EI_plotting.base     import plotOneHist, NoiseDataSpaces
 from parameters           import JobTrialSpace2D
 import flagparse
 
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
-
 from matplotlib import rc
 rc('pdf', fonttype=42)
 rc('mathtext', default='regular')

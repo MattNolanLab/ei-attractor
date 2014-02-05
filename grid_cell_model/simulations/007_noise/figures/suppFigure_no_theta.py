@@ -30,10 +30,17 @@ from EI_plotting          import sweeps, examples
 from parameters           import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
+import flagparse
 
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+parser = flagparse.FlagParser()
+parser.add_flag('--grids')
+parser.add_flag('--bumpSweep')
+parser.add_flag('--slopeSweeps')
+parser.add_flag('--slopeErrSweeps')
+parser.add_flag('--gammaPowerSweep')
+parser.add_flag('--gammaFreqSweep')
+parser.add_flag('--gammaExamples')
+args = parser.parse_args()
 
 
 # Other
@@ -60,13 +67,6 @@ velDataRoot   = 'output_local/no_theta/velocity'
 gridsDataRoot = 'output_local/no_theta/grids'
 shape    = (31, 31)
 
-grids           = 1
-bumpSweep       = 1
-slopeSweeps     = 1
-slopeErrSweeps  = 1
-gammaPowerSweep = 1
-gammaFreqSweep  = 1
-gammaExamples   = 1
 
 
 ###############################################################################
@@ -99,7 +99,7 @@ grid_cbar_kw= {
 grid_vmin = -0.57
 grid_vmax = 1.048
 
-if (grids):
+if args.grids or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig = plt.figure(figsize=sweepFigSize)
         ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -142,7 +142,7 @@ bump_cbar_kw= dict(
         ticks=ti.MultipleLocator(0.25),
         label=sigmaBumpText)
 
-if (bumpSweep):
+if args.bumpSweep or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig = plt.figure(figsize=sweepFigSize)
         ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -185,7 +185,7 @@ slope_cbar_kw= dict(
         label='Slope\n(neurons/s/pA)',
         ticks=ti.MultipleLocator(1))
 
-if (slopeSweeps):
+if args.slopeSweeps or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig = plt.figure(figsize=sweepFigSize)
         ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -225,7 +225,7 @@ err_cbar_kw = dict(
     extend='max', extendfrac=0.1)
 
 
-if (slopeErrSweeps):
+if args.slopeErrSweeps or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig = plt.figure(figsize=sweepFigSize)
         ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -276,7 +276,7 @@ F_cbar_kw = dict(
         extend='max', extendfrac=0.1)
 
 
-if (gammaPowerSweep):
+if args.gammaPowerSweep or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig = plt.figure(figsize=sweepFigSize)
         ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -305,7 +305,7 @@ if (gammaPowerSweep):
         plt.close()
         
 
-if (gammaFreqSweep):
+if args.gammaFreqSweep or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig = plt.figure(figsize=sweepFigSize)
         ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -342,7 +342,7 @@ exampleLeft   = 0.01
 exampleBottom = 0.01
 exampleRight  = 0.99
 exampleTop    = 0.82
-if (gammaExamples):
+if args.gammaExamples or args.all:
     for nsIdx, ns in enumerate(ps.noise_sigmas):
         for idx, rc in enumerate(exampleRC):
             fname = exampleFName.format(ns, idx)

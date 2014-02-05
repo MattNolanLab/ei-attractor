@@ -31,10 +31,6 @@ from parameters.param_space import JobTrialSpace2D, DataSpace
 from plotting.global_defs   import globalAxesSettings
 import flagparse
 
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
-
 from matplotlib import rc
 rc('pdf', fonttype=42)
 rc('mathtext', default='regular')

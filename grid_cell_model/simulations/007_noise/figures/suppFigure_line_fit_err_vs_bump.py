@@ -13,10 +13,11 @@ from copy import deepcopy
 
 from EI_plotting          import scatter
 from EI_plotting.base     import NoiseDataSpaces
+import flagparse
 
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+parser = flagparse.FlagParser()
+parser.add_flag('--scatterPlot')
+args = parser.parse_args()
 
 from matplotlib import rc
 rc('pdf', fonttype=42)
@@ -35,7 +36,6 @@ velDataRoot   = 'output_local/even_spacing/velocity'
 gridsDataRoot = None
 shape = (31, 31)
 
-scatterPlot  = 1
 
 roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
@@ -46,7 +46,7 @@ ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 scatterFigSize = (8.27, 11.69)
 ignoreNaNs = True
 
-if (scatterPlot):
+if args.scatterPlot or args.all:
     fname = outputDir + "/suppFigure_line_fit_error_vs_bump.pdf"
 
 

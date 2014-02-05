@@ -10,10 +10,9 @@ import mayavi.mlab as mlab
 from EI_plotting import aggregate as aggr
 from EI_plotting.base     import NoiseDataSpaces
 
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
-
+import flagparse
+parser = flagparse.FlagParser()
+args = parser.parse_args()
 
 outputDir = "panels/"
 

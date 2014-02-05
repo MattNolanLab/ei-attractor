@@ -29,11 +29,7 @@ from matplotlib.pyplot  import figure, subplot, hold, plot, xlabel, ylabel, \
 
 from plotting.global_defs import globalAxesSettings, createColorbar
 
-from matplotlib import rc
-rc('pdf', fonttype=42)
-rc('mathtext', default='regular')
-
-plt.rcParams['font.size'] = 11
+import default_settings
 
 linewidth=1
 

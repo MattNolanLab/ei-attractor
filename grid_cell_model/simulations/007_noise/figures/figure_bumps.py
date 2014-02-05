@@ -1,24 +1,9 @@
 #!/usr/bin/env python
 #
-#   figure3.py
-#
-#   Noise publication Figure 3.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Noise publication Figure 3.
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
@@ -33,10 +18,6 @@ from EI_plotting.base     import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
 from analysis             import clustering
 import flagparse
-
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
 
 from matplotlib import rc
 rc('pdf', fonttype=42)

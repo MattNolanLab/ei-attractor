@@ -35,11 +35,6 @@ from plotting.global_defs import globalAxesSettings, prepareLims
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
 import flagparse
 
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
-
-
 # Other
 from matplotlib import rc
 rc('pdf', fonttype=42)
