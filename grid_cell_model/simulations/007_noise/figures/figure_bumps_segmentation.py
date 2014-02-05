@@ -151,6 +151,21 @@ if args.diff_all or args.all:
 
 ##############################################################################
 # Parameter sweep of the difference between noise_150 and noise_0
+exampleRC = ( (5, 15), (15, 5) )
+
+ann0 = dict(
+        txt='b',
+        rc=exampleRC[0],
+        xytext_offset=(1.5, 1),
+        color='black')
+ann1 = dict(
+        txt='a',
+        rc=exampleRC[1],
+        xytext_offset=(0.5, 1.5),
+        color='black')
+ann = [ann0, ann1]
+
+
 sweepFigSize = (3.7, 2.6)
 sweepLeft   = 0.08
 sweepBottom = 0.2
