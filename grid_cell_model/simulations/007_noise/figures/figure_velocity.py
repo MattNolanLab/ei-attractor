@@ -1,24 +1,8 @@
 #!/usr/bin/env python
 #
-#   figure4.py
-#
-#   Final figure: network mechanisms
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Everything related to velocity: sweeps, lines, etc.
+'''
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
@@ -421,44 +405,24 @@ def createSweepFig(name=None):
     return fig, ax
 
 if args.slope_sweeps or args.all:
-    # noise_sigma = 0 pA
-    fig, ax = createSweepFig("velSlopeSweep0")
-    _, ax, cax = sweeps.plotVelTrial(ps.v[0], slopeVarList, iterList,
-            noise_sigmas[0], sigmaTitle=False,
-            ax=ax,
-            cbar=True, cbar_kw=slope_cbar_kw,
-            cmap=velSweep_cmap,
-            #cax.yaxis.tick_left()
-            vmin=slope_vmin, vmax=slope_vmax,
-            annotations=ann)
-    fname = outputDir + "/velocity_slope_sweeps0.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-
-    # noise_sigma = 150 pA
-    fig, ax = createSweepFig("velSlopeSweep150")
-    _, ax, cax = sweeps.plotVelTrial(ps.v[1], slopeVarList, iterList,
-            noise_sigma=noise_sigmas[1], sigmaTitle=False,
-            ax=ax,
-            ylabel='', yticks=False,
-            cbar=False, cbar_kw=slope_cbar_kw,
-            cmap=velSweep_cmap,
-            vmin=slope_vmin, vmax=slope_vmax,
-            annotations=ann)
-    fname = outputDir + "/velocity_slope_sweeps150.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-
-    # noise_sigma = 300 pA
-    fig, ax = createSweepFig("velSlopeSweep300")
-    _, ax, cax = sweeps.plotVelTrial(ps.v[2], slopeVarList, iterList,
-            noise_sigma=noise_sigmas[2], sigmaTitle=False,
-            ax=ax,
-            ylabel='', yticks=False,
-            cbar=False, cbar_kw=slope_cbar_kw,
-            cmap=velSweep_cmap,
-            vmin=slope_vmin, vmax=slope_vmax,
-            annotations=ann)
-    fname = outputDir + "/velocity_slope_sweeps300.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig, ax = createSweepFig(None)
+        kw = dict(cbar=False)
+        if (ns_idx == 0):
+            kw['cbar'] = True
+        if (ns_idx != 0):
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        _, ax, cax = sweeps.plotVelTrial(ps.v[ns_idx], slopeVarList, iterList,
+                noise_sigma, sigmaTitle=False,
+                ax=ax,
+                cbar_kw=slope_cbar_kw,
+                cmap=velSweep_cmap,
+                vmin=slope_vmin, vmax=slope_vmax,
+                annotations=ann,
+                **kw)
+        fname = outputDir + "/velocity_slope_sweeps{}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
 
 
 
