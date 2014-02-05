@@ -28,7 +28,7 @@ class ScatterPlotBase(object):
         self.xSize, self.ySize = spaceSizes
 
         self.color2D     = self.kw.pop('color2D', False)
-        self.colormap2D  = self.kw.pop('colormap2d', None)
+        self.colormap2D  = self.kw.pop('colormap2D', None)
         self.resolveColors()
 
 
