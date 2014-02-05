@@ -239,8 +239,8 @@ def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
     filterThreshold = kw.pop('filterThreshold', -np.infty)
 
 
-    stackedData = aggr.collapseNoise(spList, iterList, types, NTrials,
-            ignoreNaNs=ignoreNaNs)
+    stackedData, X, Y = aggr.collapseNoise(spList, iterList, types, NTrials,
+            ignoreNaNs=ignoreNaNs, normalizeTicks=True)
     stackedData, _ = filterData(stackedData, filterThreshold)
     diffData = np.diff(stackedData, axis=0)[which, :]
     if symmetricLimits:
@@ -251,7 +251,6 @@ def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
         logger.info(info_msg)
 
     space0 = spList[0]
-    Y, X = aggr.computeYX(space0, iterList, r=r, c=c)
     nY, nX = Y.shape
     diffData, ax, cax = plot2DTrial(X, Y, np.reshape(diffData, (nY, nX)),
             colorBar=cbar, **kw)
