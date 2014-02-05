@@ -82,13 +82,13 @@ cbar_kw= {
     'ticks'      : ti.MultipleLocator(0.5),
     'rasterized' : True}
 
-vmin = -1.1
+vmin = -0.5
 vmax = 1.1
 
 ##############################################################################
 exampleRC = ( (5, 15), (15, 5) )
 sliceAnn = None
-grids_cmap = 'RdBu_r'
+grids_cmap = 'jet'
 
 ann0 = dict(
         txt='b',
