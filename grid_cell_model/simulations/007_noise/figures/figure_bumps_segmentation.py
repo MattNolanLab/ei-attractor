@@ -14,7 +14,7 @@ from EI_plotting.base import NoiseDataSpaces
 from plotting.low_level   import zeroLines
 from plotting.global_defs import prepareLims
 from analysis         import clustering
-import flagparse
+from submitting import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)

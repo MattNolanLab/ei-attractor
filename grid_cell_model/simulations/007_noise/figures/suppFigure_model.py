@@ -17,7 +17,7 @@ from plotting.global_defs import globalAxesSettings
 from plotting.low_level   import xScaleBar
 from analysis.visitors    import AutoCorrelationVisitor
 from parameters           import DictDataSet
-import flagparse
+from submitting import flagparse
 
 parser = flagparse.FlagParser()
 parser.add_flag('--examples')

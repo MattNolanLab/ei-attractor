@@ -5,7 +5,7 @@ Everything related to velocity difference plots: mainly sweeps.
 '''
 import copy
 
-import flagparse
+from submitting import flagparse
 parser = flagparse.FlagParser()
 parser.add_flag('--slope_sweeps')
 parser.add_flag('--fitErr_sweeps')

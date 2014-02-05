@@ -10,7 +10,7 @@ import mayavi.mlab as mlab
 from EI_plotting import aggregate as aggr
 from EI_plotting.base     import NoiseDataSpaces
 
-import flagparse
+from submitting import flagparse
 parser = flagparse.FlagParser()
 args = parser.parse_args()
 

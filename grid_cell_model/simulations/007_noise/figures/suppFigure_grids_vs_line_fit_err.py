@@ -13,7 +13,7 @@ from copy import deepcopy
 
 from EI_plotting          import scatter
 from EI_plotting.base     import NoiseDataSpaces
-import flagparse
+from submitting import flagparse
 
 parser = flagparse.FlagParser()
 parser.add_flag('--scatterPlot')

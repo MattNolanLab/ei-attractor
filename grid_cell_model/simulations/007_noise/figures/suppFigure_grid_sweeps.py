@@ -29,7 +29,7 @@ from EI_plotting      import sweeps, examples
 from EI_plotting      import aggregate as aggr
 from EI_plotting.base import getNoiseRoots
 from parameters       import JobTrialSpace2D
-import flagparse
+from submitting import flagparse
 
 parser = flagparse.FlagParser()
 args = parser.parse_args()

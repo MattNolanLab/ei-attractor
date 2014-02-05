@@ -33,7 +33,7 @@ from EI_plotting          import aggregate as aggr
 from parameters           import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings, prepareLims
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
-import flagparse
+from submitting import flagparse
 
 # Other
 from matplotlib import rc

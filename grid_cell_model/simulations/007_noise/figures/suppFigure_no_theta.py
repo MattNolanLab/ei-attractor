@@ -30,7 +30,7 @@ from EI_plotting          import sweeps, examples
 from parameters           import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
-import flagparse
+from submitting import flagparse
 
 parser = flagparse.FlagParser()
 parser.add_flag('--grids')

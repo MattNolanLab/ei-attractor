@@ -29,7 +29,7 @@ import plotting.connections as pconn
 from EI_plotting            import aggregate as aggr
 from parameters.param_space import JobTrialSpace2D, DataSpace
 from plotting.global_defs   import globalAxesSettings
-import flagparse
+from submitting import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)

@@ -17,7 +17,7 @@ from plotting.global_defs import globalAxesSettings, prepareLims
 from EI_plotting.base     import NoiseDataSpaces
 from parameters           import JobTrialSpace2D
 from analysis             import clustering
-import flagparse
+from submitting import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)

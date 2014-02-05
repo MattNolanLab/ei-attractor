@@ -14,7 +14,7 @@ from EI_plotting.base import NoiseDataSpaces
 from plotting.global_defs import globalAxesSettings
 from analysis.visitors import SpikeTrainXCVisitor
 from parameters import JobTrialSpace2D
-import flagparse
+from submitting import flagparse
 
 # Other
 from matplotlib import rc

@@ -29,7 +29,7 @@ from EI_plotting          import segmentation
 from EI_plotting          import aggregate as aggr
 from plotting.global_defs import prepareLims
 from EI_plotting.base     import NoiseDataSpaces
-import flagparse
+from submitting import flagparse
 
 # Other
 from matplotlib import rc

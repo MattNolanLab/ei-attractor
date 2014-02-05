@@ -14,7 +14,7 @@ from EI_plotting            import aggregate as aggr
 from EI_plotting.base       import plotOneHist, NoiseDataSpaces
 from parameters.param_space import JobTrialSpace2D
 from plotting.global_defs   import globalAxesSettings
-import flagparse
+from submitting import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)
