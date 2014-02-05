@@ -33,6 +33,7 @@ class FlagParser(argparse.ArgumentParser):
         try:
             level = getattr(logging, args.verbosity)
             logging.basicConfig(level=level)
+            logging.getLogger().setLevel(level)
         except AttributeError as e:
             raise RuntimeError('Something went wrong! Cannot fetch logging attribute')
         return args
