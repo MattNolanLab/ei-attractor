@@ -31,9 +31,9 @@ __all__ = ['Position2D', 'remapTwistedTorus', 'fitGaussianTT',
 
 class Position2D(object):
 
-    def __init__(self):
-        self.x = None
-        self.y = None
+    def __init__(self, x=None, y=None):
+        self.x = x
+        self.y = y
 
     def __str__(self):
         return "Position2D: x: " + str(self.x) + ", y: " + str(self.y)

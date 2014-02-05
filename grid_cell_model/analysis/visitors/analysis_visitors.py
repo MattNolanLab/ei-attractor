@@ -30,6 +30,11 @@ from otherpkg.log     import log_info, log_warn
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 from analysis.image   import Position2D, fitGaussianBumpTT
 
+from . import defaults
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 __all__ = ['AutoCorrelationVisitor', 'CrossCorrelationVisitor',
         'BumpFittingVisitor', 'FiringRateVisitor', 'BumpVelocityVisitor',
@@ -343,31 +348,35 @@ class BumpFittingVisitor(DictDSVisitor):
     analysis and saving.
     '''
     
-    def __init__(self, forceUpdate=False):
+    def __init__(self,
+            forceUpdate=False,
+            readme='',
+            outputRoot=defaults.analysisRoot,
+            bumpERoot='bump_e',
+            bumpIRoot='bump_i',
+            winLen=250.0,   # ms
+            tstart=None):   # ms
         self.forceUpdate = forceUpdate
+        self.readme = readme
 
-        # Population FR parameters
-        # All time units in msec
-        self.dt     = 20.0
-        self.winLen = 250.0
+        self.outputRoot = outputRoot
+        self.bumpERoot = bumpERoot
+        self.bumpIRoot = bumpIRoot
+
+        self.winLen = winLen
+        self.tstart = tstart
 
     def fitGaussianToMon(self, mon, Nx, Ny, tstart, tend):
         '''
         Fit a Gaussian function to the monitor mon, and return the results.
         '''
-        N = Nx * Ny
-
         senders, times = simei.extractSpikes(mon)
-        F, Ft = aspikes.slidingFiringRateTuple((senders, times), N, tstart, tend,
-                self.dt, self.winLen)
-            
-        bumpT = tend - 2*self.winLen
-        bumpI = bumpT / self.dt
-        bump = np.reshape(F[:, bumpI], (Ny, Nx))
-        dim = Position2D()
-        dim.x = Nx
-        dim.y = Ny
+        sheetSize = (Nx, Ny)
+        torus = aspikes.TorusPopulationSpikes(senders, times, sheetSize)
+        bump = torus.avgFiringRate(tstart, tend)
+        dim = Position2D(Nx, Ny)
         return fitGaussianBumpTT(bump, dim), bump
+
 
     def visitDictDataSet(self, ds, **kw):
         '''
@@ -375,21 +384,44 @@ class BumpFittingVisitor(DictDSVisitor):
         and save the data into the dataset.
         '''
         data = ds.data
-        if (('analysis' not in data.keys())):
-            data['analysis'] = {}
+        if ((self.outputRoot not in data.keys())):
+            data[self.outputRoot] = {}
 
-        a = data['analysis']
-        tstart = 0.0
-        tend   = self.getOption(data, 'time')
-        if (('bump_e' not in a.keys()) or self.forceUpdate):
-            log_info("BumpFittingVisitor", "Analysing an E dataset")
+        a = data[self.outputRoot]
+
+        # Determine tstart and tend
+        # tstart == None --> second last time frame determined by winLen
+        # tstart == full --> full simulation from the start of theta
+        # tstart == int or float --> from tstart to tstart+winLen or simT
+        simT = self.getOption(data, 'time')
+        if (self.tstart is None):
+            tstart = simT - 2*self.winLen
+            tend   = tstart + winLen
+        elif isinstance(self.tstart, int) or isinstance(self.tstart, float):
+            tstart = self.tstart
+            if winLen is not None:
+                tend = tstart + self.winLen
+            else:
+                tend = simT
+        elif (self.tstart == 'full'):
+            tstart = simei.getOption(data, 'theta_start_t')
+            tend = simT
+        else:
+            raise ValueError('Undefined tstart value: {}'.format(self.tstart))
+
+        logger.debug("%s: tstart: %f, tend: %f", self.__class__.__name__,
+                tstart, tend)
+        logger.debug("%s: bumpERoot: %s", self.__class__.__name__, self.bumpERoot)
+
+        if (self.bumpERoot not in a.keys()) or self.forceUpdate:
+            logger.info("%s: Analysing an E dataset", self.__class__.__name__)
             # Fit the Gaussian onto E neurons
             Nx  = self.getNetParam(data, 'Ne_x')
             Ny  = self.getNetParam(data, 'Ne_y')
             mon = data['spikeMon_e']
             ((A, mu_x, mu_y, sigma), err2), bump = self.fitGaussianToMon(mon,
                     Nx, Ny, tstart, tend)
-            a['bump_e'] = {
+            a[self.bumpERoot] = {
                     'A' : A,
                     'mu_x' : mu_x,
                     'mu_y' : mu_y,
@@ -398,27 +430,23 @@ class BumpFittingVisitor(DictDSVisitor):
                     'bump_e_rateMap' : bump
             }
         else:
-            log_info("BumpFittingVisitor", "E data present. Skipping analysis.")
+            logger.info("%s: E data present. Skipping analysis.",
+                    self.__class__.__name__)
 
         # Only export population firing rates of I neurons
-        if ('bump_i' not in a.keys() or self.forceUpdate):
-            log_info("BumpFittingVisitor", "Analysing an I dataset")
+        if (self.bumpIRoot not in a.keys() or self.forceUpdate):
+            logger.info("%s: Analysing an I dataset", self.__class__.__name__)
             Nx  = simei.getNetParam(data, 'Ni_x')
             Ny  = simei.getNetParam(data, 'Ni_y')
             senders, times = simei.extractSpikes(data['spikeMon_i'])
             sheetSize = (Nx, Ny)
-            spikes = aspikes.TorusPopulationSpikes(senders, times, sheetSize)
-
-            F, Ft = spikes.slidingFiringRate(tstart, tend, self.dt,
-                    self.winLen)
-            bumpT = tend - 2*self.winLen
-            bumpI = bumpT / self.dt
-            bump = F[:, :, bumpI]
-
-            a['bump_i'] = dict(
+            torus = aspikes.TorusPopulationSpikes(senders, times, sheetSize)
+            bump = torus.avgFiringRate(tstart, tend)
+            a[self.bumpIRoot] = dict(
                     bump_i_rateMap=bump)
         else:
-            log_info("BumpFittingVisitor", "I data present. Skipping analysis.")
+            logger.info("%s: I data present. Skipping analysis.",
+                    self.__class__.__name__)
 
 
 class FiringRateVisitor(DictDSVisitor):
