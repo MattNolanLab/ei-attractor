@@ -45,18 +45,19 @@ for noise_sigma in noise_sigmas:
     rootDir = dirs[0].format(int(noise_sigma))
 
     sp = JobTrialSpace2D(shape, rootDir)
-    sp.aggregateData(varListBase + ['bump_e', 'sigma'], trialNumList,
-            funReduce=None, loadData=loadData,saveData=True,
-            output_dtype='array')
-    sp.aggregateData(varListBase + ['bump_e', 'err2'], trialNumList,
-            funReduce=None, loadData=loadData, saveData=True,
-            output_dtype='array')
-    sp.aggregateData(varListBase + ['bump_e', 'bump_e_rateMap'], trialNumList,
-            funReduce=None, loadData=loadData, saveData=True,
-            output_dtype='list')
-    sp.aggregateData(varListBase + ['bump_i', 'bump_i_rateMap'], trialNumList,
-            funReduce=None, loadData=loadData, saveData=True,
-            output_dtype='list')
+    for suffix in ['', '_full']:
+        sp.aggregateData(varListBase + ['bump_e'+suffix, 'sigma'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='array')
+        sp.aggregateData(varListBase + ['bump_e'+suffix, 'err2'], trialNumList,
+                funReduce=None, loadData=loadData, saveData=True,
+                output_dtype='array')
+        sp.aggregateData(varListBase + ['bump_e'+suffix, 'bump_e_rateMap'],
+                trialNumList, funReduce=None, loadData=loadData, saveData=True,
+                output_dtype='list')
+        sp.aggregateData(varListBase + ['bump_i'+suffix, 'bump_i_rateMap'],
+                trialNumList, funReduce=None, loadData=loadData, saveData=True,
+                output_dtype='list')
 
     sp.aggregateData(varListBase + ['acVal'], trialNumList, funReduce=np.mean,
             loadData=loadData, saveData=True, output_dtype='array')
