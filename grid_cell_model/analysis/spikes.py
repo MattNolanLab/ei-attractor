@@ -584,6 +584,14 @@ class TorusPopulationSpikes(PopulationSpikes):
     def getYSize(self):
         return self._sheetSize[1]
 
+    Nx = property(fget=getXSize, doc='Horizontal size of the torus')
+    Ny = property(fget=getYSize, doc='Vertical size of the torus')
+
+
+    def avgFiringRate(self, tStart, tEnd):
+        F = super(TorusPopulationSpikes, self).avgFiringRate(tStart, tEnd)
+        return np.reshape(F, (self.Ny, self.Nx))
+
     
     def populationVector(self, tStart, tEnd, dt, winLen):
         '''
