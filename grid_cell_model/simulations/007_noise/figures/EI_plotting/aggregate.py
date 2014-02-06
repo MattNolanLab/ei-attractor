@@ -146,6 +146,19 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
         else:
             raise ValueError('Unknown bump subtype: {0}'.format(subType))
 
+    elif (type == 'bump_full'):
+        trialNumList  = np.arange(NTrials)
+        if (subType == 'sigma'):
+            vars += ['bump_e_full', 'sigma']
+        elif (subType == 'rateMap_e'):
+            vars += ['bump_e_full', 'bump_e_rateMap']
+            output_dtype = 'list'
+        elif (subType == 'rateMap_i'):
+            vars += ['bump_i_full', 'bump_i_rateMap']
+            output_dtype = 'list'
+        else:
+            raise ValueError('Unknown bump_full subtype: {0}'.format(subType))
+
     elif (type == 'velocity'):
         if (subType == 'slope'):
             vars += ['lineFitSlope']
@@ -189,14 +202,16 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
     if (type == 'velocity'):
         Y, X = computeVelYX(sp, iterList, normalize=normalizeTicks, **kw)
     else:
-        if (type == 'bump'):
+        if (type == 'bump' or type == 'bump_full'):
             if (subType == 'sigma'):
+                # bump sigma is a reciprocal
                 data = 1./data
                 ignoreThreshold = 1.0
                 data.mask = np.logical_or(data.mask, data > ignoreThreshold)
+                data = np.mean(data, axis=2) # TODO: fix the trials, stack them
+        else:
+            data = np.mean(data, axis=2) # TODO: fix the trials, stack them
         Y, X = computeYX(sp, iterList, normalize=normalizeTicks, **kw)
-        data = np.mean(data, axis=2) # TODO: fix the trials, stack them
-        # bump sigma is a reciprocal
 
     return data, X, Y
 

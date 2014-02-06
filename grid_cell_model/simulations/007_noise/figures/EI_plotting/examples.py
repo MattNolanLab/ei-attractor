@@ -70,7 +70,7 @@ def plotOneGridACorrExample(dataSpace, rc, trialNum=0, **kw):
     plotAutoCorrelation(corr, corr_X, corr_Y, diam=arenaDiam, ax=ax, **kw)
 
 
-def plotOneBumpExample(sp, rc, iterList, EIType, **kw):
+def plotOneBumpExample(sp, rc, iterList, types, **kw):
     #keyword
     wspace    = kw.pop('wspace', 0)
     hspace    = kw.pop('hspace', 0)
@@ -78,7 +78,7 @@ def plotOneBumpExample(sp, rc, iterList, EIType, **kw):
 
     r, c = rc[0], rc[1] 
     spaceRect = [c, r, c, r]
-    return drawBumpExamples(sp, spaceRect, iterList, gsCoords, EIType,
+    return drawBumpExamples(sp, spaceRect, iterList, gsCoords, types,
             xlabel=False, ylabel=False,
             xlabel2=False, ylabel2=False,
             fontsize='x-small',
@@ -170,7 +170,7 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
     return gs
 
 
-def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, EIType, **kw):
+def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, types, **kw):
     '''
     TODO: code duplication
     '''
@@ -198,15 +198,8 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, EIType, **kw):
     top    = spaceRect[3]
     exRow, exCol = exIdx
 
-    if EIType == 'E':
-        varList = ['analysis', 'bump_e', 'bump_e_rateMap']
-    elif EIType == 'I':
-        varList = ['analysis', 'bump_i', 'bump_i_rateMap']
-    else:
-        raise ValueError("Unknown EIType! Must be 'E' or 'I'.")
-
-    bumps = dataSpace.aggregateData(varList, trialNumList=range(trialNum+1),
-            funReduce=None, loadData=True, saveData=False, output_dtype='list')
+    bumps, wi, we = aggr.aggregateType(dataSpace, iterList, types, trialNum+1,
+            ignoreNaNs=False, normalizeTicks=False)
 
     scaleBar = None
     exRows = top - bottom + 1
@@ -218,7 +211,6 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, EIType, **kw):
     gsTop    = gsCoords[3]
     gs.update(left=gsLeft, bottom=gsBottom, right=gsRight, top=gsTop)
 
-    we, wi = aggr.computeYX(dataSpace, iterList, r=exRow, c=exCol)
     ax = None
     for r in range(bottom, top+1):
         for c in range(left, right+1):
