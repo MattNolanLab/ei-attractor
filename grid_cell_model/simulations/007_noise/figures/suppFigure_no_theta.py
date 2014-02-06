@@ -132,7 +132,7 @@ if args.grids or args.all:
 
 ##############################################################################
 sigmaBumpText = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
-sigmaVarList = ['bump_e', 'sigma']
+sigmaTypes = ['bump_full', 'sigma']
 bumpTrialNumList = np.arange(5)
 bump_vmin = 0
 bump_vmax = 0.516
@@ -155,7 +155,7 @@ if args.bumpSweep or args.all:
         if (ns_idx != 0):
             kw['ylabel'] = ''
             kw['yticks'] = False
-        sweeps.plotBumpSigmaTrial(ps.bumpGamma[ns_idx], sigmaVarList, iterList,
+        sweeps.plotBumpSigmaTrial(ps.bumpGamma[ns_idx], sigmaTypes, iterList,
                 noise_sigma=noise_sigma,
                 r=gammaRC[ns_idx][0], c=gammaRC[ns_idx][1],
                 ax=ax,

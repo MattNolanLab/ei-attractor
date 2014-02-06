@@ -68,10 +68,10 @@ transparent  = True
 
 ##############################################################################
 sigmaBumpText = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
-sigmaVarList = ['bump_e', 'sigma']
+sigmaTypes = ['bump_full', 'sigma']
 bumpTrialNumList = np.arange(5)
 bump_vmin = 0
-bump_vmax = 0.48
+bump_vmax = 0.3565
 bump_cbar_kw = dict(
         label       = sigmaBumpText,
         location    = 'right',
@@ -103,7 +103,7 @@ if args.bumpSweep or args.all:
     exCols = [3, 15]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    sweeps.plotBumpSigmaTrial(ps.bumpGamma[0], sigmaVarList, iterList,
+    sweeps.plotBumpSigmaTrial(ps.bumpGamma[0], sigmaTypes, iterList,
             noise_sigma=ps.noise_sigmas[0],
             ax=ax,
             trialNumList=bumpTrialNumList,
@@ -121,7 +121,7 @@ if args.bumpSweep or args.all:
     exCols = [10, 9]
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    sweeps.plotBumpSigmaTrial(ps.bumpGamma[1], sigmaVarList, iterList,
+    sweeps.plotBumpSigmaTrial(ps.bumpGamma[1], sigmaTypes, iterList,
             noise_sigma=noise_sigmas[1],
             ax=ax,
             ylabel='', yticks=False,
@@ -139,7 +139,7 @@ if args.bumpSweep or args.all:
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
     ax.set_clip_on(False)
-    sweeps.plotBumpSigmaTrial(ps.bumpGamma[2], sigmaVarList, iterList,
+    sweeps.plotBumpSigmaTrial(ps.bumpGamma[2], sigmaTypes, iterList,
             noise_sigma=noise_sigmas[2],
             ax=ax,
             trialNumList=bumpTrialNumList,
@@ -155,6 +155,7 @@ if args.bumpSweep or args.all:
 # Bump examples
 exampleEFName = outputDir + "/bumps_examples_E_{0}pA_{1}.pdf"
 exampleIFName = outputDir + "/bumps_examples_I_{0}pA_{1}.pdf"
+bumpExampleTypes = ['bump_full']
 bumpTrialNum = 0
 exTransparent = True
 exampleFigSize = (0.8, 0.8)
@@ -169,12 +170,14 @@ if args.bumpExamples or args.all:
             for EIType in ['E', 'I']:
                 if EIType == 'E':
                     fnameTemplate =exampleEFName
+                    types = bumpExampleTypes + ['rateMap_e']
                 else:
                     fnameTemplate =exampleIFName
+                    types = bumpExampleTypes + ['rateMap_i']
                 fname = fnameTemplate.format(noise_sigma, idx)
                 plt.figure(figsize=exampleFigSize)
                 gs = examples.plotOneBumpExample(ps.bumpGamma[ns_idx], rc, iterList,
-                        EIType,
+                        types,
                         exIdx=exampleIdx[ns_idx],
                         trialNum=bumpTrialNum)
                 gs.update(left=exampleLeft, bottom=exampleBottom,

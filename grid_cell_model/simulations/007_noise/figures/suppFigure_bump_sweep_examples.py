@@ -68,8 +68,8 @@ def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0), cmap='jet',
 
     # Replot gridness score param. sweep
     ax0 = plt.gca()
-    varList = ['bump_e', 'sigma']
-    _, _, cax = sweeps.plotBumpSigmaTrial(dataSpace, varList, iterList,
+    sigmaTypes = ['bump_full', 'sigma']
+    _, _, cax = sweeps.plotBumpSigmaTrial(dataSpace, sigmaTypes, iterList,
             noise_sigma=None, sigmaTitle=False,
             trialNumList=range(NTrials),
             ax=ax,
@@ -81,7 +81,7 @@ def drawSweep(ax, dataSpace, iterList, spaceRect, exIdx=(0, 0), cmap='jet',
 
 
 
-def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx,
+def drawA4RectExamples(dataSpace, noise_sigma, iterList, types, exRect, exIdx,
         rectColor='black', letter=''):
     fig = plt.figure(figsize=(8.27, 11.69))
     margin    = 0.1
@@ -108,7 +108,7 @@ def drawA4RectExamples(dataSpace, noise_sigma, iterList, exRect, exIdx,
 
     gsCoords = 0.12, 0.075, 0.95, sw_bottom-div
     #gsCoords = margin, 0.46, 0.5, sw_bottom-div
-    gs = examples.drawBumpExamples(dataSpace, exRect, iterList, gsCoords, 'E',
+    gs = examples.drawBumpExamples(dataSpace, exRect, iterList, gsCoords, types,
             exIdx=exIdx, cmap='jet')
     noise_sigma_txt = "$\sigma_{{noise}}$ = {0} pA".format(int(noise_sigma))
     fig.text(nsX, nsY, noise_sigma_txt, va='center', ha='right', fontsize=19)
@@ -141,6 +141,7 @@ enable = [
 fname = outputDir + "/figureS3.pdf"
 outputPDF = PdfPages(fname)
 strIdx = 0
+types = ['bump_full', 'rateMap_e']
 for noise_idx, noise_sigma in enumerate(noise_sigmas):
     for exampleIdx, RC in enumerate(exampleRC[noise_idx]):
         if (not enable[noise_idx][exampleIdx]):
@@ -150,7 +151,7 @@ for noise_idx, noise_sigma in enumerate(noise_sigmas):
         exLeft   = RC[0]
         exBottom = RC[1]
         exRect = [exLeft, exBottom, exLeft+exWidth-1, exBottom+exHeight-1]
-        drawA4RectExamples(bumpSpaces[noise_idx], noise_sigma, iterList,
+        drawA4RectExamples(bumpSpaces[noise_idx], noise_sigma, iterList, types,
                 exRect, YXRC[noise_idx], letter=string.ascii_uppercase[strIdx])
         
         outputPDF.savefig(dpi=300, transparent=False)
