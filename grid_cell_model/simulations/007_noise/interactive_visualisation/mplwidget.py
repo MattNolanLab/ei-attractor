@@ -156,18 +156,13 @@ class BumpSweepWidget(SweepWidget):
 
     def __init__(self, parent=None):
         SweepWidget.__init__(self, parent)
-        self.varList = ['bump_e', 'sigma']
+        self.types = ['bump_full', 'sigma']
         self.bumpSigma = None
         self.trial = None
 
 
     def setDirectory(self, rootPath, shape):
         super(BumpSweepWidget, self).setDirectory(rootPath, shape)
-
-        varList = ['analysis', 'bump_e', 'sigma']
-        self.bumpSigma = self.dataSpace.aggregateData(varList, trialNumList=[],
-                funReduce=None, loadData=True, saveData=False,
-                output_dtype='array')
 
         sigmaBumpText = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
         self.cbar_kw.update(dict(
@@ -179,9 +174,8 @@ class BumpSweepWidget(SweepWidget):
                 Bbox.from_extents(self.sweepLeft, self.sweepBottom, self.sweepRight,
                                   self.sweepTop))
        
-
         sweeps.plotBumpSigmaTrial(self.dataSpace,
-                self.varList, self.iterList,
+                self.types, self.iterList,
                 self.noise_sigma,
                 trialNumList=[],
                 sigmaTitle=False,
@@ -189,6 +183,12 @@ class BumpSweepWidget(SweepWidget):
                 cbar=True, cbar_kw=self.cbar_kw,
                 ax=self.ax,
                 picker=True)
+
+        # TODO: fix this
+        varList = ['analysis', 'bump_e_full', 'sigma']
+        self.bumpSigma = self.dataSpace.aggregateData(varList, trialNumList=[],
+                funReduce=None, loadData=True, saveData=False,
+                output_dtype='array')
 
         c = self.ax.collections
         if (len(c) != 1):
@@ -291,10 +291,8 @@ class ACorrelationWidget(ExampleWidget):
 
 class PopulationFRWidget(ExampleWidget):
 
-    def __init__(self, EIType, parent=None):
-        if (EIType not in ['E', 'I']):
-            raise ValueError("Population type must be 'E' or 'I'")
-        self.EIType = EIType
+    def __init__(self, types, parent=None):
+        self.types = types
         ExampleWidget.__init__(self, parent)
 
 
@@ -304,7 +302,7 @@ class PopulationFRWidget(ExampleWidget):
         gsCoords = (0, 0, 1, 0.90)
         if (self.dataSpace is not None and rc < tuple(self.dataSpace.shape)):
             examples.plotOneBumpExample(self.dataSpace, rc, self.iterList,
-                    self.EIType,
+                    self.types,
                     trialNum=self.trial,
                     exGsCoords=gsCoords,
                     fig=self.canvas.fig)
@@ -313,9 +311,9 @@ class PopulationFRWidget(ExampleWidget):
 
 class EFRWidget(PopulationFRWidget):
     def __init__(self, parent=None):
-        PopulationFRWidget.__init__(self, 'E', parent)
+        PopulationFRWidget.__init__(self, ['bump_full', 'rateMap_e'], parent)
 
 class IFRWidget(PopulationFRWidget):
     def __init__(self, parent=None):
-        PopulationFRWidget.__init__(self, 'I', parent)
+        PopulationFRWidget.__init__(self, ['bump_full', 'rateMap_i'], parent)
 
