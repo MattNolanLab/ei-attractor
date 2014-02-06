@@ -191,13 +191,14 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
         raise ValueError('Unknown aggregation type: {0}'.format(type))
 
 
-    data = ma.MaskedArray(sp.aggregateData(vars, trialNumList,
-        output_dtype=output_dtype, loadData=True, saveData=False,
-        funReduce=funReduce))
-    if (ignoreNaNs):
-        log_warn('aggregateType', 'Ignoring NaNs')
-        nans = np.isnan(data)
-        data.mask = nans
+    data = sp.aggregateData(vars, trialNumList, output_dtype=output_dtype,
+            loadData=True, saveData=False, funReduce=funReduce)
+    if (output_dtype != 'list'):
+        data = ma.MaskedArray(data)
+        if (ignoreNaNs):
+            log_warn('aggregateType', 'Ignoring NaNs')
+            nans = np.isnan(data)
+            data.mask = nans
 
     if (type == 'velocity'):
         Y, X = computeVelYX(sp, iterList, normalize=normalizeTicks, **kw)
