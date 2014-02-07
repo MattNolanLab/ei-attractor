@@ -237,7 +237,7 @@ class HDF5MapStorage(HDF5DataStorage, MutableMapping):
         return iter(self._group.keys())
 
 
-    def setItemChained(self, keyTuple, value):
+    def setItemChained(self, keyTuple, value, overwriteLast=True):
         '''
         Set ``value`` into ``keyTuple[-1]``. ``keyTuple`` must contain only
         strings, specifying dictionary keys. The semantic of this method is the
@@ -245,7 +245,7 @@ class HDF5MapStorage(HDF5DataStorage, MutableMapping):
 
          * ``value`` can be of any supported types. It will simply be assigned
            as the last item in ``keyTuple``. If it already exists, it will be
-           overwritten.
+           overwritten if ``overwriteLast`` is ``True``.
          * If ``keyTuple[0:-1]`` don't exist, create all of them as
            dictionaries. If they exist, do not overwrite.
         '''
@@ -255,16 +255,19 @@ class HDF5MapStorage(HDF5DataStorage, MutableMapping):
         elif (l == 1):
             if (not isinstance(keyTuple[0], str)):
                 raise TypeError('All the keys in the keyTuple list must be strings.')
-            self[keyTuple[0]] = value
+            if keyTuple[0] not in self.keys() or overwriteLast:
+                self[keyTuple[0]] = value
         else:
             firstKey = keyTuple[0]
             if (not isinstance(firstKey, str)):
                 raise TypeError('All the keys in the keyTuple list must be strings.')
             if firstKey in self.keys():
-                self[firstKey].setItemChained(keyTuple[1:], value)
+                self[firstKey].setItemChained(keyTuple[1:], value,
+                        overwriteLast=overwriteLast)
             else:
                 self[firstKey] = {}
-                self[firstKey].setItemChained(keyTuple[1:], value) 
+                self[firstKey].setItemChained(keyTuple[1:], value,
+                        overwriteLast=overwriteLast) 
 
 
 
