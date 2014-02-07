@@ -210,6 +210,11 @@ class TestHDF5Storage(unittest.TestCase):
         ds.setItemChained(keyList, newTestValue)
         testChain(ds, keyList, newTestValue)
 
+        # Do not overwrite if overwriteLast is False
+        noOverWriteTestValue = 'This should not be written'
+        ds.setItemChained(keyList, noOverWriteTestValue, overwriteLast=False)
+        testChain(ds, keyList, newTestValue)
+
         # ['a', 'b', 'another', 'xxx']
         otherKeyList = ['a', 'b', 'another', 'xxx']
         otherTestValue = [1, 2, 3, 'ahoy']
