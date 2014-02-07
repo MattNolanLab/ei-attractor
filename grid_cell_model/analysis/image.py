@@ -19,15 +19,22 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from abc import ABCMeta, abstractmethod
+import collections
+import logging
+
 from scipy    import weave
 import matplotlib.pyplot as plt
 
 import numpy as np
 import scipy.optimize
 
+from . import spikes
+
 __all__ = ['Position2D', 'remapTwistedTorus', 'fitGaussianTT',
         'fitGaussianBumpTT']
 
+logger = logging.getLogger(__name__)
 
 class Position2D(object):
 
@@ -37,6 +44,25 @@ class Position2D(object):
 
     def __str__(self):
         return "Position2D: x: " + str(self.x) + ", y: " + str(self.y)
+
+
+
+class FittingParams(object):
+    __meta__ = ABCMeta
+
+    @abstractmethod
+    def __init__(self):
+        raise NotImplementedError()
+
+
+
+class SymmetricGaussianFit(FittingParams):
+    def __init__(self, A, mu_x, mu_y, sigma, err):
+        self.A = A
+        self.mu_x = mu_x
+        self.mu_y = mu_y
+        self.sigma = sigma
+        self.err = err
 
 
 
@@ -172,6 +198,121 @@ def fitGaussianBumpTT(sig, dim):
     init.sigma0  = np.max([dim.x, dim.y]) / 2.0
     
     return fitGaussianTT(sig.flatten(), init, dim)
+
+
+
+
+
+
+class SingleBumpPopulation(spikes.TwistedTorusSpikes):
+    '''
+    A population of neurons that is supposed to form a bump on a twisted torus.
+
+    This class contains methods for processing  the population activity over
+    time.
+    '''
+
+    class BumpFitList(collections.Sequence):
+        def __init__(self,
+                AList=[],
+                mu_xList=[],
+                mu_yList=[],
+                sigmaList=[],
+                err=[],
+                times=[]):
+            self._A     = AList
+            self._mu_x  = mu_xList
+            self._mu_y  = mu_yList
+            self._sigma = sigmaList
+            self._err   = err
+            self._times = times
+
+            if not self._consistent():
+                raise ValueError('All input arguments mus have same length')
+
+
+        def _consistent(self):
+            return \
+                len(self.A) == len(self.mu_x) and   \
+                len(self.A) == len(self.mu_y) and   \
+                len(self.A) == len(self.sigma) and  \
+                len(self.A) == len(self.err) and    \
+                len(self.A) == len(self.t)
+
+
+        def getA(self): return self._A
+        def getMu_x(self): return self._mu_x
+        def getMu_y(self): return self._mu_y
+        def getSigma(self): return self._sigma
+        def getErr(self): return self._err
+        def getT(self): return self._times
+        A     = property(getA)
+        mu_x  = property(getMu_x)
+        mu_y  = property(getMu_y)
+        sigma = property(getSigma)
+        err   = property(getErr)
+        t     = property(getT)
+
+
+        def _appendData(self, A, mu_x, mu_y, sigma, err, t):
+            self._A.append(A)
+            self._mu_x.append(mu_x)
+            self._mu_y.append(mu_y)
+            self._sigma.append(sigma)
+            self._err.append(err)
+            self._times.append(t)
+
+
+        def __getitem__(self, key):
+            return SymmetricGaussianFit(self._A[key], self._mu_x[key],
+                    self._mu_y[key], self._sigma[key], self._err[key]), \
+                            self._times[key]
+
+        def __len__(self):
+            return len(self._A) # All same length
+
+
+
+    def __init__(self, senders, times, sheetSize):
+        super(SingleBumpPopulation, self).__init__(senders, times, sheetSize)
+
+
+
+    def bumpPosition(self, tStart, tEnd, dt, winLen, fullErr=True):
+        '''
+        Estimate bump positions during the simulation time:
+        
+            1. Use :py:meth:`~.slidingFiringRate`
+
+            2. Apply the bump position estimation procedure to each of the
+               population activity items.
+
+        **Parameters**
+
+            tStart, tEnd, dt, winLen : as in :py:meth:`~.slidingFiringRate`.
+            fullErr : bool
+                If ``True``, save the full error of fit. Otherwise a sum only.
+
+        **Output*
+            
+            A list of estimation result objects
+        '''
+        F, Ft = self.slidingFiringRate(tStart, tEnd, dt, winLen)
+        dims = Position2D(self.Nx, self.Ny)
+        res = self.BumpFitList()
+        for tIdx in xrange(len(Ft)):
+            logger.debug('Bump fitting: {}/{}'.format(tIdx+1, len(Ft)))
+            (A, mu_x, mu_y, sigma), err2 = fitGaussianBumpTT(F[:, :, tIdx],
+                    dims)
+            
+            err = np.sqrt(err2)
+            if fullErr == False:
+                err = np.sum(err)
+
+            res._appendData(A, mu_x, mu_y, sigma, err, Ft[tIdx])
+        return res
+            
+
 
 
 

@@ -583,9 +583,12 @@ class TorusPopulationSpikes(PopulationSpikes):
         return self._sheetSize[0]
     def getYSize(self):
         return self._sheetSize[1]
+    def getDimensions(self):
+        return self._sheetSize
 
     Nx = property(fget=getXSize, doc='Horizontal size of the torus')
     Ny = property(fget=getYSize, doc='Vertical size of the torus')
+    dimensions = property(fget=getDimensions, doc='Dimensions of the torus (X, Y)')
 
 
     def avgFiringRate(self, tStart, tEnd):
@@ -664,6 +667,22 @@ class TorusPopulationSpikes(PopulationSpikes):
         Ny = self.getYSize()
         return np.reshape(F, (Ny, Nx, len(Ft))), Ft
 
+
+
+class TwistedTorusSpikes(TorusPopulationSpikes):
+    '''
+    Spikes arranged on twisted torus. The torus is twisted in the X direction.
+    '''
+
+    def __init__(self, senders, times, sheetSize):
+        super(TwistedTorusSpikes, self).__init__(senders, times, sheetSize)
+
+
+    def populationVector(self, tStart, tEnd, dt, winLen):
+        msg = 'populationVector() has not been implemented yet for {}. Note'+\
+                ' that this method is different for the regular torus ' +\
+                '(TorusPopulationSpikes).'
+        raise NotImplementedError(msg.format(self.__class__.__name__))
 
 
 
