@@ -301,7 +301,7 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
         dims = Position2D(self.Nx, self.Ny)
         res = self.BumpFitList()
         for tIdx in xrange(len(Ft)):
-            logger.debug('Bump fitting: {}/{}'.format(tIdx+1, len(Ft)))
+            logger.debug('Bump fitting: %s/%s', tIdx+1, len(Ft))
             (A, mu_x, mu_y, sigma), err2 = fitGaussianBumpTT(F[:, :, tIdx],
                     dims)
             

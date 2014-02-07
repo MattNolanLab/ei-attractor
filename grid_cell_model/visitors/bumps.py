@@ -404,7 +404,7 @@ class BumpPositionVisitor(BumpVisitor):
             tend = self.getOption(data, 'time') - self.win_dt
 
         if 'positions' not in out.keys() or self.forceUpdate:
-            logger.info('{}: Analysing data set.'.format(self.__class__.__name__))
+            logger.info('%s: Analysing data set.', self.__class__.__name__)
 
             senders, times, sheetSize =  self._getSpikeTrain(data,
                     'spikeMon_e', ['Ne_x', 'Ne_y'])
@@ -422,7 +422,8 @@ class BumpPositionVisitor(BumpVisitor):
                     readme = self.readme
             )
         else:
-            logger.info('{}: Data already present. Skipping analysis.'.format(self.__class__.__name__))
+            logger.info('{%s: Data already present. Skipping analysis.',
+                    self.__class__.__name__)
 
 
 
