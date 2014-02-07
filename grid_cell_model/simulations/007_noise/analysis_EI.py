@@ -45,6 +45,12 @@ if (o.type == "gamma-bump"):
             readme='Bump fitting. Whole simulation, starting at the start of theta stimulation.',
             bumpERoot='bump_e_full',
             bumpIRoot='bump_i_full')
+    bumpPosVisitor = vis.bumps.BumpPositionVisitor(
+            tstart=0,
+            tend=None,
+            win_dt=100,
+            readme='Bump position estimation. Whole simulation',
+            forceUpdate=forceUpdate)
     FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
     CCVisitor = vis.CrossCorrelationVisitor(monName, stateList,
             forceUpdate=forceUpdate)
@@ -52,7 +58,8 @@ if (o.type == "gamma-bump"):
             forceUpdate=forceUpdate)
 
     #sp.visit(ACVisitor)
-    sp.visit(bumpVisitor)
+    #sp.visit(bumpVisitor)
+    sp.visit(bumpPosVisitor)
     #sp.visit(FRVisitor)
     #sp.visit(CCVisitor)
     #sp.visit(spikeVisitor_e)
