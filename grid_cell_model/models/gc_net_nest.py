@@ -21,7 +21,7 @@
 
 
 import numpy    as np
-import logging  as lg
+import logging
 
 from numpy.random import rand, randn
 from scipy.io     import loadmat
@@ -35,6 +35,8 @@ from otherpkg.log import log_info
 
 import nest
 
+
+logger = logging.getLogger(__name__)
 
 nest.Install('gridcellsmodule')
 
@@ -330,6 +332,8 @@ class NestGridCellNetwork(GridCellNetwork):
         if self._ratVelocitiesLoaded:
             return
 
+        logger.info('Loading rat velocities')
+
         self.ratData    = loadmat(self.no.ratVelFName)
         self.rat_dt     = self.ratData['dt'][0][0]*1e3      # units: ms
 
@@ -343,6 +347,11 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self._ratVelocitiesLoaded = True
 
+        logger.debug(\
+            'velC: {0}, bumpCurrentSlope: {1}, gridSep: {2}'.format(self.velC,
+                self.no.bumpCurrentSlope, self.no.gridSep))
+
+
 
     def setVelocityCurrentInput_e(self, prefDirs_mask=None):
         '''
@@ -350,7 +359,7 @@ class NestGridCellNetwork(GridCellNetwork):
         prefDirs_mask can be used to manipulate velocity input strength
         for each neuron.
         '''
-        print("Setting up velocity input current.")
+        logger.info("Setting up velocity input current.")
         self._loadRatVelocities()
 
 
