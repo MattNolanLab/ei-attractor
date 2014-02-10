@@ -24,7 +24,6 @@ import collections
 import logging
 
 from scipy    import weave
-import matplotlib.pyplot as plt
 
 import numpy as np
 import scipy.optimize
@@ -336,6 +335,7 @@ def remapAndPlot(a, dims):
 
 if (__name__ == '__main__'):
 
+    import matplotlib.pyplot as plt
     from matplotlib.pyplot import *
 
     dims = Position2D()
