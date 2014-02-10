@@ -27,18 +27,20 @@ from models.gc_net_nest import BasicGridCellNetwork
 from data_storage       import DataStorage
 from nest.hl_api        import NESTError
 
+import logging
+logger = logging.getLogger(__name__)
 
 parser          = getOptParser()
-parser.add_option("--velON", type="int", help="Velocity input ON?")
-(options, args) = parser.parse_args()
+parser.add_argument("--velON", type=int, help="Velocity input ON?")
+(options, _) = parser.parse_args()
 
 
 # Do nothing when bumpCurrentSlope is NaN
 if (np.isnan(options.bumpCurrentSlope)):
-    print('bumpCurrentSlope is NaN. Not performing the simulation')
+    logger.info('bumpCurrentSlope is NaN. Not performing the simulation')
     exit(0)
 else:
-    print("bumpCurrentSlope: {0}".format(options.bumpCurrentSlope))
+    logger.info("bumpCurrentSlope: {0}".format(options.bumpCurrentSlope))
 
 
 stateMonParams = {
