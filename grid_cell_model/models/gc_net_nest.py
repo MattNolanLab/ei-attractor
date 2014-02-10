@@ -37,6 +37,8 @@ import nest
 
 
 logger = logging.getLogger(__name__)
+gcnLogger = logging.getLogger('{0}.{1}'.format(__name__,
+        "NestGridCellNetwork"))
 
 nest.Install('gridcellsmodule')
 
@@ -347,7 +349,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self._ratVelocitiesLoaded = True
 
-        logger.debug(\
+        gcnLogger.debug(\
             'velC: {0}, bumpCurrentSlope: {1}, gridSep: {2}'.format(self.velC,
                 self.no.bumpCurrentSlope, self.no.gridSep))
 
@@ -428,7 +430,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
     def setStartPlaceCells(self, posIn):
         if (len(self.PC_start) == 0):
-            print "Setting up initialization place cells"
+            logger.info("Setting up initialization place cells")
             self.PC_start, _, _ = self.createGenericPlaceCells(
                     self.no.N_place_cells,
                     self.no.pc_start_max_rate,
@@ -436,8 +438,10 @@ class NestGridCellNetwork(GridCellNetwork):
                     start=0.0,
                     end=self.no.theta_start_t,
                     posIn=posIn)
+            gcnLogger.debug("Init place cells: start: {0}, end: {1}".format(0,
+                self.no.theta_start_t))
         else:
-            log_info('Initialization place cells already set. Skipping the set up')
+            logger.info('Initialization place cells already set. Skipping the set up')
 
 
     def setPlaceCells(self, start=None, end=None, posIn=None):
