@@ -54,6 +54,7 @@ class PosInputs(object):
 class NestGridCellNetwork(GridCellNetwork):
     def __init__(self, neuronOpts, simulationOpts):
         GridCellNetwork.__init__(self, neuronOpts, simulationOpts)
+        self.velocityInputInitialized = False
 
         self.spikeMon_e = None
         self.spikeMon_i = None
@@ -102,6 +103,8 @@ class NestGridCellNetwork(GridCellNetwork):
             clk.reinit()
 
     def _initNESTKernel(self):
+        gcnLogger.debug('Initializing NEST kernel: no. of threads: {0}'.format(\
+                self.no.nthreads))
         nest.ResetKernel()
         nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": False})
         nest.SetKernelStatus({"local_num_threads" : self.no.nthreads})
@@ -147,6 +150,13 @@ class NestGridCellNetwork(GridCellNetwork):
         self.endConstruction()
         self.beginSimulation()
         nest.SetKernelStatus({"print_time": bool(printTime)})
+        
+        if not self.velocityInputInitialized:
+            velMsg = "Velocity input has not been initialized. Make sure " + \
+                    "this is the desired behavior. If you have set the " +   \
+                    "'velON' parameter to 1, then this message probably " +  \
+                    "indicates a bug in the simulation code."
+            gcnLogger.warn(velMsg)
         nest.Simulate(time)
 
 
@@ -384,6 +394,7 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
+        self.velocityInputInitialized = True
 
 
     def setConstantVelocityCurrent_e(self, vel, start_t=None, end_t=None):
@@ -430,7 +441,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
     def setStartPlaceCells(self, posIn):
         if (len(self.PC_start) == 0):
-            logger.info("Setting up initialization place cells")
+            gcnLogger.info("Setting up initialization place cells")
             self.PC_start, _, _ = self.createGenericPlaceCells(
                     self.no.N_place_cells,
                     self.no.pc_start_max_rate,
@@ -441,7 +452,7 @@ class NestGridCellNetwork(GridCellNetwork):
             gcnLogger.debug("Init place cells: start: {0}, end: {1}".format(0,
                 self.no.theta_start_t))
         else:
-            logger.info('Initialization place cells already set. Skipping the set up')
+            gcnLogger.info('Initialization place cells already set. Skipping the set up')
 
 
     def setPlaceCells(self, start=None, end=None, posIn=None):
@@ -455,7 +466,7 @@ class NestGridCellNetwork(GridCellNetwork):
         self.setStartPlaceCells(startPos)
 
         # Here the actual velocity place cells
-        print "Setting up velocity place cells"
+        gcnLogger.info("Setting up velocity place cells")
         self.PC, _, _ = self.createGenericPlaceCells(self.no.N_place_cells,
                 self.no.pc_max_rate, self.no.pc_conn_weight, start, end, posIn)
 
@@ -532,7 +543,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
 
         else:
-            print "Warning: trying to set up place cells with N_place_cells == 0"
+            gcnLogger.warn("trying to set up place cells with N_place_cells == 0")
 
         self._placeCellsLoaded = True
 

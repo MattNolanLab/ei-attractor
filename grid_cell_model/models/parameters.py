@@ -19,7 +19,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
+import copy
 from submitting import flagparse
 
 
@@ -42,7 +42,11 @@ class DOptionParser(flagparse.FlagParser):
 
 
     def setOptionDictionary(self, options):
-        options._einet_optdict = vars(options)
+        optDict = copy.deepcopy(vars(options))
+        for key in optDict.keys():
+            if optDict[key] is None:
+                del optDict[key]
+        options._einet_optdict = optDict
         return options
 
 
@@ -120,7 +124,6 @@ def getOptParser():
     optParser.add_argument("--g_GABA_total",          type=float,  help="Total GABA connections synaptic conductance (nS)")
     optParser.add_argument("--g_uni_GABA_frac",       type=float,  help="Total uniform GABA A connections synaptic conductance (fraction of g_GABA_total)")
     optParser.add_argument("--uni_GABA_density",      type=float,  help="Density of uniform GABA A connections")
-    optParser.add_argument("--NMDA_percent",          type=float,  help="Percentage of NMDA conductance the excitatory synapse contains (%%)")
     optParser.add_argument("--tau_NMDA_rise",         type=float,  help="NMDA rise time constant (ms)")
     optParser.add_argument("--tau_NMDA_fall",         type=float,  help="NMDA fall time constant (ms)")
     optParser.add_argument("--tau_GABA_A_rise",       type=float,  help="Mean of GABA A rising time constant (ms)")
