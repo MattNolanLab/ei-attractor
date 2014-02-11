@@ -18,11 +18,15 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from abc import ABCMeta, abstractmethod
 import numpy as np
 import numpy.ma as ma
 
 from parameters import DataSpace
 from otherpkg.log import log_warn
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def aggregate2DTrial(sp, varList, trialNumList, fReduce=np.mean,
@@ -215,6 +219,105 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
         Y, X = computeYX(sp, iterList, normalize=normalizeTicks, **kw)
 
     return data, X, Y
+
+
+
+class AggregateData(object):
+    __meta__ = ABCMeta
+    analysisRoot = ['analysis']
+
+    def __init__(self, space, iterList, NTrials, ignoreNaNs=False,
+            normalizeTicks=False):
+        self.sp = space
+        self.iterList = iterList
+        self.NTrials = NTrials
+        self.ignoreNaNs = ignoreNaNs
+        self.normalizeTicks = normalizeTicks
+
+
+    @abstractmethod
+    def getData(self):
+        raise NotImplementedError()
+
+
+bumpPosLogger = logging.getLogger('{0}.{1}'.format(__name__, 'BumpPositionData'))
+class BumpPositionData(AggregateData):
+    funReduce     = None
+    output_dtype  = 'list'
+
+    def __init__(self, space, iterList, NTrials, what, root, ignoreNaNs=False,
+            normalizeTicks=False, **kw):
+        super(BumpPositionData, self).__init__(space, iterList, NTrials,
+                ignoreNaNs, normalizeTicks)
+        self._what = what
+        if self._what is None:
+            raise ValueError('%s.what must be a list of strings' % self.what)
+        self._root = root
+        self._data = None
+        self._vars = self.analysisRoot + self._root + self._what
+        self._kw = kw
+        bumpPosLogger.debug('self._vars: %s', self._vars)
+
+    def getWhat(self): return self._what
+    what = property(getWhat)
+
+    def getData(self):
+        if self._data is not None:
+            return self._data
+
+        trialNumList  = np.arange(self.NTrials)
+        data = self.sp.aggregateData(self._vars,
+                trialNumList,
+                output_dtype=self.output_dtype,
+                loadData=True,
+                saveData=False,
+                funReduce=None)
+        Y, X = computeYX(self.sp, self.iterList, normalize=self.normalizeTicks,
+                **self._kw)
+        return data, X, Y
+
+
+class AggregateBumpReciprocal(BumpPositionData):
+    times_dtype = 'list'
+
+    def __init__(self, space, iterList, NTrials, ignoreNaNs=False,
+            normalizeTicks=True, root=['bump_e'], tStart=0, aggrFunc=np.median,
+            **kw):
+        what = ['positions', 'sigma']
+        super(AggregateBumpReciprocal, self).__init__(space, iterList, NTrials,
+                what, root, ignoreNaNs, normalizeTicks, **kw)
+        self.tStart = tStart
+        self.aggrFunc = aggrFunc
+
+        trialNumList  = np.arange(self.NTrials)
+        timeVars = self.analysisRoot + self._root + ['positions', 't']
+        self._timeData = self.sp.aggregateData(timeVars,
+                trialNumList,
+                output_dtype=self.times_dtype,
+                loadData=True,
+                saveData=False,
+                funReduce=None)[0][0][0]
+
+    def getData(self):
+        timeIdx = self._timeData >= self.tStart
+        resShape = (self.sp.shape[0], self.sp.shape[1], self.NTrials)
+        res = np.ma.MaskedArray(np.ndarray(resShape), mask=True)
+        nRows, nCols = self.sp.shape
+
+        rawData, X, Y = super(AggregateBumpReciprocal, self).getData()
+        for r in xrange(nRows):
+            for c in xrange(nCols):
+                for trialIdx in xrange(self.NTrials):
+                    reciprocal = 1./np.abs(rawData[r][c][trialIdx])
+                    if isinstance(reciprocal, np.ndarray):
+                        res[r, c, trialIdx] = \
+                                self.aggrFunc(reciprocal[timeIdx])
+                    elif not (isinstance(reciprocal, float) and
+                            np.isnan(reciprocal)):
+                        raise ValueError('Something went wrong here. ' + \
+                                'reciprocal must be either array or NaN')
+        return np.mean(res, axis=2), X, Y
+
 
 
 def collapseSweeps(data):
