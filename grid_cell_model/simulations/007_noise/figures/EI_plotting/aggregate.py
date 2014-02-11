@@ -244,6 +244,7 @@ bumpPosLogger = logging.getLogger('{0}.{1}'.format(__name__, 'BumpPositionData')
 class BumpPositionData(AggregateData):
     funReduce     = None
     output_dtype  = 'list'
+    times_dtype = 'list'
 
     def __init__(self, space, iterList, NTrials, what, root, ignoreNaNs=False,
             normalizeTicks=False, **kw):
@@ -257,6 +258,15 @@ class BumpPositionData(AggregateData):
         self._vars = self.analysisRoot + self._root + self._what
         self._kw = kw
         bumpPosLogger.debug('self._vars: %s', self._vars)
+
+        trialNumList  = np.arange(self.NTrials)
+        timeVars = self.analysisRoot + self._root + ['positions', 't']
+        self._timeData = self.sp.aggregateData(timeVars,
+                trialNumList,
+                output_dtype=self.times_dtype,
+                loadData=True,
+                saveData=False,
+                funReduce=None)[0][0][0]
 
     def getWhat(self): return self._what
     what = property(getWhat)
@@ -277,8 +287,11 @@ class BumpPositionData(AggregateData):
         return data, X, Y
 
 
+class BumpDifferencePosition(BumpPositionData):
+    pass
+
+
 class AggregateBumpReciprocal(BumpPositionData):
-    times_dtype = 'list'
 
     def __init__(self, space, iterList, NTrials, ignoreNaNs=False,
             normalizeTicks=True, root=['bump_e'], tStart=0, aggrFunc=np.median,
@@ -289,14 +302,6 @@ class AggregateBumpReciprocal(BumpPositionData):
         self.tStart = tStart
         self.aggrFunc = aggrFunc
 
-        trialNumList  = np.arange(self.NTrials)
-        timeVars = self.analysisRoot + self._root + ['positions', 't']
-        self._timeData = self.sp.aggregateData(timeVars,
-                trialNumList,
-                output_dtype=self.times_dtype,
-                loadData=True,
-                saveData=False,
-                funReduce=None)[0][0][0]
 
     def getData(self):
         timeIdx = self._timeData >= self.tStart
