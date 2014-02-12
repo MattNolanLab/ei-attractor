@@ -12,7 +12,6 @@ from EI_plotting import sweeps, details, rasters
 from EI_plotting import aggregate as aggr
 from EI_plotting.base import NoiseDataSpaces
 from plotting.global_defs import globalAxesSettings
-from analysis.visitors import SpikeTrainXCVisitor
 from parameters import JobTrialSpace2D
 from submitting import flagparse
 
@@ -37,71 +36,15 @@ gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
 parser = flagparse.FlagParser()
-parser.add_flag('--ccExamples')
-parser.add_flag('--spikeCCExamples')
 parser.add_flag('--velLines')
 parser.add_flag('--detailed_noise')
 parser.add_flag('--slope_sweeps')
 parser.add_flag('--rasters')
+parser.add_flag('--rastersZoom')
 parser.add_flag('--rates')
 args = parser.parse_args()
 
 ###############################################################################
-
-def plotCCExamples(dataSpaces, ns_idx, r, c, trialNum=0, **kw):
-    nPairs = kw.pop('npairs', 5)
-    ax     = kw.pop('ax', plt.gca())
-
-    kw['xlabel'] = kw.get('xlabel', 'Lag (ms)')
-    kw['ylabel'] = kw.get('ylabel', 'C')
-    kw['nticks'] = 2
-    ylabel = kw.get('ylabel', 'C')
-
-    space = dataSpaces.bumpGamma[ns_idx]
-    noise_sigma = dataSpaces.noise_sigmas[ns_idx]
-    data = space[r][c][trialNum].data
-    xcIn = data['analysis']['x-corr'] 
-    CCs =  xcIn['correlations']
-    lags = xcIn['lags']
-    for idx in xrange(nPairs):
-        cc = CCs[idx][2*idx+1]
-        signalPlot(lags, cc, ax, zeroLine=False, xmargin=0.02, nThetaTicks=2, **kw)
-    ax.set_yticks([0, 1])
-    ax.set_ylim([-0.02, 1.02])
-    ax.grid(False)
-    ax.xaxis.labelpad = 0.8
-
-    
-def plotSpikeXCExamples(dataSpaces, ns_idx, r, c, neuronIdx, nOthers, popType,
-        trialNum=0, **kw):
-    ax = kw.pop('ax', plt.gca())
-    xlabel = kw.pop('xlabel', 'Lag (ms)')
-
-    if (popType == 'E'):
-        XCName = 'XCorrelation_e'
-    elif (popType == 'I'):
-        XCName = 'XCorrelation_i'
-    else:
-        raise ValueError()
-
-    space = dataSpaces.grids[ns_idx]
-    noise_sigma = dataSpaces.noise_sigmas[ns_idx]
-    data = space[r][c][trialNum].data['analysis'][XCName]
-    bin_centers = data['bin_centers']
-    CCs = data['correlations']
-
-    for other in xrange(nOthers):
-        C = CCs[neuronIdx][1 + other]
-        ax.plot(bin_centers, C, '-', **kw)
-
-    globalAxesSettings(ax)
-    ax.set_xticks([bin_centers[0], 0, bin_centers[-1]])
-    ax.yaxis.set_visible(False)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-
-    
 
 def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
     # kwargs
@@ -289,78 +232,6 @@ if args.detailed_noise or args.all:
 
 
 ##############################################################################
-##############################################################################
-boxFigSize = (1.75, 1.5)
-boxLeft    = 0.25
-boxBottom  = 0.32
-boxRight   = 0.9
-boxTop     = 0.93
-
-#if args.ccExamples or args.all:
-#    for idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        fig = plt.figure(figsize=boxFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(boxLeft, boxBottom, boxRight,
-#            boxTop))
-#        kw = {}
-#        if (idx != 0):
-#            kw['ylabel'] = ''
-#
-#        plotCCExamples(ps, ns_idx=idx,
-#                r=rasterRC[idx][0], c=rasterRC[idx][1],
-#                ax=ax, **kw)
-#        fname = outputDir + "/velocity_cc_examples{0}.pdf".format(noise_sigma)
-#        fig.savefig(fname, dpi=300, transparent=transparent)
-#        plt.close()
-#
-#
-#if args.spikeCCExamples or args.all:
-#    lagRange    = (-125, 125)
-#    bins        = 251
-#    neuronIdx   = np.arange(4)
-#    plotIdx     = 0
-#    nOthers     = 3
-#    forceUpdate = False
-#    for idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        r, c = rasterRC[idx][0], rasterRC[idx][1]
-#        trialNum = 0
-#
-#        # E cells
-#        fig = plt.figure(figsize=boxFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(boxLeft, boxBottom, boxRight,
-#            boxTop))
-#
-#        visitor_e = SpikeTrainXCVisitor("spikeMon_e", bins,
-#                lagRange=lagRange, 
-#                neuronIdx=neuronIdx,
-#                forceUpdate=forceUpdate)
-#        dataSet_e = ps.grids[idx][r][c][trialNum]
-#        visitor_e.visitDictDataSet(dataSet_e)
-#
-#        plotSpikeXCExamples(ps, idx, r, c, plotIdx, nOthers, 'E')
-#
-#        fname = outputDir + "/velocity_spike_xc_E_examples{0}.pdf".format(noise_sigma)
-#        fig.savefig(fname, dpi=300, transparent=transparent)
-#        plt.close()
-#
-#        # Icells
-#        fig = plt.figure(figsize=boxFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(boxLeft, boxBottom, boxRight,
-#            boxTop))
-#        visitor_i = SpikeTrainXCVisitor("spikeMon_i", bins,
-#                lagRange=lagRange, 
-#                neuronIdx=neuronIdx,
-#                forceUpdate=forceUpdate)
-#        dataSet_i = ps.grids[idx][r][c][trialNum]
-#        visitor_i.visitDictDataSet(dataSet_i)
-#
-#        plotSpikeXCExamples(ps, idx, r, c, plotIdx, nOthers, 'I')
-#
-#        fname = outputDir + "/velocity_spike_xc_I_examples{0}.pdf".format(noise_sigma)
-#        fig.savefig(fname, dpi=300, transparent=transparent)
-#        plt.close()
-
-
-##############################################################################
 #                           Velocity (slope) sweeps
 
 # This should be corresponding to the velLine examples as well !!
@@ -427,10 +298,10 @@ if args.slope_sweeps or args.all:
 tLimits  = [2e3, 3e3] # ms
 trialNum = 10
 
-rasterFigSize = (3.75, 1.9)
+rasterFigSize = (3.75, 2.2)
 transparent   = True
 rasterLeft    = 0.2
-rasterBottom  = 0.1
+rasterBottom  = 0.2
 rasterRight   = 0.99
 rasterTop     = 0.8
 
@@ -442,9 +313,12 @@ if args.rasters or args.all:
         fig = plt.figure(figsize=rasterFigSize)
         ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
             rasterTop))
-        kw = {}
+        kw = dict(scaleBar=None)
         if (idx != 0):
             kw['ylabel'] = ''
+            kw['yticks'] = False
+        if idx == 2:
+            kw['scaleBar'] = 125
         rasters.EIRaster(ps.v[idx], 
                 noise_sigma=noise_sigma,
                 spaceType='velocity',
@@ -453,6 +327,8 @@ if args.rasters or args.all:
                 tLimits=tLimits,
                 trialNum=trialNum,
                 ann_EI=True,
+                scaleX=0.85,
+                scaleY=-0.15,
                 **kw)
         fname = outputDir + "/velocity_raster{0}.png"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300,
@@ -519,3 +395,41 @@ if args.rates or args.all:
 
 
 
+
+##############################################################################
+#                           Raster and rate zoom-ins
+##############################################################################
+tLimits  = [2.75e3, 2.875e3] # ms
+trialNum = 10
+
+c = 0.75
+rasterZoomFigSize = c*rasterFigSize[0], c*rasterFigSize[1]
+ylabelPos   = -0.22
+
+
+if args.rastersZoom or args.all:
+    for idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=rasterZoomFigSize)
+        ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+            rasterTop))
+        kw = dict(scaleBar=None)
+        if idx == 2:
+            kw['scaleBar'] = 25
+        rasters.EIRaster(ps.v[idx], 
+                noise_sigma=noise_sigma,
+                spaceType='velocity',
+                r=rasterRC[idx][0], c=rasterRC[idx][1],
+                ylabelPos=ylabelPos,
+                tLimits=tLimits,
+                trialNum=trialNum,
+                sigmaTitle=False,
+                ann_EI=True,
+                scaleX=0.75,
+                scaleY=-0.15,
+                ylabel='', yticks=False,
+                **kw)
+        fname = outputDir + "/velocity_raster_zooms{0}.png"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                transparent=transparent)
+        plt.close()
+        

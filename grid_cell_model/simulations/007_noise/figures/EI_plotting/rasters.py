@@ -18,6 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,8 +26,11 @@ import matplotlib.ticker as ti
 
 import analysis.spikes as aspikes
 from plotting.global_defs       import globalAxesSettings
+from plotting.low_level         import xScaleBar
 from data_storage.sim_models.ei import MonitoredSpikes
 from plotting.signal            import signalPlot
+
+logger = logging.getLogger(__name__)
 
 ##############################################################################
 # Raster plots
@@ -66,6 +70,11 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
     ann_EI       = kw.pop('ann_EI', False)
     sigmaTitle   = kw.pop('sigmaTitle', True)
     noise_sigma  = kw.pop('noise_sigma', None)
+    scaleBar     = kw.pop('scaleBar', None)
+    scaleX       = kw.pop('scaleX', 0.75)
+    scaleY       = kw.pop('scaleY', 0.05)
+    scaleText    = kw.pop('scaleText', 'ms')
+    scaleTextSize= kw.pop('scaleTextSize', 'small')
     kw['markersize'] = kw.get('markersize', 1.0)
 
     ESpikes = ESpikes.windowed(tLimits)
@@ -76,6 +85,8 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
 
     # TO REMOVE: this is to transform the neuron number from row-wise to column
     # wise indexes. A better solution has to be devised in the future
+    logger.warn('Nx, Ny are fixed in the code. Make sure the torus size is '+\
+            "the same as specified here.")
     Nx, Ny = 34, 30
     N = Nx * Ny
     if (N != ESpikes.N or N != ISpikes.N):
@@ -130,6 +141,9 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
         ax.text(-0.05, 0.25, 'I', va='center', ha='center', size='small',
                 transform=ax.transAxes, color='blue', weight='bold')
 
+    if (scaleBar is not None):
+        xScaleBar(scaleBar, x=scaleX, y=scaleY, ax=ax, size=scaleTextSize,
+                unitsText=scaleText)
 
     
     return ax
