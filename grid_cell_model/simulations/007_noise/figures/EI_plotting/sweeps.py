@@ -63,8 +63,7 @@ def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
     return C, ax, cax
 
 
-def plotBumpSigmaTrial(sp, types, iterList, noise_sigma, trialNumList=[0],
-        **kw):
+def plotBumpSigmaTrial(aggregateData, noise_sigma, **kw):
     #kw arguments
     r           = kw.pop('r', 0)
     c           = kw.pop('c', 0)
@@ -74,10 +73,10 @@ def plotBumpSigmaTrial(sp, types, iterList, noise_sigma, trialNumList=[0],
     sigmaTitle  = kw.pop('sigmaTitle', True)
     annotations = kw.pop('annotations', None)
 
-    C, _, _ = aggr.aggregateType(sp, iterList, types, 0, ignoreNaNs=ignoreNaNs, **kw)
+    
+    C, X, Y = aggregateData.getData()
     print("min(C): {0}".format(np.min(C)))
     print("max(C): {0}".format(np.max(C)))
-    Y, X = aggr.computeYX(sp, iterList, r=r, c=c)
     C, ax, cax =  plot2DTrial(X, Y, C, colorBar=cbar, **kw)
 
     if (sigmaTitle):

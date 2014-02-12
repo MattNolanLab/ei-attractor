@@ -69,17 +69,15 @@ transparent  = True
 ##############################################################################
 sigmaBumpText = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
 sigmaTypes = ['bump_full', 'sigma']
-bumpTrialNumList = np.arange(5)
+bumpNTrials = 5
 bump_vmin = 0
-bump_vmax = 0.3565
+bump_vmax = 0.421
 bump_cbar_kw = dict(
         label       = sigmaBumpText,
         location    = 'right',
         shrink      = 0.8,
         pad         = -0.05,
         ticks       = ti.MultipleLocator(0.2),
-        extend      = 'max',
-        extendfrac  = 0.1,
         rasterized  = True)
 
 exampleRC = ( (5, 15), (15, 5) )
@@ -97,58 +95,27 @@ ann1 = dict(
 ann = [ann0, ann1]
 
 if args.bumpSweep or args.all:
-    # noise_sigma = 0 pA
-    fig = plt.figure("sweeps0", figsize=sweepFigSize)
-    exRows = [28, 15]
-    exCols = [3, 15]
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    sweeps.plotBumpSigmaTrial(ps.bumpGamma[0], sigmaTypes, iterList,
-            noise_sigma=ps.noise_sigmas[0],
-            ax=ax,
-            trialNumList=bumpTrialNumList,
-            cbar=False, cbar_kw=bump_cbar_kw,
-            vmin=bump_vmin, vmax=bump_vmax,
-            annotations=ann)
-    fname = outputDir + "/bumps_sweeps0.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-
-    # noise_sigma = 150 pA
-    for a in ann:
-        a['color'] = 'black'
-    fig = plt.figure("sweeps150", figsize=sweepFigSize)
-    exRows = [8, 2]
-    exCols = [10, 9]
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    sweeps.plotBumpSigmaTrial(ps.bumpGamma[1], sigmaTypes, iterList,
-            noise_sigma=noise_sigmas[1],
-            ax=ax,
-            ylabel='', yticks=False,
-            trialNumList=bumpTrialNumList,
-            cbar=False, cbar_kw=bump_cbar_kw,
-            vmin=bump_vmin, vmax=bump_vmax,
-            annotations=ann)
-    fname = outputDir + "/bumps_sweeps150.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-
-    # noise_sigma = 300 pA
-    fig = plt.figure("sweeps300", figsize=sweepFigSize)
-    exRows = [16, 15]
-    exCols = [6, 23]
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    ax.set_clip_on(False)
-    sweeps.plotBumpSigmaTrial(ps.bumpGamma[2], sigmaTypes, iterList,
-            noise_sigma=noise_sigmas[2],
-            ax=ax,
-            trialNumList=bumpTrialNumList,
-            ylabel='', yticks=False,
-            cbar=True, cbar_kw=bump_cbar_kw,
-            vmin=bump_vmin, vmax=bump_vmax,
-            annotations=ann)
-    fname = outputDir + "/bumps_sweeps300.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=sweepFigSize)
+        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+            sweepTop))
+        kw = dict(cbar=False)
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        if ns_idx == 2:
+            kw['cbar'] = True
+        data = aggr.AggregateBumpReciprocal(ps.bumpGamma[ns_idx], iterList,
+                bumpNTrials, tStart=500.0)
+        _, _, cax = sweeps.plotBumpSigmaTrial(data,
+                noise_sigma=noise_sigma,
+                ax=ax,
+                cbar_kw=bump_cbar_kw,
+                vmin=bump_vmin, vmax=bump_vmax,
+                annotations=ann, **kw)
+        fname = outputDir + "/bumps_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
 
 
 ##############################################################################

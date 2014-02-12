@@ -210,21 +210,15 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
     This class contains methods for processing  the population activity over
     time.
     '''
-
     class BumpFitList(collections.Sequence):
-        def __init__(self,
-                AList=[],
-                mu_xList=[],
-                mu_yList=[],
-                sigmaList=[],
-                err=[],
-                times=[]):
-            self._A     = AList
-            self._mu_x  = mu_xList
-            self._mu_y  = mu_yList
-            self._sigma = sigmaList
-            self._err   = err
-            self._times = times
+        def __init__(self, AList=None, mu_xList=None, mu_yList=None,
+                sigmaList=None, err=None, times=None):
+            self._A     = AList     if AList is not None else []
+            self._mu_x  = mu_xList  if mu_xList is not None else []
+            self._mu_y  = mu_yList  if mu_yList is not None else []
+            self._sigma = sigmaList if sigmaList is not None else []
+            self._err   = err       if err is not None else []
+            self._times = times     if times is not None else []
 
             if not self._consistent():
                 raise ValueError('All input arguments mus have same length')
@@ -232,11 +226,11 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
 
         def _consistent(self):
             return \
-                len(self.A) == len(self.mu_x) and   \
-                len(self.A) == len(self.mu_y) and   \
-                len(self.A) == len(self.sigma) and  \
-                len(self.A) == len(self.err) and    \
-                len(self.A) == len(self.t)
+                len(self._A) == len(self._mu_x) and   \
+                len(self._A) == len(self._mu_y) and   \
+                len(self._A) == len(self._sigma) and  \
+                len(self._A) == len(self._err) and    \
+                len(self._A) == len(self._times)
 
 
         def getA(self): return self._A
@@ -269,7 +263,6 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
 
         def __len__(self):
             return len(self._A) # All same length
-
 
 
     def __init__(self, senders, times, sheetSize):
