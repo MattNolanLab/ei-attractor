@@ -34,6 +34,7 @@ from . import aggregate as aggr
 from .base import filterData
 
 logger = logging.getLogger(__name__)
+plotSweepLogger = logging.getLogger('{0}.{1}'.format(__name__, 'plotSweep'))
 
 ##############################################################################
 # Parameter sweeps
@@ -259,6 +260,30 @@ def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
 
     return diffData, ax, cax
 
+
+
+def plotSweep(aggregateData, noise_sigma, **kw):
+    cbar            = kw.pop('cbar', True)
+    annotations     = kw.pop('annotations', None)
+    #symmetricLimits = kw.pop('symmetricLimits', True)
+    filterThreshold = kw.pop('filterThreshold', -np.infty)
+    sigmaTitle      = kw.pop('sigmaTitle', True)
+
+    data, X, Y = aggregateData.getData()
+    plotSweepLogger.info("min(data): {0}".format(np.min(data)))
+    plotSweepLogger.info("max(data): {0}".format(np.max(data)))
+    plotSweepLogger.info("median(data): {0}".format(np.median(data)))
+
+    data, ax, cax = plot2DTrial(X, Y, data, colorBar=cbar, **kw)
+
+    if (sigmaTitle):
+        ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+
+    if (annotations is not None):
+        for a in annotations:
+            plotSweepAnnotation(X=X, Y=Y, ax=ax, **a)
+
+    return data, ax, cax
 
 
 

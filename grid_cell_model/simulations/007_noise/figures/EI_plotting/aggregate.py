@@ -1,29 +1,14 @@
-#
-#   aggregate.py
-#
-#   Data aggregation, mainly parameter sweeps
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Data aggregation, mainly parameter sweeps
+'''
 from abc import ABCMeta, abstractmethod
 import numpy as np
 import numpy.ma as ma
 
 from parameters import DataSpace
 from otherpkg.log import log_warn
+from analysis.image import Position2D
+import analysis.image as image
 
 import logging
 logger = logging.getLogger(__name__)
@@ -252,9 +237,11 @@ class BumpPositionData(AggregateData):
                 ignoreNaNs, normalizeTicks)
         self._what = what
         if self._what is None:
-            raise ValueError('%s.what must be a list of strings' % self.what)
+            self._what = []
         self._root = root
         self._data = None
+        self._X = None
+        self._Y = None
         self._vars = self.analysisRoot + self._root + self._what
         self._kw = kw
         bumpPosLogger.debug('self._vars: %s', self._vars)
@@ -271,24 +258,113 @@ class BumpPositionData(AggregateData):
     def getWhat(self): return self._what
     what = property(getWhat)
 
-    def getData(self):
-        if self._data is not None:
-            return self._data
 
+    def _getRawData(self, vars):
         trialNumList  = np.arange(self.NTrials)
-        data = self.sp.aggregateData(self._vars,
+        data = self.sp.aggregateData(vars,
                 trialNumList,
                 output_dtype=self.output_dtype,
                 loadData=True,
                 saveData=False,
                 funReduce=None)
-        Y, X = computeYX(self.sp, self.iterList, normalize=self.normalizeTicks,
-                **self._kw)
-        return data, X, Y
+        if self._X is None: # or self._Y is None
+            self._Y, self._X = computeYX(self.sp, self.iterList,
+                    normalize=self.normalizeTicks, **self._kw)
+        return data, self._X, self._Y
+
+
+    def getData(self):
+        if self._data is None:
+            self._data, self._X, self._Y = self._getRawData(self._vars)
+        return self._data, self._X, self._Y
+
+    def getTimes(self):
+        return self._timeData
 
 
 class BumpDifferencePosition(BumpPositionData):
-    pass
+    '''
+    Compute vectors of distances from the snapshot of the bump specified by a
+    user argument. Everything before the start time will be ignored.
+    '''
+    def __init__(self, space, iterList, NTrials, ignoreNaNs=False,
+            normalizeTicks=True, root=['bump_e'], tStart=0, **kw):
+        what = None # This should not be valid
+        super(BumpDifferencePosition, self).__init__(space, iterList, NTrials,
+                what, root, ignoreNaNs, normalizeTicks, **kw)
+        self.tStart = tStart
+
+
+    def _getMus(self):
+        varBase = self.analysisRoot + self._root + ['positions']
+        mu_x_all, X, Y = self._getRawData(varBase + ['mu_x'])
+        mu_y_all, _, _ = self._getRawData(varBase + ['mu_y'])
+        return mu_x_all, mu_y_all, X, Y
+
+
+    def getData(self):
+        mu_x_all, mu_y_all, X, Y = self._getMus()
+        timeIdx = self._timeData >= self.tStart
+        nRows, nCols = self.sp.shape
+        distances = [[[None for trialIdx in xrange(self.NTrials)] for c in
+                xrange(nCols)] for r in xrange(nRows)]
+
+        for r in xrange(nRows):
+            for c in xrange(nCols):
+                #if r == 13 and c == 20:
+                #    import pdb; pdb.set_trace()
+                for trialIdx in xrange(self.NTrials):
+                    mu_x = mu_x_all[r][c][trialIdx]
+                    mu_y = mu_y_all[r][c][trialIdx]
+                    if isinstance(mu_x, np.ndarray):
+                        mu_x = mu_x[timeIdx]
+                        mu_y = mu_y[timeIdx]
+
+                        startPos = Position2D(mu_x[0], mu_y[0])
+                        positions = Position2D(mu_x, mu_y)
+                        torusSize = Position2D(34, 30)
+                        distances[r][c][trialIdx] = image.remapTwistedTorus(\
+                                startPos, positions, torusSize)
+
+        return distances, X, Y
+                    
+
+    def getTimes(self):
+        return self._timeData[self._timeData >= self.tStart]
+
+
+
+class BumpDriftAtTime(BumpDifferencePosition):
+    def __init__(self, tDrift, *args, **kwargs):
+        super(BumpDriftAtTime, self).__init__(*args, **kwargs)
+        self.tDrift = tDrift
+
+
+    def getData(self):
+        # Find the correct bin if it exists. Time array might not start with
+        # t=0!
+        driftIdx = np.nonzero(self.getTimes() <= self.tDrift)[0]
+        if len(driftIdx) == 0:
+            msg = 'Cannot find appropriate index in the bump position data. '+\
+                    'Check your drift time: {0}'
+            raise IndexError(msg.format(self.tDrift))
+        driftIdx = driftIdx[-1]
+
+        drifts = np.ma.MaskedArray(np.ndarray(self.sp.shape), mask=True)
+        distances, X, Y = super(BumpDriftAtTime, self).getData()
+        nRows, nCols = self.sp.shape
+        for r in xrange(nRows):
+            for c in xrange(nCols):
+                trialDst = []
+                for trialIdx in xrange(self.NTrials):
+                    dist = distances[r][c][trialIdx]
+                    if dist is not None:
+                        trialDst.append(dist[driftIdx])
+                if len(trialDst) != 0:
+                    drifts[r, c] = np.mean(trialDst)
+        return drifts, X, Y
+                    
+
 
 
 class AggregateBumpReciprocal(BumpPositionData):
@@ -324,7 +400,11 @@ class AggregateBumpReciprocal(BumpPositionData):
         return np.mean(res, axis=2), X, Y
 
 
+    def getTimes(self):
+        return self._timeData[self._timeData >= self.tStart]
 
+
+##############################################################################
 def collapseSweeps(data):
     '''
     Take a list of 2D parameter sweep results, flatten all of them, and stack
