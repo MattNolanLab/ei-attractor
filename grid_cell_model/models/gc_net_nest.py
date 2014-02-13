@@ -49,6 +49,23 @@ class PosInputs(object):
         self.pos_y = pos_y
         self.pos_dt = pos_dt
 
+    def __str__(self):
+        res = 'PosInputs:\n  pos_x: {0}\n  pos_y: {1}\n  pos_dt: {2}'.format(\
+                self.pos_x, self.pos_y, self.pos_dt)
+        return res
+
+
+class ConstPosInputs(PosInputs):
+    def __init__(self, pos_x, pos_y):
+        # dt here is irrelevant (say 1e3). This data will never get advanced
+        super(ConstPosInputs, self).__init__([float(pos_x)], [float(pos_y)],
+                1e3)
+
+    def __str__(self):
+        res = 'ConstPosInputs:\n  pos_x: {0}\n  pos_y: {1}\n  pos_dt: {2}'.format(\
+                self.pos_x, self.pos_y, self.pos_dt)
+        return res
+
 
 
 class NestGridCellNetwork(GridCellNetwork):
@@ -442,6 +459,10 @@ class NestGridCellNetwork(GridCellNetwork):
     def setStartPlaceCells(self, posIn):
         if (len(self.PC_start) == 0):
             gcnLogger.info("Setting up initialization place cells")
+            gcnLogger.debug("Init place cell positional input: {0}".format(\
+                    str(posIn)))
+            gcnLogger.debug("Init place cells: start: {0}, end: {1}".format(0,
+                self.no.theta_start_t))
             self.PC_start, _, _ = self.createGenericPlaceCells(
                     self.no.N_place_cells,
                     self.no.pc_start_max_rate,
@@ -449,8 +470,6 @@ class NestGridCellNetwork(GridCellNetwork):
                     start=0.0,
                     end=self.no.theta_start_t,
                     posIn=posIn)
-            gcnLogger.debug("Init place cells: start: {0}, end: {1}".format(0,
-                self.no.theta_start_t))
         else:
             gcnLogger.info('Initialization place cells already set. Skipping the set up')
 
@@ -460,13 +479,18 @@ class NestGridCellNetwork(GridCellNetwork):
         # the correct position, i.e. the bump must be at the correct starting
         # position, which matches the actual velocity simulation place cell
         # input
-        self._loadRatVelocities()
-        startPos = PosInputs([self.rat_pos_x[0]], [self.rat_pos_y[0]],
-                self.rat_dt)
+        if posIn is None:
+            self._loadRatVelocities()
+            startPos = ConstPosInputs(self.rat_pos_x[0], self.rat_pos_y[0])
+        else:
+            startPos = ConstPosInputs(posIn.pos_x[0], posIn.pos_y[0])
         self.setStartPlaceCells(startPos)
 
         # Here the actual velocity place cells
-        gcnLogger.info("Setting up velocity place cells")
+        gcnLogger.info("Setting up place cells. User defined positional " +\
+                "data: {0}".format('no' if posIn is None else 'yes'))
+        gcnLogger.debug("Place cell positional input: {0}".format(str(posIn)))
+
         self.PC, _, _ = self.createGenericPlaceCells(self.no.N_place_cells,
                 self.no.pc_max_rate, self.no.pc_conn_weight, start, end, posIn)
 
@@ -486,6 +510,7 @@ class NestGridCellNetwork(GridCellNetwork):
             posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
 
         if (N != 0):
+            gcnLogger.info('Setting up generic place cells')
             NTotal = N*N
 
             boxSize = [self.no.arenaSize, self.no.arenaSize]
@@ -500,7 +525,7 @@ class NestGridCellNetwork(GridCellNetwork):
             nest.SetStatus(PC, 'ctr_x', PCHelper.centers[:, 0])
             nest.SetStatus(PC, 'ctr_y', PCHelper.centers[:, 1])
 
-            npos = int(self.no.time / self.rat_dt)
+            npos = int(self.no.time / posIn.pos_dt)
             nest.SetStatus([PC[0]], params={
                 'rat_pos_x' : posIn.pos_x[0:npos],
                 'rat_pos_y' : posIn.pos_y[0:npos],

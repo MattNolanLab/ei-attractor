@@ -50,6 +50,7 @@ for noise_sigma in noise_sigma_all:
     p['nthreads']          = 1
     p['ntrials']           = 3
     p['velON']             = 1
+    p['constantPosition']  = 0
 
 
     # Range of E/I synaptic conductances

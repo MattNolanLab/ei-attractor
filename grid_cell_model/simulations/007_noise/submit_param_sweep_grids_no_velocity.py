@@ -31,11 +31,12 @@ for noise_sigma in noise_sigma_all:
     numRepeat   = 1
     dry_run     = False
 
-    p['time']              = 600e3  # ms
+    p['time']              = 0.1e3  # ms
     p['nthreads']          = 1
     p['ntrials']           = 3
     p['bumpCurrentSlope']  = -1
     p['velON']             = 0
+    p['constantPosition']  = 0
 
 
 

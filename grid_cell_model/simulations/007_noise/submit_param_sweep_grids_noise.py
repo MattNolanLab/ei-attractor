@@ -48,6 +48,7 @@ p['time']              = 600e3  # ms
 p['nthreads']          = 1
 p['ntrials']           = 1
 p['velON']             = 1
+p['constantPosition']  = 0
 
 # Range of noise and E/I synaptic conductances
 noiseParams = SweepParams(0, 300, 31)
