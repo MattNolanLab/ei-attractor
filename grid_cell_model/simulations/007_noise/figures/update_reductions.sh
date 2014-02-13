@@ -32,7 +32,7 @@ reduction_file="reductions.h5"
 # no arguments --> update everything
 args=$@
 if [[ $# -eq 0 || ($# -eq 1 && $1 == "--detailed" ) ]]; then
-    args="gamma_bump velocity grids"
+    args="gamma_bump velocity grids grids_no_velocity"
 fi
 
 if [ "$1" == "--detailed" ]; then
@@ -59,7 +59,7 @@ for arg in $args; do
             elif [ $arg == "grids" ]; then
                 subdir="$detailed_noise/grids/$detailed_dir/$reduction_file"
             else
-                echo "Unknown option: $arg"
+                echo "Unknown detailed noise option: $arg"
                 exit 1
             fi
 
@@ -77,8 +77,10 @@ for arg in $args; do
                 subdir="$sweep_dir/velocity/${noise_sigma}pA/$reduction_file"
             elif [ $arg == "grids" ]; then
                 subdir="$sweep_dir/grids/${noise_sigma}pA/$reduction_file"
+            elif [ $arg == "grids_no_velocity" ]; then
+                subdir="$sweep_dir/grids_no_velocity/${noise_sigma}pA/$reduction_file"
             else
-                echo "Unknown option: $arg"
+                echo "Unknown even spacing option: $arg"
                 exit 1
             fi
 

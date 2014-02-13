@@ -153,11 +153,12 @@ class GridSweepWidget(SweepWidget):
 
 class BumpSweepWidget(SweepWidget):
     bumpSigmaUpdate = QtCore.Signal(str)
+    NTrials = 5
+    bumpTStart = 0.5e3
 
     def __init__(self, parent=None):
         SweepWidget.__init__(self, parent)
         self.types = ['bump_full', 'sigma']
-        self.bumpSigma = None
         self.trial = None
 
 
@@ -174,21 +175,14 @@ class BumpSweepWidget(SweepWidget):
                 Bbox.from_extents(self.sweepLeft, self.sweepBottom, self.sweepRight,
                                   self.sweepTop))
        
-        sweeps.plotBumpSigmaTrial(self.dataSpace,
-                self.types, self.iterList,
+        self.aggrData = aggr.AggregateBumpReciprocal(self.dataSpace, self.iterList,
+                self.NTrials, tStart=self.bumpTStart)
+        sweeps.plotSweep(self.aggrData,
                 self.noise_sigma,
-                trialNumList=[],
                 sigmaTitle=False,
-                ignoreNaNs=True,
                 cbar=True, cbar_kw=self.cbar_kw,
                 ax=self.ax,
                 picker=True)
-
-        # TODO: fix this
-        varList = ['analysis', 'bump_e_full', 'sigma']
-        self.bumpSigma = self.dataSpace.aggregateData(varList, trialNumList=[],
-                funReduce=None, loadData=True, saveData=False,
-                output_dtype='array')
 
         c = self.ax.collections
         if (len(c) != 1):
@@ -207,9 +201,10 @@ class BumpSweepWidget(SweepWidget):
     @QtCore.Slot(int, int)
     def setPickPosition(self, r, c):
         super(BumpSweepWidget, self).setPickPosition(r, c)
-        if (r is not None and c is not None and self.bumpSigma is not None):
+        if (r is not None and c is not None and self.aggrData is not None):
+            trialData = self.aggrData.getTrialData()
             print "emitting..."
-            self.bumpSigmaUpdate.emit("{0:.3f}".format(self.bumpSigma[r, c,
+            self.bumpSigmaUpdate.emit("{0:.3f}".format(trialData[r, c,
                 self.trial]))
 
 
