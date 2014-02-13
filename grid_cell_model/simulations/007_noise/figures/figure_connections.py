@@ -1,24 +1,7 @@
 #!/usr/bin/env python
-#
-#   figure_connections.py
-#
-#   Noise publication figures: connection weight figures.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Noise publication figures: connection weight figures.
+'''
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker     import MultipleLocator, AutoMinorLocator, \
@@ -49,36 +32,45 @@ iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 parser = flagparse.FlagParser()
 parser.add_flag('--hists')
+parser.add_flag('--exampleHists')
 parser.add_flag('-w', '--weights')
 args = parser.parse_args()
 
 ##############################################################################
 
 def plotEToI(sp, gIdx, neuronIdx, trialNum=0, **kw):
+    title = kw.pop('title', 'I cell')
+
     gE, gI = aggr.computeYX(sp, iterList)
     M      = sp[0][gIdx][trialNum].data['g_IE']
     conns  = M[neuronIdx, :]
     ax = pconn.plotConnHistogram(conns,
-            title='I cell', **kw)
+            title=title, **kw)
     annG = gE[0, gIdx]
     if (annG - int(annG) == 0):
         annG = int(annG)
-    ann = '$g_E$ = {0} (nS)'.format(annG)
-    ax.text(0.95, 0.95, ann, ha='right', va='top', fontsize='small',
+    ann = '$g_E$ = {0} nS'.format(annG)
+    ax.text(0.95, 0.9, ann, ha='right', va='bottom', fontsize='x-small',
             transform=ax.transAxes)
+    ax.set_xlim([0, annG])
+    ax.set_xticks([0, annG])
 
 def plotIToE(sp, gIdx, neuronIdx, trialNum=0, **kw):
+    title = kw.pop('title', 'E cell')
+
     gE, gI = aggr.computeYX(sp, iterList)
     M      = sp[0][gIdx][trialNum].data['g_EI']
     conns  = M[neuronIdx, :]
     ax = pconn.plotConnHistogram(conns,
-            title='E cell', **kw)
+            title=title, **kw)
     annG = gI[0, gIdx]
     if (annG - int(annG) == 0):
         annG = int(annG)
-    ann = '$g_I$ = {0} (nS)'.format(annG)
-    ax.text(0.95, 0.95, ann, ha='right', va='top', fontsize='small',
+    ann = '$g_I$ = {0} nS'.format(annG)
+    ax.text(0.95, 0.9, ann, ha='right', va='bottom', fontsize='x-small',
             transform=ax.transAxes)
+    ax.set_xlim([0, annG])
+    ax.set_xticks([0, annG])
 
 
 def plotOutgoing(sp, gIdx, type, neuronIdx, trialNum=0, **kw):
@@ -156,21 +148,55 @@ if args.hists or args.all:
     plt.savefig(fname, dpi=300, transparent=transparent)
 
 
+if args.exampleHists or args.all:
+    exampleFigSize = (1.2, 1.2)
+    exampleRC = ( (5, 15), (15, 5) )
+    for exIdx, example in enumerate(exampleRC):
+        kw = dict()
+        if exIdx == 1:
+            kw['xlabel'] = ''
+
+        fig = plt.figure(figsize=exampleFigSize)
+        ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
+        plotEToI(sp, example[0], neuronIdx, ylabel='', title='', **kw)
+        ax.yaxis.set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.set_xlabel(ax.xaxis.get_label_text(), labelpad=-5)
+        #fig.tight_layout(rect=[0.01, 0.01, 0.99, 0.99], pad=0)
+        fname = outputDir + "/figure_connections_examples_E2I{0}.pdf"
+        plt.savefig(fname.format(exIdx), dpi=300, transparent=transparent)
+        plt.close()
+
+
+        fig = plt.figure(figsize=exampleFigSize)
+        ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
+        plotIToE(sp, example[1], neuronIdx, ylabel='', title='', **kw)
+        ax.yaxis.set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.set_xlabel(ax.xaxis.get_label_text(), labelpad=-5)
+        #fig.tight_layout(rect=[0.01, 0.01, 0.99, 0.99], pad=0)
+        fname = outputDir + "/figure_connections_examples_I2E{0}.pdf"
+        plt.savefig(fname.format(exIdx), dpi=300, transparent=transparent)
+        plt.close()
+
+
 if args.weights or args.all:
     # As a control: plot the weights from one neuron (outgoing)
     # E-->I
-    fig = plt.figure('g_out_E2I', figsize=figSize)
+    fig = plt.figure(figsize=figSize)
     plotOutgoing(sp, gIdx, "E", neuronIdx)
     fig.tight_layout()
     fname = outputDir + "/figure_connections_pcolor_out_E2I.png"
     plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()
 
     # I-->E
-    fig = plt.figure('g_out_I2E', figsize=figSize)
+    fig = plt.figure(figsize=figSize)
     plotOutgoing(sp, gIdx, "I", neuronIdx)
     fig.tight_layout()
     fname = outputDir + "/figure_connections_pcolor_out_I2E.png"
     plt.savefig(fname, dpi=300, transparent=False)
+    plt.close()
 
 
     # Out of curiosity: plot the weights to one neuron (incoming)
