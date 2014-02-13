@@ -15,7 +15,7 @@ import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
 
-noise_sigma_all = [0.0] #, 150.0, 300.0] # pA
+noise_sigma_all = [0.0, 150.0, 300.0] # pA
 
 for noise_sigma in noise_sigma_all:
     p = dp.copy()
@@ -23,24 +23,24 @@ for noise_sigma in noise_sigma_all:
     p['noise_sigma'] = noise_sigma # pA
 
     # Submitting
-    ENV         = 'workstation'
-    simRootDir  = 'output_local/even_spacing/tmp'
+    ENV         = 'cluster'
+    simRootDir  = 'output/even_spacing/const_position'
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
     appName     = 'simulation_grids.py'
-    rtLimit     = '05:00:00'
+    rtLimit     = '01:00:00'
     numCPU      = 1
     blocking    = True
     timePrefix  = False
     numRepeat   = 1
     dry_run     = False
 
-    p['time']              = 10e3  # ms
+    p['time']              = 10.5e3  # ms
     p['nthreads']          = 1
-    p['ntrials']           = 20
+    p['ntrials']           = 10
     p['bumpCurrentSlope']  = -1
     p['velON']             = 0
     p['constantPosition']  = 1
-    p['stateMonDur']       = 2e3 # ms
+    p['stateMonDur']       = 1e3 # ms
 
 
 
