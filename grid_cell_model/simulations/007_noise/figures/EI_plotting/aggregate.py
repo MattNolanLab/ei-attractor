@@ -282,6 +282,8 @@ class BumpPositionData(AggregateData):
         return self._timeData
 
 
+bumpDiffLogger = logging.getLogger('{0}.{1}'.format(__name__,
+        'BumpDifferencePosition'))
 class BumpDifferencePosition(BumpPositionData):
     '''
     Compute vectors of distances from the snapshot of the bump specified by a
@@ -316,12 +318,15 @@ class BumpDifferencePosition(BumpPositionData):
                 for trialIdx in xrange(self.NTrials):
                     mu_x = mu_x_all[r][c][trialIdx]
                     mu_y = mu_y_all[r][c][trialIdx]
-                    if isinstance(mu_x, np.ndarray):
+                    if isinstance(mu_x, np.ndarray) and isinstance(mu_y,
+                            np.ndarray):
                         mu_x = mu_x[timeIdx]
                         mu_y = mu_y[timeIdx]
 
                         startPos = Position2D(mu_x[0], mu_y[0])
                         positions = Position2D(mu_x, mu_y)
+                        bumpDiffLogger.warn('Nx, Ny are fixed in the code. Make ' + \
+                                "sure the torus size is the same as specified here.")
                         torusSize = Position2D(34, 30)
                         distances[r][c][trialIdx] = image.remapTwistedTorus(\
                                 startPos, positions, torusSize)
@@ -331,6 +336,47 @@ class BumpDifferencePosition(BumpPositionData):
 
     def getTimes(self):
         return self._timeData[self._timeData >= self.tStart]
+
+
+class BumpDifferenceAtTime(BumpDifferencePosition):
+    def __init__(self, startPos, diffTime, *args, **kwargs):
+        super(BumpDifferenceAtTime, self).__init__(*args, tStart=0, **kwargs)
+        self.startPos = startPos
+        self.diffTime = diffTime
+        bumpDiffLogger.warn('Nx, Ny are fixed in the code. Make ' + \
+                "sure the torus size is the same as specified here.")
+
+    def getData(self):
+        diffIdx = np.nonzero(self.getTimes() <= self.diffTime)[0]
+        if len(diffIdx) == 0:
+            msg = 'Cannot find appropriate index in the bump position data. '+\
+                    'Check your difference time: {0}'
+            raise IndexError(msg.format(self.diffTime))
+        diffIdx = diffIdx[-1]
+
+        mu_x_all, mu_y_all, X, Y = self._getMus()
+        nRows, nCols = self.sp.shape
+        diffs = np.ma.MaskedArray(np.ndarray(self.sp.shape), mask=True)
+        for r in xrange(nRows):
+            for c in xrange(nCols):
+                trialDiffs = []
+                for trialIdx in xrange(self.NTrials):
+                    mu_x = mu_x_all[r][c][trialIdx]
+                    mu_y = mu_y_all[r][c][trialIdx]
+                    if isinstance(mu_x, np.ndarray) and isinstance(mu_y,
+                            np.ndarray):
+                        pos_x = mu_x[diffIdx]
+                        pos_y = mu_y[diffIdx]
+                        torusSize = Position2D(34, 30)
+                        d = image.remapTwistedTorus(\
+                                Position2D(self.startPos[0], self.startPos[1]),
+                                Position2D(np.array([pos_x]), np.array([pos_y])),
+                                torusSize)
+                        trialDiffs.append(d[0])
+                if len(trialDiffs) > 0:
+                    diffs[r, c] = np.mean(trialDiffs) 
+        return diffs, X, Y
+
 
 
 
@@ -377,28 +423,41 @@ class AggregateBumpReciprocal(BumpPositionData):
                 what, root, ignoreNaNs, normalizeTicks, **kw)
         self.tStart = tStart
         self.aggrFunc = aggrFunc
+        self._trialData = None
+        self._X = None
+        self._Y = None
+
+    def _computeData(self):
+        if self._trialData is None:
+            timeIdx = self._timeData >= self.tStart
+            resShape = (self.sp.shape[0], self.sp.shape[1], self.NTrials)
+            self._trialData = np.ma.MaskedArray(np.ndarray(resShape), mask=True)
+            nRows, nCols = self.sp.shape
+
+            rawData, self._X, self._Y = super(AggregateBumpReciprocal, self).getData()
+            for r in xrange(nRows):
+                for c in xrange(nCols):
+                    for trialIdx in xrange(self.NTrials):
+                        reciprocal = 1./np.abs(rawData[r][c][trialIdx])
+                        if isinstance(reciprocal, np.ndarray):
+                            self._trialData[r, c, trialIdx] = \
+                                    self.aggrFunc(reciprocal[timeIdx])
+                        elif not (isinstance(reciprocal, float) and
+                                np.isnan(reciprocal)):
+                            raise ValueError('Something went wrong here. ' + \
+                                    'reciprocal must be either array or NaN')
+            self._trialData
+
+        return self._trialData, self._X, self._Y
 
 
     def getData(self):
-        timeIdx = self._timeData >= self.tStart
-        resShape = (self.sp.shape[0], self.sp.shape[1], self.NTrials)
-        res = np.ma.MaskedArray(np.ndarray(resShape), mask=True)
-        nRows, nCols = self.sp.shape
+        trialData, X, Y = self._computeData()
+        return np.mean(trialData, axis=2), X, Y
 
-        rawData, X, Y = super(AggregateBumpReciprocal, self).getData()
-        for r in xrange(nRows):
-            for c in xrange(nCols):
-                for trialIdx in xrange(self.NTrials):
-                    reciprocal = 1./np.abs(rawData[r][c][trialIdx])
-                    if isinstance(reciprocal, np.ndarray):
-                        res[r, c, trialIdx] = \
-                                self.aggrFunc(reciprocal[timeIdx])
-                    elif not (isinstance(reciprocal, float) and
-                            np.isnan(reciprocal)):
-                        raise ValueError('Something went wrong here. ' + \
-                                'reciprocal must be either array or NaN')
-        return np.mean(res, axis=2), X, Y
-
+    def getTrialData(self):
+        trialData, _, _ = self._computeData()
+        return trialData
 
     def getTimes(self):
         return self._timeData[self._timeData >= self.tStart]

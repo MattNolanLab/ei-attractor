@@ -40,6 +40,7 @@ shape = (31, 31)
 parser = flagparse.FlagParser()
 parser.add_flag('--bumpSweep')
 parser.add_flag('--bumpDriftSweep')
+parser.add_flag('--bumpDiffAtTSweep')
 parser.add_flag('--bumpExamples')
 parser.add_flag('--velExamples')
 parser.add_flag('--velSweep')
@@ -158,6 +159,47 @@ if args.bumpDriftSweep or args.all:
         fname = outputDir + "/bumps_drift_at_time_sweeps{0}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
         plt.close()
+
+##############################################################################
+# Distance from init position
+bumpDiffText = 'Distance from init position\n(neurons)'
+bumpDiffT = 0.75e3 # ms
+bumpDiff_vmin = 0
+bumpDiff_vmax = 20
+diffStartPos = [17, 15]
+bumpDiff_cbar_kw = dict(
+        label       = bumpDiffText,
+        location    = 'right',
+        shrink      = 0.8,
+        pad         = -0.05,
+        ticks       = ti.MultipleLocator(10),
+        rasterized  = True)
+
+
+if args.bumpDiffAtTSweep or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=sweepFigSize)
+        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+            sweepTop))
+        kw = dict(cbar=False)
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        if ns_idx == 2:
+            kw['cbar'] = True
+        data = aggr.BumpDifferenceAtTime(diffStartPos, bumpDiffT,
+                ps.bumpGamma[ns_idx],
+                iterList,
+                bumpNTrials)
+        _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
+                ax=ax,
+                cbar_kw=bumpDiff_cbar_kw,
+                vmin=bumpDiff_vmin, vmax=bumpDiff_vmax,
+                **kw)
+        fname = outputDir + "/bumps_difference_at_time_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
 
 ##############################################################################
 # Bump examples
