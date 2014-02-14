@@ -20,7 +20,7 @@ parser.add_argument('--forceUpdate',  type=int, required=True)
 parser.add_argument("--output_dir",   type=str, required=True)
 parser.add_argument("--job_num",      type=int) # unused
 parser.add_argument("--type",         type=str,
-        choices=['gamma-bump', 'velocity', 'grids'], required=True)
+        choices=['gamma-bump', 'velocity', 'grids', 'positional'], required=True)
 parser.add_argument("--bumpSpeedMax", type=float)
 
 o = parser.parse_args()
@@ -34,6 +34,7 @@ trialNums = None
 sp = JobTrialSpace2D(shape, o.output_dir, dataPoints=dataPoints)
 forceUpdate = bool(o.forceUpdate)
 
+# Create visitors
 if (o.type == "gamma-bump"):
     monName   = 'stateMonF_e'
     stateList = ['I_clamp_GABA_A']
@@ -64,7 +65,8 @@ if (o.type == "gamma-bump"):
     #sp.visit(CCVisitor)
     #sp.visit(spikeVisitor_e)
 elif (o.type == "velocity"):
-    VelVisitor = vis.BumpVelocityVisitor(o.bumpSpeedMax, forceUpdate=forceUpdate, printSlope=True)
+    VelVisitor = vis.BumpVelocityVisitor(o.bumpSpeedMax,
+            forceUpdate=forceUpdate, printSlope=True)
     sp.visit(VelVisitor, trialList='all-at-once')
 elif (o.type == 'grids'):
     spikeType = 'E'
@@ -78,7 +80,15 @@ elif (o.type == 'grids'):
     FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
 
     sp.visit(gridVisitor)
-    sp.visit(ISIVisitor)
+    #sp.visit(ISIVisitor)
     sp.visit(FRVisitor)
+elif o.type == 'positional':
+    bumpPosVisitor = vis.bumps.BumpPositionVisitor(
+            tstart=0,
+            tend=None,
+            win_dt=25.0,
+            readme='Bump position estimation. Whole simulation.',
+            forceUpdate=forceUpdate)
+    sp.visit(bumpPosVisitor)
 else:
     raise ValueError("Unknown analysis type option: {0}".format(o.type))

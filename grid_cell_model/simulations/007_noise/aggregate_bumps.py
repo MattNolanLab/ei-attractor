@@ -59,6 +59,27 @@ for noise_sigma in noise_sigmas:
                 trialNumList, funReduce=None, loadData=loadData, saveData=True,
                 output_dtype='list')
 
+    bumpPosVars = varListBase + ['bump_e', 'positions']
+    sp.aggregateData(bumpPosVars + ['A'],
+            trialNumList, funReduce=None, loadData=loadData,saveData=True,
+            output_dtype='list')
+    sp.aggregateData(bumpPosVars + ['errSum'],
+            trialNumList, funReduce=None, loadData=loadData,saveData=True,
+            output_dtype='list')
+    sp.aggregateData(bumpPosVars + ['mu_x'],
+            trialNumList, funReduce=None, loadData=loadData,saveData=True,
+            output_dtype='list')
+    sp.aggregateData(bumpPosVars + ['mu_y'],
+            trialNumList, funReduce=None, loadData=loadData,saveData=True,
+            output_dtype='list')
+    sp.aggregateData(bumpPosVars + ['sigma'],
+            trialNumList, funReduce=None, loadData=loadData,saveData=True,
+            output_dtype='list')
+    sp.aggregateData(bumpPosVars + ['t'],
+            trialNumList, funReduce=None, loadData=loadData,saveData=True,
+            output_dtype='list')
+
+
     sp.aggregateData(varListBase + ['acVal'], trialNumList, funReduce=np.mean,
             loadData=loadData, saveData=True, output_dtype='array')
     sp.aggregateData(varListBase + ['acVec'], trialNumList, funReduce=None,

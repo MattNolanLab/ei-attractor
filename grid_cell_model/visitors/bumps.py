@@ -219,7 +219,8 @@ class BumpVelocityVisitor(BumpVisitor):
             winLen=250.0,
             forceUpdate=False,
             printSlope=False,
-            outputRoot=defaults.analysisRoot):
+            outputRoot=defaults.analysisRoot,
+            readme=''):
         super(BumpVelocityVisitor, self).__init__(
                 forceUpdate,
                 readme,

@@ -13,9 +13,9 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'cluster'
+ENV         = 'workstation'
 appName     = 'analysis_EI.py'
-rtLimit     = '00:02:00'
+rtLimit     = '00:05:00'
 numCPU      = 1
 blocking    = True
 timePrefix  = False
@@ -23,14 +23,17 @@ numRepeat   = 1
 dry_run     = False
 
 gammaBumpType = 'gamma-bump'
-velocityType = 'velocity'
-gridsType = 'grids'
+velocityType  = 'velocity'
+gridsType     = 'grids'
+posType       = 'positional'
 
-noise_sigma_all = [0.0, 150.0, 300.0] # pA
+noise_sigma_all = [0] #, 150.0, 300.0] # pA
 dirs = \
-    ('output/even_spacing/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
-    #('output/even_spacing/grids',      gridsType,     '{0}pA', (31, 31))
-    #('output/even_spacing/velocity',   velocityType,  '{0}pA', (31, 31))
+    ('output/even_spacing/const_position',     posType,       '{0}pA', (31, 31))
+    #('output/even_spacing/gamma_bump',        gammaBumpType, '{0}pA', (31, 31))
+    #('output/even_spacing/grids',             gridsType,     '{0}pA', (31, 31))
+    #('output/even_spacing/grids_no_velocity', gridsType,     '{0}pA', (31, 31))
+    #('output/even_spacing/velocity',          velocityType,  '{0}pA', (31, 31))
 
 for noise_sigma in noise_sigma_all:
     p = {}
@@ -39,11 +42,11 @@ for noise_sigma in noise_sigma_all:
     simLabel   = dirs[2].format(int(noise_sigma))
     rowN       = dirs[3][0]
     colN       = dirs[3][1]
-    p['verbosity'] = 'DEBUG'
+    p['verbosity'] = 'INFO'
 
     p['shapeRows'] = rowN
     p['shapeCols'] = colN
-    p['forceUpdate'] = 0
+    p['forceUpdate'] = 1
 
     if (p['type'] == velocityType):
         percentile = 99.0
@@ -55,10 +58,10 @@ for noise_sigma in noise_sigma_all:
     ac = ArgumentCreator(p, printout=True)
 
     iterparams = {
-            'row' : np.arange(rowN),
-            'col' : np.arange(colN)
-            #'row' : [5],
-            #'col' : [15]
+            #'row' : np.arange(rowN),
+            #'col' : np.arange(colN)
+            'row' : [5],
+            'col' : [15]
     }
     ac.insertDict(iterparams, mult=True)
 
