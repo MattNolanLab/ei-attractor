@@ -14,7 +14,7 @@ from matplotlib.transforms import Bbox
 from EI_plotting          import sweeps, details, examples, rasters
 from EI_plotting          import aggregate as aggr
 from plotting.global_defs import globalAxesSettings, prepareLims
-from EI_plotting.base     import NoiseDataSpaces
+from EI_plotting.base     import NoiseDataSpaces, getNoiseDataSpaces
 from parameters           import JobTrialSpace2D
 from analysis             import clustering
 from submitting import flagparse
@@ -32,15 +32,17 @@ iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas = [0, 150, 300]
 exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
-gridsDataRoot = 'output_local/even_spacing/grids'
-bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
-velDataRoot   = 'output_local/even_spacing/velocity'
+gridsDataRoot    = 'output_local/even_spacing/grids'
+bumpDataRoot     = 'output_local/even_spacing/gamma_bump'
+velDataRoot      = 'output_local/even_spacing/velocity'
+constPosDataRoot = 'output_local/even_spacing/const_position'
 shape = (31, 31)
 
 parser = flagparse.FlagParser()
 parser.add_flag('--bumpSweep')
 parser.add_flag('--bumpDriftSweep')
 parser.add_flag('--bumpDiffAtTSweep')
+parser.add_flag('--bumpDiffResetSweep')
 parser.add_flag('--bumpExamples')
 parser.add_flag('--velExamples')
 parser.add_flag('--velSweep')
@@ -51,8 +53,10 @@ parser.add_flag('--rates')
 args = parser.parse_args()
 
 ###############################################################################
-roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
+roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot,
+        constPos=constPosDataRoot)
 ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
+constPosPS = getNoiseDataSpaces(roots.constPos, noise_sigmas, shape)
 
 exW = 4
 exH = 2
@@ -197,6 +201,49 @@ if args.bumpDiffAtTSweep or args.all:
                 vmin=bumpDiff_vmin, vmax=bumpDiff_vmax,
                 **kw)
         fname = outputDir + "/bumps_difference_at_time_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
+##############################################################################
+# Average distance from position enforced by place cells, from theta_start_t
+# until the end of the simultion
+bumpResetText = 'Distance from reset\nposition (neurons)'
+bumpResetTStart = 0.5e3 # ms
+bumpReset_vmin = 0
+bumpReset_vmax = 20
+bumpResetStartPos = [17, 15]
+constPosNTrials = 5
+bumpReset_cbar_kw = dict(
+        label       = bumpResetText,
+        location    = 'right',
+        shrink      = 0.8,
+        pad         = -0.05,
+        ticks       = ti.MultipleLocator(5),
+        rasterized  = True)
+
+
+if args.bumpDiffResetSweep or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig = plt.figure(figsize=sweepFigSize)
+        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+            sweepTop))
+        kw = dict(cbar=False)
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        if ns_idx == 2:
+            kw['cbar'] = True
+        data = aggr.BumpAvgDifferenceFromPos(bumpResetStartPos,
+                constPosPS[ns_idx],
+                iterList,
+                constPosNTrials,
+                tstart=bumpResetTStart)
+        _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
+                ax=ax,
+                cbar_kw=bumpReset_cbar_kw,
+                vmin=bumpReset_vmin, vmax=bumpReset_vmax,
+                **kw)
+        fname = outputDir + "/bumps_avg_difference_reset_sweeps{0}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
         plt.close()
 

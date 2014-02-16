@@ -32,7 +32,7 @@ reduction_file="reductions.h5"
 # no arguments --> update everything
 args=$@
 if [[ $# -eq 0 || ($# -eq 1 && $1 == "--detailed" ) ]]; then
-    args="gamma_bump velocity grids grids_no_velocity"
+    args="gamma_bump velocity grids grids_no_velocity const_position"
 fi
 
 if [ "$1" == "--detailed" ]; then
@@ -80,10 +80,11 @@ for arg in $args; do
             elif [ $arg == "grids_no_velocity" ]; then
                 subdir="$sweep_dir/grids_no_velocity/${noise_sigma}pA/$reduction_file"
             else
-                echo "Unknown even spacing option: $arg"
-                exit 1
+                echo "Non-specific even spacing option detected."
+                subdir="$sweep_dir/$arg/${noise_sigma}pA/$reduction_file"
             fi
 
+            echo "$noise_sigma pA..."
             resolved_src="$src_dir/$subdir"
             resolved_dst="$dst_dir/$subdir"
             cp -v "$resolved_src" "$resolved_dst"

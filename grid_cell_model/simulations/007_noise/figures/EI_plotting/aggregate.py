@@ -295,6 +295,8 @@ class BumpDifferencePosition(BumpPositionData):
         super(BumpDifferencePosition, self).__init__(space, iterList, NTrials,
                 what, root, ignoreNaNs, normalizeTicks, **kw)
         self.tStart = tStart
+        bumpDiffLogger.warn('Nx, Ny are fixed in the code. Make sure the '+\
+                "torus size is the same as specified here.")
 
 
     def _getMus(self):
@@ -316,8 +318,11 @@ class BumpDifferencePosition(BumpPositionData):
                 #if r == 13 and c == 20:
                 #    import pdb; pdb.set_trace()
                 for trialIdx in xrange(self.NTrials):
-                    mu_x = mu_x_all[r][c][trialIdx]
-                    mu_y = mu_y_all[r][c][trialIdx]
+                    try:
+                        mu_x = mu_x_all[r][c][trialIdx]
+                        mu_y = mu_y_all[r][c][trialIdx]
+                    except KeyError:
+                        import pdb; pdb.set_trace()
                     if isinstance(mu_x, np.ndarray) and isinstance(mu_y,
                             np.ndarray):
                         mu_x = mu_x[timeIdx]
@@ -325,8 +330,6 @@ class BumpDifferencePosition(BumpPositionData):
 
                         startPos = Position2D(mu_x[0], mu_y[0])
                         positions = Position2D(mu_x, mu_y)
-                        bumpDiffLogger.warn('Nx, Ny are fixed in the code. Make ' + \
-                                "sure the torus size is the same as specified here.")
                         torusSize = Position2D(34, 30)
                         distances[r][c][trialIdx] = image.remapTwistedTorus(\
                                 startPos, positions, torusSize)
@@ -336,6 +339,37 @@ class BumpDifferencePosition(BumpPositionData):
 
     def getTimes(self):
         return self._timeData[self._timeData >= self.tStart]
+
+
+class BumpAvgDifferenceFromPos(BumpDifferencePosition):
+    def __init__(self, startPos, *args, **kwargs):
+        super(BumpAvgDifferenceFromPos, self).__init__(*args, **kwargs)
+        self.startPos = startPos
+        self._avgDiff = None
+        self._X, self._Y = None, None
+
+
+    def getData(self):
+        if self._avgDiff is not None:
+            return self._avgDiff, self._X, self._Y
+
+        distances, self._X, self._Y = super(BumpAvgDifferenceFromPos,
+                self).getData()
+        self._avgDiff = np.ma.MaskedArray(np.ndarray(self.sp.shape), mask=True)
+        nRows, nCols = self.sp.shape
+        for r in xrange(nRows):
+            for c in xrange(nCols):
+                trialDiffs = []
+                for trialIdx in xrange(self.NTrials):
+                    d = distances[r][c][trialIdx]
+                    if d is not None and isinstance(d, np.ndarray):
+                        mn = np.mean(d)
+                        if not np.isnan(mn):
+                            trialDiffs.append(mn)
+                if len(trialDiffs) > 0:
+                    self._avgDiff[r, c] = np.mean(trialDiffs)
+        return self._avgDiff, self._X, self._Y
+
 
 
 class BumpDifferenceAtTime(BumpDifferencePosition):
@@ -367,6 +401,8 @@ class BumpDifferenceAtTime(BumpDifferencePosition):
                             np.ndarray):
                         pos_x = mu_x[diffIdx]
                         pos_y = mu_y[diffIdx]
+                        diffAtTLogger.warn('Nx, Ny are fixed in the code. Make ' + \
+                                "sure the torus size is the same as specified here.")
                         torusSize = Position2D(34, 30)
                         d = image.remapTwistedTorus(\
                                 Position2D(self.startPos[0], self.startPos[1]),
@@ -376,6 +412,9 @@ class BumpDifferenceAtTime(BumpDifferencePosition):
                 if len(trialDiffs) > 0:
                     diffs[r, c] = np.mean(trialDiffs) 
         return diffs, X, Y
+
+diffAtTLogger = logging.getLogger("{0}.{1}".format(__name__,
+        'BumpDifferenceAtTime'))
 
 
 

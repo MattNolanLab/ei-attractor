@@ -53,7 +53,7 @@ def getNoiseDataSpaces(dataRoot, noise_sigmas, shape):
 
 class NoiseDataSpaces(object):
     class Roots(object):
-        def __init__(self, *args):
+        def __init__(self, *args, **kw):
             la = len(args)
             if (la == 1):
                 self.bump  = args[0]
@@ -66,6 +66,8 @@ class NoiseDataSpaces(object):
             else:
                 raise IndexError("Roots class constructor needs either 1 or"+\
                         " three arguments")
+            for key, val in kw.iteritems():
+                setattr(self, key, val)
 
     '''
     A container for the data spaces for all levels of noise.
