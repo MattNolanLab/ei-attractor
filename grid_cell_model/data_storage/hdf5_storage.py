@@ -19,9 +19,15 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 from collections import MutableMapping, MutableSequence
+import logging
+
 import numpy as np
 import h5py
 from interface import DataStorage
+
+
+modLogger = logging.getLogger(__name__)
+
 
 class HDF5DataStorage(DataStorage):
     '''
@@ -87,7 +93,12 @@ class HDF5DataStorage(DataStorage):
         '''
         Create the HDF5MapStorage object from a file.
         '''
-        f = h5py.File(filePath, mode)
+        try:
+            f = h5py.File(filePath, mode)
+        except IOError as e:
+            modLogger.error(\
+                    'Cannot open file in mode \'{0}\': {1}'.format(mode, filePath))
+            raise
         return HDF5MapStorage(f, f['/'])
 
 
