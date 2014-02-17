@@ -418,6 +418,8 @@ class NestGridCellNetwork(GridCellNetwork):
         '''
         Set the model so that there is only a constant velocity current input.
         '''
+        gcnLogger.info('Setting up constant velocity current input: {0}'.format(\
+                vel))
         if start_t is not None:
             raise Exception("Const velocity start time cannot be overridden in this model!")
 
@@ -454,6 +456,8 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
         self.setStartPlaceCells(PosInputs([0.], [.0], self.rat_dt))
+
+        self.velocityInputInitialized = True
 
 
     def setStartPlaceCells(self, posIn):
