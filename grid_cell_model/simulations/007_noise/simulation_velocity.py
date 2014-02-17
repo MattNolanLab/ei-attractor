@@ -29,8 +29,8 @@ from data_storage       import DataStorage
 
 
 parser = getOptParser()
-parser.add_option("--IvelMax", type="float", help="Max constant velocity current input (pA)")
-parser.add_option("--dIvel",   type="float", help="Constant velocity current input step (pA)")
+parser.add_argument("--IvelMax", type=float, required=True, help="Max constant velocity current input (pA)")
+parser.add_argument("--dIvel",   type=float, required=True, help="Constant velocity current input step (pA)")
 
 (options, args) = parser.parse_args()
 
@@ -51,7 +51,7 @@ for trial_idx in range(len(d['trials']), options.ntrials):
         trialOut['IvelVec'] = IvelVec
         trialOut['IvelData'] = []
         for Ivel in IvelVec:
-            const_v = [Ivel, 0.0]
+            const_v = [0.0, -Ivel]
             ei_net = ConstantVelocityNetwork(options, simulationOpts=None, vel=const_v)
 
             ei_net.simulate(options.time, printTime=options.printTime)
