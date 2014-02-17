@@ -235,8 +235,12 @@ def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
     filterThreshold = kw.pop('filterThreshold', -np.infty)
 
 
-    stackedData, X, Y = aggr.collapseNoise(spList, iterList, types, NTrials,
-            ignoreNaNs=ignoreNaNs, normalizeTicks=True)
+    if isinstance(spList[0], aggr.AggregateData):
+        dataList = spList
+        stackedData, X, Y = aggr.collapseNoiseAggregated(dataList)
+    else:
+        stackedData, X, Y = aggr.collapseNoise(spList, iterList, types,
+                NTrials, ignoreNaNs=ignoreNaNs, normalizeTicks=True)
     stackedData, _ = filterData(stackedData, filterThreshold)
     diffData = np.diff(stackedData, axis=0)[which, :]
     if symmetricLimits:

@@ -166,7 +166,7 @@ if args.bumpDriftSweep or args.all:
 
 ##############################################################################
 # Distance from init position
-bumpDiffText = 'Distance from init position\n(neurons)'
+bumpDiffText = 'Distance from init\nposition (neurons)'
 bumpDiffT = 0.75e3 # ms
 bumpDiff_vmin = 0
 bumpDiff_vmax = 20

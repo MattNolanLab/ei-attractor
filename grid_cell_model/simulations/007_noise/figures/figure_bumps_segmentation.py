@@ -152,6 +152,7 @@ if args.diff_all or args.all:
 ##############################################################################
 # Parameter sweep of the difference between noise_150 and noise_0
 exampleRC = ( (5, 15), (15, 5) )
+bumpTStart = 500.0
 
 ann0 = dict(
         txt='b',
@@ -172,7 +173,7 @@ sweepBottom = 0.2
 sweepRight  = 0.8
 sweepTop    = 0.85
 transparent  = True
-sigmaBumpText = '$\Delta^{150 - 0\ pA}[\sigma_{bump}^{-1}\ (neurons^{-1})]$'
+sigmaBumpText = '$\Delta_{150 - 0}[\sigma_{bump}^{-1}\ (neurons^{-1})]$'
 bumpDiff_cbar_kw = dict(
         label       = sigmaBumpText,
         location    = 'right',
@@ -182,13 +183,19 @@ bumpDiff_cbar_kw = dict(
         rasterized  = True)
 
 if args.diff_sweep or args.all:
+    dataList = []
+    for ns_idx, _ in enumerate(ps.noise_sigmas):
+        data = aggr.AggregateBumpReciprocal(ps.bumpGamma[ns_idx], iterList,
+                bumpNTrials, tStart=bumpTStart)
+        dataList.append(data)
+
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas[0:-1]):
         fig = plt.figure(figsize=sweepFigSize)
         ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
             sweepTop))
 
         which = ns_idx
-        sweeps.plotDiffTrial(ps.bumpGamma, iterList, which, bumpNTrials, bumpTypes,
+        sweeps.plotDiffTrial(dataList, None, which, None, None,
                 ax=ax,
                 cbar=True, cbar_kw=bumpDiff_cbar_kw,
                 symmetricLimits=True,

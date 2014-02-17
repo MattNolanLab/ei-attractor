@@ -522,3 +522,13 @@ def collapseNoise(dataSpaces, iterList, types, NTrials, **kw):
         data.append(d)
 
     return collapseSweeps(data), X, Y
+
+
+def collapseNoiseAggregated(dataList):
+    data = []
+    for dataObject in dataList:
+        d, X, Y = dataObject.getData()
+        data.append(d)
+
+    return collapseSweeps(data), X, Y
+
