@@ -2,6 +2,7 @@
 *.png
 *.eps
 *.tmp$$
+!bump_fitting_3d.png
 /slices
 /suppFigure_bumps
 /suppFigure_grids
