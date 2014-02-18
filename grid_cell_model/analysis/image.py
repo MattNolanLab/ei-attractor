@@ -1,24 +1,6 @@
-#
-#   image.py
-#
-#   Image analysis fitting - rateMaps, generic image analysis for GridCells,
-#   etc.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Image analysis fitting - rateMaps, generic image analysis for GridCells, etc.
+'''
 from abc import ABCMeta, abstractmethod
 import collections
 import logging
@@ -35,14 +17,23 @@ __all__ = ['Position2D', 'remapTwistedTorus', 'fitGaussianTT',
 
 logger = logging.getLogger(__name__)
 
+
 class Position2D(object):
 
     def __init__(self, x=None, y=None):
         self.x = x
         self.y = y
 
+        if not isinstance(x, float) and isinstance(y, float):
+            if len(x) != len(y):
+                msg = "Position2D: x and y parameters must have the same length: %d != %d."
+                logger.warn(msg, len(x), len(y))
+
     def __str__(self):
         return "Position2D: x: " + str(self.x) + ", y: " + str(self.y)
+
+    def __len__(self):
+        return len(self.x)
 
 
 
@@ -75,33 +66,47 @@ class GaussianInitParams(object):
 
 
 
-## Remap a distance between 'a' and others on a twisted torus
-#
-# Take 'a' which is a 2D position and others, which is a vector of 2D positions
-# and compute the distances between them based on the topology of the twisted
-# torus, mainly its dimensions.
-# 
-# If you just want to remap a function of (X, Y), set a==[[0, 0]].
-#
-# @param a  An array of shape (1, 2) that specifies a position on the twisted
-#           torus.
-# @param others An array of shape (N, 2) that gives the positions on the twisted
-#               torus to compute distance from.
-# @param x_dim  X dimension of the torus
-# @param y_dim  Y dimension of the torus
-# @return       An array of shape (N, ) with all the distances
-#
 def remapTwistedTorus(a, others, dim):
+    '''
+    Calculate a distance between ``a`` and ``others`` on a twisted torus.
+    
+    Take ``a`` which is a 2D position and others, which is a vector of 2D
+    positions and compute the distances between them based on the topology of
+    the twisted torus.
+    
+    If you just want to remap a function of (X, Y), set a==[[0, 0]].
 
-    a_x = float(a.x)
-    a_y = float(a.y)
-    others_x = others.x
-    others_y = others.y
-    szO = others.x.shape[0]
-    x_dim = float(dim.x)
-    y_dim = float(dim.y)
+    **Parameters**
+    
+    a : a Position2D instance
+        Specifies the initial position. ``a.x`` and ``a.y`` must be convertible
+        to floats
+    others : Position2D instance
+        Positions for which to compute the distance.
+    dim : Position2D
+        Dimensions of the torus. ``dim.x`` and ``dim.y`` must be convertible to
+        floats.
 
-    ret = np.ndarray((szO,))
+    **Returns**
+
+    An array of positions, always of the length of others
+    '''
+    
+
+    a_x      = float(a.x)
+    a_y      = float(a.y)
+    others_x = np.asarray(others.x)
+    others_y = np.asarray(others.y)
+    szO      = others.x.shape[0]
+    x_dim    = float(dim.x)
+    y_dim    = float(dim.y)
+    ret      = np.ndarray((szO,))
+
+    # Remap the values modulo torus size.
+    a_x = a_x % x_dim
+    a_y = a_y % y_dim
+    others_x = others_x % x_dim
+    others_y = others_y % y_dim
 
     code = '''
     #define SQ(x) ((x) * (x))
