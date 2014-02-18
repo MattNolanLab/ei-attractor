@@ -182,6 +182,9 @@ def fitGaussianTT(sig_f, i, dim):
     x0 = np.array([i.A0, i.mu0_x, i.mu0_y, i.sigma0])
 
     xest,ierr = scipy.optimize.leastsq(gaussDiff, x0)
+    # Remap the values module torus size
+    xest[1] = xest[1] % dim.x
+    xest[2] = xest[2] % dim.y
     err = gaussDiff(xest)
     return xest, err**2
 
