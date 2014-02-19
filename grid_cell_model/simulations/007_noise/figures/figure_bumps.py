@@ -149,7 +149,7 @@ if args.bumpDriftSweep or args.all:
         if ns_idx != 0:
             kw['ylabel'] = ''
             kw['yticks'] = False
-        if ns_idx > 0:
+        if ns_idx == 2:
             kw['cbar'] = True
         data = aggr.BumpDriftAtTime(bumpDriftT, 
                 ps.bumpGamma[ns_idx],
@@ -232,7 +232,7 @@ if args.bumpDiffResetSweep or args.all:
         if ns_idx != 0:
             kw['ylabel'] = ''
             kw['yticks'] = False
-        if ns_idx >= 0:
+        if ns_idx == 2:
             kw['cbar'] = True
         data = aggr.BumpAvgDifferenceFromPos(bumpResetStartPos,
                 constPosPS[ns_idx],
