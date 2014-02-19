@@ -35,6 +35,7 @@ files="
     $output_fig_dir/figureS5.pdf
     $output_fig_dir/figureS6.pdf
     $output_fig_dir/figure_drifts.pdf
+    $output_fig_dir/individual_differences.pdf
     $output_fig_dir/suppFigure_grid_sweeps.pdf
     $output_fig_dir/suppFigure_grids_FR-histograms.pdf
     $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf

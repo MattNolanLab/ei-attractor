@@ -242,11 +242,9 @@ slope_vmax = 1.6
 velSweep_cmap = 'jet'
 
 slope_cbar_kw= dict(
-        location='left',
-        fraction=0.25,
+        location='right',
         shrink = 0.8,
-        pad = 0.2,
-        labelpad=8,
+        pad = -0.05,
         label='Slope\n(neurons/s/pA)',
         ticks=ti.MultipleLocator(0.5),
         extend='max', extendfrac=0.1)
@@ -260,11 +258,12 @@ ann0 = dict(
 ann = [ann0]
 
 def createSweepFig(name=None):
-    sweepFigSize = (3.2, 1.9)
-    sweepLeft   = 0.15
+    sweepFigSize = (3.7, 2.6)
+    sweepLeft   = 0.08
     sweepBottom = 0.2
-    sweepRight  = 0.95
-    sweepTop    = 0.95
+    sweepRight  = 0.8
+    sweepTop    = 0.85
+    transparent  = True
     fig = plt.figure(name, figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
@@ -274,18 +273,17 @@ if args.slope_sweeps or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig, ax = createSweepFig(None)
         kw = dict(cbar=False)
-        if (ns_idx == 0):
+        if (ns_idx > 0):
             kw['cbar'] = True
         if (ns_idx != 0):
             kw['ylabel'] = ''
             kw['yticks'] = False
         _, ax, cax = sweeps.plotVelTrial(ps.v[ns_idx], slopeVarList, iterList,
-                noise_sigma, sigmaTitle=False,
+                noise_sigma, sigmaTitle=True,
                 ax=ax,
                 cbar_kw=slope_cbar_kw,
                 cmap=velSweep_cmap,
                 vmin=slope_vmin, vmax=slope_vmax,
-                annotations=ann,
                 **kw)
         fname = outputDir + "/velocity_slope_sweeps{}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)

@@ -381,12 +381,12 @@ class BumpDifferenceAtTime(BumpDifferencePosition):
                 "sure the torus size is the same as specified here.")
 
     def getData(self):
-        diffIdx = np.nonzero(self.getTimes() <= self.diffTime)[0]
+        diffIdx = np.nonzero(self.getTimes() >= self.diffTime)[0]
         if len(diffIdx) == 0:
             msg = 'Cannot find appropriate index in the bump position data. '+\
                     'Check your difference time: {0}'
             raise IndexError(msg.format(self.diffTime))
-        diffIdx = diffIdx[-1]
+        #diffIdx = diffIdx[-1]
 
         mu_x_all, mu_y_all, X, Y = self._getMus()
         nRows, nCols = self.sp.shape
@@ -447,6 +447,10 @@ class BumpDriftAtTime(BumpDifferencePosition):
                         trialDst.append(dist[driftIdx])
                 if len(trialDst) != 0:
                     drifts[r, c] = np.mean(trialDst)
+                    if drifts[r, c] > 20:
+                        msg = "drift > 20: {0}, r: {1}, c:{2}"
+                        diffAtTLogger.info(msg.format(drifts[r, c], r, c))
+        #totalTime = (self.tDrift - self.tStart) * 1e-3
         return drifts, X, Y
                     
 
