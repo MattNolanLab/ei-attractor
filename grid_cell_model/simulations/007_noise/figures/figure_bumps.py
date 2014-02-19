@@ -41,7 +41,7 @@ shape = (31, 31)
 parser = flagparse.FlagParser()
 parser.add_flag('--bumpSweep')
 parser.add_flag('--bumpDriftSweep')
-parser.add_flag('--bumpDiffAtTSweep')
+parser.add_flag('--bumpDiffAtInitSweep')
 parser.add_flag('--bumpDiffResetSweep')
 parser.add_flag('--bumpExamples')
 parser.add_flag('--velExamples')
@@ -127,9 +127,10 @@ if args.bumpSweep or args.all:
 ##############################################################################
 # Bump drift at a specified time
 bumpDriftText = 'Average bump drift\n(neurons)'
+bumpDriftTStart = 1e3 #ms
 bumpDriftT = 9e3 # ms
 drift_vmin = 0
-drift_vmax = 24
+drift_vmax = 20
 bump_drift_cbar_kw = dict(
         label       = bumpDriftText,
         location    = 'right',
@@ -148,13 +149,13 @@ if args.bumpDriftSweep or args.all:
         if ns_idx != 0:
             kw['ylabel'] = ''
             kw['yticks'] = False
-        if ns_idx == 2:
+        if ns_idx > 0:
             kw['cbar'] = True
         data = aggr.BumpDriftAtTime(bumpDriftT, 
                 ps.bumpGamma[ns_idx],
                 iterList,
                 bumpNTrials,
-                tStart=bumpTStart)
+                tStart=bumpDriftTStart)
         _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
                 ax=ax,
                 cbar_kw=bump_drift_cbar_kw,
@@ -180,7 +181,7 @@ bumpDiff_cbar_kw = dict(
         rasterized  = True)
 
 
-if args.bumpDiffAtTSweep or args.all:
+if args.bumpDiffAtInitSweep or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig = plt.figure(figsize=sweepFigSize)
         ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
@@ -231,7 +232,7 @@ if args.bumpDiffResetSweep or args.all:
         if ns_idx != 0:
             kw['ylabel'] = ''
             kw['yticks'] = False
-        if ns_idx == 2:
+        if ns_idx >= 0:
             kw['cbar'] = True
         data = aggr.BumpAvgDifferenceFromPos(bumpResetStartPos,
                 constPosPS[ns_idx],
