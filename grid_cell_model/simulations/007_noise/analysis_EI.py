@@ -66,7 +66,8 @@ if (o.type == "gamma-bump"):
     #sp.visit(spikeVisitor_e)
 elif (o.type == "velocity"):
     VelVisitor = vis.BumpVelocityVisitor(o.bumpSpeedMax,
-            forceUpdate=forceUpdate, printSlope=True)
+            forceUpdate=forceUpdate, printSlope=True, axis='vertical',
+            win_dt=25)
     sp.visit(VelVisitor, trialList='all-at-once')
 elif (o.type == 'grids'):
     spikeType = 'E'
