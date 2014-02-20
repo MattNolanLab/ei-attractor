@@ -173,6 +173,7 @@ def fitCircularSlope(bumpPos, times, normFac):
     output : float
         Estimated bump speed (neurons/time unit).
     '''
+    bumpPos = np.asarray(bumpPos)
     t = np.array(times) - times[0]
     bumpPos_norm = np.unwrap(1.0 * bumpPos / normFac * 2 * np.pi) # normalise to 2*Pi
     bumpPos_norm -= bumpPos_norm[0]
@@ -215,6 +216,7 @@ class BumpVelocityVisitor(BumpVisitor):
     A visitor that estimates the relationship between injected velocity current
     and bump speed.
     '''
+    allowedAxis = ['horizontal', 'vertical']
 
     def __init__(self,
             bumpSpeedMax,
@@ -223,6 +225,8 @@ class BumpVelocityVisitor(BumpVisitor):
             forceUpdate=False,
             printSlope=False,
             outputRoot=defaults.analysisRoot,
+            axis='vertical',
+            changeSign=False,
             readme=''):
         super(BumpVelocityVisitor, self).__init__(
                 forceUpdate,
@@ -235,9 +239,15 @@ class BumpVelocityVisitor(BumpVisitor):
         self.bumpSpeedMax = bumpSpeedMax # cm/s
         self.win_dt = win_dt
         self.printSlope = printSlope
+        self.axis = self.checkAxis(axis)
+        self.changeSign = changeSign
 
         assert(self.bumpSpeedMax is not None)
 
+    def checkAxis(self, axis):
+        if axis not in self.allowedAxis:
+            raise ValueError("axis parameter must be one of {0}".format(self.allowedAxis))
+        return axis
 
     def visitDictDataSet(self, ds, **kw):
         '''
@@ -252,39 +262,61 @@ class BumpVelocityVisitor(BumpVisitor):
             slopes.append([])
             IvelVec = trials[trialNum]['IvelVec']
             for IvelIdx in xrange(len(IvelVec)):
-                bumpVelLogger.info("Processing vel. index: %d" % IvelIdx)
                 iData = trials[trialNum]['IvelData'][IvelIdx]
+                bumpVelLogger.info("Processing vel. index: %d/%d; %.2f pA",
+                        IvelIdx, len(IvelVec) - 1, IvelVec[IvelIdx])
 
                 if self.outputRoot in iData.keys() and not self.forceUpdate:
-                    bumpVelLogger.debug("Data present. Adding slope to the list.")
+                    bumpVelLogger.info("Data present. Adding slope to the list.")
                     slopes[trialNum].append(iData[self.outputRoot]['slope'])
                     continue
 
                 bumpVelLogger.debug("\tEstimating bump positions...")
                 senders, times, sheetSize =  self._getSpikeTrain(iData,
                         'spikeMon_e', ['Ne_x', 'Ne_y'])
-                pop = aspikes.TorusPopulationSpikes(senders, times, sheetSize)
+                pop = image.SingleBumpPopulation(senders, times, sheetSize)
                 tStart = self.getOption(iData, 'theta_start_t')
-                tEnd   = self.getOption(iData, 'time')
-                bumpPos, bumpPos_t = pop.populationVector(tStart, tEnd,
-                        self.win_dt, self.winLen)
+                tEnd   = self.getOption(iData, 'time') - 2*self.win_dt
+                bumpPositions = pop.bumpPosition(tStart, tEnd, self.win_dt,
+                        self.winLen, fullErr=False)
+
+                if self.axis == 'vertical':
+                    bumpPos = bumpPositions.mu_y
+                    axisSize = pop.Ny
+                elif self.axis == 'horizontal':
+                    bumpPos = bumpPositions.mu_x
+                    axisSize = pop.Nx
 
                 bumpVelLogger.debug("\tFitting the circular slope...")
-                # NOTE: the bump moves in an opposite direction; we have to
+                # NOTE: If the bump moves in an opposite direction, we have to
                 # negate the speed
-                slope = -fitCircularSlope(bumpPos[:, 0], bumpPos_t,
-                        sheetSize[0]/2.0)*1e3
+                slope = fitCircularSlope(bumpPos, bumpPositions.t, axisSize)
+                slope *= 1e3 # Correction msec --> sec
+                if self.changeSign:
+                    slope *= -1
                 slopes[trialNum].append(slope)
+                bumpVelLogger.debug("\tslope: {0:.3f}".format(slope))
 
                 bumpVelLogger.debug("\tSaving data for the current velocity index.")
-                iData[self.outputRoot] = {
-                        'bumpPos'   : bumpPos,
-                        'bumpPos_t' : bumpPos_t,
-                        'slope'     : slope
-                }
+                iData[self.outputRoot] = dict(
+                        positions = dict(
+                            A     = bumpPositions.A,
+                            mu_x  = bumpPositions.mu_x,
+                            mu_y  = bumpPositions.mu_y,
+                            sigma = bumpPositions.sigma,
+                            err   = bumpPositions.err,
+                            t     = bumpPositions.t
+                        ),
+                        slope = slope
+                )
         slopes = np.array(slopes)
-
         analysisTop = {'bumpVelAll' : slopes}
+        printoptions_orig = np.get_printoptions()
+        np.set_printoptions(precision=3, threshold=np.infty, linewidth=100,
+                suppress=True)
+        bumpVelLogger.info("Slopes:\n%s", slopes)
+        np.set_printoptions(**printoptions_orig)
+
 
         if (self.printSlope and 'fileName' not in kw.keys()):
             msg = 'printSlope requested, but did not receive the fileName ' + \
@@ -296,7 +328,6 @@ class BumpVelocityVisitor(BumpVisitor):
             if (len(trials) == 0):
                 bumpVelLogger.warn('Something wrong: len(trials) == 0. Not plotting data')
                 return
-
 
             # Plot the estimated bump velocities (nrns/s)
             from matplotlib.pyplot import figure, errorbar, xlabel, ylabel, \
@@ -372,6 +403,9 @@ class BumpVelocityVisitor(BumpVisitor):
                 'lineFitErr'   : lineFitErr,
                 'fitIvelVec'   : fitIvelVec
             })
+            bumpVelLogger.info(\
+                    "Estimated bump velocity gain: %.3f nrns/s/pA, err=%.3f nrns/s",
+                    slope, np.sum(lineFitErr))
 
         data[self.outputRoot] = analysisTop
 

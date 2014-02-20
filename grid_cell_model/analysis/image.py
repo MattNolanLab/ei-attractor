@@ -218,6 +218,10 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
     This class contains methods for processing  the population activity over
     time.
     '''
+    def __init__(self, senders, times, sheetSize):
+        super(SingleBumpPopulation, self).__init__(senders, times, sheetSize)
+
+
     class BumpFitList(collections.Sequence):
         def __init__(self, AList=None, mu_xList=None, mu_yList=None,
                 sigmaList=None, err=None, times=None):
@@ -273,9 +277,6 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
             return len(self._A) # All same length
 
 
-    def __init__(self, senders, times, sheetSize):
-        super(SingleBumpPopulation, self).__init__(senders, times, sheetSize)
-
 
 
     def bumpPosition(self, tStart, tEnd, dt, winLen, fullErr=True):
@@ -301,7 +302,8 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
         dims = Position2D(self.Nx, self.Ny)
         res = self.BumpFitList()
         for tIdx in xrange(len(Ft)):
-            logger.debug('Bump fitting: %s/%s', tIdx+1, len(Ft))
+            logger.debug('Bump fitting: %d/%d, %.3f/%.3f ', tIdx+1, len(Ft),
+                    Ft[tIdx], Ft[-1])
             (A, mu_x, mu_y, sigma), err2 = fitGaussianBumpTT(F[:, :, tIdx],
                     dims)
             
