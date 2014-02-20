@@ -2,9 +2,8 @@
 # Copyright ENS, INRIA, CNRS
 # Contributors: Romain Brette (brette@di.ens.fr) and Dan Goodman (goodman@di.ens.fr)
 #
-# Modified by Lukas Solanka <l.solanka@sms.ed.ac.uk>, University of Edinburgh, for
-# the gamma network/grid cell simulations. Copy made from the brian simulator source
-# code
+# Modified by Lukas Solanka <l.solanka@sms.ed.ac.uk>, University of Edinburgh,
+# for the grid cell simulations. Copy made from the brian simulator source code
 # 
 # This software is governed by the CeCILL license under French law and
 # abiding by the rules of distribution of free software.  You can  use, 
@@ -48,6 +47,9 @@ logging.getLogger('ramp_model').addHandler(console)
 
 
 get_log = logging.getLogger
+
+def getClassLogger(loggerName, modName):
+    return logging.getLogger('{0}.{1}'.format(modName, loggerName))
 
 def log_warn(logname, message):
     get_log(logname).warn(message)

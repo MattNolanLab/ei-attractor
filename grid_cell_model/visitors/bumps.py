@@ -10,13 +10,14 @@ import analysis.spikes as aspikes
 import analysis.image as image
 import data_storage.sim_models.ei as simei
 from interface        import DictDSVisitor 
-from otherpkg.log     import log_info, log_warn
+from otherpkg.log     import getClassLogger
 from analysis.image   import Position2D, fitGaussianBumpTT
 
 from . import defaults
 
 import logging
 logger = logging.getLogger(__name__)
+bumpVelLogger = getClassLogger('BumpVelocityVisitor', __name__)
 
 
 __all__ = ['BumpFittingVisitor', 'BumpVelocityVisitor']
@@ -245,16 +246,19 @@ class BumpVelocityVisitor(BumpVisitor):
 
         slopes = []
         for trialNum in xrange(len(trials)):
-            log_info('BumpVelocityVisitor', "Trial no. {0}.".format(trialNum))
+            bumpVelLogger.info("Trial no. %d/%d", trialNum, len(trials)-1)
             slopes.append([])
             IvelVec = trials[trialNum]['IvelVec']
             for IvelIdx in xrange(len(IvelVec)):
+                bumpVelLogger.info("Processing vel. index: %d" % IvelIdx)
                 iData = trials[trialNum]['IvelData'][IvelIdx]
+
                 if self.outputRoot in iData.keys() and not self.forceUpdate:
-                    log_info('BumpVelocityVisitor', "Data present. Skipping analysis.")
+                    bumpVelLogger.debug("Data present. Adding slope to the list.")
                     slopes[trialNum].append(iData[self.outputRoot]['slope'])
                     continue
 
+                bumpVelLogger.debug("\tEstimating bump positions...")
                 senders, times, sheetSize =  self._getSpikeTrain(iData,
                         'spikeMon_e', ['Ne_x', 'Ne_y'])
                 pop = aspikes.TorusPopulationSpikes(senders, times, sheetSize)
@@ -262,11 +266,15 @@ class BumpVelocityVisitor(BumpVisitor):
                 tEnd   = self.getOption(iData, 'time')
                 bumpPos, bumpPos_t = pop.populationVector(tStart, tEnd,
                         self.win_dt, self.winLen)
+
+                bumpVelLogger.debug("\tFitting the circular slope...")
                 # NOTE: the bump moves in an opposite direction; we have to
                 # negate the speed
                 slope = -fitCircularSlope(bumpPos[:, 0], bumpPos_t,
                         sheetSize[0]/2.0)*1e3
                 slopes[trialNum].append(slope)
+
+                bumpVelLogger.debug("\tSaving data for the current velocity index.")
                 iData[self.outputRoot] = {
                         'bumpPos'   : bumpPos,
                         'bumpPos_t' : bumpPos_t,
@@ -279,12 +287,12 @@ class BumpVelocityVisitor(BumpVisitor):
         if (self.printSlope and 'fileName' not in kw.keys()):
             msg = 'printSlope requested, but did not receive the fileName ' + \
                     'as a keyword argument.'
-            log_warn('BumpVelocityVisitor', msg)
+            bumpVelLogger.warn(msg)
             return
         elif (self.printSlope):
+            bumpVelLogger.info('Fitting lines and producing figure...')
             if (len(trials) == 0):
-                msg = 'Something wrong: len(trials) == 0'
-                log_warn('BumpVelocityVisitor', msg)
+                bumpVelLogger.warn('Something wrong: len(trials) == 0. Not plotting data')
                 return
 
 
@@ -313,7 +321,7 @@ class BumpVelocityVisitor(BumpVisitor):
             fitIvelVec_all = []
             maxRange_all   = []
             for fitRange in xrange(1, len(IvelVec)):
-                log_info('BumpVelocityVisitor', "fitRange: {0}".format(fitRange))
+                bumpVelLogger.info("fitRange: {0}".format(fitRange))
                 newLine, newSlope, newErr, newIvelVecRange = \
                         fitBumpSpeed(IvelVec, slopes, fitRange)
                 line_all.append(newLine)
@@ -333,11 +341,11 @@ class BumpVelocityVisitor(BumpVisitor):
                         errSum     = errSumNew
 
             if (line is None):
-                msg = 'No suitable fits that cover <0, {0:.2f}> neurons/s.' +\
-                ' Using the fit with the max. bump speed range.'
-                log_info('BumpVelocityVisitor', msg.format(self.bumpSpeedMax))
-                msg = "Bump speed maxima: {0}".format(maxRange_all)
-                log_info('BumpVelocityVisitor', msg.format(self.bumpSpeedMax))
+                bumpVelLogger.info(\
+                    ('No suitable fits that cover <0, {0:.2f}> neurons/s.' +\
+                    ' Using the fit with the max. bump speed range.').format(\
+                    self.bumpSpeedMax))
+                bumpVelLogger.info("Bump speed maxima: {0}".format(maxRange_all))
                 maxRangeIdx = np.argmax(maxRange_all)
                 line        = line_all[maxRangeIdx]
                 lineFitErr  = lineFitErr_all[maxRangeIdx]
@@ -349,11 +357,13 @@ class BumpVelocityVisitor(BumpVisitor):
             t = "Line fit slope: {0:.3f} nrns/s/pA, error: {1:.3f} " + \
                     "neurons/s (norm)"
             title(t.format(slope, np.sum(lineFitErr)))
-            legend(['Average bump speed', 'Line fit', 'Estimated bump speed'], loc='best')
+            legend(['Average bump speed', 'Line fit', 'Estimated bump speed'],
+                loc='best')
             
             fileName = splitext(kw['fileName'])[0] + '.pdf'
             savefig(fileName)
 
+            bumpVelLogger.info('Saving the line fit data (top level)')
             analysisTop.update({
                 'lineFitLine'  : line,
                 'lineFitSlope' : slope,
