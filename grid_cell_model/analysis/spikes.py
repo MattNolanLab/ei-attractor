@@ -124,7 +124,10 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
 
     return  An array of shape (N, int((tend-tstart)/dt)+1
     '''
-    #print "Start sliding firing rate.."
+    tstart = float(tstart)
+    tend   = float(tend)
+    dt     = float(dt)
+    winLen = float(winLen)
     
     szRate      = int((tend-tstart)/dt)+1
     n_ids       = np.array(spikes[0])
