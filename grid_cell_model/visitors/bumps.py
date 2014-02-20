@@ -158,7 +158,8 @@ class BumpFittingVisitor(BumpVisitor):
 def fitCircularSlope(bumpPos, times, normFac):
     '''
     Fit a (circular) slope line onto velocity response of the bump and extract
-    the slope (velocity), in neurons/s
+    the slope (velocity), in neurons/s. The start position of the bump is
+    ignored here (i.e. bumpPos -= bumpPos[0])
 
     Parameters
     ----------
@@ -174,6 +175,7 @@ def fitCircularSlope(bumpPos, times, normFac):
     '''
     t = np.array(times) - times[0]
     bumpPos_norm = np.unwrap(1.0 * bumpPos / normFac * 2 * np.pi) # normalise to 2*Pi
+    bumpPos_norm -= bumpPos_norm[0]
     func = lambda X: X[0]*t - bumpPos_norm
     x0 = np.array([0.0])  # slope
     x = leastsq(func, x0)
