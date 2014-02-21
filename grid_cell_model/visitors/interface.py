@@ -1,23 +1,8 @@
-#
-#   visitors.py
-#
-#   Data analysis visitors. 
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Interface definitions for the visitors package.
+'''
+from abc import ABCMeta, abstractmethod
+
 from data_storage.sim_models.ei import extractSpikes
 
 
@@ -41,9 +26,12 @@ class DictDSVisitor(Visitor):
     A visitor that takes a dictionary data set method of any kind and processes
     it. All the keys in the dictionary must be strings.
     '''
+    __meta__ = ABCMeta
+
     def __init__(self):
         raise NotImplementedError()
 
+    @abstractmethod
     def visitDictDataSet(self, ds, **kw):
         '''
         Visit the dictionary data set, 'ds', and perform the specific operations
