@@ -21,7 +21,7 @@
 import numpy as np
 from collections    import Sequence
 from os.path        import exists
-from otherpkg.log   import log_warn, log_info
+from otherpkg.log   import log_warn, log_info, getClassLogger
 
 from data_storage       import DataStorage
 from data_storage.dict  import getDictData
@@ -63,6 +63,7 @@ class DataSpace(Sequence):
 
 
 
+trialSetLogger = getClassLogger('TrialSet', __name__)
 class TrialSet(DataSpace):
     '''
     A 1D DataSpace that contains a list of DataSet objects.
@@ -79,14 +80,14 @@ class TrialSet(DataSpace):
         if (self._dataLoaded):
             return
         try:
-            log_info("param_space", "Opening " + self._fileName)
+            trialSetLogger.debug("Opening " + self._fileName)
             self._ds = DataStorage.open(self._fileName, self._fileMode)
             DataSpace.__init__(self, self._ds['trials'], key='trials')
         except (IOError, KeyError) as e:
             self._ds = None
             msg =  "Could not open file {0}. Creating an empty DataSet instead."
-            log_warn("param_space", msg.format(self._fileName))
-            log_warn("param_space", "Error message: {0}".format(str(e)))
+            trialSetLogger.warn(msg.format(self._fileName))
+            trialSetLogger.warn("Error message: {0}".format(str(e)))
             DataSpace.__init__(self, [], key='trials')
         self._dataLoaded = True
 
@@ -99,7 +100,7 @@ class TrialSet(DataSpace):
     def __del__(self):
         if (self._dataLoaded):
             if (self._ds is not None):
-                log_info("param_space", "Closing: " + self._fileName)
+                trialSetLogger.debug("Closing: %s", self._fileName)
                 self._ds.close()
 
     def __getitem__(self, key):
