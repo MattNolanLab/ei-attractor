@@ -45,6 +45,10 @@ for noise_sigma in noise_sigmas:
     if o.type == 'velocity':
         visitor = dm.VelocityPruningVisitor(what=o.prune_what)
         sp.visit(visitor, trialList='all-at-once')
+        if o.row is not None:
+            sp.repackItem(o.row, o.col)
+        else:
+            sp.repackAllItems()
     else:
         raise RuntimeError("Whoops! We shouldn't be here!")
 

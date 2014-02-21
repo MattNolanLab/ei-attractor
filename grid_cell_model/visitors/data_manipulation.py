@@ -20,6 +20,7 @@ class VelocityPruningVisitor(DictDSVisitor):
             Specifies what data should be deleted. The deletion path will be
             trials/<trialNum>/IvelData/<IvelIdx>/<what>, for each trialNum and
             IvelIdx.
+        '''
         self.what = what
 
 
