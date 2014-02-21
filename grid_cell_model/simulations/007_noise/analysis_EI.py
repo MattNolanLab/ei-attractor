@@ -3,10 +3,12 @@
 '''
 Perform analysis on whole 2D data sets.
 '''
+import time
 import matplotlib
 matplotlib.use('agg')
 
 import visitors as vis
+import visitors.bumps as bumps
 from parameters import JobTrialSpace2D
 from submitting import flagparse
 
@@ -26,6 +28,7 @@ parser.add_argument("--bumpSpeedMax", type=float)
 o = parser.parse_args()
 
 ###############################################################################
+startT = time.time()
 
 shape = (o.shapeRows, o.shapeCols)
 dataPoints = [(o.row, o.col)]
@@ -65,9 +68,9 @@ if (o.type == "gamma-bump"):
     #sp.visit(CCVisitor)
     #sp.visit(spikeVisitor_e)
 elif (o.type == "velocity"):
-    VelVisitor = vis.BumpVelocityVisitor(o.bumpSpeedMax,
+    VelVisitor = bumps.BumpVelocityVisitor(o.bumpSpeedMax,
             forceUpdate=forceUpdate, printSlope=True, axis='vertical',
-            win_dt=25)
+            win_dt=50.0)
     sp.visit(VelVisitor, trialList='all-at-once')
 elif (o.type == 'grids'):
     spikeType = 'E'
@@ -93,3 +96,5 @@ elif o.type == 'positional':
     sp.visit(bumpPosVisitor)
 else:
     raise ValueError("Unknown analysis type option: {0}".format(o.type))
+
+print('Total time: %.3f s' % (time.time() - startT))

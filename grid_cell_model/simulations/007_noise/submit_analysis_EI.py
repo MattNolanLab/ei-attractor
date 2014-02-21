@@ -27,9 +27,10 @@ velocityType  = 'velocity'
 gridsType     = 'grids'
 posType       = 'positional'
 
-noise_sigma_all = [0] #, 150.0, 300.0] # pA
+noise_sigma_all = [0, 150.0, 300.0] # pA
 dirs = \
-    ('output/even_spacing/const_position',     posType,       '{0}pA', (31, 31))
+    ('output/even_spacing/velocity_vertical', velocityType,  '{0}pA', (31, 31))
+    #('output/even_spacing/const_position',    posType,       '{0}pA', (31, 31))
     #('output/even_spacing/gamma_bump',        gammaBumpType, '{0}pA', (31, 31))
     #('output/even_spacing/grids',             gridsType,     '{0}pA', (31, 31))
     #('output/even_spacing/grids_no_velocity', gridsType,     '{0}pA', (31, 31))
@@ -63,8 +64,8 @@ for noise_sigma in noise_sigma_all:
     iterparams = {
             'row' : np.arange(rowN),
             'col' : np.arange(colN)
-            #'row' : [0],
-            #'col' : [0]
+            #'row' : [5],
+            #'col' : [15]
     }
     ac.insertDict(iterparams, mult=True)
 
