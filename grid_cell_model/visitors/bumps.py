@@ -309,6 +309,8 @@ class BumpVelocityVisitor(BumpVisitor):
                         ),
                         slope = slope
                 )
+                iData.flush()
+
         slopes = np.array(slopes)
         analysisTop = {'bumpVelAll' : slopes}
         printoptions_orig = np.get_printoptions()
