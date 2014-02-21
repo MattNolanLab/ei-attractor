@@ -18,9 +18,11 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import numpy as np
 from collections    import Sequence
 from os.path        import exists
+import subprocess
+
+import numpy as np
 from otherpkg.log   import log_warn, log_info, getClassLogger
 
 from data_storage       import DataStorage
@@ -30,6 +32,7 @@ from data_sets          import DictDataSet
 __all__ = []
 
 
+job2DLogger = getClassLogger('JobTrialSpace2D', __name__)
 
 class DataSpace(Sequence):
     '''
@@ -182,7 +185,76 @@ class JobTrialSpace2D(DataSpace):
         self._loadTrials()
         self._aggregationDS = None
         self.saveDataFileName = 'reductions.h5'
+
+
+    def repackItem(self, r, c):
+        '''
+        Repack the underlying item at ``r`` and ``c`` position.
+
+        .. warning::
+
+            This applies only to HDF5, use with care.
+        '''
+
+        def _cleanUp(r, c, tmpFile):
+            job2DLogger.info('Cleaning up temporary.')
+            subprocess.call(['rm', '-f', tmpFile])
+            job2DLogger.info("Reloading the new item")
+            self._vals[r]._vals[c] = self._loadItem(r, c)
+
+        job2DLogger.info("Repacking item at %d, %d", r, c)
+        currentFile = self._getFilename(r, c)
+        tmpFile = currentFile + ".repacked"
+
+
+        job2DLogger.info("Removing current item")
+        #import pdb; pdb.set_trace()
+        self._vals[r]._vals[c] = None
+
+        # Try to repack to temporary file
+        job2DLogger.info("Repacking to temporary file...")
+        repackArgs = ['h5repack', currentFile, tmpFile]
+        if subprocess.call(repackArgs) != 0:
+            job2DLogger.warn('Repacking to %s failed.', tmpFile)
+            _cleanUp(r, c, tmpFile)
+            return
+
+        # Move temporary file to original
+        job2DLogger.info("Replacing original file")
+        moveArgs = ['mv', tmpFile, currentFile]
+        if subprocess.call(moveArgs) != 0:
+            job2DLogger.warn('Replacing original %s failed.', tmpFile)
+            _cleanUp(r, c, tmpFile)
+            return
+
+        # Reload the repacked file
+        _cleanUp(r, c, tmpFile)
+
+
+    def repackAllItems(self):
+        for row in xrange(self.shape[0]):
+            for col in xrange(self.shape[1]):
+                self.repackItems(row, col)
+
+
+    def _getFilename(self, row, col):
+        it = row * self.shape[1] + col
+        fileName = self._rootDir + '/' + self._fileFormat.format(it)
+        job2DLogger.debug('row: %d, col: %d, filename: %s', row, col, fileName)
+        return fileName
             
+
+    def _loadItem(self, row, col):
+        # Here either we have a full data space, or a particular row
+        # and column are present in the list of selected data points.
+        # Otherwise, append an empty list, i.e. this will do nothing
+        if (self._dataPoints is None or
+                (row, col) in self._dataPoints):
+            fileName = self._getFilename(row, col)
+            return TrialSet(fileName, self._fileMode)
+        else:
+            return DummyTrialSet()
+
 
     def _loadTrials(self):
         '''
@@ -190,20 +262,10 @@ class JobTrialSpace2D(DataSpace):
         specified in the constructor.
         '''
         rowData = []
-        it = 0
         for row in xrange(self.rows):
             colData = []
             for col in xrange(self.cols):
-                # Here either we have a full data space, or a particular row
-                # and column are present in the list of selected data points.
-                # Otherwise, append an empty list, i.e. this will do nothing
-                if (self._dataPoints is None or
-                        (row, col) in self._dataPoints):
-                    fileName = self._rootDir + '/' + self._fileFormat.format(it)
-                    colData.append(TrialSet(fileName, self._fileMode))
-                else:
-                    colData.append(DummyTrialSet())
-                it += 1
+                colData.append(self._loadItem(row, col))
             rowData.append(DataSpace(colData))
         DataSpace.__init__(self, rowData)
 
