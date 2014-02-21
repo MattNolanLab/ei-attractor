@@ -29,7 +29,8 @@ lg.basicConfig(level=lg.INFO)
 ns_all  = [0, 150, 300]
 ns_none = [-100]
 dirs = \
-    ('output/even_spacing/grids/{0}pA',    (31, 31), ns_all, 3)
+    ('output/even_spacing/grids_no_velocity/{0}pA',    (31, 31), ns_all[1:2], 1)
+    #('output/even_spacing/grids/{0}pA',    (31, 31), ns_all, 3)
     #('output/detailed_noise/grids/EI-3_1', (31, 9), ns_none, 1)
     #('output/detailed_noise/grids/EI-1_3', (31, 9), ns_none, 1)
 
