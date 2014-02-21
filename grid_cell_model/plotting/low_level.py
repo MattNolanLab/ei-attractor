@@ -11,7 +11,7 @@ import matplotlib.patches    as patches
 
 from matplotlib import rcParams as rcp
 
-def xScaleBar(scaleLen, x, y, ax=m.gca(), height=0.02, color='black',
+def xScaleBar(scaleLen, x, y, ax=None, height=0.02, color='black',
         unitsText='ms', size='medium', textYOffset=0.075):
     '''
     Plot a horizontal (X) scale bar into the axes.
@@ -38,6 +38,8 @@ def xScaleBar(scaleLen, x, y, ax=m.gca(), height=0.02, color='black',
         Offset of the text from the scale bar. Positive value is a downward
         offset.
     '''
+    if ax is None: ax = m.gca()
+
     (left, right) = ax.get_xlim()
     axisLen = scaleLen / (right - left)
     scaleCenter = x + 0.5*axisLen
@@ -54,7 +56,7 @@ def xScaleBar(scaleLen, x, y, ax=m.gca(), height=0.02, color='black',
                 va='top', ha='center', transform=ax.transAxes, size=size)
 
 
-def yScaleBar(scaleLen, x, y, ax=m.gca(), width=0.0075, color='black',
+def yScaleBar(scaleLen, x, y, ax=None, width=0.0075, color='black',
         unitsText='ms', size='medium', textXOffset=0.075):
     '''
     Plot a vertical (Y) scale bar into the axes.
@@ -81,6 +83,8 @@ def yScaleBar(scaleLen, x, y, ax=m.gca(), width=0.0075, color='black',
         Offset of the text from the scale bar. Positive value is a leftward
         offset.
     '''
+    if ax is None: ax = m.gca()
+
     (bottom, top) = ax.get_ylim()
     axisHeight = scaleLen / (top - bottom)
     scaleCenter = y + 0.5*axisHeight
