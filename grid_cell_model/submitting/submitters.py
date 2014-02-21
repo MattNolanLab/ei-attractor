@@ -102,7 +102,6 @@ class ProgramSubmitter(object):
 
 
     def _wait(self):
-        print self._numCPU
         if (self._blocking == False or len(self._pList) < self._numCPU):
             return None
         p = self._pList.pop(0)

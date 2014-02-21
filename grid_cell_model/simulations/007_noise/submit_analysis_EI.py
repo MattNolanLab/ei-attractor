@@ -13,7 +13,7 @@ import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
-ENV         = 'workstation'
+ENV         = 'cluster'
 appName     = 'analysis_EI.py'
 rtLimit     = '00:05:00'
 numCPU      = 1
@@ -34,6 +34,9 @@ dirs = \
     #('output/even_spacing/grids',             gridsType,     '{0}pA', (31, 31))
     #('output/even_spacing/grids_no_velocity', gridsType,     '{0}pA', (31, 31))
     #('output/even_spacing/velocity',          velocityType,  '{0}pA', (31, 31))
+    #('output/no_theta/grids',                 gridsType,     '{0}pA', (31, 31))
+    #('output/no_theta/velocity',              velocityType,  '{0}pA', (31, 31))
+    #('output/no_theta/gamma_bump',            gammaBumpType, '{0}pA', (31, 31))
 
 for noise_sigma in noise_sigma_all:
     p = {}
@@ -46,7 +49,7 @@ for noise_sigma in noise_sigma_all:
 
     p['shapeRows'] = rowN
     p['shapeCols'] = colN
-    p['forceUpdate'] = 1
+    p['forceUpdate'] = 0
 
     if (p['type'] == velocityType):
         percentile = 99.0
@@ -58,10 +61,10 @@ for noise_sigma in noise_sigma_all:
     ac = ArgumentCreator(p, printout=True)
 
     iterparams = {
-            #'row' : np.arange(rowN),
-            #'col' : np.arange(colN)
-            'row' : [5],
-            'col' : [15]
+            'row' : np.arange(rowN),
+            'col' : np.arange(colN)
+            #'row' : [0],
+            #'col' : [0]
     }
     ac.insertDict(iterparams, mult=True)
 

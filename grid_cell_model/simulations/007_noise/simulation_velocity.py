@@ -31,6 +31,7 @@ from data_storage       import DataStorage
 parser = getOptParser()
 parser.add_argument("--IvelMax", type=float, required=True, help="Max constant velocity current input (pA)")
 parser.add_argument("--dIvel",   type=float, required=True, help="Constant velocity current input step (pA)")
+parser.add_argument("--ispikes", type=int,   choices=[0, 1], default=0, help="Whether to save spikes from the I population")
 
 (options, args) = parser.parse_args()
 
@@ -56,7 +57,7 @@ for trial_idx in range(len(d['trials']), options.ntrials):
 
             ei_net.simulate(options.time, printTime=options.printTime)
             ei_net.endSimulation()
-            trialOut['IvelData'].append(ei_net.getMinimalSaveData())
+            trialOut['IvelData'].append(ei_net.getMinimalSaveData(ispikes=options.ispikes))
             constrT, simT, totalT = ei_net.printTimes()
             overalT += totalT
         d['trials'].append(trialOut)

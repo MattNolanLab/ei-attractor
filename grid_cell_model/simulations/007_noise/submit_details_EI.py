@@ -28,7 +28,7 @@ lg.basicConfig(level=lg.DEBUG)
 
 # Submitting
 ENV         = 'cluster'
-simRootDir  = 'output'
+simRootDir  = 'output/no_theta/gamma_bump'  # check this out (after merge)
 appName     = 'details_EI.py'
 rtLimit     = '00:02:30'
 numCPU      = 1
@@ -37,15 +37,15 @@ timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
-dirs = [
-    #('2013-03-30T19-29-21_EI_param_sweep_0pA_small_sample', (2, 2)),
-    ('2013-04-24T15-27-30_EI_param_sweep_0pA_big'         , (40, 40)),
-    ('2013-04-24T21-37-47_EI_param_sweep_150pA_big'       , (40, 40)),
-    ('2013-04-24T21-43-32_EI_param_sweep_300pA_big'       , (40, 40))
-]
+noise_sigma_all = [0.0, 150.0, 300.0] # pA
+dirs = ('{0}pA'         , (31, 31))
 
-for simLabel, (rowN, colN) in dirs:
+for noise_sigma in noise_sigma_all:
     p = {}
+    simLabel   = dirs[0].format(int(noise_sigma))
+    rowN       = dirs[1][0]
+    colN       = dirs[1][1]
+
     p['shapeRows'] = rowN
     p['shapeCols'] = colN
 
