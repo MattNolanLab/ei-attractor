@@ -300,12 +300,12 @@ class BumpVelocityVisitor(BumpVisitor):
                 bumpVelLogger.debug("\tSaving data for the current velocity index.")
                 iData[self.outputRoot] = dict(
                         positions = dict(
-                            A     = bumpPositions.A,
-                            mu_x  = bumpPositions.mu_x,
-                            mu_y  = bumpPositions.mu_y,
-                            sigma = bumpPositions.sigma,
-                            err   = bumpPositions.err,
-                            t     = bumpPositions.t
+                            A     = np.asarray(bumpPositions.A),
+                            mu_x  = np.asarray(bumpPositions.mu_x),
+                            mu_y  = np.asarray(bumpPositions.mu_y),
+                            sigma = np.asarray(bumpPositions.sigma),
+                            err   = np.asarray(bumpPositions.err),
+                            t     = np.asarray(bumpPositions.t)
                         ),
                         slope = slope
                 )
