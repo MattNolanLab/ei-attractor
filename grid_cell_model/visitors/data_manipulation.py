@@ -2,8 +2,10 @@
 Data manipulation visitors. Visitors that do some specific/generic
 manipulations with the data they receive.
 '''
+import collections
 from abc import abstractmethod
 import logging
+import numpy as np
 
 from interface        import DictDSVisitor 
 from otherpkg.log import getClassLogger
@@ -62,27 +64,41 @@ class VelocityPruningVisitor(VelocityDataVisitor):
 
 class VelocityConversionVisitor(VelocityDataVisitor):
     '''
-    Convert specified data in the data set.
+    Convert specified data in the data set. Apply recursively if the
+    destination is an instance of Mapping.
     '''
 
     def __init__(self, what, targetType):
         self.what = what
         self.targetType = targetType
 
-    def manipulateData(self, data, **kw):
-        if self.what not in data.keys():
-            convLogger.warn("'%s' not in present in data. Quitting.",
+        self.listPath = self.what.split('/')
+        if '' in self.listPath:
+            raise ValueError("%s cannot contain double '/' character!" %
                     self.what)
-            return
 
+    def manipulateData(self, data, **kw):
         try:
-            tmp = self.targetType(data[self.what])
-        except e:
-            convLogger.warn('Conversion failed. The original data is intact')
+            root = data.getItemChained(self.listPath[:-1])
+        except KeyError as e:
+            convLogger.warn("Path to '%s' does not exist. Quitting.",
+                    self.listPath[-1])
             return
+        self._applyConversion(root, self.listPath[-1])
 
-        data[self.what] = tmp
-
-
+    def _applyConversion(self, dataDict, key):
+        item = dataDict[key]
+        if isinstance(item, collections.Mapping):
+            for childKey in item.keys():
+                self._applyConversion(item, childKey)
+        else:
+            targetCls = getattr(__builtins__, self.targetType, 
+                    getattr(np, self.targetType))
+            try:
+                newItem = targetCls(item)
+            except Exception as e:
+                convLogger.warn('Conversion failed. The original data is intact')
+                return
+            dataDict[key] = newItem
 
 
