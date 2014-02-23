@@ -35,7 +35,7 @@ class ArgumentCreator(object):
     method)
     '''
     
-    def __init__(self, defaultOpts, printout=False):
+    def __init__(self, defaultOpts, printout=False, emitJobNum=True):
         '''
         defaultOpts should be a dictionary (not a list)
         '''
@@ -43,6 +43,7 @@ class ArgumentCreator(object):
         self._resList = [defaultOpts]
         self._printData = []
         self.printout = printout
+        self.emitJobNum = emitJobNum
 
         # remove job_num parameter from the list, it should be defined during
         # job submission
@@ -128,7 +129,8 @@ class ArgumentCreator(object):
                 parStr += ' --' + str(key)
             else:
                 parStr += ' --' + str(key) + ' ' + str(val)
-        parStr += ' --job_num ' + str(job_num)
+        if self.emitJobNum:
+            parStr += ' --job_num ' + str(job_num)
         return parStr
 
     def getPrintData(self):
