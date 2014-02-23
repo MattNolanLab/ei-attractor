@@ -2,13 +2,40 @@
 Data manipulation visitors. Visitors that do some specific/generic
 manipulations with the data they receive.
 '''
+from abc import abstractmethod
 import logging
+
 from interface        import DictDSVisitor 
 from otherpkg.log import getClassLogger
 
-velPruneLogger = getClassLogger('VelocityPruningVisitor', __name__)
+dataLogger  = getClassLogger('VelocityDataVisitor', __name__)
+pruneLogger = getClassLogger('VelocityPruningVisitor', __name__)
+convLogger  = getClassLogger('VelocityConversionVisitor', __name__)
 
-class VelocityPruningVisitor(DictDSVisitor):
+class VelocityDataVisitor(DictDSVisitor):
+
+    def visitDictDataSet(self, ds, **kw):
+        if ds.data is None:
+            dataLogger.info('No data set, skipping everything.')
+            return
+        data = ds.data
+        trials = data['trials']
+
+        for trialNum in xrange(len(trials)):
+            dataLogger.info("Trial no. %d/%d", trialNum, len(trials)-1)
+            IvelVec = trials[trialNum]['IvelVec']
+            for IvelIdx in xrange(len(IvelVec)):
+                iData = trials[trialNum]['IvelData'][IvelIdx]
+                dataLogger.info("Processing vel. index: %d/%d; %.2f pA",
+                        IvelIdx, len(IvelVec) - 1, IvelVec[IvelIdx])
+                self.manipulateData(iData)
+
+    @abstractmethod
+    def manipulateData(self, data, **kw):
+        raise NotImplementedError()
+
+
+class VelocityPruningVisitor(VelocityDataVisitor):
     '''
     Delete certain data on each trial, for each IvelData iteration.
     '''
@@ -24,25 +51,38 @@ class VelocityPruningVisitor(DictDSVisitor):
         self.what = what
 
 
-    def visitDictDataSet(self, ds, **kw):
-        if ds.data is None:
-            velPruneLogger.info('No data set, skipping everything.')
+    def manipulateData(self, data):
+        if self.what in data.keys():
+            del data[self.what]
+            pruneLogger.info("'%s' deleted.", self.what)
+        else:
+            pruneLogger.info("'%s' does not exist. No delete",
+                    self.what)
+
+
+class VelocityConversionVisitor(VelocityDataVisitor):
+    '''
+    Convert specified data in the data set.
+    '''
+
+    def __init__(self, what, targetType):
+        self.what = what
+        self.targetType = targetType
+
+    def manipulateData(self, data, **kw):
+        if self.what not in data.keys():
+            convLogger.warn("'%s' not in present in data. Quitting.",
+                    self.what)
             return
-        data = ds.data
-        trials = data['trials']
 
-        for trialNum in xrange(len(trials)):
-            velPruneLogger.info("Trial no. %d/%d", trialNum, len(trials)-1)
-            IvelVec = trials[trialNum]['IvelVec']
-            for IvelIdx in xrange(len(IvelVec)):
-                iData = trials[trialNum]['IvelData'][IvelIdx]
-                velPruneLogger.info("Processing vel. index: %d/%d; %.2f pA",
-                        IvelIdx, len(IvelVec) - 1, IvelVec[IvelIdx])
+        try:
+            tmp = self.targetType(data[self.what])
+        except e:
+            convLogger.warn('Conversion failed. The original data is intact')
+            return
 
-                if self.what in iData.keys():
-                    del iData[self.what]
-                    velPruneLogger.info("'%s' deleted.", self.what)
-                else:
-                    velPruneLogger.info("'%s' does not exist. No delete",
-                            self.what)
+        data[self.what] = tmp
+
+
+
 
