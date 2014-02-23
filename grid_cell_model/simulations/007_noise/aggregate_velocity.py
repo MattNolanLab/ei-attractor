@@ -31,7 +31,8 @@ ns_none = [-100]
 varListBase  = ['analysis']
 loadData     = True
 dirs = \
-    ('output/detailed_noise/velocity/EI-3_1', (31, 9), ns_all)
+    ('output/even_spacing/velocity_vertical/{0}pA', (31, 31), ns_all)
+    #('output/detailed_noise/velocity/EI-3_1', (31, 9), ns_all)
     #('output/detailed_noise/velocity/EI-1_3', (31, 9), ns_all)
     #('output/even_spacing/velocity/{0}pA', (31, 31), ns_all)
 
