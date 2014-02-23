@@ -63,10 +63,10 @@ for noise_sigma in noise_sigmas:
     ac = ArgumentCreator(p, printout=True, emitJobNum=False)
 
     iterparams = {
-            #'row' : np.arange(rowN),
-            #'col' : np.arange(colN)
-            'row' : [0],
-            'col' : [0]
+            'row' : np.arange(rowN),
+            'col' : np.arange(colN)
+            #'row' : [0],
+            #'col' : [0]
     }
     ac.insertDict(iterparams, mult=True)
 
