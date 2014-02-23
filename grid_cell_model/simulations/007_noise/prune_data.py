@@ -13,6 +13,7 @@ parser.add_argument("--prune_what", type=str, required=True)
 parser.add_argument('--type', type=str, choices=['velocity'], required=True)
 parser.add_argument('--output_dir', type=str, help='Unused')
 parser.add_flag("--ns_all")
+parser.add_flag("--repack", help='Whether to repack data after pruning')
 o = parser.parse_args()
 
 if not o.ns_all and o.ns is None:
@@ -41,10 +42,11 @@ for noise_sigma in noise_sigmas:
     if o.type == 'velocity':
         visitor = dm.VelocityPruningVisitor(what=o.prune_what)
         sp.visit(visitor, trialList='all-at-once')
-        if o.row is not None:
-            sp.repackItem(o.row, o.col)
-        else:
-            sp.repackAllItems()
+        if o.repack:
+            if o.row is not None:
+                sp.repackItem(o.row, o.col)
+            else:
+                sp.repackAllItems()
     else:
         raise RuntimeError("Whoops! We shouldn't be here!")
 

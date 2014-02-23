@@ -21,6 +21,7 @@ parser.add_argument("--prune_what", type=str, required=True)
 parser.add_argument('--type',       type=str, choices=['velocity'], required=True)
 parser.add_argument('--env',        type=str, choices=['workstation', 'cluster'], required=True)
 parser.add_flag("--ns_all")
+parser.add_flag("--repack", help='Whether to repack data after pruning')
 o = parser.parse_args()
 
 if not o.ns_all and o.ns is None:
@@ -53,6 +54,8 @@ for noise_sigma in noise_sigmas:
     p['prune_what'] = o.prune_what
     p['type']       = o.type
     p['verbosity']  = o.verbosity
+    if o.repack:
+        p['repack'] = ''
 
 
     ###############################################################################
