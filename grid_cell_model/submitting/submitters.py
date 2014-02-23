@@ -20,10 +20,11 @@ import os, subprocess
 import errno
 from datetime       import datetime
 from gc_exceptions  import SubmitError
-from otherpkg.log   import log_warn, log_info
+from otherpkg.log   import log_warn, log_info, getClassLogger
 from data_storage   import DataStorage
 
 
+progSLogger = getClassLogger("ProgramSubmitter", __name__)
 
 class ProgramSubmitter(object):
     '''
@@ -32,7 +33,7 @@ class ProgramSubmitter(object):
     '''
 
     def __init__(self, argCreator, output_dir, label, timePrefix=False,
-            blocking=True, forceExisting=True, numCPU=1):
+            blocking=True, forceExisting=True, numCPU=1, createOutputDir=True):
         '''
         Create the submitter object.
 
@@ -66,17 +67,22 @@ class ProgramSubmitter(object):
             self._timePrefix = timePrefix
         self._forceExisting = forceExisting
 
-        self._outputDir = self._createOutputDir()
-        try:
-            os.makedirs(self.outputDir())
-        except OSError as e:
-            if (not self._forceExisting):
-                raise e
-            if (e.errno == errno.EEXIST):
-                log_warn("root.submitters", "Output directory already exists. This"
-                    + " might overwrite files.")
-            else:
-                raise e
+        self.createOutputDir = createOutputDir
+        if self.createOutputDir:
+            self._outputDir = self._createOutputDir()
+            try:
+                os.makedirs(self.outputDir())
+            except OSError as e:
+                if (not self._forceExisting):
+                    raise e
+                if (e.errno == errno.EEXIST):
+                    log_warn("root.submitters", "Output directory already exists. This"
+                        + " might overwrite files.")
+                else:
+                    raise e
+        else:
+            self._outputDir = '__not_set__'
+            progSLogger.info('Not making output directory. Disabled by the user.')
 
         # process management
         self._pList = []
