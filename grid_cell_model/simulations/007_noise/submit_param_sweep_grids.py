@@ -62,6 +62,7 @@ for noise_sigma in noise_sigmas:
     p['ntrials']           = o.ntrials
     p['velON']             = 1
     p['constantPosition']  = 0
+    p['verbosity']         = o.verbosity
 
 
     # Range of E/I synaptic conductances
