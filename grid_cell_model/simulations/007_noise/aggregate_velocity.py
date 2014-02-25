@@ -22,14 +22,16 @@
 import numpy as np
 from parameters  import JobTrialSpace2D
 import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+from submitting import flagparse
 
+parser = flagparse.FlagParser()
+parser.add_argument('--noLoadData', action='store_true')
+args = parser.parse_args()
 
 ns_all  = [0, 150, 300]
 ns_none = [-100]
 varListBase  = ['analysis']
-loadData     = True
+loadData     = not o.noLoadData
 dirs = \
     ('output/even_spacing/velocity_vertical/{0}pA', (31, 31), ns_all)
     #('output/detailed_noise/velocity/EI-3_1', (31, 9), ns_all)
