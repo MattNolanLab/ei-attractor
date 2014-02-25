@@ -79,7 +79,7 @@ def getBumpCurrentSlope(noise_sigma, threshold=0, type=None):
     log_info("getBumpCurrentSlope", log_msg.format(fileName))
 
     ds = DataStorage.open(fileName, 'r')
-    slopes = np.abs(ds['lineFitSlope'].flatten())
+    slopes = ds['lineFitSlope'].flatten()
     ds.close()
     slopes[slopes < threshold] = np.nan
     return slopes
