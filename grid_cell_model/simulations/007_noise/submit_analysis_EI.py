@@ -21,6 +21,7 @@ parser.add_argument("--ns",         type=int, choices=[0, 150, 300])
 parser.add_argument('--type',       type=str, choices=['velocity'], required=True)
 parser.add_argument('--env',        type=str, choices=['workstation', 'cluster'], required=True)
 parser.add_argument('--nCPU',       type=positive_int, default=1)
+parser.add_argument('--rtLimit',    type=str, default='00:05:00')
 parser.add_flag("--ns_all")
 parser.add_flag("--forceUpdate")
 o = parser.parse_args()
@@ -32,7 +33,7 @@ if not o.ns_all and o.ns is None:
 # Submitting
 ENV         = o.env
 appName     = 'analysis_EI.py'
-rtLimit     = '00:05:00'
+rtLimit     = o.rtLimit
 numCPU      = o.nCPU
 blocking    = True
 timePrefix  = False
