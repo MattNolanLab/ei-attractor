@@ -19,36 +19,47 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import logging as lg
 import numpy as np
+
 from submitting.factory   import SubmitterFactory
 from submitting.arguments import ArgumentCreator
 from default_params       import defaultParameters as dp
+from submitting           import flagparse
+from submitting.flagparse import positive_int
 from param_sweep          import submitParamSweep, getBumpCurrentSlope
-import logging as lg
-#lg.basicConfig(level=lg.DEBUG)
-lg.basicConfig(level=lg.INFO)
 
-noise_sigma_all = [0.0, 150.0, 300.0] # pA
+parser = flagparse.FlagParser()
+parser.add_argument("--where",      type=str, required=True)
+parser.add_argument("--ns",         type=int, choices=[0, 150, 300])
+parser.add_argument('--ntrials',    type=positive_int, default=1)
+parser.add_argument('--rtLimit',    type=str, default='05:00:00')
+parser.add_argument('--env',        type=str, choices=['workstation', 'cluster'], required=True)
+parser.add_flag('--dry_run', help='Do no run anything nor save any meta-data')
+o = parser.parse_args()
 
-for noise_sigma in noise_sigma_all:
+ns_all = [0.0, 150.0, 300.0] # pA
+noise_sigmas = ns_all if o.ns is None  else [o.ns]
+
+for noise_sigma in noise_sigmas:
     p = dp.copy()
     p['noise_sigma'] = noise_sigma # pA
 
     # Submitting
-    ENV         = 'cluster'
-    simRootDir  = 'output/even_spacing/grids'
+    ENV         = o.env
+    simRootDir  = o.where
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
     appName     = 'simulation_grids.py'
-    rtLimit     = '05:00:00'
+    rtLimit     = o.rtLimit
     numCPU      = 1
     blocking    = True
     timePrefix  = False
     numRepeat   = 1
-    dry_run     = False
+    dry_run     = o.dry_run
 
     p['time']              = 600e3  # ms
     p['nthreads']          = 1
-    p['ntrials']           = 3
+    p['ntrials']           = o.ntrials
     p['velON']             = 1
     p['constantPosition']  = 0
 
