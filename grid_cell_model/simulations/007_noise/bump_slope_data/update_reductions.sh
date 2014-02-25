@@ -33,5 +33,5 @@ for I in $I_vec; do
     rm -f $dst
     echo "src: $src"
     echo "dst: $dst"
-    h5copy -i $src -o $dst -s /lineFitSlope -d /lineFitSlope
+    h5copy -i $src -o $dst -s /analysis/lineFitSlope -d /lineFitSlope
 done
