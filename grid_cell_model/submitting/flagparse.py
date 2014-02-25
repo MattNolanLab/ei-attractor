@@ -61,3 +61,12 @@ class FlagAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.allArg, False)
         setattr(namespace, self.dest, self.const)
+
+##############################################################################
+# User-defined type checkers
+def positive_int(arg):
+    value = int(arg)
+    if value <= 0:
+        msg = '%s is not a positive integer' % arg
+        raise argparse.ArgumentTypeError(msg)
+    return value

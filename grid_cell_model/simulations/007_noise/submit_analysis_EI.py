@@ -9,48 +9,65 @@ from submitting.factory   import SubmitterFactory
 from submitting.arguments import ArgumentCreator
 from param_sweep          import getSpeedPercentile
 from default_params       import defaultParameters as dp
+from submitting           import flagparse
+from submitting.flagparse import positive_int
+
 import logging as lg
 lg.basicConfig(level=lg.DEBUG)
 
+parser = flagparse.FlagParser()
+parser.add_argument("--where",      type=str, required=True)
+parser.add_argument("--ns",         type=int, choices=[0, 150, 300])
+parser.add_argument('--type',       type=str, choices=['velocity'], required=True)
+parser.add_argument('--env',        type=str, choices=['workstation', 'cluster'], required=True)
+parser.add_argument('--nCPU',       type=positive_int, default=1)
+parser.add_flag("--ns_all")
+parser.add_flag("--forceUpdate")
+o = parser.parse_args()
+
+if not o.ns_all and o.ns is None:
+    raise RuntimeError("Must specify either --ns or --ns_all!")
+
+
 # Submitting
-ENV         = 'cluster'
+ENV         = o.env
 appName     = 'analysis_EI.py'
 rtLimit     = '00:05:00'
-numCPU      = 1
+numCPU      = o.nCPU
 blocking    = True
 timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
-gammaBumpType = 'gamma-bump'
 velocityType  = 'velocity'
-gridsType     = 'grids'
-posType       = 'positional'
 
-noise_sigma_all = [0, 150.0, 300.0] # pA
-dirs = \
-    ('output/even_spacing/velocity_vertical', velocityType,  '{0}pA', (31, 31))
-    #('output/even_spacing/const_position',    posType,       '{0}pA', (31, 31))
-    #('output/even_spacing/gamma_bump',        gammaBumpType, '{0}pA', (31, 31))
-    #('output/even_spacing/grids',             gridsType,     '{0}pA', (31, 31))
-    #('output/even_spacing/grids_no_velocity', gridsType,     '{0}pA', (31, 31))
-    #('output/even_spacing/velocity',          velocityType,  '{0}pA', (31, 31))
-    #('output/no_theta/grids',                 gridsType,     '{0}pA', (31, 31))
-    #('output/no_theta/velocity',              velocityType,  '{0}pA', (31, 31))
-    #('output/no_theta/gamma_bump',            gammaBumpType, '{0}pA', (31, 31))
+ns_all = [0, 150, 300]
+shape = (31, 31)
+noise_sigmas = ns_all if o.ns_all  else [o.ns]
 
-for noise_sigma in noise_sigma_all:
+#dirs = \
+#    ('output/even_spacing/velocity_vertical', velocityType,  '{0}pA', (31, 31))
+#    #('output/even_spacing/const_position',    posType,       '{0}pA', (31, 31))
+#    #('output/even_spacing/gamma_bump',        gammaBumpType, '{0}pA', (31, 31))
+#    #('output/even_spacing/grids',             gridsType,     '{0}pA', (31, 31))
+#    #('output/even_spacing/grids_no_velocity', gridsType,     '{0}pA', (31, 31))
+#    #('output/even_spacing/velocity',          velocityType,  '{0}pA', (31, 31))
+#    #('output/no_theta/grids',                 gridsType,     '{0}pA', (31, 31))
+#    #('output/no_theta/velocity',              velocityType,  '{0}pA', (31, 31))
+#    #('output/no_theta/gamma_bump',            gammaBumpType, '{0}pA', (31, 31))
+
+for noise_sigma in noise_sigmas:
     p = {}
-    simRootDir = dirs[0]
-    p['type']  = dirs[1]
-    simLabel   = dirs[2].format(int(noise_sigma))
-    rowN       = dirs[3][0]
-    colN       = dirs[3][1]
-    p['verbosity'] = 'INFO'
+    simRootDir = o.where
+    simLabel   = '{0}pA'.format(int(noise_sigma))
+    rowN       = shape[0]
+    colN       = shape[1]
 
-    p['shapeRows'] = rowN
-    p['shapeCols'] = colN
-    p['forceUpdate'] = 0
+    p['type']        = o.type
+    p['shapeRows']   = rowN
+    p['shapeCols']   = colN
+    p['verbosity']   = o.verbosity
+    p['forceUpdate'] = int(o.forceUpdate)
 
     if (p['type'] == velocityType):
         percentile = 99.0
