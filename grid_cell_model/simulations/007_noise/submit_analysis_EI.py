@@ -12,13 +12,12 @@ from default_params       import defaultParameters as dp
 from submitting           import flagparse
 from submitting.flagparse import positive_int
 
-import logging as lg
-lg.basicConfig(level=lg.DEBUG)
+velocityType  = 'velocity'
 
 parser = flagparse.FlagParser()
 parser.add_argument("--where",      type=str, required=True)
 parser.add_argument("--ns",         type=int, choices=[0, 150, 300])
-parser.add_argument('--type',       type=str, choices=['velocity'], required=True)
+parser.add_argument('--type',       type=str, choices=[velocityType], required=True)
 parser.add_argument('--env',        type=str, choices=['workstation', 'cluster'], required=True)
 parser.add_argument('--nCPU',       type=positive_int, default=1)
 parser.add_argument('--rtLimit',    type=str, default='00:05:00')
@@ -40,22 +39,11 @@ timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
-velocityType  = 'velocity'
 
 ns_all = [0, 150, 300]
 shape = (31, 31)
 noise_sigmas = ns_all if o.ns_all  else [o.ns]
 
-#dirs = \
-#    ('output/even_spacing/velocity_vertical', velocityType,  '{0}pA', (31, 31))
-#    #('output/even_spacing/const_position',    posType,       '{0}pA', (31, 31))
-#    #('output/even_spacing/gamma_bump',        gammaBumpType, '{0}pA', (31, 31))
-#    #('output/even_spacing/grids',             gridsType,     '{0}pA', (31, 31))
-#    #('output/even_spacing/grids_no_velocity', gridsType,     '{0}pA', (31, 31))
-#    #('output/even_spacing/velocity',          velocityType,  '{0}pA', (31, 31))
-#    #('output/no_theta/grids',                 gridsType,     '{0}pA', (31, 31))
-#    #('output/no_theta/velocity',              velocityType,  '{0}pA', (31, 31))
-#    #('output/no_theta/gamma_bump',            gammaBumpType, '{0}pA', (31, 31))
 
 for noise_sigma in noise_sigmas:
     p = {}
