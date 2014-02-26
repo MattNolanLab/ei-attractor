@@ -54,19 +54,13 @@ pcolorTransparent = True
 
 def plotHistogram(sp, neuronIdx, type, fname, trialNum=0, **kw):
     # kw arguments
-    figsize     = kw.pop('figsize', (1.75, 1.75))
-    left        = kw.pop('left', 0.37)
-    bottom      = kw.pop('bottom', 0.32)
-    right       = kw.pop('right', 0.92)
-    top         = kw.pop('top', 0.85)
+    ax          = kw.pop('ax', plt.gca())
     transparent = kw.pop('transparent', True)
+    plotTitle   = kw.pop('plotTitle', True)
     xlim        = kw.pop('xlim', None)
     ylim        = kw.pop('ylim', [0, 900])
     xticks      = kw.pop('xticks', True)
     yticks      = kw.pop('yticks', True)
-
-    fig = plt.figure(figsize=figsize)
-    ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
 
     if (type == 'E2I'):
         dataVar = 'g_IE'
@@ -76,6 +70,9 @@ def plotHistogram(sp, neuronIdx, type, fname, trialNum=0, **kw):
         title   = "E cell"
     else:
         raise ValueError()
+
+    if not plotTitle:
+        title = ''
 
     M      = sp[0][0][trialNum].data[dataVar]
     conns  = M[neuronIdx, :]
@@ -88,8 +85,74 @@ def plotHistogram(sp, neuronIdx, type, fname, trialNum=0, **kw):
 
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
-    plt.savefig(fname, dpi=150, transparent=transparent)
+    
+    return ax
 
+
+
+def plotBrokenHistogram(sp, neuronIdx, type, fname, trialNum=0,
+        axBoundaries=[0, 0, 1, 1], axesProportions=(0.5, 0.5),
+        bottomLimits=None, topLimits=None, **kw):
+    # kw arguments
+    plotTitle   = kw.pop('plotTitle', True)
+    fig         = kw.pop('fig', plt.gcf())
+    transparent = kw.pop('transparent', True)
+    xlim        = kw.pop('xlim', None)
+
+    left, bottom, right, top = axBoundaries
+    h = top - bottom
+    w = right - left
+    hBottom = h*axesProportions[0]
+    hTop = h*axesProportions[1]
+    
+    axBottom = fig.add_axes(Bbox.from_extents(left, bottom, right, bottom +
+        hBottom))
+    axTop = fig.add_axes(Bbox.from_extents(left, top - hTop, right, top),
+            sharex=axBottom)
+
+    if (type == 'E2I'):
+        dataVar = 'g_IE'
+        title   = "I cell"
+    elif (type == 'I2E'):
+        dataVar = 'g_EI'
+        title   = "E cell"
+    else:
+        raise ValueError()
+
+    if not plotTitle:
+        title = ''
+
+    M      = sp[0][0][trialNum].data[dataVar]
+    conns  = M[neuronIdx, :]
+    pconn.plotConnHistogram(conns, title=title, ax=axBottom, **kw)
+    kw['ylabel'] = ''
+    pconn.plotConnHistogram(conns, title=title, ax=axTop, **kw)
+
+    #if (not xticks):
+    #    ax.xaxis.set_ticklabels([])
+    #if (not yticks):
+    #    ax.yaxis.set_ticklabels([])
+
+    axBottom.set_xlim(xlim)
+    if xlim is not None:
+        axBottom.set_xticks(xlim)
+    axBottom.set_ylim(bottomLimits)
+    axBottom.set_yticks(bottomLimits)
+    axBottom.yaxis.set_minor_locator(ti.NullLocator())
+    axTop.set_ylim(topLimits)
+    axTop.set_yticks([topLimits[1]])
+    axTop.xaxis.set_visible(False)
+    axTop.spines['bottom'].set_visible(False)
+
+    divLen = 0.07
+    d = .015
+    kwargs = dict(transform=fig.transFigure, color='k', clip_on=False)
+    axBottom.plot((left-divLen*w, left+divLen*w), (bottom+hBottom + d,
+        bottom+hBottom - d), **kwargs)
+    axTop.plot((left-divLen*w, left+divLen*w), (top-hTop + d, top-hTop - d),
+            **kwargs)
+
+    return axBottom, axTop
 
 
 def plotOutgoing(sp, type, neuronIdx, fname, trialNum=0, **kw):
@@ -169,35 +232,85 @@ IneuronIdx = 492
 
 E_surrSp = JobTrialSpace2D(shape, E_surrRoot)
 I_surrSp = JobTrialSpace2D(shape, I_surrRoot)
+histLeft   = 0.4
+histBottom = 0.32
+histRight  = 0.90
+histTop    = 0.85
+histFigsize = (1.8, 1.55)
+axBoundaries = (histLeft, histBottom, histRight, histTop)
 
 if (hists):
     # E-surround
     fname = se.setFName("conn_histogram_E_surr_E2I.pdf")
+    fig = plt.figure(figsize=histFigsize)
+    ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
+        histTop))
     plotHistogram(E_surrSp, IneuronIdx, "E2I", fname,
+            plotTitle=False,
+            ax=ax,
             locators=dict(
                 x_major=ti.MultipleLocator(0.4),
-                x_minor=ti.MultipleLocator(0.1)))
+                x_minor=ti.MultipleLocator(0.1)),
+            rwidth=0.8,
+            linewidth=0)
+    ax.set_xlabel(ax.xaxis.get_label_text(), labelpad=-5)
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
 
     fname = se.setFName("conn_histogram_E_surr_I2E.pdf")
-    plotHistogram(E_surrSp, EneuronIdx, "I2E", fname,
-            ylabel='', yticks=False,
-            locators=dict(
-                x_major=ti.MultipleLocator(1),
-                x_minor=ti.MultipleLocator(0.5)))
+    fig = plt.figure(figsize=histFigsize)
+    axBottom, axTop = plotBrokenHistogram(E_surrSp, EneuronIdx, "I2E", fname,
+            ylabel='', plotTitle=False,
+            axBoundaries=axBoundaries,
+            axesProportions=(0.75, 0.2),
+            bottomLimits=(0, 60),
+            topLimits=(800, 900),
+            xlim=[0, 2.5],
+            rwidth=0.8,
+            linewidth=0)
+    axBottom.set_xlabel(axBottom.xaxis.get_label_text(), labelpad=-5)
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
+            
 
     # I-surround
     fname = se.setFName("conn_histogram_I_surr_E2I.pdf")
-    plotHistogram(I_surrSp, IneuronIdx, "E2I", fname,
-            locators=dict(
-                x_major=ti.MultipleLocator(1),
-                x_minor=ti.MultipleLocator(0.25)))
+    fig = plt.figure(figsize=histFigsize)
+    axBottom, axTop = plotBrokenHistogram(I_surrSp, IneuronIdx, "E2I", fname,
+            fig=fig,
+            ylabel='',
+            plotTitle=False,
+            axBoundaries=axBoundaries,
+            axesProportions=(0.75, 0.2),
+            bottomLimits=(0, 100),
+            topLimits=(800, 900),
+            xlim=[0, 1.25],
+            rwidth=0.8,
+            linewidth=0)
+    axBottom.set_xlabel(ax.xaxis.get_label_text(), labelpad=-5)
+    fig.text(histLeft - 0.27, 0.5*(histBottom+histTop), 'Count', rotation=90,
+            ha='center', va='center')
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
 
     fname = se.setFName("conn_histogram_I_surr_I2E.pdf")
-    plotHistogram(I_surrSp, EneuronIdx, "I2E", fname,
-            ylabel='', yticks=False,
+    fig = plt.figure(figsize=histFigsize)
+    ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
+        histTop))
+    plotHistogram(I_surrSp, IneuronIdx, "I2E", fname,
+            ylabel='',
+            plotTitle=False,
+            ax=ax,
+            xlim=[0, 0.8],
+            ylim=[0, 150],
             locators=dict(
-                x_major=ti.MultipleLocator(0.5),
-                x_minor=ti.MultipleLocator(0.25)))
+                x_major=ti.MultipleLocator(0.8),
+                x_minor=ti.MultipleLocator(0.4)),
+            rwidth=0.8,
+            linewidth=0)
+    ax.set_xlabel(ax.xaxis.get_label_text(), labelpad=-5)
+    plt.savefig(fname, dpi=300, transparent=True)
+    plt.close()
 
 
 
