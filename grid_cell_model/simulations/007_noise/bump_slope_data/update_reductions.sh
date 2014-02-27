@@ -22,7 +22,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-root_dir="../output/even_spacing/velocity/"
+root_dir="../output/even_spacing/velocity_vertical/"
 target_file="bump_slope_"
 
 I_vec="0pA 150pA 300pA"
