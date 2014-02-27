@@ -132,7 +132,7 @@ class ProgramSubmitter(object):
     def waitForProcesses(self):
         self._cleanup()
 
-    def submitAll(self, startJobNum, repeat=1, dry_run=False):
+    def submitAll(self, startJobNum, repeat=1, dry_run=False, filter=None):
         '''
         Submits all the generated jobs. Parameters:
           startJobNum   Start job number index
@@ -144,10 +144,11 @@ class ProgramSubmitter(object):
         for it in range(self._ac.listSize()):
             for rep in range(repeat):
                 self._wait()
-                print "Submitting simulation " + str(it)
-                p = self.RunProgram(self._ac.getArgString(it, curr_job_num ),
-                        curr_job_num, dry_run)
-                self._addProcess(p)
+                if (filter is None) or (filter == it):
+                    print "Submitting simulation " + str(it)
+                    p = self.RunProgram(self._ac.getArgString(it, curr_job_num ),
+                            curr_job_num, dry_run)
+                    self._addProcess(p)
                 prt.append((curr_job_num, self._ac.getPrintArgString(it)))
                 curr_job_num += 1
 

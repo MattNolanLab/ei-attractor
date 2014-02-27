@@ -27,7 +27,7 @@ from otherpkg.log         import log_info
 
 def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
         appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
-        extraIterparams={}):
+        extraIterparams={}, rc=None):
     ac = ArgumentCreator(p, printout=True)
 
     GArr = np.linspace(startG, endG, Nvals)
@@ -57,7 +57,8 @@ def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
             blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
     ac.setOption('output_dir', submitter.outputDir())
     startJobNum = 0
-    submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
+    filter = rc[0]*len(GArr) + rc[1] if rc is not None else None
+    submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run, filter=filter)
     submitter.saveIterParams(iterparams, dry_run=dry_run)
 
 
