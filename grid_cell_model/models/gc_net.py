@@ -256,9 +256,6 @@ class GridCellNetwork(object):
             for x in xrange(self.Ne_x):
                 it = y*self.Ne_x + x
 
-                if it == 780:
-                    import pdb; pdb.set_trace()
-
                 x_e_norm = float(x) / self.Ne_x
                 a.x = x_e_norm
                 a.y = y_e_norm
