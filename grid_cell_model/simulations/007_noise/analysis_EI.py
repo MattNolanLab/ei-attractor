@@ -9,6 +9,7 @@ matplotlib.use('agg')
 
 import visitors as vis
 import visitors.bumps as bumps
+import visitors.plotting_visitors as plotting
 from parameters import JobTrialSpace2D
 from submitting import flagparse
 
@@ -74,18 +75,18 @@ elif (o.type == "velocity"):
     sp.visit(VelVisitor, trialList='all-at-once')
 elif (o.type == 'grids'):
     spikeType = 'E'
-    po = vis.GridPlotVisitor.PlotOptions()
-    gridVisitor = vis.GridPlotVisitor(o.output_dir, spikeType=spikeType,
-            plotOptions=po, minGridnessT=300e3)
-    ISIVisitor = vis.ISIPlotVisitor(o.output_dir,
-            spikeType = spikeType,
-            nRows = 5, nCols = 5, range=[0, 1000], bins=40,
-            ISINWindows=20)
-    FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
+    po = plotting.GridPlotVisitor.PlotOptions()
+    gridVisitor = plotting.GridPlotVisitor(o.output_dir, spikeType=spikeType,
+            plotOptions=po, minGridnessT=300e3, forceUpdate=o.forceUpdate)
+    #ISIVisitor = plotting.ISIPlotVisitor(o.output_dir,
+    #        spikeType = spikeType,
+    #        nRows = 5, nCols = 5, range=[0, 1000], bins=40,
+    #        ISINWindows=20)
+    #FRVisitor = plotting.FiringRateVisitor(forceUpdate=forceUpdate)
 
     sp.visit(gridVisitor)
     #sp.visit(ISIVisitor)
-    sp.visit(FRVisitor)
+    #sp.visit(FRVisitor)
 elif o.type == 'positional':
     bumpPosVisitor = vis.bumps.BumpPositionVisitor(
             tstart=0,

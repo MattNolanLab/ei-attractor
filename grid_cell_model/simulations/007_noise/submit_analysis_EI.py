@@ -13,14 +13,18 @@ from submitting           import flagparse
 from submitting.flagparse import positive_int
 
 velocityType  = 'velocity'
+gridsType     = 'grids'
+allowedTypes = [velocityType, gridsType]
 
 parser = flagparse.FlagParser()
-parser.add_argument("--where",      type=str, required=True)
-parser.add_argument("--ns",         type=int, choices=[0, 150, 300])
-parser.add_argument('--type',       type=str, choices=[velocityType], required=True)
-parser.add_argument('--env',        type=str, choices=['workstation', 'cluster'], required=True)
-parser.add_argument('--nCPU',       type=positive_int, default=1)
-parser.add_argument('--rtLimit',    type=str, default='00:05:00')
+parser.add_argument('--row',     type=int)
+parser.add_argument('--col',     type=int)
+parser.add_argument("--where",   type=str, required=True)
+parser.add_argument("--ns",      type=int, choices=[0, 150, 300])
+parser.add_argument('--type',    type=str, choices=allowedTypes, required=True)
+parser.add_argument('--env',     type=str, choices=['workstation', 'cluster'], required=True)
+parser.add_argument('--nCPU',    type=positive_int, default=1)
+parser.add_argument('--rtLimit', type=str, default='00:05:00')
 parser.add_flag("--ns_all")
 parser.add_flag("--forceUpdate")
 o = parser.parse_args()
@@ -68,10 +72,8 @@ for noise_sigma in noise_sigmas:
     ac = ArgumentCreator(p, printout=True)
 
     iterparams = {
-            'row' : np.arange(rowN),
-            'col' : np.arange(colN)
-            #'row' : [5],
-            #'col' : [15]
+            'row' : np.arange(rowN) if o.row is None else [o.row],
+            'col' : np.arange(colN) if o.col is None else [o.col]
     }
     ac.insertDict(iterparams, mult=True)
 
