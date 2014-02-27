@@ -30,6 +30,8 @@ from submitting.flagparse import positive_int
 from param_sweep          import submitParamSweep, getBumpCurrentSlope
 
 parser = flagparse.FlagParser()
+parser.add_argument('--row',     type=int)
+parser.add_argument('--col',     type=int)
 parser.add_argument("--where",      type=str, required=True)
 parser.add_argument("--ns",         type=int, choices=[0, 150, 300])
 parser.add_argument('--ntrials',    type=positive_int, default=1)
@@ -37,6 +39,9 @@ parser.add_argument('--rtLimit',    type=str, default='05:00:00')
 parser.add_argument('--env',        type=str, choices=['workstation', 'cluster'], required=True)
 parser.add_flag('--dry_run', help='Do no run anything nor save any meta-data')
 o = parser.parse_args()
+
+if (o.row is None) ^ (o.col is None):
+    raise ValueError("Specify either both --row and --col or None!")
 
 ns_all = [0.0, 150.0, 300.0] # pA
 noise_sigmas = ns_all if o.ns is None  else [o.ns]
@@ -75,8 +80,9 @@ for noise_sigma in noise_sigmas:
     #extraIterparams['bumpCurrentSlope'] = [1.0]
 
     ###############################################################################
+    rc = (o.row, o.col) if o.row is not None else None
 
     submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
             appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
-            extraIterparams)
+            extraIterparams, rc=rc)
 
