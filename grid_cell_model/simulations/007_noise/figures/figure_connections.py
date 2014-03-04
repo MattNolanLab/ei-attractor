@@ -51,11 +51,12 @@ def plotEToI(sp, gIdx, neuronIdx, trialNum=0, **kw):
     annG = gE[0, gIdx]
     if (annG - int(annG) == 0):
         annG = int(annG)
-    ann = '$g_E$ = {0} nS'.format(annG)
-    ax.text(0.95, 0.9, ann, ha='right', va='bottom', fontsize='x-small',
-            transform=ax.transAxes)
+    #ann = '$g_E$ = {0} nS'.format(annG)
+    #ax.text(0.95, 0.9, ann, ha='right', va='bottom', fontsize='x-small',
+    #        transform=ax.transAxes)
     ax.set_xlim([0, annG])
     ax.set_xticks([0, annG])
+    ax.xaxis.set_ticklabels([0, '$g_E$'])
     ax.set_ylim(ylim)
 
 def plotIToE(sp, gIdx, neuronIdx, trialNum=0, **kw):
@@ -101,12 +102,13 @@ def plotIToEBrokenAxis(sp, gIdx, neuronIdx, trialNum=0, axBoundaries=[0, 0, 1, 1
     annG = gI[0, gIdx]
     if (annG - int(annG) == 0):
         annG = int(annG)
-    ann = '$g_I$ = {0} nS'.format(annG)
-    fig.text(left+0.95*w, bottom+0.9*h, ann, ha='right', va='bottom',
-            fontsize='x-small')
+    #ann = '$g_I$ = {0} nS'.format(annG)
+    #fig.text(left+0.95*w, bottom+0.9*h, ann, ha='right', va='bottom',
+    #        fontsize='x-small')
 
     axBottom.set_xlim([0, annG])
     axBottom.set_xticks([0, annG])
+    axBottom.xaxis.set_ticklabels([0, '$g_I$'])
     axBottom.set_ylim(bottomLimits)
     axBottom.set_yticks(bottomLimits)
     axBottom.yaxis.set_minor_locator(ti.NullLocator())
@@ -190,7 +192,6 @@ if args.hists or args.all:
     fig = plt.figure('E2I', figsize=figSize)
     ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
     plotEToI(sp, gIdx, neuronIdx)
-    #fig.tight_layout(rect=[0.01, 0.01, 0.99, 0.99], pad=0)
     fname = outputDir + "/figure_connections_E2I.pdf"
     plt.savefig(fname, dpi=300, transparent=transparent)
 
@@ -198,7 +199,6 @@ if args.hists or args.all:
     fig = plt.figure('I2E', figsize=figSize)
     ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
     plotIToE(sp, gIdx, neuronIdx, ylabel='')
-    #fig.tight_layout(rect=[0.01, 0.01, 0.99, 0.99], pad=0)
     fname = outputDir + "/figure_connections_I2E.pdf"
     plt.savefig(fname, dpi=300, transparent=transparent)
 
@@ -221,11 +221,8 @@ if args.exampleHists or args.all:
                 rwidth=0.8,
                 linewidth=0,
                 **kw)
-        #ax.yaxis.set_visible(False)
         ax.yaxis.set_minor_locator(ti.NullLocator())
-        #ax.spines['left'].set_visible(False)
         ax.set_xlabel(ax.xaxis.get_label_text(), labelpad=-5)
-        #fig.tight_layout(rect=[0.01, 0.01, 0.99, 0.99], pad=0)
         fname = outputDir + "/figure_connections_examples_E2I{0}.pdf"
         plt.savefig(fname.format(exIdx), dpi=300, transparent=transparent)
         plt.close()
