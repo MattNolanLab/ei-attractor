@@ -31,7 +31,7 @@ noise_sigmas = [0, 150, 300]
 exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
 gridsDataRoot= None
 bumpDataRoot= None
-velDataRoot = 'output_local/even_spacing/velocity'
+velDataRoot = 'output_local/even_spacing/velocity_vertical'
 shape = (31, 31)
 
 
@@ -121,7 +121,7 @@ histTop     = 0.86
 
 errVarList = ['lineFitErr']
 err_vmin = 0
-err_vmax = 10
+err_vmax = 3
 
 
 def createSweepFig(name):
@@ -137,7 +137,7 @@ cbar_kw = dict(
     orientation = 'vertical',
     shrink      = 0.8,
     pad         = 0.05,
-    ticks       = ti.MultipleLocator(4),
+    ticks       = ti.MultipleLocator(1),
     extend      = 'max',
     extendfrac  = 0.1,
     rasterized  = True)

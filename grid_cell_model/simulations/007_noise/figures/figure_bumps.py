@@ -34,7 +34,7 @@ noise_sigmas = [0, 150, 300]
 exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
 gridsDataRoot    = 'output_local/even_spacing/grids'
 bumpDataRoot     = 'output_local/even_spacing/gamma_bump'
-velDataRoot      = 'output_local/even_spacing/velocity'
+velDataRoot      = 'output_local/even_spacing/velocity_vertical'
 constPosDataRoot = 'output_local/even_spacing/const_position'
 shape = (31, 31)
 
@@ -288,14 +288,14 @@ if args.bumpExamples or args.all:
 ###############################################################################
 
 std_vmin = 0
-std_vmax = 14
+std_vmax = 10.421
 
 std_cbar_kw= dict(
         orientation='vertical',
         label='Mean $\sigma_{speed}$ (neurons/s)',
         shrink = 0.8,
         pad = 0.05,
-        ticks=ti.MultipleLocator(4),
+        ticks=ti.MultipleLocator(5),
         extend='max', extendfrac=0.1)
 
 

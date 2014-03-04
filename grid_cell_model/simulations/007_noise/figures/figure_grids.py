@@ -43,15 +43,15 @@ plt.rcParams['font.size'] = 11
 
 outputDir = "panels/"
 
-NTrials=3
+NTrials=1
 gridTrialNumList = np.arange(NTrials)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas   = [0, 150, 300]
-exampleIdx     = [(1, 22), (1, 22), (1, 22)] # (row, col)
+exampleIdx     = [(5, 15), (5, 15), (5, 15) ] # (row, col)
 bumpDataRoot   = None
 velDataRoot    = None
-gridsDataRoot  = 'output_local/even_spacing/grids'
+gridsDataRoot  = 'output_local/even_spacing/grids_vertical'
 singleDataRoot = 'output_local/single_neuron'
 shape = (31, 31)
 
@@ -82,8 +82,8 @@ cbar_kw= {
     'ticks'      : ti.MultipleLocator(0.5),
     'rasterized' : True}
 
-vmin = -0.5
-vmax = 1.1
+vmin = -0.505
+vmax = 1.141
 
 ##############################################################################
 exampleRC = ( (5, 15), (15, 5) )
@@ -112,8 +112,8 @@ if args.grids or args.all:
         sweepTop))
     sweeps.plotGridTrial(ps.grids[0], varList, iterList, ps.noise_sigmas[0],
             trialNumList=gridTrialNumList,
+            r=exampleIdx[1][0], c=exampleIdx[1][1],
             ax=ax,
-            r=exampleIdx[0][0], c=exampleIdx[0][1],
             cbar=False, cbar_kw=cbar_kw,
             cmap=grids_cmap,
             vmin=vmin, vmax=vmax,

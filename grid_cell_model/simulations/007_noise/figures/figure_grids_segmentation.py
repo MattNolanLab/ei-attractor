@@ -27,15 +27,15 @@ plt.rcParams['font.size'] = 11
 
 outputDir = "panels/"
 
-NTrials=3
+NTrials=1
 gridTrialNumList = np.arange(NTrials)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
 noise_sigmas   = [0, 150, 300]
-exampleIdx     = [(1, 22), (1, 22), (1, 22)] # (row, col)
+exampleIdx     = [(5, 15), (5, 15), (5, 15)] # (row, col)
 bumpDataRoot   = None
 velDataRoot    = None
-gridsDataRoot  = 'output_local/even_spacing/grids'
+gridsDataRoot  = 'output_local/even_spacing/grids_vertical'
 singleDataRoot = 'output_local/single_neuron'
 shape = (31, 31)
 
@@ -241,6 +241,7 @@ if args.diff_sweep or args.all:
         sweeps.plotDiffTrial(ps.grids, iterList, which, NGridTrials, gridTypes,
                 ax=ax,
                 ignoreNaNs=True,
+                r=exampleIdx[0][0], c=exampleIdx[0][1],
                 cbar=True, cbar_kw=gridDiff_cbar_kw,
                 symmetricLimits=True,
                 cmap='RdBu_r')

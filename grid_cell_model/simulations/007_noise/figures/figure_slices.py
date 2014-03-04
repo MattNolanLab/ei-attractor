@@ -53,7 +53,7 @@ noise_sigmas = [0, 150, 300]
 rcIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
 gridsDataRoot= 'output_local/even_spacing/grids'
 bumpDataRoot= 'output_local/even_spacing/gamma_bump'
-velDataRoot = 'output_local/even_spacing/velocity'
+velDataRoot = 'output_local/even_spacing/velocity_vertical'
 shape = (31, 31)
 
 

@@ -33,7 +33,7 @@ iterList  = ['g_AMPA_total', 'g_GABA_total']
 noise_sigmas  = [0, 150, 300]
 exampleIdx    = [(1, 22), (1, 22), (1, 22)] # (row, col)
 bumpDataRoot  = None
-velDataRoot   = 'output_local/even_spacing/velocity'
+velDataRoot   = 'output_local/even_spacing/velocity_vertical'
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 

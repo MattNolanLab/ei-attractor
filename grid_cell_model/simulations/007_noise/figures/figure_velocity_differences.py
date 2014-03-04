@@ -11,6 +11,7 @@ parser.add_flag('--slope_sweeps')
 parser.add_flag('--fitErr_sweeps')
 parser.add_flag('--scatter_diff_slope_grids')
 parser.add_flag('--scatter_diff_fitErr_grids')
+parser.add_flag('--slope_diff_horiz_vert')
 args = parser.parse_args()
 
 
@@ -21,7 +22,7 @@ from matplotlib.transforms import Bbox
 
 import default_settings as ds
 from EI_plotting        import sweeps, scatter
-from EI_plotting.base   import NoiseDataSpaces
+from EI_plotting.base   import NoiseDataSpaces, getNoiseDataSpaces
 from plotting.low_level import zeroLines
 
 
@@ -32,7 +33,7 @@ NTrials = 5
 
 noise_sigmas  = [0, 150, 300]
 bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
-velDataRoot   = 'output_local/even_spacing/velocity'
+velDataRoot   = 'output_local/even_spacing/velocity_vertical'
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
@@ -206,3 +207,33 @@ if args.scatter_diff_fitErr_grids or args.all:
 
 
 
+##############################################################################
+# Difference between vertical and horizontal slope of bump speed estimation.
+horizVelDataRoot   = 'output_local/even_spacing/velocity'
+horizPS = getNoiseDataSpaces(horizVelDataRoot, ps.noise_sigmas, shape)
+horizVert_vmin = -1.05
+horizVert_vmax =  1.05
+
+if args.slope_diff_horiz_vert or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        kw = dict(cbar=False)
+        if ns_idx == 2:
+            kw['cbar'] = True
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        fig, ax = createSweepFig(None)
+        which = 0
+        spaces = [horizPS[ns_idx], ps.v[ns_idx]]
+        _, ax, cax = sweeps.plotDiffTrial(spaces, ds.iterList, which, None,
+                slopeTypes,
+                ax=ax,
+                cbar_kw=slope_cbar_kw,
+                vmin=horizVert_vmin, vmax=horizVert_vmax,
+                cmap=velSweep_cmap,
+                ignoreNaNs=True,
+                symmetricLimits=False,
+                **kw)
+        fname = outputDir + "/velocity_slope_diff_sweeps_horiz_vert{}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()

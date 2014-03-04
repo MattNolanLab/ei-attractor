@@ -31,7 +31,7 @@ iterList  = ['g_AMPA_total', 'g_GABA_total']
 noise_sigmas  = [0, 150, 300]
 rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
-velDataRoot   = 'output_local/even_spacing/velocity'
+velDataRoot   = 'output_local/even_spacing/velocity_vertical'
 gridsDataRoot = 'output_local/even_spacing/grids'
 shape = (31, 31)
 
@@ -237,7 +237,7 @@ if args.detailed_noise or args.all:
 # This should be corresponding to the velLine examples as well !!
 rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 slopeVarList = ['lineFitSlope']
-slope_vmin = 0
+slope_vmin = -0.472
 slope_vmax = 1.6
 velSweep_cmap = 'jet'
 
@@ -246,7 +246,7 @@ slope_cbar_kw= dict(
         shrink = 0.8,
         pad = -0.05,
         label='Slope\n(neurons/s/pA)',
-        ticks=ti.MultipleLocator(0.5),
+        ticks=ti.MultipleLocator(0.4),
         extend='max', extendfrac=0.1)
 
 ann0 = dict(
@@ -273,7 +273,7 @@ if args.slope_sweeps or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig, ax = createSweepFig(None)
         kw = dict(cbar=False)
-        if (ns_idx > 0):
+        if (ns_idx == 2):
             kw['cbar'] = True
         if (ns_idx != 0):
             kw['ylabel'] = ''
@@ -284,6 +284,7 @@ if args.slope_sweeps or args.all:
                 cbar_kw=slope_cbar_kw,
                 cmap=velSweep_cmap,
                 vmin=slope_vmin, vmax=slope_vmax,
+                annotations=ann,
                 **kw)
         fname = outputDir + "/velocity_slope_sweeps{}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)

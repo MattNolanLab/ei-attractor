@@ -172,7 +172,7 @@ def plotVelTrial(sp, varList, iterList, noise_sigma, **kw):
     cbar        = kw.pop('cbar', True)
     annotations = kw.pop('annotations', None)
 
-    C    = np.abs(aggr.aggregate2D(sp, varList, funReduce = np.sum))
+    C    = aggr.aggregate2D(sp, varList, funReduce = np.sum)
     C    = ma.MaskedArray(C, mask = np.isnan(C))
     Y, X = aggr.computeVelYX(sp, iterList, r=r, c=c)
     C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kw)
@@ -240,7 +240,7 @@ def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
         stackedData, X, Y = aggr.collapseNoiseAggregated(dataList)
     else:
         stackedData, X, Y = aggr.collapseNoise(spList, iterList, types,
-                NTrials, ignoreNaNs=ignoreNaNs, normalizeTicks=True)
+                NTrials, ignoreNaNs=ignoreNaNs, normalizeTicks=True, r=r, c=c)
     stackedData, _ = filterData(stackedData, filterThreshold)
     diffData = np.diff(stackedData, axis=0)[which, :]
     if symmetricLimits:
