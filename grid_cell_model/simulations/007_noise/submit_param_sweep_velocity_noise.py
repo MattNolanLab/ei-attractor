@@ -33,7 +33,7 @@ simLabel = 'EI-1_3'
 p = dp.copy()
 # Submitting
 ENV         = 'cluster'
-simRootDir  = 'output/detailed_noise/velocity'
+simRootDir  = 'output/detailed_noise_vertical/velocity'
 appName     = 'simulation_velocity.py'
 rtLimit     = '08:00:00'
 numCPU      = 1
@@ -49,6 +49,8 @@ p['ntrials']  = 10
 
 p['IvelMax']  = 100
 p['dIvel']    = 10
+
+p['verbosity'] = 'DEBUG'
 
 # Range of noise and E/I synaptic conductances
 noiseParams = SweepParams(0, 300, 31)
