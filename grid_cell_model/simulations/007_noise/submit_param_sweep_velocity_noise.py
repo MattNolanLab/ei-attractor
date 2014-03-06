@@ -27,8 +27,8 @@ import logging as lg
 lg.basicConfig(level=lg.INFO)
 
 # We are expecting 1-3 distinct simulation runs
-simLabel = 'EI-1_3'
-#simLabel = 'EI-3_1'
+#simLabel = 'EI-1_3'
+simLabel = 'EI-3_1'
 
 p = dp.copy()
 # Submitting
