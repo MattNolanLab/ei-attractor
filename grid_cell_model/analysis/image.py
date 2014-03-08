@@ -74,7 +74,7 @@ class FittingParams(object):
 
 
 
-class SymmetricGaussianFit(FittingParams):
+class SymmetricGaussianParams(FittingParams):
     def __init__(self, A, mu_x, mu_y, sigma, err):
         self.A = A
         self.mu_x = mu_x
@@ -82,15 +82,30 @@ class SymmetricGaussianFit(FittingParams):
         self.sigma = sigma
         self.err = err
 
+#class SymmetricGaussianFit(FittingParams):
+#    def __init__(self, *args):
+#        super(SymmetricGaussianFit, self).__init__(*args)
 
 
-class GaussianInitParams(object):
-    def __init__(self):
-        self.A0      = 10.0
-        self.mu0_x   = 1.0
-        self.mu0_y   = 1.0
-        self.sigma0  = 1.0
+class MLGaussianFit(SymmetricGaussianParams):
+    def __init__(self, A, mu_x, mu_y, sigma, err, ln_L, lh_precision):
+        super(MLGaussianFit, self).__init__(A, mu_x, mu_y, sigma, err)
+        self.ln_L = ln_L
+        self.lh_precision = lh_precision
 
+
+#class GaussianInitParams(object):
+#    def __init__(self):
+#        self.A0      = 10.0
+#        self.mu0_x   = 1.0
+#        self.mu0_y   = 1.0
+#        self.sigma0  = 1.0
+#
+#
+#class LikelihoodGaussianInitParams(GaussianInitParams):
+#    def __init__(self):
+#        super(LikeliHoodGaussianInitParams, self).__init__()
+#        self.lh_sigma0 = .0
 
 
 
@@ -174,23 +189,37 @@ def remapTwistedTorus(a, others, dim):
 
 
 
-## Fit a 2D Gaussian function to a 2D signal using a least squares method.
-#
-# The Gaussian is not generic - sigmax = sigmay = sigma, i.e. it is circular
-# only.
-#
-# The function fitted looks like this:
-#     fun = A*exp(-||X - mu||^2 / (2*sigma^2))
-#
-# The initialisation parameters are A, mu_x, mu_y, sigma
-#
-#
-# @param sig_f  Signal function value - this is fitted, use the Position2D class
-# @param i      A struct with initialisation values
-# @param dim    Dimensions of the twisted torus (Position2D)
-# @return Estimated values in the order specified above for A...sigma
-#
-def fitGaussianTT(sig_f, i, dim):
+def fitGaussianTT(sig_f, i):
+    '''Fit a 2D circular Gaussian function to a 2D signal using a maximum
+    likelihood estimator.
+
+    The Gaussian is not generic: :math:`\sigma_x = \sigma_y = \sigma`, i.e.
+    it is circular only.
+
+    The function fitted looks like this:
+    .. math::
+
+        f(\mathbf{X}) = |A| \exp\left{\frac{-||X - mu||^2}{2*\sigma^2}\right},
+
+    where :math:`||\cdot||` is a distance metric on the twisted torus.
+
+    Paramters
+    ---------
+    sig_f : np.ndarray
+        A 2D array that specified the signal to fit the Gaussian onto. The
+        dimensions of the torus will be inferred from the shape of `sig_f`:
+        (dim.y, dim.x) = `sig_f.shape`.
+    i : SymmetricGaussianParams
+        Guassian initialisation parameters for the max. likelihood optimisation
+
+    Returns
+    -------
+    :class:`MLGaussianFit`
+        Estimated values, together with maximum likelihood value and precision
+        (inverse variance of noise: *NOT* of the fitted Gaussian).
+    '''
+    # Fit the Gaussian using least squares
+    dim = Position2D(sig_f.shape[1], sig_f.shape[0])
     X, Y = np.meshgrid(np.arange(dim.x), np.arange(dim.y))
     others = Position2D()
     others.x = X.flatten()
@@ -201,20 +230,30 @@ def fitGaussianTT(sig_f, i, dim):
         a.x = x[1] # mu_x
         a.y = x[2] # mu_y
         dist = remapTwistedTorus(a, others, dim)
-        #dist = np.sqrt((others.x - a.x)**2 + (others.y - a.y)**2)
-        #print "A:", x[0], a, "sigma:", x[3]
         return np.abs(x[0]) * np.exp( -dist**2/2./ x[3]**2 ) - sig_f
 #                       |                            |
 #                       A                          sigma
 
-    x0 = np.array([i.A0, i.mu0_x, i.mu0_y, i.sigma0])
+    x0 = np.array([i.A, i.mu_x, i.mu_y, i.sigma])
+    xest, ierr = scipy.optimize.leastsq(gaussDiff, x0)
+    err = gaussDiff(xest)
+    err2 = err**2
 
-    xest,ierr = scipy.optimize.leastsq(gaussDiff, x0)
-    # Remap the values module torus size
+    # Remap the values modulo torus size
     xest[1] = xest[1] % dim.x
     xest[2] = xest[2] % dim.y
-    err = gaussDiff(xest)
-    return xest, err**2
+
+    # Compute the log-likelihood
+    N = dim.x * dim.y
+    AIC_correction = 5 # Number of optimized parameters
+    beta = 1.0 / ( np.mean(err2) )
+    ln_L = -beta / 2. * np.sum(err2) + \
+            N / 2. * np.log(beta) - \
+            N / 2. * np.log(2*np.pi) - 
+            AIC_correction
+
+    res = MLGaussianFit(xest[0], xest[1], xest[2], xest[3], ln_L, beta)
+    return res
 
 
 
