@@ -1,4 +1,34 @@
 '''
+Classes and functions for analysis of image-like structures.
+
+.. currentmodule:: analysis.image
+
+Classes
+-------
+
+.. autosummary::
+
+    SingleBumpPopulation
+    Position2D
+    SymmetricGaussianFit
+    MLGaussianFit
+    GaussianInitParams
+    LikelihoodGaussianInitParams
+
+
+
+Functions
+---------
+
+.. autosummary::
+
+    remapTwistedTorus
+    fitGaussianTT
+    fitGaussianBumpTT
+
+
+'''
+'''
 Image analysis fitting - rateMaps, generic image analysis for GridCells, etc.
 '''
 from abc import ABCMeta, abstractmethod
@@ -12,8 +42,6 @@ import scipy.optimize
 
 from . import spikes
 
-__all__ = ['Position2D', 'remapTwistedTorus', 'fitGaussianTT',
-        'fitGaussianBumpTT']
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +95,7 @@ class GaussianInitParams(object):
 
 
 def remapTwistedTorus(a, others, dim):
-    '''
-    Calculate a distance between ``a`` and ``others`` on a twisted torus.
+    ''' Calculate a distance between ``a`` and ``others`` on a twisted torus.
     
     Take ``a`` which is a 2D position and others, which is a vector of 2D
     positions and compute the distances between them based on the topology of
@@ -76,7 +103,8 @@ def remapTwistedTorus(a, others, dim):
     
     If you just want to remap a function of (X, Y), set a==[[0, 0]].
 
-    **Parameters**
+    Parameters
+    ----------
     
     a : a Position2D instance
         Specifies the initial position. ``a.x`` and ``a.y`` must be convertible
@@ -87,8 +115,8 @@ def remapTwistedTorus(a, others, dim):
         Dimensions of the torus. ``dim.x`` and ``dim.y`` must be convertible to
         floats.
 
-    **Returns**
-
+    Returns
+    -------
     An array of positions, always of the length of others
     '''
     
@@ -276,8 +304,7 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
         def __len__(self):
             return len(self._A) # All same length
 
-
-
+    
 
     def bumpPosition(self, tStart, tEnd, dt, winLen, fullErr=True):
         '''
