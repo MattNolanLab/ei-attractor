@@ -47,7 +47,7 @@ class Test_fitgaussianTT(unittest.TestCase):
         self.addTypeEqualityFunc(np.ndarray, self.assertNdarrayAlmostEqual)
 
 
-    def test_parameterFit(self):
+    def test_bumpFitting(self):
         dim = aimage.Position2D(34, 30)
         X, Y = np.meshgrid(np.arange(dim.x), np.arange(dim.y))
         failures = 0
