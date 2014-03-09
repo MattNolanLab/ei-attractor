@@ -12,7 +12,6 @@ Classes
     Position2D
     SymmetricGaussianFit
     MLGaussianFit
-    GaussianInitParams
     LikelihoodGaussianInitParams
 
 
@@ -92,20 +91,6 @@ class MLGaussianFit(SymmetricGaussianParams):
         super(MLGaussianFit, self).__init__(A, mu_x, mu_y, sigma, err)
         self.ln_L = ln_L
         self.lh_precision = lh_precision
-
-
-#class GaussianInitParams(object):
-#    def __init__(self):
-#        self.A0      = 10.0
-#        self.mu0_x   = 1.0
-#        self.mu0_y   = 1.0
-#        self.sigma0  = 1.0
-#
-#
-#class LikelihoodGaussianInitParams(GaussianInitParams):
-#    def __init__(self):
-#        super(LikeliHoodGaussianInitParams, self).__init__()
-#        self.lh_sigma0 = .0
 
 
 
@@ -210,7 +195,7 @@ def fitGaussianTT(sig_f, i):
         dimensions of the torus will be inferred from the shape of `sig_f`:
         (dim.y, dim.x) = `sig_f.shape`.
     i : SymmetricGaussianParams
-        Guassian initialisation parameters for the max. likelihood optimisation
+        Guassian initialisation parameters. The `err` field will be ignored.
 
     Returns
     -------
@@ -219,18 +204,19 @@ def fitGaussianTT(sig_f, i):
         (inverse variance of noise: *NOT* of the fitted Gaussian).
     '''
     # Fit the Gaussian using least squares
-    dim = Position2D(sig_f.shape[1], sig_f.shape[0])
-    X, Y = np.meshgrid(np.arange(dim.x), np.arange(dim.y))
-    others = Position2D()
-    others.x = X.flatten()
-    others.y = Y.flatten()
+    f_flattened = sig_f.ravel()
+    dim         = Position2D(sig_f.shape[1], sig_f.shape[0])
+    X, Y        = np.meshgrid(np.arange(dim.x), np.arange(dim.y))
+    others      = Position2D()
+    others.x    = X.flatten()
+    others.y    = Y.flatten()
 
     a = Position2D()
     def gaussDiff(x):
         a.x = x[1] # mu_x
         a.y = x[2] # mu_y
         dist = remapTwistedTorus(a, others, dim)
-        return np.abs(x[0]) * np.exp( -dist**2/2./ x[3]**2 ) - sig_f
+        return np.abs(x[0]) * np.exp( -dist**2/2./ x[3]**2 ) - f_flattened
 #                       |                            |
 #                       A                          sigma
 
@@ -247,31 +233,40 @@ def fitGaussianTT(sig_f, i):
     N = dim.x * dim.y
     AIC_correction = 5 # Number of optimized parameters
     beta = 1.0 / ( np.mean(err2) )
-    ln_L = -beta / 2. * np.sum(err2) + \
-            N / 2. * np.log(beta) - \
-            N / 2. * np.log(2*np.pi) - 
+    ln_L = -beta / 2. * np.sum(err2) +  \
+            N / 2. * np.log(beta) -     \
+            N / 2. * np.log(2*np.pi) -  \
             AIC_correction
 
-    res = MLGaussianFit(xest[0], xest[1], xest[2], xest[3], ln_L, beta)
+    res = MLGaussianFit(xest[0], xest[1], xest[2], xest[3], err, ln_L, beta)
     return res
 
 
 
-## Fit a 2D Gaussian onto a (potential) firing rate bump. On Twisted torus
-#
-# @param sig    Firing rate map to fit - a 2D numpy array
-# @param dim    Dimensions of the twisted torus (Position2D)
-# @return Estimated values for the Gaussian (see Position2D)
-def fitGaussianBumpTT(sig, dim):
+def fitGaussianBumpTT(sig):
+    '''Fit a 2D Gaussian onto a (potential) firing rate bump on the twisted torus.
+
+    Parameters
+    ----------
+    sig : np.ndarray
+        2D firing rate map to fit. Axis 0 is the Y position. This will be
+        passed directly to :func:`~analysis.image.fitGaussianTT`.
+
+    Returns
+    -------
+    :class:`analysis.image.MLGaussianFit`
+        Estimated values of the fit.
+
+    Notes
+    -----
+    The function initialises the Gaussian fitting parameters to a position at
+    the maximum of `sig`.
     '''
-    Fit a Gaussian to a rate map, using least squares method.
-    '''
-    init = GaussianInitParams()
-    init.mu0_y, init.mu0_x  = np.unravel_index(np.argmax(sig), sig.shape)
-    init.A0 = sig[init.mu0_y, init.mu0_x]
-    init.sigma0  = np.max([dim.x, dim.y]) / 2.0
-    
-    return fitGaussianTT(sig.flatten(), init, dim)
+    mu0_y, mu0_x = np.unravel_index(np.argmax(sig), sig.shape)
+    A0           = sig[mu0_y, mu0_x]
+    sigma0       = np.max(sig.shape) / 4.
+    init = SymmetricGaussianParams(A0, mu0_x, mu0_y, sigma0, None)
+    return fitGaussianTT(sig, init)
 
 
 

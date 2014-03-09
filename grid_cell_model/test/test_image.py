@@ -30,18 +30,38 @@ def generateGaussianTT(A, mu_x, mu_y, sigma, X, Y):
     return np.reshape(G, (dim.y, dim.x))
 
 
-class Test_fitgaussianTT(unittest.TestCase):
+class Test_gaussianFittingTT(unittest.TestCase):
+    '''Test all implemented functions/classes that require fitting a Gaussian
+    on the twisted torus.
+
+    Notes
+    -----
+    `decimalAlmostEqual` and `noiseDeltaFrac` have been manually fine-tuned by
+    inspecting the data. In general, it turns that the fitting procedure will
+    no be better than 10%, i.e. one digit.
+
+    .. todo::
+
+        `decimalAlmostEqual` should be relative to the size of the torus. If
+        the torus is too small this setting will effectively force all the
+        tests to pass even if the values will differ.
+
+        Also, log-likelihood tests would be useful
+    '''
     decimalAlmostEqual = 1
-    gaussianAMax = 40
-    nIter = 1000
-    minSigma = 1.
-    maxFailures = .02
+    noiseDeltaFrac     = 1e-1
+
+    gaussianAMax  = 40
+    nIter         = 1000
+    minSigma      = 1.
+    maxFailures   = .02
+    maxNoiseSigma = 1e-3
+
 
     def assertNdarrayAlmostEqual(self, first, second, msg=None):
         #print first, second
         np.testing.assert_almost_equal(first, second,
                 self.decimalAlmostEqual)
-
 
     def setUp(self):
         self.addTypeEqualityFunc(np.ndarray, self.assertNdarrayAlmostEqual)
@@ -56,18 +76,26 @@ class Test_fitgaussianTT(unittest.TestCase):
             mu_x  = np.random.rand() * dim.x
             mu_y  = np.random.rand() * dim.y
             sigma = self.minSigma + np.random.rand() * (np.min((dim.x, dim.y)) / 4 - self.minSigma)
+            noise_sigma = np.random.rand() * self.maxNoiseSigma * A
 
             ourG = generateGaussianTT(A, mu_x, mu_y, sigma, X, Y) + \
-                    np.random.randn(dim.y, dim.x)*1e-3*A
-            estParams, err = aimage.fitGaussianBumpTT(ourG, dim)
-            estParams[0] = np.abs(estParams[0])
-            estParams[3] = np.abs(estParams[3])
+                    np.random.randn(dim.y, dim.x)*noise_sigma
+            estParams = aimage.fitGaussianBumpTT(ourG)
+            estParams.A = np.abs(estParams.A)
+            estParams.sigma = np.abs(estParams.sigma)
 
             try:
-                first = np.array([A, mu_x, mu_y, sigma])
-                second = np.array(estParams)
+                e = estParams
+                first  = np.array([  A,   mu_x,   mu_y,   sigma])
+                second = np.array([e.A, e.mu_x, e.mu_y, e.sigma])
                 self.assertNdarrayAlmostEqual(first, second)
-            except AssertionError as e:
+                #print noise_sigma, np.sqrt(1./e.lh_precision)
+                #print noise_sigma*self.noiseDeltaFrac
+                self.assertAlmostEqual(noise_sigma, np.sqrt(1./e.lh_precision),
+                        delta=noise_sigma*self.noiseDeltaFrac)
+                self.assertTrue(isinstance(e.ln_L, float) or isinstance(e.ln_L,
+                    int), msg='Log likelihood must be either float or int!')
+            except (AssertionError, self.failureException) as e:
                 failures += 1
                 #print failures
                 #print('%s != \n%s within %r places' % (first, second,
