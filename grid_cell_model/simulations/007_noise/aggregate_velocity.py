@@ -31,11 +31,11 @@ args = parser.parse_args()
 ns_all  = [0, 150, 300]
 ns_none = [-100]
 varListBase  = ['analysis']
-loadData     = not o.noLoadData
+loadData     = not args.noLoadData
 dirs = \
-    ('output/even_spacing/velocity_vertical/{0}pA', (31, 31), ns_all)
-    #('output/detailed_noise/velocity/EI-3_1', (31, 9), ns_all)
-    #('output/detailed_noise/velocity/EI-1_3', (31, 9), ns_all)
+    ('output/detailed_noise_vertical/velocity/EI-3_1', (31, 9), ns_all)
+    #('output/detailed_noise_vertical/velocity/EI-1_3', (31, 9), ns_all)
+    #('output/even_spacing/velocity_vertical/{0}pA', (31, 31), ns_all)
     #('output/even_spacing/velocity/{0}pA', (31, 31), ns_all)
 
 ################################################################################
