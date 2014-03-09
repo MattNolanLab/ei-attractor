@@ -16,7 +16,7 @@ parser = flagparse.FlagParser()
 parser.add_argument("--where",   type=str, required=True)
 parser.add_argument('--env',     type=str, choices=['workstation', 'cluster'], required=True)
 parser.add_argument('--nCPU',    type=positive_int, default=1)
-parser.add_argument('--rtLimit', type=str, default='00:05:00')
+parser.add_argument('--rtLimit', type=str, default='05:00:00')
 parser.add_argument('--position',type=str, choices=allowedPositions,
         required=True)
 parser.add_flag("--forceUpdate")
