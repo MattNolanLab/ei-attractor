@@ -35,7 +35,7 @@ class Test_fitgaussianTT(unittest.TestCase):
     gaussianAMax = 40
     nIter = 1000
     minSigma = 1.
-    maxFailures = .1
+    maxFailures = .02
 
     def assertNdarrayAlmostEqual(self, first, second, msg=None):
         #print first, second
