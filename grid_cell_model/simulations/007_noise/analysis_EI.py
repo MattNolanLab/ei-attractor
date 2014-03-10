@@ -53,7 +53,7 @@ if (o.type == "gamma-bump"):
     bumpPosVisitor = vis.bumps.BumpPositionVisitor(
             tstart=0,
             tend=None,
-            win_dt=25.0,
+            win_dt=125.0,
             readme='Bump position estimation. Whole simulation',
             forceUpdate=forceUpdate)
     FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
@@ -91,7 +91,7 @@ elif o.type == 'positional':
     bumpPosVisitor = vis.bumps.BumpPositionVisitor(
             tstart=0,
             tend=None,
-            win_dt=25.0,
+            win_dt=125.0,
             readme='Bump position estimation. Whole simulation.',
             forceUpdate=forceUpdate)
     sp.visit(bumpPosVisitor)
