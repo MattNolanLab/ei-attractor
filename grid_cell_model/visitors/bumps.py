@@ -462,13 +462,15 @@ class BumpPositionVisitor(BumpVisitor):
                     fullErr=False)
 
             out['positions'] = dict(
-                    A      = np.asarray(bumpFits.A),
-                    mu_x   = np.asarray(bumpFits.mu_x),
-                    mu_y   = np.asarray(bumpFits.mu_y),
-                    sigma  = np.asarray(bumpFits.sigma),
-                    errSum = np.asarray(bumpFits.err),
-                    t      = np.asarray(bumpFits.t),
-                    readme = self.readme
+                    A            = np.asarray(bumpFits.A),
+                    mu_x         = np.asarray(bumpFits.mu_x),
+                    mu_y         = np.asarray(bumpFits.mu_y),
+                    sigma        = np.asarray(bumpFits.sigma),
+                    err2Sum      = np.asarray(bumpFits.err2),
+                    ln_L         = np.asarray(bumpFits.ln_L),
+                    lh_precision = np.asarray(bumpFits.lh_precision),
+                    t            = np.asarray(bumpFits.times),
+                    readme       = self.readme
             )
         else:
             logger.info('{%s: Data already present. Skipping analysis.',

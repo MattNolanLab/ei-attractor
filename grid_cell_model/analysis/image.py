@@ -104,6 +104,66 @@ class MLGaussianFit(SymmetricGaussianParams):
         self.lh_precision = lh_precision
 
 
+class MLGaussianFitList(MLGaussianFit, collections.Sequence):
+    def __init__(self, A=None, mu_x=None, mu_y=None, sigma=None, err2=None,
+            ln_L=None, lh_precision=None, times=None):
+        if A            is None: A     = []
+        if mu_x         is None: mu_x  = []
+        if mu_y         is None: mu_y  = []
+        if sigma        is None: sigma = []
+        if err2         is None: err2  = []
+        if ln_L         is None: ln_L  = []
+        if lh_precision is None: lh_precision = []
+        if times        is None: times = []
+
+        super(MLGaussianFitList, self).__init__(\
+                A, mu_x, mu_y, sigma, err2, ln_L, lh_precision)
+        self.times = times
+
+        if not self._consistent():
+            raise ValueError('All input arguments mus have same length')
+
+
+    def _consistent(self):
+        return \
+            len(self.A) == len(self.mu_x) and         \
+            len(self.A) == len(self.mu_y) and         \
+            len(self.A) == len(self.sigma) and        \
+            len(self.A) == len(self.err2) and          \
+            len(self.A) == len(self.ln_L) and         \
+            len(self.A) == len(self.lh_precision) and \
+            len(self.A) == len(self.times)
+
+
+    def _appendData(self, d, t):
+        '''`d` must be an instance of :class:`MLGaussianFit`'''
+        if not isinstance(d, MLGaussianFit):
+            raise TypeError('Data must be an instance of MLGaussianFit')
+
+        self.A.append(d.A)
+        self.mu_x.append(d.mu_x)
+        self.mu_y.append(d.mu_y)
+        self.sigma.append(d.sigma)
+        self.err2.append(d.err2)
+        self.ln_L.append(d.ln_L)
+        self.lh_precision.append(d.lh_precision)
+        self.times.append(t)
+
+
+    def __getitem__(self, key):
+        return MLGaussianFit(self.A[key],
+                             self.mu_x[key],
+                             self.mu_y[key],
+                             self.sigma[key],
+                             self.err2[key],
+                             self.ln_L,
+                             self.lh_precision), \
+                self._times[key]
+
+    def __len__(self):
+        return len(self.A) # All same length
+
+
 
 def remapTwistedTorus(a, others, dim):
     ''' Calculate a distance between ``a`` and ``others`` on a twisted torus.
@@ -320,97 +380,51 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
         super(SingleBumpPopulation, self).__init__(senders, times, sheetSize)
 
 
-    class BumpFitList(collections.Sequence):
-        def __init__(self, AList=None, mu_xList=None, mu_yList=None,
-                sigmaList=None, err=None, times=None):
-            self._A     = AList     if AList is not None else []
-            self._mu_x  = mu_xList  if mu_xList is not None else []
-            self._mu_y  = mu_yList  if mu_yList is not None else []
-            self._sigma = sigmaList if sigmaList is not None else []
-            self._err   = err       if err is not None else []
-            self._times = times     if times is not None else []
+    def _performFit(self, tStart, tEnd, dt, winLen, fitCallable, listCls, fullErr=True):
+        F, Ft = self.slidingFiringRate(tStart, tEnd, dt, winLen)
+        dims = Position2D(self.Nx, self.Ny)
+        res = listCls()
+        for tIdx in xrange(len(Ft)):
+            logger.debug('%s:: fitting: %d/%d, %.3f/%.3f ',
+                    fitCallable.__name__, tIdx+1, len(Ft), Ft[tIdx], Ft[-1])
+            fitParams = fitCallable(F[:, :, tIdx])
+            
+            if fullErr == False:
+                fitParams.err2 = np.sum(fitParams.err2)
 
-            if not self._consistent():
-                raise ValueError('All input arguments mus have same length')
+            res._appendData(fitParams, Ft[tIdx])
+        return res
 
-
-        def _consistent(self):
-            return \
-                len(self._A) == len(self._mu_x) and   \
-                len(self._A) == len(self._mu_y) and   \
-                len(self._A) == len(self._sigma) and  \
-                len(self._A) == len(self._err) and    \
-                len(self._A) == len(self._times)
-
-
-        def getA(self): return self._A
-        def getMu_x(self): return self._mu_x
-        def getMu_y(self): return self._mu_y
-        def getSigma(self): return self._sigma
-        def getErr(self): return self._err
-        def getT(self): return self._times
-        A     = property(getA)
-        mu_x  = property(getMu_x)
-        mu_y  = property(getMu_y)
-        sigma = property(getSigma)
-        err   = property(getErr)
-        t     = property(getT)
-
-
-        def _appendData(self, A, mu_x, mu_y, sigma, err, t):
-            self._A.append(A)
-            self._mu_x.append(mu_x)
-            self._mu_y.append(mu_y)
-            self._sigma.append(sigma)
-            self._err.append(err)
-            self._times.append(t)
-
-
-        def __getitem__(self, key):
-            return SymmetricGaussianFit(self._A[key], self._mu_x[key],
-                    self._mu_y[key], self._sigma[key], self._err[key]), \
-                            self._times[key]
-
-        def __len__(self):
-            return len(self._A) # All same length
-
-    
 
     def bumpPosition(self, tStart, tEnd, dt, winLen, fullErr=True):
-        '''
-        Estimate bump positions during the simulation time:
+        '''Estimate bump positions during the simulation time.
         
             1. Use :py:meth:`~.slidingFiringRate`
 
             2. Apply the bump position estimation procedure to each of the
                population activity items.
 
-        **Parameters**
-
-            tStart, tEnd, dt, winLen : as in :py:meth:`~.slidingFiringRate`.
+        Parameters
+        ----------
+            tStart, tEnd, dt, winLen
+                As in :py:meth:`~analysis.spikes.slidingFiringRate`.
             fullErr : bool
                 If ``True``, save the full error of fit. Otherwise a sum only.
 
-        **Output*
-            
-            A list of estimation result objects
-        '''
-        F, Ft = self.slidingFiringRate(tStart, tEnd, dt, winLen)
-        dims = Position2D(self.Nx, self.Ny)
-        res = self.BumpFitList()
-        for tIdx in xrange(len(Ft)):
-            logger.debug('Bump fitting: %d/%d, %.3f/%.3f ', tIdx+1, len(Ft),
-                    Ft[tIdx], Ft[-1])
-            (A, mu_x, mu_y, sigma), err2 = fitGaussianBumpTT(F[:, :, tIdx],
-                    dims)
-            
-            err = np.sqrt(err2)
-            if fullErr == False:
-                err = np.sum(err)
+        Returns
+        -------
+        MLGaussianFitList
+            A list of fitted Gaussian parameters
 
-            res._appendData(A, mu_x, mu_y, sigma, err, Ft[tIdx])
-        return res
+        Notes
+        -----
+        This method uses the Maximum likelihood estimator to fit the Gaussian
+        function (:meth:`~analysis.image.fitGaussianBumpTT`)
+        '''
+        return self._performFit(tStart, tEnd, dt, winLen, fitGaussianBumpTT,
+                MLGaussianFitList, fullErr=fullErr)
             
+
 
 
 
