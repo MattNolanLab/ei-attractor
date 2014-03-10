@@ -277,20 +277,20 @@ class BumpVelocityVisitor(BumpVisitor):
                 pop = image.SingleBumpPopulation(senders, times, sheetSize)
                 tStart = self.getOption(iData, 'theta_start_t')
                 tEnd   = self.getOption(iData, 'time') - 2*self.win_dt
-                bumpPositions = pop.bumpPosition(tStart, tEnd, self.win_dt,
+                fitList = pop.bumpPosition(tStart, tEnd, self.win_dt,
                         self.winLen, fullErr=False)
 
                 if self.axis == 'vertical':
-                    bumpPos = bumpPositions.mu_y
+                    bumpPos = fitList.mu_y
                     axisSize = pop.Ny
                 elif self.axis == 'horizontal':
-                    bumpPos = bumpPositions.mu_x
+                    bumpPos = fitList.mu_x
                     axisSize = pop.Nx
 
                 bumpVelLogger.debug("\tFitting the circular slope...")
                 # NOTE: If the bump moves in an opposite direction, we have to
                 # negate the speed
-                slope = fitCircularSlope(bumpPos, bumpPositions.t, axisSize)
+                slope = fitCircularSlope(bumpPos, fitList.times, axisSize)
                 slope *= 1e3 # Correction msec --> sec
                 if self.changeSign:
                     slope *= -1
@@ -300,12 +300,14 @@ class BumpVelocityVisitor(BumpVisitor):
                 bumpVelLogger.debug("\tSaving data for the current velocity index.")
                 iData[self.outputRoot] = dict(
                         positions = dict(
-                            A     = np.asarray(bumpPositions.A),
-                            mu_x  = np.asarray(bumpPositions.mu_x),
-                            mu_y  = np.asarray(bumpPositions.mu_y),
-                            sigma = np.asarray(bumpPositions.sigma),
-                            err   = np.asarray(bumpPositions.err),
-                            t     = np.asarray(bumpPositions.t)
+                            A            = np.asarray(fitList.A),
+                            mu_x         = np.asarray(fitList.mu_x),
+                            mu_y         = np.asarray(fitList.mu_y),
+                            sigma        = np.asarray(fitList.sigma),
+                            err2         = np.asarray(fitList.err2),
+                            ln_L         = np.asarray(fitList.ln_L),
+                            lh_precision = np.asarray(fitList.lh_precision),
+                            times        = np.asarray(fitList.times)
                         ),
                         slope = slope
                 )
@@ -469,7 +471,7 @@ class BumpPositionVisitor(BumpVisitor):
                     err2Sum      = np.asarray(bumpFits.err2),
                     ln_L         = np.asarray(bumpFits.ln_L),
                     lh_precision = np.asarray(bumpFits.lh_precision),
-                    t            = np.asarray(bumpFits.times),
+                    times        = np.asarray(bumpFits.times),
                     readme       = self.readme
             )
         else:
