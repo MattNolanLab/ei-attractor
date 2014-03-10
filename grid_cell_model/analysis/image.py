@@ -73,26 +73,33 @@ class FittingParams(object):
 
 
 class SymmetricGaussianParams(FittingParams):
-    def __init__(self, A, mu_x, mu_y, sigma, err):
+    def __init__(self, A, mu_x, mu_y, sigma, err2):
         self.A = A
         self.mu_x = mu_x
         self.mu_y = mu_y
         self.sigma = sigma
-        self.err = err
+        self.err2 = err2
 
 
 
+
+##############################################################################
+# Simple ML solutions and lists
 class MLFit(FittingParams):
-    def __init__(self, mu, sigma2, ln_L):
+    def __init__(self, mu, sigma2, ln_L, err2):
         self.mu     = mu
         self.sigma2 = sigma2
         self.ln_L   = ln_L
+        self.err2    = err2
 
 
 
+
+##############################################################################
+# Symmetric Gaussian ML solutions and lists
 class MLGaussianFit(SymmetricGaussianParams):
-    def __init__(self, A, mu_x, mu_y, sigma, err, ln_L, lh_precision):
-        super(MLGaussianFit, self).__init__(A, mu_x, mu_y, sigma, err)
+    def __init__(self, A, mu_x, mu_y, sigma, err2, ln_L, lh_precision):
+        super(MLGaussianFit, self).__init__(A, mu_x, mu_y, sigma, err2)
         self.ln_L = ln_L
         self.lh_precision = lh_precision
 
@@ -199,7 +206,7 @@ def fitGaussianTT(sig_f, i):
         dimensions of the torus will be inferred from the shape of `sig_f`:
         (dim.y, dim.x) = `sig_f.shape`.
     i : SymmetricGaussianParams
-        Guassian initialisation parameters. The `err` field will be ignored.
+        Guassian initialisation parameters. The `err2` field will be ignored.
 
     Returns
     -------
@@ -226,8 +233,7 @@ def fitGaussianTT(sig_f, i):
 
     x0 = np.array([i.A, i.mu_x, i.mu_y, i.sigma])
     xest, ierr = scipy.optimize.leastsq(gaussDiff, x0)
-    err = gaussDiff(xest)
-    err2 = err**2
+    err2 = gaussDiff(xest)**2
 
     # Remap the values modulo torus size
     xest[1] = xest[1] % dim.x
@@ -242,7 +248,7 @@ def fitGaussianTT(sig_f, i):
             N / 2. * np.log(2*np.pi) -  \
             AIC_correction
 
-    res = MLGaussianFit(xest[0], xest[1], xest[2], xest[3], err, ln_L, beta)
+    res = MLGaussianFit(xest[0], xest[1], xest[2], xest[3], err2, ln_L, beta)
     return res
 
 
@@ -296,8 +302,9 @@ def fitMaximumLikelihood(sig):
             .5 * N * np.log(sigma2) -             \
             .5 * N * np.log(2*np.pi) -            \
             AIC_correction
+    err2 = (sig - mu)**2
 
-    return MLFit(mu, sigma2, ln_L)
+    return MLFit(mu, sigma2, ln_L, err2)
 
 
 
