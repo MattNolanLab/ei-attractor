@@ -6,26 +6,48 @@ import numpy as np
 from parameters  import JobTrialSpace2D
 from submitting import flagparse
 
+evenSpacingType = 'even-spacing'
+detailedNoiseType = 'detailed-noise'
+allowedTypes = [evenSpacingType, detailedNoiseType]
+
+# Positions
+allowedPositions = ['EI-1_3', 'EI-3_1']
+detailedShape = (31, 9)
+
+# Even spacing
+evenShape     = (31, 31)
+
 parser = flagparse.FlagParser()
-parser.add_argument("--where",   type=str, required=True)
+parser.add_argument("type",      type=str, choices=allowedTypes,
+        metavar='types', help='Type of the aggregation. Can be one of %s' %
+        str(allowedTypes))
+parser.add_argument("where",     type=str, help='Root directory')
 parser.add_argument("--ns",      type=int, choices=[0, 150, 300])
 parser.add_argument('--ntrials', type=int, default=3)
 parser.add_argument('--noLoadData', action='store_true')
-
+parser.add_argument('--position',type=str, choices=allowedPositions)
 parser.add_flag('--gridFields')
 parser.add_flag('--FR')
 args = parser.parse_args()
 
-ns_all = [0, 150, 300]
-shape = (31, 31)
-noise_sigmas = ns_all if args.ns is None  else [args.ns]
+ns_all = ['0pA', '150pA', '300pA']
 trialNumList = range(args.ntrials)
 varListBase = ['analysis']
 loadData = not args.noLoadData
 
 ################################################################################
-for noise_sigma in noise_sigmas:
-    rootDir = '{0}/{1}pA'.format(args.where, noise_sigma)
+
+# determine the iterator
+if args.type == evenSpacingType:
+    shape = evenShape
+    subDirs = ns_all if args.ns is None  else [args.ns]
+else:
+    shape = detailedShape
+    subDirs = allowedPositions if args.position is None else [args.position]
+
+for subDir in subDirs:
+    rootDir = '{0}/{1}'.format(args.where, subDir)
+    print rootDir, shape
 
     if args.gridFields or args.all:
         sp = JobTrialSpace2D(shape, rootDir)
