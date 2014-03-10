@@ -393,17 +393,20 @@ def fitMaximumLikelihood(sig):
     fit : MLFit
         Maximum likelihood parameters
     '''
-    sig = sig.flatten()
-    mu = np.mean(sig)
+    sig    = sig.flatten()
+    mu     = np.mean(sig)
     sigma2 = np.var(sig)
+    err2   = (sig - mu)**2
 
-    N = len(sig)
-    AIC_correction = 2
-    ln_L = -.5 / sigma2 * np.sum((sig - mu)**2) - \
-            .5 * N * np.log(sigma2) -             \
-            .5 * N * np.log(2*np.pi) -            \
-            AIC_correction
-    err2 = (sig - mu)**2
+    if sigma2 == 0:
+        ln_L = np.inf
+    else:
+        N = len(sig)
+        AIC_correction = 2
+        ln_L = -.5 / sigma2 * np.sum((sig - mu)**2) - \
+                .5 * N * np.log(sigma2) -             \
+                .5 * N * np.log(2*np.pi) -            \
+                AIC_correction
 
     return MLFit(mu, sigma2, ln_L, err2)
 
