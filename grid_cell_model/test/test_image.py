@@ -30,7 +30,7 @@ def generateGaussianTT(A, mu_x, mu_y, sigma, X, Y):
     return np.reshape(G, (dim.y, dim.x))
 
 
-class Test_gaussianFittingTT(unittest.TestCase):
+class Test_FittingTT(unittest.TestCase):
     '''Test all implemented functions/classes that require fitting a Gaussian
     on the twisted torus.
 
@@ -104,6 +104,27 @@ class Test_gaussianFittingTT(unittest.TestCase):
                     msg = '%.1f%%  fitting errors reached.' % (self.maxFailures*100)
                     raise self.failureException(msg)
                 
+
+    def test_maximumLikelihood(self):
+        nVals = 100000
+        AIC_correction = 2
+        for it in xrange(self.nIter):
+            mu = np.random.rand() * self.gaussianAMax
+            sigma = np.random.rand() * np.sqrt(mu)
+            ourData = sigma * np.random.randn(nVals) + mu
+            mlFit = aimage.fitMaximumLikelihood(ourData)
+
+            #print mlFit.mu, mlFit.sigma2, mlFit.ln_L
+            #print mu, sigma
+
+            deltaMu     = mu * self.noiseDeltaFrac
+            deltaSigma  = sigma * self.noiseDeltaFrac
+            self.assertAlmostEqual(mlFit.mu, mu, delta=deltaMu)
+            self.assertAlmostEqual(np.sqrt(mlFit.sigma2), sigma, delta=deltaSigma)
+            correct_ln_L = - nVals / 2. * (1 + np.log(mlFit.sigma2) +
+                np.log(2*np.pi)) - AIC_correction
+            self.assertAlmostEqual(mlFit.ln_L, correct_ln_L, delta=1e-10)
+
 
 
 

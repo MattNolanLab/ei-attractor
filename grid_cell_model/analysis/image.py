@@ -10,7 +10,6 @@ Classes
 
     SingleBumpPopulation
     Position2D
-    SymmetricGaussianFit
     MLGaussianFit
     LikelihoodGaussianInitParams
 
@@ -81,9 +80,14 @@ class SymmetricGaussianParams(FittingParams):
         self.sigma = sigma
         self.err = err
 
-#class SymmetricGaussianFit(FittingParams):
-#    def __init__(self, *args):
-#        super(SymmetricGaussianFit, self).__init__(*args)
+
+
+class MLFit(FittingParams):
+    def __init__(self, mu, sigma2, ln_L):
+        self.mu     = mu
+        self.sigma2 = sigma2
+        self.ln_L   = ln_L
+
 
 
 class MLGaussianFit(SymmetricGaussianParams):
@@ -269,6 +273,31 @@ def fitGaussianBumpTT(sig):
     return fitGaussianTT(sig, init)
 
 
+
+def fitMaximumLikelihood(sig):
+    '''Fit a maximum likelihood solution under Gaussian noise.
+
+    Parameters
+    ----------
+    sig : np.ndarray
+        A vector containing the samples
+
+    Returns
+    fit : MLFit
+        Maximum likelihood parameters
+    '''
+    sig = sig.flatten()
+    mu = np.mean(sig)
+    sigma2 = np.var(sig)
+
+    N = len(sig)
+    AIC_correction = 2
+    ln_L = -.5 / sigma2 * np.sum((sig - mu)**2) - \
+            .5 * N * np.log(sigma2) -             \
+            .5 * N * np.log(2*np.pi) -            \
+            AIC_correction
+
+    return MLFit(mu, sigma2, ln_L)
 
 
 
