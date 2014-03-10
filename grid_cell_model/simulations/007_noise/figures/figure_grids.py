@@ -281,8 +281,8 @@ if args.Vm_examples or args.all:
 
 ##############################################################################
 # Detailed noise plots
-EI13Root  = 'output_local/detailed_noise/grids/EI-1_3'
-EI31Root  = 'output_local/detailed_noise/grids/EI-3_1'
+EI13Root  = 'output_local/detailed_noise_vertical/grids/EI-1_3'
+EI31Root  = 'output_local/detailed_noise_vertical/grids/EI-3_1'
 detailedShape = (31, 9)
 
 EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
