@@ -123,7 +123,7 @@ class Test_FittingTT(unittest.TestCase):
             self.assertAlmostEqual(np.sqrt(mlFit.sigma2), sigma, delta=deltaSigma)
             correct_ln_L = - nVals / 2. * (1 + np.log(mlFit.sigma2) +
                 np.log(2*np.pi)) - AIC_correction
-            self.assertAlmostEqual(mlFit.ln_L, correct_ln_L, delta=1e-10)
+            self.assertAlmostEqual(mlFit.ln_L, correct_ln_L, delta=1e-9)
 
 
 
