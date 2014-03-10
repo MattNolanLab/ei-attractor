@@ -93,6 +93,47 @@ class MLFit(FittingParams):
         self.err2    = err2
 
 
+class MLFitList(MLFit, collections.Sequence):
+    def __init__(self, mu=None, sigma2=None, ln_L=None, err2=None, times=None):
+        if mu     is None: mu = []
+        if sigma2 is None: sigma2 = []
+        if ln_L   is None: ln_L = []
+        if err2   is None: err2 = []
+        if times  is None: times = []
+        super(MLFitList, self).__init__(mu, sigma2, ln_L, err2)
+        self.times = times
+
+        if not self._consistent():
+            raise ValueError('All input arguments mus have same length')
+
+    def _consistent(self):
+        return len(self.mu) == len(self.sigma2) and \
+               len(self.mu) == len(self.ln_L) and   \
+               len(self.mu) == len(self.err2) and    \
+               len(self.mu) == len(self.times)
+
+    def __getitem__(self, key):
+        return MLFit(self.mu[key],
+                     self.sigma2[key],
+                     self.ln_L[key],
+                     self.err2), \
+               times
+
+
+    def __len__(self):
+        return len.self.mu
+
+
+    def _appendData(self, d, t):
+        '''`d` must be an instance of :class:`MLFit`'''
+        if not isinstance(d, MLFit):
+            raise TypeError('ML data must be an instance of MLFit')
+        self.mu.append(d.mu)
+        self.sigma2.append(d.sigma2)
+        self.ln_L.append(d.ln_L)
+        self.err2.append(d.err2)
+        self.times.append(t)
+
 
 
 ##############################################################################
@@ -425,7 +466,28 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
                 MLGaussianFitList, fullErr=fullErr)
             
 
+    def uniformFit(self, tStart, tEnd, dt, winLen, fullErr=True):
+        '''Estimate the mean firing rate using maximum likelihood estimator
+        (:func:`~analysis.image.fitMaximumLikelihood`)
+        
+            1. Use :py:meth:`~.slidingFiringRate`.
 
+            2. Apply the estimator.
+
+        Parameters
+        ----------
+            tStart, tEnd, dt, winLen
+                As in :py:meth:`~analysis.spikes.slidingFiringRate`.
+            fullErr : bool
+                If ``True``, save the full error of fit. Otherwise a sum only.
+
+        Returns
+        -------
+        MLFitList
+            A list of fitted parameters.
+        '''
+        return self._performFit(tStart, tEnd, dt, winLen, fitMaximumLikelihood,
+                MLFitList, fullErr=fullErr)
 
 
 

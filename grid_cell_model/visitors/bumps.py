@@ -454,15 +454,15 @@ class BumpPositionVisitor(BumpVisitor):
         if self.tend is None:
             tend = self.getOption(data, 'time') - self.win_dt
 
-        if 'positions' not in out.keys() or self.forceUpdate:
-            logger.info('%s: Analysing data set.', self.__class__.__name__)
+        senders, times, sheetSize =  self._getSpikeTrain(data, 'spikeMon_e',
+                ['Ne_x', 'Ne_y'])
+        pop = image.SingleBumpPopulation(senders, times, sheetSize)
 
-            senders, times, sheetSize =  self._getSpikeTrain(data,
-                    'spikeMon_e', ['Ne_x', 'Ne_y'])
-            pop = image.SingleBumpPopulation(senders, times, sheetSize)
+        # Bump fits
+        if 'positions' not in out.keys() or self.forceUpdate:
+            logger.info('%s: Analysing data set (pos).', self.__class__.__name__)
             bumpFits = pop.bumpPosition(tstart, tend, self.win_dt, self.winLen,
                     fullErr=False)
-
             out['positions'] = dict(
                     A            = np.asarray(bumpFits.A),
                     mu_x         = np.asarray(bumpFits.mu_x),
@@ -475,7 +475,23 @@ class BumpPositionVisitor(BumpVisitor):
                     readme       = self.readme
             )
         else:
-            logger.info('{%s: Data already present. Skipping analysis.',
+            logger.info('{%s: Positional data already present. Skipping analysis.',
+                    self.__class__.__name__)
+
+        # Uniform fits (ML)
+        if 'uniformML' not in out.keys() or self.forceUpdate:
+            logger.info('%s: Analysing data set (uni).', self.__class__.__name__)
+            uniformFits = pop.uniformFit(tstart, tend, self.win_dt,
+                    self.winLen, fullErr=False)
+            out['uniformML'] = dict(
+                    mu     = np.asarray(uniformFits.mu),
+                    sigma2 = np.asarray(uniformFits.sigma2),
+                    ln_L   = np.asarray(uniformFits.ln_L),
+                    err2   = np.asarray(uniformFits.err2),
+                    times  = np.asarray(uniformFits.times)
+            )
+        else:
+            logger.info('{%s: Uniform data already present. Skipping analysis.',
                     self.__class__.__name__)
 
 
