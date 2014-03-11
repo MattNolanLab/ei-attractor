@@ -4,36 +4,56 @@ Aggregate bump data into the reductions file.
 '''
 import numpy as np
 from parameters  import JobTrialSpace2D
-
 from submitting import flagparse
 
+
+evenSpacingType = 'even-spacing'
+detailedNoiseType = 'detailed-noise'
+allowedTypes = [evenSpacingType, detailedNoiseType]
+
+# Positions
+allowedPositions = ['EI-1_3', 'EI-3_1']
+detailedShape = (31, 9)
+
+# Even spacing
+evenShape     = (31, 31)
+
 parser = flagparse.FlagParser()
+parser.add_argument("type",      type=str, choices=allowedTypes,
+        metavar='type', help='Type of the aggregation. Can be one of %s' %
+        str(allowedTypes))
+parser.add_argument("where",     type=str, help='Root directory')
+
+parser.add_argument("--ns",      type=int, choices=[0, 150, 300])
+parser.add_argument('--ntrials', type=int, default=5)
+parser.add_argument('--noLoadData', action='store_true')
+parser.add_argument('--position',type=str, choices=allowedPositions)
+
 parser.add_flag('--bump')
 parser.add_flag('--positions')
 parser.add_flag('--uniformML')
 parser.add_flag('--AC')
-parser.add_argument('--ntrials', type=int, default=5)
-parser.add_argument('--noLoadData', action='store_true')
 args = parser.parse_args()
 
-
-ns_all  = [0, 150, 300]
-ns_none = [-100]
-dirs = \
-    ("output/even_spacing/gamma_bump/{0}pA",     (31, 31), ns_all)
-    #("output/even_spacing/const_position/{0}pA",     (31, 31), ns_all)
-    #("output/detailed_noise/gamma_bump/EI-3_1",  (31, 9),  ns_none)
-    #("output/detailed_noise/gamma_bump/EI-1_3",  (31, 9),  ns_none)
-
-trialNumList = xrange(args.ntrials)
+ns_all = ['0pA', '150pA', '300pA']
+trialNumList = range(args.ntrials)
 varListBase = ['analysis']
 loadData = not args.noLoadData
 
 ################################################################################
-shape        = dirs[1]
-noise_sigmas = dirs[2]
-for noise_sigma in noise_sigmas:
-    rootDir = dirs[0].format(int(noise_sigma))
+
+# determine the iterator
+if args.type == evenSpacingType:
+    shape = evenShape
+    subDirs = ns_all if args.ns is None  else [args.ns]
+else:
+    shape = detailedShape
+    subDirs = allowedPositions if args.position is None else [args.position]
+
+for subDir in subDirs:
+    rootDir = '{0}/{1}'.format(args.where, subDir)
+    print rootDir, shape
+
     sp = JobTrialSpace2D(shape, rootDir)
 
     if args.bump or args.all:
