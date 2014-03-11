@@ -12,9 +12,10 @@ from default_params       import defaultParameters as dp
 from submitting           import flagparse
 from submitting.flagparse import positive_int
 
-velocityType  = 'velocity'
-gridsType     = 'grids'
-allowedTypes = [velocityType, gridsType]
+velocityType = 'velocity'
+gridsType    = 'grids'
+posType      = 'positional'
+allowedTypes = [velocityType, gridsType, posType]
 
 parser = flagparse.FlagParser()
 parser.add_argument('--row',     type=int)

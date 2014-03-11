@@ -240,7 +240,7 @@ class JobTrialSpace2D(DataSpace):
     def _getFilename(self, row, col):
         it = row * self.shape[1] + col
         fileName = self._rootDir + '/' + self._fileFormat.format(it)
-        job2DLogger.debug('row: %d, col: %d, filename: %s', row, col, fileName)
+        #job2DLogger.debug('row: %d, col: %d, filename: %s', row, col, fileName)
         return fileName
             
 

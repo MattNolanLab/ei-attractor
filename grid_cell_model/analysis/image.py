@@ -1,4 +1,32 @@
 '''
+Classes and functions for analysis of image-like structures.
+
+.. currentmodule:: analysis.image
+
+Classes
+-------
+
+.. autosummary::
+
+    SingleBumpPopulation
+    Position2D
+    MLGaussianFit
+    LikelihoodGaussianInitParams
+
+
+
+Functions
+---------
+
+.. autosummary::
+
+    remapTwistedTorus
+    fitGaussianTT
+    fitGaussianBumpTT
+
+
+'''
+'''
 Image analysis fitting - rateMaps, generic image analysis for GridCells, etc.
 '''
 from abc import ABCMeta, abstractmethod
@@ -12,8 +40,6 @@ import scipy.optimize
 
 from . import spikes
 
-__all__ = ['Position2D', 'remapTwistedTorus', 'fitGaussianTT',
-        'fitGaussianBumpTT']
 
 logger = logging.getLogger(__name__)
 
@@ -46,29 +72,142 @@ class FittingParams(object):
 
 
 
-class SymmetricGaussianFit(FittingParams):
-    def __init__(self, A, mu_x, mu_y, sigma, err):
+class SymmetricGaussianParams(FittingParams):
+    def __init__(self, A, mu_x, mu_y, sigma, err2):
         self.A = A
         self.mu_x = mu_x
         self.mu_y = mu_y
         self.sigma = sigma
-        self.err = err
+        self.err2 = err2
 
 
 
-class GaussianInitParams(object):
-    def __init__(self):
-        self.A0      = 10.0
-        self.mu0_x   = 1.0
-        self.mu0_y   = 1.0
-        self.sigma0  = 1.0
 
+##############################################################################
+# Simple ML solutions and lists
+class MLFit(FittingParams):
+    def __init__(self, mu, sigma2, ln_L, err2):
+        self.mu     = mu
+        self.sigma2 = sigma2
+        self.ln_L   = ln_L
+        self.err2    = err2
+
+
+class MLFitList(MLFit, collections.Sequence):
+    def __init__(self, mu=None, sigma2=None, ln_L=None, err2=None, times=None):
+        if mu     is None: mu = []
+        if sigma2 is None: sigma2 = []
+        if ln_L   is None: ln_L = []
+        if err2   is None: err2 = []
+        if times  is None: times = []
+        super(MLFitList, self).__init__(mu, sigma2, ln_L, err2)
+        self.times = times
+
+        if not self._consistent():
+            raise ValueError('All input arguments mus have same length')
+
+    def _consistent(self):
+        return len(self.mu) == len(self.sigma2) and \
+               len(self.mu) == len(self.ln_L) and   \
+               len(self.mu) == len(self.err2) and    \
+               len(self.mu) == len(self.times)
+
+    def __getitem__(self, key):
+        return MLFit(self.mu[key],
+                     self.sigma2[key],
+                     self.ln_L[key],
+                     self.err2), \
+               times
+
+
+    def __len__(self):
+        return len.self.mu
+
+
+    def _appendData(self, d, t):
+        '''`d` must be an instance of :class:`MLFit`'''
+        if not isinstance(d, MLFit):
+            raise TypeError('ML data must be an instance of MLFit')
+        self.mu.append(d.mu)
+        self.sigma2.append(d.sigma2)
+        self.ln_L.append(d.ln_L)
+        self.err2.append(d.err2)
+        self.times.append(t)
+
+
+
+##############################################################################
+# Symmetric Gaussian ML solutions and lists
+class MLGaussianFit(SymmetricGaussianParams):
+    def __init__(self, A, mu_x, mu_y, sigma, err2, ln_L, lh_precision):
+        super(MLGaussianFit, self).__init__(A, mu_x, mu_y, sigma, err2)
+        self.ln_L = ln_L
+        self.lh_precision = lh_precision
+
+
+class MLGaussianFitList(MLGaussianFit, collections.Sequence):
+    def __init__(self, A=None, mu_x=None, mu_y=None, sigma=None, err2=None,
+            ln_L=None, lh_precision=None, times=None):
+        if A            is None: A     = []
+        if mu_x         is None: mu_x  = []
+        if mu_y         is None: mu_y  = []
+        if sigma        is None: sigma = []
+        if err2         is None: err2  = []
+        if ln_L         is None: ln_L  = []
+        if lh_precision is None: lh_precision = []
+        if times        is None: times = []
+
+        super(MLGaussianFitList, self).__init__(\
+                A, mu_x, mu_y, sigma, err2, ln_L, lh_precision)
+        self.times = times
+
+        if not self._consistent():
+            raise ValueError('All input arguments mus have same length')
+
+
+    def _consistent(self):
+        return \
+            len(self.A) == len(self.mu_x) and         \
+            len(self.A) == len(self.mu_y) and         \
+            len(self.A) == len(self.sigma) and        \
+            len(self.A) == len(self.err2) and          \
+            len(self.A) == len(self.ln_L) and         \
+            len(self.A) == len(self.lh_precision) and \
+            len(self.A) == len(self.times)
+
+
+    def _appendData(self, d, t):
+        '''`d` must be an instance of :class:`MLGaussianFit`'''
+        if not isinstance(d, MLGaussianFit):
+            raise TypeError('Data must be an instance of MLGaussianFit')
+
+        self.A.append(d.A)
+        self.mu_x.append(d.mu_x)
+        self.mu_y.append(d.mu_y)
+        self.sigma.append(d.sigma)
+        self.err2.append(d.err2)
+        self.ln_L.append(d.ln_L)
+        self.lh_precision.append(d.lh_precision)
+        self.times.append(t)
+
+
+    def __getitem__(self, key):
+        return MLGaussianFit(self.A[key],
+                             self.mu_x[key],
+                             self.mu_y[key],
+                             self.sigma[key],
+                             self.err2[key],
+                             self.ln_L,
+                             self.lh_precision), \
+                self._times[key]
+
+    def __len__(self):
+        return len(self.A) # All same length
 
 
 
 def remapTwistedTorus(a, others, dim):
-    '''
-    Calculate a distance between ``a`` and ``others`` on a twisted torus.
+    ''' Calculate a distance between ``a`` and ``others`` on a twisted torus.
     
     Take ``a`` which is a 2D position and others, which is a vector of 2D
     positions and compute the distances between them based on the topology of
@@ -76,7 +215,8 @@ def remapTwistedTorus(a, others, dim):
     
     If you just want to remap a function of (X, Y), set a==[[0, 0]].
 
-    **Parameters**
+    Parameters
+    ----------
     
     a : a Position2D instance
         Specifies the initial position. ``a.x`` and ``a.y`` must be convertible
@@ -87,8 +227,8 @@ def remapTwistedTorus(a, others, dim):
         Dimensions of the torus. ``dim.x`` and ``dim.y`` must be convertible to
         floats.
 
-    **Returns**
-
+    Returns
+    -------
     An array of positions, always of the length of others
     '''
     
@@ -146,67 +286,129 @@ def remapTwistedTorus(a, others, dim):
 
 
 
-## Fit a 2D Gaussian function to a 2D signal using a least squares method.
-#
-# The Gaussian is not generic - sigmax = sigmay = sigma, i.e. it is circular
-# only.
-#
-# The function fitted looks like this:
-#     fun = A*exp(-||X - mu||^2 / (2*sigma^2))
-#
-# The initialisation parameters are A, mu_x, mu_y, sigma
-#
-#
-# @param sig_f  Signal function value - this is fitted, use the Position2D class
-# @param i      A struct with initialisation values
-# @param dim    Dimensions of the twisted torus (Position2D)
-# @return Estimated values in the order specified above for A...sigma
-#
-def fitGaussianTT(sig_f, i, dim):
-    X, Y = np.meshgrid(np.arange(dim.x), np.arange(dim.y))
-    others = Position2D()
-    others.x = X.flatten()
-    others.y = Y.flatten()
+def fitGaussianTT(sig_f, i):
+    '''Fit a 2D circular Gaussian function to a 2D signal using a maximum
+    likelihood estimator.
+
+    The Gaussian is not generic: :math:`\sigma_x = \sigma_y = \sigma`, i.e.
+    it is circular only.
+
+    The function fitted looks like this:
+    .. math::
+
+        f(\mathbf{X}) = |A| \exp\left{\frac{-||X - mu||^2}{2*\sigma^2}\right},
+
+    where :math:`||\cdot||` is a distance metric on the twisted torus.
+
+    Paramters
+    ---------
+    sig_f : np.ndarray
+        A 2D array that specified the signal to fit the Gaussian onto. The
+        dimensions of the torus will be inferred from the shape of `sig_f`:
+        (dim.y, dim.x) = `sig_f.shape`.
+    i : SymmetricGaussianParams
+        Guassian initialisation parameters. The `err2` field will be ignored.
+
+    Returns
+    -------
+    :class:`MLGaussianFit`
+        Estimated values, together with maximum likelihood value and precision
+        (inverse variance of noise: *NOT* of the fitted Gaussian).
+    '''
+    # Fit the Gaussian using least squares
+    f_flattened = sig_f.ravel()
+    dim         = Position2D(sig_f.shape[1], sig_f.shape[0])
+    X, Y        = np.meshgrid(np.arange(dim.x), np.arange(dim.y))
+    others      = Position2D()
+    others.x    = X.flatten()
+    others.y    = Y.flatten()
 
     a = Position2D()
     def gaussDiff(x):
         a.x = x[1] # mu_x
         a.y = x[2] # mu_y
         dist = remapTwistedTorus(a, others, dim)
-        #dist = np.sqrt((others.x - a.x)**2 + (others.y - a.y)**2)
-        #print "A:", x[0], a, "sigma:", x[3]
-        return np.abs(x[0]) * np.exp( -dist**2/2./ x[3]**2 ) - sig_f
+        return np.abs(x[0]) * np.exp( -dist**2/2./ x[3]**2 ) - f_flattened
 #                       |                            |
 #                       A                          sigma
 
-    x0 = np.array([i.A0, i.mu0_x, i.mu0_y, i.sigma0])
+    x0 = np.array([i.A, i.mu_x, i.mu_y, i.sigma])
+    xest, ierr = scipy.optimize.leastsq(gaussDiff, x0)
+    err2 = gaussDiff(xest)**2
 
-    xest,ierr = scipy.optimize.leastsq(gaussDiff, x0)
-    # Remap the values module torus size
+    # Remap the values modulo torus size
     xest[1] = xest[1] % dim.x
     xest[2] = xest[2] % dim.y
-    err = gaussDiff(xest)
-    return xest, err**2
+
+    # Compute the log-likelihood
+    N = dim.x * dim.y
+    AIC_correction = 5 # Number of optimized parameters
+    beta = 1.0 / ( np.mean(err2) )
+    ln_L = -beta / 2. * np.sum(err2) +  \
+            N / 2. * np.log(beta) -     \
+            N / 2. * np.log(2*np.pi) -  \
+            AIC_correction
+
+    res = MLGaussianFit(xest[0], xest[1], xest[2], xest[3], err2, ln_L, beta)
+    return res
 
 
 
-## Fit a 2D Gaussian onto a (potential) firing rate bump. On Twisted torus
-#
-# @param sig    Firing rate map to fit - a 2D numpy array
-# @param dim    Dimensions of the twisted torus (Position2D)
-# @return Estimated values for the Gaussian (see Position2D)
-def fitGaussianBumpTT(sig, dim):
+def fitGaussianBumpTT(sig):
+    '''Fit a 2D Gaussian onto a (potential) firing rate bump on the twisted torus.
+
+    Parameters
+    ----------
+    sig : np.ndarray
+        2D firing rate map to fit. Axis 0 is the Y position. This will be
+        passed directly to :func:`~analysis.image.fitGaussianTT`.
+
+    Returns
+    -------
+    :class:`analysis.image.MLGaussianFit`
+        Estimated values of the fit.
+
+    Notes
+    -----
+    The function initialises the Gaussian fitting parameters to a position at
+    the maximum of `sig`.
     '''
-    Fit a Gaussian to a rate map, using least squares method.
+    mu0_y, mu0_x = np.unravel_index(np.argmax(sig), sig.shape)
+    A0           = sig[mu0_y, mu0_x]
+    sigma0       = np.max(sig.shape) / 4.
+    init = SymmetricGaussianParams(A0, mu0_x, mu0_y, sigma0, None)
+    return fitGaussianTT(sig, init)
+
+
+
+def fitMaximumLikelihood(sig):
+    '''Fit a maximum likelihood solution under Gaussian noise.
+
+    Parameters
+    ----------
+    sig : np.ndarray
+        A vector containing the samples
+
+    Returns
+    fit : MLFit
+        Maximum likelihood parameters
     '''
-    init = GaussianInitParams()
-    init.mu0_y, init.mu0_x  = np.unravel_index(np.argmax(sig), sig.shape)
-    init.A0 = sig[init.mu0_y, init.mu0_x]
-    init.sigma0  = np.max([dim.x, dim.y]) / 2.0
-    
-    return fitGaussianTT(sig.flatten(), init, dim)
+    sig    = sig.flatten()
+    mu     = np.mean(sig)
+    sigma2 = np.var(sig)
+    err2   = (sig - mu)**2
 
+    if sigma2 == 0:
+        ln_L = np.inf
+    else:
+        N = len(sig)
+        AIC_correction = 2
+        ln_L = -.5 / sigma2 * np.sum((sig - mu)**2) - \
+                .5 * N * np.log(sigma2) -             \
+                .5 * N * np.log(2*np.pi) -            \
+                AIC_correction
 
+    return MLFit(mu, sigma2, ln_L, err2)
 
 
 
@@ -222,99 +424,73 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
         super(SingleBumpPopulation, self).__init__(senders, times, sheetSize)
 
 
-    class BumpFitList(collections.Sequence):
-        def __init__(self, AList=None, mu_xList=None, mu_yList=None,
-                sigmaList=None, err=None, times=None):
-            self._A     = AList     if AList is not None else []
-            self._mu_x  = mu_xList  if mu_xList is not None else []
-            self._mu_y  = mu_yList  if mu_yList is not None else []
-            self._sigma = sigmaList if sigmaList is not None else []
-            self._err   = err       if err is not None else []
-            self._times = times     if times is not None else []
+    def _performFit(self, tStart, tEnd, dt, winLen, fitCallable, listCls, fullErr=True):
+        F, Ft = self.slidingFiringRate(tStart, tEnd, dt, winLen)
+        dims = Position2D(self.Nx, self.Ny)
+        res = listCls()
+        for tIdx in xrange(len(Ft)):
+            logger.debug('%s:: fitting: %d/%d, %.3f/%.3f ',
+                    fitCallable.__name__, tIdx+1, len(Ft), Ft[tIdx], Ft[-1])
+            fitParams = fitCallable(F[:, :, tIdx])
+            
+            if fullErr == False:
+                fitParams.err2 = np.sum(fitParams.err2)
 
-            if not self._consistent():
-                raise ValueError('All input arguments mus have same length')
-
-
-        def _consistent(self):
-            return \
-                len(self._A) == len(self._mu_x) and   \
-                len(self._A) == len(self._mu_y) and   \
-                len(self._A) == len(self._sigma) and  \
-                len(self._A) == len(self._err) and    \
-                len(self._A) == len(self._times)
-
-
-        def getA(self): return self._A
-        def getMu_x(self): return self._mu_x
-        def getMu_y(self): return self._mu_y
-        def getSigma(self): return self._sigma
-        def getErr(self): return self._err
-        def getT(self): return self._times
-        A     = property(getA)
-        mu_x  = property(getMu_x)
-        mu_y  = property(getMu_y)
-        sigma = property(getSigma)
-        err   = property(getErr)
-        t     = property(getT)
-
-
-        def _appendData(self, A, mu_x, mu_y, sigma, err, t):
-            self._A.append(A)
-            self._mu_x.append(mu_x)
-            self._mu_y.append(mu_y)
-            self._sigma.append(sigma)
-            self._err.append(err)
-            self._times.append(t)
-
-
-        def __getitem__(self, key):
-            return SymmetricGaussianFit(self._A[key], self._mu_x[key],
-                    self._mu_y[key], self._sigma[key], self._err[key]), \
-                            self._times[key]
-
-        def __len__(self):
-            return len(self._A) # All same length
-
-
+            res._appendData(fitParams, Ft[tIdx])
+        return res
 
 
     def bumpPosition(self, tStart, tEnd, dt, winLen, fullErr=True):
-        '''
-        Estimate bump positions during the simulation time:
+        '''Estimate bump positions during the simulation time.
         
             1. Use :py:meth:`~.slidingFiringRate`
 
             2. Apply the bump position estimation procedure to each of the
                population activity items.
 
-        **Parameters**
-
-            tStart, tEnd, dt, winLen : as in :py:meth:`~.slidingFiringRate`.
+        Parameters
+        ----------
+            tStart, tEnd, dt, winLen
+                As in :py:meth:`~analysis.spikes.slidingFiringRate`.
             fullErr : bool
                 If ``True``, save the full error of fit. Otherwise a sum only.
 
-        **Output*
-            
-            A list of estimation result objects
+        Returns
+        -------
+        MLGaussianFitList
+            A list of fitted Gaussian parameters
+
+        Notes
+        -----
+        This method uses the Maximum likelihood estimator to fit the Gaussian
+        function (:meth:`~analysis.image.fitGaussianBumpTT`)
         '''
-        F, Ft = self.slidingFiringRate(tStart, tEnd, dt, winLen)
-        dims = Position2D(self.Nx, self.Ny)
-        res = self.BumpFitList()
-        for tIdx in xrange(len(Ft)):
-            logger.debug('Bump fitting: %d/%d, %.3f/%.3f ', tIdx+1, len(Ft),
-                    Ft[tIdx], Ft[-1])
-            (A, mu_x, mu_y, sigma), err2 = fitGaussianBumpTT(F[:, :, tIdx],
-                    dims)
-            
-            err = np.sqrt(err2)
-            if fullErr == False:
-                err = np.sum(err)
-
-            res._appendData(A, mu_x, mu_y, sigma, err, Ft[tIdx])
-        return res
+        return self._performFit(tStart, tEnd, dt, winLen, fitGaussianBumpTT,
+                MLGaussianFitList, fullErr=fullErr)
             
 
+    def uniformFit(self, tStart, tEnd, dt, winLen, fullErr=True):
+        '''Estimate the mean firing rate using maximum likelihood estimator
+        (:func:`~analysis.image.fitMaximumLikelihood`)
+        
+            1. Use :py:meth:`~.slidingFiringRate`.
+
+            2. Apply the estimator.
+
+        Parameters
+        ----------
+            tStart, tEnd, dt, winLen
+                As in :py:meth:`~analysis.spikes.slidingFiringRate`.
+            fullErr : bool
+                If ``True``, save the full error of fit. Otherwise a sum only.
+
+        Returns
+        -------
+        MLFitList
+            A list of fitted parameters.
+        '''
+        return self._performFit(tStart, tEnd, dt, winLen, fitMaximumLikelihood,
+                MLFitList, fullErr=fullErr)
 
 
 
@@ -382,41 +558,3 @@ if (__name__ == '__main__'):
 
     show()
 
-
-    ###################################################################### 
-    # Gaussian bump fitting on a twisted torus
-    dims = Position2D()
-    dims.x = 100
-    dims.y = 100
-
-    X, Y = np.meshgrid(np.arange(dims.x), np.arange(dims.y))
-
-    pos = Position2D()
-    pos.x = X.flatten()
-    pos.y = Y.flatten()
-
-    A       = 20.0
-    mu_x    = 99
-    mu_y    = 50.0
-    sigma   = 20
-
-    a0 = Position2D()
-    a0.x = mu_x
-    a0.y = mu_y
-    dist = remapTwistedTorus(a0, pos, dims)
-    rateMap = A*np.exp(- dist**2 / (2*sigma**2))
-    rateMap += A*0.2*np.random.randn(rateMap.shape[0])
-    rateMap[rateMap < 0] = 0
-    rateMap = np.reshape(rateMap, (dims.y, dims.x))
-  
-    figure()
-    pcolormesh(np.reshape(dist, (dims.y, dims.x))); colorbar()
-    figure()
-    pcolormesh(X, Y, rateMap); colorbar()
-  
-    param_est = fitGaussianBumpTT(rateMap, dims)
-    Aest, muxest, muyest, sigmaest = param_est
-
-    print param_est
-    
-    show()

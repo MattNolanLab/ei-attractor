@@ -10,6 +10,7 @@ from submitting import flagparse
 parser = flagparse.FlagParser()
 parser.add_flag('--bump')
 parser.add_flag('--positions')
+parser.add_flag('--uniformML')
 parser.add_flag('--AC')
 parser.add_argument('--ntrials', type=int, default=5)
 parser.add_argument('--noLoadData', action='store_true')
@@ -19,8 +20,8 @@ args = parser.parse_args()
 ns_all  = [0, 150, 300]
 ns_none = [-100]
 dirs = \
-    ("output/even_spacing/const_position/{0}pA",     (31, 31), ns_all)
-    #("output/even_spacing/gamma_bump/{0}pA",     (31, 31), ns_all)
+    ("output/even_spacing/gamma_bump/{0}pA",     (31, 31), ns_all)
+    #("output/even_spacing/const_position/{0}pA",     (31, 31), ns_all)
     #("output/detailed_noise/gamma_bump/EI-3_1",  (31, 9),  ns_none)
     #("output/detailed_noise/gamma_bump/EI-1_3",  (31, 9),  ns_none)
 
@@ -55,9 +56,6 @@ for noise_sigma in noise_sigmas:
         sp.aggregateData(bumpPosVars + ['A'],
                 trialNumList, funReduce=None, loadData=loadData,saveData=True,
                 output_dtype='list')
-        sp.aggregateData(bumpPosVars + ['errSum'],
-                trialNumList, funReduce=None, loadData=loadData,saveData=True,
-                output_dtype='list')
         sp.aggregateData(bumpPosVars + ['mu_x'],
                 trialNumList, funReduce=None, loadData=loadData,saveData=True,
                 output_dtype='list')
@@ -67,7 +65,34 @@ for noise_sigma in noise_sigmas:
         sp.aggregateData(bumpPosVars + ['sigma'],
                 trialNumList, funReduce=None, loadData=loadData,saveData=True,
                 output_dtype='list')
-        sp.aggregateData(bumpPosVars + ['t'],
+        sp.aggregateData(bumpPosVars + ['err2Sum'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['ln_L'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['lh_precision'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['times'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+
+    if args.uniformML or args.all:
+        bumpPosVars = varListBase + ['bump_e', 'uniformML']
+        sp.aggregateData(bumpPosVars + ['mu'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['sigma2'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['ln_L'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['err2'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['times'],
                 trialNumList, funReduce=None, loadData=loadData,saveData=True,
                 output_dtype='list')
 
