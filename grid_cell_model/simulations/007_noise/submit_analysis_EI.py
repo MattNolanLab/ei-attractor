@@ -28,6 +28,7 @@ parser.add_argument('--nCPU',    type=positive_int, default=1)
 parser.add_argument('--rtLimit', type=str, default='00:05:00')
 parser.add_flag("--ns_all")
 parser.add_flag("--forceUpdate")
+parser.add_flag("--ignoreErrors")
 o = parser.parse_args()
 
 if not o.ns_all and o.ns is None:
@@ -81,7 +82,8 @@ for noise_sigma in noise_sigmas:
     ###############################################################################
     submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
             rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-            blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
+            blocking=blocking, timePrefix=timePrefix, numCPU=numCPU,
+            ignoreSubmitErrors=o.ignoreErrors)
     ac.setOption('output_dir', submitter.outputDir())
     startJobNum = 0
     submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)

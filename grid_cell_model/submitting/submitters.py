@@ -33,30 +33,30 @@ class ProgramSubmitter(object):
     '''
 
     def __init__(self, argCreator, output_dir, label, timePrefix=False,
-            blocking=True, forceExisting=True, numCPU=1, createOutputDir=True):
+            blocking=True, forceExisting=True, numCPU=1, createOutputDir=True,
+            ignoreSubmitErrors=False):
         '''
         Create the submitter object.
 
         Parameters
         ----------
-
         argCreator : ArgumentCreator
-
+            Argument creator
         output_dir : string
             Output directory to save data to. Unrelated to the actual output
             directory of the program that will run as the submitter cannot know
             how to force the program to output its data to this directory
-
         appLabel   : string
             Simulation run label. Each simulation will have its own directory
             created that will contain this label
-
         timePrefix : bool
             Whether to prefix the label with time before the output directory
             will be created.
-
         forceExisting : bool, optional
             When True, will not raise an error if the output directory already exists.
+        ignoreSubmitErrors : bool, optional
+            If submission of one process fails, ignore this and continue.
+            Otherwise raise an exception.
         '''
         self._ac = argCreator
         self._output_dir = output_dir
@@ -66,6 +66,7 @@ class ProgramSubmitter(object):
         else:
             self._timePrefix = timePrefix
         self._forceExisting = forceExisting
+        self._ignoreSubmitErrors = ignoreSubmitErrors
 
         self.createOutputDir = createOutputDir
         if self.createOutputDir:
@@ -112,7 +113,7 @@ class ProgramSubmitter(object):
             return None
         p = self._pList.pop(0)
         errno = p.wait()
-        if (errno is not None and errno != 0):
+        if not self._ignoreSubmitErrors and (errno is not None and errno != 0):
             raise SubmitError()
         
 
