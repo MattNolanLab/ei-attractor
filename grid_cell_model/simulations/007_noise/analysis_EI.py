@@ -43,9 +43,9 @@ if (o.type == "gamma-bump"):
     monName   = 'stateMonF_e'
     stateList = ['I_clamp_GABA_A']
     iterList  = ['g_AMPA_total', 'g_GABA_total']
-    ACVisitor = vis.AutoCorrelationVisitor(monName, stateList,
-            forceUpdate=forceUpdate)
-    bumpVisitor = vis.BumpFittingVisitor(forceUpdate=forceUpdate,
+    #ACVisitor = vis.analysis_visitors.AutoCorrelationVisitor(monName, stateList,
+    #        forceUpdate=forceUpdate)
+    bumpVisitor = vis.bumps.BumpFittingVisitor(forceUpdate=forceUpdate,
             tstart='full',
             readme='Bump fitting. Whole simulation, starting at the start of theta stimulation.',
             bumpERoot='bump_e_full',
@@ -56,14 +56,14 @@ if (o.type == "gamma-bump"):
             win_dt=125.0,
             readme='Bump position estimation. Whole simulation',
             forceUpdate=forceUpdate)
-    FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
-    CCVisitor = vis.CrossCorrelationVisitor(monName, stateList,
-            forceUpdate=forceUpdate)
-    spikeVisitor_e = vis.SpikeStatsVisitor("spikeMon_e",
-            forceUpdate=forceUpdate)
+    #FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
+    #CCVisitor = vis.CrossCorrelationVisitor(monName, stateList,
+    #        forceUpdate=forceUpdate)
+    #spikeVisitor_e = vis.SpikeStatsVisitor("spikeMon_e",
+    #        forceUpdate=forceUpdate)
 
     #sp.visit(ACVisitor)
-    #sp.visit(bumpVisitor)
+    sp.visit(bumpVisitor)
     sp.visit(bumpPosVisitor)
     #sp.visit(FRVisitor)
     #sp.visit(CCVisitor)
