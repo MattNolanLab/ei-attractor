@@ -475,7 +475,7 @@ class BumpPositionVisitor(BumpVisitor):
                     readme       = self.readme
             )
         else:
-            logger.info('{%s: Positional data already present. Skipping analysis.',
+            logger.info('%s: Positional data already present. Skipping analysis.',
                     self.__class__.__name__)
 
         # Uniform fits (ML)
@@ -491,8 +491,9 @@ class BumpPositionVisitor(BumpVisitor):
                     times  = np.asarray(uniformFits.times)
             )
         else:
-            logger.info('{%s: Uniform data already present. Skipping analysis.',
+            logger.info('%s: Uniform data already present. Skipping analysis.',
                     self.__class__.__name__)
 
+        out['isBump'] = out['positions']['ln_L'] > out['uniformML']['ln_L']
 
 
