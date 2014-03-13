@@ -225,6 +225,94 @@ class AggregateData(object):
         raise NotImplementedError()
 
 
+
+def maskNaNs(a, really):
+    return np.ma.masked_invalid(a, copy=False) if really else a
+
+
+class IsBump(AggregateData):
+    '''Retrieve bump classification data from the space.'''
+    
+    def __init__(self, space, iterList, NTrials, ignoreNaNs=False,
+            normalizeTicks=False):
+        super(IsBump, self).__init__(space, iterList, NTrials, ignoreNaNs,
+                normalizeTicks)
+        self._fracTotal = None
+        self._X = None
+        self._Y = None
+
+    def _getRawData(self):
+        if self._fracTotal is None:
+            path = self.analysisRoot + ['bump_e/isBump/fracTotal']
+            self._fracTotal = self.sp.getReduction(path)
+            self._Y, self._X = computeYX(self.sp, self.iterList,
+                    self.normalizeTicks)
+        return self._fracTotal, self._X, self._Y
+
+    def getData(self):
+        data, X, Y = self._getRawData()
+        return np.nanmean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+
+
+class IsBumpCollapsed(AggregateData):
+    '''Take a list of data spaces and aggregate them and their trials (fracTotal
+    data set) into one vector usable for histogram calculation.'''
+
+    def __init__(self, spaces, iterList, NTrials, ignoreNaNs=False,
+            normalizeTicks=False):
+        self.spaces = spaces
+        super(IsBumpCollapsed, self).__init__(None, iterList, NTrials,
+                ignoreNaNs, normalizeTicks)
+        self.fracList = []
+        for sp in spaces:
+            self.fracList.append(IsBump(sp, iterList, NTrials, ignoreNaNs,
+                normalizeTicks))
+
+
+    def getData(self):
+        collapsedData = []
+        for fracObj in self.fracList:
+            fracTotal, X, Y = fracObj.getData()
+            collapsedData.append(fracTotal.ravel())
+        return np.hstack(collapsedData), X, Y
+
+
+
+class BumpFormationFilter(IsBump):
+    '''Provide a filter that  will mask data where bump is not formed.
+
+    The threshold of the masking process must be supplied.
+    '''
+    def __init__(self, threshold, *args, **kwargs):
+        super(BumpFormationFilter, self).__init__(*args, **kwargs)
+        self.threshold = threshold
+        self._filter = None
+        self._X     = None
+        self._Y     = None
+
+    def getData(self):
+        if self._filter is None:
+            fracTotal, self._X, self._Y = \
+                    super(BumpFormationFilter, self).getData()
+        self._filter = fracTotal > self.threshold
+        return self._filter, self._X, self._Y
+
+    def filterData(self, data, invert=False):
+        '''
+        if `invert`, then return data which do *not* match the filter.
+        '''
+        filter, _, _ = self.getData()
+        if filter.shape != data.shape:
+            raise TypeError("Shapes of data to filter and filter must match.")
+        filt = np.logical_not(filter) if invert else filter
+        mask = np.logical_or(getattr(data, 'mask', False), filt)
+        return np.ma.MaskedArray(data, mask=mask)
+        
+
+
+
+
+
 bumpPosLogger = logging.getLogger('{0}.{1}'.format(__name__, 'BumpPositionData'))
 class BumpPositionData(AggregateData):
     funReduce     = None
@@ -247,7 +335,7 @@ class BumpPositionData(AggregateData):
         bumpPosLogger.debug('self._vars: %s', self._vars)
 
         trialNumList  = np.arange(self.NTrials)
-        timeVars = self.analysisRoot + self._root + ['positions', 't']
+        timeVars = self.analysisRoot + self._root + ['positions', 'times']
         self._timeData = self.sp.aggregateData(timeVars,
                 trialNumList,
                 output_dtype=self.times_dtype,
@@ -504,6 +592,9 @@ class AggregateBumpReciprocal(BumpPositionData):
 
     def getTimes(self):
         return self._timeData[self._timeData >= self.tStart]
+
+
+
 
 
 ##############################################################################
