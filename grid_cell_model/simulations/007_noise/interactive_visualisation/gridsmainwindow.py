@@ -84,7 +84,7 @@ class GridsMainWindow(QMainWindow, Ui_GridsMainWindow):
         class FinalDirs(object):
             pass
         retVal = FinalDirs()
-        for dirType in ['gamma_bump', 'grids', 'velocity']:
+        for dirType in ['gamma_bump', 'grids_vertical', 'velocity']:
             finalDir = self.constructFinalDir(dirType)
             print finalDir
             setattr(retVal, dirType, finalDir)
@@ -146,7 +146,7 @@ class GridsMainWindow(QMainWindow, Ui_GridsMainWindow):
     def load_dir(self):
         allDirs = self.constructFinalDirs() 
         shape = (self.ySizeSpinBox.value(),  self.xSizeSpinBox.value())
-        self.gridSweepWidget.setDirectory(allDirs.grids, shape)
+        self.gridSweepWidget.setDirectory(allDirs.grids_vertical, shape)
         self.bumpSweepWidget.setDirectory(allDirs.gamma_bump, shape)
         self.updateRC(self.r, self.c)
 

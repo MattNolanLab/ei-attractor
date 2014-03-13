@@ -72,14 +72,15 @@ class SweepWidget(MplWidget):
 
 
     def setDirectory(self, rootPath, shape):
+        r, c = 5, 15
         self.dataSpace = JobTrialSpace2D(shape, rootPath)
         gE, gI = aggr.computeYX(self.dataSpace, self.iterList,
-                normalize=True)
+                normalize=True, r=r, c=c)
         self.gEMax = gE[-1, 0]
         self.gIMax = gI[0, -1]
         self.dx = self.gIMax / (self.dataSpace.shape[1] - 1)
         self.dy = self.gEMax / (self.dataSpace.shape[0] - 1)
-        data = self.dataSpace[0][0][0].data
+        data = self.dataSpace[r][c][0].data
         self.noise_sigma = ei.getOption(data, 'noise_sigma')
 
     def plotPickAnnotation(self, r, c):
@@ -138,6 +139,7 @@ class GridSweepWidget(SweepWidget):
                 trialNumList=[],
                 sigmaTitle=False,
                 ignoreNaNs=True,
+                r=5, c=15,
                 cbar=True, cbar_kw=self.cbar_kw,
                 ax=self.ax,
                 picker=True)
@@ -262,6 +264,7 @@ class GridFieldWidget(ExampleWidget):
                     trialNum=self.trial,
                     fig=self.canvas.fig,
                     gsCoords=gsCoords,
+                    exIdx=(5, 15),
                     xlabel=False, ylabel=False,
                     xlabel2=False, ylabel2=False)
         self.canvas.draw()
