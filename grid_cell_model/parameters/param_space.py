@@ -387,6 +387,14 @@ class JobTrialSpace2D(DataSpace):
             return None
 
 
+    def getReduction(self, path):
+        inData = self._getAggregationDS()
+        if isinstance(path, str):
+            return inData[path]
+        else:
+            return inData.getItemChained(path)
+
+
     def aggregateData(self, varList, trialNumList, funReduce=None,
             output_dtype='array', loadData=True, saveData=False,
             saveDataFileName='reductions.h5'):
