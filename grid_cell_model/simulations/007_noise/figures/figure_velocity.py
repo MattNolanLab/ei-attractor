@@ -237,8 +237,8 @@ if args.detailed_noise or args.all:
 # This should be corresponding to the velLine examples as well !!
 rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 slopeVarList = ['lineFitSlope']
-slope_vmin = -0.472
-slope_vmax = 1.6
+slope_vmin = None
+slope_vmax = None
 velSweep_cmap = 'jet'
 
 slope_cbar_kw= dict(
@@ -272,9 +272,9 @@ def createSweepFig(name=None):
 if args.slope_sweeps or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig, ax = createSweepFig(None)
-        kw = dict(cbar=False)
-        if (ns_idx == 2):
-            kw['cbar'] = True
+        kw = dict(cbar=True)
+        #if (ns_idx == 2):
+        #    kw['cbar'] = True
         if (ns_idx != 0):
             kw['ylabel'] = ''
             kw['yticks'] = False
