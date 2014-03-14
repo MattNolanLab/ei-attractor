@@ -23,6 +23,7 @@ import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 import matplotlib.ticker as ti
+from matplotlib.transforms import Bbox
 from matplotlib.patches  import Rectangle
 from matplotlib.gridspec import GridSpec
 
@@ -345,3 +346,53 @@ def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
 
 
 
+##############################################################################
+# Snapshots of bumps in time
+
+def plotBumpSnapshots(FR, FRt, nSnapshots, **kw):
+    fig             = kw.pop('fig')
+    timeTitles      = kw.pop('timeTitles', True)
+    axesCoords      = kw.pop('axesCoords', (0.12, 0.01, 0.92, 0.7))
+    axesDiv         = kw.pop('axesDiv', .01)
+    bumpQuality     = kw.pop('bumpQuality', False)
+    bumpQualityText = kw.pop('bumpQualityText', '')
+
+    left, bottom, right, top = axesCoords
+    width  = right - left
+    height = top - bottom
+
+    step = int(FRt.shape[0] / nSnapshots)
+
+    oneWidth = float(width) / nSnapshots
+    l = left
+    bot = bottom
+    indexes = range(0, FRt.shape[0], step)
+    max = np.max(FR[:, :, indexes])
+    for it in indexes:
+        print it
+        t = bot + height
+        r = l + oneWidth - axesDiv
+        print l, bot, r, top
+
+        ax = fig.add_axes(Bbox.from_extents(l, bot, r, top))
+        plotBump(ax, FR[:, :, it], vmin=0, vmax=max, rasterized=True, **kw)
+
+        if bumpQuality and it == 0:
+            txt = '{0:.2f}'.format(bumpQuality)
+            ax.text(-.9, .5, txt, va='center', ha='center',
+                    transform=ax.transAxes)
+
+        if timeTitles:
+            yTitle = 1.02
+            ax.text(.5, yTitle, "{0}".format(FRt[it]*1e-3), size='medium',
+                    transform=ax.transAxes, va='bottom', ha='center')
+            if it == 0:
+                ax.text(.5, yTitle + .3, "t(s)", ha='center', va='bottom',
+                        transform=ax.transAxes)
+                ax.text(-.9, yTitle, bumpQualityText, ha='center', va='bottom',
+                        transform=ax.transAxes)
+            #if it / step == nSnapshots - 1:
+            #    ax.text(1, yTitle, "s", va='bottom', transform=ax.transAxes)
+
+
+        l += oneWidth

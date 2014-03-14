@@ -1,6 +1,7 @@
 '''
 Default figure plotting and analysis settings.
 '''
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
 from matplotlib.transforms import Bbox
@@ -19,21 +20,26 @@ evenShape = (31, 31)
 noise_sigmas = [0, 150, 300]
 
 
-sweepFigSize = (3.7, 2.6)
+sweepFigSize = np.array([3.7, 2.6])
+sweepW = .72
+sweepH = .65
 sweepLeft   = 0.08
 sweepBottom = 0.2
-sweepRight  = 0.8
-sweepTop    = 0.85
-sweepTransparent  = True
 
 
-def getDefaultSweepFig():
-    fig = plt.figure(figsize=sweepFigSize)
-    return fig, getDefaultSweepAxes(fig)
+def getDefaultSweepFig(scale=1.0, colorBarPos='right'):
+    fig = plt.figure(figsize=sweepFigSize*scale)
+    return fig, getDefaultSweepAxes(fig, colorBarPos)
 
-def getDefaultSweepAxes(fig):
-    return fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
+def getDefaultSweepAxes(fig, colorBarPos='right'):
+    if colorBarPos == 'right':
+        left = sweepLeft
+    else:
+        left = .12
+
+    right = left + sweepW
+    top = sweepBottom + sweepH
+    return fig.add_axes(Bbox.from_extents(left, sweepBottom, right, top))
 
 ###############################################################################
 # Parameter spaces roots
