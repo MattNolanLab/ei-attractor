@@ -430,14 +430,18 @@ class BumpPositionVisitor(BumpVisitor):
             outputRoot=defaults.analysisRoot,
             bumpERoot='bump_e',
             bumpIRoot='bump_i',
-            tstart=None,    # ms
-            tend=None,      # ms
-            winLen=250.0,   # ms
-            win_dt=25.0):   # ms
+            tstart=None,        # ms
+            tend=None,          # ms
+            winLen=250.0,       # ms
+            win_dt=25.0,        # ms
+            rateThreshold=.1,   # Hz
+            maxRelBumpDiam=1.0): # fraction of the torus size
         super(BumpPositionVisitor, self).__init__(forceUpdate, readme,
                 outputRoot, bumpERoot, bumpIRoot, winLen, tstart)
         self.tend = tend
         self.win_dt = win_dt
+        self.rateThreshold  = rateThreshold
+        self.maxRelBumpDiam = maxRelBumpDiam
         
 
     def visitDictDataSet(self, ds, **kw):
@@ -494,6 +498,16 @@ class BumpPositionVisitor(BumpVisitor):
             logger.info('%s: Uniform data already present. Skipping analysis.',
                     self.__class__.__name__)
 
-        out['isBump'] = out['positions']['ln_L'] > out['uniformML']['ln_L']
+        
+        sigma = out['positions/sigma']
+        A     = out['positions/A']
+        bumpDiam = sigma * np.sqrt(-2. * np.log(self.rateThreshold / A))
+        isBumpFrames = bumpDiam < self.maxRelBumpDiam * np.min(sheetSize)
+        nFrames = len(isBumpFrames)
+        out['isBump'] = dict(
+                isBumpFrames = isBumpFrames,
+                fracTotal = np.count_nonzero(isBumpFrames) / float(nFrames)
+        )
+
 
 

@@ -31,6 +31,7 @@ parser.add_argument('--position',type=str, choices=allowedPositions)
 
 parser.add_flag('--bump')
 parser.add_flag('--positions')
+parser.add_flag('--isBump')
 parser.add_flag('--uniformML')
 parser.add_flag('--AC')
 args = parser.parse_args()
@@ -97,6 +98,15 @@ for subDir in subDirs:
         sp.aggregateData(bumpPosVars + ['times'],
                 trialNumList, funReduce=None, loadData=loadData,saveData=True,
                 output_dtype='list')
+
+    if args.isBump or args.all:
+        bumpPosVars = varListBase + ['bump_e', 'isBump']
+        sp.aggregateData(bumpPosVars + ['isBumpFrames'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['fracTotal'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='array')
 
     if args.uniformML or args.all:
         bumpPosVars = varListBase + ['bump_e', 'uniformML']
