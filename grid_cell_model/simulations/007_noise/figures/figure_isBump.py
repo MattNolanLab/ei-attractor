@@ -32,7 +32,7 @@ args = parser.parse_args()
 bumpNTrials = 5
 bump_vmin = 0
 bump_vmax = 1.
-fracTotalText = '$P_{time}$(Bump formed)'
+fracTotalText = 'P(bumps)'
 
 #histFigSize = (5, sweepFigSize[1])
 histBins = 20
@@ -45,7 +45,7 @@ if args.fracTotalHist or args.all:
     fractions, X, Y = data.getData()
     ax.hist(fractions, normed=True, rwidth=0.8, linewidth=0, bins=histBins)
     ax.set_xlabel(fracTotalText)
-    ax.set_ylabel('p(%s)' % fracTotalText)
+    ax.set_ylabel('p[%s]' % fracTotalText)
     ax.margins(0.02, None)
     #ax.yaxis.tick_right()
     #ax.yaxis.set_label_position('right')
@@ -92,6 +92,7 @@ exampleSettings = [
         ExampleSetting( 5, 15, trialNum, ps.bumpGamma[1], ps.noise_sigmas[1]),
         ExampleSetting(15,  5, trialNum, ps.bumpGamma[1], ps.noise_sigmas[1]),
         ExampleSetting(15,  5, trialNum, ps.bumpGamma[2], ps.noise_sigmas[2]),
+        ExampleSetting(14,  1,        1, ps.bumpGamma[0], ps.noise_sigmas[0]),
 ]
 
 
@@ -120,7 +121,7 @@ if args.bumpExamples or args.all:
         examples.plotBumpSnapshots(FR, FRt, nSnapshots,
                 fig=fig, bumpQuality=bumpQuality[set.r, set.c, set.trialNum],
                 timeTitles=timeTitles, maxRate=False,
-                bumpQualityText="$P_{time}$\nBump\nis\nformed")
+                bumpQualityText="P\n(bumps)")
         fname = outputDir + "/bumps_isBumpSnapshotExamples_{0}pA_{1}_{2}.pdf"
         fig.savefig(fname.format(set.noise_sigma, set.r, set.c), dpi=300, transparent=True)
         plt.close()
@@ -208,7 +209,7 @@ if args.fracTotalSweepAnn or args.all:
 
 ##############################################################################
 # Bump formation, thresholded
-bumpThreshold = 0.9
+bumpThreshold = 0.95
 if args.isBump or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig, ax = ds.getDefaultSweepFig(scale=.8, colorBarPos='left' )
