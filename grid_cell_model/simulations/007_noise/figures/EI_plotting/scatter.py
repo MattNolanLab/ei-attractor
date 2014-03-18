@@ -190,9 +190,16 @@ class FullScatterPlot(object):
             if (spIdx != len(spaces1) - 1):
                 currentKw['xlabel'] = ''
            
-            self.scatterPlots.append(ScatterPlot(
-                sp1, sp2, types1, types2, iterList, NTrials1,
-                NTrials2, **currentKw))
+            if isinstance(sp1, aggr.AggregateData):
+                data1, _, _ = sp1.getData()
+                data2, _, _ = sp2.getData()
+                currentKw.pop('ignoreNaNs')
+                scatterPlot = RawScatterPlot(data1, data1.flatten(),
+                        data2.flatten(), **currentKw)
+            else:
+                scatterPlot = ScatterPlot(sp1, sp2, types1, types2, iterList,
+                        NTrials1, NTrials2, **currentKw)
+            self.scatterPlots.append(scatterPlot)
 
     def plot(self, plotcolorbar=True, captionLeft=-0.075):
         for idx, scatterPlot in enumerate(self.scatterPlots):

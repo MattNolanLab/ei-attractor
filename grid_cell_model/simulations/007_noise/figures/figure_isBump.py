@@ -29,7 +29,6 @@ parser.add_flag('--fracTotalSweepAnn')
 args = parser.parse_args()
 
 
-bumpNTrials = 5
 bump_vmin = 0
 bump_vmax = 1.
 fracTotalText = 'P(bumps)'
@@ -40,8 +39,7 @@ if args.fracTotalHist or args.all:
     fig = plt.figure(figsize=(2.2, ds.sweepFigSize[1]*.85))
     ax = fig.add_subplot(111)
     globalAxesSettings(ax)
-    data = aggr.IsBumpCollapsed(ps.bumpGamma, ds.iterList, bumpNTrials,
-            ignoreNaNs=True)
+    data = aggr.IsBumpCollapsed(ps.bumpGamma, ds.iterList, ignoreNaNs=True)
     fractions, X, Y = data.getData()
     ax.hist(fractions, normed=True, rwidth=0.8, linewidth=0, bins=histBins)
     ax.set_xlabel(fracTotalText)
@@ -114,8 +112,7 @@ if args.bumpExamples or args.all:
     for setIdx, set in enumerate(exampleSettings):
         fig = plt.figure(figsize=exampleFigSize)
         FR, FRt = extractRateMaps(set.ps, set.r, set.c, set.trialNum)
-        isBump = aggr.IsBump(set.ps, ds.iterList, bumpNTrials,
-                ignoreNaNs=True)
+        isBump = aggr.IsBump(set.ps, ds.iterList, ignoreNaNs=True)
         bumpQuality, _, _ = isBump._getRawData()
         timeTitles = setIdx == 0
         examples.plotBumpSnapshots(FR, FRt, nSnapshots,
@@ -193,8 +190,7 @@ if args.fracTotalSweepAnn or args.all:
             kw['yticks'] = False
         if ns_idx == 0:
             kw['cbar'] = True
-        data = aggr.IsBump(ps.bumpGamma[ns_idx], ds.iterList, bumpNTrials,
-                ignoreNaNs=True)
+        data = aggr.IsBump(ps.bumpGamma[ns_idx], ds.iterList, ignoreNaNs=True)
         _, _, cax = sweeps.plotSweep(data,
                 noise_sigma=noise_sigma,
                 ax=ax,
@@ -217,9 +213,8 @@ if args.isBump or args.all:
         if ns_idx != 0:
             kw['ylabel'] = ''
             kw['yticks'] = False
-        data = aggr.BumpFormationFilter(bumpThreshold,
-                ps.bumpGamma[ns_idx], ds.iterList, bumpNTrials,
-                ignoreNaNs=True)
+        data = aggr.BumpFormationFilter(bumpThreshold, ps.bumpGamma[ns_idx],
+                ds.iterList, ignoreNaNs=True)
         _, _, cax = sweeps.plotSweep(data,
                 noise_sigma=noise_sigma,
                 ax=ax,

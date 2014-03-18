@@ -230,12 +230,38 @@ def maskNaNs(a, really):
     return np.ma.masked_invalid(a, copy=False) if really else a
 
 
+##############################################################################
+# Grids / score
+class GridnessScore(AggregateData):
+    '''Extract gridness score from the aggregated data'''
+    def __init__(self, space, iterList, **kw):
+       super(GridnessScore, self).__init__(space, iterList, None, **kw)
+       self._gscore = None
+
+    def _getRawData(self):
+        if self._gscore is None:
+            path = self.analysisRoot + ['gridnessScore']
+            self._gscore = self.sp.getReduction(path)
+            self._Y, self._X = computeYX(self.sp, self.iterList,
+                    self.normalizeTicks)
+        return self._gscore, self._X, self._Y
+
+    def getData(self):
+        data, X, Y = self._getRawData()
+        return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+
+        
+
+
+
+##############################################################################
+# Bumps
 class IsBump(AggregateData):
     '''Retrieve bump classification data from the space.'''
     
-    def __init__(self, space, iterList, NTrials, ignoreNaNs=False,
+    def __init__(self, space, iterList, ignoreNaNs=False,
             normalizeTicks=False):
-        super(IsBump, self).__init__(space, iterList, NTrials, ignoreNaNs,
+        super(IsBump, self).__init__(space, iterList, None, ignoreNaNs,
                 normalizeTicks)
         self._fracTotal = None
         self._X = None
@@ -251,21 +277,21 @@ class IsBump(AggregateData):
 
     def getData(self):
         data, X, Y = self._getRawData()
-        return np.nanmean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+        return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
 
 
 class IsBumpCollapsed(AggregateData):
     '''Take a list of data spaces and aggregate them and their trials (fracTotal
     data set) into one vector usable for histogram calculation.'''
 
-    def __init__(self, spaces, iterList, NTrials, ignoreNaNs=False,
+    def __init__(self, spaces, iterList, ignoreNaNs=False,
             normalizeTicks=False):
         self.spaces = spaces
-        super(IsBumpCollapsed, self).__init__(None, iterList, NTrials,
+        super(IsBumpCollapsed, self).__init__(None, iterList, None,
                 ignoreNaNs, normalizeTicks)
         self.fracList = []
         for sp in spaces:
-            self.fracList.append(IsBump(sp, iterList, NTrials, ignoreNaNs,
+            self.fracList.append(IsBump(sp, iterList, ignoreNaNs,
                 normalizeTicks))
 
 
