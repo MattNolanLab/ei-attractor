@@ -40,6 +40,7 @@ files="
     $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf
     $output_fig_dir/suppFigure_grids_vs_line_slope.pdf
     $output_fig_dir/suppFigure_grids_vs_bumps.pdf
+    $output_fig_dir/suppFigure_grids_vs_bumps_exp.pdf
     $output_fig_dir/suppFigure_bump_sweeps.pdf
     $output_fig_dir/suppFigure_line_fit_error_vs_slope.pdf
     $output_fig_dir/suppFigure_no_theta.pdf

@@ -25,6 +25,7 @@ from submitting import flagparse
 
 parser = flagparse.FlagParser()
 parser.add_flag('--scatterPlot')
+parser.add_argument('--expScatter', action='store_true')
 args = parser.parse_args()
 
 outputDir = "output_figures"
@@ -126,14 +127,16 @@ if args.scatterPlot or args.all:
     w = 0.165
     scatterPlot.plotColorbar(left=l, bottom=.85, right=l+w, top=.95)
     scatterPlot.set_titleSizes(16)
-    #for ns_idx, _ in enumerate(ps.noise_sigmas):
-    #    ax = scatterPlot.axes[ns_idx]
-    #    ax.set_xscale('custom')
-    #    ax.xaxis.set_major_locator(ti.MultipleLocator(.5))
-    #    ax.xaxis.set_minor_locator(ti.MultipleLocator(.1))
-    #    ax.set_xlim([-0.3, 1.002])
+    if args.expScatter:
+        for ns_idx, _ in enumerate(ps.noise_sigmas):
+            ax = scatterPlot.axes[ns_idx]
+            ax.set_xscale('custom')
+            ax.xaxis.set_major_locator(ti.MultipleLocator(.5))
+            ax.xaxis.set_minor_locator(ti.MultipleLocator(.1))
+            ax.set_xlim([-0.3, 1.002])
+        fname = outputDir + "/suppFigure_grids_vs_bumps_exp.pdf"
+    else:
+        fname = outputDir + "/suppFigure_grids_vs_bumps.pdf"
 
-
-    fname = outputDir + "/suppFigure_grids_vs_bumps.pdf"
     fig.savefig(fname, dpi=300)
 
