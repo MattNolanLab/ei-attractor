@@ -11,32 +11,18 @@ from matplotlib.gridspec   import GridSpec
 from matplotlib.colorbar   import make_axes
 from matplotlib.transforms import Bbox
 
-from EI_plotting          import sweeps, details, examples, rasters
+import default_settings as ds
+from EI_plotting          import sweeps, details, examples, rasters, scatter
 from EI_plotting          import aggregate as aggr
 from plotting.global_defs import globalAxesSettings, prepareLims
+from plotting.low_level   import zeroLines
 from EI_plotting.base     import NoiseDataSpaces, getNoiseDataSpaces
 from parameters           import JobTrialSpace2D
 from analysis             import clustering
 from submitting import flagparse
 
-from matplotlib import rc
-rc('pdf', fonttype=42)
-rc('mathtext', default='regular')
-
-plt.rcParams['font.size'] = 11
-
-outputDir = "panels/"
-
-NTrials=10
-iterList  = ['g_AMPA_total', 'g_GABA_total']
-
-noise_sigmas = [0, 150, 300]
+outputDir = ds.figOutputDir
 exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
-gridsDataRoot    = 'output_local/even_spacing/grids'
-bumpDataRoot     = 'output_local/even_spacing/gamma_bump'
-velDataRoot      = 'output_local/even_spacing/velocity_vertical'
-constPosDataRoot = 'output_local/even_spacing/const_position'
-shape = (31, 31)
 
 parser = flagparse.FlagParser()
 parser.add_flag('--bumpSweep')
@@ -50,13 +36,12 @@ parser.add_flag('--gridness_vs_error')
 parser.add_flag('--detailed_noise')
 parser.add_flag('--rastersFlag')
 parser.add_flag('--rates')
+parser.add_flag('--scatter_diff_fracTotal_grids')
 args = parser.parse_args()
 
+
 ###############################################################################
-roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot,
-        constPos=constPosDataRoot)
-ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
-constPosPS = getNoiseDataSpaces(roots.constPos, noise_sigmas, shape)
+ps = ds.getDefaultParamSpaces()
 
 exW = 4
 exH = 2
@@ -112,7 +97,7 @@ if args.bumpSweep or args.all:
             kw['yticks'] = False
         if ns_idx == 2:
             kw['cbar'] = True
-        data = aggr.AggregateBumpReciprocal(ps.bumpGamma[ns_idx], iterList,
+        data = aggr.AggregateBumpReciprocal(ps.bumpGamma[ns_idx], ds.iterList,
                 bumpNTrials, tStart=bumpTStart)
         _, _, cax = sweeps.plotSweep(data,
                 noise_sigma=noise_sigma,
@@ -153,7 +138,7 @@ if args.bumpDriftSweep or args.all:
             kw['cbar'] = True
         data = aggr.BumpDriftAtTime(bumpDriftT, 
                 ps.bumpGamma[ns_idx],
-                iterList,
+                ds.iterList,
                 bumpNTrials,
                 tStart=bumpDriftTStart)
         _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
@@ -194,7 +179,7 @@ if args.bumpDiffAtInitSweep or args.all:
             kw['cbar'] = True
         data = aggr.BumpDifferenceAtTime(diffStartPos, bumpDiffT,
                 ps.bumpGamma[ns_idx],
-                iterList,
+                ds.iterList,
                 bumpNTrials)
         _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
                 ax=ax,
@@ -236,7 +221,7 @@ if args.bumpDiffResetSweep or args.all:
             kw['cbar'] = True
         data = aggr.BumpAvgDifferenceFromPos(bumpResetStartPos,
                 constPosPS[ns_idx],
-                iterList,
+                ds.iterList,
                 constPosNTrials,
                 tstart=bumpResetTStart)
         _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
@@ -274,7 +259,7 @@ if args.bumpExamples or args.all:
                     types = bumpExampleTypes + ['rateMap_i']
                 fname = fnameTemplate.format(noise_sigma, idx)
                 plt.figure(figsize=exampleFigSize)
-                gs = examples.plotOneBumpExample(ps.bumpGamma[ns_idx], rc, iterList,
+                gs = examples.plotOneBumpExample(ps.bumpGamma[ns_idx], rc, ds.iterList,
                         types,
                         exIdx=exampleIdx[ns_idx],
                         trialNum=bumpTrialNum)
@@ -313,8 +298,8 @@ def createSweepFig(name=None):
 if args.velSweep or args.all:
     # noise_sigma = 0 pA
     fig, ax = createSweepFig()
-    _, ax, cax = sweeps.plotVelStdSweep(ps.v[0], iterList,
-            noise_sigmas[0],
+    _, ax, cax = sweeps.plotVelStdSweep(ps.v[0], ds.iterList,
+            ps.noise_sigmas[0],
             ax=ax,
             sigmaTitle=False,
             cbar=False, cbar_kw=std_cbar_kw,
@@ -325,8 +310,8 @@ if args.velSweep or args.all:
 
     # noise_sigma = 150 pA
     fig, ax = createSweepFig()
-    _, ax, cax = sweeps.plotVelStdSweep(ps.v[1], iterList,
-            noise_sigmas[1],
+    _, ax, cax = sweeps.plotVelStdSweep(ps.v[1], ds.iterList,
+            ps.noise_sigmas[1],
             ax=ax,
             ylabel='', yticks=False,
             sigmaTitle=False,
@@ -338,8 +323,8 @@ if args.velSweep or args.all:
 
     # noise_sigma = 300 pA
     fig, ax = createSweepFig()
-    _, ax, cax = sweeps.plotVelStdSweep(ps.v[2], iterList,
-            noise_sigmas[2],
+    _, ax, cax = sweeps.plotVelStdSweep(ps.v[2], ds.iterList,
+            ps.noise_sigmas[2],
             ax=ax,
             ylabel='', yticks=False,
             sigmaTitle=False,
@@ -347,14 +332,6 @@ if args.velSweep or args.all:
             vmin=std_vmin, vmax=std_vmax)
     fname = outputDir + "/bumps_vel_std_sweeps300.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
-
-
-#if args.gridness_vs_error or args.all:
-#    fig = plt.figure(figsize=(3.4, 2.5))
-#    plotGridnessVsFitErr(ps.grids, ps.v, range(NTrials), maxErr=None)
-#    fig.tight_layout()
-#    fname = outputDir + "/bumps_gridness_vs_error.pdf"
-#    plt.savefig(fname, dpi=300, transparent=True)
 
 
 ##############################################################################
@@ -515,3 +492,52 @@ if args.rates or args.all:
 
 
 
+##############################################################################
+# Correlate (difference between) isBump and gridness score.
+corrDiffFigsize = (4, 5)
+corrDiffXLabel = "$\Delta$ P(bumps)"
+corrDiffYLabel = '$\Delta$ Gridness score'
+
+def setCorrAxes(ax):
+    ax.set_xlim(prepareLims([-1, 1]))
+    ax.set_ylim(prepareLims([-1.5, 1.5]))
+    ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+    ax.xaxis.set_minor_locator(ti.MultipleLocator(0.25))
+    ax.yaxis.set_minor_locator(ti.MultipleLocator(0.25))
+    zeroLines(ax)
+
+
+if args.scatter_diff_fracTotal_grids or args.all:
+    fig = plt.Figure(corrDiffFigsize)
+    ax = fig.add_subplot(111)
+
+    isBumpData = []
+    gridData = []
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        isBumpData.append(aggr.IsBump(ps.bumpGamma[ns_idx], ds.iterList,
+            ignoreNaNs=True))
+        gridData.append(aggr.GridnessScore(ps.grids[ns_idx], ds.iterList,
+            ignoreNaNs=True))
+
+    which = 0
+    scatterPlot = scatter.DiffScatterPlot(
+            isBumpData, gridData, None, None, None, None, None, which,
+            s=15,
+            linewidth=0.3,
+            edgecolor='white',
+            xlabel = corrDiffXLabel,
+            ylabel = corrDiffYLabel,
+            sigmaTitle=False,
+            ignoreNaNs=True,
+            cmap='Set1',
+            ax=ax)
+
+    scatterPlot.plot()
+    #ax.set_title('Difference\n $\sigma_{noise} = 150\ -\ \sigma_{noise} = 0$ pA')
+    setCorrAxes(ax)
+
+    fig.tight_layout()
+    fname = outputDir + "/bumps_scatter_diff_bumpFracTotal_gscore.pdf"
+    fig.savefig(fname, dpi=300, transparent=transparent)
+    plt.close()

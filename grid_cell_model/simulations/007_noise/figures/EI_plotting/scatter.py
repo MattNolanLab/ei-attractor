@@ -253,15 +253,21 @@ class DiffScatterPlot(RawScatterPlot):
 
         ignoreNaNs  = kw.pop('ignoreNaNs', False)
 
-        data1, _, _ = aggr.collapseNoise(self.spaces1, iterList, self.types1,
-                self.NTrials1, ignoreNaNs=ignoreNaNs)
-        data2, _, _ = aggr.collapseNoise(self.spaces2, iterList, self.types2,
-                self.NTrials2, ignoreNaNs=ignoreNaNs)
+        if isinstance(spaces1[0], aggr.AggregateData):
+            data1, _, _ = aggr.collapseNoiseAggregated(spaces1)
+            data2, _, _ = aggr.collapseNoiseAggregated(spaces2)
+            templSpace, _, _ = spaces1[0].getData()
+        else:
+            data1, _, _ = aggr.collapseNoise(self.spaces1, iterList,
+                    self.types1, self.NTrials1, ignoreNaNs=ignoreNaNs)
+            data2, _, _ = aggr.collapseNoise(self.spaces2, iterList,
+                    self.types2, self.NTrials2, ignoreNaNs=ignoreNaNs)
+            templSpace = spaces1[0]
 
         self.diffData1 = np.diff(data1, axis=0)
         self.diffData2 = np.diff(data2, axis=0)
 
         X = self.diffData1[self.which, :]
         Y = self.diffData2[self.which, :]
-        RawScatterPlot.__init__(self, self.spaces1[0], X, Y, **kw)
+        RawScatterPlot.__init__(self, templSpace, X, Y, **kw)
 

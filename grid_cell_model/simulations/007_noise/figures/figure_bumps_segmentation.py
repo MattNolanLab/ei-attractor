@@ -239,7 +239,7 @@ if args.scatter_diff_bump_grids_seg or args.all:
 
     fig.tight_layout()
     fname = outputDir + "/bumps_scatter_diff_bump_grids_segments.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
+    fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
 
@@ -270,7 +270,7 @@ if args.scatter_diff_bump_grids or args.all:
 
     fig.tight_layout()
     fname = outputDir + "/bumps_scatter_diff_bump_grids.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
+    fig.savefig(fname, dpi=300, transparent=True)
     plt.close()
 
     fig = plt.figure(figsize=scatterColorFigSize)
