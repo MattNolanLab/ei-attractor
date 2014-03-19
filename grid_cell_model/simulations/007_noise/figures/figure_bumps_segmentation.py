@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
+import default_settings as ds
 from EI_plotting      import sweeps, segmentation, scatter
 from EI_plotting      import aggregate as aggr
 from EI_plotting.base import NoiseDataSpaces
@@ -16,27 +17,14 @@ from plotting.global_defs import prepareLims
 from analysis         import clustering
 from submitting import flagparse
 
-from matplotlib import rc
-rc('pdf', fonttype=42)
-rc('mathtext', default='regular')
-
-plt.rcParams['font.size'] = 11
-
-outputDir = "panels/"
+outputDir = ds.figOutputDir
 
 gridTypes = ['grids', 'gridnessScore']
 bumpTypes = ['bump', 'sigma']
 gridNTrials = 3
 bumpNTrials = 5
 
-iterList  = ['g_AMPA_total', 'g_GABA_total']
-
-noise_sigmas   = [0, 150, 300]
 exampleIdx     = [(1, 22), (1, 22), (1, 22)] # (row, col)
-bumpDataRoot   = 'output_local/even_spacing/gamma_bump'
-velDataRoot    = None
-gridsDataRoot  = 'output_local/even_spacing/grids'
-shape = (31, 31)
 
 parser = flagparse.FlagParser()
 parser.add_flag('-a', '--diff_all')
@@ -45,12 +33,7 @@ parser.add_flag('--scatter_diff_bump_grids')
 parser.add_flag('--scatter_diff_bump_grids_seg')
 args = parser.parse_args()
 
-
-##############################################################################
-roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
-ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
-
-
+ps = ds.getDefaultParamSpaces()
 
 
 ##############################################################################
@@ -86,7 +69,7 @@ if args.diff_all or args.all:
 
     data = []
     for ns_idx, _ in enumerate(ps.noise_sigmas):
-        d, _, _ = aggr.aggregateType(ps.bumpGamma[ns_idx], iterList, bumpTypes,
+        d, _, _ = aggr.aggregateType(ps.bumpGamma[ns_idx], ds.iterList, bumpTypes,
                 bumpNTrials, ignoreNaNs=False)
         data.append(d)
 
@@ -152,7 +135,6 @@ if args.diff_all or args.all:
 ##############################################################################
 # Parameter sweep of the difference between noise_150 and noise_0
 exampleRC = ( (5, 15), (15, 5) )
-bumpTStart = 500.0
 
 ann0 = dict(
         txt='b',
@@ -167,13 +149,7 @@ ann1 = dict(
 ann = [ann0, ann1]
 
 
-sweepFigSize = (3.7, 2.6)
-sweepLeft   = 0.08
-sweepBottom = 0.2
-sweepRight  = 0.8
-sweepTop    = 0.85
-transparent  = True
-sigmaBumpText = '$\Delta_{150 - 0}[\sigma_{bump}^{-1}\ (neurons^{-1})]$'
+sigmaBumpText = '$\Delta_{150 - 0}[P(bumps)]$'
 bumpDiff_cbar_kw = dict(
         label       = sigmaBumpText,
         location    = 'right',
@@ -185,24 +161,23 @@ bumpDiff_cbar_kw = dict(
 if args.diff_sweep or args.all:
     dataList = []
     for ns_idx, _ in enumerate(ps.noise_sigmas):
-        data = aggr.AggregateBumpReciprocal(ps.bumpGamma[ns_idx], iterList,
-                bumpNTrials, tStart=bumpTStart)
+        data = aggr.IsBump(ps.bumpGamma[ns_idx], ds.iterList, ignoreNaNs=True)
         dataList.append(data)
 
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas[0:-1]):
-        fig = plt.figure(figsize=sweepFigSize)
-        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-            sweepTop))
+        fig, ax = ds.getDefaultSweepFig()
 
         which = ns_idx
-        sweeps.plotDiffTrial(dataList, None, which, None, None,
+        _, ax, cax = sweeps.plotDiffTrial(dataList, None, which, None, None,
                 ax=ax,
                 cbar=True, cbar_kw=bumpDiff_cbar_kw,
                 symmetricLimits=True,
                 annotations=ann,
                 cmap='RdBu_r')
+        #cax.yaxis.set_major_locator(ti.MultipleLocator(.9))
+        #cax.yaxis.set_minor_locator(ti.MultipleLocator(.45))
 
-        fname = outputDir + "/bumps_diff_sweep{0}.pdf"
+        fname = outputDir + "/bumps_isBumpFracTotal_diff_sweeps{0}.pdf"
         plt.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
         plt.close()
 
@@ -238,7 +213,7 @@ if args.scatter_diff_bump_grids_seg or args.all:
 
     which = 0
     scatterPlot = scatter.DiffScatterPlot(
-            ps.bumpGamma, ps.grids, bumpTypes, gridTypes, iterList,
+            ps.bumpGamma, ps.grids, bumpTypes, gridTypes, ds.iterList,
             bumpNTrials, gridNTrials, which,
             s=15,
             linewidth=0.3,
@@ -278,7 +253,7 @@ if args.scatter_diff_bump_grids or args.all:
 
     which = 0
     scatterPlot = scatter.DiffScatterPlot(
-            ps.bumpGamma, ps.grids, bumpTypes, gridTypes, iterList,
+            ps.bumpGamma, ps.grids, bumpTypes, gridTypes, ds.iterList,
             bumpNTrials, gridNTrials, which,
             s=15,
             linewidth=0.3,
