@@ -27,7 +27,7 @@ import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 from copy import deepcopy
 
-
+import default_settings as ds
 from EI_plotting          import sweeps, examples, details, scatter
 from EI_plotting          import aggregate as aggr
 from parameters           import JobTrialSpace2D, DataSpace
@@ -35,28 +35,11 @@ from plotting.global_defs import globalAxesSettings, prepareLims
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
 from submitting import flagparse
 
-# Other
-from matplotlib import rc
-rc('pdf', fonttype=42)
-rc('mathtext', default='regular')
 
-plt.rcParams['font.size'] = 11
+outputDir = ds.figOutputDir
+NTrials = 5
 
 ###############################################################################
-cFreq = 'blue'
-cAC = 'green'
-cCount = 'red'
-
-outputDir = "panels"
-NTrials = 5
-iterList  = ['g_AMPA_total', 'g_GABA_total']
-
-noise_sigmas  = [0, 150, 300]
-exampleIdx    = [(0, 0), (0, 0), (0, 0)] # (row, col)
-bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
-velDataRoot   = None
-gridsDataRoot = 'output_local/even_spacing/grids'
-shape    = (31, 31)
 
 parser = flagparse.FlagParser()
 parser.add_flag('--gammaSweep')
@@ -67,6 +50,8 @@ parser.add_flag('--examplesFlag')
 parser.add_flag('--scatterPlot')
 parser.add_flag('--scatterPlot_all')
 args = parser.parse_args()
+
+ps = ds.getDefaultParamSpaces()
 
 ###############################################################################
 
@@ -197,24 +182,11 @@ def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
             ha='right')
     
 
-
-
-
-
 ###############################################################################
-roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
-ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
+
 
 # gamma example rows and columns
 exampleRC = ( (5, 15), (15, 5) )
-
-
-sweepFigSize = (2.8, 2)
-sweepLeft   = 0.15
-sweepBottom = 0.2
-sweepRight  = 0.87
-sweepTop    = 0.85
-transparent  = True
 
 AC_vmin = -0.09
 AC_vmax = 0.675
@@ -225,22 +197,24 @@ ACVarList = ['acVal']
 FVarList  = ['freq']
 
 AC_cbar_kw = dict(
-        orientation='vertical',
+        location='left',
         ticks=ti.MultipleLocator(0.3),
         fraction=0.25,
         shrink=0.8,
-        pad=0.05,
+        pad=.2,
         labelpad=8,
-        label='$1^{st}$ autocorrelation\npeak')
+        label='$1^{st}$ autocorrelation\npeak',
+        rasterized=True)
 F_cbar_kw = dict(
-        orientation='vertical',
+        location='left',
         ticks=ti.MultipleLocator(30),
         fraction=0.25,
         shrink=0.8,
-        pad=0.05,
+        pad=.2,
         labelpad=8,
         label='Oscillation\nfrequency (Hz)',
-        extend='max', extendfrac=0.1)
+        extend='max', extendfrac=0.1,
+        rasterized=True)
 
 
 ann_color = 'white'
@@ -259,101 +233,45 @@ annF = [deepcopy(ann0), deepcopy(ann1)]
 
 
 if args.gammaSweep or args.all:
-    # noise_sigma = 0 pA
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    sweeps.plotACTrial(ps.bumpGamma[0], ACVarList, iterList,
-            noise_sigma=ps.noise_sigmas[0],
-            ax=ax,
-            xlabel='', xticks=False,
-            trialNumList=xrange(NTrials),
-            cbar=False, cbar_kw=AC_cbar_kw,
-            vmin=AC_vmin, vmax=AC_vmax,
-            annotations=ann)
-    fname = outputDir + "/gamma_sweeps0.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        kw = dict(cbar=False)
+        if ns_idx == 0:
+            kw['cbar'] = True
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+
+        # Gamma power
+        fig, ax = ds.getDefaultSweepFig(scale=0.9, colorBarPos='left')
+        sweeps.plotACTrial(ps.bumpGamma[ns_idx], ACVarList, ds.iterList,
+                noise_sigma=ps.noise_sigmas[ns_idx],
+                ax=ax,
+                xlabel='', xticks=False,
+                trialNumList=xrange(NTrials),
+                cbar_kw=AC_cbar_kw,
+                vmin=AC_vmin, vmax=AC_vmax,
+                annotations=ann,
+                **kw)
+        fname = outputDir + "/gamma_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                transparent=True)
         
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    sweeps.plotACTrial(ps.bumpGamma[0], FVarList, iterList,
-            noise_sigma=ps.noise_sigmas[0],
-            ax=ax,
-            trialNumList=xrange(NTrials),
-            sigmaTitle=False,
-            cbar=False, cbar_kw=F_cbar_kw,
-            vmin=F_vmin, vmax=F_vmax,
-            annotations=annF)
-    fname = outputDir + "/gamma_freq_sweeps0.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
+        # Gamma frequency
+        fig, ax = ds.getDefaultSweepFig(scale=0.9, colorBarPos='left')
+        sweeps.plotACTrial(ps.bumpGamma[ns_idx], FVarList, ds.iterList,
+                noise_sigma=ps.noise_sigmas[ns_idx],
+                ax=ax,
+                trialNumList=xrange(NTrials),
+                sigmaTitle=False,
+                cbar_kw=F_cbar_kw,
+                vmin=F_vmin, vmax=F_vmax,
+                annotations=annF,
+                **kw)
+        fname = outputDir + "/gamma_freq_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                transparent=True)
         
 
-    # noise_sigma = 150 pA
-    for a in ann:
-        a['color'] = 'black'
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    sweeps.plotACTrial(ps.bumpGamma[1], ACVarList, iterList,
-            noise_sigma=ps.noise_sigmas[1],
-            ax=ax,
-            xlabel='', xticks=False,
-            trialNumList=xrange(NTrials),
-            ylabel='', yticks=False,
-            cbar=False, cbar_kw=AC_cbar_kw,
-            vmin=AC_vmin, vmax=AC_vmax,
-            annotations=ann)
-    fname = outputDir + "/gamma_sweeps150.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    sweeps.plotACTrial(ps.bumpGamma[1], FVarList, iterList,
-            noise_sigma=ps.noise_sigmas[1],
-            ax=ax,
-            trialNumList=xrange(NTrials),
-            ylabel='', yticks=False,
-            sigmaTitle=False,
-            cbar=False, cbar_kw=F_cbar_kw,
-            vmin=F_vmin, vmax=F_vmax,
-            annotations=annF)
-    fname = outputDir + "/gamma_freq_sweeps150.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
-
-    # noise_sigma = 300 pA
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    sweeps.plotACTrial(ps.bumpGamma[2], ACVarList, iterList,
-            noise_sigma=ps.noise_sigmas[2],
-            ax=ax,
-            xlabel='', xticks=False,
-            trialNumList=xrange(NTrials),
-            ylabel='', yticks=False,
-            cbar=True, cbar_kw=AC_cbar_kw,
-            vmin=AC_vmin, vmax=AC_vmax,
-            annotations=ann)
-    fname = outputDir + "/gamma_sweeps300.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
-    fig = plt.figure(figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    sweeps.plotACTrial(ps.bumpGamma[2], FVarList, iterList,
-            noise_sigma=ps.noise_sigmas[2],
-            ax=ax,
-            sigmaTitle=False,
-            trialNumList=xrange(NTrials),
-            ylabel='', yticks=False,
-            cbar=True, cbar_kw=F_cbar_kw,
-            vmin=F_vmin, vmax=F_vmax,
-            annotations=annF)
-    fname = outputDir + "/gamma_freq_sweeps300.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
-        
 
 
 if args.threshold or args.all:
@@ -465,7 +383,7 @@ if args.examplesFlag or args.all:
                 exampleRight, exampleTop))
             nsAnn = None
             xscale_kw = None
-            if (idx == 0):
+            if (idx == 1):
                 nsAnn = ns
                 if (nsIdx == len(ps.noise_sigmas)-1):
                     xscale_kw = example_xscale_kw
@@ -513,7 +431,7 @@ if args.scatterPlot or args.all:
 
         scatterPlot = scatter.ScatterPlot(
                 ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
-                typesGrids, iterList, NTrialsGamma, NTrialsGrids,
+                typesGrids, ds.iterList, NTrialsGamma, NTrialsGrids,
                 s=15,
                 linewidth=0.3,
                 color2D=True,
@@ -545,9 +463,8 @@ if args.scatterPlot or args.all:
 # Scatter plot of gridness score vs. gamma power 
 # All in one plot
 if args.scatterPlot_all or args.all:
-    fig = plt.figure(figsize=scatterFigSize)
-    ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
-        scatterTop))
+    fig = plt.figure(figsize=(5, 3.2))
+    ax = fig.gca()
 
     NTrialsGamma = 5
     NTrialsGrids = 3
@@ -560,7 +477,7 @@ if args.scatterPlot_all or args.all:
         color = scatterColors[ns_idx]
         scatterPlot = scatter.ScatterPlot(
                 ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
-                typesGrids, iterList, NTrialsGamma, NTrialsGrids,
+                typesGrids, ds.iterList, NTrialsGamma, NTrialsGrids,
                 c=color,
                 s=15,
                 linewidth=0.3,
@@ -574,6 +491,7 @@ if args.scatterPlot_all or args.all:
             numpoints=1, title='$\sigma$ (pA)')
     plt.setp(l.get_title(), size='small')
 
+    fig.tight_layout(pad=3)
     fname = outputDir + "/gamma_scatter_gamma_grids_all.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
+    fig.savefig(fname, dpi=300, transparent=True)
 
