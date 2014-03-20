@@ -37,6 +37,8 @@ parser.add_flag('--detailed_noise')
 parser.add_flag('--rastersFlag')
 parser.add_flag('--rates')
 parser.add_flag('--scatter_diff_fracTotal_grids')
+parser.add_flag('--fracTotalSweepAnn')
+parser.add_flag('--isBump')
 args = parser.parse_args()
 
 
@@ -541,3 +543,99 @@ if args.scatter_diff_fracTotal_grids or args.all:
     fname = outputDir + "/bumps_scatter_diff_bumpFracTotal_gscore.pdf"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
+    
+
+
+##############################################################################
+# Bump formation sweeps
+bump_vmin = 0
+bump_vmax = 1.
+fracTotalText = 'P(bumps)'
+
+ann0_0 = dict(
+        txt='a',
+        rc=(15, 5),
+        xytext_offset=(.5, 2),
+        color='white')
+ann0_1 = dict(
+        txt='b',
+        rc=(5, 15),
+        xytext_offset=(1.5, 1),
+        color='white')
+
+ann150_0 = dict(
+        txt='c',
+        rc=(5, 15),
+        xytext_offset=(1.5, 1),
+        color='white')
+
+ann300_0 = dict(
+        txt='d',
+        rc=(15, 5),
+        xytext_offset=(1.5, 1),
+        color='white')
+ann300_1 = dict(
+        txt='e',
+        rc=(5, 15),
+        xytext_offset=(1.5, 1),
+        color='white')
+
+
+ann0   = [  ann0_0,   ann0_1]
+ann150 = [ann150_0]
+ann300 = [ann300_0, ann300_1]
+ann = [ann0, ann150, ann300]
+
+sweepAnn_cbar_kw = dict(
+        label       = fracTotalText,
+        location    = 'left',
+        shrink      = 0.8,
+        pad         = 0.25,
+        ticks       = ti.MultipleLocator(0.5),
+        rasterized  = True)
+if args.fracTotalSweepAnn or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig, ax = ds.getDefaultSweepFig(scale=0.8, colorBarPos='left')
+        kw = dict(cbar=False)
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        if ns_idx == 0:
+            kw['cbar'] = True
+        data = aggr.IsBump(ps.bumpGamma[ns_idx], ds.iterList, ignoreNaNs=True)
+        _, _, cax = sweeps.plotSweep(data,
+                noise_sigma=noise_sigma,
+                xlabel='', xticks=False,
+                ax=ax,
+                cbar_kw=sweepAnn_cbar_kw,
+                vmin=bump_vmin, vmax=bump_vmax,
+                annotations=ann[ns_idx],
+                **kw)
+        fname = outputDir + "/bumps_mainFig_isBumpFracTotal_sweeps_annotated{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
+
+##############################################################################
+# Bump formation, thresholded
+bumpThreshold = 0.95
+if args.isBump or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig, ax = ds.getDefaultSweepFig(scale=.8, colorBarPos='left' )
+        kw = dict(cbar=False, sigmaTitle=False)
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        data = aggr.BumpFormationFilter(bumpThreshold, ps.bumpGamma[ns_idx],
+                ds.iterList, ignoreNaNs=True)
+        _, _, cax = sweeps.plotSweep(data,
+                noise_sigma=noise_sigma,
+                ax=ax,
+                cbar_kw=sweepAnn_cbar_kw,
+                vmin=bump_vmin, vmax=bump_vmax,
+                annotations=ann[ns_idx],
+                **kw)
+        fname = outputDir + "/bumps_mainFig_isBump_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+

@@ -12,6 +12,8 @@ from matplotlib.pyplot   import gca, axis, colorbar
 from matplotlib.ticker   import MaxNLocator, AutoMinorLocator, LinearLocator
 from matplotlib.colorbar import make_axes
 
+from data_storage.sim_models import ei
+from analysis import spikes as aspikes
 from parameters.param_space import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings
 from plotting.low_level   import xScaleBar
@@ -216,5 +218,21 @@ def filterData(stackedData, threshold):
             missingIndexes.append(dataIdx)
     return stackedData, FilteringResult(filteredIndexes, retainedIndexes,
             missingIndexes)
+
+
+##############################################################################
+# Data extraction
+def extractRateMaps(ps, r, c, trialNum):
+    data = ps[r][c][trialNum].data
+    tStart = 0.
+    win_dt = 125.      # ms
+    tEnd = ei.getOption(data, 'time') - win_dt
+    winLen = 250.0 # ms
+    Ne_x = ei.getNetParam(data, 'Ne_x')
+    Ne_y = ei.getNetParam(data, 'Ne_y')
+    mon = data['spikeMon_e']
+    senders, times = ei.extractSpikes(mon)
+    pop = aspikes.TorusPopulationSpikes(senders, times, (Ne_x, Ne_y))
+    return pop.slidingFiringRate(tStart, tEnd, win_dt, winLen)
 
 
