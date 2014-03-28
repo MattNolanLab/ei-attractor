@@ -68,6 +68,7 @@ for trial_idx in range(o.ntrials):
             ei_net.simulate(o.time, printTime=o.printTime)
             ei_net.endSimulation()
             trialOut['IvelData'].append(ei_net.getMinimalSaveData(ispikes=o.ispikes))
+            d.flush()
             constrT, simT, totalT = ei_net.printTimes()
             overalT += totalT
         trialOut['IvelVec'] = np.arange(.0, o.IvelMax + o.dIvel, o.dIvel)
