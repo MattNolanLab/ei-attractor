@@ -42,7 +42,7 @@ for noise_sigma in noise_sigma_all:
     p['nthreads'] = 1
     p['ntrials']  = 10
 
-    p['IvelMax']  = 100
+    p['IvelMax']  = 200
     p['dIvel']    = 10
 
     p['verbosity'] = 'DEBUG'
