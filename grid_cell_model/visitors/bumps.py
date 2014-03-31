@@ -432,7 +432,6 @@ class VelocityGainEstimator(BumpVisitor):
     def __init__(self,
             bumpSpeedMax,
             forceUpdate=False,
-            printSlope=False,
             outputRoot=defaults.analysisRoot,
             readme=''):
         super(VelocityGainEstimator, self).__init__(
@@ -445,7 +444,6 @@ class VelocityGainEstimator(BumpVisitor):
                 None)
         assert(bumpSpeedMax is not None)
         self.bumpSpeedMax = bumpSpeedMax # cm/s
-        self.printSlope = printSlope
 
 
     def visitDictDataSet(self, ds, **kw):

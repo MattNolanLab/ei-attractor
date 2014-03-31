@@ -72,7 +72,7 @@ elif (o.type == "velocity"):
     speedEstimator = bumps.SpeedEstimator(
             forceUpdate=forceUpdate, axis='vertical', win_dt=50.0)
     gainEstimator = bumps.VelocityGainEstimator(o.bumpSpeedMax,
-            forceUpdate=forceUpdate, printSlope=True)
+                                                forceUpdate=forceUpdate)
     speedPlotter = bumps.SpeedPlotter()
 
     sp.visit(speedEstimator, trialList='all-at-once')
