@@ -432,8 +432,16 @@ class VelocityGainEstimator(BumpVisitor):
     def __init__(self,
             bumpSpeedMax,
             forceUpdate=False,
+            maxFitRangeIdx=None,
             outputRoot=defaults.analysisRoot,
             readme=''):
+        '''
+        Parameters
+        ----------
+        maxFitRangeIdx : int
+            Maximal index to consider when fitting lines to data. If this is
+            larger than the total range, it will be ignored.
+        '''
         super(VelocityGainEstimator, self).__init__(
                 forceUpdate,
                 readme,
@@ -443,7 +451,9 @@ class VelocityGainEstimator(BumpVisitor):
                 None,
                 None)
         assert(bumpSpeedMax is not None)
+        assert(maxFitRangeIdx is None or maxFitRangeIdx > 0)
         self.bumpSpeedMax = bumpSpeedMax # cm/s
+        self.maxFitRangeIdx = maxFitRangeIdx
 
 
     def visitDictDataSet(self, ds, **kw):
@@ -460,8 +470,14 @@ class VelocityGainEstimator(BumpVisitor):
             velGainLogger.warn('Something wrong: len(trials) == 0. Not plotting data')
             return
 
+        if self.maxFitRangeIdx is not None:
+            maxFitRange = min(len(IvelVec) - 1, self.maxFitRangeIdx)
+            velGainLogger.info("Fitting only %f - %f pA range", IvelVec[0],
+                    IvelVec[maxFitRange])
+        else:
+            maxFitRange = len(IvelVec)
+
         # Fit a line (nrns/s/pA)
-        # results
         line       = None
         lineFitErr = None
         slope      = None
@@ -473,7 +489,8 @@ class VelocityGainEstimator(BumpVisitor):
         slope_all      = []
         fitIvelVec_all = []
         maxRange_all   = []
-        for fitRange in xrange(1, len(IvelVec)):
+
+        for fitRange in xrange(1, maxFitRange + 1):
             velGainLogger.info("fitRange: {0}".format(fitRange))
             newLine, newSlope, newErr, newIvelVecRange = \
                     fitBumpSpeed(IvelVec, slopes, fitRange)
