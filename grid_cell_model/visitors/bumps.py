@@ -4,7 +4,7 @@ Visitors related to bumps.
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from scipy.optimize import leastsq
-from os.path        import splitext
+import os
 import matplotlib.pyplot as plt
 
 import analysis.spikes as aspikes
@@ -368,10 +368,20 @@ def plotVelocity(IvelVec, slopes, ax):
 
 class SpeedPlotter(DictDSVisitor):
     def __init__(self,
+                 rootDir=None,
                  plotFittedLine=True,
                  readme=''):
+        '''
+        Parameters
+        ----------
+        rootDir : str
+            Root output directory where to save the image. It will be a
+            subdirectory of where the data is located.
+        '''
+        self.rootDir = rootDir
         self.plotFittedLine = plotFittedLine
         self.readme = readme
+
 
     def visitDictDataSet(self, ds, **kw):
         data = ds.data
@@ -401,10 +411,17 @@ class SpeedPlotter(DictDSVisitor):
 
         ax.legend(leg, loc='best')
         
-        fileName = splitext(kw['fileName'])[0] + '.pdf'
-        fig.savefig(fileName)
+        dataRootDir, dataFileName = os.path.split(kw['fileName'])
+        figDir = dataRootDir + "/"
+        if self.rootDir is not None:
+            figDir += self.rootDir
+            if not os.path.exists(figDir):
+                os.makedirs(figDir)
 
-
+        figFileName = os.path.splitext(dataFileName)[0] + '.pdf'
+        figPath = "{0}/{1}".format(figDir, figFileName)
+        speedPlotLogger.info("Saving figure to '{0}'".format(figPath))
+        fig.savefig(figPath)
 
 
 class VelocityGainEstimator(BumpVisitor):
