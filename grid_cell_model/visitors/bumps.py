@@ -5,6 +5,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 from scipy.optimize import leastsq
 from os.path        import splitext
+import matplotlib.pyplot as plt
 
 import analysis.spikes as aspikes
 import analysis.image as image
@@ -16,12 +17,13 @@ from analysis.image   import Position2D, fitGaussianBumpTT
 from . import defaults
 
 import logging
-logger = logging.getLogger(__name__)
-speedLogger = getClassLogger('SpeedEstimator', __name__)
-bumpVelLogger = getClassLogger('BumpVelocityVisitor', __name__)
+logger          = logging.getLogger(__name__)
+speedLogger     = getClassLogger('SpeedEstimator', __name__)
+speedPlotLogger = getClassLogger('SpeedPlotter', __name__)
+velGainLogger   = getClassLogger('VelocityGainEstimator', __name__)
 
 
-__all__ = ['BumpFittingVisitor', 'BumpVelocityVisitor']
+__all__ = ['BumpFittingVisitor', 'VelocityGainEstimator']
 
 class BumpVisitor(DictDSVisitor):
     __meta__ = ABCMeta
@@ -348,8 +350,64 @@ class SpeedEstimator(BumpVisitor):
         np.set_printoptions(**printoptions_orig)
 
 
+def plotVelocity(IvelVec, slopes, ax):
+    # Plot the estimated bump velocities (nrns/s)
+    avgSlope    = np.nanmean(slopes, axis = 0)
+    nTrials     = slopes.shape[0]
+    stdErrSlope = np.nanstd(slopes, axis  = 0) / np.sqrt(nTrials)
 
-class BumpVelocityVisitor(BumpVisitor):
+    ax.errorbar(IvelVec, avgSlope, stdErrSlope, fmt='o-')
+    ax.plot(IvelVec, slopes.T, 'o', color='blue', alpha=0.4)
+    ax.set_xlabel('Velocity current (pA)')
+    ax.set_ylabel('Bump velocity (neurons/s)')
+
+    leg = ['Average bump speed', 'Estimated bump speed']
+
+    return leg
+
+
+class SpeedPlotter(DictDSVisitor):
+    def __init__(self,
+                 plotFittedLine=True,
+                 readme=''):
+        self.plotFittedLine = plotFittedLine
+        self.readme = readme
+
+    def visitDictDataSet(self, ds, **kw):
+        data = ds.data
+        trials = data['trials']
+        IvelVec = trials[0]['IvelVec'] # All the same
+        a      = data[defaults.analysisRoot]
+        slopes = a['bumpVelAll']
+        
+
+        if 'fileName' not in kw.keys():
+            msg = 'Did not receive the fileName as a keyword argument.'
+            velGainLogger.warn(msg)
+            return
+
+        speedPlotLogger.info("Plotting the velocity points")
+        fig = plt.figure()
+        ax = fig.gca()
+        leg = plotVelocity(IvelVec, slopes, ax)
+
+        if self.plotFittedLine:
+            speedPlotLogger.info("Plotting the fitted line")
+            ax.plot(a['fitIvelVec'], a['lineFitLine'], 'o-')
+            t = "Line fit slope: {0:.3f} nrns/s/pA, error: {1:.3f} " + \
+                "neurons/s (norm)"
+            ax.set_title(t.format(a['lineFitSlope'], np.sum(a['lineFitErr'])))
+            leg.append('Line fit')
+
+        ax.legend(leg, loc='best')
+        
+        fileName = splitext(kw['fileName'])[0] + '.pdf'
+        fig.savefig(fileName)
+
+
+
+
+class VelocityGainEstimator(BumpVisitor):
     '''
     A visitor that estimates the relationship between injected velocity current
     and bump speed.
@@ -360,7 +418,7 @@ class BumpVelocityVisitor(BumpVisitor):
             printSlope=False,
             outputRoot=defaults.analysisRoot,
             readme=''):
-        super(BumpVelocityVisitor, self).__init__(
+        super(VelocityGainEstimator, self).__init__(
                 forceUpdate,
                 readme,
                 outputRoot,
@@ -368,10 +426,10 @@ class BumpVelocityVisitor(BumpVisitor):
                 None,
                 None,
                 None)
+        assert(bumpSpeedMax is not None)
         self.bumpSpeedMax = bumpSpeedMax # cm/s
         self.printSlope = printSlope
 
-        assert(self.bumpSpeedMax is not None)
 
     def visitDictDataSet(self, ds, **kw):
         '''
@@ -380,96 +438,69 @@ class BumpVelocityVisitor(BumpVisitor):
         data = ds.data
         trials = data['trials']
         slopes = data[defaults.analysisRoot]['bumpVelAll']
+        IvelVec = trials[0]['IvelVec'] # All the same
 
-        if (self.printSlope and 'fileName' not in kw.keys()):
-            msg = 'printSlope requested, but did not receive the fileName ' + \
-                    'as a keyword argument.'
-            bumpVelLogger.warn(msg)
+        velGainLogger.info('Fitting lines')
+        if (len(trials) == 0):
+            velGainLogger.warn('Something wrong: len(trials) == 0. Not plotting data')
             return
-        elif (self.printSlope):
-            bumpVelLogger.info('Fitting lines and producing figure...')
-            if (len(trials) == 0):
-                bumpVelLogger.warn('Something wrong: len(trials) == 0. Not plotting data')
-                return
 
-            # Plot the estimated bump velocities (nrns/s)
-            from matplotlib.pyplot import figure, errorbar, xlabel, ylabel, \
-                    plot, title, savefig, legend
-            figure()
-            IvelVec = trials[0]['IvelVec'] # All the same
-            avgSlope = np.nanmean(slopes, axis=0)
-            stdErrSlope = np.nanstd(slopes, axis=0) / np.sqrt(len(trials))
-            errorbar(IvelVec, avgSlope, stdErrSlope, fmt='o-')
-            xlabel('Velocity current (pA)')
-            ylabel('Bump velocity (neurons/s)')
+        # Fit a line (nrns/s/pA)
+        # results
+        line       = None
+        lineFitErr = None
+        slope      = None
+        fitIvelVec = None
+        errSum     = None
+        # All, in case we need the one with max range
+        line_all       = []
+        lineFitErr_all = []
+        slope_all      = []
+        fitIvelVec_all = []
+        maxRange_all   = []
+        for fitRange in xrange(1, len(IvelVec)):
+            velGainLogger.info("fitRange: {0}".format(fitRange))
+            newLine, newSlope, newErr, newIvelVecRange = \
+                    fitBumpSpeed(IvelVec, slopes, fitRange)
+            line_all.append(newLine)
+            lineFitErr_all.append(newErr)
+            slope_all.append(newSlope)
+            fitIvelVec_all.append(newIvelVecRange)
+            maxRange_all.append(newLine[-1])
+            # Keep only lines that covers the desired range and have a
+            # minimal error of fit
+            if ((newLine[-1] >= self.bumpSpeedMax)):
+                errSumNew = np.sum(newErr)
+                if ((line is None) or (errSumNew <= errSum)):
+                    line       = newLine
+                    lineFitErr = newErr
+                    slope      = newSlope
+                    fitIvelVec = newIvelVecRange
+                    errSum     = errSumNew
 
-            # Fit a line (nrns/s/pA)
-            # results
-            line       = None
-            lineFitErr = None
-            slope      = None
-            fitIvelVec = None
-            errSum     = None
-            # All, in case we need the one with max range
-            line_all       = []
-            lineFitErr_all = []
-            slope_all      = []
-            fitIvelVec_all = []
-            maxRange_all   = []
-            for fitRange in xrange(1, len(IvelVec)):
-                bumpVelLogger.info("fitRange: {0}".format(fitRange))
-                newLine, newSlope, newErr, newIvelVecRange = \
-                        fitBumpSpeed(IvelVec, slopes, fitRange)
-                line_all.append(newLine)
-                lineFitErr_all.append(newErr)
-                slope_all.append(newSlope)
-                fitIvelVec_all.append(newIvelVecRange)
-                maxRange_all.append(newLine[-1])
-                # Keep only lines that covers the desired range and have a
-                # minimal error of fit
-                if ((newLine[-1] >= self.bumpSpeedMax)):
-                    errSumNew = np.sum(newErr)
-                    if ((line is None) or (errSumNew <= errSum)):
-                        line       = newLine
-                        lineFitErr = newErr
-                        slope      = newSlope
-                        fitIvelVec = newIvelVecRange
-                        errSum     = errSumNew
+        if (line is None):
+            velGainLogger.info(\
+                ('No suitable fits that cover <0, {0:.2f}> neurons/s.' +\
+                ' Using the fit with the max. bump speed range.').format(\
+                self.bumpSpeedMax))
+            velGainLogger.info("Bump speed maxima: {0}".format(maxRange_all))
+            maxRangeIdx = np.argmax(maxRange_all)
+            line        = line_all[maxRangeIdx]
+            lineFitErr  = lineFitErr_all[maxRangeIdx]
+            slope       = slope_all[maxRangeIdx]
+            fitIvelVec  = fitIvelVec_all[maxRangeIdx]
 
-            if (line is None):
-                bumpVelLogger.info(\
-                    ('No suitable fits that cover <0, {0:.2f}> neurons/s.' +\
-                    ' Using the fit with the max. bump speed range.').format(\
-                    self.bumpSpeedMax))
-                bumpVelLogger.info("Bump speed maxima: {0}".format(maxRange_all))
-                maxRangeIdx = np.argmax(maxRange_all)
-                line        = line_all[maxRangeIdx]
-                lineFitErr  = lineFitErr_all[maxRangeIdx]
-                slope       = slope_all[maxRangeIdx]
-                fitIvelVec  = fitIvelVec_all[maxRangeIdx]
+        velGainLogger.info('Saving the line fit data (top level)')
+        velGainLogger.info(\
+                "Estimated bump velocity gain: %.3f nrns/s/pA, err=%.3f nrns/s",
+                slope, np.sum(lineFitErr))
 
-            plot(fitIvelVec, line, 'o-')
-            plot(IvelVec, slopes.T, 'o', color='blue', alpha=0.4)
-            t = "Line fit slope: {0:.3f} nrns/s/pA, error: {1:.3f} " + \
-                    "neurons/s (norm)"
-            title(t.format(slope, np.sum(lineFitErr)))
-            legend(['Average bump speed', 'Line fit', 'Estimated bump speed'],
-                loc='best')
-            
-            fileName = splitext(kw['fileName'])[0] + '.pdf'
-            savefig(fileName)
-
-            bumpVelLogger.info('Saving the line fit data (top level)')
-            bumpVelLogger.info(\
-                    "Estimated bump velocity gain: %.3f nrns/s/pA, err=%.3f nrns/s",
-                    slope, np.sum(lineFitErr))
-
-            data[self.outputRoot].update({
-                'lineFitLine'  : line,
-                'lineFitSlope' : slope,
-                'lineFitErr'   : lineFitErr,
-                'fitIvelVec'   : fitIvelVec
-            })
+        data[self.outputRoot].update({
+            'lineFitLine'  : line,
+            'lineFitSlope' : slope,
+            'lineFitErr'   : lineFitErr,
+            'fitIvelVec'   : fitIvelVec
+        })
 
 
 
