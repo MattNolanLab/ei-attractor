@@ -203,6 +203,12 @@ def fitBumpSpeed(IvelVec, bumpSpeed, fitRange):
             axis=0)
     fitSpeed    = fitSpeed.flatten()
     fitIvelVec   = fitIvelVec.flatten()
+
+    # Get rid of NaNs here
+    nanIdx = np.isnan(fitSpeed)
+    fitSpeed = fitSpeed[np.logical_not(nanIdx)]
+    fitIvelVec = fitIvelVec[np.logical_not(nanIdx)]
+
     line, slope = getLineFit(fitIvelVec, fitSpeed)
     lineFitErr  = np.abs(line - fitSpeed) / len(fitIvelVec)
 
@@ -333,9 +339,11 @@ class SpeedEstimator(BumpVisitor):
 
         slopes = nanPaddedArray(slopes)
         analysisTop = {'bumpVelAll' : slopes}
+        data[self.outputRoot] = analysisTop
+
         printoptions_orig = np.get_printoptions()
         np.set_printoptions(precision=3, threshold=np.infty, linewidth=100,
-                suppress=True)
+                            suppress=True)
         speedLogger.info("Slopes:\n%s", slopes)
         np.set_printoptions(**printoptions_orig)
 
@@ -371,7 +379,7 @@ class BumpVelocityVisitor(BumpVisitor):
         '''
         data = ds.data
         trials = data['trials']
-
+        slopes = data[defaults.analysisRoot]['bumpVelAll']
 
         if (self.printSlope and 'fileName' not in kw.keys()):
             msg = 'printSlope requested, but did not receive the fileName ' + \
@@ -389,8 +397,8 @@ class BumpVelocityVisitor(BumpVisitor):
                     plot, title, savefig, legend
             figure()
             IvelVec = trials[0]['IvelVec'] # All the same
-            avgSlope = np.mean(slopes, axis=0)
-            stdErrSlope = np.std(slopes, axis=0) / np.sqrt(len(trials))
+            avgSlope = np.nanmean(slopes, axis=0)
+            stdErrSlope = np.nanstd(slopes, axis=0) / np.sqrt(len(trials))
             errorbar(IvelVec, avgSlope, stdErrSlope, fmt='o-')
             xlabel('Velocity current (pA)')
             ylabel('Bump velocity (neurons/s)')
@@ -452,17 +460,16 @@ class BumpVelocityVisitor(BumpVisitor):
             savefig(fileName)
 
             bumpVelLogger.info('Saving the line fit data (top level)')
-            analysisTop.update({
+            bumpVelLogger.info(\
+                    "Estimated bump velocity gain: %.3f nrns/s/pA, err=%.3f nrns/s",
+                    slope, np.sum(lineFitErr))
+
+            data[self.outputRoot].update({
                 'lineFitLine'  : line,
                 'lineFitSlope' : slope,
                 'lineFitErr'   : lineFitErr,
                 'fitIvelVec'   : fitIvelVec
             })
-            bumpVelLogger.info(\
-                    "Estimated bump velocity gain: %.3f nrns/s/pA, err=%.3f nrns/s",
-                    slope, np.sum(lineFitErr))
-
-        data[self.outputRoot] = analysisTop
 
 
 

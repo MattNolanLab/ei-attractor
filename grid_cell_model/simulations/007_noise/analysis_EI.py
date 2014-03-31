@@ -75,7 +75,7 @@ elif (o.type == "velocity"):
             forceUpdate=forceUpdate, printSlope=True)
 
     sp.visit(speedEstimator, trialList='all-at-once')
-    #sp.visit(VelVisitor, trialList='all-at-once')
+    sp.visit(VelVisitor, trialList='all-at-once')
 elif (o.type == 'grids'):
     spikeType = 'E'
     po = plotting.GridPlotVisitor.PlotOptions()
