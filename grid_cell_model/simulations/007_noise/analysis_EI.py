@@ -69,10 +69,13 @@ if (o.type == "gamma-bump"):
     #sp.visit(CCVisitor)
     #sp.visit(spikeVisitor_e)
 elif (o.type == "velocity"):
+    speedEstimator = bumps.SpeedEstimator(
+            forceUpdate=forceUpdate, axis='vertical', win_dt=50.0)
     VelVisitor = bumps.BumpVelocityVisitor(o.bumpSpeedMax,
-            forceUpdate=forceUpdate, printSlope=True, axis='vertical',
-            win_dt=50.0)
-    sp.visit(VelVisitor, trialList='all-at-once')
+            forceUpdate=forceUpdate, printSlope=True)
+
+    sp.visit(speedEstimator, trialList='all-at-once')
+    #sp.visit(VelVisitor, trialList='all-at-once')
 elif (o.type == 'grids'):
     spikeType = 'E'
     po = plotting.GridPlotVisitor.PlotOptions()

@@ -17,6 +17,7 @@ from . import defaults
 
 import logging
 logger = logging.getLogger(__name__)
+speedLogger = getClassLogger('SpeedEstimator', __name__)
 bumpVelLogger = getClassLogger('BumpVelocityVisitor', __name__)
 
 
@@ -211,24 +212,46 @@ def fitBumpSpeed(IvelVec, bumpSpeed, fitRange):
     return retLine, slope, lineFitErr, retIvelVec
 
 
-class BumpVelocityVisitor(BumpVisitor):
-    '''
-    A visitor that estimates the relationship between injected velocity current
-    and bump speed.
+def nanPaddedArray(data, size=None):
+    r = size[0] if size is not None else None
+    c = size[1] if size is not None else None
+    if r is None:
+        r = len(data)
+    if c is None:
+        c = 0
+        for row in data:
+            c = len(row) if len(row) > c else c
+
+    res = np.ndarray((r, c), dtype=np.double) * np.nan
+    for rowIdx, row in enumerate(data):
+        res[rowIdx, 0:len(row)] = row
+
+    return res
+
+
+class SpeedEstimator(BumpVisitor):
+    '''Estimate raw relationship between injected (velocity) current and bump
+    speed.
+
+    Steps performed:
+
+        1. Do the estimation.
+
+        2. Store the raw data for each velocity current value.
+
+        3. Store the data into a top-level stracture in the data hierarchy
     '''
     allowedAxis = ['horizontal', 'vertical']
 
     def __init__(self,
-            bumpSpeedMax,
             win_dt=20.0,
             winLen=250.0,
             forceUpdate=False,
-            printSlope=False,
             outputRoot=defaults.analysisRoot,
             axis='vertical',
             changeSign=False,
             readme=''):
-        super(BumpVelocityVisitor, self).__init__(
+        super(SpeedEstimator, self).__init__(
                 forceUpdate,
                 readme,
                 outputRoot,
@@ -236,13 +259,9 @@ class BumpVelocityVisitor(BumpVisitor):
                 None,
                 winLen,
                 None)
-        self.bumpSpeedMax = bumpSpeedMax # cm/s
         self.win_dt = win_dt
-        self.printSlope = printSlope
         self.axis = self.checkAxis(axis)
         self.changeSign = changeSign
-
-        assert(self.bumpSpeedMax is not None)
 
     def checkAxis(self, axis):
         if axis not in self.allowedAxis:
@@ -250,76 +269,108 @@ class BumpVelocityVisitor(BumpVisitor):
         return axis
 
     def visitDictDataSet(self, ds, **kw):
-        '''
-        Visit a data set that contains all the trials and Ivel simulations.
-        '''
         data = ds.data
         trials = data['trials']
 
         slopes = []
         for trialNum in xrange(len(trials)):
-            bumpVelLogger.info("Trial no. %d/%d", trialNum, len(trials)-1)
+            speedLogger.info("Trial no. %d/%d", trialNum, len(trials)-1)
             slopes.append([])
             IvelVec = trials[trialNum]['IvelVec']
             for IvelIdx in xrange(len(IvelVec)):
                 iData = trials[trialNum]['IvelData'][IvelIdx]
-                bumpVelLogger.info("Processing vel. index: %d/%d; %.2f pA",
+                speedLogger.info("Processing vel. index: %d/%d; %.2f pA",
                         IvelIdx, len(IvelVec) - 1, IvelVec[IvelIdx])
 
+                slope = None
                 if self.outputRoot in iData.keys() and not self.forceUpdate:
-                    bumpVelLogger.info("Data present. Adding slope to the list.")
-                    slopes[trialNum].append(iData[self.outputRoot]['slope'])
-                    continue
+                    speedLogger.info("Data present. Adding slope to the list.")
+                    slope = iData[self.outputRoot]['slope']
+                else:
+                    speedLogger.debug("\tEstimating bump positions...")
+                    senders, times, sheetSize =  self._getSpikeTrain(iData,
+                            'spikeMon_e', ['Ne_x', 'Ne_y'])
+                    pop = image.SingleBumpPopulation(senders, times, sheetSize)
+                    tStart = self.getOption(iData, 'theta_start_t')
+                    tEnd   = self.getOption(iData, 'time') - 2*self.win_dt
+                    fitList = pop.bumpPosition(tStart, tEnd, self.win_dt,
+                            self.winLen, fullErr=False)
 
-                bumpVelLogger.debug("\tEstimating bump positions...")
-                senders, times, sheetSize =  self._getSpikeTrain(iData,
-                        'spikeMon_e', ['Ne_x', 'Ne_y'])
-                pop = image.SingleBumpPopulation(senders, times, sheetSize)
-                tStart = self.getOption(iData, 'theta_start_t')
-                tEnd   = self.getOption(iData, 'time') - 2*self.win_dt
-                fitList = pop.bumpPosition(tStart, tEnd, self.win_dt,
-                        self.winLen, fullErr=False)
+                    if self.axis == 'vertical':
+                        bumpPos = fitList.mu_y
+                        axisSize = pop.Ny
+                    elif self.axis == 'horizontal':
+                        bumpPos = fitList.mu_x
+                        axisSize = pop.Nx
 
-                if self.axis == 'vertical':
-                    bumpPos = fitList.mu_y
-                    axisSize = pop.Ny
-                elif self.axis == 'horizontal':
-                    bumpPos = fitList.mu_x
-                    axisSize = pop.Nx
+                    speedLogger.debug("\tFitting the circular slope...")
+                    # NOTE: If the bump moves in an opposite direction, we have to
+                    # negate the speed
+                    slope = fitCircularSlope(bumpPos, fitList.times, axisSize)
+                    slope *= 1e3 # Correction msec --> sec
+                    if self.changeSign:
+                        slope *= -1
+                    speedLogger.debug("\tslope: {0:.3f}".format(slope))
 
-                bumpVelLogger.debug("\tFitting the circular slope...")
-                # NOTE: If the bump moves in an opposite direction, we have to
-                # negate the speed
-                slope = fitCircularSlope(bumpPos, fitList.times, axisSize)
-                slope *= 1e3 # Correction msec --> sec
-                if self.changeSign:
-                    slope *= -1
+                    speedLogger.debug("\tSaving data for the current velocity index.")
+                    iData[self.outputRoot] = dict(
+                            positions = dict(
+                                A            = np.asarray(fitList.A),
+                                mu_x         = np.asarray(fitList.mu_x),
+                                mu_y         = np.asarray(fitList.mu_y),
+                                sigma        = np.asarray(fitList.sigma),
+                                err2         = np.asarray(fitList.err2),
+                                ln_L         = np.asarray(fitList.ln_L),
+                                lh_precision = np.asarray(fitList.lh_precision),
+                                times        = np.asarray(fitList.times)
+                            ),
+                            slope = slope
+                    )
+                    iData.flush()
+
+                assert(slope is not None)
                 slopes[trialNum].append(slope)
-                bumpVelLogger.debug("\tslope: {0:.3f}".format(slope))
 
-                bumpVelLogger.debug("\tSaving data for the current velocity index.")
-                iData[self.outputRoot] = dict(
-                        positions = dict(
-                            A            = np.asarray(fitList.A),
-                            mu_x         = np.asarray(fitList.mu_x),
-                            mu_y         = np.asarray(fitList.mu_y),
-                            sigma        = np.asarray(fitList.sigma),
-                            err2         = np.asarray(fitList.err2),
-                            ln_L         = np.asarray(fitList.ln_L),
-                            lh_precision = np.asarray(fitList.lh_precision),
-                            times        = np.asarray(fitList.times)
-                        ),
-                        slope = slope
-                )
-                iData.flush()
-
-        slopes = np.array(slopes)
+        slopes = nanPaddedArray(slopes)
         analysisTop = {'bumpVelAll' : slopes}
         printoptions_orig = np.get_printoptions()
         np.set_printoptions(precision=3, threshold=np.infty, linewidth=100,
                 suppress=True)
-        bumpVelLogger.info("Slopes:\n%s", slopes)
+        speedLogger.info("Slopes:\n%s", slopes)
         np.set_printoptions(**printoptions_orig)
+
+
+
+class BumpVelocityVisitor(BumpVisitor):
+    '''
+    A visitor that estimates the relationship between injected velocity current
+    and bump speed.
+    '''
+    def __init__(self,
+            bumpSpeedMax,
+            forceUpdate=False,
+            printSlope=False,
+            outputRoot=defaults.analysisRoot,
+            readme=''):
+        super(BumpVelocityVisitor, self).__init__(
+                forceUpdate,
+                readme,
+                outputRoot,
+                None,
+                None,
+                None,
+                None)
+        self.bumpSpeedMax = bumpSpeedMax # cm/s
+        self.printSlope = printSlope
+
+        assert(self.bumpSpeedMax is not None)
+
+    def visitDictDataSet(self, ds, **kw):
+        '''
+        Visit a data set that contains all the trials and Ivel simulations.
+        '''
+        data = ds.data
+        trials = data['trials']
 
 
         if (self.printSlope and 'fileName' not in kw.keys()):
