@@ -9,6 +9,7 @@ matplotlib.use('agg')
 
 import visitors as vis
 import visitors.bumps as bumps
+import visitors.spikes
 import visitors.plotting_visitors as plotting
 from parameters import JobTrialSpace2D
 from submitting import flagparse
@@ -56,7 +57,9 @@ if (o.type == "gamma-bump"):
             win_dt=125.0,
             readme='Bump position estimation. Whole simulation',
             forceUpdate=forceUpdate)
-    #FRVisitor = vis.FiringRateVisitor(forceUpdate=forceUpdate)
+    FRVisitor = vis.spikes.FiringRateVisitor(winLen=2.,     # ms
+                                             winDt=.5,      # ms
+                                             forceUpdate=forceUpdate)
     #CCVisitor = vis.CrossCorrelationVisitor(monName, stateList,
     #        forceUpdate=forceUpdate)
     #spikeVisitor_e = vis.SpikeStatsVisitor("spikeMon_e",
@@ -65,7 +68,7 @@ if (o.type == "gamma-bump"):
     #sp.visit(ACVisitor)
     sp.visit(bumpVisitor)
     sp.visit(bumpPosVisitor)
-    #sp.visit(FRVisitor)
+    sp.visit(FRVisitor)
     #sp.visit(CCVisitor)
     #sp.visit(spikeVisitor_e)
 elif (o.type == "velocity"):
