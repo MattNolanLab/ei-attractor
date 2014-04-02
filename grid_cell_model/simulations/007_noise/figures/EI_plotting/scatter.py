@@ -146,8 +146,6 @@ class RawScatterPlot(ScatterPlotBase):
 class ScatterPlot(RawScatterPlot):
     def __init__(self, space1, space2, types1, types2, iterList, NTrials1,
             NTrials2, **kw):
-        if (not np.all(space1.shape == space2.shape)):
-            raise ValueError('space1.shape != space2.shape!')
 
         self.space1   = space1
         self.space2   = space2
@@ -158,11 +156,20 @@ class ScatterPlot(RawScatterPlot):
         self.NTrials2 = NTrials2
 
         ignoreNaNs  = kw.pop('ignoreNaNs', False)
-        X, _, _ = aggr.aggregateType(self.space1, self.iterList, self.types1,
-                self.NTrials1, ignoreNaNs=ignoreNaNs, **kw)
-        Y, _, _  = aggr.aggregateType(self.space2, self.iterList, self.types2,
-                self.NTrials2, ignoreNaNs=ignoreNaNs, **kw)
-        RawScatterPlot.__init__(self, self.space1, X, Y, **kw)
+        if isinstance(space1, aggr.AggregateData):
+            X, _, _ = space1.getData()
+            Y, _, _ = space2.getData()
+            RawScatterPlot.__init__(self, X, X, Y, **kw)
+        else:
+            if (not np.all(space1.shape == space2.shape)):
+                raise ValueError('space1.shape != space2.shape!')
+            X, _, _ = aggr.aggregateType(self.space1, self.iterList,
+                                         self.types1, self.NTrials1,
+                                         ignoreNaNs=ignoreNaNs, **kw)
+            Y, _, _ = aggr.aggregateType(self.space2, self.iterList,
+                                         self.types2, self.NTrials2,
+                                         ignoreNaNs=ignoreNaNs, **kw)
+            RawScatterPlot.__init__(self, self.space1, X, Y, **kw)
 
 
 

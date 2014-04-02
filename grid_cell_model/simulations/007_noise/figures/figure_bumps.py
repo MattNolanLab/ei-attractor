@@ -37,8 +37,10 @@ parser.add_flag('--detailed_noise')
 parser.add_flag('--rastersFlag')
 parser.add_flag('--rates')
 parser.add_flag('--scatter_diff_fracTotal_grids')
+parser.add_flag('--scatter_grids_fracTotal')
 parser.add_flag('--fracTotalSweepAnn')
 parser.add_flag('--isBump')
+parser.add_argument('--expScatter', action="store_true")
 args = parser.parse_args()
 
 
@@ -544,6 +546,53 @@ if args.scatter_diff_fracTotal_grids or args.all:
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
     
+
+##############################################################################
+# Correlate P(bump) vs gridness score
+xlabel = 'P(bumps)'
+ylabel = 'Gridness score'
+
+scatterAllFigSize = (5.8, 3.2)
+scatterAllLeft   = 0.05
+scatterAllBottom = 0.05
+scatterAllRight  = 0.95
+scatterAllTop    = 0.9
+
+if args.scatter_grids_fracTotal or args.all:
+    fig = plt.figure(figsize=scatterAllFigSize)
+    ax = fig.gca()
+
+    scatterColors = ['blue', 'green', 'red']
+
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        isBumpData = aggr.IsBump(ps.bumpGamma[ns_idx], ds.iterList,
+                                 ignoreNaNs=True)
+        gridData = aggr.GridnessScore(ps.grids[ns_idx], ds.iterList,
+                                      ignoreNaNs=True)
+
+        scatterPlot = scatter.ScatterPlot(
+                isBumpData, gridData, None, None, None, None, None,
+                c=scatterColors[ns_idx],
+                s=15,
+                linewidth=0.3,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                ax=ax)
+        scatterPlot.plot()
+
+    ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
+    ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+    leg = ['0', '150', '300']
+    l = ax.legend(leg, loc=(-0.28, 0.8), fontsize='small', frameon=False,
+            numpoints=1, title='$\sigma$ (pA)')
+    plt.setp(l.get_title(), size='small')
+    ax.set_ylabel(ax.get_ylabel(), y=0., ha='left')
+
+    fig.tight_layout(rect=[scatterAllLeft, scatterAllBottom, scatterAllRight,
+                           scatterAllTop])
+    fname = outputDir + "/bumps_scatter_grids_vs_bumpFracTotal.pdf"
+    fig.savefig(fname, dpi=300, transparent=True)
+
 
 
 ##############################################################################

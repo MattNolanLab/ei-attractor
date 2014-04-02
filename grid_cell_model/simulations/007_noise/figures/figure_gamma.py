@@ -448,14 +448,14 @@ if args.scatterPlot or args.all:
 
         fname = outputDir + "/gamma_scatter_gamma_grids{0}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300,
-                transparent=transparent)
+                    transparent=True)
 
     fig = plt.figure(figsize=scatterColorFigSize)
     ax = fig.gca()
     scatterPlot.plotColorbar(ax)
     fig.tight_layout(pad=0)
     fname = outputDir + "/gamma_scatter_gamma_grids_colorbar.pdf"
-    fig.savefig(fname, dpi=300, transparent=transparent)
+    fig.savefig(fname, dpi=300, transparent=True)
 
 
 

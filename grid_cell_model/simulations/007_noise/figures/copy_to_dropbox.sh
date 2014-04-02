@@ -30,9 +30,6 @@ files="
     $output_fig_dir/figure4.pdf
     $output_fig_dir/figureS1.pdf
     $output_fig_dir/figureS2.pdf
-    $output_fig_dir/figureS3.pdf
-    $output_fig_dir/figureS5.pdf
-    $output_fig_dir/figureS6.pdf
     $output_fig_dir/figure_drifts.pdf
     $output_fig_dir/figure_isBump.pdf
     $output_fig_dir/suppFigure_gamma.pdf
