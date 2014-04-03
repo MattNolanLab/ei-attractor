@@ -24,7 +24,7 @@ parser.add_argument("type",      type=str, choices=allowedTypes,
         str(allowedTypes))
 parser.add_argument("where",     type=str, help='Root directory')
 
-parser.add_argument("--ns",      type=int, choices=[0, 150, 300])
+parser.add_argument("--ns",      type=str, choices=['0pA', '150pA', '300pA'])
 parser.add_argument('--ntrials', type=int, default=5)
 parser.add_argument('--noLoadData', action='store_true')
 parser.add_argument('--position',type=str, choices=allowedPositions)
@@ -34,6 +34,8 @@ parser.add_flag('--positions')
 parser.add_flag('--isBump')
 parser.add_flag('--uniformML')
 parser.add_flag('--AC')
+parser.add_flag('--FR_e')
+parser.add_flag('--FR_i')
 args = parser.parse_args()
 
 ns_all = ['0pA', '150pA', '300pA']
@@ -126,7 +128,6 @@ for subDir in subDirs:
                 trialNumList, funReduce=None, loadData=loadData,saveData=True,
                 output_dtype='list')
 
-
     if args.AC or args.all:
         sp.aggregateData(varListBase + ['acVal'], trialNumList, funReduce=np.mean,
                 loadData=loadData, saveData=True, output_dtype='array')
@@ -134,3 +135,13 @@ for subDir in subDirs:
                 loadData=loadData, saveData=True, output_dtype='list')
         sp.aggregateData(varListBase + ['freq'], trialNumList, funReduce=np.mean,
                 loadData=loadData, saveData=True, output_dtype='array')
+
+    if args.FR_e or args.all:
+        FRVars = varListBase + ['FR_e']
+        sp.aggregateData(FRVars + ['popSliding'], trialNumList, funReduce=None,
+                         loadData=loadData, saveData=True, output_dtype='list')
+
+    if args.FR_i or args.all:
+        FRVars = varListBase + ['FR_i']
+        sp.aggregateData(FRVars + ['popSliding'], trialNumList, funReduce=None,
+                         loadData=loadData, saveData=True, output_dtype='list')
