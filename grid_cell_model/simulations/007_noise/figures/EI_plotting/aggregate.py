@@ -9,6 +9,7 @@ from parameters import DataSpace
 from otherpkg.log import log_warn
 from analysis.image import Position2D
 import analysis.image as image
+import analysis.signal as asignal
 
 import logging
 logger = logging.getLogger(__name__)
@@ -625,38 +626,88 @@ class AggregateBumpReciprocal(BumpPositionData):
 ##############################################################################
 #                            Firing rates
 
-class MaxPopulationFR(AggregateData):
+
+class PopulationFR(AggregateData):
+
+    def __init__(self, space, iterList, **kw):
+        super(PopulationFR, self).__init__(space, iterList, None, **kw)
+        self._FR = None
+        self._X  = None
+        self._Y  = None
+
+    def _getRawData(self):
+        if self._FR is None:
+            path = self.analysisRoot[0] + '/FR_e/popSliding'
+            FR = self.sp.getReduction(path)
+            nTrials = len(FR[0][0])
+            dataLen = len(FR[0][0][0])
+            self._FR = np.ndarray((self.sp.shape[0], self.sp.shape[1],
+                                        nTrials, dataLen),
+                                     dtype=np.double)
+            for r in xrange(self.sp.shape[0]):
+                for c in xrange(self.sp.shape[1]):
+                    for trialNum in xrange(nTrials):
+                        data = FR[r][c][trialNum]
+                        self._FR[r, c, trialNum, :] = \
+                                data if data is not None else np.nan
+
+            #import pdb; pdb.set_trace()
+            self._Y, self._X = computeYX(self.sp, self.iterList,
+                                         normalizeTicks=self.normalizeTicks)
+
+        return self._FR, self._X, self._Y
+
+
+class MaxPopulationFR(PopulationFR):
     '''
     Extract the maximal (sliding) population firing rate for each parameter
     setting.
     '''
 
     def __init__(self, space, iterList, **kw):
-        super(MaxPopulationFR, self).__init__(space, iterList, None, **kw)
-
-        self._maxFR = None
+        super(MaxPopulationFR, self).__init__(space, iterList, **kw)
 
     def getData(self):
-        if self._maxFR is None:
-            path = self.analysisRoot[0] + '/FR_e/popSliding'
-            FR = self.sp.getReduction(path)
-            nTrials = len(FR[0][0])
-            self._maxFR = np.ndarray((self.sp.shape[0], self.sp.shape[1],
-                                        nTrials),
-                                     dtype=np.double)
+        FR, X, Y = self._getRawData()
+        maxFR = np.nanmax(FR, axis=3)
+        return (np.mean(maskNaNs(maxFR, self.ignoreNaNs), axis=2), self._X,
+                self._Y)
+
+
+class MaxThetaPopulationFR(PopulationFR):
+    '''
+    Extract the median/mean of the maximal population firing rate *every theta*
+    cycle.
+    '''
+    def __init__(self, thetaT, sig_dt, reduceFunc, space, iterList, **kw):
+        super(MaxThetaPopulationFR, self).__init__(space, iterList, **kw)
+        self.thetaT = thetaT
+        self.sig_dt = sig_dt
+        self._maxThetaFR = None
+        self.reduceFunc = reduceFunc
+
+
+    def getData(self):
+        if self._maxThetaFR is None:
+            FR, _, _ = self._getRawData()
+            nTrials = FR.shape[2]
+            self._maxThetaFR = np.ndarray((self.sp.shape[0], self.sp.shape[1],
+                                            nTrials),
+                                         dtype=np.double)
             for r in xrange(self.sp.shape[0]):
                 for c in xrange(self.sp.shape[1]):
                     for trialNum in xrange(nTrials):
-                        data = FR[r][c][trialNum]
-                        self._maxFR[r, c, trialNum] = \
-                                np.max(data) if data is not None else np.nan
+                        rate = FR[r, c, trialNum, :]
+                        thetaRate = np.max(
+                                asignal.splitSigToThetaCycles(rate,
+                                                              self.thetaT,
+                                                              self.sig_dt),
+                                axis=1)
+                        self._maxThetaFR[r, c, trialNum] = self.reduceFunc(
+                                thetaRate)
 
-            #import pdb; pdb.set_trace()
-            self._Y, self._X = computeYX(self.sp, self.iterList,
-                                         normalizeTicks=self.normalizeTicks)
-        return (np.mean(maskNaNs(self._maxFR, self.ignoreNaNs), axis=2),
+        return (np.mean(maskNaNs(self._maxThetaFR, self.ignoreNaNs), axis=2),
                 self._X, self._Y)
-
 
 
 

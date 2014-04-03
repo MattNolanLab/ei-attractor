@@ -22,6 +22,9 @@ parser = flagparse.FlagParser()
 parser.add_flag('--rastersFlag')
 parser.add_flag('--rates')
 parser.add_flag('--maxFRSweeps')
+parser.add_flag('--maxThetaFRSweeps')
+parser.add_flag('--maxThetaFRSweeps_median')
+parser.add_flag('--maxThetaFRSweeps_std')
 args = parser.parse_args()
 
 ###############################################################################
@@ -155,7 +158,7 @@ if args.rates or args.all:
 
 
 ##############################################################################
-# Seizure measure
+# Seizure measure - max firing rate for the whole simulation
 maxFR_cbar_kw = dict(
         label       = "max(E rate) (Hz)",
         location    = 'left',
@@ -179,10 +182,106 @@ if args.maxFRSweeps or args.all:
                 ignoreNaNs=True, normalizeTicks=True)
         _, _, cax = sweeps.plotSweep(data,
                 noise_sigma=noise_sigma,
+                xlabel='', xticks=False,
                 ax=ax,
                 cbar_kw=maxFR_cbar_kw,
                 vmin=maxFR_vmin, vmax=maxFR_vmax,
                 **kw)
         fname = outputDir + "/bumps_popMaxFR_sweep{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
+
+
+##############################################################################
+# Seizure measure - max firing rate per theta cycle (mean)
+maxThetaFR_cbar_kw = dict(
+        label       = "max(E rate)/$\\theta$ cycle (Hz)",
+        location    = 'left',
+        shrink      = 0.8,
+        pad         = 0.25,
+        ticks       = ti.MultipleLocator(100),
+        rasterized  = True)
+maxThetaFR_vmin = 0
+maxThetaFR_vmax = 500.
+
+thetaT = 125.  # ms
+sig_dt = .5    # ms
+
+if args.maxThetaFRSweeps or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig, ax = ds.getDefaultSweepFig(scale=1., colorBarPos='left')
+        kw = dict(cbar=False)
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        if ns_idx == 0:
+            kw['cbar'] = True
+        data = aggr.MaxThetaPopulationFR(
+                thetaT, sig_dt, np.mean,
+                ps.bumpGamma[ns_idx], ds.iterList,
+                ignoreNaNs=True, normalizeTicks=True)
+        _, _, cax = sweeps.plotSweep(data,
+                noise_sigma=noise_sigma,
+                ax=ax,
+                cbar_kw=maxThetaFR_cbar_kw,
+                vmin=maxThetaFR_vmin, vmax=maxThetaFR_vmax,
+                sigmaTitle=False,
+                **kw)
+        fname = outputDir + "/bumps_popMaxThetaFR_sweep{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
+
+if args.maxThetaFRSweeps_median or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig, ax = ds.getDefaultSweepFig(scale=1., colorBarPos='left')
+        kw = dict(cbar=False)
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        if ns_idx == 0:
+            kw['cbar'] = True
+        data = aggr.MaxThetaPopulationFR(
+                thetaT, sig_dt, np.median,
+                ps.bumpGamma[ns_idx], ds.iterList,
+                ignoreNaNs=True, normalizeTicks=True)
+        _, _, cax = sweeps.plotSweep(data,
+                noise_sigma=noise_sigma,
+                ax=ax,
+                cbar_kw=maxThetaFR_cbar_kw,
+                vmin=maxThetaFR_vmin, vmax=maxThetaFR_vmax,
+                sigmaTitle=False,
+                **kw)
+        fname = outputDir + "/bumps_popMaxThetaFR_median_sweep{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
+
+maxThetaFR_std_cbar_kw = dict(
+        label       = "max(E rate)/$\\theta$ cycle (Hz)",
+        location    = 'left',
+        shrink      = 0.8,
+        pad         = 0.25,
+        ticks       = ti.MaxNLocator(4),
+        rasterized  = True)
+maxThetaFR_std_vmin = 0.
+maxThetaFR_std_vmax = None
+if args.maxThetaFRSweeps_std or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig, ax = ds.getDefaultSweepFig(scale=1., colorBarPos='left')
+        kw = dict(cbar=True)
+        data = aggr.MaxThetaPopulationFR(
+                thetaT, sig_dt, np.std,
+                ps.bumpGamma[ns_idx], ds.iterList,
+                ignoreNaNs=True, normalizeTicks=True)
+        _, _, cax = sweeps.plotSweep(data,
+                noise_sigma=noise_sigma,
+                ax=ax,
+                cbar_kw=maxThetaFR_std_cbar_kw,
+                vmin=maxThetaFR_std_vmin, vmax=maxThetaFR_std_vmax,
+                sigmaTitle=False,
+                **kw)
+        fname = outputDir + "/bumps_popMaxThetaFR_std_sweep{0}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
         plt.close()
