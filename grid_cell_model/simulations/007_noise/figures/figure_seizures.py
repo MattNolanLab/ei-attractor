@@ -10,8 +10,10 @@ import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
 import default_settings as ds
-from EI_plotting          import rasters
-from submitting import flagparse
+from EI_plotting import sweeps
+from EI_plotting import rasters
+from EI_plotting import aggregate as aggr
+from submitting  import flagparse
 
 
 outputDir = ds.figOutputDir
@@ -19,6 +21,7 @@ outputDir = ds.figOutputDir
 parser = flagparse.FlagParser()
 parser.add_flag('--rastersFlag')
 parser.add_flag('--rates')
+parser.add_flag('--maxFRSweeps')
 args = parser.parse_args()
 
 ###############################################################################
@@ -151,3 +154,35 @@ if args.rates or args.all:
 
 
 
+##############################################################################
+# Seizure measure
+maxFR_cbar_kw = dict(
+        label       = "max(E rate) (Hz)",
+        location    = 'left',
+        shrink      = 0.8,
+        pad         = 0.25,
+        ticks       = ti.MultipleLocator(100),
+        rasterized  = True)
+maxFR_vmin = 0
+maxFR_vmax = 500.
+
+if args.maxFRSweeps or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig, ax = ds.getDefaultSweepFig(scale=1., colorBarPos='left')
+        kw = dict(cbar=False)
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        if ns_idx == 0:
+            kw['cbar'] = True
+        data = aggr.MaxPopulationFR(ps.bumpGamma[ns_idx], ds.iterList,
+                ignoreNaNs=True, normalizeTicks=True)
+        _, _, cax = sweeps.plotSweep(data,
+                noise_sigma=noise_sigma,
+                ax=ax,
+                cbar_kw=maxFR_cbar_kw,
+                vmin=maxFR_vmin, vmax=maxFR_vmax,
+                **kw)
+        fname = outputDir + "/bumps_popMaxFR_sweep{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()

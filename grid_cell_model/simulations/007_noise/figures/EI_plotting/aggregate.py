@@ -622,6 +622,44 @@ class AggregateBumpReciprocal(BumpPositionData):
 
 
 
+##############################################################################
+#                            Firing rates
+
+class MaxPopulationFR(AggregateData):
+    '''
+    Extract the maximal (sliding) population firing rate for each parameter
+    setting.
+    '''
+
+    def __init__(self, space, iterList, **kw):
+        super(MaxPopulationFR, self).__init__(space, iterList, None, **kw)
+
+        self._maxFR = None
+
+    def getData(self):
+        if self._maxFR is None:
+            path = self.analysisRoot[0] + '/FR_e/popSliding'
+            FR = self.sp.getReduction(path)
+            nTrials = len(FR[0][0])
+            self._maxFR = np.ndarray((self.sp.shape[0], self.sp.shape[1],
+                                        nTrials),
+                                     dtype=np.double)
+            for r in xrange(self.sp.shape[0]):
+                for c in xrange(self.sp.shape[1]):
+                    for trialNum in xrange(nTrials):
+                        data = FR[r][c][trialNum]
+                        self._maxFR[r, c, trialNum] = \
+                                np.max(data) if data is not None else np.nan
+
+            #import pdb; pdb.set_trace()
+            self._Y, self._X = computeYX(self.sp, self.iterList,
+                                         normalizeTicks=self.normalizeTicks)
+        return (np.mean(maskNaNs(self._maxFR, self.ignoreNaNs), axis=2),
+                self._X, self._Y)
+
+
+
+
 
 ##############################################################################
 def collapseSweeps(data):
