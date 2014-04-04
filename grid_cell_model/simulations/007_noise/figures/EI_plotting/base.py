@@ -6,6 +6,7 @@
 #       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
 #       
 import numpy       as np
+import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 
 from matplotlib.pyplot   import gca, axis, colorbar
@@ -148,7 +149,7 @@ def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn, thetaLim, color='grey')
     
 
 def plotOneHist(data, bins=40, normed=False, **kw):
-    ax = gca()
+    ax = kw.pop('ax', plt.gca())
     globalAxesSettings(ax)
     ax.hist(data, bins=bins, normed=normed, histtype='step',
             align='mid', **kw)

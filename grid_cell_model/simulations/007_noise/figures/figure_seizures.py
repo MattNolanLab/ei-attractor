@@ -7,11 +7,11 @@ Figure illustrating seizures.
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
+from matplotlib.colors import LogNorm
 from matplotlib.transforms import Bbox
 
 import default_settings as ds
-from EI_plotting import sweeps
-from EI_plotting import rasters
+from EI_plotting import sweeps, rasters, base
 from EI_plotting import aggregate as aggr
 from submitting  import flagparse
 
@@ -25,6 +25,7 @@ parser.add_flag('--maxFRSweeps')
 parser.add_flag('--maxThetaFRSweeps')
 parser.add_flag('--maxThetaFRSweeps_median')
 parser.add_flag('--maxThetaFRSweeps_std')
+parser.add_flag('--maxThetaFRHist')
 args = parser.parse_args()
 
 ###############################################################################
@@ -201,8 +202,10 @@ maxThetaFR_cbar_kw = dict(
         shrink      = 0.8,
         pad         = 0.25,
         ticks       = ti.MultipleLocator(100),
+        #ticks       = ti.LogLocator(base=4),
+        #format      = ti.LogFormatter(4),
         rasterized  = True)
-maxThetaFR_vmin = 0
+maxThetaFR_vmin = 2.
 maxThetaFR_vmax = 500.
 
 thetaT = 125.  # ms
@@ -226,11 +229,12 @@ if args.maxThetaFRSweeps or args.all:
                 ax=ax,
                 cbar_kw=maxThetaFR_cbar_kw,
                 vmin=maxThetaFR_vmin, vmax=maxThetaFR_vmax,
+                #norm=LogNorm(maxThetaFR_vmin, maxThetaFR_vmax),
                 sigmaTitle=False,
                 **kw)
         fname = outputDir + "/bumps_popMaxThetaFR_sweep{0}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
-        plt.close()
+        #plt.close()
 
 
 if args.maxThetaFRSweeps_median or args.all:
@@ -283,5 +287,25 @@ if args.maxThetaFRSweeps_std or args.all:
                 sigmaTitle=False,
                 **kw)
         fname = outputDir + "/bumps_popMaxThetaFR_std_sweep{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
+# Histograms of maxima of firing rates during theta cycles
+if args.maxThetaFRHist or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig, _ = ds.getDefaultSweepFig(scale=1., colorBarPos='left')
+        ax = plt.subplot(111)
+        kw = dict(cbar=True)
+        data = aggr.MaxThetaPopulationFR(
+                thetaT, sig_dt, None,
+                ps.bumpGamma[ns_idx], ds.iterList,
+                ignoreNaNs=True, normalizeTicks=True)
+        flatData = np.hstack(data.getNonReducedData().flatten().tolist())
+        flatData = flatData[np.logical_not(np.isnan(flatData))]
+        base.plotOneHist(flatData, bins=80, ax=ax, rwidth=.8, normed=True)
+        ax.set_xlabel('Max rate in $\\theta$ cycle (Hz)')
+        ax.set_ylabel('p(rate)')
+        fig.tight_layout()
+        fname = outputDir + "/bumps_popMaxThetaFR_hist{0}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
         plt.close()

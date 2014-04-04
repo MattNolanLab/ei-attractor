@@ -683,30 +683,32 @@ class MaxThetaPopulationFR(PopulationFR):
         super(MaxThetaPopulationFR, self).__init__(space, iterList, **kw)
         self.thetaT = thetaT
         self.sig_dt = sig_dt
-        self._maxThetaFR = None
+        self._trialMax = None        # Trial data, non-reduced
         self.reduceFunc = reduceFunc
 
-
-    def getData(self):
-        if self._maxThetaFR is None:
+    def getNonReducedData(self):
+        if self._trialMax is None:
             FR, _, _ = self._getRawData()
             nTrials = FR.shape[2]
-            self._maxThetaFR = np.ndarray((self.sp.shape[0], self.sp.shape[1],
+            self._trialMax = np.ndarray((self.sp.shape[0], self.sp.shape[1],
                                             nTrials),
-                                         dtype=np.double)
+                                         dtype=object)
             for r in xrange(self.sp.shape[0]):
                 for c in xrange(self.sp.shape[1]):
                     for trialNum in xrange(nTrials):
                         rate = FR[r, c, trialNum, :]
-                        thetaRate = np.max(
+                        self._trialMax[r, c, trialNum] = np.max(
                                 asignal.splitSigToThetaCycles(rate,
                                                               self.thetaT,
                                                               self.sig_dt),
                                 axis=1)
-                        self._maxThetaFR[r, c, trialNum] = self.reduceFunc(
-                                thetaRate)
+        return self._trialMax
 
-        return (np.mean(maskNaNs(self._maxThetaFR, self.ignoreNaNs), axis=2),
+    def getData(self):
+        data = self.getNonReducedData()
+        reduction = np.vectorize(self.reduceFunc, cache=True)
+        reducedData = reduction(data)
+        return (np.mean(maskNaNs(reducedData, self.ignoreNaNs), axis=2),
                 self._X, self._Y)
 
 
