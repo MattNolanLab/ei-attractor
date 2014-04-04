@@ -63,37 +63,65 @@ class FiringRateVisitor(DictDSVisitor):
         thetaStartT = self._checkAttrIsNone(self.thetaStartT,
                 'theta_start_t', data)
         tEnd = self._checkAttrIsNone(self.tEnd, 'time', data)
+
+        eSp = self._getSpikeTrain(data, 'spikeMon_e', ['Ne_x', 'Ne_y'])
+        iSp = self._getSpikeTrain(data, 'spikeMon_i', ['Ni_x', 'Ni_y'])
+
         if (not self.folderExists(a, ['FR_e']) or self.forceUpdate):
             FRLogger.info("Analysing (FR_e)")
-            eSp = self._getSpikeTrain(data, 'spikeMon_e', ['Ne_x', 'Ne_y'])
             eFR = eSp.avgFiringRate(thetaStartT, tEnd)
-            eSlidingFR, eSlidingFRt = eSp.slidingFiringRate(
-                                        thetaStartT, tEnd, self.winDt,
-                                        self.winLen)
             a['FR_e'] = {
                     'all'             : eFR,
                     'avg'             : np.mean(eFR),
-                    'popSliding'      : np.mean(eSlidingFR, axis=0),
-                    'popSlidingTimes' : eSlidingFRt
             }
         else:
             FRLogger.info("Data present (FR_e), skipping.")
 
-        if (not self.folderExists(a, ['FR_i']) or self.forceUpdate):
-            FRLogger.info("Analysing (FR_i)")
-            iSp = self._getSpikeTrain(data, 'spikeMon_i', ['Ni_x', 'Ni_y'])
-            iFR = iSp.avgFiringRate(thetaStartT, tEnd)
-            iSlidingFR, iSlidingFRt = iSp.slidingFiringRate(
+
+        import pdb; pdb.set_trace()
+        frE = a['FR_e']
+        if not ('popSliding' in frE.keys() and 'popSlidingTimes' in
+                frE.keys()):
+            FRLogger.info("Analysing (sliding FR_e)")
+            eSlidingFR, eSlidingFRt = eSp.slidingFiringRate(
                                         thetaStartT, tEnd, self.winDt,
                                         self.winLen)
+            frE.update({
+                    'popSliding'      : np.mean(eSlidingFR, axis=0),
+                    'popSlidingTimes' : eSlidingFRt
+            })
+        else:
+            FRLogger.info("Data present (sliding FR_e), skipping.")
+
+
+        if (not self.folderExists(a, ['FR_i']) or self.forceUpdate):
+            FRLogger.info("Analysing (FR_i)")
+            iFR = iSp.avgFiringRate(thetaStartT, tEnd)
             a['FR_i'] = {
                     'all'             : iFR,
-                    'avg'             : np.mean(iFR),
-                    'popSliding'      : np.mean(iSlidingFR, axis=0),
-                    'popSlidingTimes' : iSlidingFRt
+                    'avg'             : np.mean(iFR)
             }
         else:
             FRLogger.info("Data present (FR_i), skipping.")
+
+
+        frI = a['FR_i']
+        if not ('popSliding' in frI.keys() and 'popSlidingTimes' in
+                frI.keys()):
+            FRLogger.info("Analysing (sliding FR_i)")
+            iSlidingFR, iSlidingFRt = iSp.slidingFiringRate(
+                                        thetaStartT, tEnd, self.winDt,
+                                        self.winLen)
+            frI.update({
+                    'popSliding'      : np.mean(iSlidingFR, axis=0),
+                    'popSlidingTimes' : iSlidingFRt
+            })
+        else:
+            FRLogger.info("Data present (sliding FR_i), skipping.")
+
+
+        
+        
 
 
 ##############################################################################
