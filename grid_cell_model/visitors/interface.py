@@ -14,7 +14,10 @@ class Visitor(object):
     methods implemented in the derived classes. Due to duck typing, one does
     not need to declare the specific implementation methods of the visitor.
     '''
-    def __init__(self):
+    __meta__ = ABCMeta
+
+    @abstractmethod
+    def _dummy(self):
         raise NotImplementedError()
 
 
@@ -26,10 +29,6 @@ class DictDSVisitor(Visitor):
     A visitor that takes a dictionary data set method of any kind and processes
     it. All the keys in the dictionary must be strings.
     '''
-    __meta__ = ABCMeta
-
-    def __init__(self):
-        raise NotImplementedError()
 
     @abstractmethod
     def visitDictDataSet(self, ds, **kw):
