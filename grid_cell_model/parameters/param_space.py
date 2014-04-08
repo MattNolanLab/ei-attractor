@@ -114,7 +114,7 @@ class TrialSet(DataSpace):
         self._loadData()
         return DictDataSet(self._ds)
 
-    def visit(self, visitor, trialList=None):
+    def visit(self, visitor, trialList=None, **kw):
         '''
         Apply a visitor to the trials set. There are two modes: Apply the
         visitor to trials separately, or pass the raw DictDataset to the
@@ -132,14 +132,16 @@ class TrialSet(DataSpace):
             list of trials to pass on to the visitor (separately).
         '''
         if (trialList == 'all-at-once'):
-            self.getAllTrialsAsDataSet().visit(visitor, fileName=self._fileName)
+            self.getAllTrialsAsDataSet().visit(visitor,
+                                               fileName=self._fileName, **kw)
         else:
             if (trialList is None):
                 trialList = xrange(len(self))
 
             for trialIdx in trialList:
                 trial = self[trialIdx]
-                trial.visit(visitor, fileName=self._fileName, trialNum=trialIdx)
+                trial.visit(visitor, fileName=self._fileName,
+                            trialNum=trialIdx, **kw)
 
 
 class DummyTrialSet(DataSpace):
@@ -150,7 +152,7 @@ class DummyTrialSet(DataSpace):
     def __getitem__(self, key):
         raise ValueError("A DummyTrialSet cannot be indexed!")
 
-    def visit(self, visitor, trialList=None):
+    def visit(self, visitor, trialList=None, **kw):
         pass
 
 
@@ -313,7 +315,7 @@ class JobTrialSpace2D(DataSpace):
     def visit(self, visitor, trialList=None):
         for r in xrange(self.rows):
             for c in xrange(self.cols):
-                self[r][c].visit(visitor, trialList)
+                self[r][c].visit(visitor, trialList=trialList, r=r, c=c)
 
 
     def _createAggregateOutput(self, trialNumList, output_dtype):

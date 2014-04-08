@@ -36,7 +36,7 @@ class DataSet(object):
     def parameters(self):
         raise NotImplementedError()
 
-    def visit(self, visitor):
+    def visit(self, visitor, **kw):
         raise NotImplementedError()
 
 
