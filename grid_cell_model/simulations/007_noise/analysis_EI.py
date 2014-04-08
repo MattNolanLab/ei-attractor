@@ -66,7 +66,7 @@ if (o.type == "gamma-bump"):
     #        forceUpdate=forceUpdate)
 
     #sp.visit(ACVisitor)
-    sp.visit(bumpVisitor)
+    #sp.visit(bumpVisitor)
     sp.visit(bumpPosVisitor)
     sp.visit(FRVisitor)
     #sp.visit(CCVisitor)
