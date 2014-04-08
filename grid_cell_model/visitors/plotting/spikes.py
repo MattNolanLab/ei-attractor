@@ -3,6 +3,7 @@ Visitors that perform plotting of spikes.
 '''
 import numpy as np
 
+import matplotlib.pyplot as plt
 
 from otherpkg.log import getClassLogger
 #import analysis.spikes as aspikes
@@ -18,7 +19,7 @@ FRPlotLogger = getClassLogger("FiringRatePlotter", __name__)
 class FiringRatePlotter(interface.DictDSVisitor):
     '''Plot population firing rates for the specified duration'''
 
-    def __init__(self, rootDir=None, readme=''):
+    def __init__(self, rootDir=None, readme='', figSize=(20, 4)):
         '''Initialize the visitor
 
         Parameters
@@ -29,6 +30,7 @@ class FiringRatePlotter(interface.DictDSVisitor):
         '''
         super(FiringRatePlotter, self).__init__()
         self.rootDir = rootDir
+        self.figSize = figSize
 
 
 
@@ -43,25 +45,33 @@ class FiringRatePlotter(interface.DictDSVisitor):
 
         data = ds.data
         a = data['analysis']
-        fig = plt.Figure()
+        fig = plt.figure(figsize=self.figSize)
         
         # E firing rate
-        FR_e  = a['FR_e/popSliding']
-        FRt_e = a['FR_e/popSligindTimes']
+        FR_e  = a['FR_e']['popSliding']
+        FRt_e = a['FR_e']['popSlidingTimes']
         
         axE = fig.add_subplot(211)
-        signalPlot(FRt_e, FR_e, axE) 
+        signalPlot(FRt_e, FR_e, axE, color='red')
+        axE.set_ylabel('E rate (Hz)') 
+        axE.set_xlim([0, FRt_e[-1]])
 
 
         # I firing rate
-        FR_i  = a['FR_i/popSliding']
-        FRt_i = a['FR_i/popSligindTimes']
+        FR_i  = a['FR_i']['popSliding']
+        FRt_i = a['FR_i']['popSlidingTimes']
         
         axI = fig.add_subplot(212)
-        signalPlot(FRt_i, FR_i, axI) 
+        signalPlot(FRt_i, FR_i, axI, color='blue')
+        axI.set_ylabel('I rate (Hz)') 
+        axI.set_xlim([0, FRt_i[-1]])
+
+        fig.suptitle("gE idx: {r}, gI idx: {c}, trial: {tr}".format(
+            r=r, c=c, tr=trialNum))
 
         figPath = self.getFigPath(kw['fileName'], self.rootDir, r, c, trialNum)
         FRPlotLogger.info("Saving figure to '{0}'".format(figPath))
+        fig.tight_layout()
         fig.savefig(figPath)
 
 

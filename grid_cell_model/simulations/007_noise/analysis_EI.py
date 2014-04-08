@@ -10,7 +10,7 @@ matplotlib.use('agg')
 import visitors as vis
 import visitors.bumps as bumps
 import visitors.spikes
-import visitors.plotting_visitors as plotting
+import visitors.plotting.spikes
 from parameters import JobTrialSpace2D
 from submitting import flagparse
 
@@ -60,6 +60,7 @@ if (o.type == "gamma-bump"):
     FRVisitor = vis.spikes.FiringRateVisitor(winLen=2.,     # ms
                                              winDt=.5,      # ms
                                              forceUpdate=forceUpdate)
+    FRPlotter = vis.plotting.spikes.FiringRatePlotter(rootDir='pop_fr_plots')
     #CCVisitor = vis.CrossCorrelationVisitor(monName, stateList,
     #        forceUpdate=forceUpdate)
     #spikeVisitor_e = vis.SpikeStatsVisitor("spikeMon_e",
@@ -69,6 +70,7 @@ if (o.type == "gamma-bump"):
     #sp.visit(bumpVisitor)
     sp.visit(bumpPosVisitor)
     sp.visit(FRVisitor)
+    sp.visit(FRPlotter)
     #sp.visit(CCVisitor)
     #sp.visit(spikeVisitor_e)
 elif (o.type == "velocity"):
@@ -84,16 +86,16 @@ elif (o.type == "velocity"):
     #sp.visit(speedPlotter, trialList='all-at-once')
 elif (o.type == 'grids'):
     spikeType = 'E'
-    po = plotting.GridPlotVisitor.PlotOptions()
-    gridVisitor = plotting.GridPlotVisitor(o.output_dir, spikeType=spikeType,
-            plotOptions=po, minGridnessT=300e3, forceUpdate=o.forceUpdate)
-    #ISIVisitor = plotting.ISIPlotVisitor(o.output_dir,
+    #po = plotting_visitors.GridPlotVisitor.PlotOptions()
+    #gridVisitor = plotting_visitors.GridPlotVisitor(o.output_dir, spikeType=spikeType,
+    #        plotOptions=po, minGridnessT=300e3, forceUpdate=o.forceUpdate)
+    #ISIVisitor = plotting_visitors.ISIPlotVisitor(o.output_dir,
     #        spikeType = spikeType,
     #        nRows = 5, nCols = 5, range=[0, 1000], bins=40,
     #        ISINWindows=20)
-    #FRVisitor = plotting.FiringRateVisitor(forceUpdate=forceUpdate)
+    #FRVisitor = plotting_visitors.FiringRateVisitor(forceUpdate=forceUpdate)
 
-    sp.visit(gridVisitor)
+    #sp.visit(gridVisitor)
     #sp.visit(ISIVisitor)
     #sp.visit(FRVisitor)
 elif o.type == 'positional':
