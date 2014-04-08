@@ -32,7 +32,7 @@ module load python/2.7.5
 
 BASE=../../
 export LOCAL_DIR=/exports/work/inf_ndtc/lsolanka
-export PYTHONPATH=$PYTHONPATH:$LOCAL_DIR/GridCells/grid_cell_model
+export PYTHONPATH=$PYTHONPATH:$LOCAL_DIR/GridCellModel/grid_cell_model
 export PYTHONUSERBASE=$LOCAL_DIR/usr/local/
 
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
