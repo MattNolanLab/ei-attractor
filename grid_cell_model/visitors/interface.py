@@ -2,6 +2,7 @@
 Interface definitions for the visitors package.
 '''
 from abc import ABCMeta, abstractmethod
+import os
 
 from data_storage.sim_models.ei import extractSpikes
 
@@ -20,6 +21,27 @@ class Visitor(object):
     def _dummy(self):
         raise NotImplementedError()
 
+
+    def getFigPath(self, dataFilePath, rootDir, r, c, trialNum, ext="pdf"):
+        '''Return name of figure related to data being processed.
+
+        Extract the data file name from the path given and return the name
+        of the figure related to the data file name. Also, try to create the
+        underlying directories (if the resulting path does not exist) so the
+        caller can simply output the file with that name into the specified
+        path.
+        '''
+        dataRootDir, dataFileName = os.path.split(dataFilePath)
+        figDir = dataRootDir + "/"
+        if rootDir is not None:
+            figDir += rootDir
+            if not os.path.exists(figDir):
+                os.makedirs(figDir)
+        figFileName = os.path.splitext(dataFileName)[0]
+        figPath = "{figDir}/{figFileName}_r{r}_c{c}_tr{tr}.{ext}".format(
+                figDir=figDir, figFileName=figFileName, r=r, c=c, tr=trialNum,
+                ext=ext)
+        return figPath
 
 
 class DictDSVisitor(Visitor):

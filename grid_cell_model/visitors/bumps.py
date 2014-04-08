@@ -384,18 +384,17 @@ class SpeedPlotter(DictDSVisitor):
 
 
     def visitDictDataSet(self, ds, **kw):
+        if 'fileName' not in kw.keys():
+            msg = 'Did not receive the fileName as a keyword argument.'
+            velGainLogger.warn(msg)
+            return
+
         data = ds.data
         trials = data['trials']
         IvelVec = trials[0]['IvelVec'] # All the same
         a      = data[defaults.analysisRoot]
         slopes = a['bumpVelAll']
         
-
-        if 'fileName' not in kw.keys():
-            msg = 'Did not receive the fileName as a keyword argument.'
-            velGainLogger.warn(msg)
-            return
-
         speedPlotLogger.info("Plotting the velocity points")
         fig = plt.figure()
         ax = fig.gca()
@@ -411,15 +410,7 @@ class SpeedPlotter(DictDSVisitor):
 
         ax.legend(leg, loc='best')
         
-        dataRootDir, dataFileName = os.path.split(kw['fileName'])
-        figDir = dataRootDir + "/"
-        if self.rootDir is not None:
-            figDir += self.rootDir
-            if not os.path.exists(figDir):
-                os.makedirs(figDir)
-
-        figFileName = os.path.splitext(dataFileName)[0] + '.pdf'
-        figPath = "{0}/{1}".format(figDir, figFileName)
+        figPath = self.getFigPath(kw['fileName'], self.rootDir)
         speedPlotLogger.info("Saving figure to '{0}'".format(figPath))
         fig.savefig(figPath)
 
