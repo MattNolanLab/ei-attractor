@@ -42,6 +42,7 @@ files="
     $output_fig_dir/suppFigure_bump_sweeps.pdf
     $output_fig_dir/suppFigure_line_fit_error_vs_slope.pdf
     $output_fig_dir/suppFigure_no_theta.pdf
+    $output_fig_dir/suppFigure_seizures.pdf
     "
 
 echo $files

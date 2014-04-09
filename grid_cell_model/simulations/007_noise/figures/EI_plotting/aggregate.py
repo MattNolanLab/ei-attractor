@@ -1,4 +1,6 @@
 '''
+.. currentmodule:: EI_plotting.aggregate
+
 Data aggregation, mainly parameter sweeps
 '''
 from abc import ABCMeta, abstractmethod
@@ -674,6 +676,7 @@ class MaxPopulationFR(PopulationFR):
                 self._Y)
 
 
+
 class MaxThetaPopulationFR(PopulationFR):
     '''
     Extract the median/mean of the maximal population firing rate *every theta*
@@ -710,8 +713,6 @@ class MaxThetaPopulationFR(PopulationFR):
         reducedData = reduction(data)
         return (np.mean(maskNaNs(reducedData, self.ignoreNaNs), axis=2),
                 self._X, self._Y)
-
-
 
 
 ##############################################################################

@@ -25,6 +25,7 @@ parser.add_flag('--maxFRSweeps')
 parser.add_flag('--maxThetaFRSweeps')
 parser.add_flag('--maxThetaFRSweeps_median')
 parser.add_flag('--maxThetaFRSweeps_std')
+parser.add_flag('--seizureProportion')
 parser.add_flag('--maxThetaFRHist')
 args = parser.parse_args()
 
@@ -183,7 +184,6 @@ if args.maxFRSweeps or args.all:
                 ignoreNaNs=True, normalizeTicks=True)
         _, _, cax = sweeps.plotSweep(data,
                 noise_sigma=noise_sigma,
-                xlabel='', xticks=False,
                 ax=ax,
                 cbar_kw=maxFR_cbar_kw,
                 vmin=maxFR_vmin, vmax=maxFR_vmax,
@@ -195,7 +195,7 @@ if args.maxFRSweeps or args.all:
 
 
 ##############################################################################
-# Seizure measure - max firing rate per theta cycle (mean)
+# Seizure measure - max firing rate per theta cycle
 maxThetaFR_cbar_kw = dict(
         label       = "max(E rate)/$\\theta$ cycle (Hz)",
         location    = 'left',
@@ -211,6 +211,7 @@ maxThetaFR_vmax = 500.
 thetaT = 125.  # ms
 sig_dt = .5    # ms
 
+# mean
 if args.maxThetaFRSweeps or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig, ax = ds.getDefaultSweepFig(scale=1., colorBarPos='left')
@@ -237,6 +238,7 @@ if args.maxThetaFRSweeps or args.all:
         #plt.close()
 
 
+# median
 if args.maxThetaFRSweeps_median or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig, ax = ds.getDefaultSweepFig(scale=1., colorBarPos='left')
@@ -262,6 +264,7 @@ if args.maxThetaFRSweeps_median or args.all:
         plt.close()
 
 
+# std
 maxThetaFR_std_cbar_kw = dict(
         label       = "max(E rate)/$\\theta$ cycle (Hz)",
         location    = 'left',
@@ -290,7 +293,57 @@ if args.maxThetaFRSweeps_std or args.all:
         fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
         plt.close()
 
-# Histograms of maxima of firing rates during theta cycles
+
+# Proportion of cycles with max firing rate larger than threshold, i.e. number
+# of seizures during the simulation
+FRThreshold = 300
+
+maxThetaFR_std_cbar_kw = dict(
+        label       = "P[max(rate during $\\theta$) > {0}]".format(FRThreshold),
+        location    = 'left',
+        shrink      = 0.8,
+        pad         = 0.25,
+        ticks       = ti.MultipleLocator(0.5),
+        rasterized  = True)
+seizureThreshold_vmin = 0.
+seizureThreshold_vmax = 1.
+
+class thresholdReduction(object):
+    def __init__(self, threshold):
+        self.threshold = threshold
+
+    def __call__(self, data):
+        return float(np.count_nonzero(data >= self.threshold)) / len(data)
+
+if args.seizureProportion or args.all:
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig, ax = ds.getDefaultSweepFig(scale=1., colorBarPos='left')
+        kw = dict(cbar=False)
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        if ns_idx == 0:
+            kw['cbar'] = True
+        data = aggr.MaxThetaPopulationFR(
+                thetaT, sig_dt, thresholdReduction(FRThreshold),
+                ps.bumpGamma[ns_idx], ds.iterList,
+                ignoreNaNs=True, normalizeTicks=True)
+        _, _, cax = sweeps.plotSweep(data,
+                noise_sigma=noise_sigma,
+                ax=ax,
+                cbar_kw=maxThetaFR_std_cbar_kw,
+                vmin=maxThetaFR_std_vmin, vmax=maxThetaFR_std_vmax,
+                sigmaTitle=False,
+                **kw)
+        fname = outputDir + "/bumps_seizureProportion_sweep{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
+
+
+
+
+##############################################################################
+#       Histograms of maxima of firing rates during theta cycles
 if args.maxThetaFRHist or args.all:
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig, _ = ds.getDefaultSweepFig(scale=1., colorBarPos='left')
