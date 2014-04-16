@@ -295,8 +295,8 @@ if args.freqHist or args.all:
 
 
 ##############################################################################
-EI13Root  = 'output_local/detailed_noise/gamma_bump/EI-1_3'
-EI31Root  = 'output_local/detailed_noise/gamma_bump/EI-3_1'
+EI13Root  = 'output_local/detailed_noise_vertical/gamma_bump/EI-1_3'
+EI31Root  = 'output_local/detailed_noise_vertical/gamma_bump/EI-3_1'
 detailedShape = (31, 9)
 
 EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
