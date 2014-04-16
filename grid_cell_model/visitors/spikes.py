@@ -4,11 +4,15 @@ Visitors that perform (raw) spikes analysis.
 import numpy as np
 
 import analysis.spikes as aspikes
-from .interface import DictDSVisitor
+import data_storage.sim_models.ei as simei
 from otherpkg.log     import getClassLogger
+
+from .interface import DictDSVisitor
 
 import logging
 FRLogger = getClassLogger("FiringRateVisitor", __name__)
+XCLogger = getClassLogger("SpikeTrainXCVisitor", __name__)
+statsLogger = getClassLogger("SpikeStatsVisitor", __name__)
 
 __all__ = ['FiringRateVisitor', 'SpikeTrainXCVisitor', 'SpikeStatsVisitor']
 
@@ -172,7 +176,7 @@ class SpikeTrainXCVisitor(DictDSVisitor):
         a = data['analysis']
 
         if (self.outputName in a.keys() and not self.forceUpdate):
-            log_info("SpikeTrainXCorrelation", "Data present. Skipping analysis.")
+            XCLogger.info("Data present. Skipping analysis.")
             return
 
         spikes = simei.MonitoredSpikes(data, self.monitorName, self.NName)
@@ -222,7 +226,7 @@ class SpikeStatsVisitor(DictDSVisitor):
         a = data['analysis']
 
         if (self.outputName in a.keys() and not self.forceUpdate):
-            log_info("SpikeStatsVisitor", "Data present. Skipping analysis.")
+            statsLogger.info("Data present. Skipping analysis.")
             return
 
         spikes = simei.MonitoredSpikes(data, self.monitorName, self.NName)

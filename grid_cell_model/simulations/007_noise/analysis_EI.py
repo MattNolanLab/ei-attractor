@@ -8,8 +8,10 @@ import matplotlib
 matplotlib.use('agg')
 
 import visitors as vis
-import visitors.bumps as bumps
 import visitors.spikes
+import visitors.bumps
+import visitors.signals
+import visitors.plotting
 import visitors.plotting.spikes
 from parameters import JobTrialSpace2D
 from submitting import flagparse
@@ -41,11 +43,6 @@ forceUpdate = bool(o.forceUpdate)
 
 # Create visitors
 if o.type == common.bumpType:
-    monName   = 'stateMonF_e'
-    stateList = ['I_clamp_GABA_A']
-    iterList  = ['g_AMPA_total', 'g_GABA_total']
-    #ACVisitor = vis.analysis_visitors.AutoCorrelationVisitor(monName, stateList,
-    #        forceUpdate=forceUpdate)
     bumpVisitor = vis.bumps.BumpFittingVisitor(forceUpdate=forceUpdate,
             tstart='full',
             readme='Bump fitting. Whole simulation, starting at the start of theta stimulation.',
@@ -61,18 +58,27 @@ if o.type == common.bumpType:
                                              winDt=.5,      # ms
                                              forceUpdate=forceUpdate)
     FRPlotter = vis.plotting.spikes.FiringRatePlotter(rootDir='pop_fr_plots')
-    #CCVisitor = vis.CrossCorrelationVisitor(monName, stateList,
-    #        forceUpdate=forceUpdate)
-    #spikeVisitor_e = vis.SpikeStatsVisitor("spikeMon_e",
-    #        forceUpdate=forceUpdate)
 
-    #sp.visit(ACVisitor)
     #sp.visit(bumpVisitor)
     sp.visit(bumpPosVisitor)
     sp.visit(FRVisitor)
     sp.visit(FRPlotter)
-    #sp.visit(CCVisitor)
-    #sp.visit(spikeVisitor_e)
+
+elif o.type == common.gammaType:
+    monName   = 'stateMonF_e'
+    stateList = ['I_clamp_GABA_A']
+
+    statsVisitor_e = vis.spikes.SpikeStatsVisitor("spikeMon_e",
+                                                  forceUpdate=forceUpdate)
+    ACVisitor = vis.signals.AutoCorrelationVisitor(monName, stateList,
+                                                   forceUpdate=forceUpdate)
+    CCVisitor = vis.signals.CrossCorrelationVisitor(monName, stateList,
+                                                    forceUpdate=forceUpdate)
+
+    sp.visit(ACVisitor)
+    sp.visit(CCVisitor)
+    sp.visit(statsVisitor_e)
+
 elif o.type == common.velocityType:
     speedEstimator = bumps.SpeedEstimator(
             forceUpdate=forceUpdate, axis='vertical', win_dt=50.0)

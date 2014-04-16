@@ -1,13 +1,12 @@
 '''
-Visitors that perform data analysis on data.
+Visitors that perform data analysis on signals (i.e. voltage clamp data).
 '''
 import numpy as np
 
 import analysis.signal as asignal
-import analysis.spikes as aspikes
 import data_storage.sim_models.ei as simei
 from interface        import DictDSVisitor 
-from otherpkg.log     import log_info, log_warn
+from otherpkg.log     import log_info
 from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
 
 
