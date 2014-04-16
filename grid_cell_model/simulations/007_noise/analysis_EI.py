@@ -13,6 +13,7 @@ import visitors.spikes
 import visitors.plotting.spikes
 from parameters import JobTrialSpace2D
 from submitting import flagparse
+import common.analysis as common
 
 ###############################################################################
 parser = flagparse.FlagParser()
@@ -23,8 +24,7 @@ parser.add_argument('--shapeCols',    type=int, required=True)
 parser.add_argument('--forceUpdate',  type=int, required=True)
 parser.add_argument("--output_dir",   type=str, required=True)
 parser.add_argument("--job_num",      type=int) # unused
-parser.add_argument("--type",         type=str,
-        choices=['gamma-bump', 'velocity', 'grids', 'positional'], required=True)
+parser.add_argument("--type",         type=str, choices=common.allowedTypes, required=True)
 parser.add_argument("--bumpSpeedMax", type=float)
 
 o = parser.parse_args()
@@ -40,7 +40,7 @@ sp = JobTrialSpace2D(shape, o.output_dir, dataPoints=dataPoints)
 forceUpdate = bool(o.forceUpdate)
 
 # Create visitors
-if (o.type == "gamma-bump"):
+if o.type == common.bumpType:
     monName   = 'stateMonF_e'
     stateList = ['I_clamp_GABA_A']
     iterList  = ['g_AMPA_total', 'g_GABA_total']
@@ -73,7 +73,7 @@ if (o.type == "gamma-bump"):
     sp.visit(FRPlotter)
     #sp.visit(CCVisitor)
     #sp.visit(spikeVisitor_e)
-elif (o.type == "velocity"):
+elif o.type == common.velocityType:
     speedEstimator = bumps.SpeedEstimator(
             forceUpdate=forceUpdate, axis='vertical', win_dt=50.0)
     gainEstimator = bumps.VelocityGainEstimator(o.bumpSpeedMax,
@@ -84,7 +84,8 @@ elif (o.type == "velocity"):
     sp.visit(speedEstimator, trialList='all-at-once')
     #sp.visit(gainEstimator, trialList='all-at-once')
     #sp.visit(speedPlotter, trialList='all-at-once')
-elif (o.type == 'grids'):
+
+elif o.type == common.gridsType:
     spikeType = 'E'
     #po = plotting_visitors.GridPlotVisitor.PlotOptions()
     #gridVisitor = plotting_visitors.GridPlotVisitor(o.output_dir, spikeType=spikeType,
@@ -98,7 +99,7 @@ elif (o.type == 'grids'):
     #sp.visit(gridVisitor)
     #sp.visit(ISIVisitor)
     #sp.visit(FRVisitor)
-elif o.type == 'positional':
+elif o.type == common.posType:
     bumpPosVisitor = vis.bumps.BumpPositionVisitor(
             tstart=0,
             tend=None,

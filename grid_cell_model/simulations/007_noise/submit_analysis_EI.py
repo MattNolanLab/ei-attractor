@@ -5,6 +5,7 @@ Submit EI analysis jobs.
 '''
 
 import numpy as np
+
 from submitting.factory   import SubmitterFactory
 from submitting.arguments import ArgumentCreator
 from param_sweep          import getSpeedPercentile
@@ -12,18 +13,15 @@ from default_params       import defaultParameters as dp
 from submitting           import flagparse
 from submitting.flagparse import positive_int
 
-gammaBumpType= 'gamma-bump'
-velocityType = 'velocity'
-gridsType    = 'grids'
-posType      = 'positional'
-allowedTypes = [gammaBumpType, velocityType, gridsType, posType]
+import common.analysis as common
+
 
 parser = flagparse.FlagParser()
 parser.add_argument('--row',     type=int)
 parser.add_argument('--col',     type=int)
 parser.add_argument("--where",   type=str, required=True)
 parser.add_argument("--ns",      type=int, choices=[0, 150, 300])
-parser.add_argument('--type',    type=str, choices=allowedTypes, required=True)
+parser.add_argument('--type',    type=str, choices=common.allowedTypes, required=True)
 parser.add_argument('--env',     type=str, choices=['workstation', 'cluster'], required=True)
 parser.add_argument('--nCPU',    type=positive_int, default=1)
 parser.add_argument('--rtLimit', type=str, default='00:05:00')
@@ -65,7 +63,7 @@ for noise_sigma in noise_sigmas:
     p['verbosity']   = o.verbosity
     p['forceUpdate'] = int(o.forceUpdate)
 
-    if (p['type'] == velocityType):
+    if (p['type'] == common.velocityType):
         percentile = 99.0
         p['bumpSpeedMax'] = getSpeedPercentile(percentile, dp['ratVelFName'],
                 dp['gridSep'], dp['Ne'])

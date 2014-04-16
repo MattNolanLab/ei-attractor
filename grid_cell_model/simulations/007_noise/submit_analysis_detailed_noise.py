@@ -21,24 +21,22 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
+
 from submitting           import flagparse
 from submitting.flagparse import positive_int
 from submitting.factory   import SubmitterFactory
 from submitting.arguments import ArgumentCreator
 from param_sweep          import getSpeedPercentile
 from default_params       import defaultParameters as dp
+import common.analysis as common
 
-velocityType  = 'velocity'
-gridsType     = 'grids'
-
-allowedTypes = [velocityType, gridsType]
 allowedPositions = ['EI-1_3', 'EI-3_1']
 
 parser = flagparse.FlagParser()
 parser.add_argument('--row',     type=int)
 parser.add_argument('--col',     type=int)
 parser.add_argument("--where",   type=str, required=True)
-parser.add_argument('--type',    type=str, choices=allowedTypes, required=True)
+parser.add_argument('--type',    type=str, choices=common.allowedTypes, required=True)
 parser.add_argument('--env',     type=str, choices=['workstation', 'cluster'], required=True)
 parser.add_argument('--nCPU',    type=positive_int, default=1)
 parser.add_argument('--rtLimit', type=str, default='00:05:00')
@@ -79,7 +77,7 @@ for position in positions:
     p['verbosity']   = o.verbosity
     p['forceUpdate'] = int(o.forceUpdate)
 
-    if (p['type'] == velocityType):
+    if (p['type'] == common.velocityType):
         percentile = 99.0
         p['bumpSpeedMax'] = getSpeedPercentile(percentile, dp['ratVelFName'],
                 dp['gridSep'], dp['Ne'])
