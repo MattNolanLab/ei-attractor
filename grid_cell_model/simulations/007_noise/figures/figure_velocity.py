@@ -166,8 +166,8 @@ if args.velLines or args.all:
 
 
 ##############################################################################
-EI13Root  = 'output_local/detailed_noise/velocity/EI-1_3'
-EI31Root  = 'output_local/detailed_noise/velocity/EI-3_1'
+EI13Root  = 'output_local/detailed_noise_vertical/velocity/EI-1_3'
+EI31Root  = 'output_local/detailed_noise_vertical/velocity/EI-3_1'
 detailedShape = (31, 9)
 
 EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
