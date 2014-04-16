@@ -80,12 +80,15 @@ elif o.type == common.gammaType:
     sp.visit(statsVisitor_e)
 
 elif o.type == common.velocityType:
-    speedEstimator = bumps.SpeedEstimator(
-            forceUpdate=forceUpdate, axis='vertical', win_dt=50.0)
-    gainEstimator = bumps.VelocityGainEstimator(o.bumpSpeedMax,
-                                                forceUpdate=forceUpdate,
-                                                maxFitRangeIdx=10)
-    speedPlotter = bumps.SpeedPlotter(plotFittedLine=False)
+    speedEstimator = vis.bumps.SpeedEstimator(
+            forceUpdate=forceUpdate,
+            axis='vertical',
+            win_dt=50.0)
+    gainEstimator = vis.bumps.VelocityGainEstimator(
+            o.bumpSpeedMax,
+            forceUpdate=forceUpdate,
+            maxFitRangeIdx=10)
+    speedPlotter = vis.bumps.SpeedPlotter(plotFittedLine=False)
 
     sp.visit(speedEstimator, trialList='all-at-once')
     #sp.visit(gainEstimator, trialList='all-at-once')
