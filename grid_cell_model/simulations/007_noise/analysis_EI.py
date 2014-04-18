@@ -13,6 +13,7 @@ import visitors.bumps
 import visitors.signals
 import visitors.plotting
 import visitors.plotting.spikes
+import visitors.plotting.grids
 from parameters import JobTrialSpace2D
 from submitting import flagparse
 import common.analysis as common
@@ -103,16 +104,29 @@ elif o.type == common.velocityType:
 
 elif o.type == common.gridsType:
     spikeType = 'E'
-    #po = plotting_visitors.GridPlotVisitor.PlotOptions()
-    #gridVisitor = plotting_visitors.GridPlotVisitor(o.output_dir, spikeType=spikeType,
-    #        plotOptions=po, minGridnessT=300e3, forceUpdate=o.forceUpdate)
+
+    po = vis.plotting.grids.GridPlotVisitor.PlotOptions()
+    gridVisitor = vis.plotting.grids.GridPlotVisitor(
+            o.output_dir,
+            spikeType=spikeType,
+            plotOptions=po,
+            minGridnessT=300e3,
+            forceUpdate=o.forceUpdate)
+    isBumpVisitor = vis.bumps.BumpPositionVisitor(
+            tstart=isBump_tstart,
+            tend=isBump_tend,
+            win_dt=isBump_win_dt,
+            readme=isBump_readme,
+            forceUpdate=forceUpdate,
+            bumpERoot='bump_e_isBump')
     #ISIVisitor = plotting_visitors.ISIPlotVisitor(o.output_dir,
     #        spikeType = spikeType,
     #        nRows = 5, nCols = 5, range=[0, 1000], bins=40,
     #        ISINWindows=20)
     #FRVisitor = plotting_visitors.FiringRateVisitor(forceUpdate=forceUpdate)
 
-    #sp.visit(gridVisitor)
+    sp.visit(gridVisitor)
+    sp.visit(isBumpVisitor)
     #sp.visit(ISIVisitor)
     #sp.visit(FRVisitor)
 elif o.type == common.posType:
