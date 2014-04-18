@@ -41,6 +41,13 @@ trialNums = None
 sp = JobTrialSpace2D(shape, o.output_dir, dataPoints=dataPoints)
 forceUpdate = bool(o.forceUpdate)
 
+# Common parameters
+isBump_win_dt = 125.
+isBump_tstart = 0.
+isBump_tend   = None
+isBump_readme = 'Bump position estimation. Whole simulation'
+
+
 # Create visitors
 if o.type == common.bumpType:
     bumpVisitor = vis.bumps.BumpFittingVisitor(forceUpdate=forceUpdate,
@@ -48,19 +55,19 @@ if o.type == common.bumpType:
             readme='Bump fitting. Whole simulation, starting at the start of theta stimulation.',
             bumpERoot='bump_e_full',
             bumpIRoot='bump_i_full')
-    bumpPosVisitor = vis.bumps.BumpPositionVisitor(
-            tstart=0,
-            tend=None,
-            win_dt=125.0,
-            readme='Bump position estimation. Whole simulation',
-            forceUpdate=forceUpdate)
     FRVisitor = vis.spikes.FiringRateVisitor(winLen=2.,     # ms
                                              winDt=.5,      # ms
                                              forceUpdate=forceUpdate)
     FRPlotter = vis.plotting.spikes.FiringRatePlotter(rootDir='pop_fr_plots')
+    isBumpVisitor = vis.bumps.BumpPositionVisitor(
+            tstart=isBump_tstart,
+            tend=isBump_tend,
+            win_dt=isBump_win_dt,
+            readme=isBump_readme,
+            forceUpdate=forceUpdate)
 
     #sp.visit(bumpVisitor)
-    sp.visit(bumpPosVisitor)
+    sp.visit(isBumpVisitor)
     sp.visit(FRVisitor)
     sp.visit(FRPlotter)
 
