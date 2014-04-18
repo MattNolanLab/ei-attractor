@@ -1,6 +1,27 @@
+'''
+Grid field plotting visitors.
+'''
+import os
+import errno
+
+import numpy as np
+from matplotlib.pyplot import figure, plot, pcolormesh, subplot2grid, savefig,\
+        colorbar, axis, xlabel, ylabel
+
+from analysis.spikes import PopulationSpikes
+from analysis.grid_cells import SNSpatialRate2D, SNAutoCorr, cellGridnessScore
+from plotting.bumps  import torusFiringRate
+from plotting.grids  import plotSpikes2D
+from otherpkg.log    import log_warn, log_info
+
+from .. import interface
 
 
-class GridPlotVisitor(DictDSVisitor):
+__all__ = ['GridPlotVisitor']
+
+
+
+class GridPlotVisitor(interface.DictDSVisitor):
     '''
     Plot the following figures for the data set:
         * Spike map, showing the trajectory of a simulated animal and spike
