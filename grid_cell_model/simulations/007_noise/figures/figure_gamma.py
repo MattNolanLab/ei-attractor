@@ -471,7 +471,8 @@ if args.scatterPlot_all or args.all:
     typesGamma = ['gamma', 'acVal']
     typesGrids = ['grids', 'gridnessScore']
     ax.hold('on')
-    scatterColors = ['blue', 'green', 'red']
+    scatterColors = ['green', 'red', 'blue']
+    scatterOrders = [2, 3, 1]
 
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         color = scatterColors[ns_idx]
@@ -482,7 +483,8 @@ if args.scatterPlot_all or args.all:
                 s=15,
                 linewidth=0.3,
                 xlabel='$1^{st}$ autocorrelation peak',
-                ylabel='Gridness score')
+                ylabel='Gridness score',
+                zorder=scatterOrders[ns_idx])
         scatterPlot.plot()
     ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))

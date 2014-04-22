@@ -443,7 +443,8 @@ if args.scatter_grids_fracTotal or args.all:
     fig = plt.figure(figsize=scatterAllFigSize)
     ax = fig.gca()
 
-    scatterColors = ['blue', 'green', 'red']
+    scatterColors = ['green', 'red', 'blue']
+    scatterOrders = [2, 3, 1]
 
     for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         isBumpData = aggr.IsBump(ps.bumpGamma[ns_idx], ds.iterList,
@@ -458,16 +459,18 @@ if args.scatter_grids_fracTotal or args.all:
                 linewidth=0.3,
                 xlabel=xlabel,
                 ylabel=ylabel,
-                ax=ax)
+                ax=ax,
+                zorder=scatterOrders[ns_idx])
         scatterPlot.plot()
 
     ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
     leg = ['0', '150', '300']
-    l = ax.legend(leg, loc=(-0.28, 0.8), fontsize='small', frameon=False,
-            numpoints=1, title='$\sigma$ (pA)')
+    l = ax.legend(leg, loc=(0.2, 1.02), fontsize='small', frameon=True,
+                  fancybox=True, framealpha=0.5, handletextpad=0,
+                  scatterpoints=1, ncol=3, title='$\sigma$ (pA)')
     plt.setp(l.get_title(), size='small')
-    ax.set_ylabel(ax.get_ylabel(), y=0., ha='left')
+    #ax.set_ylabel(ax.get_ylabel(), y=0., ha='left')
 
     fig.tight_layout(rect=[scatterAllLeft, scatterAllBottom, scatterAllRight,
                            scatterAllTop])
@@ -535,7 +538,6 @@ if args.fracTotalSweepAnn or args.all:
         data = aggr.IsBump(ps.bumpGamma[ns_idx], ds.iterList, ignoreNaNs=True)
         _, _, cax = sweeps.plotSweep(data,
                 noise_sigma=noise_sigma,
-                xlabel='', xticks=False,
                 ax=ax,
                 cbar_kw=sweepAnn_cbar_kw,
                 vmin=bump_vmin, vmax=bump_vmax,
