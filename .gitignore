@@ -14,3 +14,5 @@ output_local
 
 # Building
 /build
+
+/git_hooks
