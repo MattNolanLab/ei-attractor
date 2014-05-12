@@ -388,6 +388,9 @@ class SpeedPlotter(DictDSVisitor):
             msg = 'Did not receive the fileName as a keyword argument.'
             velGainLogger.warn(msg)
             return
+        r = kw.pop('r', '')
+        c = kw.pop('c', '')
+        trialNum = kw.pop('trialNum', '')
 
         data = ds.data
         trials = data['trials']
@@ -410,7 +413,7 @@ class SpeedPlotter(DictDSVisitor):
 
         ax.legend(leg, loc='best')
         
-        figPath = self.getFigPath(kw['fileName'], self.rootDir)
+        figPath = self.getFigPath(kw['fileName'], self.rootDir, r, c, trialNum)
         speedPlotLogger.info("Saving figure to '{0}'".format(figPath))
         fig.savefig(figPath)
 

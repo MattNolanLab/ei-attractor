@@ -99,8 +99,8 @@ elif o.type == common.velocityType:
     speedPlotter = vis.bumps.SpeedPlotter(plotFittedLine=False)
 
     sp.visit(speedEstimator, trialList='all-at-once')
-    #sp.visit(gainEstimator, trialList='all-at-once')
-    #sp.visit(speedPlotter, trialList='all-at-once')
+    sp.visit(gainEstimator, trialList='all-at-once')
+    sp.visit(speedPlotter, trialList='all-at-once')
 
 elif o.type == common.gridsType:
     spikeType = 'E'
