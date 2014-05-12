@@ -3,37 +3,29 @@
 '''
 Everything related to velocity: sweeps, lines, etc.
 '''
+import logging
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-from EI_plotting import sweeps, details, rasters
-from EI_plotting import aggregate as aggr
-from EI_plotting.base import NoiseDataSpaces
 from plotting.global_defs import globalAxesSettings
 from parameters import JobTrialSpace2D
 from submitting import flagparse
 
-# Other
-from matplotlib import rc
-rc('pdf', fonttype=42)
-rc('mathtext', default='regular')
+from EI_plotting import sweeps, details, rasters
+from EI_plotting import aggregate as aggr
+import default_settings as ds
 
-plt.rcParams['font.size'] = 11
+logger = logging.getLogger(__name__)
 
 ###############################################################################
 
-outputDir = "panels"
+outputDir = ds.figOutputDir
 NTrials = 5
-iterList  = ['g_AMPA_total', 'g_GABA_total']
 
-noise_sigmas  = [0, 150, 300]
 rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
-bumpDataRoot  = 'output_local/even_spacing/gamma_bump'
-velDataRoot   = 'output_local/even_spacing/velocity_vertical'
-gridsDataRoot = 'output_local/even_spacing/grids'
-shape = (31, 31)
 
 parser = flagparse.FlagParser()
 parser.add_flag('--velLines')
@@ -43,6 +35,8 @@ parser.add_flag('--rasters')
 parser.add_flag('--rastersZoom')
 parser.add_flag('--rates')
 args = parser.parse_args()
+
+ps = ds.getDefaultParamSpaces()
 
 ###############################################################################
 
@@ -103,7 +97,7 @@ def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
         ax.set_title(sigma_txt, y=1.1, va='bottom')
 
     if (g_ann):
-        Y, X = aggr.computeVelYX(dataSpace, iterList, r, c)
+        Y, X = aggr.computeVelYX(dataSpace, ds.iterList, r, c)
         gE = Y[r, c]
         gI = X[r, c]
         g_txt = '$g_E$ = {0}\n$g_I$ = {1} nS'.format(gE, gI)
@@ -113,15 +107,6 @@ def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
     txt = '{0}'.format(g_txt)
     ax.text(0.05, 1.1, txt, transform=ax.transAxes, va='top',
             ha='left', size='x-small')
-
-
-
-
-
-
-###############################################################################
-roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
-ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
 
 
 ##############################################################################
@@ -166,8 +151,8 @@ if args.velLines or args.all:
 
 
 ##############################################################################
-EI13Root  = 'output_local/detailed_noise_vertical/velocity/EI-1_3'
-EI31Root  = 'output_local/detailed_noise_vertical/velocity/EI-3_1'
+EI13Root  = 'simulation_data/submission/detailed_noise/velocity/EI-1_3'
+EI31Root  = 'simulation_data/submission/detailed_noise/velocity/EI-3_1'
 detailedShape = (31, 9)
 
 EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
@@ -278,7 +263,7 @@ if args.slope_sweeps or args.all:
         if (ns_idx != 0):
             kw['ylabel'] = ''
             kw['yticks'] = False
-        _, ax, cax = sweeps.plotVelTrial(ps.v[ns_idx], slopeVarList, iterList,
+        _, ax, cax = sweeps.plotVelTrial(ps.v[ns_idx], slopeVarList, ds.iterList,
                 noise_sigma, sigmaTitle=True,
                 ax=ax,
                 cbar_kw=slope_cbar_kw,
@@ -295,7 +280,7 @@ if args.slope_sweeps or args.all:
 #                           Raster and rate plots
 ##############################################################################
 tLimits  = [2e3, 3e3] # ms
-trialNum = 10
+trialNum = 0
 
 rasterFigSize = (3.75, 2.2)
 transparent   = True
@@ -308,7 +293,9 @@ ylabelPos   = -0.22
 
 
 if args.rasters or args.all:
+    logger.info("Plotting rasters")
     for idx, noise_sigma in enumerate(ps.noise_sigmas):
+        logger.info("   Rasters: %d pA", noise_sigma)
         fig = plt.figure(figsize=rasterFigSize)
         ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
             rasterTop))
@@ -399,7 +386,7 @@ if args.rates or args.all:
 #                           Raster and rate zoom-ins
 ##############################################################################
 tLimits  = [2.75e3, 2.875e3] # ms
-trialNum = 10
+trialNum = 0
 
 c = 0.75
 rasterZoomFigSize = c*rasterFigSize[0], c*rasterFigSize[1]

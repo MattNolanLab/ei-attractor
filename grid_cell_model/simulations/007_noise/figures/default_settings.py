@@ -43,10 +43,10 @@ def getDefaultSweepAxes(fig, colorBarPos='right'):
 
 ###############################################################################
 # Parameter spaces roots
-gridsDataRoot    = 'output_local/even_spacing/grids'
-bumpDataRoot     = 'output_local/even_spacing/gamma_bump'
-velDataRoot      = 'output_local/even_spacing/velocity_vertical'
-constPosDataRoot = 'output_local/even_spacing/const_position'
+gridsDataRoot    = 'simulation_data/submission/grids'
+bumpDataRoot     = 'simulation_data/submission/gamma_bump'
+velDataRoot      = 'simulation_data/submission/velocity'
+constPosDataRoot = 'simulation_data/submission/const_position'
 
 def getDefaultParamSpaces():
     roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot,

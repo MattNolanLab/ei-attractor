@@ -24,36 +24,22 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-from EI_plotting      import sweeps, examples, details, segmentation
-from EI_plotting      import aggregate as aggr
-from EI_plotting.base import NoiseDataSpaces, getOption, plotStateSignal
+import default_settings as ds
+from EI_plotting      import sweeps, examples, details
+from EI_plotting.base import getOption, plotStateSignal
 from parameters       import JobTrialSpace2D
 from data_storage     import DataStorage
 from data_storage.sim_models.ei import extractSummedSignals
 import plotting.low_level
-from plotting.global_defs import prepareLims
-from analysis         import clustering
 from submitting import flagparse
 
-from matplotlib import rc
-rc('pdf', fonttype=42)
-rc('mathtext', default='regular')
+outputDir = ds.figOutputDir
 
-plt.rcParams['font.size'] = 11
-
-outputDir = "panels/"
-
-NTrials=1
+NTrials=3
 gridTrialNumList = np.arange(NTrials)
-iterList  = ['g_AMPA_total', 'g_GABA_total']
 
-noise_sigmas   = [0, 150, 300]
 exampleIdx     = [(5, 15), (5, 15), (5, 15) ] # (row, col)
-bumpDataRoot   = None
-velDataRoot    = None
-gridsDataRoot  = 'output_local/even_spacing/grids_vertical'
-singleDataRoot = 'output_local/single_neuron'
-shape = (31, 31)
+singleDataRoot = 'simulation_data/submission/single_neuron'
 
 parser = flagparse.FlagParser()
 parser.add_flag('--grids')
@@ -62,10 +48,9 @@ parser.add_flag('--detailed_noise')
 parser.add_flag('--Vm_examples')
 args = parser.parse_args()
 
-##############################################################################
-roots = NoiseDataSpaces.Roots(bumpDataRoot, velDataRoot, gridsDataRoot)
-ps    = NoiseDataSpaces(roots, shape, noise_sigmas)
+ps = ds.getDefaultParamSpaces()
 
+##############################################################################
 
 sweepFigSize = (3.7, 2.6)
 sweepLeft   = 0.08
@@ -110,7 +95,7 @@ if args.grids or args.all:
     fig = plt.figure("sweeps0", figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    sweeps.plotGridTrial(ps.grids[0], varList, iterList, ps.noise_sigmas[0],
+    sweeps.plotGridTrial(ps.grids[0], varList, ds.iterList, ps.noise_sigmas[0],
             trialNumList=gridTrialNumList,
             r=exampleIdx[1][0], c=exampleIdx[1][1],
             ax=ax,
@@ -131,7 +116,7 @@ if args.grids or args.all:
     fig = plt.figure("sweeps150", figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    sweeps.plotGridTrial(ps.grids[1], varList, iterList, ps.noise_sigmas[1],
+    sweeps.plotGridTrial(ps.grids[1], varList, ds.iterList, ps.noise_sigmas[1],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[1][0], c=exampleIdx[1][1],
@@ -151,7 +136,7 @@ if args.grids or args.all:
     fig = plt.figure("sweeps300", figsize=sweepFigSize)
     ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
         sweepTop))
-    _, _, cax = sweeps.plotGridTrial(ps.grids[2], varList, iterList, ps.noise_sigmas[2],
+    _, _, cax = sweeps.plotGridTrial(ps.grids[2], varList, ds.iterList, ps.noise_sigmas[2],
             trialNumList=gridTrialNumList,
             ax=ax,
             r=exampleIdx[2][0], c=exampleIdx[2][1],
@@ -187,7 +172,7 @@ if args.examplesFlag or args.all:
             # Grid field
             fname = exampleGridFName.format(noise_sigma, idx)
             fig = plt.figure(figsize=exampleFigSize)
-            gs = examples.plotOneGridExample(ps.grids[ns_idx], rc, iterList,
+            gs = examples.plotOneGridExample(ps.grids[ns_idx], rc, ds.iterList,
                     exIdx=exampleIdx[idx],
                     xlabel=False, ylabel=False,
                     xlabel2=False, ylabel2=False, 
@@ -263,7 +248,7 @@ VmExampleXScalebar = 50 # ms
 VmExampleYScalebar = 10 # mV
 
 if args.Vm_examples or args.all:
-    for ns_idx, noise_sigma in enumerate(noise_sigmas):
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
         fig = plt.figure(figsize=VmExampleFigSize)
         ax = fig.add_axes(Bbox.from_extents(VmExampleLeft, VmExampleBottom,
             VmExampleRight, VmExampleTop))
@@ -281,8 +266,8 @@ if args.Vm_examples or args.all:
 
 ##############################################################################
 # Detailed noise plots
-EI13Root  = 'output_local/detailed_noise_vertical/grids/EI-1_3'
-EI31Root  = 'output_local/detailed_noise_vertical/grids/EI-3_1'
+EI13Root  = 'simulation_data/submission/detailed_noise/grids/EI-1_3'
+EI31Root  = 'simulation_data/submission/detailed_noise/grids/EI-3_1'
 detailedShape = (31, 9)
 
 EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
