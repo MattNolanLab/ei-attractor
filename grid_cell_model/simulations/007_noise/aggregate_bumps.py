@@ -3,8 +3,8 @@
 Aggregate bump data into the reductions file.
 '''
 import numpy as np
-from parameters  import JobTrialSpace2D
-from submitting import flagparse
+from grid_cell_model.parameters  import JobTrialSpace2D
+from grid_cell_model.submitting import flagparse
 
 
 evenSpacingType = 'even-spacing'
