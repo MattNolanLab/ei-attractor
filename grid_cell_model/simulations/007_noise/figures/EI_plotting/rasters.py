@@ -24,7 +24,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 
-import analysis.spikes as aspikes
+import grid_cell_model.analysis.spikes as aspikes
 from plotting.global_defs       import globalAxesSettings
 from plotting.low_level         import xScaleBar
 from data_storage.sim_models.ei import MonitoredSpikes

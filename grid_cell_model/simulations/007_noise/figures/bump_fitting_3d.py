@@ -21,7 +21,7 @@ import numpy as np
 
 from EI_plotting import aggregate as aggr
 from EI_plotting.base     import NoiseDataSpaces
-import analysis.image as image
+import grid_cell_model.analysis.image as image
 
 from submitting import flagparse
 parser = flagparse.FlagParser()

@@ -15,7 +15,7 @@ from EI_plotting.base     import plotStateSignal, plotThetaSignal, \
 from plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
 from plotting.global_defs import globalAxesSettings
 from plotting.low_level   import xScaleBar
-from analysis.visitors    import AutoCorrelationVisitor
+from grid_cell_model.analysis.visitors import AutoCorrelationVisitor
 from parameters           import DictDataSet
 from submitting import flagparse
 

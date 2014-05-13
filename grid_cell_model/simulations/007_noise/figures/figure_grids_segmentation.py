@@ -16,7 +16,7 @@ from data_storage     import DataStorage
 from data_storage.sim_models.ei import extractSummedSignals
 import plotting.low_level
 from plotting.global_defs import prepareLims
-from analysis         import clustering
+from grid_cell_model.analysis import clustering
 from submitting import flagparse
 
 from matplotlib import rc

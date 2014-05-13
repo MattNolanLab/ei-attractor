@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 from matplotlib           import rcParams as rcp
 from plotting.global_defs import globalAxesSettings
 from plotting.low_level   import zeroLines
-from analysis             import clustering
+from grid_cell_model.analysis import clustering
 
 from . import sweeps
 from . import aggregate as aggr

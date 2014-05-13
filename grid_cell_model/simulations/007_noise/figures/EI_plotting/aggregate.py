@@ -9,9 +9,9 @@ import numpy.ma as ma
 
 from parameters import DataSpace
 from otherpkg.log import log_warn
-from analysis.image import Position2D
-import analysis.image as image
-import analysis.signal as asignal
+from grid_cell_model.analysis.image import Position2D
+import grid_cell_model.analysis.image as image
+import grid_cell_model.analysis.signal as asignal
 
 import logging
 logger = logging.getLogger(__name__)

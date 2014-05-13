@@ -14,7 +14,7 @@ from matplotlib.ticker   import MaxNLocator, AutoMinorLocator, LinearLocator
 from matplotlib.colorbar import make_axes
 
 from data_storage.sim_models import ei
-from analysis import spikes as aspikes
+from grid_cell_model.analysis import spikes as aspikes
 from parameters.param_space import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings
 from plotting.low_level   import xScaleBar
