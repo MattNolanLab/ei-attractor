@@ -4,7 +4,7 @@ populations, E and I cells; more specifically, a grid cell network.
 '''
 import numpy as np
 
-from analysis import spikes
+from ...analysis import spikes
 
 
 def getNetParam(data, p):

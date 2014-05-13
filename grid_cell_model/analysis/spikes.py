@@ -49,7 +49,7 @@ import collections
 from scipy import weave
 
 import _spikes
-from otherpkg.log import log_warn
+from grid_cell_model.otherpkg.log import log_warn
 
 __all__ = [ 'slidingFiringRateTuple', 'torusPopulationVector',
         'torusPopulationVectorFromRates', 'SpikeTrain', 'PopulationSpikes',

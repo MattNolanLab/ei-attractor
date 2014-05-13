@@ -18,6 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import absolute_import
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as mpl
@@ -25,9 +26,9 @@ from matplotlib.pyplot  import plot, xlabel, ylabel, legend, xlim, ylim, \
         tight_layout, axis, title, pcolor, colorbar, hold, subplot, gca
 from matplotlib.ticker  import MaxNLocator, LinearLocator
 
-from global_defs         import globalAxesSettings, createColorbar
-from plotting.low_level  import xScaleBar
-from analysis.grid_cells import extractSpikePositions2D
+from .global_defs         import globalAxesSettings, createColorbar
+from .low_level  import xScaleBar
+from ..analysis.grid_cells import extractSpikePositions2D
 
 lim_factor = 1.1
 

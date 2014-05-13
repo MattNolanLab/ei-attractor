@@ -18,16 +18,17 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import absolute_import
 from collections    import Sequence
 from os.path        import exists
 import subprocess
 
 import numpy as np
-from otherpkg.log   import log_warn, log_info, getClassLogger
+from ..otherpkg.log   import log_warn, log_info, getClassLogger
 
-from data_storage       import DataStorage
-from data_storage.dict  import getDictData
-from data_sets          import DictDataSet
+from ..data_storage       import DataStorage
+from ..data_storage.dict  import getDictData
+from .data_sets           import DictDataSet
 
 __all__ = []
 
