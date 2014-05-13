@@ -27,7 +27,7 @@ from matplotlib.transforms import Bbox
 
 from EI_plotting          import segmentation
 from EI_plotting          import aggregate as aggr
-from plotting.global_defs import prepareLims
+from grid_cell_model.plotting.global_defs import prepareLims
 from EI_plotting.base     import NoiseDataSpaces
 from submitting import flagparse
 

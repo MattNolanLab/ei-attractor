@@ -15,7 +15,7 @@ from grid_cell_model.parameters       import JobTrialSpace2D
 from grid_cell_model.data_storage     import DataStorage
 from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 import plotting.low_level
-from plotting.global_defs import prepareLims
+from grid_cell_model.plotting.global_defs import prepareLims
 from grid_cell_model.analysis import clustering
 from submitting import flagparse
 

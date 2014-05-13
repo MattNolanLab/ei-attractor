@@ -11,7 +11,7 @@ import matplotlib.ticker as ti
 import default_settings as ds
 from EI_plotting          import sweeps
 from EI_plotting          import aggregate as aggr
-from plotting.global_defs import prepareLims
+from grid_cell_model.plotting.global_defs import prepareLims
 from grid_cell_model.parameters           import JobTrialSpace2D
 from submitting import flagparse
 

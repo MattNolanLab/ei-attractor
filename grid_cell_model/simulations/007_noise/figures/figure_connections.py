@@ -12,7 +12,7 @@ from matplotlib.transforms import Bbox
 import plotting.connections as pconn
 from EI_plotting            import aggregate as aggr
 from grid_cell_model.parameters.param_space import JobTrialSpace2D, DataSpace
-from plotting.global_defs   import globalAxesSettings
+from grid_cell_model.plotting.global_defs   import globalAxesSettings
 from submitting import flagparse
 
 from matplotlib import rc

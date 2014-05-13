@@ -12,9 +12,9 @@ from grid_cell_model.data_storage         import DataStorage
 from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 from EI_plotting.base     import plotStateSignal, plotThetaSignal, \
         getOption, thetaLim
-from plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
-from plotting.global_defs import globalAxesSettings
-from plotting.low_level   import xScaleBar
+from grid_cell_model.plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
+from grid_cell_model.plotting.global_defs import globalAxesSettings
+from grid_cell_model.plotting.low_level   import xScaleBar
 from grid_cell_model.analysis.visitors import AutoCorrelationVisitor
 from grid_cell_model.parameters           import DictDataSet
 from submitting import flagparse

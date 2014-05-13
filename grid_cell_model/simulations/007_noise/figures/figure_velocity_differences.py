@@ -23,7 +23,7 @@ from matplotlib.transforms import Bbox
 import default_settings as ds
 from EI_plotting        import sweeps, scatter
 from EI_plotting.base   import NoiseDataSpaces, getNoiseDataSpaces
-from plotting.low_level import zeroLines
+from grid_cell_model.plotting.low_level import zeroLines
 
 
 ###############################################################################

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-from plotting.global_defs import globalAxesSettings
+from grid_cell_model.plotting.global_defs import globalAxesSettings
 from grid_cell_model.parameters import JobTrialSpace2D
 from submitting import flagparse
 

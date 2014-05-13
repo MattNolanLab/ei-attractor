@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 from matplotlib.transforms import Bbox
 from copy import deepcopy
 
-from plotting.global_defs import globalAxesSettings
-from plotting.colors      import Colormap2D
+from grid_cell_model.plotting.global_defs import globalAxesSettings
+from grid_cell_model.plotting.colors      import Colormap2D
 
 from . import xlabelTextShort, ylabelTextShort
 from . import aggregate as aggr

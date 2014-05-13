@@ -12,8 +12,8 @@ import default_settings as ds
 from EI_plotting      import sweeps, segmentation, scatter
 from EI_plotting      import aggregate as aggr
 from EI_plotting.base import NoiseDataSpaces
-from plotting.low_level   import zeroLines
-from plotting.global_defs import prepareLims
+from grid_cell_model.plotting.low_level   import zeroLines
+from grid_cell_model.plotting.global_defs import prepareLims
 from grid_cell_model.analysis import clustering
 from submitting import flagparse
 
