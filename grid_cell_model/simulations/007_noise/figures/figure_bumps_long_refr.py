@@ -13,7 +13,7 @@ from EI_plotting          import sweeps
 from EI_plotting          import aggregate as aggr
 from grid_cell_model.plotting.global_defs import prepareLims
 from grid_cell_model.parameters           import JobTrialSpace2D
-from submitting import flagparse
+from grid_cell_model.submitting import flagparse
 
 outputDir = ds.figOutputDir + '/long_refractory'
 

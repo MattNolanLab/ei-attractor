@@ -31,7 +31,7 @@ from grid_cell_model.parameters       import JobTrialSpace2D
 from grid_cell_model.data_storage     import DataStorage
 from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 import plotting.low_level
-from submitting import flagparse
+from grid_cell_model.submitting import flagparse
 
 outputDir = ds.figOutputDir
 

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import default_settings as ds
 from EI_plotting          import examples, base
 from EI_plotting          import aggregate as aggr
-from submitting import flagparse
+from grid_cell_model.submitting import flagparse
 
 
 outputDir = ds.figOutputDir

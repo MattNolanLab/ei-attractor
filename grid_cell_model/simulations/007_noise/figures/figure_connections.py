@@ -13,7 +13,7 @@ import plotting.connections as pconn
 from EI_plotting            import aggregate as aggr
 from grid_cell_model.parameters.param_space import JobTrialSpace2D, DataSpace
 from grid_cell_model.plotting.global_defs   import globalAxesSettings
-from submitting import flagparse
+from grid_cell_model.submitting import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)

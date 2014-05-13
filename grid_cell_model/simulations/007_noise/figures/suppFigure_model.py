@@ -17,7 +17,7 @@ from grid_cell_model.plotting.global_defs import globalAxesSettings
 from grid_cell_model.plotting.low_level   import xScaleBar
 from grid_cell_model.analysis.visitors import AutoCorrelationVisitor
 from grid_cell_model.parameters           import DictDataSet
-from submitting import flagparse
+from grid_cell_model.submitting import flagparse
 
 parser = flagparse.FlagParser()
 parser.add_flag('--examples')

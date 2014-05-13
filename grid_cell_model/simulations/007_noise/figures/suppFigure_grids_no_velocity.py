@@ -17,7 +17,7 @@ from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 import plotting.low_level
 from grid_cell_model.plotting.global_defs import prepareLims
 from grid_cell_model.analysis import clustering
-from submitting import flagparse
+from grid_cell_model.submitting import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)

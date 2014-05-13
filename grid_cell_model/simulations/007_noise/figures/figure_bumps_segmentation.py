@@ -15,7 +15,7 @@ from EI_plotting.base import NoiseDataSpaces
 from grid_cell_model.plotting.low_level   import zeroLines
 from grid_cell_model.plotting.global_defs import prepareLims
 from grid_cell_model.analysis import clustering
-from submitting import flagparse
+from grid_cell_model.submitting import flagparse
 
 outputDir = ds.figOutputDir
 

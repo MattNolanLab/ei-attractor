@@ -30,7 +30,7 @@ from EI_plotting          import aggregate as aggr
 from grid_cell_model.plotting.global_defs import globalAxesSettings
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
 from grid_cell_model.parameters           import JobTrialSpace2D
-from submitting import flagparse
+from grid_cell_model.submitting import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)
