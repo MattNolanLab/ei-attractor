@@ -8,8 +8,8 @@ from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 
 from fig_conn_func        import plotWeights
-from data_storage         import DataStorage
-from data_storage.sim_models.ei import extractSummedSignals
+from grid_cell_model.data_storage         import DataStorage
+from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 from EI_plotting.base     import plotStateSignal, plotThetaSignal, \
         getOption, thetaLim
 from plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D

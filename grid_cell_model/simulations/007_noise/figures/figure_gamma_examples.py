@@ -23,8 +23,8 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot   import figure, subplot, savefig
 from matplotlib.gridspec import GridSpec
 
-from data_storage    import DataStorage
-from data_storage.sim_models.ei import extractSummedSignals
+from grid_cell_model.data_storage    import DataStorage
+from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 from EI_plotting.base import plotThetaSignal, thetaLim, plotStateSignal
 
 

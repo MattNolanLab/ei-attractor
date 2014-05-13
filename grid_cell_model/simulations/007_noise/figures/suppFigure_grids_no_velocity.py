@@ -12,8 +12,8 @@ from EI_plotting      import sweeps, examples, details, segmentation
 from EI_plotting      import aggregate as aggr
 from EI_plotting.base import NoiseDataSpaces, getOption, plotStateSignal
 from parameters       import JobTrialSpace2D
-from data_storage     import DataStorage
-from data_storage.sim_models.ei import extractSummedSignals
+from grid_cell_model.data_storage     import DataStorage
+from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 import plotting.low_level
 from plotting.global_defs import prepareLims
 from grid_cell_model.analysis import clustering

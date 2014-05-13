@@ -34,7 +34,7 @@ from plotting.global_defs import globalAxesSettings
 from plotting.grids       import plotGridRateMap, plotAutoCorrelation
 from plotting.low_level   import xScaleBar
 from plotting.bumps       import plotBump
-from data_storage.sim_models.ei import extractSummedSignals
+from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 
 
 

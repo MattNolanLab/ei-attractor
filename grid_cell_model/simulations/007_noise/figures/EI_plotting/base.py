@@ -13,7 +13,7 @@ from matplotlib.pyplot   import gca, axis, colorbar
 from matplotlib.ticker   import MaxNLocator, AutoMinorLocator, LinearLocator
 from matplotlib.colorbar import make_axes
 
-from data_storage.sim_models import ei
+from grid_cell_model.data_storage.sim_models import ei
 from grid_cell_model.analysis import spikes as aspikes
 from parameters.param_space import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings

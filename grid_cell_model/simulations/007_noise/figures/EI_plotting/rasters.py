@@ -27,7 +27,7 @@ import matplotlib.ticker as ti
 import grid_cell_model.analysis.spikes as aspikes
 from plotting.global_defs       import globalAxesSettings
 from plotting.low_level         import xScaleBar
-from data_storage.sim_models.ei import MonitoredSpikes
+from grid_cell_model.data_storage.sim_models.ei import MonitoredSpikes
 from plotting.signal            import signalPlot
 
 logger = logging.getLogger(__name__)
