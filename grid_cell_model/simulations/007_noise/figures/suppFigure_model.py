@@ -16,7 +16,7 @@ from plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpike
 from plotting.global_defs import globalAxesSettings
 from plotting.low_level   import xScaleBar
 from grid_cell_model.analysis.visitors import AutoCorrelationVisitor
-from parameters           import DictDataSet
+from grid_cell_model.parameters           import DictDataSet
 from submitting import flagparse
 
 parser = flagparse.FlagParser()

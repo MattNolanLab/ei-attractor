@@ -27,7 +27,7 @@ from matplotlib.transforms import Bbox
 from copy import deepcopy
 
 from EI_plotting          import sweeps, examples
-from parameters           import JobTrialSpace2D, DataSpace
+from grid_cell_model.parameters           import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
 from submitting import flagparse

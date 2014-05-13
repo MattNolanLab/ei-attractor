@@ -11,7 +11,7 @@ import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
 from plotting.global_defs import globalAxesSettings
-from parameters import JobTrialSpace2D
+from grid_cell_model.parameters import JobTrialSpace2D
 from submitting import flagparse
 
 from EI_plotting import sweeps, details, rasters

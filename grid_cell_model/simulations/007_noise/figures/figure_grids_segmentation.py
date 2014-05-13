@@ -11,7 +11,7 @@ from matplotlib.transforms import Bbox
 from EI_plotting      import sweeps, examples, details, segmentation
 from EI_plotting      import aggregate as aggr
 from EI_plotting.base import NoiseDataSpaces, getOption, plotStateSignal
-from parameters       import JobTrialSpace2D
+from grid_cell_model.parameters       import JobTrialSpace2D
 from grid_cell_model.data_storage     import DataStorage
 from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 import plotting.low_level

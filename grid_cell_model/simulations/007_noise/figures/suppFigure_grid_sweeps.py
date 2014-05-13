@@ -28,7 +28,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from EI_plotting      import sweeps, examples
 from EI_plotting      import aggregate as aggr
 from EI_plotting.base import getNoiseRoots
-from parameters       import JobTrialSpace2D
+from grid_cell_model.parameters       import JobTrialSpace2D
 from submitting import flagparse
 
 parser = flagparse.FlagParser()

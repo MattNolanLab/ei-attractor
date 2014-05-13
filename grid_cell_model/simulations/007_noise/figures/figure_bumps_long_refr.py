@@ -12,7 +12,7 @@ import default_settings as ds
 from EI_plotting          import sweeps
 from EI_plotting          import aggregate as aggr
 from plotting.global_defs import prepareLims
-from parameters           import JobTrialSpace2D
+from grid_cell_model.parameters           import JobTrialSpace2D
 from submitting import flagparse
 
 outputDir = ds.figOutputDir + '/long_refractory'

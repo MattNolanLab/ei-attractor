@@ -16,7 +16,7 @@ from EI_plotting          import sweeps, details, examples, scatter
 from EI_plotting          import aggregate as aggr
 from plotting.global_defs import prepareLims
 from plotting.low_level   import zeroLines
-from parameters           import JobTrialSpace2D
+from grid_cell_model.parameters           import JobTrialSpace2D
 from submitting import flagparse
 
 outputDir = ds.figOutputDir

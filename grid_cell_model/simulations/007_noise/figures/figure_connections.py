@@ -11,7 +11,7 @@ from matplotlib.transforms import Bbox
 
 import plotting.connections as pconn
 from EI_plotting            import aggregate as aggr
-from parameters.param_space import JobTrialSpace2D, DataSpace
+from grid_cell_model.parameters.param_space import JobTrialSpace2D, DataSpace
 from plotting.global_defs   import globalAxesSettings
 from submitting import flagparse
 

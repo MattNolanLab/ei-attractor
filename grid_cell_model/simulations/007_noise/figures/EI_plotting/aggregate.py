@@ -7,7 +7,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import numpy.ma as ma
 
-from parameters import DataSpace
+from grid_cell_model.parameters import DataSpace
 from grid_cell_model.otherpkg.log import log_warn
 from grid_cell_model.analysis.image import Position2D
 import grid_cell_model.analysis.image as image

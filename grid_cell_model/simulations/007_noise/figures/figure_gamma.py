@@ -30,7 +30,7 @@ from copy import deepcopy
 import default_settings as ds
 from EI_plotting          import sweeps, examples, details, scatter
 from EI_plotting          import aggregate as aggr
-from parameters           import JobTrialSpace2D, DataSpace
+from grid_cell_model.parameters           import JobTrialSpace2D, DataSpace
 from plotting.global_defs import globalAxesSettings, prepareLims
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
 from submitting import flagparse

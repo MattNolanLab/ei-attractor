@@ -15,7 +15,7 @@ from matplotlib.colorbar import make_axes
 
 from grid_cell_model.data_storage.sim_models import ei
 from grid_cell_model.analysis import spikes as aspikes
-from parameters.param_space import JobTrialSpace2D
+from grid_cell_model.parameters.param_space import JobTrialSpace2D
 from plotting.global_defs import globalAxesSettings
 from plotting.low_level   import xScaleBar
 
