@@ -5,7 +5,7 @@ Everything related to velocity difference plots: mainly sweeps.
 '''
 import copy
 
-from submitting import flagparse
+from grid_cell_model.submitting import flagparse
 parser = flagparse.FlagParser()
 parser.add_flag('--slope_sweeps')
 parser.add_flag('--fitErr_sweeps')
@@ -23,7 +23,7 @@ from matplotlib.transforms import Bbox
 import default_settings as ds
 from EI_plotting        import sweeps, scatter
 from EI_plotting.base   import NoiseDataSpaces, getNoiseDataSpaces
-from plotting.low_level import zeroLines
+from grid_cell_model.plotting.low_level import zeroLines
 
 
 ###############################################################################

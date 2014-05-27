@@ -27,10 +27,10 @@ from matplotlib.transforms import Bbox
 from copy import deepcopy
 
 from EI_plotting          import sweeps, examples
-from parameters           import JobTrialSpace2D, DataSpace
-from plotting.global_defs import globalAxesSettings
+from grid_cell_model.parameters           import JobTrialSpace2D, DataSpace
+from grid_cell_model.plotting.global_defs import globalAxesSettings
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
-from submitting import flagparse
+from grid_cell_model.submitting import flagparse
 
 parser = flagparse.FlagParser()
 parser.add_flag('--grids')

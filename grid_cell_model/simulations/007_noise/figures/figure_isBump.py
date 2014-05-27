@@ -9,8 +9,8 @@ import matplotlib.ticker as ti
 import default_settings as ds
 from EI_plotting          import sweeps, examples, base
 from EI_plotting          import aggregate as aggr
-from plotting.global_defs import globalAxesSettings, prepareLims
-from submitting import flagparse
+from grid_cell_model.plotting.global_defs import globalAxesSettings, prepareLims
+from grid_cell_model.submitting import flagparse
 
 
 outputDir = ds.figOutputDir

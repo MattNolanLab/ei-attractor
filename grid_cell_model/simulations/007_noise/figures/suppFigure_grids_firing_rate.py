@@ -29,9 +29,9 @@ from copy import deepcopy
 from EI_plotting          import sweeps, scatter
 from EI_plotting          import aggregate as aggr
 from EI_plotting.base     import NoiseDataSpaces
-from parameters           import JobTrialSpace2D
-from plotting.global_defs import globalAxesSettings
-from submitting import flagparse
+from grid_cell_model.parameters           import JobTrialSpace2D
+from grid_cell_model.plotting.global_defs import globalAxesSettings
+from grid_cell_model.submitting import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)

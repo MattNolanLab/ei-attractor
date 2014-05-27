@@ -8,16 +8,16 @@ from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 
 from fig_conn_func        import plotWeights
-from data_storage         import DataStorage
-from data_storage.sim_models.ei import extractSummedSignals
+from grid_cell_model.data_storage         import DataStorage
+from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 from EI_plotting.base     import plotStateSignal, plotThetaSignal, \
         getOption, thetaLim
-from plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
-from plotting.global_defs import globalAxesSettings
-from plotting.low_level   import xScaleBar
-from analysis.visitors    import AutoCorrelationVisitor
-from parameters           import DictDataSet
-from submitting import flagparse
+from grid_cell_model.plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
+from grid_cell_model.plotting.global_defs import globalAxesSettings
+from grid_cell_model.plotting.low_level   import xScaleBar
+from grid_cell_model.analysis.visitors import AutoCorrelationVisitor
+from grid_cell_model.parameters           import DictDataSet
+from grid_cell_model.submitting import flagparse
 
 parser = flagparse.FlagParser()
 parser.add_flag('--examples')

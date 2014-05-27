@@ -25,8 +25,8 @@ import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 
-from plotting.global_defs import globalAxesSettings
-from plotting.low_level   import symmetricDataLimits
+from grid_cell_model.plotting.global_defs import globalAxesSettings
+from grid_cell_model.plotting.low_level   import symmetricDataLimits
 from base                 import createColorbar
 
 from . import xlabelText, ylabelText

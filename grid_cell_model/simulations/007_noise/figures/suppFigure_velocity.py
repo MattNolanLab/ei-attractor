@@ -12,9 +12,9 @@ from matplotlib.transforms import Bbox
 from EI_plotting            import sweeps
 from EI_plotting            import aggregate as aggr
 from EI_plotting.base       import plotOneHist, NoiseDataSpaces
-from parameters.param_space import JobTrialSpace2D
-from plotting.global_defs   import globalAxesSettings
-from submitting import flagparse
+from grid_cell_model.parameters.param_space import JobTrialSpace2D
+from grid_cell_model.plotting.global_defs   import globalAxesSettings
+from grid_cell_model.submitting import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)

@@ -14,5 +14,6 @@ output_local
 
 # Building
 /build
+/*.egg-info
 
 /git_hooks

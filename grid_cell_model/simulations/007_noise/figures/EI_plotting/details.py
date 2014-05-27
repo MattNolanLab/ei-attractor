@@ -25,7 +25,7 @@ import matplotlib.ticker as ti
 
 from . import xlabelText, ylabelText
 from . import aggregate as aggr
-from plotting.global_defs import globalAxesSettings
+from grid_cell_model.plotting.global_defs import globalAxesSettings
 
 ##############################################################################
 # Slices through parameter spaces

@@ -27,10 +27,10 @@ from matplotlib.transforms import Bbox
 
 from EI_plotting          import details
 from EI_plotting          import aggregate as aggr
-from plotting.global_defs import globalAxesSettings
+from grid_cell_model.plotting.global_defs import globalAxesSettings
 from EI_plotting.base     import plotOneHist, NoiseDataSpaces
-from parameters           import JobTrialSpace2D
-from submitting import flagparse
+from grid_cell_model.parameters           import JobTrialSpace2D
+from grid_cell_model.submitting import flagparse
 
 from matplotlib import rc
 rc('pdf', fonttype=42)

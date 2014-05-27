@@ -14,10 +14,10 @@ from matplotlib.transforms import Bbox
 import default_settings as ds
 from EI_plotting          import sweeps, details, examples, scatter
 from EI_plotting          import aggregate as aggr
-from plotting.global_defs import prepareLims
-from plotting.low_level   import zeroLines
-from parameters           import JobTrialSpace2D
-from submitting import flagparse
+from grid_cell_model.plotting.global_defs import prepareLims
+from grid_cell_model.plotting.low_level   import zeroLines
+from grid_cell_model.parameters           import JobTrialSpace2D
+from grid_cell_model.submitting import flagparse
 
 outputDir = ds.figOutputDir
 exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)

@@ -27,11 +27,11 @@ from matplotlib.transforms import Bbox
 import default_settings as ds
 from EI_plotting      import sweeps, examples, details
 from EI_plotting.base import getOption, plotStateSignal
-from parameters       import JobTrialSpace2D
-from data_storage     import DataStorage
-from data_storage.sim_models.ei import extractSummedSignals
-import plotting.low_level
-from submitting import flagparse
+from grid_cell_model.parameters       import JobTrialSpace2D
+from grid_cell_model.data_storage     import DataStorage
+from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
+import grid_cell_model.plotting.low_level as low_level
+from grid_cell_model.submitting import flagparse
 
 outputDir = ds.figOutputDir
 
@@ -226,7 +226,7 @@ def drawVm(data, noise_sigma, xScaleBar=None, yScaleBar=None,
             scaleBar=xScaleBar, scaleText="ms", scaleX=0.5, scaleY=1.1,
             scaleTextSize=scaleTextSize)
     if (yScaleBar is not None):
-        plotting.low_level.yScaleBar(yScaleBar, yScaleX, yScaleY,
+        low_level.yScaleBar(yScaleBar, yScaleX, yScaleY,
                 ax=ax,
                 unitsText='mV', textXOffset=yScaleXOffset,
                 size='x-small')

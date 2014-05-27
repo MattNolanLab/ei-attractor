@@ -27,11 +27,11 @@ from matplotlib.ticker     import MultipleLocator, AutoMinorLocator, \
 from matplotlib.transforms import Bbox
 
 import EI_plotting as EI
-from parameters           import JobTrialSpace2D
+from grid_cell_model.parameters           import JobTrialSpace2D
 from EI_plotting          import aggregate2DTrial, aggregate2D, computeYX, \
         computeVelYX
-from plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
-from plotting.global_defs import globalAxesSettings
+from grid_cell_model.plotting.grids       import plotGridRateMap, plotAutoCorrelation, plotSpikes2D
+from grid_cell_model.plotting.global_defs import globalAxesSettings
 from EI_plotting.base     import NoiseDataSpaces
 
 import logging as lg

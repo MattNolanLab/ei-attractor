@@ -30,11 +30,11 @@ from matplotlib.gridspec import GridSpec
 
 from . import xlabelText, ylabelText
 from . import aggregate as aggr
-from plotting.global_defs import globalAxesSettings
-from plotting.grids       import plotGridRateMap, plotAutoCorrelation
-from plotting.low_level   import xScaleBar
-from plotting.bumps       import plotBump
-from data_storage.sim_models.ei import extractSummedSignals
+from grid_cell_model.plotting.global_defs import globalAxesSettings
+from grid_cell_model.plotting.grids       import plotGridRateMap, plotAutoCorrelation
+from grid_cell_model.plotting.low_level   import xScaleBar
+from grid_cell_model.plotting.bumps       import plotBump
+from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 
 
 
