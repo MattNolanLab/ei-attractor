@@ -246,7 +246,7 @@ if args.gammaSweep or args.all:
         sweeps.plotACTrial(ps.bumpGamma[ns_idx], ACVarList, ds.iterList,
                 noise_sigma=ps.noise_sigmas[ns_idx],
                 ax=ax,
-                xlabel='', xticks=False,
+                #xlabel='', xticks=False,
                 trialNumList=xrange(NTrials),
                 cbar_kw=AC_cbar_kw,
                 vmin=AC_vmin, vmax=AC_vmax,
@@ -364,7 +364,7 @@ if args.detailed_noise or args.all:
 ##############################################################################
 exampleFName = outputDir + "/gamma_example{0}_{1}.pdf"
 exampleTrialNum = 0
-exampleFigSize = (2, 1.1)
+exampleFigSize = (2*ds.scaleFactor, 1.1*ds.scaleFactor)
 exampleLeft   = 0.08
 exampleBottom = 0.2
 exampleRight  = 0.99
@@ -463,7 +463,7 @@ if args.scatterPlot or args.all:
 # Scatter plot of gridness score vs. gamma power 
 # All in one plot
 if args.scatterPlot_all or args.all:
-    fig = plt.figure(figsize=(5, 3.2))
+    fig = plt.figure(figsize=(8, 8))
     ax = fig.gca()
 
     NTrialsGamma = 5
@@ -480,7 +480,7 @@ if args.scatterPlot_all or args.all:
                 ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
                 typesGrids, ds.iterList, NTrialsGamma, NTrialsGrids,
                 c=color,
-                s=15,
+                s=15*ds.scaleFactor,
                 linewidth=0.3,
                 xlabel='$1^{st}$ autocorrelation peak',
                 ylabel='Gridness score',
@@ -489,11 +489,11 @@ if args.scatterPlot_all or args.all:
     ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
     leg = ['0', '150', '300']
-    l = ax.legend(leg, loc=(0.9, 0.4), fontsize='small', frameon=False,
-            numpoints=1, title='$\sigma$ (pA)')
+    l = ax.legend(leg, loc=(0, 1.0), fontsize='small', frameon=False,
+            scatterpoints=1, handletextpad=0, ncol=3, title='$\sigma$ (pA)')
     plt.setp(l.get_title(), size='small')
 
-    fig.tight_layout(pad=3)
+    fig.tight_layout(rect=(.01, .01, .99, .85), pad=0)
     fname = outputDir + "/gamma_scatter_gamma_grids_all.pdf"
     fig.savefig(fname, dpi=300, transparent=True)
 

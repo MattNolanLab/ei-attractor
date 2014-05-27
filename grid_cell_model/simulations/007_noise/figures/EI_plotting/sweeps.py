@@ -344,7 +344,7 @@ def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
     kw['color']      = kw.get('color', 'black')
     kw['arrowprops'] = kw.get('arrowprops',
             dict(arrowstyle         = "->",
-                    linewidth       = 1.5,
+                    linewidth       = plt.rcParams['lines.linewidth']*1.5,
                     color           = kw['color'],
                     connectionstyle = "arc3,rad=0"))
 

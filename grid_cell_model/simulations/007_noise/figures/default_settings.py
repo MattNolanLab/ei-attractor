@@ -8,11 +8,17 @@ from matplotlib.transforms import Bbox
 
 from EI_plotting.base     import NoiseDataSpaces
 
-plt.rcParams['font.size'] = 11
+plt.rcParams['font.size'] = 30
 
 # Math fonts are all sans-serif
 rc('pdf', fonttype=42)
 rc('mathtext', default='regular')
+
+scaleFactor = 2.5
+
+linewidth = 1. * scaleFactor
+rc('lines', linewidth=linewidth, markersize=6.*scaleFactor)
+rc('axes', linewidth=linewidth)
 
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 figOutputDir = 'panels/'
@@ -20,7 +26,7 @@ evenShape = (31, 31)
 noise_sigmas = [0, 150, 300]
 
 
-sweepFigSize = np.array([3.7, 2.6])
+sweepFigSize = np.array([3.7*scaleFactor, 2.6*scaleFactor])
 sweepW = .72
 sweepH = .65
 sweepLeft   = 0.08

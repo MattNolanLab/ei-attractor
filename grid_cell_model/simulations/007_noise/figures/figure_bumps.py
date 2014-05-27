@@ -14,6 +14,7 @@ from matplotlib.transforms import Bbox
 import default_settings as ds
 from EI_plotting          import sweeps, details, examples, scatter
 from EI_plotting          import aggregate as aggr
+from EI_plotting import scaling
 from grid_cell_model.plotting.global_defs import prepareLims
 from grid_cell_model.plotting.low_level   import zeroLines
 from grid_cell_model.parameters           import JobTrialSpace2D
@@ -210,65 +211,65 @@ bumpReset_cbar_kw = dict(
         rasterized  = True)
 
 
-if args.bumpDiffResetSweep or args.all:
-    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-        fig = plt.figure(figsize=sweepFigSize)
-        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-            sweepTop))
-        kw = dict(cbar=False)
-        if ns_idx != 0:
-            kw['ylabel'] = ''
-            kw['yticks'] = False
-        if ns_idx == 2:
-            kw['cbar'] = True
-        data = aggr.BumpAvgDifferenceFromPos(bumpResetStartPos,
-                constPosPS[ns_idx],
-                ds.iterList,
-                constPosNTrials,
-                tstart=bumpResetTStart)
-        _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
-                ax=ax,
-                cbar_kw=bumpReset_cbar_kw,
-                vmin=bumpReset_vmin, vmax=bumpReset_vmax,
-                **kw)
-        fname = outputDir + "/bumps_avg_difference_reset_sweeps{0}.pdf"
-        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
-        plt.close()
+#if args.bumpDiffResetSweep or args.all:
+#    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+#        fig = plt.figure(figsize=sweepFigSize)
+#        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
+#            sweepTop))
+#        kw = dict(cbar=False)
+#        if ns_idx != 0:
+#            kw['ylabel'] = ''
+#            kw['yticks'] = False
+#        if ns_idx == 2:
+#            kw['cbar'] = True
+#        data = aggr.BumpAvgDifferenceFromPos(bumpResetStartPos,
+#                constPosPS[ns_idx],
+#                ds.iterList,
+#                constPosNTrials,
+#                tstart=bumpResetTStart)
+#        _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
+#                ax=ax,
+#                cbar_kw=bumpReset_cbar_kw,
+#                vmin=bumpReset_vmin, vmax=bumpReset_vmax,
+#                **kw)
+#        fname = outputDir + "/bumps_avg_difference_reset_sweeps{0}.pdf"
+#        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+#        plt.close()
 
 
-##############################################################################
-# Bump examples
-exampleEFName = outputDir + "/bumps_examples_E_{0}pA_{1}.pdf"
-exampleIFName = outputDir + "/bumps_examples_I_{0}pA_{1}.pdf"
-bumpExampleTypes = ['bump_full']
-bumpTrialNum = 0
-exTransparent = True
-exampleFigSize = (0.8, 0.8)
-exampleLeft   = 0.01
-exampleBottom = 0.01
-exampleRight  = 0.99
-exampleTop    = 0.82
-
-if args.bumpExamples or args.all:
-    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-        for idx, rc in enumerate(exampleRC):
-            for EIType in ['E', 'I']:
-                if EIType == 'E':
-                    fnameTemplate =exampleEFName
-                    types = bumpExampleTypes + ['rateMap_e']
-                else:
-                    fnameTemplate =exampleIFName
-                    types = bumpExampleTypes + ['rateMap_i']
-                fname = fnameTemplate.format(noise_sigma, idx)
-                plt.figure(figsize=exampleFigSize)
-                gs = examples.plotOneBumpExample(ps.bumpGamma[ns_idx], rc, ds.iterList,
-                        types,
-                        exIdx=exampleIdx[ns_idx],
-                        trialNum=bumpTrialNum)
-                gs.update(left=exampleLeft, bottom=exampleBottom,
-                        right=exampleRight, top=exampleTop)
-                plt.savefig(fname, dpi=300, transparent=exTransparent)
-                plt.close()
+###############################################################################
+## Bump examples
+#exampleEFName = outputDir + "/bumps_examples_E_{0}pA_{1}.pdf"
+#exampleIFName = outputDir + "/bumps_examples_I_{0}pA_{1}.pdf"
+#bumpExampleTypes = ['bump_full']
+#bumpTrialNum = 0
+#exTransparent = True
+#exampleFigSize = (0.8, 0.8)
+#exampleLeft   = 0.01
+#exampleBottom = 0.01
+#exampleRight  = 0.99
+#exampleTop    = 0.82
+#
+#if args.bumpExamples or args.all:
+#    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+#        for idx, rc in enumerate(exampleRC):
+#            for EIType in ['E', 'I']:
+#                if EIType == 'E':
+#                    fnameTemplate =exampleEFName
+#                    types = bumpExampleTypes + ['rateMap_e']
+#                else:
+#                    fnameTemplate =exampleIFName
+#                    types = bumpExampleTypes + ['rateMap_i']
+#                fname = fnameTemplate.format(noise_sigma, idx)
+#                plt.figure(figsize=exampleFigSize)
+#                gs = examples.plotOneBumpExample(ps.bumpGamma[ns_idx], rc, ds.iterList,
+#                        types,
+#                        exIdx=exampleIdx[ns_idx],
+#                        trialNum=bumpTrialNum)
+#                gs.update(left=exampleLeft, bottom=exampleBottom,
+#                        right=exampleRight, top=exampleTop)
+#                plt.savefig(fname, dpi=300, transparent=exTransparent)
+#                plt.close()
 
 
 
@@ -433,11 +434,11 @@ if args.scatter_diff_fracTotal_grids or args.all:
 xlabel = 'P(bumps)'
 ylabel = 'Gridness score'
 
-scatterAllFigSize = (5.8, 3.2)
+scatterAllFigSize = (9.2, 5.5)
 scatterAllLeft   = 0.05
 scatterAllBottom = 0.05
 scatterAllRight  = 0.95
-scatterAllTop    = 0.9
+scatterAllTop    = 0.8
 
 if args.scatter_grids_fracTotal or args.all:
     fig = plt.figure(figsize=scatterAllFigSize)
@@ -450,12 +451,12 @@ if args.scatter_grids_fracTotal or args.all:
         isBumpData = aggr.IsBump(ps.bumpGamma[ns_idx], ds.iterList,
                                  ignoreNaNs=True)
         gridData = aggr.GridnessScore(ps.grids[ns_idx], ds.iterList,
-                                      ignoreNaNs=True)
+                                      ignoreNaNs=True, normalizeTicks=True)
 
         scatterPlot = scatter.ScatterPlot(
                 isBumpData, gridData, None, None, None, None, None,
                 c=scatterColors[ns_idx],
-                s=15,
+                s=15*ds.scaleFactor,
                 linewidth=0.3,
                 xlabel=xlabel,
                 ylabel=ylabel,
@@ -463,18 +464,24 @@ if args.scatter_grids_fracTotal or args.all:
                 zorder=scatterOrders[ns_idx])
         scatterPlot.plot()
 
-    ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
     ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
     leg = ['0', '150', '300']
-    l = ax.legend(leg, loc=(0.2, 1.02), fontsize='small', frameon=True,
+    l = ax.legend(leg, loc=(0.05, 1.02), fontsize='small', frameon=False,
                   fancybox=True, framealpha=0.5, handletextpad=0,
                   scatterpoints=1, ncol=3, title='$\sigma$ (pA)')
     plt.setp(l.get_title(), size='small')
-    #ax.set_ylabel(ax.get_ylabel(), y=0., ha='left')
+    if args.expScatter:
+        ax.set_xscale('custom')
+        ax.xaxis.set_major_locator(ti.MultipleLocator(.5))
+        ax.xaxis.set_minor_locator(ti.MultipleLocator(.1))
+        ax.set_xlim([-0.3, 1.002])
+        fname = outputDir + "/bumps_scatter_grids_vs_bumpFracTotal_exp.pdf"
+    else:
+        ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
+        fname = outputDir + "/bumps_scatter_grids_vs_bumpFracTotal.pdf"
 
     fig.tight_layout(rect=[scatterAllLeft, scatterAllBottom, scatterAllRight,
-                           scatterAllTop])
-    fname = outputDir + "/bumps_scatter_grids_vs_bumpFracTotal.pdf"
+                           scatterAllTop], pad=0)
     fig.savefig(fname, dpi=300, transparent=True)
 
 
@@ -541,7 +548,6 @@ if args.fracTotalSweepAnn or args.all:
                 ax=ax,
                 cbar_kw=sweepAnn_cbar_kw,
                 vmin=bump_vmin, vmax=bump_vmax,
-                annotations=ann[ns_idx],
                 **kw)
         fname = outputDir + "/bumps_mainFig_isBumpFracTotal_sweeps_annotated{0}.pdf"
         fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)

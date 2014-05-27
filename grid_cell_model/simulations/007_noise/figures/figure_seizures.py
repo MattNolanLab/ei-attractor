@@ -45,7 +45,7 @@ transparent  = True
 rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 tLimits = [2e3, 2.25e3] # ms
 
-rasterFigSize = (3, 1.9)
+rasterFigSize = (3*ds.scaleFactor, 1.5*ds.scaleFactor)
 transparent   = True
 rasterLeft    = 0.28
 rasterBottom  = 0.1
@@ -66,7 +66,8 @@ if args.rastersFlag or args.all:
             r=rasterRC[0][0], c=rasterRC[0][1],
             ylabelPos=ylabelPos,
             tLimits=tLimits,
-            ann_EI=True)
+            ann_EI=True,
+            markersize=ds.scaleFactor)
     fname = outputDir + "/bumps_raster0.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
@@ -82,7 +83,8 @@ if args.rastersFlag or args.all:
             r=rasterRC[1][0], c=rasterRC[1][1],
             ylabelPos=ylabelPos,
             tLimits=tLimits,
-            ylabel='', yticks=False)
+            ylabel='', yticks=False,
+            markersize=ds.scaleFactor)
     fname = outputDir + "/bumps_raster150.png"
     fig.savefig(fname, dpi=300, transparent=transparent)
     plt.close()
@@ -105,11 +107,11 @@ if args.rastersFlag or args.all:
         
 
 ##############################################################################
-rateFigSize   = (rasterFigSize[0], 0.65)
+rateFigSize   = (rasterFigSize[0], 0.5*ds.scaleFactor)
 rateLeft    = rasterLeft
 rateBottom  = 0.2
 rateRight   = rasterRight
-rateTop     = 0.9
+rateTop     = 0.85
 
 
 if args.rates or args.all:

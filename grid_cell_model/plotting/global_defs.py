@@ -23,18 +23,27 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator, LinearLocator
 
 
-def globalAxesSettings(ax, setTickPos=True):
+nominalTickWidth = 1.
+nominalTickLen   = 6.
+
+majorTickWidth = nominalTickWidth
+majorTickLen   = nominalTickLen
+minorTickWidth = nominalTickWidth
+minorTickLen   = nominalTickLen / 2.
+
+
+def globalAxesSettings(ax, setTickPos=True, scale=2.5):
     ax.tick_params(
             which='major',
             direction='out',
-            width=1,
-            length=6
+            width=majorTickWidth*scale,
+            length=majorTickLen*scale
     )
     ax.tick_params(
             which='minor',
             direction='out',
-            width=1,
-            length=3
+            width=minorTickWidth*scale,
+            length=minorTickLen*scale
     )
     if (setTickPos):
         ax.xaxis.set_ticks_position('bottom')

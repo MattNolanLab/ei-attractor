@@ -10,8 +10,6 @@ import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
-from matplotlib import scale as mscale
-from matplotlib import transforms as mtransforms
 from matplotlib.transforms import Bbox
 from copy import deepcopy
 
@@ -19,6 +17,7 @@ import default_settings as ds
 from EI_plotting          import sweeps, scatter
 from EI_plotting          import aggregate as aggr
 from EI_plotting.base     import NoiseDataSpaces
+from EI_plotting import scaling
 from grid_cell_model.parameters           import JobTrialSpace2D
 from grid_cell_model.plotting.global_defs import globalAxesSettings
 from grid_cell_model.submitting import flagparse
@@ -45,52 +44,6 @@ scatterColorFigSize = (1.5, 1.5)
 
 ignoreNaNs = True
 
-
-class CustomScale(mscale.ScaleBase):
-    name = 'custom'
-
-    def __init__(self, axis, **kwargs):
-        mscale.ScaleBase.__init__(self)
-        self.thresh = None #thresh
-
-    def get_transform(self):
-        return self.CustomTransform(self.thresh)
-
-    def set_default_locators_and_formatters(self, axis):
-        pass
-
-    class CustomTransform(mtransforms.Transform):
-        input_dims = 1
-        output_dims = 1
-        is_separable = True
-
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-
-        def transform_non_affine(self, a):
-            return 10**(a*2)
-
-        def inverted(self):
-            return CustomScale.InvertedCustomTransform(self.thresh)
-
-    class InvertedCustomTransform(mtransforms.Transform):
-        input_dims = 1
-        output_dims = 1
-        is_separable = True
-
-        def __init__(self, thresh):
-            mtransforms.Transform.__init__(self)
-            self.thresh = thresh
-
-        def transform_non_affine(self, a):
-            return log10(a)
-
-        def inverted(self):
-            return CustomScale.CustomTransform(self.thresh)
-
-
-mscale.register_scale(CustomScale)
 
 ##############################################################################
 xlabel = 'P(bumps)'

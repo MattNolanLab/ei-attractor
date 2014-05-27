@@ -60,10 +60,10 @@ sweepTop    = 0.85
 transparent  = True
 
 cbar_kw= {
-    'label'      : 'Gridness score',
-    'location'   : 'right',
+    'label'      : '',
+    'location'   : 'left',
     'shrink'     : 0.8,
-    'pad'        : -0.05,
+    'pad'        : .2,
     'ticks'      : ti.MultipleLocator(0.5),
     'rasterized' : True}
 
@@ -91,68 +91,31 @@ ann = [ann0, ann1]
 varList = ['gridnessScore']
 
 if args.grids or args.all:
-    # noise_sigma = 0 pA
-    fig = plt.figure("sweeps0", figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    sweeps.plotGridTrial(ps.grids[0], varList, ds.iterList, ps.noise_sigmas[0],
-            trialNumList=gridTrialNumList,
-            r=exampleIdx[1][0], c=exampleIdx[1][1],
-            ax=ax,
-            cbar=False, cbar_kw=cbar_kw,
-            cmap=grids_cmap,
-            vmin=vmin, vmax=vmax,
-            ignoreNaNs=True,
-            annotations=ann,
-            sliceAnn=sliceAnn)
-    fname = outputDir + "/grids_sweeps0.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-    plt.close()
+    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+        fig, ax = ds.getDefaultSweepFig(scale=0.8, colorBarPos='left')
+        kw = dict(cbar=False)
+        if ns_idx == 0:
+            kw['cbar'] = True
+        if ns_idx != 0:
+            kw['ylabel'] = ''
+            kw['yticks'] = False
+        sweeps.plotGridTrial(ps.grids[ns_idx], varList, ds.iterList,
+                ps.noise_sigmas[ns_idx],
+                trialNumList=gridTrialNumList,
+                r=exampleIdx[ns_idx][0], c=exampleIdx[ns_idx][1],
+                ax=ax,
+                cbar_kw=cbar_kw,
+                cmap=grids_cmap,
+                vmin=vmin, vmax=vmax,
+                ignoreNaNs=True,
+                annotations=ann,
+                sliceAnn=sliceAnn,
+                **kw)
+        fname = outputDir + "/grids_sweeps{0}.pdf"
+        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
+        plt.close()
 
 
-    # noise_sigma = 150 pA
-    #for a in sliceAnn:
-    #    a['letterColor'] = 'black'
-    fig = plt.figure("sweeps150", figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    sweeps.plotGridTrial(ps.grids[1], varList, ds.iterList, ps.noise_sigmas[1],
-            trialNumList=gridTrialNumList,
-            ax=ax,
-            r=exampleIdx[1][0], c=exampleIdx[1][1],
-            cbar=False, cbar_kw=cbar_kw,
-            cmap=grids_cmap,
-            vmin=vmin, vmax=vmax,
-            ignoreNaNs=True,
-            ylabel='', yticks=False,
-            annotations=ann,
-            sliceAnn=sliceAnn)
-    fname = outputDir + "/grids_sweeps150.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-    plt.close()
-
-
-    # noise_sigma = 300 pA
-    fig = plt.figure("sweeps300", figsize=sweepFigSize)
-    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-        sweepTop))
-    _, _, cax = sweeps.plotGridTrial(ps.grids[2], varList, ds.iterList, ps.noise_sigmas[2],
-            trialNumList=gridTrialNumList,
-            ax=ax,
-            r=exampleIdx[2][0], c=exampleIdx[2][1],
-            cbar_kw=cbar_kw,
-            cmap=grids_cmap,
-            vmin=vmin, vmax=vmax,
-            ignoreNaNs=True,
-            ylabel='', yticks=False,
-            annotations=ann,
-            sliceAnn=sliceAnn)
-    #for label in cax.yaxis.get_ticklabels():
-    #    label.set_ha('right')
-    #cax.tick_params(pad=30)
-    fname = outputDir + "/grids_sweeps300.pdf"
-    fig.savefig(fname, dpi=300, transparent=True)
-    plt.close()
 
 
 ##############################################################################
@@ -160,7 +123,9 @@ if args.grids or args.all:
 exampleGridFName = outputDir + "/grids_examples_{0}pA_{1}.pdf"
 exampleACFName = outputDir + "/grids_examples_acorr_{0}pA_{1}.pdf"
 exTransparent = True
-exampleFigSize = (1, 1.2)
+exampleScale = .8
+exampleFigSize = (1*ds.scaleFactor*exampleScale,
+                  1.2*ds.scaleFactor*exampleScale)
 exampleLeft   = 0.01
 exampleBottom = 0.01
 exampleRight  = 0.99
@@ -239,7 +204,7 @@ def drawVm(data, noise_sigma, xScaleBar=None, yScaleBar=None,
                 size=scaleTextSize, y=0.9)
 
 
-VmExampleFigSize = (2.5, 1.25)
+VmExampleFigSize = (2.5*ds.scaleFactor, 1.25*ds.scaleFactor)
 VmExampleLeft   = 0.01
 VmExampleBottom = 0.01
 VmExampleRight  = 0.999
