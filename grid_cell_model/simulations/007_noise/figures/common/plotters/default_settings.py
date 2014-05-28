@@ -27,20 +27,6 @@ sweepLeft   = 0.08
 sweepBottom = 0.2
 
 
-def getDefaultSweepFig(scale=1.0, colorBarPos='right'):
-    fig = plt.figure(figsize=sweepFigSize*scale)
-    return fig, getDefaultSweepAxes(fig, colorBarPos)
-
-def getDefaultSweepAxes(fig, colorBarPos='right'):
-    if colorBarPos == 'right':
-        left = sweepLeft
-    else:
-        left = .12
-
-    right = left + sweepW
-    top = sweepBottom + sweepH
-    return fig.add_axes(Bbox.from_extents(left, sweepBottom, right, top))
-
 ###############################################################################
 # Parameter spaces roots
 gridsDataRoot    = 'simulation_data/submission/grids'
