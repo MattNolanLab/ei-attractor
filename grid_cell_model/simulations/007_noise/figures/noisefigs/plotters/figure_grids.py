@@ -13,7 +13,7 @@ from grid_cell_model.submitting import flagparse
 
 from ..EI_plotting import sweeps, examples, details
 from ..EI_plotting.base import getOption, plotStateSignal
-import .default_settings as ds
+from . import  default_settings as ds
 from .base import SweepPlotter
 
 outputDir = ds.figOutputDir
