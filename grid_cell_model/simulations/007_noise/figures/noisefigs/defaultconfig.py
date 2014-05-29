@@ -44,6 +44,9 @@ _default_config = {
 def get_config():
     return _default_config
 
+
+##############################################################################
+
 GridSweepsPlotter_config = {
     'cbar_kw': {
         'label': 'Gridness score',
@@ -72,7 +75,7 @@ GridSweepsPlotter_config = {
 }
 _default_config['GridSweepsPlotter'] = GridSweepsPlotter_config
 
-
+##############################################################################
 GridExamplesPlotter_config = {
     'fig_size': (1, 1.2),
     'ax_box': (0.01, 0.01, 0.99, 0.85),  # l, b, r, t
@@ -80,6 +83,7 @@ GridExamplesPlotter_config = {
 }
 _default_config['GridExamplesPlotter'] = GridExamplesPlotter_config
 
+##############################################################################
 
 GridsDiffSweep_config = {
     'cbar_kw': dict(
@@ -92,3 +96,34 @@ GridsDiffSweep_config = {
     )
 }
 _default_config['GridsDiffSweep'] = GridsDiffSweep_config
+
+##############################################################################
+
+GammaSweepsPlotter_config = {
+    'AC_cbar_kw': dict(
+        location='left',
+        ticks=ti.MultipleLocator(0.3),
+        fraction=0.25,
+        shrink=0.8,
+        pad=.2,
+        labelpad=8,
+        label='$1^{st}$ autocorrelation\npeak',
+        rasterized=True,
+    ),
+    'F_cbar_kw': dict(
+        location='left',
+        ticks=ti.MultipleLocator(30),
+        fraction=0.25,
+        shrink=0.8,
+        pad=.2,
+        labelpad=8,
+        label='Oscillation\nfrequency (Hz)',
+        extend='max', extendfrac=0.1,
+        rasterized=True
+    ),
+
+    'cbar_kw' : {
+        'location': 'left',
+    }
+}
+_default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
