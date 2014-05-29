@@ -1,5 +1,5 @@
-#!/usr/bin/env python
 '''Print synaptic connection profiles.'''
+from __future__ import absolute_import, print_function
 
 import numpy as np
 import sys
@@ -9,7 +9,12 @@ import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 from grid_cell_model.plotting.global_defs import globalAxesSettings, createColorbar
 
-outputDir = 'panels'
+from .base import FigurePlotter
+
+__all__ = [
+    'ConnectionFunctionPlotter',
+]
+
 linewidth=1
 
 dx = 0.001
@@ -53,40 +58,37 @@ def plotWeights(ax, d, exc_profile, inh_profile, inh_const):
     #            color=arrow_clr, zorder=-1)
     
 
+class ConnectionFunctionPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(ConnectionFunctionPlotter, self).__init__(*args, **kwargs)
 
-if (__name__ == "__main__"):
-    from matplotlib import rc
-    rc('pdf', fonttype=42)
-    rc('mathtext', default='regular')
+    def plot(self, *args, **kwargs):
+        d = np.arange(x0, x1+dx, dx)
+        y_dim = np.sqrt(3)/2.0
+        ES_pAMPA_mu = y_dim/2.0
+        ES_pAMPA_sigma = 0.5/6
+        ES_pGABA_sigma = 0.5/6
+        ES_pGABA_const = 0.1
+        shift = 0.1
 
-    plt.rcParams['font.size'] = 11
+        figsize = (3, 1.5)
+        left    = 0.2
+        bottom  = 0.25
+        top     = 0.75
+        right   = 0.95
 
-    d = np.arange(x0, x1+dx, dx)
-    y_dim = np.sqrt(3)/2.0
-    ES_pAMPA_mu = y_dim/2.0
-    ES_pAMPA_sigma = 0.5/6
-    ES_pGABA_sigma = 0.5/6
-    ES_pGABA_const = 0.1
-    shift = 0.1
+        # Excitatory surround
+        ES_exc_profile         = np.exp(-(np.abs(d) - ES_pAMPA_mu)**2/2/ES_pAMPA_sigma**2)
+        ES_exc_profile_shifted = np.exp(-(np.abs(d - shift) - ES_pAMPA_mu)**2/2/ES_pAMPA_sigma**2)
+        ES_inh_profile         = (1-ES_pGABA_const)*np.exp(-d**2/2./ES_pGABA_sigma**2) + ES_pGABA_const
 
-    figsize = (3, 1.5)
-    left    = 0.2
-    bottom  = 0.25
-    top     = 0.75
-    right   = 0.95
-
-    # Excitatory surround
-    ES_exc_profile         = np.exp(-(np.abs(d) - ES_pAMPA_mu)**2/2/ES_pAMPA_sigma**2)
-    ES_exc_profile_shifted = np.exp(-(np.abs(d - shift) - ES_pAMPA_mu)**2/2/ES_pAMPA_sigma**2)
-    ES_inh_profile         = (1-ES_pGABA_const)*np.exp(-d**2/2./ES_pGABA_sigma**2) + ES_pGABA_const
-
-    fig = plt.figure(figsize=figsize)
-    ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
-    plotWeights(ax, d, ES_exc_profile, ES_inh_profile, ES_pGABA_const)
-    ax.set_xticks([-.5, .5])
-    ax.xaxis.set_minor_locator(ti.MultipleLocator(0.5))
-    ax.xaxis.set_label_coords(x=0.5, y=-0.2)
-    fileBase = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-    fileName = "{0}/{1}_E_surr.pdf".format(outputDir, fileBase)
-    plt.savefig(fileName, transparent=True)
+        fig = self._get_final_fig(figsize)
+        ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
+        plotWeights(ax, d, ES_exc_profile, ES_inh_profile, ES_pGABA_const)
+        ax.set_xticks([-.5, .5])
+        ax.xaxis.set_minor_locator(ti.MultipleLocator(0.5))
+        ax.xaxis.set_label_coords(x=0.5, y=-0.2)
+        fileBase = 'fig_conn_func'
+        fileName = "{0}/{1}_E_surr.pdf".format(self.config['output_dir'], fileBase)
+        plt.savefig(fileName, transparent=True)
 

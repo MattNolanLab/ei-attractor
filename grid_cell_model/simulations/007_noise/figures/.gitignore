@@ -3,6 +3,7 @@
 *.eps
 *.tmp$$
 !bump_fitting_3d.png
+!network_layers.png
 /suppFigure_bumps
 /suppFigure_grids
 
