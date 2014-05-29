@@ -4,3 +4,7 @@ from .grids import *
 from .weights import *
 from .connections import *
 from .gamma import *
+from .bumps import *
+from .isbump import *
+from .isbump_examples import *
+

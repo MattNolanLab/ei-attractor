@@ -101,25 +101,26 @@ _default_config['GridsDiffSweep'] = GridsDiffSweep_config
 
 GammaSweepsPlotter_config = {
     'AC_cbar_kw': dict(
-        location='left',
-        ticks=ti.MultipleLocator(0.3),
-        fraction=0.25,
-        shrink=0.8,
-        pad=.2,
-        labelpad=8,
-        label='$1^{st}$ autocorrelation\npeak',
-        rasterized=True,
+        location   = 'left',
+        ticks      = ti.MultipleLocator(0.3),
+        fraction   = 0.25,
+        shrink     = 0.8,
+        pad        = .2,
+        labelpad   = 8,
+        label      = '$1^{st}$ autocorrelation\npeak',
+        rasterized = True,
     ),
     'F_cbar_kw': dict(
-        location='left',
-        ticks=ti.MultipleLocator(30),
-        fraction=0.25,
-        shrink=0.8,
-        pad=.2,
-        labelpad=8,
-        label='Oscillation\nfrequency (Hz)',
-        extend='max', extendfrac=0.1,
-        rasterized=True
+        location   = 'left',
+        ticks      = ti.MultipleLocator(30),
+        fraction   = 0.25,
+        shrink     = 0.8,
+        pad        = .2,
+        labelpad   = 8,
+        label      = 'Oscillation\nfrequency (Hz)',
+        extend     = 'max',
+        extendfrac = 0.1,
+        rasterized = True
     ),
 
     'cbar_kw' : {
@@ -127,3 +128,29 @@ GammaSweepsPlotter_config = {
     }
 }
 _default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
+
+##############################################################################
+
+fracTotalText = 'P(bumps)'
+
+FracTotalSweepAnnPlotter_config = {
+    'scale_factor': .8,
+    'cbar_kw': dict(
+        label       = fracTotalText,
+        location    = 'left',
+        shrink      = 0.8,
+        pad         = 0.25,
+        ticks       = ti.MultipleLocator(0.5),
+        rasterized  = True
+    )
+}
+_default_config['FracTotalSweepAnnPlotter'] = FracTotalSweepAnnPlotter_config
+
+##############################################################################
+
+_default_config['MainBumpFormationPlotter'] = FracTotalSweepAnnPlotter_config
+
+##############################################################################
+
+_default_config['MainIsBumpPlotter'] = FracTotalSweepAnnPlotter_config
+
