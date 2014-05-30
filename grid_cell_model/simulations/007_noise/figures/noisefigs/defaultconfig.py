@@ -41,7 +41,11 @@ _default_config = {
 
     'p_bumps': {
         'frac_total_text' : 'P(bumps)'
-    }
+    },
+
+    'bump_sigma': {
+        'sigma_bump_text': '$\sigma_{bump}^{-1}\ (neurons^{-1})$',
+    },
 }
 
 
@@ -177,3 +181,18 @@ MaxPopulationFRSweepsPlotter_config = {
 _default_config['MaxPopulationFRSweepsPlotter'] = MaxPopulationFRSweepsPlotter_config
 
 ##############################################################################
+
+BumpSigmaSweepPlotter_config = {
+    'cbar_kw': dict(
+        label       = get_config()['bump_sigma']['sigma_bump_text'],
+        location    = 'right',
+        shrink      = 0.8,
+        pad         = -0.05,
+        ticks       = ti.MultipleLocator(0.2),
+        rasterized  = True
+    )
+}
+_default_config['BumpSigmaSweepPlotter'] = BumpSigmaSweepPlotter_config
+
+##############################################################################
+

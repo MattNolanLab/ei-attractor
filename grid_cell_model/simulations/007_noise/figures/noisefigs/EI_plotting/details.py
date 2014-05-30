@@ -210,7 +210,10 @@ def plotDetailedNoise(sp, NTrials, types, **kw):
     iterList = ['noise_sigma', 'g_AMPA_total']
 
     ax.hold('on')
-    data, X, Y = aggr.aggregateType(sp, iterList, types, NTrials, **kw)
+    if isinstance(sp, aggr.AggregateData):
+        data, X, Y = sp.getData()
+    else:
+        data, X, Y = aggr.aggregateType(sp, iterList, types, NTrials, **kw)
     if (ignoreNaNs):
         nans = np.isnan(data)
         data = ma.MaskedArray(data, mask=nans)

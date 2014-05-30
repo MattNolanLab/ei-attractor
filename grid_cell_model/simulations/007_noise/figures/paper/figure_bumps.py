@@ -36,6 +36,14 @@ if args.scatter_grids_fracTotal or args.all:
 if args.isBump or args.all:
     env.register_plotter(noisefigs.plotters.MainIsBumpPlotter)
 
+if args.bumpSweep or args.all:
+    env.register_plotter(noisefigs.plotters.BumpSigmaSweepPlotter)
+
+if args.bumpExamples or args.all:
+    env.register_plotter(noisefigs.plotters.BumpExamplePlotter)
+
+if args.detailed_noise or args.all:
+    env.register_plotter(noisefigs.plotters.BumpSigmaDetailedNoisePlotter)
 
 env.plot()
 

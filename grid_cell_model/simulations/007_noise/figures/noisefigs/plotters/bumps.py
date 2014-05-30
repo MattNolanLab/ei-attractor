@@ -14,82 +14,70 @@ from ..EI_plotting import sweeps, details, examples, scatter
 from ..EI_plotting import aggregate as aggr
 from .base import FigurePlotter, SweepPlotter
 
-exampleIdx   = [(0, 0), (0, 0), (0, 0)] # (row, col)
-
 __all__ = [
+    'BumpSigmaSweepPlotter',
+    'BumpExamplePlotter',
+    'BumpSigmaDetailedNoisePlotter',
     'MainBumpFormationPlotter',
     'MainScatterGridsBumpsPlotter',
     'MainIsBumpPlotter',
 ]
 
-
 ###############################################################################
 
-#exW = 4
-#exH = 2
-#exMargin = 0.075
-#exWspace=0.2
-#exHspace=0.15
+bumpTStart  = 500.0
+bumpNTrials = 5
+exampleRC   = ( (5, 15), (15, 5) )
+exampleIdx  = [(0, 0), (0, 0), (0, 0)] # (row, col)
 
-#sweepFigSize = (3.7, 2.6)
-#sweepLeft   = 0.08
-#sweepBottom = 0.2
-#sweepRight  = 0.8
-#sweepTop    = 0.85
-#transparent  = True
+##############################################################################
+# Bump sigma sweeps
+class BumpSigmaSweepPlotter(SweepPlotter):
+    bump_vmin = 0
+    bump_vmax = 0.421
 
-###############################################################################
-## Bump sigma sweeps
-#sigmaBumpText = '$\sigma_{bump}^{-1}\ (neurons^{-1})$'
-#bumpTStart = 500.0
-#bumpNTrials = 5
-#bump_vmin = 0
-#bump_vmax = 0.421
-#bump_cbar_kw = dict(
-#        label       = sigmaBumpText,
-#        location    = 'right',
-#        shrink      = 0.8,
-#        pad         = -0.05,
-#        ticks       = ti.MultipleLocator(0.2),
-#        rasterized  = True)
-#
-#exampleRC = ( (5, 15), (15, 5) )
-#
-#ann0 = dict(
-#        txt='b',
-#        rc=exampleRC[0],
-#        xytext_offset=(1.5, 0.5),
-#        color='white')
-#ann1 = dict(
-#        txt='a',
-#        rc=exampleRC[1],
-#        xytext_offset=(1.2, 1.1),
-#        color='black')
-#ann = [ann0, ann1]
-#
-#if args.bumpSweep or args.all:
-#    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        fig = plt.figure(figsize=sweepFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-#            sweepTop))
-#        kw = dict(cbar=False)
-#        if ns_idx != 0:
-#            kw['ylabel'] = ''
-#            kw['yticks'] = False
-#        if ns_idx == 2:
-#            kw['cbar'] = True
-#        data = aggr.AggregateBumpReciprocal(ps.bumpGamma[ns_idx], ds.iterList,
-#                bumpNTrials, tStart=bumpTStart)
-#        _, _, cax = sweeps.plotSweep(data,
-#                noise_sigma=noise_sigma,
-#                ax=ax,
-#                cbar_kw=bump_cbar_kw,
-#                vmin=bump_vmin, vmax=bump_vmax,
-#                annotations=ann, **kw)
-#        fname = outputDir + "/bumps_sweeps{0}.pdf"
-#        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
-#        plt.close()
-#
+    ann0 = dict(
+            txt='b',
+            rc=exampleRC[0],
+            xytext_offset=(1.5, 0.5),
+            color='white')
+    ann1 = dict(
+            txt='a',
+            rc=exampleRC[1],
+            xytext_offset=(1.2, 1.1),
+            color='black')
+
+    def __init__(self, *args, **kwargs):
+        super(BumpSigmaSweepPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        myc= self._get_class_config()
+        sweepc = self._get_sweep_config()
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+        ann = [self.ann0, self.ann1]
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fname = (self.config['output_dir'] +
+                     "/bumps_sweeps{0}.pdf".format(int(noise_sigma)))
+            with self.figure_and_axes(fname, sweepc) as (fig, ax):
+                kw = dict(cbar=False)
+                if ns_idx != 0:
+                    kw['ylabel'] = ''
+                    kw['yticks'] = False
+                if ns_idx == 2:
+                    kw['cbar'] = True
+                data = aggr.AggregateBumpReciprocal(
+                        ps.bumpGamma[ns_idx],
+                        iter_list,
+                        bumpNTrials, tStart=bumpTStart)
+                _, _, cax = sweeps.plotSweep(data,
+                        noise_sigma=noise_sigma,
+                        ax=ax,
+                        cbar_kw=myc['cbar_kw'],
+                        vmin=self.bump_vmin, vmax=self.bump_vmax,
+                        annotations=ann, **kw)
+
 ###############################################################################
 ## Bump drift at a specified time
 #bumpDriftText = 'Average bump drift\n(neurons)'
@@ -215,42 +203,49 @@ __all__ = [
 #        plt.close()
 #
 #
-###############################################################################
-## Bump examples
-#exampleEFName = outputDir + "/bumps_examples_E_{0}pA_{1}.pdf"
-#exampleIFName = outputDir + "/bumps_examples_I_{0}pA_{1}.pdf"
-#bumpExampleTypes = ['bump_full']
-#bumpTrialNum = 0
-#exTransparent = True
-#exampleFigSize = (0.8, 0.8)
-#exampleLeft   = 0.01
-#exampleBottom = 0.01
-#exampleRight  = 0.99
-#exampleTop    = 0.82
-#
-#if args.bumpExamples or args.all:
-#    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        for idx, rc in enumerate(exampleRC):
-#            for EIType in ['E', 'I']:
-#                if EIType == 'E':
-#                    fnameTemplate =exampleEFName
-#                    types = bumpExampleTypes + ['rateMap_e']
-#                else:
-#                    fnameTemplate =exampleIFName
-#                    types = bumpExampleTypes + ['rateMap_i']
-#                fname = fnameTemplate.format(noise_sigma, idx)
-#                plt.figure(figsize=exampleFigSize)
-#                gs = examples.plotOneBumpExample(ps.bumpGamma[ns_idx], rc, ds.iterList,
-#                        types,
-#                        exIdx=exampleIdx[ns_idx],
-#                        trialNum=bumpTrialNum)
-#                gs.update(left=exampleLeft, bottom=exampleBottom,
-#                        right=exampleRight, top=exampleTop)
-#                plt.savefig(fname, dpi=300, transparent=exTransparent)
-#                plt.close()
-#
-#
-#
+##############################################################################
+# Bump examples
+class BumpExamplePlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(BumpExamplePlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        output_dir = self.config['output_dir']
+        iter_list = self.config['iter_list']
+
+        exampleEFName = output_dir + "/bumps_examples_E_{0}pA_{1}.pdf"
+        exampleIFName = output_dir + "/bumps_examples_I_{0}pA_{1}.pdf"
+        bumpExampleTypes = ['bump_full']
+        bumpTrialNum = 0
+        exTransparent = True
+        exampleFigSize = (0.8, 0.8)
+        exampleLeft   = 0.01
+        exampleBottom = 0.01
+        exampleRight  = 0.99
+        exampleTop    = 0.82
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            for idx, rc in enumerate(exampleRC):
+                for EIType in ['E', 'I']:
+                    if EIType == 'E':
+                        fnameTemplate =exampleEFName
+                        types = bumpExampleTypes + ['rateMap_e']
+                    else:
+                        fnameTemplate =exampleIFName
+                        types = bumpExampleTypes + ['rateMap_i']
+                    fname = fnameTemplate.format(noise_sigma, idx)
+                    plt.figure(figsize=exampleFigSize)
+                    gs = examples.plotOneBumpExample(ps.bumpGamma[ns_idx], rc, iter_list,
+                            types,
+                            exIdx=exampleIdx[ns_idx],
+                            trialNum=bumpTrialNum)
+                    gs.update(left=exampleLeft, bottom=exampleBottom,
+                            right=exampleRight, top=exampleTop)
+                    plt.savefig(fname, dpi=300, transparent=exTransparent)
+                    plt.close()
+
+
 ################################################################################
 #
 #std_vmin = 0
@@ -313,49 +308,71 @@ __all__ = [
 #            vmin=std_vmin, vmax=std_vmax)
 #    fname = outputDir + "/bumps_vel_std_sweeps300.pdf"
 #    fig.savefig(fname, dpi=300, transparent=True)
-#
-#
-###############################################################################
-## Detailed noise plots
-#EI13Root  = 'output_local/detailed_noise_vertical/gamma_bump/EI-1_3'
-#EI31Root  = 'output_local/detailed_noise_vertical/gamma_bump/EI-3_1'
-#detailedShape = (31, 9)
-#
-#EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
-#EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
-#detailedNTrials = 5
-#
-#
-#detailFigSize = (3.8, 2.6)
-#detailLeft   = 0.18
-#detailBottom = 0.26
-#detailRight  = 0.95
-#detailTop    = 0.95
-#if args.detailed_noise or args.all:
-#    ylabelPos = -0.17
-#
-#    types = ('bump', 'sigma')
-#    fig = plt.figure(figsize=detailFigSize)
-#    ax = fig.add_axes(Bbox.from_extents(detailLeft, detailBottom, detailRight,
-#        detailTop))
-#    _, p13, l13 = details.plotDetailedNoise(EI13PS, detailedNTrials, types, ax=ax,
-#            ylabel=sigmaBumpText, ylabelPos=ylabelPos,
-#            color='red', markerfacecolor='red', zorder=10)
-#    _, p31, l31 = details.plotDetailedNoise(EI31PS, detailedNTrials, types, ax=ax,
-#            ylabelPos=ylabelPos,
-#            color='#505050')
-#    #ax.set_yscale("log")
-#    #ax.set_ylim([1.5, 300])
-#    leg = ['a',  'b']
-#    l = ax.legend([p31, p13], leg, loc=(0.85, 0.1), fontsize='small', frameon=False,
-#            numpoints=1, handletextpad=0.05)
-#    plt.setp(l.get_title(), fontsize='small')
-#
-#    fname = outputDir + "/bumps_detailed_noise_sigma.pdf"
-#    plt.savefig(fname, dpi=300, transparent=True)
-#    plt.close()
-#
-#
+
+
+##############################################################################
+# Detailed noise plots
+class BumpSigmaDetailedNoisePlotter(FigurePlotter):
+
+    def __init__(self, *args, **kwargs):
+        super(BumpSigmaDetailedNoisePlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        iter_list = self.config['iter_list']
+        sigma_bump_text = self.config['bump_sigma']['sigma_bump_text']
+
+        EI13Root  = 'simulation_data/submission/detailed_noise/gamma_bump/EI-1_3'
+        EI31Root  = 'simulation_data/submission/detailed_noise/gamma_bump/EI-3_1'
+        detailedShape = (31, 9)
+        
+        EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
+        EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
+        detailedNTrials = 5
+        
+        ylabelPos = -0.17
+        detailFigSize = (3.8, 2.6)
+        detailLeft   = 0.18
+        detailBottom = 0.26
+        detailRight  = 0.95
+        detailTop    = 0.95
+
+        iter_list = ['noise_sigma', 'g_AMPA_total']
+
+        types = ('bump', 'sigma')
+        fig = plt.figure(figsize=detailFigSize)
+        ax = fig.add_axes(Bbox.from_extents(detailLeft, detailBottom, detailRight,
+            detailTop))
+
+        data13 = aggr.AggregateBumpReciprocal(
+                EI13PS,
+                iter_list,
+                detailedNTrials, tStart=bumpTStart,
+                normalizeTicks=False)
+        _, p13, l13 = details.plotDetailedNoise(data13, None, None, ax=ax,
+                ylabel=sigma_bump_text, ylabelPos=ylabelPos,
+                color='red', markerfacecolor='red', zorder=10)
+
+        data31 = aggr.AggregateBumpReciprocal(
+                EI31PS,
+                iter_list,
+                detailedNTrials, tStart=bumpTStart,
+                normalizeTicks=False)
+        _, p31, l31 = details.plotDetailedNoise(data31, None, None, ax=ax,
+                ylabelPos=ylabelPos,
+                color='#505050')
+
+        #ax.set_yscale("log")
+        #ax.set_ylim([1.5, 300])
+        leg = ['a',  'b']
+        l = ax.legend([p31, p13], leg, loc=(0.85, 0.1), fontsize='small', frameon=False,
+                numpoints=1, handletextpad=0.05)
+        plt.setp(l.get_title(), fontsize='small')
+
+        fname = self.config['output_dir'] + "/bumps_detailed_noise_sigma.pdf"
+        plt.savefig(fname, dpi=300, transparent=True)
+        plt.close()
+
+
 ###############################################################################
 ## Correlate (difference between) isBump and gridness score.
 #corrDiffFigsize = (4, 5)
@@ -409,15 +426,6 @@ __all__ = [
 #
 ##############################################################################
 # Correlate P(bump) vs gridness score
-xlabel = 'P(bumps)'
-ylabel = 'Gridness score'
-
-scatterAllFigSize = (5.8, 3.2)
-scatterAllLeft   = 0.05
-scatterAllBottom = 0.05
-scatterAllRight  = 0.95
-scatterAllTop    = 0.9
-
 class MainScatterGridsBumpsPlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
         super(MainScatterGridsBumpsPlotter, self).__init__(*args, **kwargs)
@@ -425,6 +433,15 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
     def plot(self, *args, **kwargs):
         ps = self.env.ps
         iter_list = self.config['iter_list']
+
+        xlabel = 'P(bumps)'
+        ylabel = 'Gridness score'
+        
+        scatterAllFigSize = (5.8, 3.2)
+        scatterAllLeft   = 0.05
+        scatterAllBottom = 0.05
+        scatterAllRight  = 0.95
+        scatterAllTop    = 0.9
 
         fig = self._get_final_fig(scatterAllFigSize)
         ax = fig.gca()
@@ -468,45 +485,50 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
 
 ##############################################################################
 # Bump formation sweeps
-bump_vmin = 0
-bump_vmax = 1.
-fracTotalText = 'P(bumps)'
+class BumpFormationBase(SweepPlotter):
+    bump_vmin = 0
+    bump_vmax = 1.
 
-ann0_0 = dict(
-        txt='a',
-        rc=(15, 5),
-        xytext_offset=(.5, 2),
-        color='white')
-ann0_1 = dict(
-        txt='b',
-        rc=(5, 15),
-        xytext_offset=(1.5, 1),
-        color='white')
+    ann0_0 = dict(
+            txt='a',
+            rc=(15, 5),
+            xytext_offset=(.5, 2),
+            color='white')
+    ann0_1 = dict(
+            txt='b',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='white')
+    
+    ann150_0 = dict(
+            txt='c',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='white')
+    
+    ann300_0 = dict(
+            txt='d',
+            rc=(15, 5),
+            xytext_offset=(1.5, 1),
+            color='white')
+    ann300_1 = dict(
+            txt='e',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='white')
 
-ann150_0 = dict(
-        txt='c',
-        rc=(5, 15),
-        xytext_offset=(1.5, 1),
-        color='white')
+    def __init__(self, *args, **kwargs):
+        super(BumpFormationBase, self).__init__(*args, **kwargs)
 
-ann300_0 = dict(
-        txt='d',
-        rc=(15, 5),
-        xytext_offset=(1.5, 1),
-        color='white')
-ann300_1 = dict(
-        txt='e',
-        rc=(5, 15),
-        xytext_offset=(1.5, 1),
-        color='white')
+    def get_ann(self):
+        ann0   = [  self.ann0_0,   self.ann0_1]
+        ann150 = [self.ann150_0]
+        ann300 = [self.ann300_0, self.ann300_1]
+        return [ann0, ann150, ann300]
 
 
-ann0   = [  ann0_0,   ann0_1]
-ann150 = [ann150_0]
-ann300 = [ann300_0, ann300_1]
-ann = [ann0, ann150, ann300]
 
-class MainBumpFormationPlotter(SweepPlotter):
+class MainBumpFormationPlotter(BumpFormationBase):
     '''This one goes to the main figure'''
     def __init__(self, *args, **kwargs):
         super(MainBumpFormationPlotter, self).__init__(*args, **kwargs)
@@ -540,14 +562,14 @@ class MainBumpFormationPlotter(SweepPlotter):
                         xlabel='', xticks=False,
                         ax=ax,
                         cbar_kw=myc['cbar_kw'],
-                        vmin=bump_vmin, vmax=bump_vmax,
-                        annotations=ann[ns_idx],
+                        vmin=self.bump_vmin, vmax=self.bump_vmax,
+                        annotations=self.get_ann()[ns_idx],
                         **kw)
 
 
 ##############################################################################
 # Bump formation, thresholded
-class MainIsBumpPlotter(SweepPlotter):
+class MainIsBumpPlotter(BumpFormationBase):
     bumpThreshold = 0.95
 
     def __init__(self, *args, **kwargs):
@@ -578,7 +600,7 @@ class MainIsBumpPlotter(SweepPlotter):
                         noise_sigma=noise_sigma,
                         ax=ax,
                         cbar_kw=myc['cbar_kw'],
-                        vmin=bump_vmin, vmax=bump_vmax,
-                        annotations=ann[ns_idx],
+                        vmin=self.bump_vmin, vmax=self.bump_vmax,
+                        annotations=self.get_ann()[ns_idx],
                         **kw)
 
