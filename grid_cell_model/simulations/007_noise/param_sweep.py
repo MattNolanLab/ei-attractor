@@ -18,11 +18,13 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import absolute_import, print_function
+
 import numpy as np
-from submitting.factory   import SubmitterFactory
-from submitting.arguments import ArgumentCreator
-from data_storage         import DataStorage
-from otherpkg.log         import log_info
+from grid_cell_model.submitting.factory import SubmitterFactory
+from grid_cell_model.submitting.arguments import ArgumentCreator
+from grid_cell_model.data_storage import DataStorage
+from grid_cell_model.otherpkg.log import log_info
 
 
 def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,

@@ -3,17 +3,19 @@
 '''
 Submit EI analysis jobs.
 '''
+from __future__ import absolute_import, print_function
 
 import numpy as np
 
-from submitting.factory   import SubmitterFactory
-from submitting.arguments import ArgumentCreator
-from param_sweep          import getSpeedPercentile
-from default_params       import defaultParameters as dp
-from submitting           import flagparse
-from submitting.flagparse import positive_int
+from grid_cell_model.submitting.factory   import SubmitterFactory
+from grid_cell_model.submitting.arguments import ArgumentCreator
+from grid_cell_model.submitting           import flagparse
+from grid_cell_model.submitting.flagparse import positive_int
 
 import common.analysis as common
+from param_sweep          import getSpeedPercentile
+from default_params       import defaultParameters as dp
+
 
 
 parser = flagparse.FlagParser()
