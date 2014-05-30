@@ -1,15 +1,17 @@
 '''
 Visitors that perform (raw) spikes analysis.
 '''
-import numpy as np
-
-import analysis.spikes as aspikes
-import data_storage.sim_models.ei as simei
-from otherpkg.log     import getClassLogger
-
-from .interface import DictDSVisitor
+from __future__ import absolute_import, print_function
 
 import logging
+
+import numpy as np
+
+from ..analysis import spikes as aspikes
+from ..data_storage.sim_models import ei as simei
+from ..otherpkg.log import getClassLogger
+from .interface import DictDSVisitor
+
 FRLogger = getClassLogger("FiringRateVisitor", __name__)
 XCLogger = getClassLogger("SpikeTrainXCVisitor", __name__)
 statsLogger = getClassLogger("SpikeStatsVisitor", __name__)

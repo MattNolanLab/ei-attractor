@@ -7,15 +7,16 @@ import time
 import matplotlib
 matplotlib.use('agg')
 
-import visitors as vis
-import visitors.spikes
-import visitors.bumps
-import visitors.signals
-import visitors.plotting
-import visitors.plotting.spikes
-import visitors.plotting.grids
-from parameters import JobTrialSpace2D
-from submitting import flagparse
+import grid_cell_model.visitors as vis
+import grid_cell_model.visitors.spikes
+import grid_cell_model.visitors.bumps
+import grid_cell_model.visitors.signals
+import grid_cell_model.visitors.plotting
+import grid_cell_model.visitors.plotting.spikes
+import grid_cell_model.visitors.plotting.grids
+from grid_cell_model.parameters import JobTrialSpace2D
+from grid_cell_model.submitting import flagparse
+
 import common.analysis as common
 
 ###############################################################################
@@ -67,10 +68,10 @@ if o.type == common.bumpType:
             readme=isBump_readme,
             forceUpdate=forceUpdate)
 
-    #sp.visit(bumpVisitor)
-    sp.visit(isBumpVisitor)
-    sp.visit(FRVisitor)
-    sp.visit(FRPlotter)
+    sp.visit(bumpVisitor)
+    #sp.visit(isBumpVisitor)
+    #sp.visit(FRVisitor)
+    #sp.visit(FRPlotter)
 
 elif o.type == common.gammaType:
     monName   = 'stateMonF_e'

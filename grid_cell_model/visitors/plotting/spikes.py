@@ -1,18 +1,19 @@
 '''
 Visitors that perform plotting of spikes.
 '''
-import numpy as np
+from __future__ import absolute_import, print_function
 
+import logging
+
+import numpy as np
 import matplotlib.pyplot as plt
 
-from otherpkg.log import getClassLogger
-#import analysis.spikes as aspikes
-from plotting.signal import signalPlot
-
+from ...otherpkg.log import getClassLogger
+from ...plotting.signal import signalPlot
 from .. import interface
 from .. import spikes
 
-import logging
+
 FRPlotLogger = getClassLogger("FiringRatePlotter", __name__)
 
 

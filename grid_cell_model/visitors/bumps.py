@@ -1,22 +1,25 @@
 '''
 Visitors related to bumps.
 '''
+from __future__ import absolute_import, print_function
+
+import os
+import logging
 from abc import ABCMeta, abstractmethod
+
 import numpy as np
 from scipy.optimize import leastsq
-import os
 import matplotlib.pyplot as plt
 
-import analysis.spikes as aspikes
-import analysis.image as image
-import data_storage.sim_models.ei as simei
-from interface        import DictDSVisitor 
-from otherpkg.log     import getClassLogger
-from analysis.image   import Position2D, fitGaussianBumpTT
-
+from ..analysis import spikes as aspikes
+from ..analysis import image as image
+from ..data_storage.sim_models import ei as simei
+from ..otherpkg.log import getClassLogger
+from ..analysis.image import Position2D, fitGaussianBumpTT
+from .interface import DictDSVisitor 
 from . import defaults
 
-import logging
+
 logger          = logging.getLogger(__name__)
 speedLogger     = getClassLogger('SpeedEstimator', __name__)
 speedPlotLogger = getClassLogger('SpeedPlotter', __name__)
