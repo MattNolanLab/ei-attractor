@@ -60,7 +60,7 @@ for subDir in subDirs:
     sp = JobTrialSpace2D(shape, rootDir)
 
     if args.bump or args.all:
-        for suffix in ['', '_full']:
+        for suffix in ['_full']:
             sp.aggregateData(varListBase + ['bump_e'+suffix, 'sigma'],
                     trialNumList, funReduce=None, loadData=loadData,saveData=True,
                     output_dtype='array')

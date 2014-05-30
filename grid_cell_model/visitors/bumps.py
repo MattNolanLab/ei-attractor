@@ -84,7 +84,7 @@ class BumpFittingVisitor(BumpVisitor):
         torus = aspikes.TorusPopulationSpikes(senders, times, sheetSize)
         bump = torus.avgFiringRate(tstart, tend)
         dim = Position2D(Nx, Ny)
-        return fitGaussianBumpTT(bump, dim), bump
+        return fitGaussianBumpTT(bump), bump
 
 
     def visitDictDataSet(self, ds, **kw):
@@ -128,14 +128,16 @@ class BumpFittingVisitor(BumpVisitor):
             Nx  = self.getNetParam(data, 'Ne_x')
             Ny  = self.getNetParam(data, 'Ne_y')
             mon = data['spikeMon_e']
-            ((A, mu_x, mu_y, sigma), err2), bump = self.fitGaussianToMon(mon,
+            fit, bump = self.fitGaussianToMon(mon,
                     Nx, Ny, tstart, tend)
             a[self.bumpERoot] = {
-                    'A' : A,
-                    'mu_x' : mu_x,
-                    'mu_y' : mu_y,
-                    'sigma' : np.abs(sigma),
-                    'err2'  : np.sum(err2),
+                    'A'              : fit.A,
+                    'mu_x'           : fit.mu_x,
+                    'mu_y'           : fit.mu_y,
+                    'sigma'          : np.abs(fit.sigma),
+                    'err2'           : np.sum(fit.err2),
+                    'ln_L'           : fit.ln_L,
+                    'lh_precision'   : fit.lh_precision,
                     'bump_e_rateMap' : bump
             }
         else:
