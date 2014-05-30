@@ -20,12 +20,15 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import absolute_import, print_function
+
 import numpy as np
 
-from submitting           import flagparse
-from submitting.flagparse import positive_int
-from submitting.factory   import SubmitterFactory
-from submitting.arguments import ArgumentCreator
+from grid_cell_model.submitting import flagparse
+from grid_cell_model.submitting.flagparse import positive_int
+from grid_cell_model.submitting.factory   import SubmitterFactory
+from grid_cell_model.submitting.arguments import ArgumentCreator
+
 from param_sweep          import getSpeedPercentile
 from default_params       import defaultParameters as dp
 import common.analysis as common
@@ -43,6 +46,7 @@ parser.add_argument('--rtLimit', type=str, default='00:05:00')
 parser.add_argument('--position',type=str, choices=allowedPositions)
 parser.add_flag("--all-positions")
 parser.add_flag("--forceUpdate")
+parser.add_flag("--ignoreErrors")
 o = parser.parse_args()
 
 if not o.all_positions and o.position is None:
@@ -95,7 +99,8 @@ for position in positions:
     ###############################################################################
     submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
             rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-            blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
+            blocking=blocking, timePrefix=timePrefix, numCPU=numCPU,
+            ignoreSubmitErrors=o.ignoreErrors)
     ac.setOption('output_dir', submitter.outputDir())
     startJobNum = 0
     submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
