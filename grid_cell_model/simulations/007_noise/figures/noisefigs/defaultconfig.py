@@ -38,6 +38,10 @@ _default_config = {
         'example_idx': [(5, 15), (5, 15), (5, 15)],  # (row, col)
         'ntrials': 3,
     },
+
+    'p_bumps': {
+        'frac_total_text' : 'P(bumps)'
+    }
 }
 
 
@@ -131,7 +135,7 @@ _default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
 
 ##############################################################################
 
-fracTotalText = 'P(bumps)'
+fracTotalText = _default_config['p_bumps']['frac_total_text']
 
 FracTotalSweepAnnPlotter_config = {
     'scale_factor': .8,
@@ -154,3 +158,8 @@ _default_config['MainBumpFormationPlotter'] = FracTotalSweepAnnPlotter_config
 
 _default_config['MainIsBumpPlotter'] = FracTotalSweepAnnPlotter_config
 
+##############################################################################
+
+_default_config['IsBumpPlotter'] = FracTotalSweepAnnPlotter_config
+
+##############################################################################
