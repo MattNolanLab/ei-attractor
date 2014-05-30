@@ -20,6 +20,7 @@ __all__ = [
     'GammaDetailedNoisePlotter',
     'GammaExamplePlotter',
     'GammaScatterAllPlotter',
+    'ScatterGammaGridsSeparatePlotter',
 ]
 
 
@@ -372,68 +373,75 @@ class GammaExamplePlotter(FigurePlotter):
                 plt.close()
 
 
-###############################################################################
-## Separate scatter plot of gridness score vs. gamma power
-#scatterFigSize = (3.8, 3.2)
-#scatterLeft   = 0.2
-#scatterBottom = 0.32
-#scatterRight  = 0.98
-#scatterTop    = 0.87
-#
-#scatterColorFigSize = (0.75, 0.75)
-#
-#ignoreNaNs = True
-#
-#if args.scatterPlot or args.all:
-#    NTrialsGamma = 5
-#    NTrialsGrids = 3
-#    typesGamma = ['gamma', 'acVal']
-#    typesGrids = ['grids', 'gridnessScore']
-#
-#    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        fig = plt.figure(figsize=scatterFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
-#            scatterTop))
-#
-#        if (ns_idx != 0):
-#            ylabel = ''
-#        else:
-#            ylabel = 'Gridness score'
-#        if (ns_idx == 1):
-#            xlabel = '$1^{st}$ autocorrelation peak'
-#        else:
-#            xlabel = ''
-#
-#        scatterPlot = scatter.ScatterPlot(
-#                ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
-#                typesGrids, ds.iterList, NTrialsGamma, NTrialsGrids,
-#                s=15,
-#                linewidth=0.3,
-#                color2D=True,
-#                xlabel=xlabel,
-#                ylabel=ylabel,
-#                sigmaTitle=True,
-#                noise_sigma=noise_sigma,
-#                ignoreNaNs=ignoreNaNs)
-#        scatterPlot.plot()
-#        ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
-#        ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-#        ax.set_ylim(prepareLims((-0.5, 1.2), margin=0.02))
-#
-#
-#        fname = outputDir + "/gamma_scatter_gamma_grids{0}.pdf"
-#        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
-#                    transparent=True)
-#
-#    fig = plt.figure(figsize=scatterColorFigSize)
-#    ax = fig.gca()
-#    scatterPlot.plotColorbar(ax)
-#    fig.tight_layout(pad=0)
-#    fname = outputDir + "/gamma_scatter_gamma_grids_colorbar.pdf"
-#    fig.savefig(fname, dpi=300, transparent=True)
-#
-#
-#
+##############################################################################
+# Separate scatter plot of gridness score vs. gamma power
+class ScatterGammaGridsSeparatePlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(ScatterGammaGridsSeparatePlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+        output_dir = self.config['output_dir']
+
+        NTrialsGamma = 5
+        NTrialsGrids = 3
+        typesGamma = ['gamma', 'acVal']
+        typesGrids = ['grids', 'gridnessScore']
+
+        scatterFigSize = (3.8, 3.2)
+        scatterLeft   = 0.2
+        scatterBottom = 0.32
+        scatterRight  = 0.98
+        scatterTop    = 0.87
+        scatterColorFigSize = (0.75, 0.75)
+        
+        ignoreNaNs = True
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fig = self._get_final_fig(scatterFigSize)
+            ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
+                scatterTop))
+
+            if (ns_idx != 0):
+                ylabel = ''
+            else:
+                ylabel = 'Gridness score'
+            if (ns_idx == 1):
+                xlabel = '$1^{st}$ autocorrelation peak'
+            else:
+                xlabel = ''
+
+            scatterPlot = scatter.ScatterPlot(
+                    ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
+                    typesGrids, iter_list, NTrialsGamma, NTrialsGrids,
+                    s=15,
+                    linewidth=0.3,
+                    color2D=True,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    sigmaTitle=True,
+                    noise_sigma=noise_sigma,
+                    ignoreNaNs=ignoreNaNs)
+            scatterPlot.plot()
+            ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
+            ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+            ax.set_ylim(prepareLims((-0.5, 1.2), margin=0.02))
+
+
+            fname = output_dir + "/gamma_scatter_gamma_grids{0}.pdf"
+            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                        transparent=True)
+
+        fig = self._get_final_fig(scatterColorFigSize)
+        ax = fig.gca()
+        scatterPlot.plotColorbar(ax)
+        fig.tight_layout(pad=0)
+        fname = output_dir + "/gamma_scatter_gamma_grids_colorbar.pdf"
+        fig.savefig(fname, dpi=300, transparent=True)
+
+
+
 
 ##############################################################################
 # Scatter plot of gridness score vs. gamma power 

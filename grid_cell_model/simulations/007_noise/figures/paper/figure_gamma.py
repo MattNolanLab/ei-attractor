@@ -11,7 +11,6 @@ parser.add_flag('--threshold')
 parser.add_flag('--freqHist')
 parser.add_flag('--detailed_noise')
 parser.add_flag('--examples')
-parser.add_flag('--scatterPlot')
 parser.add_flag('--scatter_all')
 args = parser.parse_args()
 
