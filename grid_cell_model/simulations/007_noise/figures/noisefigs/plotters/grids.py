@@ -10,8 +10,10 @@ from grid_cell_model.data_storage     import DataStorage
 from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 import grid_cell_model.plotting.low_level as low_level
 
-from ..EI_plotting import sweeps, examples, details
+from ..EI_plotting import sweeps, examples, details, scatter
+from ..EI_plotting import aggregate as aggr
 from ..EI_plotting.base import getOption, plotStateSignal
+from ..EI_plotting import scaling
 from .base import FigurePlotter, SweepPlotter
 
 __all__ = [
@@ -20,6 +22,7 @@ __all__ = [
     'VMExamplesPlotter',
     'GridDetailedNoisePlotter',
     'GridsDiffSweep',
+    'GridBumpScatterPlotter',
 ]
          
 
@@ -263,3 +266,76 @@ class GridsDiffSweep(SweepPlotter):
                     symmetricLimits=True,
                     cmap='RdBu_r'
                 )
+
+
+##############################################################################
+# Scatter plot of gridness score vs. P(bump)
+##############################################################################
+class GridBumpScatterPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(GridBumpScatterPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+        output_dir = self.config['output_dir']
+
+        scatterFigSize = (8.27, 11.69)
+        scatterLeft   = 0.12
+        scatterBottom = 0.17
+        scatterRight  = 0.98
+        scatterTop    = 0.92
+        scatterTransparent = True
+        
+        scatterColorFigSize = (1.5, 1.5)
+        
+        ignoreNaNs = True
+
+        xlabel = 'P(bumps)'
+        ylabel = 'Gridness score'
+
+        fig = self._get_final_fig(scatterFigSize)
+        ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
+            scatterTop))
+
+        isBumpData = []
+        gridData = []
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            isBumpData.append(aggr.IsBump(ps.bumpGamma[ns_idx], iter_list,
+                ignoreNaNs=True, normalizeTicks=False))
+            gridData.append(aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                ignoreNaNs=True, normalizeTicks=False))
+
+        fig = self._get_final_fig(scatterFigSize)
+        scatterPlot = scatter.FullScatterPlot(
+                isBumpData, gridData, None, None, iter_list, None, None,
+                s=25,
+                linewidth=0.3,
+                color2D=True,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                sigmaTitle=True,
+                noise_sigmas=ps.noise_sigmas,
+                ignoreNaNs=ignoreNaNs,
+                captionLetters=('A', 'B', 'C'),
+                fig=fig)
+        scatterPlot.plot(captionLeft=-0.1, plotcolorbar=False)
+        l = 0.14
+        w = 0.165
+        scatterPlot.plotColorbar(left=l, bottom=.85, right=l+w, top=.95)
+        scatterPlot.set_titleSizes(16)
+
+        # Normal scale
+        fname = output_dir + "/suppFigure_grids_vs_bumps.pdf"
+        fig.savefig(fname, dpi=300)
+        
+        # Exponential scale
+        for ns_idx, _ in enumerate(ps.noise_sigmas):
+            ax = scatterPlot.axes[ns_idx]
+            ax.set_xscale('exponential')
+            ax.xaxis.set_major_locator(ti.MultipleLocator(.5))
+            ax.xaxis.set_minor_locator(ti.MultipleLocator(.1))
+            ax.set_xlim([-0.3, 1.002])
+        fname = output_dir + "/suppFigure_grids_vs_bumps_exp.pdf"
+        fig.savefig(fname, dpi=300)
+

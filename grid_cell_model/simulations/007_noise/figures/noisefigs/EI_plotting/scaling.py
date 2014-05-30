@@ -1,8 +1,8 @@
 from matplotlib import scale as mscale
 from matplotlib import transforms as mtransforms
 
-class CustomScale(mscale.ScaleBase):
-    name = 'custom'
+class ExpScale(mscale.ScaleBase):
+    name = 'exponential'
 
     def __init__(self, axis, **kwargs):
         mscale.ScaleBase.__init__(self)
@@ -27,7 +27,7 @@ class CustomScale(mscale.ScaleBase):
             return 10**(a*1.5)
 
         def inverted(self):
-            return CustomScale.InvertedCustomTransform(self.thresh)
+            return ExpScale.InvertedCustomTransform(self.thresh)
 
     class InvertedCustomTransform(mtransforms.Transform):
         input_dims = 1
@@ -42,8 +42,8 @@ class CustomScale(mscale.ScaleBase):
             return log10(a)
 
         def inverted(self):
-            return CustomScale.CustomTransform(self.thresh)
+            return ExpScale.CustomTransform(self.thresh)
 
 
-mscale.register_scale(CustomScale)
+mscale.register_scale(ExpScale)
 
