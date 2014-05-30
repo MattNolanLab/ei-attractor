@@ -7,4 +7,5 @@ from .gamma import *
 from .bumps import *
 from .isbump import *
 from .isbump_examples import *
+from .seizures import *
 

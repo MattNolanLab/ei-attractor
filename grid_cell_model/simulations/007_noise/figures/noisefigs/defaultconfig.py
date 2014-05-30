@@ -163,3 +163,17 @@ _default_config['MainIsBumpPlotter'] = FracTotalSweepAnnPlotter_config
 _default_config['IsBumpPlotter'] = FracTotalSweepAnnPlotter_config
 
 ##############################################################################
+
+MaxPopulationFRSweepsPlotter_config = {
+    'cbar_kw': dict(
+        label       = "max(E rate) (Hz)",
+        location    = 'left',
+        shrink      = 0.8,
+        pad         = 0.25,
+        ticks       = ti.MultipleLocator(100),
+        rasterized  = True
+    )
+}
+_default_config['MaxPopulationFRSweepsPlotter'] = MaxPopulationFRSweepsPlotter_config
+
+##############################################################################
