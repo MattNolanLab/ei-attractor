@@ -251,3 +251,34 @@ _default_config['MaxStdThetaFRSweepPlotter'] = MaxStdThetaFRSweepPlotter_config
 _default_config['MaxMedianThetaFRSweepPlotter'] = MaxStdThetaFRSweepPlotter_config
 
 ##############################################################################
+VelFitErrSweepPlotter_config = {
+    'scale_factor': .7,
+    'cbar_kw': dict(
+        label       = 'Fit error (neurons/s)',
+        location    = 'right',
+        shrink      = 0.8,
+        pad         = 0.05,
+        ticks       = ti.MultipleLocator(1),
+        extend      = 'max',
+        extendfrac  = 0.1,
+        rasterized  = True
+    )
+}
+_default_config['VelFitErrSweepPlotter'] = VelFitErrSweepPlotter_config
+
+##############################################################################
+
+VelFitStdSweepPlotter_config = {
+    'scale_factor': .7,
+    'cbar_kw': dict(
+        location='right',
+        label='Mean $\sigma_{spd}$ (neurons/s)',
+        shrink = 0.8,
+        pad = 0.05,
+        ticks=ti.MultipleLocator(5),
+        extend='max', extendfrac=0.1
+    )
+}
+_default_config['VelFitStdSweepPlotter'] = VelFitStdSweepPlotter_config
+
+##############################################################################

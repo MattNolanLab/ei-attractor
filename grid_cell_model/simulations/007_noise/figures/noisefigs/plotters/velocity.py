@@ -24,6 +24,8 @@ __all__ = [
     'GridsLineErrScatterPlotter',
     'GridsLineSlopeScatterPlotter',
     'LineErrSlopeScatterPlotter',
+    'VelFitErrSweepPlotter',
+    'VelFitStdSweepPlotter',
 ]
 
 ###############################################################################
@@ -552,4 +554,107 @@ class LineErrSlopeScatterPlotter(FigurePlotter):
         #ax.yaxis.set_minor_locator(ti.MultipleLocator(0.25))
 
         fig.savefig(fname, dpi=300)
+
+
+
+##############################################################################
+# Bump velocity line fit error
+#exampleRC = ( (5, 15), (15, 5) )
+class VelFitErrSweepPlotter(SweepPlotter):
+    def __init__(self, *args, **kwargs):
+        super(VelFitErrSweepPlotter, self).__init__(*args, **kwargs)
+
+    def get_fig(self):
+        fig_size = np.asarray(self.config['sweeps']['fig_size'])
+        scale = self._get_class_config()['scale_factor']
+        return self._get_final_fig(fig_size*scale)
+
+    def plot(self, *args, **kwargs):
+        myc= self._get_class_config()
+        sweepc = self._get_sweep_config()
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+
+        errVarList = ['lineFitErr']
+        err_vmin = 0
+        err_vmax = 3
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fname = (self.config['output_dir'] +
+                     "/suppFigure_velocity_err_sweeps{}.pdf".format(int(noise_sigma)))
+            with self.figure_and_axes(fname, sweepc) as (fig, ax):
+                kw = {'cbar': False}
+                if (ns_idx != 0):
+                    kw['ylabel'] = ''
+                    kw['yticks'] = False
+                if (ns_idx == 2):
+                    kw['cbar'] = True
+                _, ax, cax = sweeps.plotVelTrial(ps.v[ns_idx], errVarList,
+                        iter_list,
+                        noise_sigma,
+                        ax=ax,
+                        cbar_kw=myc['cbar_kw'],
+                        xlabel='', xticks=False,
+                        vmin=err_vmin, vmax=err_vmax,
+                        **kw)
+
+
+## Stats
+#if args.hists or args.all:
+#    fig = plt.figure(figsize=histFigsize)
+#    ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
+#        histTop))
+#    plotErrHistogram(ps.v, ['lineFitErr'], xlabel='Fit error (neurons/s)',
+#            ylabel='p(error)')
+#    fname = outputDir + "/suppFigure_velocity_err_histograms.pdf"
+#    plt.savefig(fname, dpi=300, transparent=True)
+#
+#    fig = plt.figure(figsize=histFigsize)
+#    ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
+#        histTop))
+#    plotSlopeHistogram(ps.v, ['lineFitSlope'], xlabel='Slope (neurons/s/pA)',
+#            ylabel='p(slope)', plotLegend=True)
+#    fname = outputDir + "/suppFigure_velocity_slope_histograms.pdf"
+#    plt.savefig(fname, dpi=300, transparent=True)
+
+
+################################################################################
+# Velocity line fit std. deviation
+class VelFitStdSweepPlotter(SweepPlotter):
+    def __init__(self, *args, **kwargs):
+        super(VelFitStdSweepPlotter, self).__init__(*args, **kwargs)
+
+    def get_fig(self):
+        fig_size = np.asarray(self.config['sweeps']['fig_size'])
+        scale = self._get_class_config()['scale_factor']
+        return self._get_final_fig(fig_size*scale)
+
+    def plot(self, *args, **kwargs):
+        myc= self._get_class_config()
+        sweepc = self._get_sweep_config()
+        ps = self.env.ps
+
+        iter_list = self.config['iter_list']
+        output_dir = self.config['output_dir']
+
+        std_vmin = 0
+        std_vmax = 10.421
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fname = (output_dir +
+                    "/bumps_vel_std_sweeps{0}.pdf".format(int(noise_sigma)))
+            with self.figure_and_axes(fname, sweepc) as (fig, ax):
+                kw = {'cbar': False}
+                if (ns_idx != 0):
+                    kw['ylabel'] = ''
+                    kw['yticks'] = False
+                if (ns_idx == 2):
+                    kw['cbar'] = True
+                _, ax, cax = sweeps.plotVelStdSweep(ps.v[ns_idx], iter_list,
+                        ps.noise_sigmas[ns_idx],
+                        ax=ax,
+                        sigmaTitle=False,
+                        cbar_kw=myc['cbar_kw'],
+                        vmin=std_vmin, vmax=std_vmax,
+                        **kw)
 
