@@ -46,6 +46,11 @@ _default_config = {
     'bump_sigma': {
         'sigma_bump_text': '$\sigma_{bump}^{-1}\ (neurons^{-1})$',
     },
+
+    'seizures': {
+        'thetaT': 125.,  # ms
+        'sig_dt': .5     # ms
+    }
 }
 
 
@@ -195,4 +200,54 @@ BumpSigmaSweepPlotter_config = {
 _default_config['BumpSigmaSweepPlotter'] = BumpSigmaSweepPlotter_config
 
 ##############################################################################
+MaxMeanThetaFRSweepPlotter_config = {
+    'cbar_kw': dict(
+        label       = "max(E rate)/$\\theta$ cycle (Hz)",
+        location    = 'left',
+        shrink      = 0.8,
+        pad         = 0.25,
+        ticks       = ti.MultipleLocator(100),
+        #ticks       = ti.LogLocator(base=4),
+        #format      = ti.LogFormatter(4),
+        rasterized  = True
+    )
+}
+_default_config['MaxMeanThetaFRSweepPlotter'] = MaxMeanThetaFRSweepPlotter_config
 
+##############################################################################
+
+PSeizureSweepPlotter_config = {
+    'FRThreshold': 300
+}
+PSeizureSweepPlotter_config.update({
+    'cbar_kw': dict(
+        label       = "P[max(rate during $\\theta$) > {0}]".format(
+                        PSeizureSweepPlotter_config['FRThreshold']),
+        location    = 'left',
+        shrink      = 0.8,
+        pad         = 0.25,
+        ticks       = ti.MultipleLocator(0.5),
+        rasterized  = True
+    )
+})
+_default_config['PSeizureSweepPlotter'] = PSeizureSweepPlotter_config
+
+##############################################################################
+
+MaxStdThetaFRSweepPlotter_config = {
+    'cbar_kw': dict(
+        label       = "max(E rate)/$\\theta$ cycle (Hz)",
+        location    = 'left',
+        shrink      = 0.8,
+        pad         = 0.25,
+        ticks       = ti.MaxNLocator(4),
+        rasterized  = True
+    )
+}
+_default_config['MaxStdThetaFRSweepPlotter'] = MaxStdThetaFRSweepPlotter_config
+
+##############################################################################
+
+_default_config['MaxMedianThetaFRSweepPlotter'] = MaxStdThetaFRSweepPlotter_config
+
+##############################################################################
