@@ -390,7 +390,7 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
                                      ignoreNaNs=True)
             gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
                                           ignoreNaNs=True,
-                                          normalizeTicks=True)
+                                          normalizeTicks=False)
 
             scatterPlot = scatter.ScatterPlot(
                     isBumpData, gridData, None, None, None, None, None,
