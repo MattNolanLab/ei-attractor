@@ -1,22 +1,25 @@
 '''
 Visitors related to bumps.
 '''
+from __future__ import absolute_import, print_function
+
+import os
+import logging
 from abc import ABCMeta, abstractmethod
+
 import numpy as np
 from scipy.optimize import leastsq
-import os
 import matplotlib.pyplot as plt
 
-import analysis.spikes as aspikes
-import analysis.image as image
-import data_storage.sim_models.ei as simei
-from interface        import DictDSVisitor 
-from otherpkg.log     import getClassLogger
-from analysis.image   import Position2D, fitGaussianBumpTT
-
+from ..analysis import spikes as aspikes
+from ..analysis import image as image
+from ..data_storage.sim_models import ei as simei
+from ..otherpkg.log import getClassLogger
+from ..analysis.image import Position2D, fitGaussianBumpTT
+from .interface import DictDSVisitor 
 from . import defaults
 
-import logging
+
 logger          = logging.getLogger(__name__)
 speedLogger     = getClassLogger('SpeedEstimator', __name__)
 speedPlotLogger = getClassLogger('SpeedPlotter', __name__)
@@ -81,7 +84,7 @@ class BumpFittingVisitor(BumpVisitor):
         torus = aspikes.TorusPopulationSpikes(senders, times, sheetSize)
         bump = torus.avgFiringRate(tstart, tend)
         dim = Position2D(Nx, Ny)
-        return fitGaussianBumpTT(bump, dim), bump
+        return fitGaussianBumpTT(bump), bump
 
 
     def visitDictDataSet(self, ds, **kw):
@@ -125,14 +128,16 @@ class BumpFittingVisitor(BumpVisitor):
             Nx  = self.getNetParam(data, 'Ne_x')
             Ny  = self.getNetParam(data, 'Ne_y')
             mon = data['spikeMon_e']
-            ((A, mu_x, mu_y, sigma), err2), bump = self.fitGaussianToMon(mon,
+            fit, bump = self.fitGaussianToMon(mon,
                     Nx, Ny, tstart, tend)
             a[self.bumpERoot] = {
-                    'A' : A,
-                    'mu_x' : mu_x,
-                    'mu_y' : mu_y,
-                    'sigma' : np.abs(sigma),
-                    'err2'  : np.sum(err2),
+                    'A'              : fit.A,
+                    'mu_x'           : fit.mu_x,
+                    'mu_y'           : fit.mu_y,
+                    'sigma'          : np.abs(fit.sigma),
+                    'err2'           : np.sum(fit.err2),
+                    'ln_L'           : fit.ln_L,
+                    'lh_precision'   : fit.lh_precision,
                     'bump_e_rateMap' : bump
             }
         else:

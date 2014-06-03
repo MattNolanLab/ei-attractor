@@ -1,6 +1,8 @@
 '''
 Grid field plotting visitors.
 '''
+from __future__ import absolute_import, print_function
+
 import os
 import errno
 
@@ -8,11 +10,11 @@ import numpy as np
 from matplotlib.pyplot import figure, plot, pcolormesh, subplot2grid, savefig,\
         colorbar, axis, xlabel, ylabel
 
-from analysis.spikes import PopulationSpikes
-from analysis.grid_cells import SNSpatialRate2D, SNAutoCorr, cellGridnessScore
-from plotting.bumps  import torusFiringRate
-from plotting.grids  import plotSpikes2D
-from otherpkg.log    import log_warn, log_info
+from ...analysis.spikes import PopulationSpikes
+from ...analysis.grid_cells import SNSpatialRate2D, SNAutoCorr, cellGridnessScore
+from ...plotting.bumps  import torusFiringRate
+from ...plotting.grids  import plotSpikes2D
+from ...otherpkg.log    import log_warn, log_info
 
 from .. import interface
 

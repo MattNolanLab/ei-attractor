@@ -1,16 +1,18 @@
 '''
 Visitors that perform data analysis on signals (i.e. voltage clamp data).
 '''
-import numpy as np
-
-import analysis.signal as asignal
-import data_storage.sim_models.ei as simei
-from interface        import DictDSVisitor 
-from otherpkg.log     import log_info
-from analysis.signal  import localExtrema, butterBandPass, autoCorrelation
-
+from __future__ import absolute_import, print_function
 
 import logging
+
+import numpy as np
+
+from ..analysis import signal as asignal
+from ..analysis.signal import localExtrema, butterBandPass, autoCorrelation
+from ..data_storage.sim_models import ei as simei
+from ..otherpkg.log import log_info
+from .interface import DictDSVisitor 
+
 logger = logging.getLogger(__name__)
 
 
@@ -177,7 +179,7 @@ class AutoCorrelationVisitor(DictDSVisitor):
             o = data['options']
             self.maxLag = 1. / (o['theta_freq'] * 1e-3)
             freq, acVal, acVec, dt = self.extractACStat(data[self.monName])
-            print freq
+            print(freq)
             a['freq']  = np.array(freq)
             a['acVal'] = np.array(acVal)
             a['acVec'] = np.array(acVec)
