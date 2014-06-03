@@ -47,12 +47,28 @@ class FigurePlotter(object):
         try:
             return self.config[self.__class__.__name__]
         except KeyError:
-            raise RuntimeError('Config section [%s] missing! Write it!' %
-                    self.__class__.__name__)
+            logger.warn('Config section [%s] missing.' %
+                        self.__class__.__name__)
+            return {}
+
+    def pre_plot(self, *args, **kwargs):
+        pass
 
     @abstractmethod
     def plot(self, *args, **kwargs):
         raise NotImplementedError()
+
+    def post_plot(self, *args, **kwargs):
+        pass
+
+    def save(self, *args, **kwargs):
+        pass
+
+    def run_all(self, *args, **kwargs):
+        self.pre_plot(*args, **kwargs)
+        self.plot(*args, **kwargs)
+        self.post_plot(*args, **kwargs)
+        self.save(*args, **kwargs)
 
     def figure_and_axes(self, fname, config):
         return _FigureContextManager(fname, self, config['transparent'])
@@ -64,8 +80,10 @@ class FigurePlotter(object):
         raise NotImplementedError()
 
     def _get_final_fig(self, nominal_fig_size):
-        scale = self.config['scale_factor']
-        fig = plt.figure(figsize=np.asarray(nominal_fig_size)*scale)
+        global_scale = self.config['scale_factor']
+        class_scale  = self._get_class_config().get('scale_factor', 1.)
+        final_scale = global_scale*class_scale
+        fig = plt.figure(figsize=np.asarray(nominal_fig_size)*final_scale)
         return fig
 
 

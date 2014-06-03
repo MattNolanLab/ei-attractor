@@ -15,13 +15,11 @@ __all__ = [
     'ConnectionFunctionPlotter',
 ]
 
-linewidth=1
-
 dx = 0.001
 x0 = -0.5
 x1 = 0.5
 
-def plotWeights(ax, d, exc_profile, inh_profile, inh_const):
+def plotWeights(ax, d, exc_profile, inh_profile, inh_const, linewidth):
     plt.hold('on')
     ax = plt.gca()
     globalAxesSettings(ax)
@@ -84,7 +82,8 @@ class ConnectionFunctionPlotter(FigurePlotter):
 
         fig = self._get_final_fig(figsize)
         ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
-        plotWeights(ax, d, ES_exc_profile, ES_inh_profile, ES_pGABA_const)
+        plotWeights(ax, d, ES_exc_profile, ES_inh_profile, ES_pGABA_const,
+                    linewidth=self.config['scale_factor'])
         ax.set_xticks([-.5, .5])
         ax.xaxis.set_minor_locator(ti.MultipleLocator(0.5))
         ax.xaxis.set_label_coords(x=0.5, y=-0.2)

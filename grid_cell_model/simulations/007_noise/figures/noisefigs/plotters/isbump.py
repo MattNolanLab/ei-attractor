@@ -116,11 +116,6 @@ class FracTotalSweepAnnPlotter(SweepPlotter):
     def __init__(self, *args, **kwargs):
         super(FracTotalSweepAnnPlotter, self).__init__(*args, **kwargs)
 
-    def get_fig(self):
-        fig_size = np.asarray(self.config['sweeps']['fig_size'])
-        scale = self._get_class_config()['scale_factor']
-        return self._get_final_fig(fig_size*scale)
-
     def plot(self, *args, **kwargs):
         myc= self._get_class_config()
         sweepc = self._get_sweep_config()
@@ -157,11 +152,6 @@ class IsBumpPlotter(SweepPlotter):
 
     def __init__(self, *args, **kwargs):
         super(IsBumpPlotter, self).__init__(*args, **kwargs)
-
-    def get_fig(self):
-        fig_size = np.asarray(self.config['sweeps']['fig_size'])
-        scale = self._get_class_config()['scale_factor']
-        return self._get_final_fig(fig_size*scale)
 
     def plot(self, *args, **kwargs):
         myc= self._get_class_config()

@@ -564,11 +564,6 @@ class VelFitErrSweepPlotter(SweepPlotter):
     def __init__(self, *args, **kwargs):
         super(VelFitErrSweepPlotter, self).__init__(*args, **kwargs)
 
-    def get_fig(self):
-        fig_size = np.asarray(self.config['sweeps']['fig_size'])
-        scale = self._get_class_config()['scale_factor']
-        return self._get_final_fig(fig_size*scale)
-
     def plot(self, *args, **kwargs):
         myc= self._get_class_config()
         sweepc = self._get_sweep_config()
@@ -623,11 +618,6 @@ class VelFitErrSweepPlotter(SweepPlotter):
 class VelFitStdSweepPlotter(SweepPlotter):
     def __init__(self, *args, **kwargs):
         super(VelFitStdSweepPlotter, self).__init__(*args, **kwargs)
-
-    def get_fig(self):
-        fig_size = np.asarray(self.config['sweeps']['fig_size'])
-        scale = self._get_class_config()['scale_factor']
-        return self._get_final_fig(fig_size*scale)
 
     def plot(self, *args, **kwargs):
         myc= self._get_class_config()

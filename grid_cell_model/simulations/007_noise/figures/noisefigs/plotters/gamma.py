@@ -192,6 +192,7 @@ class GammaSweepsPlotter(SweepPlotter):
         myc = self._get_class_config()
         sweepc = self._get_sweep_config()
         ps = self.env.ps
+        ac_xticks = myc['AC_xticks']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             kw = dict(cbar=False)
@@ -211,7 +212,8 @@ class GammaSweepsPlotter(SweepPlotter):
                         self.config['iter_list'],
                         noise_sigma=ps.noise_sigmas[ns_idx],
                         ax=ax,
-                        xlabel='', xticks=False,
+                        xlabel='' if ac_xticks[ns_idx] == False else None,
+                        xticks=ac_xticks[ns_idx],
                         trialNumList=xrange(NTrials),
                         cbar_kw=myc['AC_cbar_kw'],
                         vmin=AC_vmin, vmax=AC_vmax,
@@ -452,15 +454,17 @@ class GammaScatterAllPlotter(FigurePlotter):
 
     def plot(self, *args, **kwargs):
         ps = self.env.ps
+        myc = self._get_class_config()
+        legend_kwargs = myc['legend_kwargs']
 
-        fig = self._get_final_fig((5, 3.2))
-        ax = fig.gca()
+        self.fig = self._get_final_fig(myc['fig_size'])
+        self.ax = self.fig.gca()
 
         NTrialsGamma = 5
         NTrialsGrids = 3
         typesGamma = ['gamma', 'acVal']
         typesGrids = ['grids', 'gridnessScore']
-        ax.hold('on')
+        self.ax.hold('on')
         scatterColors = ['green', 'red', 'blue']
         scatterOrders = [2, 3, 1]
 
@@ -470,20 +474,20 @@ class GammaScatterAllPlotter(FigurePlotter):
                     ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
                     typesGrids, self.config['iter_list'], NTrialsGamma, NTrialsGrids,
                     c=color,
-                    s=15,
+                    s=15*self.config['scale_factor'],
                     linewidth=0.3,
                     xlabel='$1^{st}$ autocorrelation peak',
                     ylabel='Gridness score',
                     zorder=scatterOrders[ns_idx])
             scatterPlot.plot()
-        ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
-        ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+        self.ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
+        self.ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
         leg = ['0', '150', '300']
-        l = ax.legend(leg, loc=(0.9, 0.4), fontsize='small', frameon=False,
-                numpoints=1, title='$\sigma$ (pA)')
-        plt.setp(l.get_title(), size='small')
+        l = self.ax.legend(leg, **legend_kwargs)
+        plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
+        self.fig.tight_layout(**myc['tight_layout_kwargs'])
 
-        fig.tight_layout(pad=3)
+    def save(self, *args, **kwargs):
         fname = self.config['output_dir'] + "/gamma_scatter_gamma_grids_all.pdf"
-        fig.savefig(fname, dpi=300, transparent=True)
+        self.fig.savefig(fname, dpi=300, transparent=True)
 
