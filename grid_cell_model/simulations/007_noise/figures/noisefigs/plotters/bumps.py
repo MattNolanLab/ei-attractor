@@ -16,6 +16,9 @@ from .base import FigurePlotter, SweepPlotter
 
 __all__ = [
     'BumpSigmaSweepPlotter',
+    'BumpDriftAtTimePlotter',
+    'BumpDiffAtInitPlotter',
+    'BumpDiffResetPlotter',
     'BumpExamplePlotter',
     'BumpSigmaDetailedNoisePlotter',
     'MainBumpFormationPlotter',
@@ -26,7 +29,6 @@ __all__ = [
 ###############################################################################
 
 bumpTStart  = 500.0
-bumpNTrials = 5
 exampleRC   = ( (5, 15), (15, 5) )
 exampleIdx  = [(0, 0), (0, 0), (0, 0)] # (row, col)
 
@@ -56,6 +58,7 @@ class BumpSigmaSweepPlotter(SweepPlotter):
         ps = self.env.ps
         iter_list = self.config['iter_list']
         ann = [self.ann0, self.ann1]
+        n_trials = self.config['bumps']['n_trials']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
@@ -70,7 +73,7 @@ class BumpSigmaSweepPlotter(SweepPlotter):
                 data = aggr.AggregateBumpReciprocal(
                         ps.bumpGamma[ns_idx],
                         iter_list,
-                        bumpNTrials, tStart=bumpTStart)
+                        n_trials, tStart=bumpTStart)
                 _, _, cax = sweeps.plotSweep(data,
                         noise_sigma=noise_sigma,
                         ax=ax,
@@ -78,131 +81,124 @@ class BumpSigmaSweepPlotter(SweepPlotter):
                         vmin=self.bump_vmin, vmax=self.bump_vmax,
                         annotations=ann, **kw)
 
-###############################################################################
-## Bump drift at a specified time
-#bumpDriftText = 'Average bump drift\n(neurons)'
-#bumpDriftTStart = 1e3 #ms
-#bumpDriftT = 9e3 # ms
-#drift_vmin = 0
-#drift_vmax = 20
-#bump_drift_cbar_kw = dict(
-#        label       = bumpDriftText,
-#        location    = 'right',
-#        shrink      = 0.8,
-#        pad         = -0.05,
-#        ticks       = ti.MultipleLocator(10),
-#        rasterized  = True)
-#
-#
-#if args.bumpDriftSweep or args.all:
-#    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        fig = plt.figure(figsize=sweepFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-#            sweepTop))
-#        kw = dict(cbar=False)
-#        if ns_idx != 0:
-#            kw['ylabel'] = ''
-#            kw['yticks'] = False
-#        if ns_idx == 2:
-#            kw['cbar'] = True
-#        data = aggr.BumpDriftAtTime(bumpDriftT, 
-#                ps.bumpGamma[ns_idx],
-#                ds.iterList,
-#                bumpNTrials,
-#                tStart=bumpDriftTStart)
-#        _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
-#                ax=ax,
-#                cbar_kw=bump_drift_cbar_kw,
-#                vmin=drift_vmin, vmax=drift_vmax,
-#                **kw)
-#        fname = outputDir + "/bumps_drift_at_time_sweeps{0}.pdf"
-#        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
-#        plt.close()
-#
-###############################################################################
-## Distance from init position
-#bumpDiffText = 'Distance from init\nposition (neurons)'
-#bumpDiffT = 0.75e3 # ms
-#bumpDiff_vmin = 0
-#bumpDiff_vmax = 20
-#diffStartPos = [17, 15]
-#bumpDiff_cbar_kw = dict(
-#        label       = bumpDiffText,
-#        location    = 'right',
-#        shrink      = 0.8,
-#        pad         = -0.05,
-#        ticks       = ti.MultipleLocator(10),
-#        rasterized  = True)
-#
-#
-#if args.bumpDiffAtInitSweep or args.all:
-#    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        fig = plt.figure(figsize=sweepFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-#            sweepTop))
-#        kw = dict(cbar=False)
-#        if ns_idx != 0:
-#            kw['ylabel'] = ''
-#            kw['yticks'] = False
-#        if ns_idx == 2:
-#            kw['cbar'] = True
-#        data = aggr.BumpDifferenceAtTime(diffStartPos, bumpDiffT,
-#                ps.bumpGamma[ns_idx],
-#                ds.iterList,
-#                bumpNTrials)
-#        _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
-#                ax=ax,
-#                cbar_kw=bumpDiff_cbar_kw,
-#                vmin=bumpDiff_vmin, vmax=bumpDiff_vmax,
-#                **kw)
-#        fname = outputDir + "/bumps_difference_at_time_sweeps{0}.pdf"
-#        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
-#        plt.close()
-#
-###############################################################################
-## Average distance from position enforced by place cells, from theta_start_t
-## until the end of the simultion
-#bumpResetText = 'Distance from reset\nposition (neurons)'
-#bumpResetTStart = 0.5e3 # ms
-#bumpReset_vmin = 0
-#bumpReset_vmax = 20
-#bumpResetStartPos = [17, 15]
-#constPosNTrials = 5
-#bumpReset_cbar_kw = dict(
-#        label       = bumpResetText,
-#        location    = 'right',
-#        shrink      = 0.8,
-#        pad         = -0.05,
-#        ticks       = ti.MultipleLocator(5),
-#        rasterized  = True)
-#
-#
-#if args.bumpDiffResetSweep or args.all:
-#    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        fig = plt.figure(figsize=sweepFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-#            sweepTop))
-#        kw = dict(cbar=False)
-#        if ns_idx != 0:
-#            kw['ylabel'] = ''
-#            kw['yticks'] = False
-#        if ns_idx == 2:
-#            kw['cbar'] = True
-#        data = aggr.BumpAvgDifferenceFromPos(bumpResetStartPos,
-#                constPosPS[ns_idx],
-#                ds.iterList,
-#                constPosNTrials,
-#                tstart=bumpResetTStart)
-#        _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
-#                ax=ax,
-#                cbar_kw=bumpReset_cbar_kw,
-#                vmin=bumpReset_vmin, vmax=bumpReset_vmax,
-#                **kw)
-#        fname = outputDir + "/bumps_avg_difference_reset_sweeps{0}.pdf"
-#        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
-#        plt.close()
-#
-#
+##############################################################################
+# Bump drift at a specified time
+class BumpDriftAtTimePlotter(SweepPlotter):
+    def __init__(self, *args, **kwargs):
+        super(BumpDriftAtTimePlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        myc= self._get_class_config()
+        sweepc = self._get_sweep_config()
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+        n_trials = self.config['bumps']['n_trials']
+
+        bumpDriftTStart = 1e3 #ms
+        bumpDriftT = 9e3 # ms
+        drift_vmin = 0
+        drift_vmax = 20
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fname = (self.config['output_dir'] +
+                     "/bumps_drift_at_time_sweeps{0}.pdf".format(int(noise_sigma)))
+            with self.figure_and_axes(fname, sweepc) as (fig, ax):
+                kw = dict(cbar=False)
+                if ns_idx != 0:
+                    kw['ylabel'] = ''
+                    kw['yticks'] = False
+                if ns_idx == 2:
+                    kw['cbar'] = True
+                data = aggr.BumpDriftAtTime(bumpDriftT, 
+                        ps.bumpGamma[ns_idx],
+                        iter_list,
+                        n_trials,
+                        tStart=bumpDriftTStart)
+                _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
+                        ax=ax,
+                        cbar_kw=myc['cbar_kw'],
+                        vmin=drift_vmin, vmax=drift_vmax,
+                        **kw)
+
+##############################################################################
+# Distance from init position
+class BumpDiffAtInitPlotter(SweepPlotter):
+    def __init__(self, *args, **kwargs):
+        super(BumpDiffAtInitPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        myc= self._get_class_config()
+        sweepc = self._get_sweep_config()
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+        n_trials = self.config['bumps']['n_trials']
+
+        bumpDiffT = 0.75e3 # ms
+        bumpDiff_vmin = 0
+        bumpDiff_vmax = 20
+        diffStartPos = [17, 15]
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fname = (self.config['output_dir'] +
+                     "/bumps_difference_at_time_sweeps{0}.pdf".format(int(noise_sigma)))
+            with self.figure_and_axes(fname, sweepc) as (fig, ax):
+                kw = dict(cbar=False)
+                if ns_idx != 0:
+                    kw['ylabel'] = ''
+                    kw['yticks'] = False
+                if ns_idx == 2:
+                    kw['cbar'] = True
+                data = aggr.BumpDifferenceAtTime(diffStartPos, bumpDiffT,
+                        ps.bumpGamma[ns_idx],
+                        iter_list,
+                        n_trials)
+                _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
+                        ax=ax,
+                        cbar_kw=myc['cbar_kw'],
+                        vmin=bumpDiff_vmin, vmax=bumpDiff_vmax,
+                        **kw)
+
+##############################################################################
+# Average distance from position enforced by place cells, from theta_start_t
+# until the end of the simultion
+class BumpDiffResetPlotter(SweepPlotter):
+    def __init__(self, *args, **kwargs):
+        super(BumpDiffResetPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        myc= self._get_class_config()
+        sweepc = self._get_sweep_config()
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+
+        bumpResetTStart = 0.5e3 # ms
+        bumpReset_vmin = 0
+        bumpReset_vmax = 20
+        bumpResetStartPos = [17, 15]
+        constPosNTrials = 5
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fname = (self.config['output_dir'] +
+                     "/bumps_avg_difference_reset_sweeps{0}.pdf".format(int(noise_sigma)))
+            with self.figure_and_axes(fname, sweepc) as (fig, ax):
+                kw = dict(cbar=False)
+                if ns_idx != 0:
+                    kw['ylabel'] = ''
+                    kw['yticks'] = False
+                if ns_idx == 2:
+                    kw['cbar'] = True
+                data = aggr.BumpAvgDifferenceFromPos(bumpResetStartPos,
+                        ps.constPos[ns_idx],
+                        iter_list,
+                        constPosNTrials,
+                        tstart=bumpResetTStart)
+                _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
+                        ax=ax,
+                        cbar_kw=myc['cbar_kw'],
+                        vmin=bumpReset_vmin, vmax=bumpReset_vmax,
+                        **kw)
+
+
 ##############################################################################
 # Bump examples
 class BumpExamplePlotter(FigurePlotter):

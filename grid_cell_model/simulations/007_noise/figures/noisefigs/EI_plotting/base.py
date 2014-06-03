@@ -77,11 +77,14 @@ class NoiseDataSpaces(object):
     '''
     def __init__(self, roots, shape, noise_sigmas):
         self.bumpGamma    = getNoiseDataSpaces(roots.bump,  noise_sigmas,
-                shape)
+                                               shape)
         self.v            = getNoiseDataSpaces(roots.v,     noise_sigmas,
-                shape)
+                                               shape)
         self.grids        = getNoiseDataSpaces(roots.grids, noise_sigmas,
-                shape)
+                                               shape)
+        if hasattr(roots, 'constPos'):
+            self.constPos = getNoiseDataSpaces(roots.constPos, noise_sigmas,
+                                               shape)
         self.noise_sigmas = noise_sigmas
 
 

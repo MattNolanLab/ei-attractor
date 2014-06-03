@@ -39,6 +39,10 @@ _default_config = {
         'ntrials': 3,
     },
 
+    'bumps': {
+        'n_trials': 5,
+    },
+
     'p_bumps': {
         'frac_total_text' : 'P(bumps)'
     },
@@ -170,6 +174,45 @@ _default_config['MainIsBumpPlotter'] = FracTotalSweepAnnPlotter_config
 ##############################################################################
 
 _default_config['IsBumpPlotter'] = FracTotalSweepAnnPlotter_config
+
+##############################################################################
+BumpDriftAtTimePlotter_config = {
+    'cbar_kw': dict(
+        label       = 'Average bump drift\n(neurons)',
+        location    = 'right',
+        shrink      = 0.8,
+        pad         = -0.05,
+        ticks       = ti.MultipleLocator(10),
+        rasterized  = True
+    )
+}
+_default_config['BumpDriftAtTimePlotter'] = BumpDriftAtTimePlotter_config
+
+##############################################################################
+BumpDiffAtInitPlotter_config = {
+    'cbar_kw': dict(
+        label       = 'Distance from init\nposition (neurons)',
+        location    = 'right',
+        shrink      = 0.8,
+        pad         = -0.05,
+        ticks       = ti.MultipleLocator(10),
+        rasterized  = True
+    )
+}
+_default_config['BumpDiffAtInitPlotter'] = BumpDiffAtInitPlotter_config
+
+##############################################################################
+BumpDiffResetPlotter_config = {
+    'cbar_kw': dict(
+        label       = 'Distance from reset\nposition (neurons)',
+        location    = 'right',
+        shrink      = 0.8,
+        pad         = -0.05,
+        ticks       = ti.MultipleLocator(5),
+        rasterized  = True
+    )
+}
+_default_config['BumpDiffResetPlotter'] = BumpDiffResetPlotter_config
 
 ##############################################################################
 
