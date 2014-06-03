@@ -28,26 +28,26 @@ __all__ = [
 rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 tLimits = [2e3, 2.25e3] # ms
 
-rasterFigSize = (3, 1.9)
 transparent   = True
 rasterLeft    = 0.28
 rasterBottom  = 0.1
 rasterRight   = 0.95
 rasterTop     = 0.8
-
+        
 ylabelPos   = -0.35
-
 
 class EIRasterPlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
         super(EIRasterPlotter, self).__init__(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
-        output_dir = self.config['output_dir']
         ps = self.env.ps
+        myc = self._get_class_config()
+
+        output_dir = self.config['output_dir']
         
         # noise_sigma = 0 pA
-        fig = self._get_final_fig(rasterFigSize)
+        fig = self._get_final_fig(myc['fig_size'])
         ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
             rasterTop))
         rasters.EIRaster(ps.bumpGamma[0], 
@@ -56,6 +56,7 @@ class EIRasterPlotter(FigurePlotter):
                 r=rasterRC[0][0], c=rasterRC[0][1],
                 ylabelPos=ylabelPos,
                 tLimits=tLimits,
+                markersize=self.config['scale_factor'],
                 ann_EI=True)
         fname = output_dir + "/bumps_raster0.png"
         fig.savefig(fname, dpi=300, transparent=transparent)
@@ -63,7 +64,7 @@ class EIRasterPlotter(FigurePlotter):
             
 
         # noise_sigma = 150 pA
-        fig = self._get_final_fig(rasterFigSize)
+        fig = self._get_final_fig(myc['fig_size'])
         ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
             rasterTop))
         rasters.EIRaster(ps.bumpGamma[1], 
@@ -72,6 +73,7 @@ class EIRasterPlotter(FigurePlotter):
                 r=rasterRC[1][0], c=rasterRC[1][1],
                 ylabelPos=ylabelPos,
                 tLimits=tLimits,
+                markersize=self.config['scale_factor'],
                 ylabel='', yticks=False)
         fname = output_dir + "/bumps_raster150.png"
         fig.savefig(fname, dpi=300, transparent=transparent)
@@ -79,7 +81,7 @@ class EIRasterPlotter(FigurePlotter):
             
 
         # noise_sigma = 300 pA
-        fig = self._get_final_fig(rasterFigSize)
+        fig = self._get_final_fig(myc['fig_size'])
         ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
             rasterTop))
         rasters.EIRaster(ps.bumpGamma[2], 
@@ -87,6 +89,7 @@ class EIRasterPlotter(FigurePlotter):
                 spaceType='bump',
                 r=rasterRC[2][0], c=rasterRC[2][1],
                 ylabelPos=ylabelPos,
+                markersize=self.config['scale_factor'],
                 tLimits=tLimits,
                 ylabel='', yticks=False)
         fname = output_dir + "/bumps_raster300.png"
@@ -95,12 +98,6 @@ class EIRasterPlotter(FigurePlotter):
         
 
 ##############################################################################
-rateFigSize   = (rasterFigSize[0], 0.65)
-rateLeft    = rasterLeft
-rateBottom  = 0.2
-rateRight   = rasterRight
-rateTop     = 0.9
-
 
 class EIRatePlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
@@ -108,10 +105,18 @@ class EIRatePlotter(FigurePlotter):
 
     def plot(self, *args, **kwargs):
         ps = self.env.ps
+        myc = self._get_class_config()
+
         output_dir = self.config['output_dir']
+
+        rateLeft    = rasterLeft
+        rateBottom  = 0.2
+        rateRight   = rasterRight
+        rateTop     = myc['rateTop']
+
         for idx, noise_sigma in enumerate(ps.noise_sigmas):
             # E cells
-            fig = plt.figure(figsize=rateFigSize)
+            fig = self._get_final_fig(myc['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
                 rateTop))
             kw = {}
@@ -132,7 +137,7 @@ class EIRatePlotter(FigurePlotter):
             plt.close()
 
             # I cells
-            fig = plt.figure(figsize=rateFigSize)
+            fig = self._get_final_fig(myc['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
                 rateTop))
             kw = {}

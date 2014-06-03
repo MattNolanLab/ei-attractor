@@ -1,10 +1,17 @@
 from __future__ import absolute_import, print_function
 
 import matplotlib.ticker as ti
+from configobj import ConfigObj
+
+_default_config = ConfigObj()
+
+scale_factor = 1.
 
 exampleRC = ((5, 15), (15, 5))
+tick_width = 1. * scale_factor
+tick_len   = 6. * scale_factor
 
-_default_config = {
+_default_config.merge({
     'scale_factor': 1.,
 
     'iter_list': ['g_AMPA_total', 'g_GABA_total'],
@@ -25,6 +32,18 @@ _default_config = {
         'font.size': 11,
         'pdf.fonttype': 42,
         'mathtext.default': 'regular',
+
+        'xtick.major.size'  : tick_len,
+        'xtick.major.width' : tick_width,
+        'xtick.minor.size'  : tick_len / 2.,
+        'xtick.minor.width' : tick_width,
+        'xtick.direction'   : 'out',
+
+        'ytick.major.size'  : tick_len,
+        'ytick.major.width' : tick_width,
+        'ytick.minor.size'  : tick_len / 2.,
+        'ytick.minor.width' : tick_width,
+        'ytick.direction'   : 'out',
     },
 
     'sweeps': {
@@ -55,7 +74,7 @@ _default_config = {
         'thetaT': 125.,  # ms
         'sig_dt': .5     # ms
     }
-}
+})
 
 
 def get_config():
@@ -65,6 +84,7 @@ def get_config():
 ##############################################################################
 
 GridSweepsPlotter_config = {
+    'cbar': [0, 0, 1],
     'cbar_kw': {
         'label': 'Gridness score',
         'location': 'right',
@@ -117,6 +137,7 @@ _default_config['GridsDiffSweep'] = GridsDiffSweep_config
 ##############################################################################
 
 GammaSweepsPlotter_config = {
+    'scale_factor': .8,
     'AC_cbar_kw': dict(
         location   = 'left',
         ticks      = ti.MultipleLocator(0.3),
@@ -127,6 +148,8 @@ GammaSweepsPlotter_config = {
         label      = '$1^{st}$ autocorrelation\npeak',
         rasterized = True,
     ),
+    'AC_xticks': [False]*3,
+
     'F_cbar_kw': dict(
         location   = 'left',
         ticks      = ti.MultipleLocator(30),
@@ -148,6 +171,23 @@ _default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
 
 ##############################################################################
 
+GammaScatterAllPlotter_config = {
+    'fig_size': (5., 3.2),
+    'legend_kwargs': dict(
+        loc=(0.9, 0.4),
+        fontsize='small',
+        frameon=False,
+        numpoints=1,
+        title='$\sigma$ (pA)'
+    ),
+    'tight_layout_kwargs': {
+        'pad': 3.,
+    },
+}
+_default_config['GammaScatterAllPlotter'] = GammaScatterAllPlotter_config
+
+##############################################################################
+
 fracTotalText = _default_config['p_bumps']['frac_total_text']
 
 FracTotalSweepAnnPlotter_config = {
@@ -165,7 +205,19 @@ _default_config['FracTotalSweepAnnPlotter'] = FracTotalSweepAnnPlotter_config
 
 ##############################################################################
 
-_default_config['MainBumpFormationPlotter'] = FracTotalSweepAnnPlotter_config
+MainBumpFormationPlotter_config = {
+    'scale_factor': .8,
+    'cbar_kw': dict(
+        label       = fracTotalText,
+        location    = 'left',
+        shrink      = 0.8,
+        pad         = 0.25,
+        ticks       = ti.MultipleLocator(0.5),
+        rasterized  = True
+    ),
+    'xticks': [True]*3,
+}
+_default_config['MainBumpFormationPlotter'] = MainBumpFormationPlotter_config
 
 ##############################################################################
 
@@ -174,6 +226,27 @@ _default_config['MainIsBumpPlotter'] = FracTotalSweepAnnPlotter_config
 ##############################################################################
 
 _default_config['IsBumpPlotter'] = FracTotalSweepAnnPlotter_config
+
+##############################################################################
+
+MainScatterGridsBumpsPlotter_config = {
+    'fig_size': (5.8, 3.2),
+    'tight_layout_kwargs': {
+        'rect': (0.05, 0.05, 0.95, 0.9),
+    },
+    'legend_kwargs': dict(
+        loc=(0.2, 1.02),
+        fontsize='small',
+        frameon=True,
+        fancybox=True,
+        framealpha=0.5,
+        handletextpad=0,
+        scatterpoints=1,
+        ncol=3,
+        title='$\sigma$ (pA)'
+    ),
+}
+_default_config['MainScatterGridsBumpsPlotter'] = MainScatterGridsBumpsPlotter_config
 
 ##############################################################################
 BumpDriftAtTimePlotter_config = {
@@ -243,6 +316,22 @@ BumpSigmaSweepPlotter_config = {
 _default_config['BumpSigmaSweepPlotter'] = BumpSigmaSweepPlotter_config
 
 ##############################################################################
+
+EIRasterPlotter_config = {
+    'fig_size': (3, 1.9),
+}
+_default_config['EIRasterPlotter'] = EIRasterPlotter_config
+
+##############################################################################
+
+EIRatePlotter_config = {
+    'fig_size': (3, .65),
+    'rateTop': .9
+}
+_default_config['EIRatePlotter'] = EIRatePlotter_config
+
+##############################################################################
+
 MaxMeanThetaFRSweepPlotter_config = {
     'cbar_kw': dict(
         label       = "max(E rate)/$\\theta$ cycle (Hz)",

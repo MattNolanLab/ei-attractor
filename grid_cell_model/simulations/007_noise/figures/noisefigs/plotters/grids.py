@@ -46,9 +46,7 @@ class GridSweepsPlotter(SweepPlotter):
             fname = (self.config['output_dir'] +
                      "/grids_sweeps{0}.pdf".format(int(noise_sigma)))
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
-                kw = dict(cbar=False)
-                if ns_idx == 2:
-                    kw['cbar'] = True
+                kw = dict()
                 if ns_idx != 0:
                     kw['ylabel'] = ''
                     kw['yticks'] = False
@@ -60,6 +58,7 @@ class GridSweepsPlotter(SweepPlotter):
                         trialNumList=trial_num_list,
                         r=example_idx[ns_idx][0], c=example_idx[ns_idx][1],
                         ax=ax,
+                        cbar=myc['cbar'][ns_idx],
                         cbar_kw=myc['cbar_kw'],
                         cmap=self.cmap,
                         vmin=myc['vmin'], vmax=myc['vmax'],
@@ -107,7 +106,7 @@ class GridExamplesPlotter(FigurePlotter):
                 # Autocorrelation
                 fname = (self.config['output_dir'] +
                             self.exampleACFName.format(noise_sigma, idx))
-                fig= plt.figure(figsize=myc['fig_size'])
+                fig= self._get_final_fig(myc['fig_size'])
                 ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
                     exampleRight, exampleTop))
                 gs = examples.plotOneGridACorrExample(ps.grids[ns_idx], rc, ax=ax)
@@ -161,20 +160,21 @@ def drawVm(data, noise_sigma, xScaleBar=None, yScaleBar=None,
                 size=scaleTextSize, y=0.9)
 
 
-VmExampleFigSize = (2.5, 1.25)
-VmExampleLeft   = 0.01
-VmExampleBottom = 0.01
-VmExampleRight  = 0.999
-VmExampleTop    = 0.6
-VmExampleXScalebar = 50 # ms
-VmExampleYScalebar = 10 # mV
-
 class VMExamplesPlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
         super(VMExamplesPlotter, self).__init__(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
         ps = self.env.ps
+
+        VmExampleFigSize = (2.5, 1.25)
+        VmExampleLeft   = 0.01
+        VmExampleBottom = 0.01
+        VmExampleRight  = 0.999
+        VmExampleTop    = 0.6
+        VmExampleXScalebar = 50 # ms
+        VmExampleYScalebar = 10 # mV
+
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fig = self._get_final_fig(VmExampleFigSize)
             ax = fig.add_axes(Bbox.from_extents(VmExampleLeft, VmExampleBottom,

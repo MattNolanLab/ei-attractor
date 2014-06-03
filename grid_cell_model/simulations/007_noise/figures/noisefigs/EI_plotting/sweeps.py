@@ -291,7 +291,7 @@ def plotSweep(aggregateData, noise_sigma, **kw):
 
 
 
-def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=xlabelText, ylabel=ylabelText,
+def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=None, ylabel=None,
         colorBar=False, clBarLabel="", vmin=None, vmax=None, title="",
         clbarNTicks=2, xticks=True, yticks=True, cmap=None, cbar_kw={},
         sliceAnn=None, **kw):
@@ -304,6 +304,11 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=xlabelText, ylabel=ylabelText,
     cbar_kw['pad']         = cbar_kw.get('pad', 0.05)
     cbar_kw['ticks']       = cbar_kw.get('ticks', ti.MultipleLocator(5))
     cbar_kw['rasterized']  = cbar_kw.get('rasterized', True)
+
+    if xlabel is None:
+        xlabel = xlabelText
+    if ylabel is None:
+        ylabel = ylabelText
 
     globalAxesSettings(ax)
     ax.minorticks_on()
@@ -344,7 +349,7 @@ def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
     kw['color']      = kw.get('color', 'black')
     kw['arrowprops'] = kw.get('arrowprops',
             dict(arrowstyle         = "->",
-                    linewidth       = 1.5,
+                    linewidth       = plt.rcParams['lines.linewidth']*1.5,
                     color           = kw['color'],
                     connectionstyle = "arc3,rad=0"))
 

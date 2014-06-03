@@ -364,18 +364,16 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
 
     def plot(self, *args, **kwargs):
         ps = self.env.ps
+        myc = self._get_class_config()
+
         iter_list = self.config['iter_list']
+        tight_layout_kwargs = myc['tight_layout_kwargs']
+        legend_kwargs = myc['legend_kwargs']
 
         xlabel = 'P(bumps)'
         ylabel = 'Gridness score'
         
-        scatterAllFigSize = (5.8, 3.2)
-        scatterAllLeft   = 0.05
-        scatterAllBottom = 0.05
-        scatterAllRight  = 0.95
-        scatterAllTop    = 0.9
-
-        fig = self._get_final_fig(scatterAllFigSize)
+        fig = self._get_final_fig(myc['fig_size'])
         ax = fig.gca()
 
         scatterColors = ['green', 'red', 'blue']
@@ -391,7 +389,7 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
             scatterPlot = scatter.ScatterPlot(
                     isBumpData, gridData, None, None, None, None, None,
                     c=scatterColors[ns_idx],
-                    s=15,
+                    s=15*self.config['scale_factor'],
                     linewidth=0.3,
                     xlabel=xlabel,
                     ylabel=ylabel,
@@ -402,15 +400,22 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
         ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
         ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
         leg = ['0', '150', '300']
-        l = ax.legend(leg, loc=(0.2, 1.02), fontsize='small', frameon=True,
-                      fancybox=True, framealpha=0.5, handletextpad=0,
-                      scatterpoints=1, ncol=3, title='$\sigma$ (pA)')
+        l = ax.legend(leg, **legend_kwargs)
         plt.setp(l.get_title(), size='small')
         #ax.set_ylabel(ax.get_ylabel(), y=0., ha='left')
 
-        fig.tight_layout(rect=[scatterAllLeft, scatterAllBottom, scatterAllRight,
-                               scatterAllTop])
+        # Normal scale
+        fig.tight_layout(**tight_layout_kwargs)
         fname = self.config['output_dir'] + "/bumps_scatter_grids_vs_bumpFracTotal.pdf"
+        fig.savefig(fname, dpi=300, transparent=True)
+
+        # Exponential scale
+        ax.set_xscale('exponential')
+        ax.xaxis.set_major_locator(ti.MultipleLocator(.5))
+        ax.xaxis.set_minor_locator(ti.MultipleLocator(.1))
+        ax.set_xlim([-0.3, 1.002])
+        fig.tight_layout(**tight_layout_kwargs)
+        fname = self.config['output_dir'] + "/bumps_scatter_grids_vs_bumpFracTotal_exp.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
 
 
@@ -465,15 +470,11 @@ class MainBumpFormationPlotter(BumpFormationBase):
     def __init__(self, *args, **kwargs):
         super(MainBumpFormationPlotter, self).__init__(*args, **kwargs)
 
-    def get_fig(self):
-        fig_size = np.asarray(self.config['sweeps']['fig_size'])
-        scale = self._get_class_config()['scale_factor']
-        return self._get_final_fig(fig_size*scale)
-
     def plot(self, *args, **kwargs):
         myc= self._get_class_config()
         sweepc = self._get_sweep_config()
         ps = self.env.ps
+        xticks = myc['xticks']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
@@ -491,7 +492,8 @@ class MainBumpFormationPlotter(BumpFormationBase):
                                    ignoreNaNs=True)
                 _, _, cax = sweeps.plotSweep(data,
                         noise_sigma=noise_sigma,
-                        xlabel='', xticks=False,
+                        xlabel='' if xticks[ns_idx] == False else None,
+                        xticks=xticks[ns_idx],
                         ax=ax,
                         cbar_kw=myc['cbar_kw'],
                         vmin=self.bump_vmin, vmax=self.bump_vmax,
@@ -506,11 +508,6 @@ class MainIsBumpPlotter(BumpFormationBase):
 
     def __init__(self, *args, **kwargs):
         super(MainIsBumpPlotter, self).__init__(*args, **kwargs)
-
-    def get_fig(self):
-        fig_size = np.asarray(self.config['sweeps']['fig_size'])
-        scale = self._get_class_config()['scale_factor']
-        return self._get_final_fig(fig_size*scale)
 
     def plot(self, *args, **kwargs):
         myc= self._get_class_config()

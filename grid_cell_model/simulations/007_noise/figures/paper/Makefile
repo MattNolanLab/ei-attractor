@@ -1,3 +1,4 @@
+.PHONY: clean
 
 files=										\
 	figure_bumps.py							\
@@ -23,4 +24,7 @@ all: $(files)
 		echo;							\
    		./$$file -v DEBUG || exit 1;	\
 	done
+
+clean:
+	rm -f $$(git ls-files -i --exclude-standard -o panels)
 
