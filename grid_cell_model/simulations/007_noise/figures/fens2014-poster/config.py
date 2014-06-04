@@ -18,12 +18,14 @@ _config = {
 
         'xtick.major.size'  : tick_len,
         'xtick.major.width' : tick_width,
+        'xtick.major.pad'   : 4*scale_factor,
         'xtick.minor.size'  : tick_len / 2.,
         'xtick.minor.width' : tick_width,
         'xtick.direction'   : 'out',
 
         'ytick.major.size'  : tick_len,
         'ytick.major.width' : tick_width,
+        'ytick.major.pad'   : 4*scale_factor,
         'ytick.minor.size'  : tick_len / 2.,
         'ytick.minor.width' : tick_width,
         'ytick.direction'   : 'out',
@@ -43,6 +45,16 @@ _config = {
 
     'GridExamplesPlotter': {
         'scale_factor': .8,
+    },
+
+    'ConnectionFunctionPlotter': {
+        'fig_size': (3, 2),
+        'ylabel_coords': (-.1, .5),
+    },
+
+    'VmExamplesPlotter': {
+        'fig_size': (2.3, 1.25),
+        'scale_factor': .9,
     },
 
     'GammaScatterAllPlotter': {

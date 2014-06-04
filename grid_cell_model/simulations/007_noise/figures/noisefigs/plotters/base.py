@@ -35,7 +35,13 @@ class FigurePlotter(object):
 
     @property
     def config(self):
+        '''Global configuration.'''
         return self.env.config
+
+    @property
+    def myc(self):
+        '''Class-specific configuration.'''
+        return self._get_class_config()
 
     @property
     def env(self):

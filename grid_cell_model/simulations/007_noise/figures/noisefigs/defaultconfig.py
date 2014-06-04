@@ -136,6 +136,21 @@ _default_config['GridsDiffSweep'] = GridsDiffSweep_config
 
 ##############################################################################
 
+VmExamplesPlotter_config = {
+    'fig_size': (2.5, 1.25),
+    'ax_rect': (0.01, 0.01, 0.999, 0.6),  # l, b, r, t
+}
+_default_config['VmExamplesPlotter'] = VmExamplesPlotter_config
+
+##############################################################################
+
+ConnectionFunctionPlotter_config = {
+    'fig_size': (3, 1.5),
+}
+_default_config['ConnectionFunctionPlotter'] = ConnectionFunctionPlotter_config
+
+##############################################################################
+
 GammaSweepsPlotter_config = {
     'scale_factor': .8,
     'AC_cbar_kw': dict(

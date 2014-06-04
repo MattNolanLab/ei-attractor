@@ -28,9 +28,10 @@ def plotWeights(ax, d, exc_profile, inh_profile, inh_const, linewidth):
     ep, = plt.plot(d, exc_profile, linewidth=linewidth, color='red', label="E")
     ip, = plt.plot(d, inh_profile, linewidth=linewidth, color='blue', label="I")
     icp, = plt.plot(d, [inh_const]*len(d), ':', color='blue')
-    plt.xlabel('Distance')
-    plt.ylabel('G/G$_\mathrm{max}$')
+    ax.set_xlabel("'Distance'")
+    ax.set_ylabel('G (nS)')
     ax.yaxis.set_ticks([0, 1])
+    ax.yaxis.set_ticklabels([0, '$g_{E/I}$'])
     ax.xaxis.set_ticks([x0, 0, x1])
     leg1 = ['E$\\rightarrow$I', 'I$\\rightarrow$E']
     leg2 = ['I$\\rightarrow$E uniform\nrandom']
@@ -61,6 +62,8 @@ class ConnectionFunctionPlotter(FigurePlotter):
         super(ConnectionFunctionPlotter, self).__init__(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
+        ylabel_coords = self.myc.get('ylabel_coords', None)
+
         d = np.arange(x0, x1+dx, dx)
         y_dim = np.sqrt(3)/2.0
         ES_pAMPA_mu = y_dim/2.0
@@ -69,7 +72,6 @@ class ConnectionFunctionPlotter(FigurePlotter):
         ES_pGABA_const = 0.1
         shift = 0.1
 
-        figsize = (3, 1.5)
         left    = 0.2
         bottom  = 0.25
         top     = 0.75
@@ -80,13 +82,15 @@ class ConnectionFunctionPlotter(FigurePlotter):
         ES_exc_profile_shifted = np.exp(-(np.abs(d - shift) - ES_pAMPA_mu)**2/2/ES_pAMPA_sigma**2)
         ES_inh_profile         = (1-ES_pGABA_const)*np.exp(-d**2/2./ES_pGABA_sigma**2) + ES_pGABA_const
 
-        fig = self._get_final_fig(figsize)
+        fig = self._get_final_fig(self.myc['fig_size'])
         ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
         plotWeights(ax, d, ES_exc_profile, ES_inh_profile, ES_pGABA_const,
                     linewidth=self.config['scale_factor'])
         ax.set_xticks([-.5, .5])
         ax.xaxis.set_minor_locator(ti.MultipleLocator(0.5))
         ax.xaxis.set_label_coords(x=0.5, y=-0.2)
+        if ylabel_coords is not None:
+            ax.yaxis.set_label_coords(ylabel_coords[0], ylabel_coords[1])
         fileBase = 'fig_conn_func'
         fileName = "{0}/{1}_E_surr.pdf".format(self.config['output_dir'], fileBase)
         plt.savefig(fileName, transparent=True)

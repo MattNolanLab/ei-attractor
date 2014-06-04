@@ -28,7 +28,7 @@ if args.examplesFlag or args.all:
     env.register_plotter(noisefigs.plotters.GridExamplesPlotter)
 
 if args.Vm_examples or args.all:
-    env.register_plotter(noisefigs.plotters.VMExamplesPlotter)
+    env.register_plotter(noisefigs.plotters.VmExamplesPlotter)
 
 if args.detailed_noise or args.all:
     env.register_plotter(noisefigs.plotters.GridDetailedNoisePlotter)

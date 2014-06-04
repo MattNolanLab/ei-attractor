@@ -19,7 +19,7 @@ from .base import FigurePlotter, SweepPlotter
 __all__ = [
     'GridSweepsPlotter',
     'GridExamplesPlotter',
-    'VMExamplesPlotter',
+    'VmExamplesPlotter',
     'GridDetailedNoisePlotter',
     'GridsDiffSweep',
     'GridBumpScatterPlotter',
@@ -157,31 +157,27 @@ def drawVm(data, noise_sigma, xScaleBar=None, yScaleBar=None,
 
     if (sigmaTitle):
         ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)), loc='left',
-                size=scaleTextSize, y=0.9)
+                size=scaleTextSize, y=0.95)
 
 
-class VMExamplesPlotter(FigurePlotter):
+class VmExamplesPlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
-        super(VMExamplesPlotter, self).__init__(*args, **kwargs)
+        super(VmExamplesPlotter, self).__init__(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
+        myc = self._get_class_config()
         ps = self.env.ps
 
-        VmExampleFigSize = (2.5, 1.25)
-        VmExampleLeft   = 0.01
-        VmExampleBottom = 0.01
-        VmExampleRight  = 0.999
-        VmExampleTop    = 0.6
+        l, b, r, t = myc['ax_rect']
         VmExampleXScalebar = 50 # ms
         VmExampleYScalebar = 10 # mV
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-            fig = self._get_final_fig(VmExampleFigSize)
-            ax = fig.add_axes(Bbox.from_extents(VmExampleLeft, VmExampleBottom,
-                VmExampleRight, VmExampleTop))
+            fig = self._get_final_fig(myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
             ds = openJob(self.config['singleDataRoot'], noise_sigma)
             kw = {}
-            if (ns_idx == 2):
+            if (ns_idx == 1):
                 kw['xScaleBar'] = VmExampleXScalebar
                 kw['yScaleBar'] = VmExampleYScalebar
             drawVm(ds, noise_sigma=noise_sigma, ax=ax, **kw)
