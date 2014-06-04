@@ -189,10 +189,9 @@ class GammaSweepsPlotter(SweepPlotter):
         super(GammaSweepsPlotter, self).__init__(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
-        myc = self._get_class_config()
         sweepc = self._get_sweep_config()
         ps = self.env.ps
-        ac_xticks = myc['AC_xticks']
+        ac_xticks = self.myc['AC_xticks']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             kw = dict(cbar=False)
@@ -215,7 +214,8 @@ class GammaSweepsPlotter(SweepPlotter):
                         xlabel='' if ac_xticks[ns_idx] == False else None,
                         xticks=ac_xticks[ns_idx],
                         trialNumList=xrange(NTrials),
-                        cbar_kw=myc['AC_cbar_kw'],
+                        sigmaTitle=self.myc['AC_sigma_title'],
+                        cbar_kw=self.myc['AC_cbar_kw'],
                         vmin=AC_vmin, vmax=AC_vmax,
                         annotations=ann,
                         **kw)
@@ -231,8 +231,8 @@ class GammaSweepsPlotter(SweepPlotter):
                         noise_sigma=ps.noise_sigmas[ns_idx],
                         ax=ax,
                         trialNumList=xrange(NTrials),
-                        sigmaTitle=False,
-                        cbar_kw=myc['F_cbar_kw'],
+                        sigmaTitle=self.myc['freq_sigma_title'],
+                        cbar_kw=self.myc['F_cbar_kw'],
                         vmin=F_vmin, vmax=F_vmax,
                         annotations=annF,
                         **kw)

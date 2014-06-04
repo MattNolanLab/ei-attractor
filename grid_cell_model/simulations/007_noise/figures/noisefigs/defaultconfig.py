@@ -93,6 +93,7 @@ GridSweepsPlotter_config = {
         'ticks': ti.MultipleLocator(0.5),
         'rasterized': True
     },
+    'sigma_title': True,
     'vmin': -0.505,
     'vmax': 1.141,
     'ann': [
@@ -164,6 +165,7 @@ GammaSweepsPlotter_config = {
         rasterized = True,
     ),
     'AC_xticks': [False]*3,
+    'AC_sigma_title': True,
 
     'F_cbar_kw': dict(
         location   = 'left',
@@ -180,7 +182,8 @@ GammaSweepsPlotter_config = {
 
     'cbar_kw' : {
         'location': 'left',
-    }
+    },
+    'freq_sigma_title': False,
 }
 _default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
 
@@ -334,6 +337,9 @@ _default_config['BumpSigmaSweepPlotter'] = BumpSigmaSweepPlotter_config
 
 EIRasterPlotter_config = {
     'fig_size': (3, 1.9),
+    'fig_ext': 'png',
+
+    'yticks': [1, 0, 0],
 }
 _default_config['EIRasterPlotter'] = EIRasterPlotter_config
 

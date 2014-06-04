@@ -42,59 +42,27 @@ class EIRasterPlotter(FigurePlotter):
 
     def plot(self, *args, **kwargs):
         ps = self.env.ps
-        myc = self._get_class_config()
 
         output_dir = self.config['output_dir']
         
-        # noise_sigma = 0 pA
-        fig = self._get_final_fig(myc['fig_size'])
-        ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-            rasterTop))
-        rasters.EIRaster(ps.bumpGamma[0], 
-                noise_sigma=ps.noise_sigmas[0],
-                spaceType='bump',
-                r=rasterRC[0][0], c=rasterRC[0][1],
-                ylabelPos=ylabelPos,
-                tLimits=tLimits,
-                markersize=self.config['scale_factor'],
-                ann_EI=True)
-        fname = output_dir + "/bumps_raster0.png"
-        fig.savefig(fname, dpi=300, transparent=transparent)
-        plt.close()
-            
-
-        # noise_sigma = 150 pA
-        fig = self._get_final_fig(myc['fig_size'])
-        ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-            rasterTop))
-        rasters.EIRaster(ps.bumpGamma[1], 
-                noise_sigma=ps.noise_sigmas[1],
-                spaceType='bump',
-                r=rasterRC[1][0], c=rasterRC[1][1],
-                ylabelPos=ylabelPos,
-                tLimits=tLimits,
-                markersize=self.config['scale_factor'],
-                ylabel='', yticks=False)
-        fname = output_dir + "/bumps_raster150.png"
-        fig.savefig(fname, dpi=300, transparent=transparent)
-        plt.close()
-            
-
-        # noise_sigma = 300 pA
-        fig = self._get_final_fig(myc['fig_size'])
-        ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-            rasterTop))
-        rasters.EIRaster(ps.bumpGamma[2], 
-                noise_sigma=ps.noise_sigmas[2],
-                spaceType='bump',
-                r=rasterRC[2][0], c=rasterRC[2][1],
-                ylabelPos=ylabelPos,
-                markersize=self.config['scale_factor'],
-                tLimits=tLimits,
-                ylabel='', yticks=False)
-        fname = output_dir + "/bumps_raster300.png"
-        fig.savefig(fname, dpi=300, transparent=transparent)
-        plt.close()
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fig = self._get_final_fig(self.myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
+                rasterTop))
+            rasters.EIRaster(ps.bumpGamma[ns_idx], 
+                    noise_sigma=noise_sigma,
+                    spaceType='bump',
+                    r=rasterRC[ns_idx][0], c=rasterRC[ns_idx][1],
+                    ylabelPos=ylabelPos,
+                    tLimits=tLimits,
+                    markersize=self.config['scale_factor'],
+                    ylabel='' if self.myc['yticks'][ns_idx] == False else None,
+                    yticks=self.myc['yticks'][ns_idx],
+                    ann_EI=True)
+            fname = "%s/bumps_raster%d.%s" % (output_dir, int(noise_sigma),
+                                              self.myc['fig_ext'])
+            fig.savefig(fname, dpi=300, transparent=transparent)
+            plt.close()
         
 
 ##############################################################################
@@ -105,18 +73,17 @@ class EIRatePlotter(FigurePlotter):
 
     def plot(self, *args, **kwargs):
         ps = self.env.ps
-        myc = self._get_class_config()
 
         output_dir = self.config['output_dir']
 
         rateLeft    = rasterLeft
         rateBottom  = 0.2
         rateRight   = rasterRight
-        rateTop     = myc['rateTop']
+        rateTop     = self.myc['rateTop']
 
         for idx, noise_sigma in enumerate(ps.noise_sigmas):
             # E cells
-            fig = self._get_final_fig(myc['fig_size'])
+            fig = self._get_final_fig(self.myc['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
                 rateTop))
             kw = {}
@@ -137,7 +104,7 @@ class EIRatePlotter(FigurePlotter):
             plt.close()
 
             # I cells
-            fig = self._get_final_fig(myc['fig_size'])
+            fig = self._get_final_fig(self.myc['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
                 rateTop))
             kw = {}

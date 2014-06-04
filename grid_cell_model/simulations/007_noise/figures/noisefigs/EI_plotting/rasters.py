@@ -56,10 +56,9 @@ def EIRaster(space, spaceType, r, c, tLimits, trialNum=0, **kw):
     return ax
 
 
-def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
+def plotEIRaster(ESpikes, ISpikes, tLimits, ylabel=None, **kw):
     # kw arguments 
     ax           = kw.pop('ax', plt.gca())
-    ylabel       = kw.pop('ylabel', 'Neuron #')
     yticks       = kw.pop('yticks', True)
     yticks_style = kw.pop('yticks_style', 'separate')
     ylabelPos    = kw.pop('ylabelPos', -0.22)
@@ -76,6 +75,9 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, **kw):
     scaleText    = kw.pop('scaleText', 'ms')
     scaleTextSize= kw.pop('scaleTextSize', 'small')
     kw['markersize'] = kw.get('markersize', 1.0)
+
+    if ylabel is None:
+        ylabel = 'Neuron #'
 
     ESpikes = ESpikes.windowed(tLimits)
     ISpikes = ISpikes.windowed(tLimits)

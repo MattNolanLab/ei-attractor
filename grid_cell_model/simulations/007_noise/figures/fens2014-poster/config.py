@@ -6,6 +6,10 @@ scale_factor = 2.5
 tick_width = 1. * scale_factor
 tick_len   = 6. * scale_factor
 
+def get_config():
+    return _config
+
+
 _config = {
     'scale_factor': scale_factor,
 
@@ -41,6 +45,16 @@ _config = {
             'location': 'left',
             'pad': .2,
         },
+        'sigma_title': False,
+
+        'ann': [
+            dict(
+                txt='a',
+                rc=(5, 15),
+                xytext_offset=(0.5, 1.5),
+                color='black'
+            )
+        ],
     },
 
     'GridExamplesPlotter': {
@@ -86,6 +100,7 @@ _config = {
 
     'EIRasterPlotter': {
         'fig_size': (3, 1.5),
+        'fig_ext': 'pdf',
     },
 
     'EIRatePlotter': {
@@ -95,6 +110,7 @@ _config = {
 
     'MainBumpFormationPlotter': {
         'xticks' : [True]*3,
+        'ann': ([], [], []),
     },
 
     'GammaSweepsPlotter': {

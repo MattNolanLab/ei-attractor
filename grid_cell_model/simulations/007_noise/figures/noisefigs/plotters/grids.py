@@ -36,7 +36,6 @@ class GridSweepsPlotter(SweepPlotter):
         super(GridSweepsPlotter, self).__init__(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
-        myc= self._get_class_config()
         sweepc = self._get_sweep_config()
         ps = self.env.ps
         example_idx = self.config['grids']['example_idx']
@@ -58,13 +57,14 @@ class GridSweepsPlotter(SweepPlotter):
                         trialNumList=trial_num_list,
                         r=example_idx[ns_idx][0], c=example_idx[ns_idx][1],
                         ax=ax,
-                        cbar=myc['cbar'][ns_idx],
-                        cbar_kw=myc['cbar_kw'],
+                        cbar=self.myc['cbar'][ns_idx],
+                        cbar_kw=self.myc['cbar_kw'],
                         cmap=self.cmap,
-                        vmin=myc['vmin'], vmax=myc['vmax'],
+                        vmin=self.myc['vmin'], vmax=self.myc['vmax'],
                         ignoreNaNs=True,
-                        annotations=myc['ann'],
+                        annotations=self.myc['ann'],
                         sliceAnn=None,
+                        sigmaTitle=self.myc['sigma_title'],
                         **kw)
 
 
