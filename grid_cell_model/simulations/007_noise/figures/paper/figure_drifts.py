@@ -5,13 +5,15 @@ from grid_cell_model.submitting import flagparse
 import noisefigs
 from noisefigs.env import NoiseEnvironment
 
+import config
+
 parser = flagparse.FlagParser()
 parser.add_flag('--bumpDriftSweep')
 parser.add_flag('--bumpDiffAtInitSweep')
 parser.add_flag('--bumpDiffResetSweep')
 args = parser.parse_args()
 
-env = NoiseEnvironment()
+env = NoiseEnvironment(user_config=config.get_config())
 
 if args.bumpDriftSweep or args.all:
     env.register_plotter(noisefigs.plotters.BumpDriftAtTimePlotter)

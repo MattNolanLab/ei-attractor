@@ -17,8 +17,6 @@ parser.add_flag('--conn_func')
 parser.add_flag('--example_hists')
 args = parser.parse_args()
 
-#ps = ds.getDefaultParamSpaces()
-
 env = NoiseEnvironment(user_config=config.get_config())
 
 if args.grids or args.all:

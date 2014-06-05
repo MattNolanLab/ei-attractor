@@ -5,6 +5,8 @@ from grid_cell_model.submitting import flagparse
 import noisefigs
 from noisefigs.env import NoiseEnvironment
 
+import config
+
 parser = flagparse.FlagParser()
 parser.add_flag('--gammaSweep')
 parser.add_flag('--threshold')
@@ -15,7 +17,7 @@ parser.add_flag('--scatter_all')
 args = parser.parse_args()
 
 
-env = NoiseEnvironment()
+env = NoiseEnvironment(user_config=config.get_config())
 
 if args.gammaSweep or args.all:
     env.register_plotter(noisefigs.plotters.GammaSweepsPlotter)

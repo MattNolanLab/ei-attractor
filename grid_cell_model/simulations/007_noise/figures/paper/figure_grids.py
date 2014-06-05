@@ -5,6 +5,8 @@ from grid_cell_model.submitting import flagparse
 import noisefigs
 from noisefigs.env import NoiseEnvironment
 
+import config
+
 singleDataRoot = 'simulation_data/submission/single_neuron'
 
 parser = flagparse.FlagParser()
@@ -19,7 +21,7 @@ args = parser.parse_args()
 
 #ps = ds.getDefaultParamSpaces()
 
-env = NoiseEnvironment()
+env = NoiseEnvironment(user_config=config.get_config())
 
 if args.grids or args.all:
     env.register_plotter(noisefigs.plotters.GridSweepsPlotter)
