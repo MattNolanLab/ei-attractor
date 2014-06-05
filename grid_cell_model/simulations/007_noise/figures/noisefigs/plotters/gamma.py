@@ -5,7 +5,6 @@ import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
-from copy import deepcopy
 
 from grid_cell_model.parameters           import JobTrialSpace2D, DataSpace
 from grid_cell_model.plotting.global_defs import globalAxesSettings, prepareLims
@@ -159,7 +158,6 @@ def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
 
 
 # gamma example rows and columns
-exampleRC = ( (5, 15), (15, 5) )
 
 AC_vmin = -0.09
 AC_vmax = 0.675
@@ -169,30 +167,14 @@ F_vmax  = 120
 ACVarList = ['acVal']
 FVarList  = ['freq']
 
-ann_color = 'white'
-ann0 = dict(
-        txt='b',
-        rc=exampleRC[0],
-        xytext_offset=(1.5, 0),
-        color=ann_color)
-ann1 = dict(
-        txt='a',
-        rc=exampleRC[1],
-        xytext_offset=(1.5, 1),
-        color=ann_color)
-ann = [ann0, ann1]
-annF = [deepcopy(ann0), deepcopy(ann1)]
-
-
 class GammaSweepsPlotter(SweepPlotter):
     def __init__(self, *args, **kwargs):
         super(GammaSweepsPlotter, self).__init__(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
-        myc = self._get_class_config()
         sweepc = self._get_sweep_config()
         ps = self.env.ps
-        ac_xticks = myc['AC_xticks']
+        ac_xticks = self.myc['AC_xticks']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             kw = dict(cbar=False)
@@ -215,9 +197,10 @@ class GammaSweepsPlotter(SweepPlotter):
                         xlabel='' if ac_xticks[ns_idx] == False else None,
                         xticks=ac_xticks[ns_idx],
                         trialNumList=xrange(NTrials),
-                        cbar_kw=myc['AC_cbar_kw'],
+                        sigmaTitle=self.myc['AC_sigma_title'],
+                        cbar_kw=self.myc['AC_cbar_kw'],
                         vmin=AC_vmin, vmax=AC_vmax,
-                        annotations=ann,
+                        annotations=self.myc['ann'],
                         **kw)
             
             # Gamma frequency
@@ -231,10 +214,10 @@ class GammaSweepsPlotter(SweepPlotter):
                         noise_sigma=ps.noise_sigmas[ns_idx],
                         ax=ax,
                         trialNumList=xrange(NTrials),
-                        sigmaTitle=False,
-                        cbar_kw=myc['F_cbar_kw'],
+                        sigmaTitle=self.myc['freq_sigma_title'],
+                        cbar_kw=self.myc['F_cbar_kw'],
                         vmin=F_vmin, vmax=F_vmax,
-                        annotations=annF,
+                        annotations=self.myc['annF'],
                         **kw)
         
 
@@ -340,10 +323,6 @@ exampleLeft   = 0.08
 exampleBottom = 0.2
 exampleRight  = 0.99
 exampleTop    = 0.85
-example_xscale_kw = dict(
-        scaleLen=50,
-        x=0.75, y=-0.1,
-        size='x-small')
 
 class GammaExamplePlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
@@ -352,21 +331,22 @@ class GammaExamplePlotter(FigurePlotter):
     def plot(self, *args, **kwargs):
         ps = self.env.ps
         exampleFName = self.config['output_dir'] + "/gamma_example{0}_{1}.pdf"
+        example_rc = self.config['gamma']['example_rc']
 
         for nsIdx, ns in enumerate(ps.noise_sigmas):
-            for idx, rc in enumerate(exampleRC):
+            for idx, rc in enumerate(example_rc):
                 fname = exampleFName.format(ns, idx)
                 fig = self._get_final_fig(exampleFigSize)
                 ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
                     exampleRight, exampleTop))
                 nsAnn = None
                 xscale_kw = None
-                if (idx == 1):
+                if self.myc['xscales'][idx][nsIdx]:
+                    xscale_kw = self.myc['xscale_kw']
+                if self.myc['sigma_titles'][idx][nsIdx]:
                     nsAnn = ns
-                    if (nsIdx == len(ps.noise_sigmas)-1):
-                        xscale_kw = example_xscale_kw
                 examples.plotGammaExample(ps.bumpGamma[nsIdx], ax=ax,
-                        r=exampleRC[idx][0], c=exampleRC[idx][1],
+                        r=example_rc[idx][0], c=example_rc[idx][1],
                         trialNum=exampleTrialNum,
                         tStart = 2e3, tEnd=2.25e3,
                         noise_sigma=nsAnn, noise_sigma_xy=(0.95, 1),

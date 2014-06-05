@@ -1,5 +1,7 @@
 from __future__ import absolute_import, print_function
 
+from copy import deepcopy
+
 import matplotlib.ticker as ti
 from configobj import ConfigObj
 
@@ -58,6 +60,10 @@ _default_config.merge({
         'ntrials': 3,
     },
 
+    'gamma': {
+        'example_rc': ((5, 15), (15, 5)),
+    },
+
     'bumps': {
         'n_trials': 5,
     },
@@ -93,6 +99,7 @@ GridSweepsPlotter_config = {
         'ticks': ti.MultipleLocator(0.5),
         'rasterized': True
     },
+    'sigma_title': True,
     'vmin': -0.505,
     'vmax': 1.141,
     'ann': [
@@ -136,6 +143,21 @@ _default_config['GridsDiffSweep'] = GridsDiffSweep_config
 
 ##############################################################################
 
+VmExamplesPlotter_config = {
+    'fig_size': (2.5, 1.25),
+    'ax_rect': (0.01, 0.01, 0.999, 0.6),  # l, b, r, t
+}
+_default_config['VmExamplesPlotter'] = VmExamplesPlotter_config
+
+##############################################################################
+
+ConnectionFunctionPlotter_config = {
+    'fig_size': (3, 1.5),
+}
+_default_config['ConnectionFunctionPlotter'] = ConnectionFunctionPlotter_config
+
+##############################################################################
+
 GammaSweepsPlotter_config = {
     'scale_factor': .8,
     'AC_cbar_kw': dict(
@@ -149,6 +171,7 @@ GammaSweepsPlotter_config = {
         rasterized = True,
     ),
     'AC_xticks': [False]*3,
+    'AC_sigma_title': True,
 
     'F_cbar_kw': dict(
         location   = 'left',
@@ -163,11 +186,58 @@ GammaSweepsPlotter_config = {
         rasterized = True
     ),
 
+    'ann': [
+        dict(
+            txt='b',
+            rc=None,
+            xytext_offset=(1.5, 0),
+            color='white',
+        ),
+        dict(
+            txt='a',
+            rc=None,
+            xytext_offset=(1.5, 1),
+            color='white',
+        ),
+    ],
+
     'cbar_kw' : {
         'location': 'left',
-    }
+    },
+    'freq_sigma_title': False,
 }
 _default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
+tmp = GammaSweepsPlotter_config
+_default_config['GammaSweepsPlotter']['ann'][0]['rc'] = \
+    get_config()['gamma']['example_rc'][0]
+_default_config['GammaSweepsPlotter']['ann'][1]['rc'] = \
+    get_config()['gamma']['example_rc'][1]
+
+_default_config['GammaSweepsPlotter'].update({
+    'annF': deepcopy(tmp['ann']),
+})
+
+##############################################################################
+
+GammaExamplePlotter_config = {
+    # index0: noise_sigma
+    # index1: example index
+    'xscales': [
+        [0, 0, 0],
+        [0, 0, 1],
+    ],
+    'sigma_titles': [
+        [0, 0, 0],
+        [1, 1, 1],
+    ],
+
+    'xscale_kw': dict(
+        scaleLen=50,
+        x=0.75, y=-0.1,
+        size='x-small'
+    ),
+}
+_default_config['GammaExamplePlotter'] = GammaExamplePlotter_config
 
 ##############################################################################
 
@@ -319,6 +389,9 @@ _default_config['BumpSigmaSweepPlotter'] = BumpSigmaSweepPlotter_config
 
 EIRasterPlotter_config = {
     'fig_size': (3, 1.9),
+    'fig_ext': 'png',
+
+    'yticks': [1, 0, 0],
 }
 _default_config['EIRasterPlotter'] = EIRasterPlotter_config
 

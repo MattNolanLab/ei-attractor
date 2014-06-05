@@ -6,6 +6,10 @@ scale_factor = 2.5
 tick_width = 1. * scale_factor
 tick_len   = 6. * scale_factor
 
+def get_config():
+    return _config
+
+
 _config = {
     'scale_factor': scale_factor,
 
@@ -18,12 +22,14 @@ _config = {
 
         'xtick.major.size'  : tick_len,
         'xtick.major.width' : tick_width,
+        'xtick.major.pad'   : 4*scale_factor,
         'xtick.minor.size'  : tick_len / 2.,
         'xtick.minor.width' : tick_width,
         'xtick.direction'   : 'out',
 
         'ytick.major.size'  : tick_len,
         'ytick.major.width' : tick_width,
+        'ytick.major.pad'   : 4*scale_factor,
         'ytick.minor.size'  : tick_len / 2.,
         'ytick.minor.width' : tick_width,
         'ytick.direction'   : 'out',
@@ -39,10 +45,30 @@ _config = {
             'location': 'left',
             'pad': .2,
         },
+        'sigma_title': False,
+
+        'ann': [
+            dict(
+                txt='a',
+                rc=(5, 15),
+                xytext_offset=(0.5, 1.5),
+                color='black'
+            )
+        ],
     },
 
     'GridExamplesPlotter': {
         'scale_factor': .8,
+    },
+
+    'ConnectionFunctionPlotter': {
+        'fig_size': (3, 2),
+        'ylabel_coords': (-.1, .5),
+    },
+
+    'VmExamplesPlotter': {
+        'fig_size': (2.3, 1.25),
+        'scale_factor': .9,
     },
 
     'GammaScatterAllPlotter': {
@@ -74,6 +100,7 @@ _config = {
 
     'EIRasterPlotter': {
         'fig_size': (3, 1.5),
+        'fig_ext': 'pdf',
     },
 
     'EIRatePlotter': {
@@ -83,11 +110,35 @@ _config = {
 
     'MainBumpFormationPlotter': {
         'xticks' : [True]*3,
+        'ann': ([], [], []),
     },
 
     'GammaSweepsPlotter': {
         'AC_xticks': [True]*3,
-    }
+        'ann': [
+            dict(
+                txt='a',
+                rc=(5, 15),
+                xytext_offset=(1.5, 1),
+                color='white',
+            ),
+        ],
+    },
+
+    'GammaExamplePlotter': {
+        'xscales': [
+            [0, 0, 1],
+            [0, 0, 0],
+        ],
+        'sigma_titles': [
+            [1, 1, 1],
+            [0, 0, 0],
+        ],
+
+        'xscale_kw': dict(
+            x=0.75, y=.2,
+        ),
+    },
 }
 
 

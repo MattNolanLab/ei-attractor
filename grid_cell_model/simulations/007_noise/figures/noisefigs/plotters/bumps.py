@@ -458,6 +458,10 @@ class BumpFormationBase(SweepPlotter):
         super(BumpFormationBase, self).__init__(*args, **kwargs)
 
     def get_ann(self):
+        ann_config = self.myc.get('ann', None)
+        if ann_config is not None:
+            return ann_config
+
         ann0   = [  self.ann0_0,   self.ann0_1]
         ann150 = [self.ann150_0]
         ann300 = [self.ann300_0, self.ann300_1]

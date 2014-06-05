@@ -338,6 +338,7 @@ def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
 
     # Scale bars
     if (xscale_kw is not None):
+        xscale_kw = dict(xscale_kw)
         xscale_kw.update(ax=ax)
         xScaleBar(**xscale_kw)
 
