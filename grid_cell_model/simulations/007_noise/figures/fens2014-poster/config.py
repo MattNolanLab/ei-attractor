@@ -115,7 +115,30 @@ _config = {
 
     'GammaSweepsPlotter': {
         'AC_xticks': [True]*3,
-    }
+        'ann': [
+            dict(
+                txt='a',
+                rc=(5, 15),
+                xytext_offset=(1.5, 1),
+                color='white',
+            ),
+        ],
+    },
+
+    'GammaExamplePlotter': {
+        'xscales': [
+            [0, 0, 1],
+            [0, 0, 0],
+        ],
+        'sigma_titles': [
+            [1, 1, 1],
+            [0, 0, 0],
+        ],
+
+        'xscale_kw': dict(
+            x=0.75, y=.2,
+        ),
+    },
 }
 
 

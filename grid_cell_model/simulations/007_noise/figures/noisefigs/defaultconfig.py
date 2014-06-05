@@ -1,5 +1,7 @@
 from __future__ import absolute_import, print_function
 
+from copy import deepcopy
+
 import matplotlib.ticker as ti
 from configobj import ConfigObj
 
@@ -56,6 +58,10 @@ _default_config.merge({
         'example_rc': ((5, 15), (15, 5)),
         'example_idx': [(5, 15), (5, 15), (5, 15)],  # (row, col)
         'ntrials': 3,
+    },
+
+    'gamma': {
+        'example_rc': ((5, 15), (15, 5)),
     },
 
     'bumps': {
@@ -180,12 +186,58 @@ GammaSweepsPlotter_config = {
         rasterized = True
     ),
 
+    'ann': [
+        dict(
+            txt='b',
+            rc=None,
+            xytext_offset=(1.5, 0),
+            color='white',
+        ),
+        dict(
+            txt='a',
+            rc=None,
+            xytext_offset=(1.5, 1),
+            color='white',
+        ),
+    ],
+
     'cbar_kw' : {
         'location': 'left',
     },
     'freq_sigma_title': False,
 }
 _default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
+tmp = GammaSweepsPlotter_config
+_default_config['GammaSweepsPlotter']['ann'][0]['rc'] = \
+    get_config()['gamma']['example_rc'][0]
+_default_config['GammaSweepsPlotter']['ann'][1]['rc'] = \
+    get_config()['gamma']['example_rc'][1]
+
+_default_config['GammaSweepsPlotter'].update({
+    'annF': deepcopy(tmp['ann']),
+})
+
+##############################################################################
+
+GammaExamplePlotter_config = {
+    # index0: noise_sigma
+    # index1: example index
+    'xscales': [
+        [0, 0, 0],
+        [0, 0, 1],
+    ],
+    'sigma_titles': [
+        [0, 0, 0],
+        [1, 1, 1],
+    ],
+
+    'xscale_kw': dict(
+        scaleLen=50,
+        x=0.75, y=-0.1,
+        size='x-small'
+    ),
+}
+_default_config['GammaExamplePlotter'] = GammaExamplePlotter_config
 
 ##############################################################################
 
