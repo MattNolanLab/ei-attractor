@@ -80,7 +80,13 @@ _default_config.merge({
     'seizures': {
         'thetaT': 125.,  # ms
         'sig_dt': .5     # ms
-    }
+    },
+
+    'vel_rasters': {
+        'tLimits': [2e3, 3e3],  # ms
+        'trialNum': 0,
+        'ylabelPos': -0.22,
+    },
 })
 
 
@@ -496,5 +502,33 @@ VelFitStdSweepPlotter_config = {
     )
 }
 _default_config['VelFitStdSweepPlotter'] = VelFitStdSweepPlotter_config
+
+##############################################################################
+
+VelocityRasterPlotter_config = {
+    'fig_size': (3.75, 2.2),
+    'transparent': True,
+    'bbox': (0.2, 0.2, 0.99, 0.8)
+}
+_default_config['VelocityRasterPlotter'] = VelocityRasterPlotter_config
+
+##############################################################################
+
+VelocityRatePlotter_config = {
+    'fig_size': (3.75, 1),
+    'bbox': (.2, .2, .99, 0.70),
+    'transparent' : True,
+}
+_default_config['VelocityRatePlotter'] = VelocityRatePlotter_config
+
+##############################################################################
+
+VelocityRasterZoomPlotter_config = {
+    'fig_size': (3.75*.75, 1.2),
+    'ylabelPos': -0.22,
+    'bbox': (0.2, 0.25, 0.99, 0.95),
+    'transparent' : True,
+}
+_default_config['VelocityRasterZoomPlotter'] = VelocityRasterZoomPlotter_config
 
 ##############################################################################
