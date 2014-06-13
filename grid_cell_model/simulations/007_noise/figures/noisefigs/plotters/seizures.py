@@ -34,7 +34,6 @@ rasterBottom  = 0.1
 rasterRight   = 0.95
 rasterTop     = 0.8
         
-ylabelPos   = -0.35
 
 class EIRasterPlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
@@ -53,7 +52,7 @@ class EIRasterPlotter(FigurePlotter):
                     noise_sigma=noise_sigma,
                     spaceType='bump',
                     r=rasterRC[ns_idx][0], c=rasterRC[ns_idx][1],
-                    ylabelPos=ylabelPos,
+                    ylabelPos=self.myc['ylabelPos'],
                     tLimits=tLimits,
                     markersize=self.config['scale_factor'],
                     ylabel='' if self.myc['yticks'][ns_idx] == False else None,
@@ -95,7 +94,7 @@ class EIRatePlotter(FigurePlotter):
                     noise_sigma=ps.noise_sigmas[idx],
                     popType='E',
                     r=rasterRC[idx][0], c=rasterRC[idx][1],
-                    ylabelPos=ylabelPos,
+                    ylabelPos=self.myc['ylabelPos'],
                     color='red',
                     tLimits=tLimits,
                     ax=ax, **kw)
@@ -116,7 +115,7 @@ class EIRatePlotter(FigurePlotter):
                     noise_sigma=ps.noise_sigmas[idx],
                     popType='I', 
                     r=rasterRC[idx][0], c=rasterRC[idx][1],
-                    ylabelPos=ylabelPos,
+                    ylabelPos=self.myc['ylabelPos'],
                     color='blue',
                     tLimits=tLimits,
                     ax=ax, **kw)

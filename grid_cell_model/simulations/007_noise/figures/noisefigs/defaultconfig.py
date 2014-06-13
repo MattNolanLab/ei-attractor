@@ -34,7 +34,8 @@ _default_config.merge({
         'font.size': 11,
         'pdf.fonttype': 42,
         'mathtext.default': 'regular',
-
+        'font.sans-serif'    : ['Helvetica', 'Avant Garde', 'Computer Modern Sans serif'],
+        
         'xtick.major.size'  : tick_len,
         'xtick.major.width' : tick_width,
         'xtick.minor.size'  : tick_len / 2.,
@@ -185,6 +186,8 @@ GammaSweepsPlotter_config = {
         extendfrac = 0.1,
         rasterized = True
     ),
+    'F_xticks': [True]*3,
+    'F_sigma_title': False,
 
     'ann': [
         dict(
@@ -204,7 +207,6 @@ GammaSweepsPlotter_config = {
     'cbar_kw' : {
         'location': 'left',
     },
-    'freq_sigma_title': False,
 }
 _default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
 tmp = GammaSweepsPlotter_config
@@ -296,6 +298,13 @@ _default_config['MainIsBumpPlotter'] = FracTotalSweepAnnPlotter_config
 ##############################################################################
 
 _default_config['IsBumpPlotter'] = FracTotalSweepAnnPlotter_config
+
+##############################################################################
+
+IsBumpExamplePlotter_config = {
+    'bumpQualityX': -.9,
+}
+_default_config['IsBumpExamplePlotter'] = IsBumpExamplePlotter_config
 
 ##############################################################################
 
@@ -392,6 +401,7 @@ EIRasterPlotter_config = {
     'fig_ext': 'png',
 
     'yticks': [1, 0, 0],
+    'ylabelPos': -0.35,
 }
 _default_config['EIRasterPlotter'] = EIRasterPlotter_config
 
@@ -399,7 +409,8 @@ _default_config['EIRasterPlotter'] = EIRasterPlotter_config
 
 EIRatePlotter_config = {
     'fig_size': (3, .65),
-    'rateTop': .9
+    'rateTop': .9,
+    'ylabelPos': -0.35,
 }
 _default_config['EIRatePlotter'] = EIRatePlotter_config
 

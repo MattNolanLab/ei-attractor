@@ -1,4 +1,6 @@
-.PHONY: clean
+.PHONY: clean, thesis
+
+THESIS_DIR=~/work/PhDThesis/src
 
 files=										\
 	figure_bumps.py							\
@@ -28,3 +30,6 @@ all: $(files)
 clean:
 	rm -f $$(git ls-files -i --exclude-standard -o panels)
 
+thesis:
+	./update_thesis.sh
+	cd $(THESIS_DIR); $(MAKE)
