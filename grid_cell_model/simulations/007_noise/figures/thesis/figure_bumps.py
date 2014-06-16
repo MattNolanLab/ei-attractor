@@ -9,9 +9,6 @@ import config
 
 parser = flagparse.FlagParser()
 parser.add_flag('--bumpSweep')
-parser.add_flag('--bumpDriftSweep')
-parser.add_flag('--bumpDiffAtInitSweep')
-parser.add_flag('--bumpDiffResetSweep')
 parser.add_flag('--bumpExamples')
 parser.add_flag('--velExamples')
 parser.add_flag('--velSweep')

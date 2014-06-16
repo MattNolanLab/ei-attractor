@@ -100,6 +100,14 @@ _config = {
         },
     },
 
+    'BumpDiffAtInitPlotter': {
+        'scale_factor': .75,
+        'cbar_kw': {
+            'label': 'Initialisation error\n(neurons)',
+            'pad': -.15,
+        },
+    },
+
     'BumpDriftAtTimePlotter': {
         'scale_factor': .75,
         'cbar_kw': {
