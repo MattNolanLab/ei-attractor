@@ -389,6 +389,7 @@ _default_config['MaxPopulationFRSweepsPlotter'] = MaxPopulationFRSweepsPlotter_c
 ##############################################################################
 
 BumpSigmaSweepPlotter_config = {
+    'cbar': [0, 0, 1],
     'cbar_kw': dict(
         label       = get_config()['bump_sigma']['sigma_bump_text'],
         location    = 'right',
@@ -399,6 +400,13 @@ BumpSigmaSweepPlotter_config = {
     )
 }
 _default_config['BumpSigmaSweepPlotter'] = BumpSigmaSweepPlotter_config
+
+##############################################################################
+
+BumpExamplePlotter_config = {
+    'bbox': (0.01, 0.01, 0.99, 0.82),
+}
+_default_config['BumpExamplePlotter'] = BumpExamplePlotter_config
 
 ##############################################################################
 
@@ -530,5 +538,15 @@ VelocityRasterZoomPlotter_config = {
     'transparent' : True,
 }
 _default_config['VelocityRasterZoomPlotter'] = VelocityRasterZoomPlotter_config
+
+##############################################################################
+
+ThetaSignalPlotter_config = {
+    'fig_size': (3, .5),
+    'T': .5e3,  # ms
+    'bbox': (0, .05, 1., .95),  # l, b, r, t
+    'color': (0, 0, 0, .3),
+}
+_default_config['ThetaSignalPlotter'] = ThetaSignalPlotter_config
 
 ##############################################################################

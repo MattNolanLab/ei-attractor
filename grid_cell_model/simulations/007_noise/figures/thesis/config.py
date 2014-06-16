@@ -65,6 +65,21 @@ _config = {
         },
     },
 
+    'BumpSigmaSweepPlotter': {
+        'cbar': [1, 0, 0],
+        'cbar_kw': {
+            'location': 'left',
+            'pad': .25,
+            'labelpad': 3,
+        },
+        'scale_factor': .75,
+    },
+
+    'BumpExamplePlotter': {
+        'scale_factor': .75,
+        'bbox': (0.01, 0.01, 0.99, 0.8),
+    },
+
     'EIRasterPlotter': {
         'fig_size': (2.9, 2),
         'scale_factor': .75,
@@ -82,6 +97,13 @@ _config = {
         'scale_factor': .75,
         'cbar_kw': {
             'labelpad': 2,
+        },
+    },
+
+    'BumpDriftAtTimePlotter': {
+        'scale_factor': .75,
+        'cbar_kw': {
+            'pad': -.15,
         },
     },
 }
