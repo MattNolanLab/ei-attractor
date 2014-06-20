@@ -126,6 +126,7 @@ _config = {
     },
 
     'GammaExamplePlotter': {
+        'scale_factor': .9,
         'xscales': [
             [0, 0, 1],
             [0, 0, 0],

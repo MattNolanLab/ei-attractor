@@ -317,13 +317,6 @@ class GammaDetailedNoisePlotter(FigurePlotter):
 
 
 ##############################################################################
-exampleTrialNum = 0
-exampleFigSize = (2, 1.1)
-exampleLeft   = 0.08
-exampleBottom = 0.2
-exampleRight  = 0.99
-exampleTop    = 0.85
-
 class GammaExamplePlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
         super(GammaExamplePlotter, self).__init__(*args, **kwargs)
@@ -332,6 +325,13 @@ class GammaExamplePlotter(FigurePlotter):
         ps = self.env.ps
         exampleFName = self.config['output_dir'] + "/gamma_example{0}_{1}.pdf"
         example_rc = self.config['gamma']['example_rc']
+
+        exampleTrialNum = 0
+        exampleFigSize = (2, 1.1)
+        exampleLeft   = 0.08
+        exampleBottom = 0.2
+        exampleRight  = 0.99
+        exampleTop    = 0.85
 
         for nsIdx, ns in enumerate(ps.noise_sigmas):
             for idx, rc in enumerate(example_rc):
