@@ -114,4 +114,11 @@ _config = {
             'pad': -.15,
         },
     },
+
+    'BumpDiffResetPlotter': {
+        'scale_factor': .75,
+        'cbar_kw': {
+            'pad': -.15,
+        },
+    },
 }
