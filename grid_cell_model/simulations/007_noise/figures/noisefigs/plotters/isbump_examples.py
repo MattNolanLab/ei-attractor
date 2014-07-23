@@ -60,7 +60,8 @@ class IsBumpExamplePlotter(FigurePlotter):
                 examples.plotBumpSnapshots(FR, FRt, nSnapshots,
                         fig=fig, bumpQuality=bumpQuality[set.r, set.c, set.trialNum],
                         timeTitles=timeTitles, maxRate=False,
-                        bumpQualityText="P\n(bumps)")
+                        bumpQualityText="P\n(bumps)",
+                        bumpQualityX=self.myc['bumpQualityX'])
                 fname = self.config['output_dir'] + "/bumps_isBumpSnapshotExamples_{0}pA_{1}_{2}{3}.pdf"
                 timeStr = '_times' if timeTitles else ''
                 fig.savefig(fname.format(set.noise_sigma, set.r, set.c, timeStr),

@@ -10,7 +10,7 @@ files=										\
 	figure_isBump.py						\
 	figure_isbump_examples.py				\
 	figure_seizures.py						\
-	figure_velocity.py					    \
+	figure_theta.py							\
 	suppFigure_gamma.py						\
 	suppFigure_grids_vs_bumps.py			\
 	suppFigure_grids_vs_line_fit_err.py		\

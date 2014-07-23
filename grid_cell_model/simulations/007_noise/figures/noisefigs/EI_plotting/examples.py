@@ -357,6 +357,7 @@ def plotBumpSnapshots(FR, FRt, nSnapshots, **kw):
     axesDiv         = kw.pop('axesDiv', .01)
     bumpQuality     = kw.pop('bumpQuality', False)
     bumpQualityText = kw.pop('bumpQualityText', '')
+    bumpQualityX    = kw.pop('bumpQualityX', -.9)
 
     left, bottom, right, top = axesCoords
     width  = right - left
@@ -380,7 +381,7 @@ def plotBumpSnapshots(FR, FRt, nSnapshots, **kw):
 
         if bumpQuality and it == 0:
             txt = '{0:.2f}'.format(bumpQuality)
-            ax.text(-.9, .5, txt, va='center', ha='center',
+            ax.text(bumpQualityX, .5, txt, va='center', ha='center',
                     transform=ax.transAxes)
 
         if timeTitles:
@@ -390,8 +391,8 @@ def plotBumpSnapshots(FR, FRt, nSnapshots, **kw):
             if it == 0:
                 ax.text(.5, yTitle + .3, "t(s)", ha='center', va='bottom',
                         transform=ax.transAxes)
-                ax.text(-.9, yTitle, bumpQualityText, ha='center', va='bottom',
-                        transform=ax.transAxes)
+                ax.text(bumpQualityX, yTitle, bumpQualityText, ha='center',
+                        va='bottom', transform=ax.transAxes)
             #if it / step == nSnapshots - 1:
             #    ax.text(1, yTitle, "s", va='bottom', transform=ax.transAxes)
 

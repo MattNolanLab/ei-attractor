@@ -34,7 +34,8 @@ _default_config.merge({
         'font.size': 11,
         'pdf.fonttype': 42,
         'mathtext.default': 'regular',
-
+        'font.sans-serif'    : ['Helvetica', 'Avant Garde', 'Computer Modern Sans serif'],
+        
         'xtick.major.size'  : tick_len,
         'xtick.major.width' : tick_width,
         'xtick.minor.size'  : tick_len / 2.,
@@ -79,7 +80,13 @@ _default_config.merge({
     'seizures': {
         'thetaT': 125.,  # ms
         'sig_dt': .5     # ms
-    }
+    },
+
+    'vel_rasters': {
+        'tLimits': [2e3, 3e3],  # ms
+        'trialNum': 0,
+        'ylabelPos': -0.22,
+    },
 })
 
 
@@ -185,6 +192,8 @@ GammaSweepsPlotter_config = {
         extendfrac = 0.1,
         rasterized = True
     ),
+    'F_xticks': [True]*3,
+    'F_sigma_title': False,
 
     'ann': [
         dict(
@@ -204,7 +213,6 @@ GammaSweepsPlotter_config = {
     'cbar_kw' : {
         'location': 'left',
     },
-    'freq_sigma_title': False,
 }
 _default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
 tmp = GammaSweepsPlotter_config
@@ -299,6 +307,13 @@ _default_config['IsBumpPlotter'] = FracTotalSweepAnnPlotter_config
 
 ##############################################################################
 
+IsBumpExamplePlotter_config = {
+    'bumpQualityX': -.9,
+}
+_default_config['IsBumpExamplePlotter'] = IsBumpExamplePlotter_config
+
+##############################################################################
+
 MainScatterGridsBumpsPlotter_config = {
     'fig_size': (5.8, 3.2),
     'tight_layout_kwargs': {
@@ -374,6 +389,7 @@ _default_config['MaxPopulationFRSweepsPlotter'] = MaxPopulationFRSweepsPlotter_c
 ##############################################################################
 
 BumpSigmaSweepPlotter_config = {
+    'cbar': [0, 0, 1],
     'cbar_kw': dict(
         label       = get_config()['bump_sigma']['sigma_bump_text'],
         location    = 'right',
@@ -387,11 +403,19 @@ _default_config['BumpSigmaSweepPlotter'] = BumpSigmaSweepPlotter_config
 
 ##############################################################################
 
+BumpExamplePlotter_config = {
+    'bbox': (0.01, 0.01, 0.99, 0.82),
+}
+_default_config['BumpExamplePlotter'] = BumpExamplePlotter_config
+
+##############################################################################
+
 EIRasterPlotter_config = {
     'fig_size': (3, 1.9),
     'fig_ext': 'png',
 
     'yticks': [1, 0, 0],
+    'ylabelPos': -0.35,
 }
 _default_config['EIRasterPlotter'] = EIRasterPlotter_config
 
@@ -399,7 +423,8 @@ _default_config['EIRasterPlotter'] = EIRasterPlotter_config
 
 EIRatePlotter_config = {
     'fig_size': (3, .65),
-    'rateTop': .9
+    'rateTop': .9,
+    'ylabelPos': -0.35,
 }
 _default_config['EIRatePlotter'] = EIRatePlotter_config
 
@@ -485,5 +510,43 @@ VelFitStdSweepPlotter_config = {
     )
 }
 _default_config['VelFitStdSweepPlotter'] = VelFitStdSweepPlotter_config
+
+##############################################################################
+
+VelocityRasterPlotter_config = {
+    'fig_size': (3.75, 2.2),
+    'transparent': True,
+    'bbox': (0.2, 0.2, 0.99, 0.8)
+}
+_default_config['VelocityRasterPlotter'] = VelocityRasterPlotter_config
+
+##############################################################################
+
+VelocityRatePlotter_config = {
+    'fig_size': (3.75, 1),
+    'bbox': (.2, .2, .99, 0.70),
+    'transparent' : True,
+}
+_default_config['VelocityRatePlotter'] = VelocityRatePlotter_config
+
+##############################################################################
+
+VelocityRasterZoomPlotter_config = {
+    'fig_size': (3.75*.75, 1.2),
+    'ylabelPos': -0.22,
+    'bbox': (0.2, 0.25, 0.99, 0.95),
+    'transparent' : True,
+}
+_default_config['VelocityRasterZoomPlotter'] = VelocityRasterZoomPlotter_config
+
+##############################################################################
+
+ThetaSignalPlotter_config = {
+    'fig_size': (3, .5),
+    'T': .5e3,  # ms
+    'bbox': (0, .05, 1., .95),  # l, b, r, t
+    'color': (0, 0, 0, .3),
+}
+_default_config['ThetaSignalPlotter'] = ThetaSignalPlotter_config
 
 ##############################################################################

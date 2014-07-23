@@ -61,6 +61,15 @@ for subDir in subDirs:
 
     if args.bump or args.all:
         for suffix in ['_full']:
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'A'],
+                    trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                    output_dtype='array')
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'mu_x'],
+                    trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                    output_dtype='array')
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'mu_y'],
+                    trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                    output_dtype='array')
             sp.aggregateData(varListBase + ['bump_e'+suffix, 'sigma'],
                     trialNumList, funReduce=None, loadData=loadData,saveData=True,
                     output_dtype='array')

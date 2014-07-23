@@ -64,12 +64,10 @@ class BumpSigmaSweepPlotter(SweepPlotter):
             fname = (self.config['output_dir'] +
                      "/bumps_sweeps{0}.pdf".format(int(noise_sigma)))
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
-                kw = dict(cbar=False)
+                kw = dict()
                 if ns_idx != 0:
                     kw['ylabel'] = ''
                     kw['yticks'] = False
-                if ns_idx == 2:
-                    kw['cbar'] = True
                 data = aggr.AggregateBumpReciprocal(
                         ps.bumpGamma[ns_idx],
                         iter_list,
@@ -78,6 +76,7 @@ class BumpSigmaSweepPlotter(SweepPlotter):
                         noise_sigma=noise_sigma,
                         ax=ax,
                         cbar_kw=myc['cbar_kw'],
+                        cbar=self.myc['cbar'][ns_idx],
                         vmin=self.bump_vmin, vmax=self.bump_vmax,
                         annotations=ann, **kw)
 
@@ -216,10 +215,7 @@ class BumpExamplePlotter(FigurePlotter):
         bumpTrialNum = 0
         exTransparent = True
         exampleFigSize = (0.8, 0.8)
-        exampleLeft   = 0.01
-        exampleBottom = 0.01
-        exampleRight  = 0.99
-        exampleTop    = 0.82
+        l, b, r, t = self.myc['bbox']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             for idx, rc in enumerate(exampleRC):
@@ -231,14 +227,14 @@ class BumpExamplePlotter(FigurePlotter):
                         fnameTemplate =exampleIFName
                         types = bumpExampleTypes + ['rateMap_i']
                     fname = fnameTemplate.format(noise_sigma, idx)
-                    plt.figure(figsize=exampleFigSize)
+                    fig = self._get_final_fig(exampleFigSize)
                     gs = examples.plotOneBumpExample(ps.bumpGamma[ns_idx], rc, iter_list,
                             types,
                             exIdx=exampleIdx[ns_idx],
-                            trialNum=bumpTrialNum)
-                    gs.update(left=exampleLeft, bottom=exampleBottom,
-                            right=exampleRight, top=exampleTop)
-                    plt.savefig(fname, dpi=300, transparent=exTransparent)
+                            trialNum=bumpTrialNum,
+                            fig=fig)
+                    gs.update(left=l, bottom=b, right=r, top=t)
+                    fig.savefig(fname, dpi=300, transparent=exTransparent)
                     plt.close()
 
 

@@ -21,6 +21,9 @@ from .base import FigurePlotter, SweepPlotter
 logger = logging.getLogger(__name__)
 
 __all__ = [
+    'VelocityRasterPlotter',
+    'VelocityRatePlotter',
+    'VelocityRasterZoomPlotter',
     'GridsLineErrScatterPlotter',
     'GridsLineSlopeScatterPlotter',
     'LineErrSlopeScatterPlotter',
@@ -30,19 +33,14 @@ __all__ = [
 
 ###############################################################################
 
-#rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
-#
+rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
+
 #parser = flagparse.FlagParser()
 #parser.add_flag('--velLines')
 #parser.add_flag('--detailed_noise')
 #parser.add_flag('--slope_sweeps')
-#parser.add_flag('--rasters')
-#parser.add_flag('--rastersZoom')
-#parser.add_flag('--rates')
 #args = parser.parse_args()
-#
-#ps = ds.getDefaultParamSpaces()
-#
+
 ################################################################################
 #
 #def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
@@ -281,149 +279,146 @@ __all__ = [
 #
 #
 #
-###############################################################################
-##                           Raster and rate plots
-###############################################################################
-#tLimits  = [2e3, 3e3] # ms
-#trialNum = 0
-#
-#rasterFigSize = (3.75, 2.2)
-#transparent   = True
-#rasterLeft    = 0.2
-#rasterBottom  = 0.2
-#rasterRight   = 0.99
-#rasterTop     = 0.8
-#
-#ylabelPos   = -0.22
-#
-#
-#if args.rasters or args.all:
-#    logger.info("Plotting rasters")
-#    for idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        logger.info("   Rasters: %d pA", noise_sigma)
-#        fig = plt.figure(figsize=rasterFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-#            rasterTop))
-#        kw = dict(scaleBar=None)
-#        if (idx != 0):
-#            kw['ylabel'] = ''
-#            kw['yticks'] = False
-#        if idx == 2:
-#            kw['scaleBar'] = 125
-#        rasters.EIRaster(ps.v[idx], 
-#                noise_sigma=noise_sigma,
-#                spaceType='velocity',
-#                r=rasterRC[idx][0], c=rasterRC[idx][1],
-#                ylabelPos=ylabelPos,
-#                tLimits=tLimits,
-#                trialNum=trialNum,
-#                ann_EI=True,
-#                scaleX=0.85,
-#                scaleY=-0.15,
-#                **kw)
-#        fname = outputDir + "/velocity_raster{0}.png"
-#        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
-#                transparent=transparent)
-#        plt.close()
-#        
-#        
-#
-###############################################################################
-#rateFigSize   = (rasterFigSize[0], 1)
-#rateLeft    = rasterLeft
-#rateBottom  = 0.2
-#rateRight   = rasterRight
-#rateTop     = 0.7
-#
-#
-#if args.rates or args.all:
-#    for idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        # E cells
-#        fig = plt.figure(figsize=rateFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
-#            rateTop))
-#        kw = {}
-#        if (idx != 0):
-#            kw['ylabel'] = ''
-#
-#        rasters.plotAvgFiringRate(ps.v[idx],
-#                spaceType='velocity',
-#                noise_sigma=noise_sigma,
-#                popType='E',
-#                r=rasterRC[idx][0], c=rasterRC[idx][1],
-#                ylabelPos=ylabelPos,
-#                color='red',
-#                tLimits=tLimits,
-#                trialNum=trialNum,
-#                sigmaTitle=False,
-#                ax=ax, **kw)
-#        fname = outputDir + "/velocity_rate_e{0}.pdf".format(noise_sigma)
-#        fig.savefig(fname, dpi=300, transparent=transparent)
-#        plt.close()
-#
-#        # I cells
-#        fig = plt.figure(figsize=rateFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(rateLeft, rateBottom, rateRight,
-#            rateTop))
-#        kw = {}
-#        if (idx != 0):
-#            kw['ylabel'] = ''
-#
-#        rasters.plotAvgFiringRate(ps.v[idx],
-#                spaceType='velocity',
-#                noise_sigma=noise_sigma,
-#                popType='I', 
-#                r=rasterRC[idx][0], c=rasterRC[idx][1],
-#                ylabelPos=ylabelPos,
-#                color='blue',
-#                tLimits=tLimits,
-#                trialNum=trialNum,
-#                sigmaTitle=False,
-#                ax=ax, **kw)
-#        fname = outputDir + "/velocity_rate_i{0}.pdf".format(noise_sigma)
-#        fig.savefig(fname, dpi=300, transparent=transparent)
-#        plt.close()
-#
-#
-#
-#
-###############################################################################
-##                           Raster and rate zoom-ins
-###############################################################################
-#tLimits  = [2.75e3, 2.875e3] # ms
-#trialNum = 0
-#
-#c = 0.75
-#rasterZoomFigSize = c*rasterFigSize[0], c*rasterFigSize[1]
-#ylabelPos   = -0.22
-#
-#
-#if args.rastersZoom or args.all:
-#    for idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        fig = plt.figure(figsize=rasterZoomFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-#            rasterTop))
-#        kw = dict(scaleBar=None)
-#        if idx == 2:
-#            kw['scaleBar'] = 25
-#        rasters.EIRaster(ps.v[idx], 
-#                noise_sigma=noise_sigma,
-#                spaceType='velocity',
-#                r=rasterRC[idx][0], c=rasterRC[idx][1],
-#                ylabelPos=ylabelPos,
-#                tLimits=tLimits,
-#                trialNum=trialNum,
-#                sigmaTitle=False,
-#                ann_EI=True,
-#                scaleX=0.75,
-#                scaleY=-0.15,
-#                ylabel='', yticks=False,
-#                **kw)
-#        fname = outputDir + "/velocity_raster_zooms{0}.png"
-#        fig.savefig(fname.format(int(noise_sigma)), dpi=300,
-#                transparent=transparent)
-#        plt.close()
+##############################################################################
+#                           Raster and rate plots
+##############################################################################
+
+class VelocityRasterPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(VelocityRasterPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        output_dir = self.config['output_dir']
+
+        logger.info("Plotting rasters")
+        for idx, noise_sigma in enumerate(ps.noise_sigmas):
+            logger.info("   Rasters: %d pA", noise_sigma)
+            fig = self._get_final_fig(self.myc['fig_size'])
+            l, b, r, t = self.myc['bbox']
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            kw = dict(scaleBar=None)
+            if (idx != 0):
+                kw['ylabel'] = ''
+                kw['yticks'] = False
+            if idx == 2:
+                kw['scaleBar'] = 125
+            rasters.EIRaster(ps.v[idx], 
+                    noise_sigma=noise_sigma,
+                    spaceType='velocity',
+                    r=rasterRC[idx][0], c=rasterRC[idx][1],
+                    ylabelPos=self.config['vel_rasters']['ylabelPos'],
+                    tLimits=self.config['vel_rasters']['tLimits'],
+                    trialNum=self.config['vel_rasters']['trialNum'],
+                    ann_EI=True,
+                    scaleX=0.85,
+                    scaleY=-0.15,
+                    **kw)
+            fname = output_dir + "/velocity_raster{0}.png"
+            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                    transparent=self.myc['transparent'])
+            plt.close()
         
+        
+
+##############################################################################
+
+class VelocityRatePlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(VelocityRatePlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        output_dir = self.config['output_dir']
+        transparent = self.myc['transparent']
+
+        for idx, noise_sigma in enumerate(ps.noise_sigmas):
+            # E cells
+            fig = self._get_final_fig(self.myc['fig_size'])
+            l, b, r, t = self.myc['bbox']
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            kw = {}
+            if (idx != 0):
+                kw['ylabel'] = ''
+
+            rasters.plotAvgFiringRate(ps.v[idx],
+                    spaceType='velocity',
+                    noise_sigma=noise_sigma,
+                    popType='E',
+                    r=rasterRC[idx][0], c=rasterRC[idx][1],
+                    color='red',
+                    ylabelPos=self.config['vel_rasters']['ylabelPos'],
+                    tLimits=self.config['vel_rasters']['tLimits'],
+                    trialNum=self.config['vel_rasters']['trialNum'],
+                    sigmaTitle=False,
+                    ax=ax, **kw)
+            fname = output_dir + "/velocity_rate_e{0}.pdf".format(noise_sigma)
+            fig.savefig(fname, dpi=300, transparent=transparent)
+            plt.close()
+
+            # I cells
+            fig = self._get_final_fig(self.myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            kw = {}
+            if (idx != 0):
+                kw['ylabel'] = ''
+
+            rasters.plotAvgFiringRate(ps.v[idx],
+                    spaceType='velocity',
+                    noise_sigma=noise_sigma,
+                    popType='I', 
+                    r=rasterRC[idx][0], c=rasterRC[idx][1],
+                    color='blue',
+                    ylabelPos=self.config['vel_rasters']['ylabelPos'],
+                    tLimits=self.config['vel_rasters']['tLimits'],
+                    trialNum=self.config['vel_rasters']['trialNum'],
+                    sigmaTitle=False,
+                    ax=ax, **kw)
+            fname = output_dir + "/velocity_rate_i{0}.pdf".format(noise_sigma)
+            fig.savefig(fname, dpi=300, transparent=transparent)
+            plt.close()
+
+
+##############################################################################
+#                           Raster and rate zoom-ins
+##############################################################################
+class VelocityRasterZoomPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(VelocityRasterZoomPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        output_dir = self.config['output_dir']
+        l, b, r, t = self.myc['bbox']
+        transparent = self.myc['transparent']
+
+        tLimits  = [2.75e3, 2.875e3] # ms
+        trialNum = 0
+
+        for idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fig = self._get_final_fig(self.myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            kw = dict(scaleBar=None)
+            if idx == 2:
+                kw['scaleBar'] = 25
+            rasters.EIRaster(ps.v[idx], 
+                    noise_sigma=noise_sigma,
+                    spaceType='velocity',
+                    r=rasterRC[idx][0], c=rasterRC[idx][1],
+                    ylabelPos=self.myc['ylabelPos'],
+                    tLimits=tLimits,
+                    trialNum=trialNum,
+                    sigmaTitle=False,
+                    ann_EI=True,
+                    scaleX=0.75,
+                    scaleY=-0.15,
+                    ylabel='', yticks=False,
+                    **kw)
+            fname = output_dir + "/velocity_raster_zooms{0}.png"
+            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                    transparent=transparent)
+            plt.close()
+       
 
 ##############################################################################
 # Scatter plot of gridness score vs. bump speed line fit error
