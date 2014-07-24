@@ -17,3 +17,4 @@ output_local
 /*.egg-info
 
 /git_hooks
+/tags
