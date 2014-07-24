@@ -46,9 +46,12 @@ def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
     sigmaTitle  = kw.pop('sigmaTitle', True)
     annotations = kw.pop('annotations', None)
 
-    C = aggr.aggregate2DTrial(sp, varList, trialNumList)
+    if isinstance(sp, aggr.AggregateData):
+        C, X, Y  = sp.getData()
+    else:
+        C = aggr.aggregate2DTrial(sp, varList, trialNumList)
+        Y, X = aggr.computeYX(sp, iterList, r=r, c=c)
     C = ma.MaskedArray(C, mask=np.isnan(C))
-    Y, X = aggr.computeYX(sp, iterList, r=r, c=c)
     C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kw)
 
     print("    max(C): {0}".format(np.max(C)))

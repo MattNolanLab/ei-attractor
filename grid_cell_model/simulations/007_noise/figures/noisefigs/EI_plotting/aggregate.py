@@ -8,13 +8,14 @@ import numpy as np
 import numpy.ma as ma
 
 from grid_cell_model.parameters import DataSpace
-from grid_cell_model.otherpkg.log import log_warn
+from grid_cell_model.otherpkg.log import log_warn, getClassLogger
 from grid_cell_model.analysis.image import Position2D
 import grid_cell_model.analysis.image as image
 import grid_cell_model.analysis.signal as asignal
 
 import logging
 logger = logging.getLogger(__name__)
+gammaAggrLogger = getClassLogger('GammaAggregateData', __name__)
 
 
 def aggregate2DTrial(sp, varList, trialNumList, fReduce=np.mean,
@@ -254,6 +255,26 @@ class GridnessScore(AggregateData):
         return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
 
         
+class GammaAggregateData(AggregateData):
+    '''Extract power of gamma oscillations from the aggregated data'''
+    def __init__(self, what, space, iterList, **kw):
+        '''``what`` determines the data field to extract'''
+        super(GammaAggregateData, self).__init__(space, iterList, None, **kw)
+        self._acval = None
+        self._what = what
+
+    def _getRawData(self):
+        if self._acval is None:
+            path = self.analysisRoot + [self._what]
+            gammaAggrLogger.info("Extracting data from path: %s", path)
+            self._acval = self.sp.getReduction(path)
+            self._Y, self._X = computeYX(self.sp, self.iterList,
+                                         normalize=self.normalizeTicks)
+        return self._acval, self._X, self._Y
+
+    def getData(self):
+        data, X, Y = self._getRawData()
+        return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
 
 
 

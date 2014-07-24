@@ -266,6 +266,24 @@ _default_config['GammaScatterAllPlotter'] = GammaScatterAllPlotter_config
 
 ##############################################################################
 
+GammaScatterPBumpsAllPlotter_config = {
+    'fig_size': (5., 3.2),
+    'legend_kwargs': dict(
+        loc=(0.25, 0.95),
+        fontsize='small',
+        frameon=False,
+        ncol=3,
+        title='$\sigma$ (pA)'
+    ),
+    'tight_layout_kwargs': {
+        'rect': [.05, .05, .95, .9],
+        'pad': 0,
+    },
+}
+_default_config['GammaScatterPBumpsAllPlotter'] = GammaScatterPBumpsAllPlotter_config
+
+##############################################################################
+
 fracTotalText = _default_config['p_bumps']['frac_total_text']
 
 FracTotalSweepAnnPlotter_config = {

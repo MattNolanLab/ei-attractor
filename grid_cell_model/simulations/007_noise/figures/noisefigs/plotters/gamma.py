@@ -20,6 +20,7 @@ __all__ = [
     'GammaExamplePlotter',
     'GammaScatterAllPlotter',
     'ScatterGammaGridsSeparatePlotter',
+    'GammaScatterPBumpsAllPlotter',
 ]
 
 
@@ -176,8 +177,11 @@ class GammaSweepsPlotter(SweepPlotter):
         ps = self.env.ps
         ac_xticks = self.myc['AC_xticks']
         f_xticks = self.myc['F_xticks']
+        iter_list = self.config['iter_list']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            ACData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
+                                           iter_list, normalizeTicks=True)
             kw = dict(cbar=False)
             if ns_idx == 0:
                 kw['cbar'] = True
@@ -190,14 +194,14 @@ class GammaSweepsPlotter(SweepPlotter):
                      "/gamma_sweeps{0}.pdf".format(int(noise_sigma)))
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 sweeps.plotACTrial(
-                        ps.bumpGamma[ns_idx],
-                        ACVarList,
-                        self.config['iter_list'],
+                        ACData,
+                        None,
+                        None,
                         noise_sigma=ps.noise_sigmas[ns_idx],
                         ax=ax,
                         xlabel='' if ac_xticks[ns_idx] == False else None,
                         xticks=ac_xticks[ns_idx],
-                        trialNumList=xrange(NTrials),
+                        trialNumList=None,
                         sigmaTitle=self.myc['AC_sigma_title'],
                         cbar_kw=self.myc['AC_cbar_kw'],
                         vmin=AC_vmin, vmax=AC_vmax,
@@ -211,7 +215,7 @@ class GammaSweepsPlotter(SweepPlotter):
                 sweeps.plotACTrial(
                         ps.bumpGamma[ns_idx],
                         FVarList,
-                        self.config['iter_list'],
+                        iter_list,
                         noise_sigma=ps.noise_sigmas[ns_idx],
                         ax=ax,
                         xlabel='' if f_xticks[ns_idx] == False else None,
@@ -472,5 +476,52 @@ class GammaScatterAllPlotter(FigurePlotter):
 
     def save(self, *args, **kwargs):
         fname = self.config['output_dir'] + "/gamma_scatter_gamma_grids_all.pdf"
+        self.fig.savefig(fname, dpi=300, transparent=True)
+
+
+##############################################################################
+# Scatter plot of gamma power vs P_{bumps}
+# All in one plot
+class GammaScatterPBumpsAllPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(GammaScatterPBumpsAllPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        iter_list = self.config['iter_list']
+        legend_kwargs = myc['legend_kwargs']
+
+        self.fig = self._get_final_fig(myc['fig_size'])
+        self.ax = self.fig.gca()
+
+        self.ax.hold('on')
+        scatterColors = ['green', 'red', 'blue']
+        scatterOrders = [2, 3, 1]
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            gammaData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
+                                                iter_list, normalizeTicks=False)
+            pbumpsData = aggr.IsBump(ps.bumpGamma[ns_idx], iter_list,
+                                     ignoreNaNs=True)
+            color = scatterColors[ns_idx]
+            scatterPlot = scatter.ScatterPlot(
+                    pbumpsData, gammaData, None, None, None, None, None,
+                    c=color,
+                    s=15*self.config['scale_factor'],
+                    linewidth=0.3,
+                    xlabel='$P_{bumps}$',
+                    ylabel='$1^{st}$ autocorrelation peak',
+                    zorder=scatterOrders[ns_idx])
+            scatterPlot.plot()
+        self.ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
+        self.ax.yaxis.set_major_locator(ti.MultipleLocator(0.2))
+        leg = ['0', '150', '300']
+        l = self.ax.legend(leg, **legend_kwargs)
+        plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
+        self.fig.tight_layout(**myc['tight_layout_kwargs'])
+
+    def save(self, *args, **kwargs):
+        fname = self.config['output_dir'] + "/gamma_scatter_gamma_pbumps_all.pdf"
         self.fig.savefig(fname, dpi=300, transparent=True)
 
