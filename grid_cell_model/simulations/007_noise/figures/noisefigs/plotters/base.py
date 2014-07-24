@@ -118,4 +118,15 @@ class SweepPlotter(FigurePlotter):
         return fig.add_axes(Bbox.from_extents(left, b, right, top))
 
 
+class ExampleSetting(object):
+    '''A setting that specifies where an example is in the 2D sweep parameter
+    space
+    '''
+    def __init__(self, r, c, trialNum, ps, noise_sigma):
+        self.r = r
+        self.c = c
+        self.trialNum = trialNum
+        self.ps = ps
+        self.noise_sigma = noise_sigma
+
 
