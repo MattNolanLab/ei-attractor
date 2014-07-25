@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from ..EI_plotting import examples, base
 from ..EI_plotting import aggregate as aggr
-from .base import FigurePlotter
+from .base import FigurePlotter, ExampleSetting
 
 __all__ = [
     'IsBumpExamplePlotter',
@@ -21,14 +21,6 @@ __all__ = [
 trialNum = 0
 nSnapshots = 8
 exampleFigSize = (8, 1.2)
-
-class ExampleSetting(object):
-    def __init__(self, r, c, trialNum, ps, noise_sigma):
-        self.r = r
-        self.c = c
-        self.trialNum = trialNum
-        self.ps = ps
-        self.noise_sigma = noise_sigma
 
 class IsBumpExamplePlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
