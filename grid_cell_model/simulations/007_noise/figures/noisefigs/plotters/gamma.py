@@ -10,7 +10,7 @@ from grid_cell_model.parameters           import JobTrialSpace2D, DataSpace
 from grid_cell_model.plotting.global_defs import globalAxesSettings, prepareLims
 
 from ..EI_plotting          import sweeps, examples, details, scatter
-from ..EI_plotting          import aggregate as aggr
+from ..EI_plotting          import aggregate as aggr, scaling
 from ..EI_plotting.base     import plotOneHist, NoiseDataSpaces
 from .base import FigurePlotter, SweepPlotter
 
@@ -522,6 +522,15 @@ class GammaScatterPBumpsAllPlotter(FigurePlotter):
         self.fig.tight_layout(**myc['tight_layout_kwargs'])
 
     def save(self, *args, **kwargs):
+        # Linear scale
         fname = self.config['output_dir'] + "/gamma_scatter_gamma_pbumps_all.pdf"
+        self.fig.savefig(fname, dpi=300, transparent=True)
+
+        # Exponential scale
+        fname = self.config['output_dir'] + "/gamma_scatter_gamma_pbumps_all_exp.pdf"
+        self.ax.set_xscale('exponential')
+        self.ax.xaxis.set_major_locator(ti.MultipleLocator(.5))
+        self.ax.xaxis.set_minor_locator(ti.MultipleLocator(.1))
+        self.ax.set_xlim([-0.3, 1.002])
         self.fig.savefig(fname, dpi=300, transparent=True)
 
