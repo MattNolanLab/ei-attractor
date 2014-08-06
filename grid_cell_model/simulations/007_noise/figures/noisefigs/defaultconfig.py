@@ -284,6 +284,14 @@ _default_config['GammaScatterPBumpsAllPlotter'] = GammaScatterPBumpsAllPlotter_c
 
 ##############################################################################
 
+GammaPBumpsProbabilityPlotter_config = {
+    'fig_size': (2.7, 2.7),         # inches
+    'bbox_rect': (0.25, 0.2, 0.95, 0.9),
+}
+_default_config['GammaPBumpsProbabilityPlotter'] = GammaPBumpsProbabilityPlotter_config
+
+##############################################################################
+
 fracTotalText = _default_config['p_bumps']['frac_total_text']
 
 FracTotalSweepAnnPlotter_config = {

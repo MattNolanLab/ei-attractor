@@ -216,12 +216,13 @@ class AggregateData(object):
     analysisRoot = ['analysis']
 
     def __init__(self, space, iterList, NTrials, ignoreNaNs=False,
-            normalizeTicks=False):
+            normalizeTicks=False, collapseTrials=True):
         self.sp = space
         self.iterList = iterList
         self.NTrials = NTrials
         self.ignoreNaNs = ignoreNaNs
         self.normalizeTicks = normalizeTicks
+        self.collapseTrials = collapseTrials
 
 
     @abstractmethod
@@ -274,7 +275,10 @@ class GammaAggregateData(AggregateData):
 
     def getData(self):
         data, X, Y = self._getRawData()
-        return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+        if self.collapseTrials:
+            return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+        else:
+            return data, X, Y
 
 
 
@@ -283,10 +287,10 @@ class GammaAggregateData(AggregateData):
 class IsBump(AggregateData):
     '''Retrieve bump classification data from the space.'''
     
-    def __init__(self, space, iterList, ignoreNaNs=False,
-            normalizeTicks=False):
+    def __init__(self, space, iterList, ignoreNaNs=False, normalizeTicks=False,
+                 **kw):
         super(IsBump, self).__init__(space, iterList, None, ignoreNaNs,
-                normalizeTicks)
+                normalizeTicks, **kw)
         self._fracTotal = None
         self._X = None
         self._Y = None
@@ -301,7 +305,10 @@ class IsBump(AggregateData):
 
     def getData(self):
         data, X, Y = self._getRawData()
-        return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+        if self.collapseTrials:
+            return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+        else:
+            return data, X, Y
 
 
 class IsBumpCollapsed(AggregateData):

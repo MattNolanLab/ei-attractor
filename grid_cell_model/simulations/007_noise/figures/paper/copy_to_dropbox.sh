@@ -20,6 +20,7 @@ files="
     $output_fig_dir/suppFigure_line_fit_error_vs_slope.pdf
     $output_fig_dir/suppFigure_seizures.pdf
     $output_fig_dir/suppFigure_velocity.pdf
+    $output_fig_dir/suppFigure_gamma_pbumps_prob.pdf
     $panels_dir/raster_examples*.pdf
     $panels_dir/gamma_scatter_gamma_pbumps_all.pdf
     "

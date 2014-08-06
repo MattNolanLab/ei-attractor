@@ -15,6 +15,7 @@ parser.add_flag('--detailed_noise')
 parser.add_flag('--examples')
 parser.add_flag('--scatter_all')
 parser.add_flag('--scatter_gamma_pbumps_all')
+parser.add_flag('--gamma_pbumps_prob')
 args = parser.parse_args()
 
 
@@ -34,5 +35,8 @@ if args.scatter_all or args.all:
 
 if args.scatter_gamma_pbumps_all or args.all:
     env.register_plotter(noisefigs.plotters.GammaScatterPBumpsAllPlotter)
+
+if args.gamma_pbumps_prob or args.all:
+    env.register_plotter(noisefigs.plotters.GammaPBumpsProbabilityPlotter)
 
 env.plot()

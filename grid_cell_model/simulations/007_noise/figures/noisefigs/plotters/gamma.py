@@ -5,6 +5,8 @@ import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
+import pyentropy
+from minepy import MINE
 
 from grid_cell_model.parameters           import JobTrialSpace2D, DataSpace
 from grid_cell_model.plotting.global_defs import globalAxesSettings, prepareLims
@@ -21,6 +23,7 @@ __all__ = [
     'GammaScatterAllPlotter',
     'ScatterGammaGridsSeparatePlotter',
     'GammaScatterPBumpsAllPlotter',
+    'GammaPBumpsProbabilityPlotter',
 ]
 
 
@@ -501,14 +504,16 @@ class GammaScatterPBumpsAllPlotter(FigurePlotter):
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             gammaData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
-                                                iter_list, normalizeTicks=False)
+                                                iter_list,
+                                                normalizeTicks=False,
+                                                collapseTrials=False)
             pbumpsData = aggr.IsBump(ps.bumpGamma[ns_idx], iter_list,
-                                     ignoreNaNs=True)
+                                     ignoreNaNs=True, collapseTrials=False)
             color = scatterColors[ns_idx]
             scatterPlot = scatter.ScatterPlot(
                     pbumpsData, gammaData, None, None, None, None, None,
                     c=color,
-                    s=15*self.config['scale_factor'],
+                    s=10*self.config['scale_factor'],
                     linewidth=0.3,
                     xlabel='$P_{bumps}$',
                     ylabel='$1^{st}$ autocorrelation peak',
@@ -533,4 +538,96 @@ class GammaScatterPBumpsAllPlotter(FigurePlotter):
         self.ax.xaxis.set_minor_locator(ti.MultipleLocator(.1))
         self.ax.set_xlim([-0.3, 1.002])
         self.fig.savefig(fname, dpi=300, transparent=True)
+
+
+class GammaPBumpsProbabilityPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(GammaPBumpsProbabilityPlotter, self).__init__(*args, **kwargs)
+
+    def plotDistribution(self, X, Y, ax, noise_sigma=None, **kw):
+        xlabel = kw.get('xlabel', 'P(bump)') 
+        ylabel = kw.get('ylabel', '$Power_\gamma$')
+        yticks = kw.get('yticks', True)
+
+        H, xedges, yedges = np.histogram2d(
+                X.flatten(),
+                Y.flatten(),
+                bins=[40, 50],
+                range=[[0, 1], [-.2, .8]],
+                normed=True)
+
+        globalAxesSettings(ax)
+        ax.pcolormesh(xedges, yedges, H.T, rasterized=True)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        if noise_sigma is not None:
+            ax.set_title("$\sigma$ = %d pA" % int(noise_sigma))
+        else:
+            ax.set_title("All noise levels")
+        if not yticks:
+            ax.yaxis.set_ticklabels([])
+
+    def mutual_information(self, gamma, pbumps, nbins_gamma=50,
+            nbins_pbumps=50, noise_sigma='all'): 
+        #import pdb; pdb.set_trace()
+        no_nans_idx = np.logical_not(np.logical_or(np.isnan(gamma),
+                                 np.isnan(pbumps)))
+        gammaq, _, _ = pyentropy.quantise(gamma[no_nans_idx], nbins_gamma)
+        pbumpsq, _, _ = pyentropy.quantise(pbumps[no_nans_idx],
+                                           nbins_pbumps)
+        s = pyentropy.DiscreteSystem(pbumpsq, (1, nbins_pbumps),
+                                     gammaq, (1, nbins_gamma))
+        s.calculate_entropies()
+
+        # MINE
+        mine = MINE()
+        mine.compute_score(gamma.flatten(), pbumps.flatten())
+        print("MIC/MI for %s:\t%.3f\t%.3f" % (noise_sigma, mine.mic(), s.I()))
+       
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        iter_list = self.config['iter_list']
+        l, b, r, t = myc['bbox_rect']
+
+        gamma_all = np.empty(0)
+        pbumps_all = np.empty(0)
+
+        # Separate noise sigmas
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            gammaData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
+                                                iter_list,
+                                                normalizeTicks=False,
+                                                collapseTrials=False)
+            pbumpsData = aggr.IsBump(ps.bumpGamma[ns_idx], iter_list,
+                                     ignoreNaNs=True, collapseTrials=False)
+            gammaData, _, _ = gammaData.getData()
+            pbumpsData, _, _ = pbumpsData.getData()
+            gamma_all = np.hstack((gamma_all, gammaData.flatten()))
+            pbumps_all = np.hstack((pbumps_all, pbumpsData.flatten()))
+
+            fig = self._get_final_fig(myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            self.plotDistribution(pbumpsData, gammaData, ax,
+                                  noise_sigma=noise_sigma,
+                                  ylabel='', yticks=False)
+            fname = self.config['output_dir'] + "/gamma_pbumps_probability_{0}.pdf"
+            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                             transparent=True)
+            plt.close(fig)
+
+            self.mutual_information(gammaData, pbumpsData,
+                    noise_sigma=noise_sigma)
+
+        # All together
+        fig = self._get_final_fig(myc['fig_size'])
+        ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+        self.plotDistribution(pbumps_all, gamma_all, ax)
+        #fig.tight_layout(**myc['tight_layout_kwargs'])
+        fname = self.config['output_dir'] + "/gamma_pbumps_probability_all.pdf"
+        fig.savefig(fname, dpi=300, transparent=True)
+        plt.close(fig)
+
+        self.mutual_information(gamma_all, pbumps_all)
 
