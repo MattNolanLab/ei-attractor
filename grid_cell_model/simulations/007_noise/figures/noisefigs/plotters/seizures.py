@@ -160,6 +160,18 @@ class MaxPopulationFRSweepsPlotter(SweepPlotter):
                         vmin=maxFR_vmin, vmax=maxFR_vmax,
                         **kw)
 
+                # Contours
+                if self.myc['plot_grid_contours'][ns_idx]:
+                    grids_example_idx = self.config['grids']['example_idx']
+                    gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                                  ignoreNaNs=True, normalizeTicks=True,
+                                                  r=grids_example_idx[ns_idx][0],
+                                                  c=grids_example_idx[ns_idx][1])
+                    contours = sweeps.Contours(gridData,
+                            self.myc['grid_contours'])
+                    contours.plot(
+                            ax,
+                            **self.config['sweeps']['contours_kwargs'])
 
 ##############################################################################
 # Seizure measure - max firing rate per theta cycle
@@ -327,6 +339,18 @@ class PSeizureSweepPlotter(SweepPlotter):
                         vmin=vmin, vmax=vmax,
                         sigmaTitle=False,
                         **kw)
+                # Contours
+                if self.myc['plot_grid_contours'][ns_idx]:
+                    grids_example_idx = self.config['grids']['example_idx']
+                    gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                                  ignoreNaNs=True, normalizeTicks=True,
+                                                  r=grids_example_idx[ns_idx][0],
+                                                  c=grids_example_idx[ns_idx][1])
+                    contours = sweeps.Contours(gridData,
+                            self.myc['grid_contours'])
+                    contours.plot(
+                            ax,
+                            **self.config['sweeps']['contours_kwargs'])
 
 
 ##############################################################################

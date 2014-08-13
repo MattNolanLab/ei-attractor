@@ -53,6 +53,12 @@ _default_config.merge({
         'fig_size': (3.7, 2.6),         # inches
         'bbox': (0.08, 0.2, .72, .65),  # l, b, w, h
         'transparent': True,
+        'grid_contours': [.5],
+        'contours_kwargs': {
+            'hold': True,
+            'colors': 'k',
+            'linewidths': [1.5]
+        },
     },
 
     'grids': {
@@ -123,6 +129,8 @@ GridSweepsPlotter_config = {
             color='black'
         )
     ],
+
+    'plot_contours': [0, 0, 0],
 }
 _default_config['GridSweepsPlotter'] = GridSweepsPlotter_config
 
@@ -166,7 +174,7 @@ _default_config['ConnectionFunctionPlotter'] = ConnectionFunctionPlotter_config
 ##############################################################################
 
 GammaSweepsPlotter_config = {
-    'scale_factor': .8,
+    'scale_factor': .9,
     'AC_cbar_kw': dict(
         location   = 'left',
         ticks      = ti.MultipleLocator(0.3),
@@ -205,7 +213,7 @@ GammaSweepsPlotter_config = {
         dict(
             txt='a',
             rc=None,
-            xytext_offset=(1.5, 1),
+            xytext_offset=(-.5, 2.),
             color='white',
         ),
     ],
@@ -213,6 +221,8 @@ GammaSweepsPlotter_config = {
     'cbar_kw' : {
         'location': 'left',
     },
+
+    'plot_grid_contours': [0, 1, 0],
 }
 _default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
 tmp = GammaSweepsPlotter_config
@@ -426,13 +436,16 @@ _default_config['BumpDiffResetPlotter'] = BumpDiffResetPlotter_config
 
 MaxPopulationFRSweepsPlotter_config = {
     'cbar_kw': dict(
-        label       = "max(E rate) (Hz)",
+        label       = "$E-rate_{max}$ (Hz)",
         location    = 'left',
         shrink      = 0.8,
         pad         = 0.25,
         ticks       = ti.MultipleLocator(100),
         rasterized  = True
-    )
+    ),
+
+    'plot_grid_contours': [1, 1, 1],
+    'grid_contours': [.1],
 }
 _default_config['MaxPopulationFRSweepsPlotter'] = MaxPopulationFRSweepsPlotter_config
 
@@ -497,11 +510,14 @@ _default_config['MaxMeanThetaFRSweepPlotter'] = MaxMeanThetaFRSweepPlotter_confi
 ##############################################################################
 
 PSeizureSweepPlotter_config = {
-    'FRThreshold': 300
+    'FRThreshold': 300,
+
+    'plot_grid_contours': [1, 1, 1],
+    'grid_contours': [.1],
 }
 PSeizureSweepPlotter_config.update({
     'cbar_kw': dict(
-        label       = "P[max(rate during $\\theta$) > {0}]".format(
+        label       = "P($E-rate_{{max}}$ > {0})".format(
                         PSeizureSweepPlotter_config['FRThreshold']),
         location    = 'left',
         shrink      = 0.8,
