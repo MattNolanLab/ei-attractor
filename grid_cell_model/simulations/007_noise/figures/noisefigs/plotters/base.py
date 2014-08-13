@@ -5,8 +5,13 @@ import logging
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
+import scipy
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Bbox
+
+from grid_cell_model.plotting.global_defs import globalAxesSettings
+import pyentropy
+from minepy import MINE
 
 logger = logging.getLogger(__name__)
 
@@ -129,4 +134,57 @@ class ExampleSetting(object):
         self.ps = ps
         self.noise_sigma = noise_sigma
 
+
+class ProbabilityPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(ProbabilityPlotter, self).__init__(*args, **kwargs)
+
+    def plotDistribution(self, X, Y, ax, noise_sigma=None, **kw):
+        xlabel = kw.get('xlabel', 'P(bump)') 
+        ylabel = kw.get('ylabel', '$Power_\gamma$')
+        yticks = kw.get('yticks', True)
+        bins   = kw.get('bins', [40, 50])
+        range  = kw.get('range', [[0, 1], [-.2, .8]])
+
+        H, xedges, yedges = np.histogram2d(
+                X.flatten(),
+                Y.flatten(),
+                bins=bins,
+                range=range,
+                normed=True)
+
+        globalAxesSettings(ax)
+        ax.pcolormesh(xedges, yedges, H.T, rasterized=True)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        if noise_sigma is not None:
+            ax.set_title("$\sigma$ = %d pA" % int(noise_sigma))
+        else:
+            ax.set_title("All noise levels")
+        if not yticks:
+            ax.yaxis.set_ticklabels([])
+
+    def mutual_information(self, X, Y, title=None, nbins_X=50, nbins_Y=50,
+            noise_sigma='all'): 
+        #import pdb; pdb.set_trace()
+        no_nans_idx = np.logical_not(np.logical_or(np.isnan(X), np.isnan(Y)))
+        Xq, _, _ = pyentropy.quantise(X[no_nans_idx], nbins_X)
+        Yq, _, _ = pyentropy.quantise(Y[no_nans_idx], nbins_Y)
+        s = pyentropy.DiscreteSystem(Yq, (1, nbins_Y), Xq, (1, nbins_X))
+        s.calculate_entropies()
+
+        # MINE
+        mine = MINE()
+        mine.compute_score(X.flatten(), Y.flatten())
+
+        # Linear regression
+        slope, intercept, r, p, stderr = \
+                scipy.stats.linregress(X[no_nans_idx], Y[no_nans_idx])
+
+        #import pdb; pdb.set_trace()
+        if title is not None:
+            print(title)
+        print(" MIC/MI/r^2/p/slope for %s:\t%.3f\t%.3f\t%s\t%s\t%s" %
+                (noise_sigma, mine.mic(), s.I(), r**2, p, slope))
+       
 
