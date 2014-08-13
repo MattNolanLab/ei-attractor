@@ -530,6 +530,25 @@ _default_config['PSeizureSweepPlotter'] = PSeizureSweepPlotter_config
 
 ##############################################################################
 
+MaxFRGridsProbabilityPlotter_config = {
+    'fig_size': (2.7, 2.7),         # inches
+    'scale_factor': .85,
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+}
+_default_config['MaxFRGridsProbabilityPlotter'] = MaxFRGridsProbabilityPlotter_config
+
+##############################################################################
+
+PSeizureGridsProbabilityPlotter_config = {
+    'FRThreshold': 300,
+    'fig_size': (2.7, 2.7),         # inches
+    'scale_factor': .85,
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+}
+_default_config['PSeizureGridsProbabilityPlotter'] = PSeizureGridsProbabilityPlotter_config
+
+##############################################################################
+
 MaxStdThetaFRSweepPlotter_config = {
     'cbar_kw': dict(
         label       = "max(E rate)/$\\theta$ cycle (Hz)",

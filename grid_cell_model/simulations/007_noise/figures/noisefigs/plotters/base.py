@@ -154,7 +154,7 @@ class ProbabilityPlotter(FigurePlotter):
                 normed=True)
 
         globalAxesSettings(ax)
-        ax.pcolormesh(xedges, yedges, H.T, rasterized=True)
+        ax.pcolormesh(xedges, yedges, H.T, vmin=0, rasterized=True)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         if noise_sigma is not None:
