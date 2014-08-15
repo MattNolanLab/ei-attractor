@@ -9,7 +9,7 @@ import matplotlib.ticker as ti
 from matplotlib.colors import LogNorm
 from matplotlib.transforms import Bbox
 
-from ..EI_plotting import sweeps, rasters, base
+from ..EI_plotting import sweeps, rasters, base, scatter
 from ..EI_plotting import aggregate as aggr
 from .base import FigurePlotter, SweepPlotter, ProbabilityPlotter
 
@@ -23,7 +23,9 @@ __all__ = [
     'MaxThetaFRHistPlotter',
     'PSeizureSweepPlotter',
     'MaxFRGridsProbabilityPlotter',
+    'MaxFRGridsScatterAllPlotter',
     'PSeizureGridsProbabilityPlotter',
+    'PSeizureGridsScatterAllPlotter',
 ]
 
 ##############################################################################
@@ -400,7 +402,7 @@ class MaxFRGridsProbabilityPlotter(ProbabilityPlotter):
         myc = self._get_class_config()
         iter_list = self.config['iter_list']
         l, b, r, t = myc['bbox_rect']
-        drange = [[0, 500], [-.2, .8]]
+        drange = [[0, 500], [-.4, .8]]
 
         maxFR_all = np.empty(0)
         gridness_all = np.empty(0)
@@ -457,6 +459,55 @@ class MaxFRGridsProbabilityPlotter(ProbabilityPlotter):
 
         self.mutual_information(maxFR_all, gridness_all)
 
+##############################################################################
+# Scatter plot of gridness score vs. max firing rate
+class MaxFRGridsScatterAllPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(MaxFRGridsScatterAllPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        iter_list = self.config['iter_list']
+        l, b, r, t = myc['bbox_rect']
+        legend_kwargs = myc['legend_kwargs']
+
+        self.fig = self._get_final_fig(myc['fig_size'])
+        self.ax = self.fig.add_axes(Bbox.from_extents(l, b, r, t))
+
+        self.ax.hold('on')
+        scatterColors = ['green', 'red', 'blue']
+        scatterOrders = [3, 2, 1]
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            maxFRData = aggr.MaxPopulationFR(ps.bumpGamma[ns_idx], iter_list,
+                    ignoreNaNs=True, normalizeTicks=False, collapseTrials=True)
+            gridnessData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                    normalizeTicks=False, collapseTrials=True)
+
+            color = scatterColors[ns_idx]
+            scatterPlot = scatter.ScatterPlot(
+                    maxFRData, gridnessData, None, None, None, None, None,
+                    c=color,
+                    s=10*self.config['scale_factor'],
+                    linewidth=0.3,
+                    xlabel='$E-rate_{max}$',
+                    ylabel='Gridness score',
+                    zorder=scatterOrders[ns_idx])
+            scatterPlot.plot()
+        self.ax.xaxis.set_major_locator(ti.MultipleLocator(250))
+        self.ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
+        if self.myc['plot_legend']:
+            leg = ['0', '150', '300']
+            l = self.ax.legend(leg, **legend_kwargs)
+            plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
+        #self.fig.tight_layout(**myc['tight_layout_kwargs'])
+
+    def save(self, *args, **kwargs):
+        # Linear scale
+        fname = self.config['output_dir'] + "/maxFR_gridness_scatter_all.pdf"
+        self.fig.savefig(fname, dpi=300, transparent=True)
+
 
 ##############################################################################
 # Probability plots of gridness score vs seizure proportion
@@ -469,7 +520,7 @@ class PSeizureGridsProbabilityPlotter(ProbabilityPlotter):
         myc = self._get_class_config()
         iter_list = self.config['iter_list']
         l, b, r, t = myc['bbox_rect']
-        drange = [[0, 1], [-.2, .8]]
+        drange = [[0, 1], [-.5, .8]]
         FRThreshold = myc['FRThreshold']
         thetaT = self.config['seizures']['thetaT']
         sig_dt = self.config['seizures']['sig_dt']
@@ -532,3 +583,56 @@ class PSeizureGridsProbabilityPlotter(ProbabilityPlotter):
         self.mutual_information(gridness_all, PSeizure_all)
 
 
+##############################################################################
+# P(E-rate_max) vs gridness score scatter plot
+class PSeizureGridsScatterAllPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(PSeizureGridsScatterAllPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        iter_list = self.config['iter_list']
+        l, b, r, t = myc['bbox_rect']
+        legend_kwargs = myc['legend_kwargs']
+        FRThreshold = myc['FRThreshold']
+        thetaT = self.config['seizures']['thetaT']
+        sig_dt = self.config['seizures']['sig_dt']
+
+        self.fig = self._get_final_fig(myc['fig_size'])
+        self.ax = self.fig.add_axes(Bbox.from_extents(l, b, r, t))
+
+        self.ax.hold('on')
+        scatterColors = ['green', 'red', 'blue']
+        scatterOrders = [3, 2, 1]
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            PSeizureData = aggr.MaxThetaPopulationFR(
+                    thetaT, sig_dt, thresholdReduction(FRThreshold),
+                    ps.bumpGamma[ns_idx], iter_list,
+                    ignoreNaNs=True, normalizeTicks=True)
+            gridnessData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                    normalizeTicks=False, collapseTrials=True)
+
+            color = scatterColors[ns_idx]
+            scatterPlot = scatter.ScatterPlot(
+                    PSeizureData, gridnessData, None, None, None, None, None,
+                    c=color,
+                    s=10*self.config['scale_factor'],
+                    linewidth=0.3,
+                    xlabel='$P(E-rate_{max} > 300)$',
+                    ylabel='',
+                    zorder=scatterOrders[ns_idx])
+            scatterPlot.plot()
+        self.ax.xaxis.set_major_locator(ti.MultipleLocator(.5))
+        self.ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
+        self.ax.yaxis.set_ticklabels([])
+        leg = ['0', '150', '300']
+        l = self.ax.legend(leg, **legend_kwargs)
+        plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
+        #self.fig.tight_layout(**myc['tight_layout_kwargs'])
+
+    def save(self, *args, **kwargs):
+        # Linear scale
+        fname = self.config['output_dir'] + "/PSeizure_gridness_scatter_all.pdf"
+        self.fig.savefig(fname, dpi=300, transparent=True)

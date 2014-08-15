@@ -549,6 +549,46 @@ _default_config['PSeizureGridsProbabilityPlotter'] = PSeizureGridsProbabilityPlo
 
 ##############################################################################
 
+PSeizureGridsScatterAllPlotter_config = {
+    'FRThreshold': 300,
+    'fig_size': (2.5, 2.2),         # inches
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+    'tight_layout_kwargs': {
+        'pad': .2,
+    },
+
+    'legend_kwargs': dict(
+        loc=(0.5, 0.6),
+        fontsize='small',
+        frameon=False,
+        numpoints=1,
+        title='$\sigma$ (pA)'
+    ),
+}
+_default_config['PSeizureGridsScatterAllPlotter'] = PSeizureGridsScatterAllPlotter_config
+
+##############################################################################
+
+MaxFRGridsScatterAllPlotter_config = {
+    'fig_size': (2.5, 2.2),         # inches
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+    'tight_layout_kwargs': {
+        'pad': .2,
+    },
+
+    'plot_legend' : False,
+    'legend_kwargs': dict(
+        loc=(0.6, 0.5),
+        fontsize='small',
+        frameon=False,
+        numpoints=1,
+        title='$\sigma$ (pA)'
+    ),
+}
+_default_config['MaxFRGridsScatterAllPlotter'] = MaxFRGridsScatterAllPlotter_config
+
+##############################################################################
+
 MaxStdThetaFRSweepPlotter_config = {
     'cbar_kw': dict(
         label       = "max(E rate)/$\\theta$ cycle (Hz)",

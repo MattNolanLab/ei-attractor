@@ -685,7 +685,6 @@ class PopulationFR(AggregateData):
                         self._FR[r, c, trialNum, :] = \
                                 data if data is not None else np.nan
 
-            #import pdb; pdb.set_trace()
             self._Y, self._X = computeYX(self.sp, self.iterList,
                                          normalizeTicks=self.normalizeTicks)
 
@@ -704,6 +703,7 @@ class MaxPopulationFR(PopulationFR):
     def getData(self):
         FR, X, Y = self._getRawData()
         maxFR = np.nanmax(FR, axis=3)
+        maxFR[maxFR == 5000] = np.nan
         return (np.mean(maskNaNs(maxFR, self.ignoreNaNs), axis=2), self._X,
                 self._Y)
 
