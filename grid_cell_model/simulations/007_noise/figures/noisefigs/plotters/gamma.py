@@ -10,9 +10,9 @@ from grid_cell_model.parameters           import JobTrialSpace2D, DataSpace
 from grid_cell_model.plotting.global_defs import globalAxesSettings, prepareLims
 
 from ..EI_plotting          import sweeps, examples, details, scatter
-from ..EI_plotting          import aggregate as aggr
+from ..EI_plotting          import aggregate as aggr, scaling
 from ..EI_plotting.base     import plotOneHist, NoiseDataSpaces
-from .base import FigurePlotter, SweepPlotter
+from .base import FigurePlotter, SweepPlotter, ProbabilityPlotter
 
 __all__ = [
     'GammaSweepsPlotter',
@@ -20,6 +20,11 @@ __all__ = [
     'GammaExamplePlotter',
     'GammaScatterAllPlotter',
     'ScatterGammaGridsSeparatePlotter',
+    'GammaScatterPBumpsAllPlotter',
+    'GammaPBumpsProbabilityPlotter',
+    'GammaFreqPBumpsProbabilityPlotter',
+    'GammaGridsProbabilityPlotter',
+    'GammaFreqGridsProbabilityPlotter',
 ]
 
 
@@ -176,8 +181,16 @@ class GammaSweepsPlotter(SweepPlotter):
         ps = self.env.ps
         ac_xticks = self.myc['AC_xticks']
         f_xticks = self.myc['F_xticks']
+        iter_list = self.config['iter_list']
+        grids_example_idx = self.config['grids']['example_idx']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            ACData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
+                                           iter_list, normalizeTicks=True)
+            gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                          ignoreNaNs=True, normalizeTicks=True,
+                                          r=grids_example_idx[ns_idx][0],
+                                          c=grids_example_idx[ns_idx][1])
             kw = dict(cbar=False)
             if ns_idx == 0:
                 kw['cbar'] = True
@@ -190,19 +203,25 @@ class GammaSweepsPlotter(SweepPlotter):
                      "/gamma_sweeps{0}.pdf".format(int(noise_sigma)))
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 sweeps.plotACTrial(
-                        ps.bumpGamma[ns_idx],
-                        ACVarList,
-                        self.config['iter_list'],
+                        ACData,
+                        None,
+                        None,
                         noise_sigma=ps.noise_sigmas[ns_idx],
                         ax=ax,
                         xlabel='' if ac_xticks[ns_idx] == False else None,
                         xticks=ac_xticks[ns_idx],
-                        trialNumList=xrange(NTrials),
+                        trialNumList=None,
                         sigmaTitle=self.myc['AC_sigma_title'],
                         cbar_kw=self.myc['AC_cbar_kw'],
                         vmin=AC_vmin, vmax=AC_vmax,
                         annotations=self.myc['ann'],
                         **kw)
+                if self.myc['plot_grid_contours'][ns_idx]:
+                    contours = sweeps.Contours(gridData,
+                            self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                            ax,
+                            **self.config['sweeps']['contours_kwargs'])
             
             # Gamma frequency
             fname = (self.config['output_dir'] +
@@ -211,7 +230,7 @@ class GammaSweepsPlotter(SweepPlotter):
                 sweeps.plotACTrial(
                         ps.bumpGamma[ns_idx],
                         FVarList,
-                        self.config['iter_list'],
+                        iter_list,
                         noise_sigma=ps.noise_sigmas[ns_idx],
                         ax=ax,
                         xlabel='' if f_xticks[ns_idx] == False else None,
@@ -222,6 +241,12 @@ class GammaSweepsPlotter(SweepPlotter):
                         vmin=F_vmin, vmax=F_vmax,
                         annotations=self.myc['annF'],
                         **kw)
+                if self.myc['plot_grid_contours'][ns_idx]:
+                    contours = sweeps.Contours(gridData,
+                            self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                            ax,
+                            **self.config['sweeps']['contours_kwargs'])
         
 
 
@@ -473,4 +498,322 @@ class GammaScatterAllPlotter(FigurePlotter):
     def save(self, *args, **kwargs):
         fname = self.config['output_dir'] + "/gamma_scatter_gamma_grids_all.pdf"
         self.fig.savefig(fname, dpi=300, transparent=True)
+
+
+##############################################################################
+# Probability plots of gridness score vs gamma power
+class GammaGridsProbabilityPlotter(ProbabilityPlotter):
+    def __init__(self, *args, **kwargs):
+        super(GammaGridsProbabilityPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        iter_list = self.config['iter_list']
+        l, b, r, t = myc['bbox_rect']
+        drange = [[-.5, 1.2], [-.2, .8]]
+
+        gamma_all = np.empty(0)
+        gridness_all = np.empty(0)
+
+        # Separate noise sigmas
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            if ns_idx == 0:
+                mi_title = 'Gamma power vs. gridness score'
+            else:
+                mi_title = None
+
+            gammaData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
+                                                iter_list,
+                                                normalizeTicks=False,
+                                                collapseTrials=True)
+            gridnessData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                    normalizeTicks=False, collapseTrials=True)
+
+
+            gammaData, _, _ = gammaData.getData()
+            gridnessData, _, _ = gridnessData.getData()
+            gamma_all = np.hstack((gamma_all, gammaData.flatten()))
+            gridness_all = np.hstack((gridness_all, gridnessData.flatten()))
+
+            # Gamma power vs. gridness score
+            fig = self._get_final_fig(myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            self.plotDistribution(gridnessData, gammaData, ax,
+                                  noise_sigma=noise_sigma,
+                                  range=drange,
+                                  xlabel='Gridness score',
+                                  ylabel='', yticks=False)
+            ax.axis('tight')
+            ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+            fname = self.config['output_dir'] + "/gamma_gridness_probability_{0}.pdf"
+            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                             transparent=True)
+            plt.close(fig)
+
+            self.mutual_information(gammaData, gridnessData,
+                                    noise_sigma=noise_sigma,
+                                    title=mi_title)
+
+        # All together
+        fig = self._get_final_fig(myc['fig_size'])
+        ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+        self.plotDistribution(gridness_all, gamma_all, ax,
+                xlabel='Gridness score',
+                range=drange)
+        ax.axis('tight')
+        ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+        fname = self.config['output_dir'] + "/gamma_gridness_probability_all.pdf"
+        fig.savefig(fname, dpi=300, transparent=True)
+        plt.close(fig)
+
+        self.mutual_information(gamma_all, gridness_all)
+
+
+##############################################################################
+# Probability plots of gridness score vs gamma frequency
+class GammaFreqGridsProbabilityPlotter(ProbabilityPlotter):
+    def __init__(self, *args, **kwargs):
+        super(GammaFreqGridsProbabilityPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        iter_list = self.config['iter_list']
+        l, b, r, t = myc['bbox_rect']
+        drange = [[-.5, 1.2], [0, 140]]
+
+        gammaF_all = np.empty(0)
+        gridness_all = np.empty(0)
+
+        # Separate noise sigmas
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            if ns_idx == 0:
+                mi_title = 'Gamma frequency vs. gridness score'
+            else:
+                mi_title = None
+
+            gammaFData = aggr.GammaAggregateData('freq', ps.bumpGamma[ns_idx],
+                                                 iter_list,
+                                                 normalizeTicks=False,
+                                                 collapseTrials=True)
+            gridnessData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                    normalizeTicks=False, collapseTrials=True)
+
+
+            gammaFData, _, _ = gammaFData.getData()
+            gridnessData, _, _ = gridnessData.getData()
+            gammaF_all = np.hstack((gammaF_all, gammaFData.flatten()))
+            gridness_all = np.hstack((gridness_all, gridnessData.flatten()))
+
+            # Gamma frequency vs. gridness score
+            fig = self._get_final_fig(myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            self.plotDistribution(gridnessData, gammaFData, ax,
+                                  noise_sigma=noise_sigma,
+                                  range=drange,
+                                  xlabel='Gridness score',
+                                  ylabel='', yticks=False)
+            ax.axis('tight')
+            ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+            fname = self.config['output_dir'] + "/gammaFreq_gridness_probability_{0}.pdf"
+            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                             transparent=True)
+            plt.close(fig)
+
+            self.mutual_information(gridnessData, gammaFData,
+                    noise_sigma=noise_sigma, title=mi_title)
+
+        # All together
+        fig = self._get_final_fig(myc['fig_size'])
+        ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+        self.plotDistribution(gridness_all, gammaF_all, ax,
+                xlabel='Gridness score',
+                ylabel='Oscillation frequency (Hz)',
+                range=drange)
+        ax.axis('tight')
+        ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+        fname = self.config['output_dir'] + "/gammaFreq_gridness_probability_all.pdf"
+        fig.savefig(fname, dpi=300, transparent=True)
+        plt.close(fig)
+
+        self.mutual_information(gammaF_all, gridness_all)
+
+
+##############################################################################
+# Scatter plot of gamma power vs P_{bumps}
+# All in one plot
+class GammaScatterPBumpsAllPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(GammaScatterPBumpsAllPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        iter_list = self.config['iter_list']
+        legend_kwargs = myc['legend_kwargs']
+
+        self.fig = self._get_final_fig(myc['fig_size'])
+        self.ax = self.fig.gca()
+
+        self.ax.hold('on')
+        scatterColors = ['green', 'red', 'blue']
+        scatterOrders = [2, 3, 1]
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            gammaData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
+                                                iter_list,
+                                                normalizeTicks=False,
+                                                collapseTrials=False)
+            pbumpsData = aggr.IsBump(ps.bumpGamma[ns_idx], iter_list,
+                                     ignoreNaNs=True, collapseTrials=False)
+            color = scatterColors[ns_idx]
+            scatterPlot = scatter.ScatterPlot(
+                    pbumpsData, gammaData, None, None, None, None, None,
+                    c=color,
+                    s=10*self.config['scale_factor'],
+                    linewidth=0.3,
+                    xlabel='$P_{bumps}$',
+                    ylabel='$1^{st}$ autocorrelation peak',
+                    zorder=scatterOrders[ns_idx])
+            scatterPlot.plot()
+        self.ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
+        self.ax.yaxis.set_major_locator(ti.MultipleLocator(0.2))
+        leg = ['0', '150', '300']
+        l = self.ax.legend(leg, **legend_kwargs)
+        plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
+        self.fig.tight_layout(**myc['tight_layout_kwargs'])
+
+    def save(self, *args, **kwargs):
+        # Linear scale
+        fname = self.config['output_dir'] + "/gamma_scatter_gamma_pbumps_all.pdf"
+        self.fig.savefig(fname, dpi=300, transparent=True)
+
+        # Exponential scale
+        fname = self.config['output_dir'] + "/gamma_scatter_gamma_pbumps_all_exp.pdf"
+        self.ax.set_xscale('exponential')
+        self.ax.xaxis.set_major_locator(ti.MultipleLocator(.5))
+        self.ax.xaxis.set_minor_locator(ti.MultipleLocator(.1))
+        self.ax.set_xlim([-0.3, 1.002])
+        self.fig.savefig(fname, dpi=300, transparent=True)
+
+
+class GammaPBumpsProbabilityPlotter(ProbabilityPlotter):
+    def __init__(self, *args, **kwargs):
+        super(GammaPBumpsProbabilityPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        iter_list = self.config['iter_list']
+        l, b, r, t = myc['bbox_rect']
+
+        gamma_all = np.empty(0)
+        pbumps_all = np.empty(0)
+
+        # Separate noise sigmas
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            if ns_idx == 0:
+                mi_title = 'Gamma power vs. P_Bumps'
+            else:
+                mi_title = None
+
+            gammaData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
+                                                iter_list,
+                                                normalizeTicks=False,
+                                                collapseTrials=False)
+            pbumpsData = aggr.IsBump(ps.bumpGamma[ns_idx], iter_list,
+                                     ignoreNaNs=True, collapseTrials=False)
+            gammaData, _, _ = gammaData.getData()
+            pbumpsData, _, _ = pbumpsData.getData()
+            gamma_all = np.hstack((gamma_all, gammaData.flatten()))
+            pbumps_all = np.hstack((pbumps_all, pbumpsData.flatten()))
+
+            fig = self._get_final_fig(myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            self.plotDistribution(pbumpsData, gammaData, ax,
+                                  noise_sigma=noise_sigma,
+                                  ylabel='', yticks=False)
+            fname = self.config['output_dir'] + "/gamma_pbumps_probability_{0}.pdf"
+            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                             transparent=True)
+            plt.close(fig)
+
+            self.mutual_information(gammaData, pbumpsData,
+                    noise_sigma=noise_sigma,
+                    title=mi_title)
+
+        # All together
+        fig = self._get_final_fig(myc['fig_size'])
+        ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+        self.plotDistribution(pbumps_all, gamma_all, ax)
+        #fig.tight_layout(**myc['tight_layout_kwargs'])
+        fname = self.config['output_dir'] + "/gamma_pbumps_probability_all.pdf"
+        fig.savefig(fname, dpi=300, transparent=True)
+        plt.close(fig)
+
+        self.mutual_information(gamma_all, pbumps_all)
+
+
+##############################################################################
+# Gamma frequency vs. P_Bumps
+class GammaFreqPBumpsProbabilityPlotter(ProbabilityPlotter):
+    def __init__(self, *args, **kwargs):
+        super(GammaFreqPBumpsProbabilityPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        iter_list = self.config['iter_list']
+        l, b, r, t = myc['bbox_rect']
+        drange = [[0, 1], [0, 140]]
+
+        gammaF_all = np.empty(0)
+        pbumps_all = np.empty(0)
+
+        # Separate noise sigmas
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            if ns_idx == 0:
+                mi_title = 'Gamma freq vs. P_Bumps'
+            else:
+                mi_title = None
+
+            gammaFData = aggr.GammaAggregateData('freq', ps.bumpGamma[ns_idx],
+                                                 iter_list,
+                                                 normalizeTicks=False,
+                                                 collapseTrials=False)
+            pbumpsData = aggr.IsBump(ps.bumpGamma[ns_idx], iter_list,
+                                     ignoreNaNs=True, collapseTrials=False)
+            gammaFData, _, _ = gammaFData.getData()
+            pbumpsData, _, _ = pbumpsData.getData()
+            gammaF_all = np.hstack((gammaF_all, gammaFData.flatten()))
+            pbumps_all = np.hstack((pbumps_all, pbumpsData.flatten()))
+
+            fig = self._get_final_fig(myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            self.plotDistribution(pbumpsData, gammaFData, ax,
+                                  noise_sigma=noise_sigma,
+                                  range=drange,
+                                  ylabel='', yticks=False)
+            fname = self.config['output_dir'] + "/gammaFreq_pbumps_probability_{0}.pdf"
+            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                             transparent=True)
+            plt.close(fig)
+
+            self.mutual_information(gammaFData, pbumpsData,
+                    noise_sigma=noise_sigma,
+                    title=mi_title)
+
+        # All together
+        fig = self._get_final_fig(myc['fig_size'])
+        ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+        self.plotDistribution(pbumps_all, gammaF_all, ax,
+                range=drange,
+                ylabel='Oscillation frequency (Hz)')
+        #fig.tight_layout(**myc['tight_layout_kwargs'])
+        fname = self.config['output_dir'] + "/gammaFreq_pbumps_probability_all.pdf"
+        fig.savefig(fname, dpi=300, transparent=True)
+        plt.close(fig)
+
+        self.mutual_information(gammaF_all, pbumps_all)
 

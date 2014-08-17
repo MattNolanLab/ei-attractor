@@ -27,6 +27,7 @@ __all__ = [
          
 
 ##############################################################################
+# Parameter sweeps of gridness score
 
 class GridSweepsPlotter(SweepPlotter):
     cmap = 'jet'
@@ -34,29 +35,36 @@ class GridSweepsPlotter(SweepPlotter):
 
     def __init__(self, *args, **kwargs):
         super(GridSweepsPlotter, self).__init__(*args, **kwargs)
+        self.fig = None
+        self.ax = None
 
     def plot(self, *args, **kwargs):
         sweepc = self._get_sweep_config()
         ps = self.env.ps
         example_idx = self.config['grids']['example_idx']
-        trial_num_list = np.arange(self.config['grids']['ntrials'])
+        iter_list = self.config['iter_list']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
                      "/grids_sweeps{0}.pdf".format(int(noise_sigma)))
-            with self.figure_and_axes(fname, sweepc) as (fig, ax):
+            self.data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                           ignoreNaNs=True, normalizeTicks=True,
+                                           r=example_idx[ns_idx][0],
+                                           c=example_idx[ns_idx][1])
+            with self.figure_and_axes(fname, sweepc) as (self.fig, self.ax):
+                # Sweep itself
                 kw = dict()
                 if ns_idx != 0:
                     kw['ylabel'] = ''
                     kw['yticks'] = False
                 sweeps.plotGridTrial(
-                        ps.grids[ns_idx],
-                        self.varList,
-                        self.config['iter_list'],
+                        self.data,
+                        None,
+                        None,
                         ps.noise_sigmas[ns_idx],
-                        trialNumList=trial_num_list,
-                        r=example_idx[ns_idx][0], c=example_idx[ns_idx][1],
-                        ax=ax,
+                        trialNumList=None,
+                        r=None, c=None,
+                        ax=self.ax,
                         cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=self.myc['cbar_kw'],
                         cmap=self.cmap,
@@ -66,6 +74,27 @@ class GridSweepsPlotter(SweepPlotter):
                         sliceAnn=None,
                         sigmaTitle=self.myc['sigma_title'],
                         **kw)
+
+                # Contours
+                if self.myc['plot_contours'][ns_idx]:
+                    contours = sweeps.Contours(self.data,
+                            self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                            self.ax,
+                            **self.config['sweeps']['contours_kwargs'])
+
+
+##############################################################################
+# Parameter sweeps of gridness score with a contour plot
+class ContourGridSweepsPlotter(GridSweepsPlotter):
+    def __init__(self, *args, **kwargs):
+        super(ContourGridSweepsPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        super(ContourGridSweepsPlotter, self).plot(
+                self, *args, plotContours=True, **kwargs)
+
+
 
 
 ###############################################################################

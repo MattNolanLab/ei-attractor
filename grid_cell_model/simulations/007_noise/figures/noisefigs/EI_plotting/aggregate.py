@@ -8,13 +8,14 @@ import numpy as np
 import numpy.ma as ma
 
 from grid_cell_model.parameters import DataSpace
-from grid_cell_model.otherpkg.log import log_warn
+from grid_cell_model.otherpkg.log import log_warn, getClassLogger
 from grid_cell_model.analysis.image import Position2D
 import grid_cell_model.analysis.image as image
 import grid_cell_model.analysis.signal as asignal
 
 import logging
 logger = logging.getLogger(__name__)
+gammaAggrLogger = getClassLogger('GammaAggregateData', __name__)
 
 
 def aggregate2DTrial(sp, varList, trialNumList, fReduce=np.mean,
@@ -215,12 +216,15 @@ class AggregateData(object):
     analysisRoot = ['analysis']
 
     def __init__(self, space, iterList, NTrials, ignoreNaNs=False,
-            normalizeTicks=False):
+            normalizeTicks=False, collapseTrials=True, r=0, c=0):
         self.sp = space
         self.iterList = iterList
         self.NTrials = NTrials
         self.ignoreNaNs = ignoreNaNs
         self.normalizeTicks = normalizeTicks
+        self.collapseTrials = collapseTrials
+        self.r = r
+        self.c = c
 
 
     @abstractmethod
@@ -246,14 +250,39 @@ class GridnessScore(AggregateData):
             path = self.analysisRoot + ['gridnessScore']
             self._gscore = self.sp.getReduction(path)
             self._Y, self._X = computeYX(self.sp, self.iterList,
-                                         normalize=self.normalizeTicks)
+                                         normalize=self.normalizeTicks,
+                                         r=self.r, c=self.c)
         return self._gscore, self._X, self._Y
 
     def getData(self):
+        #import pdb; pdb.set_trace()
         data, X, Y = self._getRawData()
         return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
 
         
+class GammaAggregateData(AggregateData):
+    '''Extract power of gamma oscillations from the aggregated data'''
+    def __init__(self, what, space, iterList, **kw):
+        '''``what`` determines the data field to extract'''
+        super(GammaAggregateData, self).__init__(space, iterList, None, **kw)
+        self._acval = None
+        self._what = what
+
+    def _getRawData(self):
+        if self._acval is None:
+            path = self.analysisRoot + [self._what]
+            gammaAggrLogger.info("Extracting data from path: %s", path)
+            self._acval = self.sp.getReduction(path)
+            self._Y, self._X = computeYX(self.sp, self.iterList,
+                                         normalize=self.normalizeTicks)
+        return self._acval, self._X, self._Y
+
+    def getData(self):
+        data, X, Y = self._getRawData()
+        if self.collapseTrials:
+            return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+        else:
+            return data, X, Y
 
 
 
@@ -262,10 +291,10 @@ class GridnessScore(AggregateData):
 class IsBump(AggregateData):
     '''Retrieve bump classification data from the space.'''
     
-    def __init__(self, space, iterList, ignoreNaNs=False,
-            normalizeTicks=False):
+    def __init__(self, space, iterList, ignoreNaNs=False, normalizeTicks=False,
+                 **kw):
         super(IsBump, self).__init__(space, iterList, None, ignoreNaNs,
-                normalizeTicks)
+                normalizeTicks, **kw)
         self._fracTotal = None
         self._X = None
         self._Y = None
@@ -280,7 +309,10 @@ class IsBump(AggregateData):
 
     def getData(self):
         data, X, Y = self._getRawData()
-        return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+        if self.collapseTrials:
+            return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+        else:
+            return data, X, Y
 
 
 class IsBumpCollapsed(AggregateData):
@@ -653,7 +685,6 @@ class PopulationFR(AggregateData):
                         self._FR[r, c, trialNum, :] = \
                                 data if data is not None else np.nan
 
-            #import pdb; pdb.set_trace()
             self._Y, self._X = computeYX(self.sp, self.iterList,
                                          normalizeTicks=self.normalizeTicks)
 
@@ -672,6 +703,7 @@ class MaxPopulationFR(PopulationFR):
     def getData(self):
         FR, X, Y = self._getRawData()
         maxFR = np.nanmax(FR, axis=3)
+        maxFR[maxFR == 5000] = np.nan
         return (np.mean(maskNaNs(maxFR, self.ignoreNaNs), axis=2), self._X,
                 self._Y)
 

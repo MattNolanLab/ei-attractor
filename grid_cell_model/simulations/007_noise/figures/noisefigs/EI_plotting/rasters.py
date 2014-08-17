@@ -73,6 +73,8 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, ylabel=None, **kw):
     scaleX       = kw.pop('scaleX', 0.75)
     scaleY       = kw.pop('scaleY', 0.05)
     scaleText    = kw.pop('scaleText', 'ms')
+    scaleTextYOffset = kw.pop('scaleTextYOffset', .075)
+    scaleHeight  = kw.pop('scaleHeight', .02)
     scaleTextSize= kw.pop('scaleTextSize', 'small')
     kw['markersize'] = kw.get('markersize', 1.0)
 
@@ -145,7 +147,8 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, ylabel=None, **kw):
 
     if (scaleBar is not None):
         xScaleBar(scaleBar, x=scaleX, y=scaleY, ax=ax, size=scaleTextSize,
-                unitsText=scaleText)
+                unitsText=scaleText, textYOffset=scaleTextYOffset,
+                height=scaleHeight)
 
     
     return ax

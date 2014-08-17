@@ -53,6 +53,12 @@ _default_config.merge({
         'fig_size': (3.7, 2.6),         # inches
         'bbox': (0.08, 0.2, .72, .65),  # l, b, w, h
         'transparent': True,
+        'grid_contours': [.5],
+        'contours_kwargs': {
+            'hold': True,
+            'colors': 'k',
+            'linewidths': [1.5]
+        },
     },
 
     'grids': {
@@ -123,6 +129,8 @@ GridSweepsPlotter_config = {
             color='black'
         )
     ],
+
+    'plot_contours': [0, 0, 0],
 }
 _default_config['GridSweepsPlotter'] = GridSweepsPlotter_config
 
@@ -166,7 +174,7 @@ _default_config['ConnectionFunctionPlotter'] = ConnectionFunctionPlotter_config
 ##############################################################################
 
 GammaSweepsPlotter_config = {
-    'scale_factor': .8,
+    'scale_factor': .9,
     'AC_cbar_kw': dict(
         location   = 'left',
         ticks      = ti.MultipleLocator(0.3),
@@ -205,7 +213,7 @@ GammaSweepsPlotter_config = {
         dict(
             txt='a',
             rc=None,
-            xytext_offset=(1.5, 1),
+            xytext_offset=(-.5, 2.),
             color='white',
         ),
     ],
@@ -213,6 +221,8 @@ GammaSweepsPlotter_config = {
     'cbar_kw' : {
         'location': 'left',
     },
+
+    'plot_grid_contours': [0, 1, 0],
 }
 _default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
 tmp = GammaSweepsPlotter_config
@@ -263,6 +273,56 @@ GammaScatterAllPlotter_config = {
     },
 }
 _default_config['GammaScatterAllPlotter'] = GammaScatterAllPlotter_config
+
+##############################################################################
+
+GammaScatterPBumpsAllPlotter_config = {
+    'fig_size': (5., 3.2),
+    'legend_kwargs': dict(
+        loc=(0.25, 0.95),
+        fontsize='small',
+        frameon=False,
+        ncol=3,
+        title='$\sigma$ (pA)'
+    ),
+    'tight_layout_kwargs': {
+        'rect': [.05, .05, .95, .9],
+        'pad': 0,
+    },
+}
+_default_config['GammaScatterPBumpsAllPlotter'] = GammaScatterPBumpsAllPlotter_config
+
+##############################################################################
+
+GammaPBumpsProbabilityPlotter_config = {
+    'fig_size': (2.7, 2.7),         # inches
+    'bbox_rect': (0.25, 0.2, 0.95, 0.9),
+}
+_default_config['GammaPBumpsProbabilityPlotter'] = GammaPBumpsProbabilityPlotter_config
+
+##############################################################################
+
+GammaFreqPBumpsProbabilityPlotter_config = {
+    'fig_size': (2.7, 2.7),         # inches
+    'bbox_rect': (0.25, 0.2, 0.95, 0.9),
+}
+_default_config['GammaFreqPBumpsProbabilityPlotter'] = GammaFreqPBumpsProbabilityPlotter_config
+
+##############################################################################
+
+GammaGridsProbabilityPlotter_config = {
+    'fig_size': (2.7, 2.7),         # inches
+    'bbox_rect': (0.25, 0.2, 0.95, 0.9),
+}
+_default_config['GammaGridsProbabilityPlotter'] = GammaGridsProbabilityPlotter_config
+
+##############################################################################
+
+GammaFreqGridsProbabilityPlotter_config = {
+    'fig_size': (2.7, 2.7),         # inches
+    'bbox_rect': (0.25, 0.2, 0.95, 0.9),
+}
+_default_config['GammaFreqGridsProbabilityPlotter'] = GammaFreqGridsProbabilityPlotter_config
 
 ##############################################################################
 
@@ -376,13 +436,16 @@ _default_config['BumpDiffResetPlotter'] = BumpDiffResetPlotter_config
 
 MaxPopulationFRSweepsPlotter_config = {
     'cbar_kw': dict(
-        label       = "max(E rate) (Hz)",
+        label       = "$E-rate_{max}$ (Hz)",
         location    = 'left',
         shrink      = 0.8,
         pad         = 0.25,
         ticks       = ti.MultipleLocator(100),
         rasterized  = True
-    )
+    ),
+
+    'plot_grid_contours': [1, 1, 1],
+    'grid_contours': [.1],
 }
 _default_config['MaxPopulationFRSweepsPlotter'] = MaxPopulationFRSweepsPlotter_config
 
@@ -447,11 +510,14 @@ _default_config['MaxMeanThetaFRSweepPlotter'] = MaxMeanThetaFRSweepPlotter_confi
 ##############################################################################
 
 PSeizureSweepPlotter_config = {
-    'FRThreshold': 300
+    'FRThreshold': 300,
+
+    'plot_grid_contours': [1, 1, 1],
+    'grid_contours': [.1],
 }
 PSeizureSweepPlotter_config.update({
     'cbar_kw': dict(
-        label       = "P[max(rate during $\\theta$) > {0}]".format(
+        label       = "P($E-rate_{{max}}$ > {0})".format(
                         PSeizureSweepPlotter_config['FRThreshold']),
         location    = 'left',
         shrink      = 0.8,
@@ -461,6 +527,65 @@ PSeizureSweepPlotter_config.update({
     )
 })
 _default_config['PSeizureSweepPlotter'] = PSeizureSweepPlotter_config
+
+##############################################################################
+
+MaxFRGridsProbabilityPlotter_config = {
+    'fig_size': (2.7, 2.7),         # inches
+    'scale_factor': .85,
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+}
+_default_config['MaxFRGridsProbabilityPlotter'] = MaxFRGridsProbabilityPlotter_config
+
+##############################################################################
+
+PSeizureGridsProbabilityPlotter_config = {
+    'FRThreshold': 300,
+    'fig_size': (2.7, 2.7),         # inches
+    'scale_factor': .85,
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+}
+_default_config['PSeizureGridsProbabilityPlotter'] = PSeizureGridsProbabilityPlotter_config
+
+##############################################################################
+
+PSeizureGridsScatterAllPlotter_config = {
+    'FRThreshold': 300,
+    'fig_size': (2.5, 2.2),         # inches
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+    'tight_layout_kwargs': {
+        'pad': .2,
+    },
+
+    'legend_kwargs': dict(
+        loc=(0.5, 0.6),
+        fontsize='small',
+        frameon=False,
+        numpoints=1,
+        title='$\sigma$ (pA)'
+    ),
+}
+_default_config['PSeizureGridsScatterAllPlotter'] = PSeizureGridsScatterAllPlotter_config
+
+##############################################################################
+
+MaxFRGridsScatterAllPlotter_config = {
+    'fig_size': (2.5, 2.2),         # inches
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+    'tight_layout_kwargs': {
+        'pad': .2,
+    },
+
+    'plot_legend' : False,
+    'legend_kwargs': dict(
+        loc=(0.6, 0.5),
+        fontsize='small',
+        frameon=False,
+        numpoints=1,
+        title='$\sigma$ (pA)'
+    ),
+}
+_default_config['MaxFRGridsScatterAllPlotter'] = MaxFRGridsScatterAllPlotter_config
 
 ##############################################################################
 

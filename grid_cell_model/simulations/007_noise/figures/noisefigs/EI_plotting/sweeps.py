@@ -46,9 +46,12 @@ def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
     sigmaTitle  = kw.pop('sigmaTitle', True)
     annotations = kw.pop('annotations', None)
 
-    C = aggr.aggregate2DTrial(sp, varList, trialNumList)
+    if isinstance(sp, aggr.AggregateData):
+        C, X, Y  = sp.getData()
+    else:
+        C = aggr.aggregate2DTrial(sp, varList, trialNumList)
+        Y, X = aggr.computeYX(sp, iterList, r=r, c=c)
     C = ma.MaskedArray(C, mask=np.isnan(C))
-    Y, X = aggr.computeYX(sp, iterList, r=r, c=c)
     C, ax, cax = plot2DTrial(X, Y, C, colorBar=cbar, **kw)
 
     print("    max(C): {0}".format(np.max(C)))
@@ -142,13 +145,17 @@ def plotGridTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
     cbar        = kw.pop('cbar', True)
     annotations = kw.pop('annotations', None)
 
-    G = aggr.aggregate2DTrial(sp, varList, trialNumList, ignoreNaNs=ignoreNaNs)
+    if isinstance(sp, aggr.AggregateData):
+        G, X, Y = sp.getData()
+    else:
+        G = aggr.aggregate2DTrial(sp, varList, trialNumList, ignoreNaNs=ignoreNaNs)
+        Y, X = aggr.computeYX(sp, iterList, r=r, c=c)
+
     nans = np.isnan(G)
     if (nansAs0):
         G[nans] = 0
     else:
         G = ma.MaskedArray(G, mask=nans)
-    Y, X = aggr.computeYX(sp, iterList, r=r, c=c)
     G, ax, cax = plot2DTrial(X, Y, G, colorBar=cbar, **kw)
 
     print("    max(G): {0}".format(np.max(G)))
@@ -396,3 +403,31 @@ def plotCollapsedSweeps(noise_sigmas, data, **kw):
         ax.yaxis.set_ticklabels([])
 
     return ax
+
+
+class Contours(object):
+    '''Contour object on a 2D plot. Usually a paramter sweep plot'''
+    def __init__(self, data, V):
+        '''Create the contour object from ``data``, with contour values
+        ``V``.'''
+        self.data = data
+        self.V = V
+    
+    def plot(self, ax, V=None, **kwargs):
+        '''Plot the contours into matplotlib axis.
+
+        Parameters
+        ----------
+        ax : matplotlib.Axes
+            Axes to plot into
+        V : array-like
+            A list of contour values to plot. If not None, the internal contour
+            values will be overriden during plotting, but not inside the
+            object.
+        kwargs : dict
+            Keyword arguments to pass on to the ax.contour() method.
+        '''
+        if V is None:
+            V = self.V
+        d, X, Y = self.data.getData()
+        ax.contour(X, Y, d, V, **kwargs)
