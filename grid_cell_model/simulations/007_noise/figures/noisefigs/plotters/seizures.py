@@ -658,7 +658,7 @@ class RasterExamplePlotter(SweepPlotter):
         sweepc = self._get_sweep_config()
         ps = self.env.ps
         iter_list = self.config['iter_list']
-        sl, sb, sr, st = (.1, .73, .4, .95)
+        sl, sb, sr, st = self.myc['sweep_rect']
         tLimits = [2e3, 3e3]
 
         ann150_0 = dict(
@@ -727,7 +727,7 @@ class RasterExamplePlotter(SweepPlotter):
                     ignoreNaNs=True, normalizeTicks=True)
             for annotation in ann_noise:
                 r, c = annotation['rc']
-                fig = plt.figure(figsize=(8.3, 8.3))
+                fig = self._get_final_fig(self.myc['fig_size'])
 
                 # Sweep
                 ax_sweep = fig.add_axes(Bbox.from_extents(sl, sb, sr, st))

@@ -675,8 +675,11 @@ ThetaSignalPlotter_config = {
 _default_config['ThetaSignalPlotter'] = ThetaSignalPlotter_config
 
 ##############################################################################
+
 RasterExamplePlotter_config = {
+    'fig_size': (8.3, 8.3),
     'FRThreshold': 300,
+    'sweep_rect' : (.1, .73, .4, .95),
     'cbar_kw': dict(
         label       = "Mean $E-rate_{max}^{\\theta}$ (Hz)",
         location    = 'right',
@@ -689,4 +692,5 @@ RasterExamplePlotter_config = {
     'markersize': 1.5,
 }
 _default_config['RasterExamplePlotter'] = RasterExamplePlotter_config
+
 ##############################################################################
