@@ -36,7 +36,7 @@ tLimits = [2e3, 2.25e3] # ms
 
 transparent   = True
 rasterLeft    = 0.28
-rasterBottom  = 0.1
+rasterBottom  = 0.15
 rasterRight   = 0.95
 rasterTop     = 0.8
         
@@ -51,6 +51,7 @@ class EIRasterPlotter(FigurePlotter):
         output_dir = self.config['output_dir']
         
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            scaleBar = 25 if ns_idx == 2 else None
             fig = self._get_final_fig(self.myc['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
                 rasterTop))
@@ -63,6 +64,8 @@ class EIRasterPlotter(FigurePlotter):
                     markersize=self.config['scale_factor'],
                     ylabel='' if self.myc['yticks'][ns_idx] == False else None,
                     yticks=self.myc['yticks'][ns_idx],
+                    scaleBar=scaleBar, scaleX=.85, scaleY=-.1,
+                    scaleTextYOffset=.03, scaleHeight=.005,
                     ann_EI=True)
             fname = "%s/bumps_raster%d.%s" % (output_dir, int(noise_sigma),
                                               self.myc['fig_ext'])
