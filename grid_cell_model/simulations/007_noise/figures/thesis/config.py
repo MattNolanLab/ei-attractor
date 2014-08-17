@@ -35,7 +35,45 @@ _config = {
 
     'GammaExamplePlotter': {
         'scale_factor': .75,
-    },
+        'yscale_kw': [[
+            dict(
+                scaleLen=5,
+                unitsText='nA',
+                x=.3, y=0,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.55, y=0,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.55, y=-.1,
+                size='x-small'
+            )],
+
+            [dict(
+                scaleLen=5,
+                unitsText='nA',
+                x=.3, y=0,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.55, y=0,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.55, y=-.1,
+                size='x-small'
+            )]],
+        },
 
     'GammaScatterAllPlotter': {
         'fig_size': (5.25, 3.2),

@@ -251,9 +251,48 @@ GammaExamplePlotter_config = {
 
     'xscale_kw': dict(
         scaleLen=50,
-        x=0.75, y=-0.1,
+        x=0.75, y=-0.07,
         size='x-small'
     ),
+
+    'yscale_kw': [[
+        dict(
+            scaleLen=5,
+            unitsText='nA',
+            x=.5, y=.1,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.5, y=.05,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.5, y=.05,
+            size='x-small'
+        )],
+
+        [dict(
+            scaleLen=5,
+            unitsText='nA',
+            x=.5, y=.1,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.5, y=.05,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.55, y=0,
+            size='x-small'
+        )]],
 }
 _default_config['GammaExamplePlotter'] = GammaExamplePlotter_config
 
