@@ -661,9 +661,6 @@ class RasterExamplePlotter(SweepPlotter):
         sl, sb, sr, st = (.1, .73, .4, .95)
         tLimits = [2e3, 3e3]
 
-        maxFR_vmin = 0
-        maxFR_vmax = 500.
-
         ann150_0 = dict(
                 txt='a',
                 rc=(4, 4),
@@ -711,9 +708,22 @@ class RasterExamplePlotter(SweepPlotter):
         ann300 = [ann300_0, ann300_1]
         ann = [ann0, ann150, ann300]
 
+        FRThreshold = myc['FRThreshold']
+        thetaT = self.config['seizures']['thetaT']
+        sig_dt = self.config['seizures']['sig_dt']
+
+        vmin = 0.
+        vmax = 500.
+
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             ann_noise = ann[ns_idx]
-            data = aggr.MaxPopulationFR(ps.bumpGamma[ns_idx], iter_list,
+            #data = aggr.MaxThetaPopulationFR(
+            #        thetaT, sig_dt, thresholdReduction(FRThreshold),
+            #        ps.bumpGamma[ns_idx], iter_list,
+            #        ignoreNaNs=True, normalizeTicks=True)
+            data = aggr.MaxThetaPopulationFR(
+                    thetaT, sig_dt, np.mean,
+                    ps.bumpGamma[ns_idx], iter_list,
                     ignoreNaNs=True, normalizeTicks=True)
             for annotation in ann_noise:
                 r, c = annotation['rc']
@@ -725,7 +735,7 @@ class RasterExamplePlotter(SweepPlotter):
                         noise_sigma=noise_sigma,
                         ax=ax_sweep,
                         cbar=True, cbar_kw=myc['cbar_kw'],
-                        vmin=maxFR_vmin, vmax=maxFR_vmax,
+                        vmin=vmin, vmax=vmax,
                         annotations=[annotation])
 
                 gs = gridspec.GridSpec(3, 1, height_ratios=(2.5, 1, 1))

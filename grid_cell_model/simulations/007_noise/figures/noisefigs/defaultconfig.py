@@ -676,12 +676,13 @@ _default_config['ThetaSignalPlotter'] = ThetaSignalPlotter_config
 
 ##############################################################################
 RasterExamplePlotter_config = {
+    'FRThreshold': 300,
     'cbar_kw': dict(
-        label       = "max(E rate) (Hz)",
+        label       = "Mean $E-rate_{max}^{\\theta}$ (Hz)",
         location    = 'right',
         shrink      = 0.8,
         pad         = -.02,
-        ticks       = ti.MultipleLocator(100),
+        ticks       = ti.MultipleLocator(250),
         rasterized  = True
     ),
     'ylabelPos': -0.1,
