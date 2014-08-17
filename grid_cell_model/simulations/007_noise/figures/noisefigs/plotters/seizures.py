@@ -727,6 +727,8 @@ class RasterExamplePlotter(SweepPlotter):
                     ignoreNaNs=True, normalizeTicks=True)
             for annotation in ann_noise:
                 r, c = annotation['rc']
+                if not self.myc['plot_ann_txt']:
+                    annotation['txt'] = ''
                 fig = self._get_final_fig(self.myc['fig_size'])
 
                 # Sweep

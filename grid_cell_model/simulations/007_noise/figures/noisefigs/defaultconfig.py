@@ -690,6 +690,7 @@ RasterExamplePlotter_config = {
     ),
     'ylabelPos': -0.1,
     'markersize': 1.5,
+    'plot_ann_txt' : True,
 }
 _default_config['RasterExamplePlotter'] = RasterExamplePlotter_config
 
