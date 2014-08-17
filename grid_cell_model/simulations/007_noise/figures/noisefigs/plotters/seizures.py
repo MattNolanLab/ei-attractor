@@ -309,6 +309,12 @@ class PSeizureSweepPlotter(SweepPlotter):
     def __init__(self, *args, **kwargs):
         super(PSeizureSweepPlotter, self).__init__(*args, **kwargs)
 
+    def get_fig(self):
+        if 'fig_size' in self.myc:
+            return self._get_final_fig(self.myc['fig_size'])
+        else:
+            return super(PSeizureSweepPlotter, self).get_fig()
+
     def plot(self, *args, **kwargs):
         myc = self._get_class_config()
         sweepc = self._get_sweep_config()

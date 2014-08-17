@@ -115,8 +115,10 @@ class SweepPlotter(FigurePlotter):
         l, b, w, h = self.config['sweeps']['bbox']
         if color_bar_pos == 'right':
             left = l
-        else:
+        elif color_bar_pos == 'left':
             left = .12
+        else:
+            left = .2
     
         right = left + w
         top = b + h

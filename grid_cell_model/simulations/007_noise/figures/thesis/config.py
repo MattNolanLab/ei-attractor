@@ -121,4 +121,29 @@ _config = {
             'pad': -.15,
         },
     },
+
+    'PSeizureGridsScatterAllPlotter': {
+        'fig_size': (2.5, 3),         # inches
+        'scale_factor': .75,
+        'bbox_rect': (0.35, 0.22, 0.92, 0.9),
+        'legend_kwargs': dict(
+            loc=(0.3, 0.6),
+        ),
+    },
+
+    'MaxFRGridsScatterAllPlotter': {
+        'fig_size': (2.5, 3),         # inches
+        'scale_factor': .75,
+        'bbox_rect': (0.35, 0.22, 0.92, 0.9),
+    },
+
+    'PSeizureSweepPlotter': {
+        'fig_size': (2.6, 3.7),  # inches
+        'cbar_kw': {
+            'location': 'top',
+            'pad': .1,
+            'labelpad': 3,
+        },
+        'scale_factor': .75,
+    }
 }
