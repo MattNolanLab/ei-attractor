@@ -213,7 +213,8 @@ class GridExampleRectPlotter(FigurePlotter):
         #gsCoords = margin, 0.46, 0.5, sw_bottom-div
         gs = examples.drawGridExamples(dataSpace, exRect, iter_list,
                                        gsCoords=gsCoords, exIdx=exIdx, fig=fig,
-                                       maxRate=False)
+                                       maxRate=True, rateStr='')
+        gs.update(wspace=0.05)
         #fig.text(letter_left, sw_bottom-div+letter_top_off, "B", va=letter_va,
         #        ha=letter_ha, fontsize=19, fontweight='bold')
         noise_sigma_txt = "$\sigma_{{noise}}$ = {0} pA".format(int(noise_sigma))

@@ -73,7 +73,8 @@ def plotOneBumpExample(sp, rc, iterList, types, **kw):
 def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
         exIdx=(0, 0), xlabel=True, ylabel=True, xlabelPos=-0.2, xlabel2=True,
         ylabel2=True, ylabelPos=-0.2, xlabel2Pos=-0.6, ylabel2Pos=-0.6,
-        fontSize=None, maxRate=True, plotGScore=True, fig=plt.gcf()):
+        fontSize=None, maxRate=True, rateStr='Hz', plotGScore=True,
+        fig=plt.gcf()):
     left   = spaceRect[0]
     bottom = spaceRect[1]
     right  = spaceRect[2]
@@ -118,8 +119,8 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
             else:
                 gScore = None
             plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=scaleBar,
-                    scaleText=False, maxRate=maxRate, G=gScore,
-                    rasterized=True, ax=ax)
+                            scaleText=False, maxRate=maxRate, rateStr=rateStr,
+                            G=gScore, rasterized=True, ax=ax)
 
             if (ylabel and gsCol == 0):
                 label = "{0:.2f}".format(we[r][c])
