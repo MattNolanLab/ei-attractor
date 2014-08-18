@@ -751,6 +751,7 @@ RasterExamplePlotter_config = {
     'ylabelPos': -0.1,
     'markersize': 1.5,
     'plot_ann_txt' : True,
+    'theta_color': (0, 0, 0, .3),
 }
 _default_config['RasterExamplePlotter'] = RasterExamplePlotter_config
 

@@ -67,6 +67,7 @@ class EIRasterPlotter(FigurePlotter):
                     scaleBar=scaleBar, scaleX=.85, scaleY=-.1,
                     scaleTextYOffset=.03, scaleHeight=.005,
                     ann_EI=True)
+
             fname = "%s/bumps_raster%d.%s" % (output_dir, int(noise_sigma),
                                               self.myc['fig_ext'])
             fig.savefig(fname, dpi=300, transparent=transparent)
@@ -653,6 +654,10 @@ class PSeizureGridsScatterAllPlotter(FigurePlotter):
 ##############################################################################
 # Seizure measure - max firing rate for the whole simulation
 class RasterExamplePlotter(SweepPlotter):
+    dt = .1  # ms
+    freq = 8. # Hz
+    const = .4 # Fraction of max. theta
+
     def __init__(self, *args, **kwargs):
         super(RasterExamplePlotter, self).__init__(*args, **kwargs)
 
@@ -761,6 +766,8 @@ class RasterExamplePlotter(SweepPlotter):
                         scaleTextYOffset=.03, scaleHeight=.01,
                         rasterized=True)
 
+
+
                 # EI rates
                 ax_erates = fig.add_subplot(gs[1, 0])
                 ax_irates = fig.add_subplot(gs[2, 0])
@@ -783,9 +790,24 @@ class RasterExamplePlotter(SweepPlotter):
                         tLimits=tLimits,
                         ax=ax_irates)
 
-                # Save
-                gs.update(left=.12, bottom=.05, right=.95, top=.65, hspace=.2)
+                gsl = .12
+                gsb = .05
+                gsr = .95
+                gst = .65
+                gs.update(left=gsl, bottom=gsb, right=gsr, top=gst, hspace=.2)
 
+                ax_theta = fig.add_axes(Bbox.from_extents(gsl, gst - .015,
+                                                          gsr, gst + .01))
+                t = np.arange(tLimits[0], tLimits[1]+self.dt, self.dt)
+                theta = self.const + .5 * (1. + 
+                        np.cos(2*np.pi*self.freq*1e-3*t - np.pi)) * (1 - self.const)
+                ax_theta.fill_between(t, theta, edgecolor='None',
+                                      color=self.myc['theta_color'])
+                ax_theta.set_xlim([tLimits[0], tLimits[1]]) 
+                ax_theta.set_ylim(-.02, 1.02)
+                ax_theta.axis('off')
+
+                # Save
                 fname = (self.config['output_dir'] +
                          "/raster_examples_{0}pA_{1}_{2}.pdf".format(
                              int(noise_sigma), r, c))
