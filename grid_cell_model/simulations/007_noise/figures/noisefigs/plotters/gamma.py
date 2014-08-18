@@ -182,10 +182,15 @@ class GammaSweepsPlotter(SweepPlotter):
         ac_xticks = self.myc['AC_xticks']
         f_xticks = self.myc['F_xticks']
         iter_list = self.config['iter_list']
+        grids_example_idx = self.config['grids']['example_idx']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             ACData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
                                            iter_list, normalizeTicks=True)
+            gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                          ignoreNaNs=True, normalizeTicks=True,
+                                          r=grids_example_idx[ns_idx][0],
+                                          c=grids_example_idx[ns_idx][1])
             kw = dict(cbar=False)
             if ns_idx == 0:
                 kw['cbar'] = True
@@ -211,6 +216,12 @@ class GammaSweepsPlotter(SweepPlotter):
                         vmin=AC_vmin, vmax=AC_vmax,
                         annotations=self.myc['ann'],
                         **kw)
+                if self.myc['plot_grid_contours'][ns_idx]:
+                    contours = sweeps.Contours(gridData,
+                            self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                            ax,
+                            **self.config['sweeps']['contours_kwargs'])
             
             # Gamma frequency
             fname = (self.config['output_dir'] +
@@ -230,6 +241,12 @@ class GammaSweepsPlotter(SweepPlotter):
                         vmin=F_vmin, vmax=F_vmax,
                         annotations=self.myc['annF'],
                         **kw)
+                if self.myc['plot_grid_contours'][ns_idx]:
+                    contours = sweeps.Contours(gridData,
+                            self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                            ax,
+                            **self.config['sweeps']['contours_kwargs'])
         
 
 
@@ -361,7 +378,8 @@ class GammaExamplePlotter(FigurePlotter):
                         trialNum=exampleTrialNum,
                         tStart = 2e3, tEnd=2.25e3,
                         noise_sigma=nsAnn, noise_sigma_xy=(0.95, 1),
-                        xscale_kw=xscale_kw)
+                        xscale_kw=xscale_kw,
+                        yscale_kw=self.myc['yscale_kw'][idx][nsIdx])
                 plt.savefig(fname, dpi=300, transparent=True)
                 plt.close()
 

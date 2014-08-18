@@ -1,9 +1,12 @@
 from __future__ import absolute_import, print_function
 
+import string
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
+from matplotlib.backends.backend_pdf import PdfPages
 
 from grid_cell_model.parameters       import JobTrialSpace2D
 from grid_cell_model.data_storage     import DataStorage
@@ -19,6 +22,7 @@ from .base import FigurePlotter, SweepPlotter
 __all__ = [
     'GridSweepsPlotter',
     'GridExamplesPlotter',
+    'GridExampleRectPlotter',
     'VmExamplesPlotter',
     'GridDetailedNoisePlotter',
     'GridsDiffSweep',
@@ -27,6 +31,7 @@ __all__ = [
          
 
 ##############################################################################
+# Parameter sweeps of gridness score
 
 class GridSweepsPlotter(SweepPlotter):
     cmap = 'jet'
@@ -34,29 +39,36 @@ class GridSweepsPlotter(SweepPlotter):
 
     def __init__(self, *args, **kwargs):
         super(GridSweepsPlotter, self).__init__(*args, **kwargs)
+        self.fig = None
+        self.ax = None
 
     def plot(self, *args, **kwargs):
         sweepc = self._get_sweep_config()
         ps = self.env.ps
         example_idx = self.config['grids']['example_idx']
-        trial_num_list = np.arange(self.config['grids']['ntrials'])
+        iter_list = self.config['iter_list']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
                      "/grids_sweeps{0}.pdf".format(int(noise_sigma)))
-            with self.figure_and_axes(fname, sweepc) as (fig, ax):
+            self.data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                           ignoreNaNs=True, normalizeTicks=True,
+                                           r=example_idx[ns_idx][0],
+                                           c=example_idx[ns_idx][1])
+            with self.figure_and_axes(fname, sweepc) as (self.fig, self.ax):
+                # Sweep itself
                 kw = dict()
                 if ns_idx != 0:
                     kw['ylabel'] = ''
                     kw['yticks'] = False
                 sweeps.plotGridTrial(
-                        ps.grids[ns_idx],
-                        self.varList,
-                        self.config['iter_list'],
+                        self.data,
+                        None,
+                        None,
                         ps.noise_sigmas[ns_idx],
-                        trialNumList=trial_num_list,
-                        r=example_idx[ns_idx][0], c=example_idx[ns_idx][1],
-                        ax=ax,
+                        trialNumList=None,
+                        r=None, c=None,
+                        ax=self.ax,
                         cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=self.myc['cbar_kw'],
                         cmap=self.cmap,
@@ -67,9 +79,30 @@ class GridSweepsPlotter(SweepPlotter):
                         sigmaTitle=self.myc['sigma_title'],
                         **kw)
 
+                # Contours
+                if self.myc['plot_contours'][ns_idx]:
+                    contours = sweeps.Contours(self.data,
+                            self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                            self.ax,
+                            **self.config['sweeps']['contours_kwargs'])
+
+
+##############################################################################
+# Parameter sweeps of gridness score with a contour plot
+class ContourGridSweepsPlotter(GridSweepsPlotter):
+    def __init__(self, *args, **kwargs):
+        super(ContourGridSweepsPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        super(ContourGridSweepsPlotter, self).plot(
+                self, *args, plotContours=True, **kwargs)
+
+
+
 
 ###############################################################################
-## Grid field examples
+## Grid field examples for the main figure
 class GridExamplesPlotter(FigurePlotter):
     exampleGridFName = "/grids_examples_{0}pA_{1}.pdf"
     exampleACFName = "/grids_examples_acorr_{0}pA_{1}.pdf"
@@ -114,9 +147,115 @@ class GridExamplesPlotter(FigurePlotter):
                 plt.close()
     
 
+###############################################################################
+## Grid field examples - plotted on the sheet
+class GridExampleRectPlotter(FigurePlotter):
+    cmap = 'jet'
+
+    def __init__(self, *args, **kwargs):
+        super(GridExampleRectPlotter, self).__init__(*args, **kwargs)
+
+    def drawSweep(self, ax, data, spaceRect):
+        sweeps.plotGridTrial(
+                data,
+                None,
+                None,
+                None,
+                trialNumList=None,
+                r=None, c=None,
+                ax=ax,
+                cbar=True,
+                cbar_kw=self.myc['cbar_kw'],
+                cmap=self.cmap,
+                vmin=self.myc['vmin'], vmax=self.myc['vmax'],
+                ignoreNaNs=True,
+                sliceAnn=None,
+                sigmaTitle=False)
+
+        _, X, Y = data.getData()
+        examples.drawEIRectSelection(ax, spaceRect, X, Y)
+
+    def drawA4RectExamples(self, ns_idx, exRect, exIdx, letter=''):
+        ps = self.env.ps
+        dataSpace = ps.grids[ns_idx]
+        noise_sigma = ps.noise_sigmas[ns_idx]
+        iter_list = self.config['iter_list']
+        example_idx = self.config['grids']['example_idx']
+
+        fig = plt.figure(figsize=(8.27, 11.69))
+        margin    = 0.05
+        sw_width  = 0.25
+        sw_left   = margin
+        sw_bottom = 0.85
+        sw_right  = sw_left + sw_width
+        sw_top    = 0.96
+        div       = 0.05
+
+        letter_left = 0.02
+        letter_top_off = 0.01
+        letter_va='bottom'
+        letter_ha='left'
+
+        nsX = 0.9
+        nsY = sw_top
+
+        sweepsRect = sw_left, sw_bottom, sw_right-sw_left, sw_top-sw_bottom
+        ax_sweeps = fig.add_axes(sweepsRect)
+        data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                  ignoreNaNs=True, normalizeTicks=True,
+                                  r=example_idx[ns_idx][0],
+                                  c=example_idx[ns_idx][1])
+        self.drawSweep(ax_sweeps, data, exRect)
+        fig.text(letter_left, sw_top+letter_top_off, letter, va=letter_va,
+                 ha=letter_ha, fontsize=19, fontweight='bold')
+
+        gsCoords = 0.06, 0.05, 0.97, sw_bottom-div
+        #gsCoords = margin, 0.46, 0.5, sw_bottom-div
+        gs = examples.drawGridExamples(dataSpace, exRect, iter_list,
+                                       gsCoords=gsCoords, exIdx=exIdx, fig=fig,
+                                       maxRate=False)
+        #fig.text(letter_left, sw_bottom-div+letter_top_off, "B", va=letter_va,
+        #        ha=letter_ha, fontsize=19, fontweight='bold')
+        noise_sigma_txt = "$\sigma_{{noise}}$ = {0} pA".format(int(noise_sigma))
+        fig.text(nsX, nsY, noise_sigma_txt, va='center', ha='right', fontsize=19)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+        YXRC = [(1, 22), (1, 22), (1, 22)] # (row, col)
+
+        exWidth = 15
+        exHeight = 15
+
+        exampleRC = [
+                [[0, 0], [15, 0], [0, 15], [15, 15]],
+                [[0, 0], [15, 0], [0, 15], [15, 15]],
+                [[0, 0], [15, 0], [0, 15], [15, 15]],
+        ]
+
+        fname = self.config['output_dir'] + "/suppFigure_grid_examples.pdf"
+        outputPDF = PdfPages(fname)
+        strIdx = 0
+        for noise_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            for exampleIdx, RC in enumerate(exampleRC[noise_idx]):
+                print(noise_idx, exampleIdx, RC)
+
+                exLeft   = RC[0]
+                exBottom = RC[1]
+                exRect = [exLeft, exBottom, exLeft+exWidth-1,
+                          exBottom + exHeight - 1]
+                self.drawA4RectExamples(noise_idx, exRect, YXRC[noise_idx],
+                                        letter=string.ascii_uppercase[strIdx])
+                
+                outputPDF.savefig(dpi=300, transparent=False)
+                plt.close()
+                strIdx += 1
+
+        outputPDF.close()
+
+
 ##############################################################################
 # Membrane potential examples
-
 def openJob(rootDir, noise_sigma):
     fileTemplate = "noise_sigma{0}_output.h5"
     fileName = rootDir + '/' + fileTemplate.format(int(noise_sigma))

@@ -115,8 +115,10 @@ class SweepPlotter(FigurePlotter):
         l, b, w, h = self.config['sweeps']['bbox']
         if color_bar_pos == 'right':
             left = l
-        else:
+        elif color_bar_pos == 'left':
             left = .12
+        else:
+            left = .2
     
         right = left + w
         top = b + h
@@ -154,7 +156,7 @@ class ProbabilityPlotter(FigurePlotter):
                 normed=True)
 
         globalAxesSettings(ax)
-        ax.pcolormesh(xedges, yedges, H.T, rasterized=True)
+        ax.pcolormesh(xedges, yedges, H.T, vmin=0, rasterized=True)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         if noise_sigma is not None:

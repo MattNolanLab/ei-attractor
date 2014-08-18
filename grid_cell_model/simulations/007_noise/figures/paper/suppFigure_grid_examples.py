@@ -8,13 +8,12 @@ from noisefigs.env import NoiseEnvironment
 import config
 
 parser = flagparse.FlagParser()
-parser.add_flag('--raster-examples')
+parser.add_flag('--grids_examples')
 args = parser.parse_args()
 
 env = NoiseEnvironment(user_config=config.get_config())
 
-if args.raster_examples or args.all:
-    env.register_plotter(noisefigs.plotters.RasterExamplePlotter)
-
+if args.grids_examples or args.all:
+    env.register_plotter(noisefigs.plotters.GridExampleRectPlotter)
 
 env.plot()

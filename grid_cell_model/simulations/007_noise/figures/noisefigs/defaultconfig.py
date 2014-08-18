@@ -53,6 +53,12 @@ _default_config.merge({
         'fig_size': (3.7, 2.6),         # inches
         'bbox': (0.08, 0.2, .72, .65),  # l, b, w, h
         'transparent': True,
+        'grid_contours': [.5],
+        'contours_kwargs': {
+            'hold': True,
+            'colors': 'k',
+            'linewidths': [1.5]
+        },
     },
 
     'grids': {
@@ -123,6 +129,8 @@ GridSweepsPlotter_config = {
             color='black'
         )
     ],
+
+    'plot_contours': [0, 0, 0],
 }
 _default_config['GridSweepsPlotter'] = GridSweepsPlotter_config
 
@@ -133,6 +141,22 @@ GridExamplesPlotter_config = {
     'transparent': True,
 }
 _default_config['GridExamplesPlotter'] = GridExamplesPlotter_config
+
+##############################################################################
+
+GridExampleRectPlotter_config = {
+    'cbar_kw': {
+        'label': 'Gridness score',
+        'location': 'right',
+        'shrink': 0.8,
+        'pad': -0.05,
+        'ticks': ti.MultipleLocator(0.5),
+        'rasterized': True
+    },
+    'vmin': -0.505,
+    'vmax': 1.141,
+}
+_default_config['GridExampleRectPlotter'] = GridExampleRectPlotter_config
 
 ##############################################################################
 
@@ -166,7 +190,7 @@ _default_config['ConnectionFunctionPlotter'] = ConnectionFunctionPlotter_config
 ##############################################################################
 
 GammaSweepsPlotter_config = {
-    'scale_factor': .8,
+    'scale_factor': .9,
     'AC_cbar_kw': dict(
         location   = 'left',
         ticks      = ti.MultipleLocator(0.3),
@@ -205,7 +229,7 @@ GammaSweepsPlotter_config = {
         dict(
             txt='a',
             rc=None,
-            xytext_offset=(1.5, 1),
+            xytext_offset=(-.5, 2.),
             color='white',
         ),
     ],
@@ -213,6 +237,8 @@ GammaSweepsPlotter_config = {
     'cbar_kw' : {
         'location': 'left',
     },
+
+    'plot_grid_contours': [0, 1, 0],
 }
 _default_config['GammaSweepsPlotter'] = GammaSweepsPlotter_config
 tmp = GammaSweepsPlotter_config
@@ -241,9 +267,48 @@ GammaExamplePlotter_config = {
 
     'xscale_kw': dict(
         scaleLen=50,
-        x=0.75, y=-0.1,
+        x=0.75, y=-0.07,
         size='x-small'
     ),
+
+    'yscale_kw': [[
+        dict(
+            scaleLen=5,
+            unitsText='nA',
+            x=.5, y=.1,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.5, y=.05,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.5, y=.05,
+            size='x-small'
+        )],
+
+        [dict(
+            scaleLen=5,
+            unitsText='nA',
+            x=.5, y=.1,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.5, y=.05,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.55, y=0,
+            size='x-small'
+        )]],
 }
 _default_config['GammaExamplePlotter'] = GammaExamplePlotter_config
 
@@ -426,13 +491,16 @@ _default_config['BumpDiffResetPlotter'] = BumpDiffResetPlotter_config
 
 MaxPopulationFRSweepsPlotter_config = {
     'cbar_kw': dict(
-        label       = "max(E rate) (Hz)",
+        label       = "$E-rate_{max}$ (Hz)",
         location    = 'left',
         shrink      = 0.8,
         pad         = 0.25,
         ticks       = ti.MultipleLocator(100),
         rasterized  = True
-    )
+    ),
+
+    'plot_grid_contours': [1, 1, 1],
+    'grid_contours': [.1],
 }
 _default_config['MaxPopulationFRSweepsPlotter'] = MaxPopulationFRSweepsPlotter_config
 
@@ -497,11 +565,14 @@ _default_config['MaxMeanThetaFRSweepPlotter'] = MaxMeanThetaFRSweepPlotter_confi
 ##############################################################################
 
 PSeizureSweepPlotter_config = {
-    'FRThreshold': 300
+    'FRThreshold': 300,
+
+    'plot_grid_contours': [1, 1, 1],
+    'grid_contours': [.1],
 }
 PSeizureSweepPlotter_config.update({
     'cbar_kw': dict(
-        label       = "P[max(rate during $\\theta$) > {0}]".format(
+        label       = "P($E-rate_{{max}}$ > {0})".format(
                         PSeizureSweepPlotter_config['FRThreshold']),
         location    = 'left',
         shrink      = 0.8,
@@ -511,6 +582,65 @@ PSeizureSweepPlotter_config.update({
     )
 })
 _default_config['PSeizureSweepPlotter'] = PSeizureSweepPlotter_config
+
+##############################################################################
+
+MaxFRGridsProbabilityPlotter_config = {
+    'fig_size': (2.7, 2.7),         # inches
+    'scale_factor': .85,
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+}
+_default_config['MaxFRGridsProbabilityPlotter'] = MaxFRGridsProbabilityPlotter_config
+
+##############################################################################
+
+PSeizureGridsProbabilityPlotter_config = {
+    'FRThreshold': 300,
+    'fig_size': (2.7, 2.7),         # inches
+    'scale_factor': .85,
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+}
+_default_config['PSeizureGridsProbabilityPlotter'] = PSeizureGridsProbabilityPlotter_config
+
+##############################################################################
+
+PSeizureGridsScatterAllPlotter_config = {
+    'FRThreshold': 300,
+    'fig_size': (2.5, 2.2),         # inches
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+    'tight_layout_kwargs': {
+        'pad': .2,
+    },
+
+    'legend_kwargs': dict(
+        loc=(0.5, 0.6),
+        fontsize='small',
+        frameon=False,
+        numpoints=1,
+        title='$\sigma$ (pA)'
+    ),
+}
+_default_config['PSeizureGridsScatterAllPlotter'] = PSeizureGridsScatterAllPlotter_config
+
+##############################################################################
+
+MaxFRGridsScatterAllPlotter_config = {
+    'fig_size': (2.5, 2.2),         # inches
+    'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+    'tight_layout_kwargs': {
+        'pad': .2,
+    },
+
+    'plot_legend' : False,
+    'legend_kwargs': dict(
+        loc=(0.6, 0.5),
+        fontsize='small',
+        frameon=False,
+        numpoints=1,
+        title='$\sigma$ (pA)'
+    ),
+}
+_default_config['MaxFRGridsScatterAllPlotter'] = MaxFRGridsScatterAllPlotter_config
 
 ##############################################################################
 
@@ -598,5 +728,25 @@ ThetaSignalPlotter_config = {
     'color': (0, 0, 0, .3),
 }
 _default_config['ThetaSignalPlotter'] = ThetaSignalPlotter_config
+
+##############################################################################
+
+RasterExamplePlotter_config = {
+    'fig_size': (8.3, 8.3),
+    'FRThreshold': 300,
+    'sweep_rect' : (.1, .73, .4, .95),
+    'cbar_kw': dict(
+        label       = "Mean $E-rate_{max}^{\\theta}$ (Hz)",
+        location    = 'right',
+        shrink      = 0.8,
+        pad         = -.02,
+        ticks       = ti.MultipleLocator(250),
+        rasterized  = True
+    ),
+    'ylabelPos': -0.1,
+    'markersize': 1.5,
+    'plot_ann_txt' : True,
+}
+_default_config['RasterExamplePlotter'] = RasterExamplePlotter_config
 
 ##############################################################################

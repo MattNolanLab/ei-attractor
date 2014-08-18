@@ -216,13 +216,15 @@ class AggregateData(object):
     analysisRoot = ['analysis']
 
     def __init__(self, space, iterList, NTrials, ignoreNaNs=False,
-            normalizeTicks=False, collapseTrials=True):
+            normalizeTicks=False, collapseTrials=True, r=0, c=0):
         self.sp = space
         self.iterList = iterList
         self.NTrials = NTrials
         self.ignoreNaNs = ignoreNaNs
         self.normalizeTicks = normalizeTicks
         self.collapseTrials = collapseTrials
+        self.r = r
+        self.c = c
 
 
     @abstractmethod
@@ -248,10 +250,12 @@ class GridnessScore(AggregateData):
             path = self.analysisRoot + ['gridnessScore']
             self._gscore = self.sp.getReduction(path)
             self._Y, self._X = computeYX(self.sp, self.iterList,
-                                         normalize=self.normalizeTicks)
+                                         normalize=self.normalizeTicks,
+                                         r=self.r, c=self.c)
         return self._gscore, self._X, self._Y
 
     def getData(self):
+        #import pdb; pdb.set_trace()
         data, X, Y = self._getRawData()
         return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
 
@@ -681,7 +685,6 @@ class PopulationFR(AggregateData):
                         self._FR[r, c, trialNum, :] = \
                                 data if data is not None else np.nan
 
-            #import pdb; pdb.set_trace()
             self._Y, self._X = computeYX(self.sp, self.iterList,
                                          normalizeTicks=self.normalizeTicks)
 
@@ -700,6 +703,7 @@ class MaxPopulationFR(PopulationFR):
     def getData(self):
         FR, X, Y = self._getRawData()
         maxFR = np.nanmax(FR, axis=3)
+        maxFR[maxFR == 5000] = np.nan
         return (np.mean(maskNaNs(maxFR, self.ignoreNaNs), axis=2), self._X,
                 self._Y)
 

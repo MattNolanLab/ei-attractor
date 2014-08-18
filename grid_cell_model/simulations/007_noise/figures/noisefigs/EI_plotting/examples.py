@@ -1,23 +1,3 @@
-#
-#   examples.py
-#
-#   Plotting of E/I examples.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
@@ -32,7 +12,7 @@ from . import xlabelText, ylabelText
 from . import aggregate as aggr
 from grid_cell_model.plotting.global_defs import globalAxesSettings
 from grid_cell_model.plotting.grids       import plotGridRateMap, plotAutoCorrelation
-from grid_cell_model.plotting.low_level   import xScaleBar
+from grid_cell_model.plotting.low_level   import xScaleBar, yScaleBar
 from grid_cell_model.plotting.bumps       import plotBump
 from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 
@@ -317,6 +297,8 @@ def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
     monIList = data['stateMon_i']
     t, Isyn_i = extractSummedSignals(monIList, ['I_clamp_AMPA',
         'I_clamp_NMDA'], tStart, tEnd)
+    Isyn_e *= 1e-3
+    Isyn_i *= 1e-3
     plt.plot(t, Isyn_e, color='red')
     plt.plot(t, Isyn_i, color='blue')
     max = np.max(Isyn_e)
@@ -337,14 +319,15 @@ def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
                 size='x-small')
 
     # Scale bars
-    if (xscale_kw is not None):
+    if xscale_kw is not None:
         xscale_kw = dict(xscale_kw)
         xscale_kw.update(ax=ax)
         xScaleBar(**xscale_kw)
 
-
-
-
+    if yscale_kw is not None:
+        yscale_kw = dict(yscale_kw)
+        yscale_kw.update(ax=ax)
+        yScaleBar(**yscale_kw)
 
 
 ##############################################################################
