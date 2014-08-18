@@ -144,6 +144,22 @@ _default_config['GridExamplesPlotter'] = GridExamplesPlotter_config
 
 ##############################################################################
 
+GridExampleRectPlotter_config = {
+    'cbar_kw': {
+        'label': 'Gridness score',
+        'location': 'right',
+        'shrink': 0.8,
+        'pad': -0.05,
+        'ticks': ti.MultipleLocator(0.5),
+        'rasterized': True
+    },
+    'vmin': -0.505,
+    'vmax': 1.141,
+}
+_default_config['GridExampleRectPlotter'] = GridExampleRectPlotter_config
+
+##############################################################################
+
 GridsDiffSweep_config = {
     'cbar_kw': dict(
         label      = '$\Delta_{150 - 0}$(Gridness score)',
