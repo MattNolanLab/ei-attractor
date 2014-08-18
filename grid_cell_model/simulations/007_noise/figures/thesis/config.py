@@ -1,6 +1,8 @@
 '''Configuration file for the FENS2014 poster figures.'''
 from __future__ import absolute_import, print_function
 
+from noisefigs.plotters.base import SeparateMultipageSaver
+
 def get_config():
     return _config
 
@@ -74,6 +76,10 @@ _config = {
                 size='x-small'
             )]],
         },
+
+    'GridExampleRectPlotter': {
+        'fig_saver': SeparateMultipageSaver(None, 'pdf')
+    },
 
     'GammaScatterAllPlotter': {
         'fig_size': (5.25, 3.2),

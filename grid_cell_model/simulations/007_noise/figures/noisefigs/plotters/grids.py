@@ -6,7 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
-from matplotlib.backends.backend_pdf import PdfPages
 
 from grid_cell_model.parameters       import JobTrialSpace2D
 from grid_cell_model.data_storage     import DataStorage
@@ -213,12 +212,14 @@ class GridExampleRectPlotter(FigurePlotter):
         #gsCoords = margin, 0.46, 0.5, sw_bottom-div
         gs = examples.drawGridExamples(dataSpace, exRect, iter_list,
                                        gsCoords=gsCoords, exIdx=exIdx, fig=fig,
-                                       maxRate=True, rateStr='')
+                                       maxRate=True, rateStr='',
+                                       rasterized=True)
         gs.update(wspace=0.05)
         #fig.text(letter_left, sw_bottom-div+letter_top_off, "B", va=letter_va,
         #        ha=letter_ha, fontsize=19, fontweight='bold')
         noise_sigma_txt = "$\sigma_{{noise}}$ = {0} pA".format(int(noise_sigma))
         fig.text(nsX, nsY, noise_sigma_txt, va='center', ha='right', fontsize=19)
+        return fig
 
     def plot(self, *args, **kwargs):
         ps = self.env.ps
@@ -234,8 +235,12 @@ class GridExampleRectPlotter(FigurePlotter):
                 [[0, 0], [15, 0], [0, 15], [15, 15]],
         ]
 
-        fname = self.config['output_dir'] + "/suppFigure_grid_examples.pdf"
-        outputPDF = PdfPages(fname)
+        saver = self.myc['fig_saver']
+        saver.set_file_name(self.config['output_dir'] +
+                            "/suppFigure_grid_examples")
+        saver.ext = "pdf"
+        saver.set_backend_params(dpi=300, transparent=True)
+
         strIdx = 0
         for noise_idx, noise_sigma in enumerate(ps.noise_sigmas):
             for exampleIdx, RC in enumerate(exampleRC[noise_idx]):
@@ -245,15 +250,15 @@ class GridExampleRectPlotter(FigurePlotter):
                 exBottom = RC[1]
                 exRect = [exLeft, exBottom, exLeft+exWidth-1,
                           exBottom + exHeight - 1]
-                self.drawA4RectExamples(noise_idx, exRect, YXRC[noise_idx],
-                                        letter=string.ascii_uppercase[strIdx])
+                fig = self.drawA4RectExamples(
+                        noise_idx, exRect, YXRC[noise_idx],
+                        letter=string.ascii_uppercase[strIdx])
                 
-                outputPDF.savefig(dpi=300, transparent=False)
+                saver.savefig(fig)
                 plt.close()
                 strIdx += 1
 
-        outputPDF.close()
-
+        saver.close()
 
 ##############################################################################
 # Membrane potential examples

@@ -5,6 +5,8 @@ from copy import deepcopy
 import matplotlib.ticker as ti
 from configobj import ConfigObj
 
+from .plotters.base import PdfOutputSaver
+
 _default_config = ConfigObj()
 
 scale_factor = 1.
@@ -135,6 +137,7 @@ GridSweepsPlotter_config = {
 _default_config['GridSweepsPlotter'] = GridSweepsPlotter_config
 
 ##############################################################################
+
 GridExamplesPlotter_config = {
     'fig_size': (1, 1.2),
     'ax_box': (0.01, 0.01, 0.99, 0.85),  # l, b, r, t
@@ -155,6 +158,8 @@ GridExampleRectPlotter_config = {
     },
     'vmin': -0.505,
     'vmax': 1.141,
+
+    'fig_saver': PdfOutputSaver(None, 'pdf')
 }
 _default_config['GridExampleRectPlotter'] = GridExampleRectPlotter_config
 
