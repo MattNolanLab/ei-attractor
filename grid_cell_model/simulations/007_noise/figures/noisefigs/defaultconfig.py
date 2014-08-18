@@ -144,6 +144,22 @@ _default_config['GridExamplesPlotter'] = GridExamplesPlotter_config
 
 ##############################################################################
 
+GridExampleRectPlotter_config = {
+    'cbar_kw': {
+        'label': 'Gridness score',
+        'location': 'right',
+        'shrink': 0.8,
+        'pad': -0.05,
+        'ticks': ti.MultipleLocator(0.5),
+        'rasterized': True
+    },
+    'vmin': -0.505,
+    'vmax': 1.141,
+}
+_default_config['GridExampleRectPlotter'] = GridExampleRectPlotter_config
+
+##############################################################################
+
 GridsDiffSweep_config = {
     'cbar_kw': dict(
         label      = '$\Delta_{150 - 0}$(Gridness score)',
@@ -251,9 +267,48 @@ GammaExamplePlotter_config = {
 
     'xscale_kw': dict(
         scaleLen=50,
-        x=0.75, y=-0.1,
+        x=0.75, y=-0.07,
         size='x-small'
     ),
+
+    'yscale_kw': [[
+        dict(
+            scaleLen=5,
+            unitsText='nA',
+            x=.5, y=.1,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.5, y=.05,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.5, y=.05,
+            size='x-small'
+        )],
+
+        [dict(
+            scaleLen=5,
+            unitsText='nA',
+            x=.5, y=.1,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.5, y=.05,
+            size='x-small'
+        ),
+        dict(
+            scaleLen=0.5,
+            unitsText='nA',
+            x=.55, y=0,
+            size='x-small'
+        )]],
 }
 _default_config['GammaExamplePlotter'] = GammaExamplePlotter_config
 
@@ -673,5 +728,25 @@ ThetaSignalPlotter_config = {
     'color': (0, 0, 0, .3),
 }
 _default_config['ThetaSignalPlotter'] = ThetaSignalPlotter_config
+
+##############################################################################
+
+RasterExamplePlotter_config = {
+    'fig_size': (8.3, 8.3),
+    'FRThreshold': 300,
+    'sweep_rect' : (.1, .73, .4, .95),
+    'cbar_kw': dict(
+        label       = "Mean $E-rate_{max}^{\\theta}$ (Hz)",
+        location    = 'right',
+        shrink      = 0.8,
+        pad         = -.02,
+        ticks       = ti.MultipleLocator(250),
+        rasterized  = True
+    ),
+    'ylabelPos': -0.1,
+    'markersize': 1.5,
+    'plot_ann_txt' : True,
+}
+_default_config['RasterExamplePlotter'] = RasterExamplePlotter_config
 
 ##############################################################################

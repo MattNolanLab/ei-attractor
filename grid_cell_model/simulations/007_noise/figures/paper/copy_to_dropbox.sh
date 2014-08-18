@@ -23,6 +23,7 @@ files="
     $output_fig_dir/suppFigure_gamma_probabilities.pdf
     $panels_dir/raster_examples*.pdf
     $panels_dir/gamma_scatter_gamma_pbumps_all.pdf
+    $panels_dir/suppFigure_grid_examples.pdf
     "
 
 echo $files

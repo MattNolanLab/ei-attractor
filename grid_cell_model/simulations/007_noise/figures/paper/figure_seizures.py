@@ -8,6 +8,7 @@ from noisefigs.env import NoiseEnvironment
 import config
 
 parser = flagparse.FlagParser()
+parser.add_flag('--theta_signal')
 parser.add_flag('--rastersFlag')
 parser.add_flag('--rates')
 parser.add_flag('--maxFRSweeps')
@@ -18,6 +19,9 @@ parser.add_flag('--PSeizureGridsScatter')
 args = parser.parse_args()
 
 env = NoiseEnvironment(user_config=config.get_config())
+
+if args.theta_signal or args.all:
+    env.register_plotter(noisefigs.plotters.ThetaSignalPlotter)
 
 if args.rastersFlag or args.all:
     env.register_plotter(noisefigs.plotters.EIRasterPlotter)

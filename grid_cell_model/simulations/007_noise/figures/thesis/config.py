@@ -35,7 +35,45 @@ _config = {
 
     'GammaExamplePlotter': {
         'scale_factor': .75,
-    },
+        'yscale_kw': [[
+            dict(
+                scaleLen=5,
+                unitsText='nA',
+                x=.3, y=0,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.55, y=0,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.55, y=-.1,
+                size='x-small'
+            )],
+
+            [dict(
+                scaleLen=5,
+                unitsText='nA',
+                x=.3, y=0,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.55, y=0,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.55, y=-.1,
+                size='x-small'
+            )]],
+        },
 
     'GammaScatterAllPlotter': {
         'fig_size': (5.25, 3.2),
@@ -121,4 +159,39 @@ _config = {
             'pad': -.15,
         },
     },
+
+    'PSeizureGridsScatterAllPlotter': {
+        'fig_size': (2.5, 3),         # inches
+        'scale_factor': .75,
+        'bbox_rect': (0.35, 0.22, 0.92, 0.9),
+        'legend_kwargs': dict(
+            loc=(0.3, 0.6),
+        ),
+    },
+
+    'MaxFRGridsScatterAllPlotter': {
+        'fig_size': (2.5, 3),         # inches
+        'scale_factor': .75,
+        'bbox_rect': (0.35, 0.22, 0.92, 0.9),
+    },
+
+    'PSeizureSweepPlotter': {
+        'fig_size': (2.6, 3.7),  # inches
+        'cbar_kw': {
+            'location': 'top',
+            'pad': .1,
+            'labelpad': 3,
+        },
+        'scale_factor': .75,
+    },
+
+    'RasterExamplePlotter': {
+        'fig_size': (5.5, 8.3),
+        'sweep_rect' : (.1, .73, .5, .95),
+        'cbar_kw': dict(
+            pad         = .1,
+        ),
+        'plot_ann_txt' : False,
+    },
+##############################################################################
 }

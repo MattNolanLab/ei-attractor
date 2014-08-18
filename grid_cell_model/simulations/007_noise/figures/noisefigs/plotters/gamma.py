@@ -378,7 +378,8 @@ class GammaExamplePlotter(FigurePlotter):
                         trialNum=exampleTrialNum,
                         tStart = 2e3, tEnd=2.25e3,
                         noise_sigma=nsAnn, noise_sigma_xy=(0.95, 1),
-                        xscale_kw=xscale_kw)
+                        xscale_kw=xscale_kw,
+                        yscale_kw=self.myc['yscale_kw'][idx][nsIdx])
                 plt.savefig(fname, dpi=300, transparent=True)
                 plt.close()
 
