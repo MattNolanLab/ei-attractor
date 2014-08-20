@@ -33,6 +33,7 @@ if args.examples or args.all:
 
 if args.scatter_all or args.all:
     env.register_plotter(noisefigs.plotters.GammaScatterAllPlotter)
+    env.register_plotter(noisefigs.plotters.GammaFreqGridsScatterAllPlotter)
 
 if args.scatter_gamma_pbumps_all or args.all:
     env.register_plotter(noisefigs.plotters.GammaScatterPBumpsAllPlotter)

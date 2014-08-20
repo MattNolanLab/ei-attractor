@@ -19,6 +19,7 @@ __all__ = [
     'GammaDetailedNoisePlotter',
     'GammaExamplePlotter',
     'GammaScatterAllPlotter',
+    'GammaFreqGridsScatterAllPlotter',
     'ScatterGammaGridsSeparatePlotter',
     'GammaScatterPBumpsAllPlotter',
     'GammaPBumpsProbabilityPlotter',
@@ -176,11 +177,19 @@ class GammaSweepsPlotter(SweepPlotter):
     def __init__(self, *args, **kwargs):
         super(GammaSweepsPlotter, self).__init__(*args, **kwargs)
 
+    def get_fig(self):
+        if 'fig_size' in self.myc:
+            return self._get_final_fig(self.myc['fig_size'])
+        else:
+            return super(PSeizureSweepPlotter, self).get_fig()
+
     def plot(self, *args, **kwargs):
         sweepc = self._get_sweep_config()
         ps = self.env.ps
         ac_xticks = self.myc['AC_xticks']
+        ac_yticks = self.myc['AC_yticks']
         f_xticks = self.myc['F_xticks']
+        f_yticks = self.myc['F_yticks']
         iter_list = self.config['iter_list']
         grids_example_idx = self.config['grids']['example_idx']
 
@@ -191,12 +200,6 @@ class GammaSweepsPlotter(SweepPlotter):
                                           ignoreNaNs=True, normalizeTicks=True,
                                           r=grids_example_idx[ns_idx][0],
                                           c=grids_example_idx[ns_idx][1])
-            kw = dict(cbar=False)
-            if ns_idx == 0:
-                kw['cbar'] = True
-            if ns_idx != 0:
-                kw['ylabel'] = ''
-                kw['yticks'] = False
 
             # Gamma power
             fname = (self.config['output_dir'] +
@@ -210,12 +213,14 @@ class GammaSweepsPlotter(SweepPlotter):
                         ax=ax,
                         xlabel='' if ac_xticks[ns_idx] == False else None,
                         xticks=ac_xticks[ns_idx],
+                        ylabel='' if ac_yticks[ns_idx] == False else None,
+                        yticks=ac_yticks[ns_idx],
                         trialNumList=None,
                         sigmaTitle=self.myc['AC_sigma_title'],
+                        cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=self.myc['AC_cbar_kw'],
                         vmin=AC_vmin, vmax=AC_vmax,
-                        annotations=self.myc['ann'],
-                        **kw)
+                        annotations=self.myc['ann'])
                 if self.myc['plot_grid_contours'][ns_idx]:
                     contours = sweeps.Contours(gridData,
                             self.config['sweeps']['grid_contours'])
@@ -235,12 +240,14 @@ class GammaSweepsPlotter(SweepPlotter):
                         ax=ax,
                         xlabel='' if f_xticks[ns_idx] == False else None,
                         xticks=f_xticks[ns_idx],
+                        ylabel='' if f_yticks[ns_idx] == False else None,
+                        yticks=f_yticks[ns_idx],
                         trialNumList=xrange(NTrials),
                         sigmaTitle=self.myc['F_sigma_title'],
+                        cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=self.myc['F_cbar_kw'],
                         vmin=F_vmin, vmax=F_vmax,
-                        annotations=self.myc['annF'],
-                        **kw)
+                        annotations=self.myc['annF'])
                 if self.myc['plot_grid_contours'][ns_idx]:
                     contours = sweeps.Contours(gridData,
                             self.config['sweeps']['grid_contours'])
@@ -281,7 +288,7 @@ EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
 EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
 detailedNTrials = 5
 
-detailFigSize = (4.25, 1.8)
+detailFigSize = (4.6, 1.8)
 detailLeft   = 0.2
 detailBottom = 0.3
 detailRight  = 0.98
@@ -312,9 +319,8 @@ class GammaDetailedNoisePlotter(FigurePlotter):
         ax.yaxis.set_major_locator(ti.MultipleLocator(0.6))
         ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
         ax.set_ylim(prepareLims((0, 0.6), margin=0.03))
-        leg = ['a', 'b']
-        l = ax.legend([p31, p13], leg, loc=(0.85, 0.7), fontsize='small', frameon=False,
-                numpoints=1, handletextpad=0.05)
+        leg = self.myc['legend']
+        l = ax.legend([p31, p13], leg, **self.myc['legend_kwargs'])
         plt.setp(l.get_title(), fontsize='small')
 
 
@@ -394,64 +400,48 @@ class ScatterGammaGridsSeparatePlotter(FigurePlotter):
         ps = self.env.ps
         iter_list = self.config['iter_list']
         output_dir = self.config['output_dir']
-
-        NTrialsGamma = 5
-        NTrialsGrids = 3
-        typesGamma = ['gamma', 'acVal']
-        typesGrids = ['grids', 'gridnessScore']
-
-        scatterFigSize = (3.8, 3.2)
-        scatterLeft   = 0.2
-        scatterBottom = 0.32
-        scatterRight  = 0.98
-        scatterTop    = 0.87
-        scatterColorFigSize = (0.75, 0.75)
-        
         ignoreNaNs = True
 
+        xlabel = '$1^{st}$ autocorrelation peak'
+        ylabel = 'Gridness score'
+
+        fig = self._get_final_fig(self.myc['fig_size'])
+
+        gammaData = []
+        gridData = []
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-            fig = self._get_final_fig(scatterFigSize)
-            ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
-                scatterTop))
+            gammaData.append(aggr.GammaAggregateData('acVal',
+                                                     ps.bumpGamma[ns_idx],
+                                                     iter_list,
+                                                     normalizeTicks=False,
+                                                     collapseTrials=True))
+            gridData.append(aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                               ignoreNaNs=True,
+                                               normalizeTicks=False))
 
-            if (ns_idx != 0):
-                ylabel = ''
-            else:
-                ylabel = 'Gridness score'
-            if (ns_idx == 1):
-                xlabel = '$1^{st}$ autocorrelation peak'
-            else:
-                xlabel = ''
+        scatterPlot = scatter.FullScatterPlot(
+                gammaData, gridData, None, None, iter_list, None, None,
+                s=8,
+                linewidth=0.3,
+                color2D=True,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                sigmaTitle=True,
+                noise_sigmas=ps.noise_sigmas,
+                ignoreNaNs=ignoreNaNs,
+                captionLetters=('A', 'B', 'C'),
+                fig=fig)
+        scatterPlot.plot(captionLeft=-0.1, plotcolorbar=False)
+        l = 0.8
+        w = 0.165
+        scatterPlot.plotColorbar(left=l, bottom=.87, right=l+w, top=.97)
+        scatterPlot.set_titleSizes(16) 
+        #ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
+        #ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+        #ax.set_ylim(prepareLims((-0.5, 1.2), margin=0.02))
 
-            scatterPlot = scatter.ScatterPlot(
-                    ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
-                    typesGrids, iter_list, NTrialsGamma, NTrialsGrids,
-                    s=15,
-                    linewidth=0.3,
-                    color2D=True,
-                    xlabel=xlabel,
-                    ylabel=ylabel,
-                    sigmaTitle=True,
-                    noise_sigma=noise_sigma,
-                    ignoreNaNs=ignoreNaNs)
-            scatterPlot.plot()
-            ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
-            ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-            ax.set_ylim(prepareLims((-0.5, 1.2), margin=0.02))
-
-
-            fname = output_dir + "/gamma_scatter_gamma_grids{0}.pdf"
-            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
-                        transparent=True)
-
-        fig = self._get_final_fig(scatterColorFigSize)
-        ax = fig.gca()
-        scatterPlot.plotColorbar(ax)
-        fig.tight_layout(pad=0)
-        fname = output_dir + "/gamma_scatter_gamma_grids_colorbar.pdf"
+        fname = output_dir + "/suppFigure_gamma.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
-
-
 
 
 ##############################################################################
@@ -465,9 +455,10 @@ class GammaScatterAllPlotter(FigurePlotter):
         ps = self.env.ps
         myc = self._get_class_config()
         legend_kwargs = myc['legend_kwargs']
+        l, b, r, t = self.myc['bbox_rect']
 
         self.fig = self._get_final_fig(myc['fig_size'])
-        self.ax = self.fig.gca()
+        self.ax = self.fig.add_axes(Bbox.from_extents(l, b, r, t))
 
         NTrialsGamma = 5
         NTrialsGrids = 3
@@ -483,21 +474,73 @@ class GammaScatterAllPlotter(FigurePlotter):
                     ps.bumpGamma[ns_idx], ps.grids[ns_idx], typesGamma,
                     typesGrids, self.config['iter_list'], NTrialsGamma, NTrialsGrids,
                     c=color,
-                    s=15*self.config['scale_factor'],
+                    s=self.myc['dot_size']*self.config['scale_factor'],
                     linewidth=0.3,
                     xlabel='$1^{st}$ autocorrelation peak',
-                    ylabel='Gridness score',
+                    ylabel=self.myc['ylabel'],
                     zorder=scatterOrders[ns_idx])
             scatterPlot.plot()
         self.ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
         self.ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-        leg = ['0', '150', '300']
-        l = self.ax.legend(leg, **legend_kwargs)
-        plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
-        self.fig.tight_layout(**myc['tight_layout_kwargs'])
+        #leg = ['0', '150', '300']
+        #l = self.ax.legend(leg, **legend_kwargs)
+        #plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
+        #self.fig.tight_layout(**myc['tight_layout_kwargs'])
 
     def save(self, *args, **kwargs):
         fname = self.config['output_dir'] + "/gamma_scatter_gamma_grids_all.pdf"
+        self.fig.savefig(fname, dpi=300, transparent=True)
+
+
+##############################################################################
+# Scatter plot of gridness score vs. gamma frequency
+# All in one plot
+class GammaFreqGridsScatterAllPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(GammaFreqGridsScatterAllPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        legend_kwargs = myc['legend_kwargs']
+        iter_list = self.config['iter_list']
+        l, b, r, t = self.myc['bbox_rect']
+
+        self.fig = self._get_final_fig(myc['fig_size'])
+        self.ax = self.fig.add_axes(Bbox.from_extents(l, b, r, t))
+
+        scatterColors = ['green', 'red', 'blue']
+        scatterOrders = [2, 3, 1]
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            gammaFData = aggr.GammaAggregateData('freq', ps.bumpGamma[ns_idx],
+                                                 iter_list,
+                                                 normalizeTicks=False,
+                                                 collapseTrials=True)
+            gridnessData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                              normalizeTicks=False,
+                                              collapseTrials=True)
+
+            color = scatterColors[ns_idx]
+            scatterPlot = scatter.ScatterPlot(
+                    gammaFData, gridnessData,
+                    None, None, None, None, None,
+                    c=color,
+                    s=self.myc['dot_size']*self.config['scale_factor'],
+                    linewidth=0.3,
+                    xlabel='Oscillation frequency (Hz)',
+                    ylabel=self.myc['ylabel'],
+                    yticks=self.myc['yticks'],
+                    zorder=scatterOrders[ns_idx])
+            scatterPlot.plot()
+        self.ax.xaxis.set_major_locator(ti.MultipleLocator(20))
+        self.ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+        leg = ['0', '150', '300']
+        l = self.ax.legend(leg, **legend_kwargs)
+        plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
+
+    def save(self, *args, **kwargs):
+        fname = self.config['output_dir'] + "/gamma_scatter_gammaF_grids_all.pdf"
         self.fig.savefig(fname, dpi=300, transparent=True)
 
 
@@ -512,7 +555,7 @@ class GammaGridsProbabilityPlotter(ProbabilityPlotter):
         myc = self._get_class_config()
         iter_list = self.config['iter_list']
         l, b, r, t = myc['bbox_rect']
-        drange = [[-.5, 1.2], [-.2, .8]]
+        drange = [[-.2, .8], [-.5, 1.2]]
 
         gamma_all = np.empty(0)
         gridness_all = np.empty(0)
@@ -540,13 +583,16 @@ class GammaGridsProbabilityPlotter(ProbabilityPlotter):
             # Gamma power vs. gridness score
             fig = self._get_final_fig(myc['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
-            self.plotDistribution(gridnessData, gammaData, ax,
+            self.plotDistribution(gammaData, gridnessData, ax,
                                   noise_sigma=noise_sigma,
                                   range=drange,
-                                  xlabel='Gridness score',
-                                  ylabel='', yticks=False)
+                                  xlabel='$Power_\gamma$',
+                                  ylabel='', yticks=False,
+                                  title_size=self.myc['title_size'])
             ax.axis('tight')
             ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+            if 'strip_axis' in self.myc and self.myc['strip_axis']:
+                ax.axis('off')
             fname = self.config['output_dir'] + "/gamma_gridness_probability_{0}.pdf"
             fig.savefig(fname.format(int(noise_sigma)), dpi=300,
                              transparent=True)
@@ -559,11 +605,15 @@ class GammaGridsProbabilityPlotter(ProbabilityPlotter):
         # All together
         fig = self._get_final_fig(myc['fig_size'])
         ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
-        self.plotDistribution(gridness_all, gamma_all, ax,
-                xlabel='Gridness score',
-                range=drange)
+        self.plotDistribution(gamma_all, gridness_all, ax,
+                xlabel='$Power_\gamma$',
+                ylabel='Gridness score',
+                range=drange,
+                title_size=self.myc['title_size'])
         ax.axis('tight')
         ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+        if 'strip_axis' in self.myc and self.myc['strip_axis']:
+            ax.axis('off')
         fname = self.config['output_dir'] + "/gamma_gridness_probability_all.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
         plt.close(fig)
@@ -582,7 +632,7 @@ class GammaFreqGridsProbabilityPlotter(ProbabilityPlotter):
         myc = self._get_class_config()
         iter_list = self.config['iter_list']
         l, b, r, t = myc['bbox_rect']
-        drange = [[-.5, 1.2], [0, 140]]
+        drange = [[20, 160], [-.5, 1.2]]
 
         gammaF_all = np.empty(0)
         gridness_all = np.empty(0)
@@ -610,13 +660,16 @@ class GammaFreqGridsProbabilityPlotter(ProbabilityPlotter):
             # Gamma frequency vs. gridness score
             fig = self._get_final_fig(myc['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
-            self.plotDistribution(gridnessData, gammaFData, ax,
+            self.plotDistribution(gammaFData, gridnessData, ax,
                                   noise_sigma=noise_sigma,
                                   range=drange,
                                   xlabel='Gridness score',
-                                  ylabel='', yticks=False)
+                                  ylabel='', yticks=False,
+                                  title_size=self.myc['title_size'])
             ax.axis('tight')
             ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+            if 'strip_axis' in self.myc and self.myc['strip_axis']:
+                ax.axis('off')
             fname = self.config['output_dir'] + "/gammaFreq_gridness_probability_{0}.pdf"
             fig.savefig(fname.format(int(noise_sigma)), dpi=300,
                              transparent=True)
@@ -628,12 +681,15 @@ class GammaFreqGridsProbabilityPlotter(ProbabilityPlotter):
         # All together
         fig = self._get_final_fig(myc['fig_size'])
         ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
-        self.plotDistribution(gridness_all, gammaF_all, ax,
+        self.plotDistribution(gammaF_all, gridness_all, ax,
                 xlabel='Gridness score',
                 ylabel='Oscillation frequency (Hz)',
-                range=drange)
+                range=drange,
+                title_size=self.myc['title_size'])
         ax.axis('tight')
         ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+        if 'strip_axis' in self.myc and self.myc['strip_axis']:
+            ax.axis('off')
         fname = self.config['output_dir'] + "/gammaFreq_gridness_probability_all.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
         plt.close(fig)

@@ -179,6 +179,48 @@ _default_config['GridsDiffSweep'] = GridsDiffSweep_config
 
 ##############################################################################
 
+GridDetailedNoisePlotter_config = {
+    'legend':  ['a',  'b'],
+    'legend_kwargs': dict(
+        loc=(0.8, 1),
+        fontsize='small',
+        frameon=False,
+        numpoints=1,
+        handletextpad=0.05,
+    )
+}
+_default_config['GridDetailedNoisePlotter'] = GridDetailedNoisePlotter_config
+
+##############################################################################
+
+GridDetailedNoisePlotter_config = {
+    'legend':  ['a',  'b'],
+    'legend_kwargs': dict(
+        loc=(0.8, 1),
+        fontsize='small',
+        frameon=False,
+        numpoints=1,
+        handletextpad=0.05,
+    )
+}
+_default_config['GridDetailedNoisePlotter'] = GridDetailedNoisePlotter_config
+
+##############################################################################
+
+GammaDetailedNoisePlotter_config = {
+    'legend':  ['a',  'b'],
+    'legend_kwargs': dict(
+        loc=(0.85, 0.7),
+        fontsize='small',
+        frameon=False,
+        numpoints=1,
+        handletextpad=0.05,
+    )
+}
+_default_config['GammaDetailedNoisePlotter'] = GammaDetailedNoisePlotter_config
+
+##############################################################################
+
 VmExamplesPlotter_config = {
     'fig_size': (2.5, 1.25),
     'ax_rect': (0.01, 0.01, 0.999, 0.6),  # l, b, r, t
@@ -196,6 +238,7 @@ _default_config['ConnectionFunctionPlotter'] = ConnectionFunctionPlotter_config
 
 GammaSweepsPlotter_config = {
     'scale_factor': .9,
+    'cbar': [1, 0, 0],
     'AC_cbar_kw': dict(
         location   = 'left',
         ticks      = ti.MultipleLocator(0.3),
@@ -207,6 +250,7 @@ GammaSweepsPlotter_config = {
         rasterized = True,
     ),
     'AC_xticks': [False]*3,
+    'AC_yticks': [1, 0, 0],
     'AC_sigma_title': True,
 
     'F_cbar_kw': dict(
@@ -222,6 +266,7 @@ GammaSweepsPlotter_config = {
         rasterized = True
     ),
     'F_xticks': [True]*3,
+    'F_yticks': [1, 0, 0],
     'F_sigma_title': False,
 
     'ann': [
@@ -320,7 +365,8 @@ _default_config['GammaExamplePlotter'] = GammaExamplePlotter_config
 ##############################################################################
 
 GammaScatterAllPlotter_config = {
-    'fig_size': (5., 3.2),
+    'fig_size': (4.2, 2),
+    'dot_size': 6,
     'legend_kwargs': dict(
         loc=(0.9, 0.4),
         fontsize='small',
@@ -328,11 +374,28 @@ GammaScatterAllPlotter_config = {
         numpoints=1,
         title='$\sigma$ (pA)'
     ),
-    'tight_layout_kwargs': {
-        'pad': 3.,
-    },
+    'bbox_rect': (.1, .35, .95, .85),
+    'ylabel': '',
 }
 _default_config['GammaScatterAllPlotter'] = GammaScatterAllPlotter_config
+
+##############################################################################
+
+GammaFreqGridsScatterAllPlotter_config = {
+    'fig_size': (4.2, 2),
+    'dot_size': 6,
+    'legend_kwargs': dict(
+        loc=(0.8, 0.4),
+        fontsize='small',
+        frameon=False,
+        numpoints=1,
+        title='$\sigma$ (pA)'
+    ),
+    'bbox_rect': (.1, .35, .95, .85),
+    'ylabel': '',
+    'yticks': True,
+}
+_default_config['GammaFreqGridsScatterAllPlotter'] = GammaFreqGridsScatterAllPlotter_config
 
 ##############################################################################
 
@@ -373,6 +436,7 @@ _default_config['GammaFreqPBumpsProbabilityPlotter'] = GammaFreqPBumpsProbabilit
 GammaGridsProbabilityPlotter_config = {
     'fig_size': (2.7, 2.7),         # inches
     'bbox_rect': (0.25, 0.2, 0.95, 0.9),
+    'title_size': 'medium',
 }
 _default_config['GammaGridsProbabilityPlotter'] = GammaGridsProbabilityPlotter_config
 
@@ -754,5 +818,13 @@ RasterExamplePlotter_config = {
     'theta_color': (0, 0, 0, .3),
 }
 _default_config['RasterExamplePlotter'] = RasterExamplePlotter_config
+
+##############################################################################
+
+ScatterGammaGridsSeparatePlotter_config = {
+    'fig_size': (8.27, 11.69),
+    #'bbox_rect': (0.12, 0.17, 0.98, 0.92),
+}
+_default_config['ScatterGammaGridsSeparatePlotter'] = ScatterGammaGridsSeparatePlotter_config
 
 ##############################################################################

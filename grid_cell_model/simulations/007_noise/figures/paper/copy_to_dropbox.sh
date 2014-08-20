@@ -26,12 +26,27 @@ files="
     $panels_dir/suppFigure_grid_examples.pdf
     "
 
+local_files="
+    $panels_dir/suppFigure_gamma.pdf
+"
+
+# Copy to dropbox
+echo "Copying to dropbox..."
 echo $files
 echo
 ls $dst_dir
 for f in $files
 do
-    cp -r $f $dst_dir
+    cp -rv $f $dst_dir
 done
 
 cp -r panels $dst_dir/
+echo "Done"
+
+# Copy local files to output_figures
+echo "Copying from panels to output_figures"
+for f in $local_files
+do
+    cp -rv $f $output_fig_dir
+done
+echo "Done"

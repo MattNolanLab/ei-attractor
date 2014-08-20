@@ -148,6 +148,7 @@ class ProbabilityPlotter(FigurePlotter):
         yticks = kw.get('yticks', True)
         bins   = kw.get('bins', [40, 50])
         range  = kw.get('range', [[0, 1], [-.2, .8]])
+        title_size = kw.get('title_size', 'medium')
 
         H, xedges, yedges = np.histogram2d(
                 X.flatten(),
@@ -161,9 +162,9 @@ class ProbabilityPlotter(FigurePlotter):
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         if noise_sigma is not None:
-            ax.set_title("$\sigma$ = %d pA" % int(noise_sigma))
+            ax.set_title("%d pA" % int(noise_sigma), size=title_size)
         else:
-            ax.set_title("All noise levels")
+            ax.set_title("All", size=title_size)
         if not yticks:
             ax.yaxis.set_ticklabels([])
 

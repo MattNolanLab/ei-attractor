@@ -369,9 +369,8 @@ class GridDetailedNoisePlotter(FigurePlotter):
         ax.yaxis.set_major_locator(ti.MultipleLocator(0.4))
         ax.yaxis.set_minor_locator(ti.MultipleLocator(0.2))
         ax.set_ylim([-0.6, 1.2])
-        leg = ['a',  'b']
-        l = ax.legend([p31, p13], leg, loc=(0.8, 1), fontsize='small', frameon=False,
-                numpoints=1, handletextpad=0.05)
+        leg = self.myc['legend']
+        l = ax.legend([p31, p13], leg, **self.myc['legend_kwargs'])
 
         fname = self.config['output_dir'] + "/grids_detailed_noise_gscore.pdf"
         plt.savefig(fname, dpi=300, transparent=True)

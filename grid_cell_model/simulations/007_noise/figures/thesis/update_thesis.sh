@@ -10,6 +10,7 @@ files="
     $output_fig_dir/bumps_scatter_grids_vs_bumpFracTotal_exp.pdf
     $output_fig_dir/raster_examples*.pdf
     $output_fig_dir/suppFigure_grid_examples*.pdf
+    $output_fig_dir/suppFigure_gamma.pdf
     "
 
 for f in $files

@@ -67,6 +67,7 @@ class ScatterPlotBase(object):
         ax          = kw.pop('ax', plt.gca())
         xlabel      = kw.pop('xlabel', '')
         ylabel      = kw.pop('ylabel', '')
+        yticks      = kw.pop('yticks', True)
         sigmaTitle  = kw.pop('sigmaTitle', False)
         noise_sigma = kw.pop('noise_sigma', None)
 
@@ -85,6 +86,8 @@ class ScatterPlotBase(object):
 
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
+        if not yticks:
+            ax.yaxis.set_ticklabels([])
 
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)

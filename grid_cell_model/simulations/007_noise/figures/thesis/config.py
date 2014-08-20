@@ -9,34 +9,50 @@ def get_config():
 
 _config = {
     'GridSweepsPlotter': {
+        'cbar': [1, 1, 1],
         'scale_factor': .75,
-        'cbar': [1, 0, 0],
-        'cbar_kw': {
-            'location': 'left',
-            'pad': .2,
-            'labelpad': 0,
-            'rasterized': False,
-        },
     },
 
     'GridExamplesPlotter': {
         'scale_factor': .75,
     },
 
+    'GridDetailedNoisePlotter': {
+        'legend':  ['$(g_E,\ gI)$ = (3, 1) nS',  '$(g_E,\ gI)$ = (1, 3) nS'],
+        'legend_kwargs': dict(
+            loc=(0.6, 1),
+        ),
+    },
+
     'GammaSweepsPlotter': {
-        'scale_factor': .75,
+        'fig_size': (2.6, 4.5),  # inches
+        'scale_factor': .67,
+        'cbar': [1, 0, 1],
         'AC_cbar_kw': {
+            'location': 'bottom',
+            'pad': .2,
             'labelpad': 2,
         },
-        #'AC_xticks': [True]*3,
+        'AC_xticks': [1, 0, 1],
+        'AC_yticks': [1, 1, 1],
+        'AC_sigma_title': False,
+
         'F_cbar_kw': {
+            'location': 'bottom',
+            'pad': .2,
             'labelpad': 2,
         },
-        #'F_sigma_title': True,
+        'F_xticks': [1, 0, 1],
+        'F_yticks': [0, 0, 0],
+        'F_sigma_title': False,
     },
 
     'GammaExamplePlotter': {
         'scale_factor': .75,
+        'sigma_titles': [
+            [0, 0, 0],
+            [0, 0, 0],
+        ],
         'yscale_kw': [[
             dict(
                 scaleLen=5,
@@ -77,16 +93,31 @@ _config = {
             )]],
         },
 
+    'GammaDetailedNoisePlotter': {
+        'legend':  ['$(g_E,\ gI)$ = (3, 1) nS',  '$(g_E,\ gI)$ = (1, 3) nS'],
+        'legend_kwargs': dict(
+            loc=(.6, .75),
+        ),
+    },
+
     'GridExampleRectPlotter': {
         'fig_saver': SeparateMultipageSaver(None, 'pdf')
     },
 
     'GammaScatterAllPlotter': {
-        'fig_size': (5.25, 3.2),
-        'tight_layout_kwargs': {
-            'pad': 0,
-            'rect': (.01, 0, 0.95, .99),
-        },
+        'fig_size': (3, 2.75),
+        'bbox_rect': (.25, .35, .95, .85),
+        'ylabel': 'Gridness score',
+    },
+
+    'GammaFreqGridsScatterAllPlotter': {
+        'fig_size': (3, 2.75),
+        'bbox_rect': (.25, .35, .95, .85),
+        'legend_kwargs': dict(
+            loc=(0.7, 0.4),
+        ),
+        'ylabel': '',
+        'yticks': False,
     },
 
     'MainBumpFormationPlotter': {
@@ -199,5 +230,25 @@ _config = {
         ),
         'plot_ann_txt' : False,
     },
+
+    'GammaGridsProbabilityPlotter': {
+        'fig_size': (.65, .65),  # inches
+        'scale_factor': .8,
+        'bbox_rect': (0.05, 0.05, 0.95, 0.7),
+        'strip_axis': True,
+        'title_size': 'x-small',
+    },
+
+    'GammaFreqGridsProbabilityPlotter': {
+        'fig_size': (.65, .65),  # inches
+        'scale_factor': .8,
+        'bbox_rect': (0.05, 0.05, 0.95, 0.7),
+        'strip_axis': True,
+        'title_size': 'x-small',
+    },
+
+    'ScatterGammaGridsSeparatePlotter': {
+        'fig_size': (5.6, 7.9),
+    }
 ##############################################################################
 }
