@@ -21,6 +21,7 @@ __all__ = [
     'GammaScatterAllPlotter',
     'GammaFreqGridsScatterAllPlotter',
     'ScatterGammaGridsSeparatePlotter',
+    'ScatterGammaFGridsSeparatePlotter',
     'GammaScatterPBumpsAllPlotter',
     'GammaPBumpsProbabilityPlotter',
     'GammaFreqPBumpsProbabilityPlotter',
@@ -441,6 +442,57 @@ class ScatterGammaGridsSeparatePlotter(FigurePlotter):
         #ax.set_ylim(prepareLims((-0.5, 1.2), margin=0.02))
 
         fname = output_dir + "/suppFigure_gamma.pdf"
+        fig.savefig(fname, dpi=300, transparent=True)
+
+
+##############################################################################
+# Separate scatter plot of gridness score vs. gamma frequency
+class ScatterGammaFGridsSeparatePlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(ScatterGammaFGridsSeparatePlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+        output_dir = self.config['output_dir']
+        ignoreNaNs = True
+
+        xlabel = 'Oscillation frequency (Hz)'
+        ylabel = 'Gridness score'
+
+        fig = self._get_final_fig(self.myc['fig_size'])
+
+        gammaFData = []
+        gridData = []
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            gammaFData.append(aggr.GammaAggregateData('freq',
+                                                     ps.bumpGamma[ns_idx],
+                                                     iter_list,
+                                                     normalizeTicks=False,
+                                                     collapseTrials=True))
+            gridData.append(aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                               ignoreNaNs=True,
+                                               normalizeTicks=False))
+
+        scatterPlot = scatter.FullScatterPlot(
+                gammaFData, gridData, None, None, iter_list, None, None,
+                s=8,
+                linewidth=0.3,
+                color2D=True,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                sigmaTitle=True,
+                noise_sigmas=ps.noise_sigmas,
+                ignoreNaNs=ignoreNaNs,
+                captionLetters=('A', 'B', 'C'),
+                fig=fig)
+        scatterPlot.plot(captionLeft=-0.1, plotcolorbar=False)
+        l = 0.8
+        w = 0.165
+        scatterPlot.plotColorbar(left=l, bottom=.87, right=l+w, top=.97)
+        scatterPlot.set_titleSizes(16) 
+
+        fname = output_dir + "/suppFigure_gammaF_grids_scatter.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
 
 

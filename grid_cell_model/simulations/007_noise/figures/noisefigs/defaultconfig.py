@@ -469,15 +469,17 @@ _default_config['FracTotalSweepAnnPlotter'] = FracTotalSweepAnnPlotter_config
 
 MainBumpFormationPlotter_config = {
     'scale_factor': .8,
+    'cbar': [0, 0, 1],
     'cbar_kw': dict(
         label       = fracTotalText,
-        location    = 'left',
+        location    = 'right',
         shrink      = 0.8,
-        pad         = 0.25,
+        pad         = -.05,
         ticks       = ti.MultipleLocator(0.5),
         rasterized  = True
     ),
     'xticks': [True]*3,
+    'plot_grid_contours': [1, 1, 1],
 }
 _default_config['MainBumpFormationPlotter'] = MainBumpFormationPlotter_config
 
@@ -826,5 +828,22 @@ ScatterGammaGridsSeparatePlotter_config = {
     #'bbox_rect': (0.12, 0.17, 0.98, 0.92),
 }
 _default_config['ScatterGammaGridsSeparatePlotter'] = ScatterGammaGridsSeparatePlotter_config
+
+##############################################################################
+
+ScatterGammaFGridsSeparatePlotter_config = {
+    'fig_size': (8.27, 11.69),
+    #'bbox_rect': (0.12, 0.17, 0.98, 0.92),
+}
+_default_config['ScatterGammaFGridsSeparatePlotter'] = ScatterGammaFGridsSeparatePlotter_config
+
+##############################################################################
+
+GridsPBumpsProbabilityPlotter_config = {
+    'fig_size': (2.7, 2.7),         # inches
+    'bbox_rect': (0.25, 0.2, 0.95, 0.9),
+    'title_size': 'medium',
+}
+_default_config['GridsPBumpsProbabilityPlotter'] = GridsPBumpsProbabilityPlotter_config
 
 ##############################################################################

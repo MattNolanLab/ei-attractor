@@ -16,7 +16,7 @@ from ..EI_plotting import sweeps, examples, details, scatter
 from ..EI_plotting import aggregate as aggr
 from ..EI_plotting.base import getOption, plotStateSignal
 from ..EI_plotting import scaling
-from .base import FigurePlotter, SweepPlotter
+from .base import FigurePlotter, SweepPlotter, ProbabilityPlotter
 
 __all__ = [
     'GridSweepsPlotter',
@@ -26,6 +26,7 @@ __all__ = [
     'GridDetailedNoisePlotter',
     'GridsDiffSweep',
     'GridBumpScatterPlotter',
+    'GridsPBumpsProbabilityPlotter',
 ]
          
 
@@ -479,3 +480,77 @@ class GridBumpScatterPlotter(FigurePlotter):
         fname = output_dir + "/suppFigure_grids_vs_bumps_exp.pdf"
         fig.savefig(fname, dpi=300)
 
+
+##############################################################################
+# Probability plots of gridness score vs gamma power
+class GridsPBumpsProbabilityPlotter(ProbabilityPlotter):
+    def __init__(self, *args, **kwargs):
+        super(GridsPBumpsProbabilityPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        iter_list = self.config['iter_list']
+        l, b, r, t = myc['bbox_rect']
+        drange = [[0, 1], [-.5, 1.2]]
+
+        pbumps_all = np.empty(0)
+        gridness_all = np.empty(0)
+
+        # Separate noise sigmas
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            if ns_idx == 0:
+                mi_title = 'gridness score vs. P_bumps'
+            else:
+                mi_title = None
+
+            pbumpsData = aggr.IsBump(ps.bumpGamma[ns_idx], iter_list,
+                                     ignoreNaNs=True, collapseTrials=True)
+            gridnessData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                    normalizeTicks=False, collapseTrials=True)
+
+
+            pbumpsData, _, _ = pbumpsData.getData()
+            gridnessData, _, _ = gridnessData.getData()
+            pbumps_all = np.hstack((pbumps_all, pbumpsData.flatten()))
+            gridness_all = np.hstack((gridness_all, gridnessData.flatten()))
+
+            # Gamma power vs. gridness score
+            fig = self._get_final_fig(myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            self.plotDistribution(pbumpsData, gridnessData, ax,
+                                  noise_sigma=noise_sigma,
+                                  range=drange,
+                                  xlabel='P(bumps)',
+                                  ylabel='', yticks=False,
+                                  title_size=self.myc['title_size'])
+            ax.axis('tight')
+            ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+            if 'strip_axis' in self.myc and self.myc['strip_axis']:
+                ax.axis('off')
+            fname = self.config['output_dir'] + "/grids_pbumps_probability_{0}.pdf"
+            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                             transparent=True)
+            plt.close(fig)
+
+            self.mutual_information(pbumpsData, gridnessData,
+                                    noise_sigma=noise_sigma,
+                                    title=mi_title)
+
+        # All together
+        fig = self._get_final_fig(myc['fig_size'])
+        ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+        self.plotDistribution(pbumps_all, gridness_all, ax,
+                xlabel='P(bumps)',
+                ylabel='Gridness score',
+                range=drange,
+                title_size=self.myc['title_size'])
+        ax.axis('tight')
+        ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+        if 'strip_axis' in self.myc and self.myc['strip_axis']:
+            ax.axis('off')
+        fname = self.config['output_dir'] + "/grids_pbumps_probability_all.pdf"
+        fig.savefig(fname, dpi=300, transparent=True)
+        plt.close(fig)
+
+        self.mutual_information(pbumps_all, gridness_all)

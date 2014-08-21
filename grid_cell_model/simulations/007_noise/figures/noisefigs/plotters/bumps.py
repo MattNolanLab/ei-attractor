@@ -474,31 +474,43 @@ class MainBumpFormationPlotter(BumpFormationBase):
         myc= self._get_class_config()
         sweepc = self._get_sweep_config()
         ps = self.env.ps
+        iter_list = self.config['iter_list']
         xticks = myc['xticks']
+        grids_example_idx = self.config['grids']['example_idx']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
                      "/bumps_mainFig_isBumpFracTotal_sweeps_annotated{0}.pdf".format(int(noise_sigma)))
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 #fig, ax = ds.getDefaultSweepFig(scale=0.8, colorBarPos='left')
-                kw = dict(cbar=False)
+                kw = dict()
                 if ns_idx != 0:
                     kw['ylabel'] = ''
                     kw['yticks'] = False
-                if ns_idx == 0:
-                    kw['cbar'] = True
                 data = aggr.IsBump(ps.bumpGamma[ns_idx],
-                                   self.config['iter_list'],
+                                   iter_list,
                                    ignoreNaNs=True)
+                gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                              ignoreNaNs=True, normalizeTicks=True,
+                                              r=grids_example_idx[ns_idx][0],
+                                              c=grids_example_idx[ns_idx][1])
                 _, _, cax = sweeps.plotSweep(data,
                         noise_sigma=noise_sigma,
                         xlabel='' if xticks[ns_idx] == False else None,
                         xticks=xticks[ns_idx],
                         ax=ax,
+                        cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=myc['cbar_kw'],
                         vmin=self.bump_vmin, vmax=self.bump_vmax,
                         annotations=self.get_ann()[ns_idx],
                         **kw)
+
+                if self.myc['plot_grid_contours'][ns_idx]:
+                    contours = sweeps.Contours(gridData,
+                            self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                            ax,
+                            **self.config['sweeps']['contours_kwargs'])
 
 
 ##############################################################################

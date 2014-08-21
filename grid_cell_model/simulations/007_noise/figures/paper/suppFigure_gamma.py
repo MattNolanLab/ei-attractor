@@ -16,5 +16,6 @@ env = NoiseEnvironment(user_config=config.get_config())
 
 if args.scatterPlot or args.all:
     env.register_plotter(noisefigs.plotters.ScatterGammaGridsSeparatePlotter)
+    env.register_plotter(noisefigs.plotters.ScatterGammaFGridsSeparatePlotter)
 
 env.plot()

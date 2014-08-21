@@ -12,7 +12,8 @@ files="
     $output_fig_dir/figure_drifts.pdf
     $output_fig_dir/figure_isBump.pdf
     $output_fig_dir/suppFigure_bump_sweeps.pdf
-    $output_fig_dir/suppFigure_gamma.pdf
+    $panels_dir/suppfigure_gamma.pdf
+    $panels_dir/suppFigure_gammaF_grids_scatter.pdf
     $output_fig_dir/suppFigure_grids_vs_bumps_exp.pdf
     $output_fig_dir/suppFigure_grids_vs_bumps.pdf
     $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf
@@ -21,6 +22,7 @@ files="
     $output_fig_dir/suppFigure_seizures.pdf
     $output_fig_dir/suppFigure_velocity.pdf
     $output_fig_dir/suppFigure_gamma_probabilities.pdf
+    $output_fig_dir/suppFigure_grids_probability.pdf
     $panels_dir/raster_examples*.pdf
     $panels_dir/gamma_scatter_gamma_pbumps_all.pdf
     $panels_dir/suppFigure_grid_examples.pdf
@@ -28,6 +30,7 @@ files="
 
 local_files="
     $panels_dir/suppFigure_gamma.pdf
+    $panels_dir/suppFigure_gammaF_grids_scatter.pdf
 "
 
 # Copy to dropbox
