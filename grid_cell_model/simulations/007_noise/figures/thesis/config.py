@@ -249,6 +249,25 @@ _config = {
 
     'ScatterGammaGridsSeparatePlotter': {
         'fig_size': (5.6, 7.9),
-    }
+    },
+
+    'GridBumpScatterPlotter': {
+        'fig_size': (5.6, 7.9),
+        'color_box_coords': {
+            'left': .2,  # w = 0.165
+            'bottom': .87,
+            'right': .2 + .165,
+            'top': .97
+        }
+    },
+
+    'FracTotalSweepAnnPlotter': {
+        'cbar': (0, 0, 1),
+        'cbar_kw': dict(
+            location    = 'right',
+            pad         = -.05,
+        )
+    },
+
 ##############################################################################
 }

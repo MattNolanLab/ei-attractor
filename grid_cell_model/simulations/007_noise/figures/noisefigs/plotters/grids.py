@@ -420,24 +420,9 @@ class GridBumpScatterPlotter(FigurePlotter):
         ps = self.env.ps
         iter_list = self.config['iter_list']
         output_dir = self.config['output_dir']
-
-        scatterFigSize = (8.27, 11.69)
-        scatterLeft   = 0.12
-        scatterBottom = 0.17
-        scatterRight  = 0.98
-        scatterTop    = 0.92
-        scatterTransparent = True
         
-        scatterColorFigSize = (1.5, 1.5)
-        
-        ignoreNaNs = True
-
         xlabel = 'P(bumps)'
         ylabel = 'Gridness score'
-
-        fig = self._get_final_fig(scatterFigSize)
-        ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
-            scatterTop))
 
         isBumpData = []
         gridData = []
@@ -447,23 +432,21 @@ class GridBumpScatterPlotter(FigurePlotter):
             gridData.append(aggr.GridnessScore(ps.grids[ns_idx], iter_list,
                 ignoreNaNs=True, normalizeTicks=False))
 
-        fig = self._get_final_fig(scatterFigSize)
+        fig = self._get_final_fig(self.myc['fig_size'])
         scatterPlot = scatter.FullScatterPlot(
                 isBumpData, gridData, None, None, iter_list, None, None,
-                s=25,
+                s=8,
                 linewidth=0.3,
                 color2D=True,
                 xlabel=xlabel,
                 ylabel=ylabel,
                 sigmaTitle=True,
                 noise_sigmas=ps.noise_sigmas,
-                ignoreNaNs=ignoreNaNs,
+                ignoreNaNs=True,
                 captionLetters=('A', 'B', 'C'),
                 fig=fig)
         scatterPlot.plot(captionLeft=-0.1, plotcolorbar=False)
-        l = 0.14
-        w = 0.165
-        scatterPlot.plotColorbar(left=l, bottom=.85, right=l+w, top=.95)
+        scatterPlot.plotColorbar(**self.myc['color_box_coords'])
         scatterPlot.set_titleSizes(16)
 
         # Normal scale

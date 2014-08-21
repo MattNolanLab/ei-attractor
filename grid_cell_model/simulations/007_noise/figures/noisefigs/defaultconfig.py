@@ -454,6 +454,7 @@ fracTotalText = _default_config['p_bumps']['frac_total_text']
 
 FracTotalSweepAnnPlotter_config = {
     'scale_factor': .8,
+    'cbar': (1, 0, 0),
     'cbar_kw': dict(
         label       = fracTotalText,
         location    = 'left',
@@ -845,5 +846,22 @@ GridsPBumpsProbabilityPlotter_config = {
     'title_size': 'medium',
 }
 _default_config['GridsPBumpsProbabilityPlotter'] = GridsPBumpsProbabilityPlotter_config
+
+##############################################################################
+
+GridBumpScatterPlotter_config = {
+    'fig_size': (8.27, 11.69),
+    'color_box_width': .165
+}
+GridBumpScatterPlotter_config.update({
+    'color_box_coords': {
+        'left': 0.14,  # w = 0.165
+        'bottom': .85,
+        'right': .14 + GridBumpScatterPlotter_config['color_box_width'],
+        'top': .95
+    }
+    #'bbox_rect': (0.12, 0.17, 0.98, 0.92),
+})
+_default_config['GridBumpScatterPlotter'] = GridBumpScatterPlotter_config
 
 ##############################################################################

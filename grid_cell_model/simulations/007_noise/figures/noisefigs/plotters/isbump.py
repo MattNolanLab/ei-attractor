@@ -126,12 +126,10 @@ class FracTotalSweepAnnPlotter(SweepPlotter):
                      "/bumps_isBumpFracTotal_sweeps_annotated{0}.pdf".format(int(noise_sigma)))
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 #fig, ax = ds.getDefaultSweepFig(scale=0.8, colorBarPos='left')
-                kw = dict(cbar=False)
+                kw = dict()
                 if ns_idx != 0:
                     kw['ylabel'] = ''
                     kw['yticks'] = False
-                if ns_idx == 0:
-                    kw['cbar'] = True
                 data = aggr.IsBump(ps.bumpGamma[ns_idx],
                                    self.config['iter_list'],
                                    ignoreNaNs=True)
@@ -139,6 +137,7 @@ class FracTotalSweepAnnPlotter(SweepPlotter):
                         noise_sigma=noise_sigma,
                         xlabel='', xticks=False,
                         ax=ax,
+                        cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=myc['cbar_kw'],
                         vmin=bump_vmin, vmax=bump_vmax,
                         annotations=ann[ns_idx],

@@ -14,8 +14,6 @@ files="
     $output_fig_dir/suppFigure_bump_sweeps.pdf
     $panels_dir/suppfigure_gamma.pdf
     $panels_dir/suppFigure_gammaF_grids_scatter.pdf
-    $output_fig_dir/suppFigure_grids_vs_bumps_exp.pdf
-    $output_fig_dir/suppFigure_grids_vs_bumps.pdf
     $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf
     $output_fig_dir/suppFigure_grids_vs_line_slope.pdf
     $output_fig_dir/suppFigure_line_fit_error_vs_slope.pdf
@@ -26,11 +24,15 @@ files="
     $panels_dir/raster_examples*.pdf
     $panels_dir/gamma_scatter_gamma_pbumps_all.pdf
     $panels_dir/suppFigure_grid_examples.pdf
+    $panels_dir/suppFigure_grids_vs_bumps_exp.pdf
+    $panels_dir/suppFigure_grids_vs_bumps.pdf
     "
 
 local_files="
     $panels_dir/suppFigure_gamma.pdf
     $panels_dir/suppFigure_gammaF_grids_scatter.pdf
+    $panels_dir/suppFigure_grids_vs_bumps_exp.pdf
+    $panels_dir/suppFigure_grids_vs_bumps.pdf
 "
 
 # Copy to dropbox
