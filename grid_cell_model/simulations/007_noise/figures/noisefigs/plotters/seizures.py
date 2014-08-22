@@ -155,17 +155,16 @@ class MaxPopulationFRSweepsPlotter(SweepPlotter):
             fname = (self.config['output_dir'] +
                      "/bumps_popMaxFR_sweep{0}.pdf".format(int(noise_sigma)))
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
-                kw = dict(cbar=False)
+                kw = dict()
                 if ns_idx != 0:
                     kw['ylabel'] = ''
                     kw['yticks'] = False
-                if ns_idx == 0:
-                    kw['cbar'] = True
                 data = aggr.MaxPopulationFR(ps.bumpGamma[ns_idx], iter_list,
                         ignoreNaNs=True, normalizeTicks=True)
                 _, _, cax = sweeps.plotSweep(data,
                         noise_sigma=noise_sigma,
                         ax=ax,
+                        cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=myc['cbar_kw'],
                         vmin=maxFR_vmin, vmax=maxFR_vmax,
                         **kw)

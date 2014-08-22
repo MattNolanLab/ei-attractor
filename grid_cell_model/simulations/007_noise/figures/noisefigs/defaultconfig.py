@@ -562,6 +562,7 @@ _default_config['BumpDiffResetPlotter'] = BumpDiffResetPlotter_config
 ##############################################################################
 
 MaxPopulationFRSweepsPlotter_config = {
+    'cbar': [1, 0, 0],
     'cbar_kw': dict(
         label       = "$E-rate_{max}$ (Hz)",
         location    = 'left',

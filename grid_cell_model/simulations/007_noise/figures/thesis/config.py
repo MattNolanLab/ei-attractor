@@ -170,8 +170,11 @@ _config = {
 
     'MaxPopulationFRSweepsPlotter': {
         'scale_factor': .75,
+        'cbar': [0, 0, 1],
         'cbar_kw': {
-            'labelpad': 2,
+            'location': 'right',
+            'pad': -.05,
+            'labelpad': 5,
         },
     },
 
