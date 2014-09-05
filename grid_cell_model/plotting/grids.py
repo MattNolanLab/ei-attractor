@@ -72,7 +72,7 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
         ax = gca()
     rateMap = ma.masked_array(rateMap, mask = np.sqrt(X**2 + Y**2) > diam/2.0)
     globalAxesSettings(ax)
-    ax.pcolormesh(X, Y, rateMap, **kw)
+    ax.pcolor(X, Y, rateMap, **kw)
     ax.axis('scaled')
     ax.axis('off')
     ax.set_title(titleStr, va='bottom')

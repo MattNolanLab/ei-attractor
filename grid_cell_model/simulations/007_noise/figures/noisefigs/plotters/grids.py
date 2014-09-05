@@ -7,9 +7,12 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-from grid_cell_model.parameters       import JobTrialSpace2D
-from grid_cell_model.data_storage     import DataStorage
+from grid_cell_model.parameters import JobTrialSpace2D
+from grid_cell_model.data_storage import DataStorage
 from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
+from grid_cell_model.plotting.grids import (plotSpikes2D,
+                                            plotGridRateMap,
+                                            plotAutoCorrelation)
 import grid_cell_model.plotting.low_level as low_level
 
 from ..EI_plotting import sweeps, examples, details, scatter
@@ -27,6 +30,7 @@ __all__ = [
     'GridsDiffSweep',
     'GridBumpScatterPlotter',
     'GridsPBumpsProbabilityPlotter',
+    'GridSimpleExamplePlotter',
 ]
          
 
@@ -537,3 +541,71 @@ class GridsPBumpsProbabilityPlotter(ProbabilityPlotter):
         plt.close(fig)
 
         self.mutual_information(pbumps_all, gridness_all)
+
+
+##############################################################################
+class GridSimpleExamplePlotter(FigurePlotter):
+    arenaDiam = 180.0 # cm
+
+    def __init__(self, *args, **kwargs):
+        super(GridSimpleExamplePlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        myc = self._get_class_config()
+        ps  = self.env.ps
+
+        ns_idx = self.myc['ns_idx']
+        r, c = self.myc['rc']
+        trial_no = self.myc['trial_no']
+
+        fig = self._get_final_fig(myc['fig_size'])
+
+        # Spikes
+        ax_spikes = fig.add_subplot(1, 3, 1)
+        data = ps.grids[ns_idx][r][c][trial_no].data['analysis']
+        plotSpikes2D(
+            data['spikes_e'],
+            data['rat_pos_x'],
+            data['rat_pos_y'],
+            data['rat_dt'],
+            ax=ax_spikes,
+            spikeDotSize=2)
+
+        # Rate map
+        ax_field = fig.add_subplot(1, 3, 2)
+        plotGridRateMap(
+            data['rateMap_e'],
+            data['rateMap_e_X'],
+            data['rateMap_e_Y'],
+            self.arenaDiam,
+            rasterized=True,
+            ax=ax_field)
+
+        # Rate map dimmed
+        ax_field = fig.add_subplot(1, 3, 3)
+        plotGridRateMap(
+            data['rateMap_e'],
+            data['rateMap_e_X'],
+            data['rateMap_e_Y'],
+            self.arenaDiam,
+            rasterized=True,
+            maxRate=False,
+            ax=ax_field,
+            scaleBar=50,
+            alpha=0.6)
+
+        # Auto correlation
+        #ax_corr = fig.add_subplot(1, 3, 3)
+        #plotAutoCorrelation(
+        #    data['corr'],
+        #    data['corr_X'],
+        #    data['corr_Y'],
+        #    self.arenaDiam,
+        #    rasterized=True,
+        #    ax=ax_corr,
+        #    scaleBar=50)
+
+        fname = (self.config['output_dir'] + 
+                 'grid_spiking_and_field_example.pdf')
+        fig.savefig(fname, dpi=300, transparent=myc['transparent'])
+        plt.close()

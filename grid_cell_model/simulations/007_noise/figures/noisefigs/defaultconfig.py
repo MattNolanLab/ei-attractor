@@ -804,6 +804,17 @@ _default_config['ThetaSignalPlotter'] = ThetaSignalPlotter_config
 
 ##############################################################################
 
+PACExamplePlotter_config = {
+    'fig_size': (5, 3.5),
+    'bbox': (0, .05, 1., .95),  # l, b, r, t
+    'letter_xy': (0, 1.),
+    'theta_color': 'k',
+    'gamma_color': 'b',
+}
+_default_config['PACExamplePlotter'] = PACExamplePlotter_config
+
+##############################################################################
+
 RasterExamplePlotter_config = {
     'fig_size': (8.3, 8.3),
     'FRThreshold': 300,
@@ -864,5 +875,16 @@ GridBumpScatterPlotter_config.update({
     #'bbox_rect': (0.12, 0.17, 0.98, 0.92),
 })
 _default_config['GridBumpScatterPlotter'] = GridBumpScatterPlotter_config
+
+##############################################################################
+
+GridSimpleExamplePlotter_config = {
+    'fig_size' : (5.4, 2.5),
+    'transparent' : True,
+    'ns_idx' : 0,
+    'rc' : (25, 2),
+    'trial_no' : 0,
+}
+_default_config['GridSimpleExamplePlotter'] = GridSimpleExamplePlotter_config
 
 ##############################################################################

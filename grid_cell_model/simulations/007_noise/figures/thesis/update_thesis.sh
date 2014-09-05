@@ -13,6 +13,8 @@ files="
     $output_fig_dir/suppFigure_grid_examples*.pdf
     $output_fig_dir/suppFigure_gamma.pdf
     $output_fig_dir/suppFigure_grids_vs_bumps.pdf
+    $output_fig_dir/suppFigure_grids_vs_bumps.pdf
+    $output_fig_dir/pac_example_4.pdf
     "
 
 for f in $files
