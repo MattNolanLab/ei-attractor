@@ -746,6 +746,8 @@ class RasterExamplePlotter(SweepPlotter):
                         cbar=True, cbar_kw=myc['cbar_kw'],
                         vmin=vmin, vmax=vmax,
                         annotations=[annotation])
+                fig.text(0.01, st, 'A', size=16, weight='bold', 
+                         va='bottom', ha='left')
 
                 gs = gridspec.GridSpec(3, 1, height_ratios=(2.5, 1, 1))
 
@@ -793,6 +795,8 @@ class RasterExamplePlotter(SweepPlotter):
                 gsb = .05
                 gsr = .95
                 gst = .65
+                fig.text(0.01, gst, 'B', size=16, weight='bold', 
+                         va='bottom', ha='left')
                 gs.update(left=gsl, bottom=gsb, right=gsr, top=gst, hspace=.2)
 
                 ax_theta = fig.add_axes(Bbox.from_extents(gsl, gst - .015,

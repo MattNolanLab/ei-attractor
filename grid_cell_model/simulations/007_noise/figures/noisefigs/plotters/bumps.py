@@ -92,6 +92,7 @@ class BumpDriftAtTimePlotter(SweepPlotter):
         ps = self.env.ps
         iter_list = self.config['iter_list']
         n_trials = self.config['bumps']['n_trials']
+        grids_example_idx = self.config['grids']['example_idx']
 
         bumpDriftTStart = 1e3 #ms
         bumpDriftT = 9e3 # ms
@@ -113,11 +114,23 @@ class BumpDriftAtTimePlotter(SweepPlotter):
                         iter_list,
                         n_trials,
                         tStart=bumpDriftTStart)
+                gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                              ignoreNaNs=True, normalizeTicks=True,
+                                              r=grids_example_idx[ns_idx][0],
+                                              c=grids_example_idx[ns_idx][1])
                 _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
                         ax=ax,
                         cbar_kw=myc['cbar_kw'],
                         vmin=drift_vmin, vmax=drift_vmax,
                         **kw)
+
+                if self.myc['plot_grid_contours'][ns_idx]:
+                    contours = sweeps.Contours(gridData,
+                            self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                            ax,
+                            **self.config['sweeps']['contours_kwargs'])
+
 
 ##############################################################################
 # Distance from init position

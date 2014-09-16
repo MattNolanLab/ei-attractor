@@ -135,7 +135,6 @@ class FracTotalSweepAnnPlotter(SweepPlotter):
                                    ignoreNaNs=True)
                 _, _, cax = sweeps.plotSweep(data,
                         noise_sigma=noise_sigma,
-                        xlabel='', xticks=False,
                         ax=ax,
                         cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=myc['cbar_kw'],

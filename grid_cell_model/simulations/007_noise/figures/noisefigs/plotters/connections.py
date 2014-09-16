@@ -14,6 +14,7 @@ from grid_cell_model.parameters.param_space import JobTrialSpace2D, DataSpace
 from grid_cell_model.plotting.global_defs   import globalAxesSettings
 import grid_cell_model.plotting.connections as pconn
 from grid_cell_model.submitting import flagparse
+from grid_cell_model.analysis.image import Position2D
 
 from .base import FigurePlotter
 from ..EI_plotting import aggregate as aggr
@@ -22,6 +23,7 @@ DS = DataSpace
 
 __all__ = [
     'WeightExamplesHists',
+    'Burak2009ConnectionPlotter',
 ]
 
 ##############################################################################
@@ -287,4 +289,68 @@ class WeightExamplesHists(FigurePlotter):
 #    plt.savefig(fname, dpi=300, transparent=False)
 
 
+class Burak2009ConnectionPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(Burak2009ConnectionPlotter, self).__init__(*args, **kwargs)
+
+    def compute_weights(self, X1, X2, a, gamma, beta, l, pref_theta):
+        '''Compute the outgoing weights between neurons at positions specified
+        by ``X1`` and ``X2``. See Burak and Fiete (2009).
+        '''
+        X_sq = ((X1.x - X2.x - l * pref_theta.x)**2 +
+                (X1.y - X2.y - l * pref_theta.y)**2)
+        return a * np.exp(-gamma * X_sq) - np.exp(-beta * X_sq)
+
+    def plot(self, *args, **kwargs):
+        output_dir = self.config['output_dir']
+
+        lambda_net = 20.
+        a = 1.
+        beta = 3. / lambda_net**2
+        gamma = 1.05 * beta
+        l = 5.
+        X1 = Position2D(0., 0.)
+        n_range = 30
+        X2_x, X2_y = np.meshgrid(np.arange(-n_range, n_range),
+                                 np.arange(-n_range, n_range))
+        X2 = Position2D(X2_x, X2_y)
+
+        fig = self._get_final_fig(self.myc['fig_size'])
+        # Shift up
+        ax_up = fig.add_subplot(2, 2, 1)
+        pref_theta = Position2D(0, -1)
+        w = self.compute_weights(X1, X2, a, gamma, beta, l, pref_theta)
+        ax_up.pcolor(X2.x, X2.y, w, rasterized=True)
+        ax_up.set_xticks([])
+        ax_up.set_yticks([])
+    
+
+        # Shift down
+        ax_down = fig.add_subplot(2, 2, 2)
+        pref_theta = Position2D(0, 1)
+        w = self.compute_weights(X1, X2, a, gamma, beta, l, pref_theta)
+        ax_down.pcolor(X2.x, X2.y, w, rasterized=True)
+        ax_down.set_xticks([])
+        ax_down.set_yticks([])
+    
+        # Shift left
+        ax_left = fig.add_subplot(2, 2, 3)
+        pref_theta = Position2D(1, 0)
+        w = self.compute_weights(X1, X2, a, gamma, beta, l, pref_theta)
+        ax_left.pcolor(X2.x, X2.y, w, rasterized=True)
+        ax_left.set_xticks([])
+        ax_left.set_yticks([])
+    
+        # Shift right
+        ax_right = fig.add_subplot(2, 2, 4)
+        pref_theta = Position2D(-1, 0)
+        w = self.compute_weights(X1, X2, a, gamma, beta, l, pref_theta)
+        ax_right.pcolor(X2.x, X2.y, w, rasterized=True)
+        ax_right.set_xticks([])
+        ax_right.set_yticks([])
+    
+        fig.tight_layout()
+        fname = self.config['output_dir'] + "/intro_burak2009_conn_weights.pdf"
+        fig.savefig(fname, dpi=300, transparent=True)
+        plt.close()
 

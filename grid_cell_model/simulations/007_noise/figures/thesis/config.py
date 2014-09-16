@@ -231,6 +231,7 @@ _config = {
         'cbar_kw': dict(
             pad         = .1,
         ),
+        'ylabelPos': -0.12,
         'plot_ann_txt' : False,
     },
 

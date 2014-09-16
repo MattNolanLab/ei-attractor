@@ -529,7 +529,8 @@ BumpDriftAtTimePlotter_config = {
         pad         = -0.05,
         ticks       = ti.MultipleLocator(10),
         rasterized  = True
-    )
+    ),
+    'plot_grid_contours': [1, 1, 1],
 }
 _default_config['BumpDriftAtTimePlotter'] = BumpDriftAtTimePlotter_config
 
@@ -817,8 +818,6 @@ _default_config['PACExamplePlotter'] = PACExamplePlotter_config
 
 RasterExamplePlotter_config = {
     'fig_size': (8.3, 8.3),
-    'FRThreshold': 300,
-    'sweep_rect' : (.1, .73, .4, .95),
     'cbar_kw': dict(
         label       = "Mean $E-rate_{max}^{\\theta}$ (Hz)",
         location    = 'right',
@@ -827,6 +826,7 @@ RasterExamplePlotter_config = {
         ticks       = ti.MultipleLocator(250),
         rasterized  = True
     ),
+    'FRThreshold': 300.,
     'ylabelPos': -0.1,
     'markersize': 1.5,
     'plot_ann_txt' : True,
@@ -886,5 +886,12 @@ GridSimpleExamplePlotter_config = {
     'trial_no' : 0,
 }
 _default_config['GridSimpleExamplePlotter'] = GridSimpleExamplePlotter_config
+
+##############################################################################
+
+Burak2009ConnectionPlotter_config = {
+    'fig_size' : (2, 2),
+}
+_default_config['Burak2009ConnectionPlotter'] = Burak2009ConnectionPlotter_config
 
 ##############################################################################
