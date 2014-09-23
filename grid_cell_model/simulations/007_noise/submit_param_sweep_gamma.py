@@ -18,7 +18,7 @@ for noise_sigma in noise_sigma_all:
 
     # Submitting
     ENV         = 'cluster'
-    simRootDir  = 'output/nmda_vm_dep/C_Mg_0_mM/gamma_bump'
+    simRootDir  = 'output/nmda_vm_dep/C_Mg_0p1_mM/gamma_bump'
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
     appName     = '../common/simulation_stationary.py'
     rtLimit     = '01:30:00'
@@ -31,6 +31,8 @@ for noise_sigma in noise_sigma_all:
     p['time']              = 10e3  # ms
     p['nthreads']          = 1
     p['ntrials']           = 5
+
+    p['C_Mg'] = .1  # mM
 
 
     # Range of E/I synaptic conductances
