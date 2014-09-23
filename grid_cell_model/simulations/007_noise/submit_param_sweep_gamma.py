@@ -10,7 +10,7 @@ lg.basicConfig(level=lg.INFO)
 from default_params import defaultParameters as dp
 from param_sweep    import submitParamSweep
 
-noise_sigma_all = [.0, 150.0, 300.0] # pA
+noise_sigma_all = [.0] #, 150.0, 300.0] # pA
 
 for noise_sigma in noise_sigma_all:
     p = dp.copy()
@@ -18,7 +18,7 @@ for noise_sigma in noise_sigma_all:
 
     # Submitting
     ENV         = 'cluster'
-    simRootDir  = 'output/submission/gamma_bump'
+    simRootDir  = 'output/nmda_vm_dep/C_Mg_0_mM/gamma_bump'
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
     appName     = '../common/simulation_stationary.py'
     rtLimit     = '01:30:00'
