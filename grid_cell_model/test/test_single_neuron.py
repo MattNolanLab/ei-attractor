@@ -69,7 +69,7 @@ class TestNMDA(object):
         network = self._simulate(default_params_fix, T_fix)
         e = self._extract_state_vars(network.stateMon_i)
 
-        N = 4
+        N = 5
         fig = plt.figure()
         ax1 = fig.add_subplot(N, 1, 1)
         ax1.plot(e['times'], e['V_m'])
@@ -86,9 +86,14 @@ class TestNMDA(object):
         ax3.set_xlabel('t (ms)')
 
         ax4 = fig.add_subplot(N, 1, 4)
-        ax4.plot(e['times'], e['I_stim'])
-        ax4.set_ylabel('I_stim (pA)')
+        ax4.plot(e['times'], e['I_clamp_NMDA'])
+        ax4.set_ylabel('I_clamp_NMDA (pA)')
         ax4.set_xlabel('t (ms)')
+
+        ax5 = fig.add_subplot(N, 1, 5)
+        ax5.plot(e['times'], e['I_stim'])
+        ax5.set_ylabel('I_stim (pA)')
+        ax5.set_xlabel('t (ms)')
 
         fname = 'single_neuron_state_variables_Mg%.1f_mM.pdf' % network.no.C_Mg
         fig.savefig(fname)

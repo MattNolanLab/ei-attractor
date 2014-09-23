@@ -570,13 +570,14 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
         // set new input current
         B_.I_stim_ = B_.currents_.get_value(lag);
 
-        // Set clamp currents
-        S_.y_[S::I_CLAMP_AMPA]    = -S_.y_[S::G_AMPA]    * P.E_clamp_AMPA;
-        S_.y_[S::I_CLAMP_NMDA]    = -S_.y_[S::G_NMDA]    * P.E_clamp_NMDA;
-        S_.y_[S::I_CLAMP_GABA_A]  = -S_.y_[S::G_GABA_A]  * P.E_clamp_GABA_A;
-
         // Record NMDA gating variable
         S_.y_[S::S_NMDA] = nmda_mg_multiplier(S_.y_[S::V_M], P.C_Mg);
+
+        // Set clamp currents
+        S_.y_[S::I_CLAMP_AMPA]    = -S_.y_[S::G_AMPA]   * P.E_clamp_AMPA;
+        S_.y_[S::I_CLAMP_NMDA]    = -S_.y_[S::G_NMDA]   * P.E_clamp_NMDA *
+                                    nmda_mg_multiplier(P.V_clamp, P.C_Mg);
+        S_.y_[S::I_CLAMP_GABA_A]  = -S_.y_[S::G_GABA_A] * P.E_clamp_GABA_A;
 
         // log state data
         B_.logger_.record_data(now);
