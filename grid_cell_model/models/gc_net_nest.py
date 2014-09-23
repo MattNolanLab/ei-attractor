@@ -1,20 +1,19 @@
 '''Nest-specific implementation of the grid cell model.'''
+from __future__ import absolute_import, print_function
 
-import numpy    as np
 import logging
 
+import numpy    as np
 from numpy.random import rand, randn
 from scipy.io     import loadmat
-
-import gc_neurons
-from gc_net       import GridCellNetwork
-from place_input  import PlaceCellInput
-from place_cells  import UniformBoxPlaceCells
-from data_storage import DataStorage
-from otherpkg.log import log_info
-
 import nest
 
+from . import gc_neurons
+from .gc_net import GridCellNetwork
+from .place_input import PlaceCellInput
+from .place_cells import UniformBoxPlaceCells
+from ..data_storage import DataStorage
+from ..otherpkg.log import log_info
 
 logger = logging.getLogger(__name__)
 gcnLogger = logging.getLogger('{0}.{1}'.format(__name__,
@@ -424,8 +423,8 @@ class NestGridCellNetwork(GridCellNetwork):
             "rat_pos_y" :  self.rat_pos_y,
             "rat_pos_dt":  self.rat_dt}) # s --> ms
 
-        print self.rat_pos_x
-        print self.rat_pos_y
+        print(self.rat_pos_x)
+        print(self.rat_pos_y)
 
         # Map velocities to currents: Here the mapping is 1:1, i.e. the
         # velocity dictates the current

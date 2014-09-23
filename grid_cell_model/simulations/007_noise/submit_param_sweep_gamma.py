@@ -1,29 +1,14 @@
 #!/usr/bin/env python
-#
-#   submit_param_sweep_gamma.py
-#
-#   Submit job(s) to the cluster/workstation: gamma parameter sweep (noise)
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-from default_params import defaultParameters as dp
-from param_sweep    import submitParamSweep
+'''2D parameter sweep that simulates a stationary bump and records spiking
+activity and synaptic currents from selected neurons.'''
+from __future__ import absolute_import, print_function, division
+
 import logging as lg
 #lg.basicConfig(level=lg.DEBUG)
 lg.basicConfig(level=lg.INFO)
+
+from default_params import defaultParameters as dp
+from param_sweep    import submitParamSweep
 
 noise_sigma_all = [.0, 150.0, 300.0] # pA
 
