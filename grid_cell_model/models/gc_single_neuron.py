@@ -1,33 +1,14 @@
-#
-#   gc_single_neuron.py
-#
-#   A model that simulates a single neuron with theta input. One neuron from E
-#   and I population.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''A model that simulates a single neuron with theta input. One neuron from E
+and I population.'''
 
 import numpy    as np
 import logging  as lg
 
 from numpy.random import rand, randn
 
-import gc_neurons
-from gc_net       import GridCellNetwork
-from data_storage import DataStorage
+from . import gc_neurons
+from .gc_net import GridCellNetwork
+from ..data_storage import DataStorage
 
 import nest
 nest.Install('gridcellsmodule')
@@ -69,7 +50,8 @@ class OneNeuronNetwork(GridCellNetwork):
             'withtime' : True,
             'interval' : self.no.sim_dt,
             'record_from' : ['V_m', 'I_clamp_AMPA', 'I_clamp_NMDA',
-                'I_clamp_GABA_A', 'I_stim']
+                'I_clamp_GABA_A', 'I_stim', 'g_AHP', 'g_AMPA', 'g_NMDA',
+                'g_GABA_A', 's_NMDA']
         }
 
 
@@ -104,9 +86,13 @@ class OneNeuronNetwork(GridCellNetwork):
 
     def _constructNetwork(self):
         '''Construct the E/I network'''
+        self.i_model_name = "iaf_gridcells"
         self.e_neuron_params = gc_neurons.getENeuronParams(self.no)
         self.i_neuron_params = gc_neurons.getINeuronParams(self.no)
+        self.i_receptors = nest.GetDefaults(self.i_model_name)['receptor_types']
 
+        nest.CopyModel('static_synapse', 'I_AMPA_NMDA',
+                params={'receptor_type' : self.i_receptors['AMPA_NMDA']})
 
         self.e_model_name = "iaf_gridcells"
         self.i_model_name = "iaf_gridcells"
@@ -182,5 +168,13 @@ class OneNeuronNetwork(GridCellNetwork):
         d.close()
 
 
+class NeuronAndGenerator(OneNeuronNetwork):
+    def __init__(self, neuronOpts, simulationOpts):
+        super(NeuronAndGenerator, self).__init__(neuronOpts, simulationOpts)
 
-
+        I_gen_params = {
+            "spike_times" : [200., 400., 600., 800.],
+            "spike_weights" : [10.]*4,
+        }
+        self.I_gen = nest.Create("spike_generator", 1, params=I_gen_params)
+        nest.Connect(self.I_gen, [self.I_pop[0]], model='I_AMPA_NMDA')
