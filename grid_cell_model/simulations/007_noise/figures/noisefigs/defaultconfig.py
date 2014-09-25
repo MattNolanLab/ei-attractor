@@ -735,20 +735,45 @@ _default_config['MaxStdThetaFRSweepPlotter'] = MaxStdThetaFRSweepPlotter_config
 _default_config['MaxMedianThetaFRSweepPlotter'] = MaxStdThetaFRSweepPlotter_config
 
 ##############################################################################
+
+VelSlopeSweepPlotter_config = {
+    'cbar': [0, 0, 1],
+    'cbar_kw': dict(
+        location='right',
+        shrink = 0.8,
+        pad = -0.1,
+        label='Slope\n(neurons/s/pA)',
+        ticks=ti.MultipleLocator(0.4),
+    ),
+    'plot_contours' : [1, 1, 1],
+
+}
+_default_config['VelSlopeSweepPlotter'] = VelSlopeSweepPlotter_config
+
+##############################################################################
+
 VelFitErrSweepPlotter_config = {
-    'scale_factor': .7,
+    #'scale_factor': .7,
     'cbar_kw': dict(
         label       = 'Fit error (neurons/s)',
         location    = 'right',
         shrink      = 0.8,
-        pad         = 0.05,
-        ticks       = ti.MultipleLocator(1),
-        extend      = 'max',
-        extendfrac  = 0.1,
+        pad         = -0.1,
+        ticks       = ti.MultipleLocator(2),
         rasterized  = True
-    )
+    ),
+    'plot_contours' : [1, 1, 1],
 }
 _default_config['VelFitErrSweepPlotter'] = VelFitErrSweepPlotter_config
+
+##############################################################################
+
+VelLinesPlotter_config = {
+    'fig_size': (2.6, 2),
+    'bbox_rect': (0.3, 0.35, 0.95, 0.65),
+    'positions': ((5, 15), (5, 15), (5, 15)),
+}
+_default_config['VelLinesPlotter'] = VelLinesPlotter_config
 
 ##############################################################################
 

@@ -29,130 +29,118 @@ __all__ = [
     'LineErrSlopeScatterPlotter',
     'VelFitErrSweepPlotter',
     'VelFitStdSweepPlotter',
+    'VelSlopeSweepPlotter',
+    'VelLinesPlotter',
 ]
 
 ###############################################################################
 
 rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 
-#parser = flagparse.FlagParser()
-#parser.add_flag('--velLines')
-#parser.add_flag('--detailed_noise')
-#parser.add_flag('--slope_sweeps')
-#args = parser.parse_args()
 
 ################################################################################
-#
-#def plotSlopes(ax, dataSpace, pos, noise_sigma, **kw):
-#    # kwargs
-#    trialNum   = kw.pop('trialNum', 0)
-#    markersize = kw.pop('markersize', 4)
-#    color      = kw.pop('color', 'blue')
-#    xlabel     = kw.pop('xlabel', 'Velocity current (pA)')
-#    ylabel     = kw.pop('ylabel', 'Bump speed\n(neurons/s)')
-#    xticks     = kw.pop('xticks', True)
-#    yticks     = kw.pop('yticks', True)
-#    g_ann      = kw.pop('g_ann', True)
-#    sigma_ann  = kw.pop('sigma_ann', True)
-#    kw['markeredgecolor'] = color
-#
-#    r = pos[0]
-#    c = pos[1]
-#    d = dataSpace[r][c].getAllTrialsAsDataSet().data
-#    a = d['analysis']
-#    IvelVec = dataSpace[r][c][trialNum].data['IvelVec']
-#    slopes = a['bumpVelAll']
-#    lineFit = a['lineFitLine']
-#    fitIvelVec = a['fitIvelVec']
-#
-#    nTrials = slopes.shape[0]
-#    avgSlope = np.mean(slopes, axis=0)
-#    stdSlope = np.std(slopes, axis=0)
-#
-#    if (ax is None):
-#        ax = plt.gca()
-#    plt.hold('on')
-#    globalAxesSettings(ax)
-#
-#    ax.plot(IvelVec, slopes.T, 'o', markerfacecolor='none', markersize=markersize, **kw)
-#    #ax.errorbar(IvelVec, avgSlope, stdSlope, fmt='o-',
-#    #        markersize=markersize, color=color, alpha=0.5, **kw)
-#    ax.plot(fitIvelVec, lineFit, '-', linewidth=1, color=color, **kw)
-#
-#    ax.set_xlabel(xlabel)
-#    ax.set_ylabel(ylabel)
-#    ax.spines['top'].set_visible(False)
-#    ax.spines['right'].set_visible(False)
-#    ax.xaxis.set_major_locator(ti.MultipleLocator(50))
-#    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(5))
-#    ax.yaxis.set_major_locator(ti.MultipleLocator(20))
-#    ax.yaxis.set_minor_locator(ti.MultipleLocator(10))
-#    ax.margins(0.05)
-#
-#    if (not xticks):
-#        ax.xaxis.set_ticklabels([])
-#    if (not yticks):
-#        ax.yaxis.set_ticklabels([])
-#
-#    # Annotations
-#    if (sigma_ann):
-#        sigma_txt = '$\sigma$ = {0} pA'.format(noise_sigma)
-#        ax.set_title(sigma_txt, y=1.1, va='bottom')
-#
-#    if (g_ann):
-#        Y, X = aggr.computeVelYX(dataSpace, ds.iterList, r, c)
-#        gE = Y[r, c]
-#        gI = X[r, c]
-#        g_txt = '$g_E$ = {0}\n$g_I$ = {1} nS'.format(gE, gI)
-#    else:
-#        g_txt = ''
-#
-#    txt = '{0}'.format(g_txt)
-#    ax.text(0.05, 1.1, txt, transform=ax.transAxes, va='top',
-#            ha='left', size='x-small')
-#
-#
-###############################################################################
-#velFigsize =(2.6, 2)
-#velLeft    = 0.3
-#velBottom  = 0.35
-#velRight   = 0.95
-#velTop     = 0.65
-#
-#if args.velLines or args.all:
-#    #positions = ((4, 27), (4, 27), (4, 27))
-#    positions = ((5, 15), (5, 15), (5, 15))
-#    fig = plt.figure(figsize=(2.5, velFigsize[1]))
-#    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
-#        velTop))
-#    plotSlopes(ax, ps.v[0], positions[0], noise_sigma=ps.noise_sigmas[0],
-#            xlabel='',
-#            color='blue')
-#    fname = outputDir + "/velocity_slope_examples_0.pdf"
-#    plt.savefig(fname, dpi=300, transparent=True)
-#
-#    fig = plt.figure(figsize=(2.5, velFigsize[1]))
-#    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
-#        velTop))
-#    plotSlopes(ax, ps.v[1], positions[1], noise_sigma=ps.noise_sigmas[1],
-#            ylabel='',
-#            g_ann=False,
-#            color='green')
-#    fname = outputDir + "/velocity_slope_examples_1.pdf"
-#    plt.savefig(fname, dpi=300, transparent=True)
-#
-#    fig = plt.figure(figsize=(2.5, velFigsize[1]))
-#    ax = fig.add_axes(Bbox.from_extents(0.3, velBottom, velRight,
-#        velTop))
-#    plotSlopes(ax, ps.v[2], positions[2], noise_sigma=ps.noise_sigmas[2],
-#            xlabel='',
-#            ylabel='',
-#            g_ann=False,
-#            color='red')
-#    fname = outputDir + "/velocity_slope_examples_2.pdf"
-#    plt.savefig(fname, dpi=300, transparent=True)
-#
-#
+# Examples of velocity fitting lines
+class VelLinesPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(VelLinesPlotter, self).__init__(*args, **kwargs)
+
+    def plotSlopes(self, ax, dataSpace, pos, noise_sigma, iterList, **kw):
+        # kwargs
+        trialNum   = kw.pop('trialNum', 0)
+        markersize = kw.pop('markersize', 4)
+        color      = kw.pop('color', 'blue')
+        lineColor  = kw.pop('lineColor', 'black')
+        xlabel     = kw.pop('xlabel', 'Velocity current (pA)')
+        ylabel     = kw.pop('ylabel', 'Bump speed\n(neurons/s)')
+        xticks     = kw.pop('xticks', True)
+        yticks     = kw.pop('yticks', True)
+        g_ann      = kw.pop('g_ann', True)
+        sigma_ann  = kw.pop('sigma_ann', True)
+        kw['markeredgecolor'] = color
+
+        r = pos[0]
+        c = pos[1]
+        d = dataSpace[r][c].getAllTrialsAsDataSet().data
+        a = d['analysis']
+        IvelVec = dataSpace[r][c][trialNum].data['IvelVec']
+        slopes = a['bumpVelAll']
+        lineFit = a['lineFitLine']
+        fitIvelVec = a['fitIvelVec']
+
+        nTrials = slopes.shape[0]
+        avgSlope = np.mean(slopes, axis=0)
+        stdSlope = np.std(slopes, axis=0)
+
+        if (ax is None):
+            ax = plt.gca()
+        plt.hold('on')
+        globalAxesSettings(ax)
+
+        ax.plot(IvelVec, slopes.T, 'o', markerfacecolor='none', markersize=markersize, **kw)
+        #ax.errorbar(IvelVec, avgSlope, stdSlope, fmt='o-',
+        #        markersize=markersize, color=color, alpha=0.5, **kw)
+        ax.plot(fitIvelVec, lineFit, '-', linewidth=1, color=lineColor, **kw)
+
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.xaxis.set_major_locator(ti.MultipleLocator(50))
+        #ax.xaxis.set_minor_locator(ti.AutoMinorLocator(5))
+        ax.yaxis.set_major_locator(ti.MultipleLocator(25))
+        #ax.yaxis.set_minor_locator(ti.MultipleLocator(10))
+        ax.margins(0.05)
+
+        if (not xticks):
+            ax.xaxis.set_ticklabels([])
+        if (not yticks):
+            ax.yaxis.set_ticklabels([])
+
+        # Annotations
+        if (sigma_ann):
+            sigma_txt = '$\sigma$ = {0} pA'.format(noise_sigma)
+            ax.set_title(sigma_txt, y=1.3, va='bottom')
+
+        if (g_ann):
+            Y, X = aggr.computeVelYX(dataSpace, iterList, r, c)
+            gE = Y[r, c]
+            gI = X[r, c]
+            g_txt = '$g_E$ = {0}\n$g_I$ = {1} nS'.format(gE, gI)
+        else:
+            g_txt = ''
+
+        txt = '{0}'.format(g_txt)
+        ax.text(0.05, 1.3, txt, transform=ax.transAxes, va='top',
+                ha='left', size='x-small')
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        output_dir = self.config['output_dir']
+        iter_list = self.config['iter_list']
+        l, b, r, t = self.myc['bbox_rect']
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fig = self._get_final_fig(self.myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            kwargs = dict()
+            if ns_idx != 1:
+                kwargs['xlabel'] = ''
+            if ns_idx != 0:
+                kwargs['ylabel'] = ''
+            self.plotSlopes(
+                ax,
+                ps.v[ns_idx],
+                self.myc['positions'][ns_idx],
+                noise_sigma=noise_sigma,
+                iterList=iter_list,
+                color='blue',
+                **kwargs)
+
+            fname = (self.config['output_dir'] +
+                     "/velocity_slope_examples_{0}.pdf".format(int(noise_sigma)))
+            plt.savefig(fname, dpi=300, transparent=True)
+        
+
 ###############################################################################
 #EI13Root  = 'simulation_data/submission/detailed_noise/velocity/EI-1_3'
 #EI31Root  = 'simulation_data/submission/detailed_noise/velocity/EI-3_1'
@@ -217,68 +205,60 @@ rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 #
 #
 #
-#
-#
-###############################################################################
-##                           Velocity (slope) sweeps
-#
-## This should be corresponding to the velLine examples as well !!
-#rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
-#slopeVarList = ['lineFitSlope']
-#slope_vmin = None
-#slope_vmax = None
-#velSweep_cmap = 'jet'
-#
-#slope_cbar_kw= dict(
-#        location='right',
-#        shrink = 0.8,
-#        pad = -0.05,
-#        label='Slope\n(neurons/s/pA)',
-#        ticks=ti.MultipleLocator(0.4),
-#        extend='max', extendfrac=0.1)
-#
-#ann0 = dict(
-#        txt='A',
-#        rc=rasterRC[0],
-#        xytext_offset=(1.5, 0.5),
-#        color='white')
-#
-#ann = [ann0]
-#
-#def createSweepFig(name=None):
-#    sweepFigSize = (3.7, 2.6)
-#    sweepLeft   = 0.08
-#    sweepBottom = 0.2
-#    sweepRight  = 0.8
-#    sweepTop    = 0.85
-#    transparent  = True
-#    fig = plt.figure(name, figsize=sweepFigSize)
-#    ax = fig.add_axes(Bbox.from_extents(sweepLeft, sweepBottom, sweepRight,
-#        sweepTop))
-#    return fig, ax
-#
-#if args.slope_sweeps or args.all:
-#    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        fig, ax = createSweepFig(None)
-#        kw = dict(cbar=True)
-#        #if (ns_idx == 2):
-#        #    kw['cbar'] = True
-#        if (ns_idx != 0):
-#            kw['ylabel'] = ''
-#            kw['yticks'] = False
-#        _, ax, cax = sweeps.plotVelTrial(ps.v[ns_idx], slopeVarList, ds.iterList,
-#                noise_sigma, sigmaTitle=True,
-#                ax=ax,
-#                cbar_kw=slope_cbar_kw,
-#                cmap=velSweep_cmap,
-#                vmin=slope_vmin, vmax=slope_vmax,
-#                annotations=ann,
-#                **kw)
-#        fname = outputDir + "/velocity_slope_sweeps{}.pdf"
-#        fig.savefig(fname.format(int(noise_sigma)), dpi=300, transparent=True)
-#
-#
-#
+
+
+##############################################################################
+#                           Velocity (slope) sweeps
+##############################################################################
+class VelSlopeSweepPlotter(SweepPlotter):
+    def __init__(self, *args, **kwargs):
+        super(VelSlopeSweepPlotter, self).__init__(*args, **kwargs)
+        self.fig = None
+        self.ax = None
+
+    def plot(self, *args, **kwargs):
+        sweepc = self._get_sweep_config()
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+        grid_example_idx = self.config['grids']['example_idx']
+
+        # This should be corresponding to the velLine examples as well !!
+        slopeVarList = ['lineFitSlope']
+        slope_vmin = -.472
+        slope_vmax = 1.353
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fname = (self.config['output_dir'] +
+                     "/velocity_slope_sweeps{0}.pdf".format(int(noise_sigma)))
+            self.data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                           ignoreNaNs=True, normalizeTicks=True,
+                                           r=grid_example_idx[ns_idx][0],
+                                           c=grid_example_idx[ns_idx][1])
+            with self.figure_and_axes(fname, sweepc) as (self.fig, self.ax):
+                kw = dict()
+                if (ns_idx != 0):
+                    kw['ylabel'] = ''
+                    kw['yticks'] = False
+                sweeps.plotVelTrial(
+                    ps.v[ns_idx],
+                    slopeVarList,
+                    iter_list,
+                    noise_sigma, sigmaTitle=False,
+                    ax=self.ax,
+                    cbar=self.myc['cbar'][ns_idx],
+                    cbar_kw=self.myc['cbar_kw'],
+                    vmin=slope_vmin, vmax=slope_vmax,
+                    **kw)
+
+                # Contours
+                if self.myc['plot_contours'][ns_idx]:
+                    contours = sweeps.Contours(self.data,
+                            self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                            self.ax,
+                            **self.config['sweeps']['contours_kwargs'])
+
+
 ##############################################################################
 #                           Raster and rate plots
 ##############################################################################
@@ -564,14 +544,19 @@ class VelFitErrSweepPlotter(SweepPlotter):
         sweepc = self._get_sweep_config()
         ps = self.env.ps
         iter_list = self.config['iter_list']
+        grid_example_idx = self.config['grids']['example_idx']
 
         errVarList = ['lineFitErr']
         err_vmin = 0
-        err_vmax = 3
+        err_vmax = 11.2
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
                      "/suppFigure_velocity_err_sweeps{}.pdf".format(int(noise_sigma)))
+            self.data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                           ignoreNaNs=True, normalizeTicks=True,
+                                           r=grid_example_idx[ns_idx][0],
+                                           c=grid_example_idx[ns_idx][1])
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 kw = {'cbar': False}
                 if (ns_idx != 0):
@@ -584,9 +569,18 @@ class VelFitErrSweepPlotter(SweepPlotter):
                         noise_sigma,
                         ax=ax,
                         cbar_kw=myc['cbar_kw'],
-                        xlabel='', xticks=False,
                         vmin=err_vmin, vmax=err_vmax,
+                        sigmaTitle=False,
                         **kw)
+
+                # Contours
+                if self.myc['plot_contours'][ns_idx]:
+                    contours = sweeps.Contours(self.data,
+                            self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                            ax,
+                            **self.config['sweeps']['contours_kwargs'])
+
 
 
 ## Stats

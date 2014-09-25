@@ -21,6 +21,7 @@ files="
     $output_fig_dir/suppFigure_velocity.pdf
     $output_fig_dir/suppFigure_gamma_probabilities.pdf
     $output_fig_dir/suppFigure_grids_probability.pdf
+    $output_fig_dir/suppFigure_bump_drift.pdf
     $panels_dir/raster_examples*.pdf
     $panels_dir/gamma_scatter_gamma_pbumps_all.pdf
     $panels_dir/suppFigure_grid_examples.pdf
