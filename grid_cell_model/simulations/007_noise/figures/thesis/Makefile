@@ -11,6 +11,7 @@ files=										\
 	figure_isbump_examples.py				\
 	figure_seizures.py						\
 	figure_theta.py							\
+	figure_intro.py							\
 	suppFigure_gamma.py						\
 	suppFigure_grids_vs_bumps.py			\
 	suppFigure_grids_vs_line_fit_err.py		\

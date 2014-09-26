@@ -182,7 +182,7 @@ class GammaSweepsPlotter(SweepPlotter):
         if 'fig_size' in self.myc:
             return self._get_final_fig(self.myc['fig_size'])
         else:
-            return super(PSeizureSweepPlotter, self).get_fig()
+            return super(GammaSweepsPlotter, self).get_fig()
 
     def plot(self, *args, **kwargs):
         sweepc = self._get_sweep_config()

@@ -38,11 +38,12 @@ class FigurePlotter(object):
     '''Performs plotting without returning any value.'''
     def __init__(self, config, env):
         self._env = env
+        self._config = config
 
     @property
     def config(self):
         '''Global configuration.'''
-        return self.env.config
+        return self._config
 
     @property
     def myc(self):
