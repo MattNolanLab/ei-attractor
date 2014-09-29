@@ -69,8 +69,8 @@ if o.type == common.bumpType:
             forceUpdate=forceUpdate)
 
     sp.visit(bumpVisitor)
-    #sp.visit(isBumpVisitor)
-    #sp.visit(FRVisitor)
+    sp.visit(isBumpVisitor)
+    sp.visit(FRVisitor)
     #sp.visit(FRPlotter)
 
 elif o.type == common.gammaType:

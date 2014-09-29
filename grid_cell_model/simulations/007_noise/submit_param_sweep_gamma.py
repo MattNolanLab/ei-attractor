@@ -10,7 +10,7 @@ lg.basicConfig(level=lg.INFO)
 from default_params import defaultParameters as dp
 from param_sweep    import submitParamSweep
 
-noise_sigma_all = [.0] #, 150.0, 300.0] # pA
+noise_sigma_all = [150.0, 300.0] # pA
 
 for noise_sigma in noise_sigma_all:
     p = dp.copy()
