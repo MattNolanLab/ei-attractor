@@ -33,19 +33,6 @@ def _get_default_config():
         'const_pos_data_root':  'simulation_data/submission/const_position',
         'singleDataRoot':       'simulation_data/submission/single_neuron',
 
-        'nmda_roots': {
-            '0mM': {
-                'grids_data_root': None,
-                'bump_data_root':  'simulation_data/nmda_vm_dep/C_Mg_0_mM/gamma_bump',
-                'vel_data_root':   None,
-            },
-            '0p1mM': {
-                'grids_data_root': None,
-                'bump_data_root':  'simulation_data/nmda_vm_dep/C_Mg_0p1_mM/gamma_bump',
-                'vel_data_root':   None,
-            },
-        },
-
         'even_shape': (31, 31),
         'noise_sigmas': [0, 150, 300],
 

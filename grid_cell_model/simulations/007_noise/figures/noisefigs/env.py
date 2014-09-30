@@ -4,6 +4,7 @@ import logging
 import pprint
 
 import matplotlib as mpl
+from configobj import ConfigObj
 
 from .EI_plotting.base import NoiseDataSpaces
 from . import defaultconfig as defc
@@ -35,6 +36,11 @@ class NoiseEnvironment(object):
     @property
     def config(self):
         return self._config
+
+    def _get_config_copy(self):
+        new_config = ConfigObj()
+        new_config.merge(self.config.dict())
+        return new_config
 
     def _load_default_config(self):
         return defc.get_config()

@@ -812,7 +812,8 @@ class RasterExamplePlotter(SweepPlotter):
 
                 # Save
                 fname = (self.config['output_dir'] +
-                         "/raster_examples_{0}pA_{1}_{2}.pdf".format(
+                         "/{0}raster_examples_{1}pA_{2}_{3}.pdf".format(
+                             self.config.get('fname_prefix', ''),
                              int(noise_sigma), r, c))
 
                 fig.savefig(fname, dpi=300, transparent=True)
