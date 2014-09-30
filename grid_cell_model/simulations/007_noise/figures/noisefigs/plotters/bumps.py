@@ -493,7 +493,9 @@ class MainBumpFormationPlotter(BumpFormationBase):
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
-                     "/bumps_mainFig_isBumpFracTotal_sweeps_annotated{0}.pdf".format(int(noise_sigma)))
+                     "/{0}bumps_mainFig_isBumpFracTotal_sweeps_annotated{1}.pdf".format(
+                         self.config.get('fname_prefix', ''),
+                         int(noise_sigma)))
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 #fig, ax = ds.getDefaultSweepFig(scale=0.8, colorBarPos='left')
                 kw = dict()
@@ -503,10 +505,6 @@ class MainBumpFormationPlotter(BumpFormationBase):
                 data = aggr.IsBump(ps.bumpGamma[ns_idx],
                                    iter_list,
                                    ignoreNaNs=True)
-                gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
-                                              ignoreNaNs=True, normalizeTicks=True,
-                                              r=grids_example_idx[ns_idx][0],
-                                              c=grids_example_idx[ns_idx][1])
                 _, _, cax = sweeps.plotSweep(data,
                         noise_sigma=noise_sigma,
                         xlabel='' if xticks[ns_idx] == False else None,
@@ -519,6 +517,10 @@ class MainBumpFormationPlotter(BumpFormationBase):
                         **kw)
 
                 if self.myc['plot_grid_contours'][ns_idx]:
+                    gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                                  ignoreNaNs=True, normalizeTicks=True,
+                                                  r=grids_example_idx[ns_idx][0],
+                                                  c=grids_example_idx[ns_idx][1])
                     contours = sweeps.Contours(gridData,
                             self.config['sweeps']['grid_contours'])
                     contours.plot(
@@ -542,7 +544,9 @@ class MainIsBumpPlotter(BumpFormationBase):
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
-                     "/bumps_mainFig_isBump_sweeps{0}.pdf".format(int(noise_sigma)))
+                     "/{0}bumps_mainFig_isBump_sweeps{1}.pdf".format(
+                         self.config.get('fname_prefix', ''),
+                         int(noise_sigma)))
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 kw = dict(cbar=False, sigmaTitle=False)
                 if ns_idx != 0:

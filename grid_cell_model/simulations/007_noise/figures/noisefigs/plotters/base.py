@@ -99,6 +99,29 @@ class FigurePlotter(object):
         fig = plt.figure(figsize=np.asarray(nominal_fig_size)*final_scale)
         return fig
 
+    def get_fname(self, template, *args, **kwargs):
+        '''Format the template of the file name into a ready-to-use file path
+        for saving the figure.
+
+        Parameters
+        ----------
+        template : str
+            String of the file name template. This can be prefixed and suffixed
+            with various paths. *args and **kwargs will be passed to
+            template.format() method.
+
+        Returns
+        -------
+        fname : str
+            Fully qualifying path to save the figure into.
+        '''
+        if "ns" in kwargs:
+            kwargs["ns"] = int(kwargs["ns"])
+        return "{output_dir}/{fname_prefix}{file_str}".format(
+                    output_dir=self.config['output_dir'],
+                    fname_prefix=self.config.get('fname_prefix', ''),
+                    file_str=template.format(*args, **kwargs))
+
 
 class SweepPlotter(FigurePlotter):
     '''Parameter sweeps plotter'''
@@ -242,8 +265,9 @@ class PdfOutputSaver(MultiFigureSaver):
 
     def _reset(self):
         self.close()
-        fname = "%s.%s" % (self.file_name, self.ext)
-        self._saver = PdfPages(fname)
+        if self.file_name is not None:
+            fname = "%s.%s" % (self.file_name, self.ext)
+            self._saver = PdfPages(fname)
 
     def savefig(self, fig):
         self._saver.savefig(fig, **self._backend_params)

@@ -193,18 +193,13 @@ class GammaSweepsPlotter(SweepPlotter):
         f_yticks = self.myc['F_yticks']
         iter_list = self.config['iter_list']
         grids_example_idx = self.config['grids']['example_idx']
+        fname_prefix = self.config.get('fname_prefix', '')
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             ACData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
                                            iter_list, normalizeTicks=True)
-            gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
-                                          ignoreNaNs=True, normalizeTicks=True,
-                                          r=grids_example_idx[ns_idx][0],
-                                          c=grids_example_idx[ns_idx][1])
-
             # Gamma power
-            fname = (self.config['output_dir'] +
-                     "/gamma_sweeps{0}.pdf".format(int(noise_sigma)))
+            fname = self.get_fname("gamma_sweeps{ns}.pdf", ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 sweeps.plotACTrial(
                         ACData,
@@ -223,6 +218,13 @@ class GammaSweepsPlotter(SweepPlotter):
                         vmin=AC_vmin, vmax=AC_vmax,
                         annotations=self.myc['ann'])
                 if self.myc['plot_grid_contours'][ns_idx]:
+                    gridData = aggr.GridnessScore(
+                            ps.grids[ns_idx],
+                            iter_list,
+                            ignoreNaNs=True,
+                            normalizeTicks=True,
+                            r=grids_example_idx[ns_idx][0],
+                            c=grids_example_idx[ns_idx][1])
                     contours = sweeps.Contours(gridData,
                             self.config['sweeps']['grid_contours'])
                     contours.plot(
@@ -230,8 +232,7 @@ class GammaSweepsPlotter(SweepPlotter):
                             **self.config['sweeps']['contours_kwargs'])
             
             # Gamma frequency
-            fname = (self.config['output_dir'] +
-                     "/gamma_freq_sweeps{0}.pdf".format(int(noise_sigma)))
+            fname = self.get_fname("gamma_freq_sweeps{ns}.pdf", ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 sweeps.plotACTrial(
                         ps.bumpGamma[ns_idx],
@@ -358,7 +359,6 @@ class GammaExamplePlotter(FigurePlotter):
 
     def plot(self, *args, **kwargs):
         ps = self.env.ps
-        exampleFName = self.config['output_dir'] + "/gamma_example{0}_{1}.pdf"
         example_rc = self.config['gamma']['example_rc']
 
         exampleTrialNum = 0
@@ -370,7 +370,10 @@ class GammaExamplePlotter(FigurePlotter):
 
         for nsIdx, ns in enumerate(ps.noise_sigmas):
             for idx, rc in enumerate(example_rc):
-                fname = exampleFName.format(ns, idx)
+                exampleFName = (self.config['output_dir'] +
+                                "/{0}gamma_example{1}_{2}.pdf")
+                fname = exampleFName.format(self.config.get('fname_prefix', ''),
+                                            ns, idx)
                 fig = self._get_final_fig(exampleFigSize)
                 ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
                     exampleRight, exampleTop))
