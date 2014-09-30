@@ -10,4 +10,5 @@ from .isbump_examples import *
 from .seizures import *
 from .velocity import *
 from .theta import *
+from .rates import *
 
