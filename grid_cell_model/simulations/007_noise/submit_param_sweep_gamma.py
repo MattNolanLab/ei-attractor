@@ -32,9 +32,6 @@ for noise_sigma in noise_sigma_all:
     p['nthreads']          = 1
     p['ntrials']           = 5
 
-    p['C_Mg'] = .1  # mM
-
-
     # Range of E/I synaptic conductances
     Nvals  = 31      # Number of values for each dimension
     startG = 0.0     # nS
