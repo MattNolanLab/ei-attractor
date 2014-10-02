@@ -5,7 +5,7 @@ simulation with initialisation and velocity place cells active (velOn==True and
 constantPosition=False). Or a simulation in which the animal holds still at a
 specified position (constantPosition==True).
 '''
-from __future__ import absolute_import, print_function, division
+from __future__ import absolute_import, print_function
 
 import numpy as np
 from os.path            import exists
@@ -73,7 +73,7 @@ for trial_idx in range(len(d['trials']), o.ntrials):
     overalT += totalT
 
 d.close()
-print "Script total run time: {0} s".format(overalT)
+print("Script total run time: {0} s".format(overalT))
 ################################################################################
 
 

@@ -22,12 +22,13 @@
 import logging as lg
 import numpy as np
 
-from submitting.factory   import SubmitterFactory
-from submitting.arguments import ArgumentCreator
-from default_params       import defaultParameters as dp
-from submitting           import flagparse
-from submitting.flagparse import positive_int
+from grid_cell_model.submitting.factory   import SubmitterFactory
+from grid_cell_model.submitting.arguments import ArgumentCreator
+from grid_cell_model.submitting           import flagparse
+from grid_cell_model.submitting.flagparse import positive_int
+
 from param_sweep          import submitParamSweep, getBumpCurrentSlope
+from default_params       import defaultParameters as dp
 
 parser = flagparse.FlagParser()
 parser.add_argument('--row',     type=int)
