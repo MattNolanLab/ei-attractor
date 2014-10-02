@@ -89,6 +89,9 @@ for subDir in subDirs:
         def extractFR_i(x):
             N = 10 # 10 neurons recorded, ugly, I know
             return np.mean(x[0:N])
+        sp.aggregateData(varListBase + ['FR_i', 'avg'], trialNumList,
+                funReduce=extractFR_i, saveData=True, loadData=loadData,
+                output_dtype='array')
         sp.aggregateData(varListBase + ['FR_i', 'all'], trialNumList,
                 funReduce=extractFR_i, saveData=True, loadData=False,
                 output_dtype='array')

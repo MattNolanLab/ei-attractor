@@ -6,6 +6,7 @@ import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
+from matplotlib.colors import LogNorm
 from copy import deepcopy
 
 from grid_cell_model.plotting.global_defs import globalAxesSettings
@@ -80,11 +81,12 @@ class FRSweepPlotter(SweepPlotter):
         varList_e = ['FR_e',  'avg']
         varList_i = ['FR_i',  'all']
         exampleIdx = [(1, 22), (1, 22), (1, 22)] # (row, col)
+        example_idx = self.config['grids']['example_idx']
 
         FR_e_vmin = 0
-        FR_e_vmax = 5
-        FR_i_vmin = 0
-        FR_i_vmax = 100
+        FR_e_vmax = 54.53
+        FR_i_vmin = 0.1
+        FR_i_vmax = 295
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             # E cells
@@ -100,32 +102,43 @@ class FRSweepPlotter(SweepPlotter):
                     kw['ylabel'] = ''
                     kw['yticks'] = False
 
-                sweeps.plotFRTrial(ps.grids[ns_idx], varList_e, iter_list,
-                        noise_sigma=noise_sigma,
-                        trialNumList=gridTrialNumList,
+                data_e = aggr.AvgPopulationFR(
+                        'FR_e/avg',
+                        ps.grids[ns_idx], iter_list,
+                        ignoreNaNs=True, normalizeTicks=True,
+                        r=example_idx[ns_idx][0],
+                        c=example_idx[ns_idx][1])
+
+                sweeps.plotSweep(
+                        data_e,
+                        noise_sigma,
                         ax=ax,
                         xlabel='', xticks=False,
-                        r=exampleIdx[ns_idx][0], c=exampleIdx[ns_idx][1],
                         cbar=cbar,
                         cbar_kw=self.myc['cbar_kw_e'],
                         vmin=FR_e_vmin, vmax=FR_e_vmax,
-                        ignoreNaNs=True,
                         **kw)
 
             # I cells
             fname_i = self.get_fname("suppFigure_grids_FR_I_{ns}.pdf",
                                      ns=noise_sigma)
             with self.figure_and_axes(fname_i, sweepc) as (fig, ax):
-                sweeps.plotFRTrial(ps.grids[ns_idx], varList_i, iter_list,
-                        noise_sigma=noise_sigma,
-                        trialNumList=gridTrialNumList,
+                data_i = aggr.AvgPopulationFR(
+                        'FR_i/all',
+                        ps.grids[ns_idx], iter_list,
+                        ignoreNaNs=True, normalizeTicks=True,
+                        r=example_idx[ns_idx][0],
+                        c=example_idx[ns_idx][1])
+                flt_data_i = aggr.NoZeroExcitationFilter(data_i)
+
+                sweeps.plotSweep(
+                        flt_data_i,
+                        noise_sigma,
                         ax=ax,
-                        r=exampleIdx[ns_idx][0], c=exampleIdx[ns_idx][1],
+                        xlabel='', xticks=False,
                         cbar=cbar,
                         cbar_kw=self.myc['cbar_kw_i'],
                         vmin=FR_i_vmin, vmax=FR_i_vmax,
-                        sigmaTitle=False,
-                        ignoreNaNs=True,
                         **kw)
 
 

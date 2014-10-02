@@ -945,8 +945,6 @@ def _get_default_config():
             'pad'        : -0.05,
             'ticks'      : ti.MultipleLocator(50),
             'rasterized' : True,
-            'extend'     : 'max',
-            'extendfrac' : 0.1
         },
 
     }
