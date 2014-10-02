@@ -63,8 +63,8 @@ import logging  as lg
 import random
 import time
 
-from gc_exceptions         import NotImplementedException
-from analysis.image        import Position2D, remapTwistedTorus
+from ..gc_exceptions import NotImplementedException
+from ..analysis.image import Position2D, remapTwistedTorus
 
 
 __all__ = ['GridCellNetwork']

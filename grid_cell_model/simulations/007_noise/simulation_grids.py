@@ -5,14 +5,16 @@ simulation with initialisation and velocity place cells active (velOn==True and
 constantPosition=False). Or a simulation in which the animal holds still at a
 specified position (constantPosition==True).
 '''
+from __future__ import absolute_import, print_function, division
+
 import numpy as np
 from os.path            import exists
 from numpy.random       import choice
-
-from models.parameters  import getOptParser
-from models.gc_net_nest import BasicGridCellNetwork, ConstPosInputs
-from data_storage       import DataStorage
 from nest.hl_api        import NESTError
+
+from grid_cell_model.models.parameters  import getOptParser
+from grid_cell_model.models.gc_net_nest import BasicGridCellNetwork, ConstPosInputs
+from grid_cell_model.data_storage       import DataStorage
 
 import logging
 logger = logging.getLogger(__name__)

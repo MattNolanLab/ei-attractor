@@ -1,40 +1,19 @@
-#
-#   gc_net_nest.py
-#
-#   Nest-specific implementation of the grid cell model
-#
-#     Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#     
-#     This program is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
-#     (at your option) any later version.
-#     
-#     This program is distributed in the hope that it will be useful,
-#     but WITHOUT ANY WARRANTY; without even the implied warranty of
-#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#     GNU General Public License for more details.
-#     
-#     You should have received a copy of the GNU General Public License
-#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Nest-specific implementation of the grid cell model.'''
+from __future__ import absolute_import, print_function
 
-
-import numpy    as np
 import logging
 
+import numpy    as np
 from numpy.random import rand, randn
 from scipy.io     import loadmat
-
-import gc_neurons
-from gc_net       import GridCellNetwork
-from place_input  import PlaceCellInput
-from place_cells  import UniformBoxPlaceCells
-from data_storage import DataStorage
-from otherpkg.log import log_info
-
 import nest
 
+from . import gc_neurons
+from .gc_net import GridCellNetwork
+from .place_input import PlaceCellInput
+from .place_cells import UniformBoxPlaceCells
+from ..data_storage import DataStorage
+from ..otherpkg.log import log_info
 
 logger = logging.getLogger(__name__)
 gcnLogger = logging.getLogger('{0}.{1}'.format(__name__,
@@ -444,8 +423,8 @@ class NestGridCellNetwork(GridCellNetwork):
             "rat_pos_y" :  self.rat_pos_y,
             "rat_pos_dt":  self.rat_dt}) # s --> ms
 
-        print self.rat_pos_x
-        print self.rat_pos_y
+        print(self.rat_pos_x)
+        print(self.rat_pos_y)
 
         # Map velocities to currents: Here the mapping is 1:1, i.e. the
         # velocity dictates the current

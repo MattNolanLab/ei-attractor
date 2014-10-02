@@ -46,12 +46,14 @@ namespace nest
         const Name g_AMPA("g_AMPA");
         const Name g_NMDA("g_NMDA");
         const Name g_NMDA_fraction("g_NMDA_fraction");
+        const Name C_Mg("C_Mg");
         const Name g_GABA_A("g_GABA_A");
         const Name I_stim("I_stim");
         const Name V_clamp("V_clamp");
         const Name I_clamp_AMPA("I_clamp_AMPA");
         const Name I_clamp_NMDA("I_clamp_NMDA");
         const Name I_clamp_GABA_A("I_clamp_GABA_A");
+        const Name s_NMDA("s_NMDA");
         const Name I_const("I_const");
         const Name I_ac_amp("I_ac_amp");
         const Name I_ac_freq("I_ac_freq");

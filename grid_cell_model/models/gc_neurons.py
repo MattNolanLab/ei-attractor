@@ -1,23 +1,6 @@
-#
-#   gc_neurons.py
-#
-#   Grid cell network neuron definitions.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Grid cell network neuron definitions.'''
+from __future__ import absolute_import, print_function, division
+
 import numpy as np
 
 __all__ = ['getENeuronParams', 'getINeuronParams']
@@ -54,6 +37,7 @@ def getENeuronParams(no):
             "I_ac_start_t"     : no.theta_start_t,
             "I_noise_std"      : no.noise_sigma,
             "V_clamp"          : no.Vclamp,
+            "C_Mg"             : no.C_Mg,
             "rat_pos_x"        : [],
             "rat_pos_y"        : []}
 
@@ -90,6 +74,7 @@ def getINeuronParams(no):
             "I_noise_std"      : no.noise_sigma,
             "V_clamp"          : no.Vclamp,
             "g_NMDA_fraction"  : no.NMDA_amount,
+            "C_Mg"             : no.C_Mg,
             "rat_pos_x"        : [],
             "rat_pos_y"        : []}
 

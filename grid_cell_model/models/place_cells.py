@@ -19,7 +19,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from gc_exceptions import NotImplementedException
+from grid_cell_model.gc_exceptions import NotImplementedException
 
 
 __all__ = ['PlaceCells', 'UniformBoxPlaceCells']

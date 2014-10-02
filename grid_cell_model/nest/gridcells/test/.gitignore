@@ -1,0 +1,9 @@
+/build
+/googletest
+
+/CMakeCache.txt
+/CMakeFiles/
+/Makefile
+/cmake_install.cmake
+/iaf_gridcells_unittest
+/nmda_test_vec.pdf
