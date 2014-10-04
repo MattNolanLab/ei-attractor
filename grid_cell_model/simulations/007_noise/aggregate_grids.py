@@ -3,8 +3,8 @@
 Aggregate grid field data into the reductions file.
 '''
 import numpy as np
-from parameters  import JobTrialSpace2D
-from submitting import flagparse
+from grid_cell_model.parameters import JobTrialSpace2D
+from grid_cell_model.submitting import flagparse
 
 evenSpacingType = 'even-spacing'
 detailedNoiseType = 'detailed-noise'
@@ -22,7 +22,7 @@ parser.add_argument("type",      type=str, choices=allowedTypes,
         metavar='types', help='Type of the aggregation. Can be one of %s' %
         str(allowedTypes))
 parser.add_argument("where",     type=str, help='Root directory')
-parser.add_argument("--ns",      type=int, choices=[0, 150, 300])
+parser.add_argument("--ns",      type=str, choices=["0pA", "150pA", "300pA"])
 parser.add_argument('--ntrials', type=int, default=3)
 parser.add_argument('--noLoadData', action='store_true')
 parser.add_argument('--position',type=str, choices=allowedPositions)
@@ -49,8 +49,9 @@ for subDir in subDirs:
     rootDir = '{0}/{1}'.format(args.where, subDir)
     print rootDir, shape
 
+    sp = JobTrialSpace2D(shape, rootDir)
+
     if args.gridFields or args.all:
-        sp = JobTrialSpace2D(shape, rootDir)
         sp.aggregateData(varListBase + ['rateMap_e'], trialNumList,
                 funReduce=None, saveData=True, loadData=loadData,
                 output_dtype='list')
@@ -88,6 +89,9 @@ for subDir in subDirs:
         def extractFR_i(x):
             N = 10 # 10 neurons recorded, ugly, I know
             return np.mean(x[0:N])
+        sp.aggregateData(varListBase + ['FR_i', 'avg'], trialNumList,
+                funReduce=extractFR_i, saveData=True, loadData=loadData,
+                output_dtype='array')
         sp.aggregateData(varListBase + ['FR_i', 'all'], trialNumList,
                 funReduce=extractFR_i, saveData=True, loadData=False,
                 output_dtype='array')

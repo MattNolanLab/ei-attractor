@@ -226,11 +226,28 @@ class AggregateData(object):
         self.r = r
         self.c = c
 
-
     @abstractmethod
     def getData(self):
         raise NotImplementedError()
 
+
+class AggregateDataFilter(AggregateData):
+    def __init__(self, data):
+        self._data = data
+
+    def getData(self):
+        raise NotImplementedError()
+
+
+class NoZeroExcitationFilter(AggregateDataFilter):
+    def __init__(self, data):
+        super(NoZeroExcitationFilter, self).__init__(data)
+
+    def getData(self):
+        data, X, Y = self._data.getData()
+        data = np.ma.array(data, copy=True)
+        data.mask[:, 0] = True
+        return data, X, Y
 
 
 def maskNaNs(a, really):
@@ -745,6 +762,33 @@ class MaxThetaPopulationFR(PopulationFR):
         reducedData = reduction(data)
         return (np.mean(maskNaNs(reducedData, self.ignoreNaNs), axis=2),
                 self._X, self._Y)
+
+
+class AvgPopulationFR(AggregateData):
+    '''Average population firing rate, averaged over all neurons in the
+    network'''
+    def __init__(self, where, space, iterList, **kw):
+        super(AvgPopulationFR, self).__init__(space, iterList, None, **kw)
+        self._where = where
+        self._FR = None
+        self._X  = None
+        self._Y  = None
+
+    def _getRawData(self):
+        if self._FR is None:
+            path = "{root}/{where}".format(
+                        root=self.analysisRoot[0],
+                        where = self._where)
+            self._FR = np.asarray(self.sp.getReduction(path))
+            self._Y, self._X = computeYX(self.sp, self.iterList,
+                                         normalizeTicks=self.normalizeTicks,
+                                         r=self.r, c=self.c)
+
+        return self._FR, self._X, self._Y
+
+    def getData(self):
+        data, X, Y = self._getRawData()
+        return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
 
 
 ##############################################################################

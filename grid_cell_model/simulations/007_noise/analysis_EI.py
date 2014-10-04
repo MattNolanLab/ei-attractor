@@ -124,12 +124,15 @@ elif o.type == common.gridsType:
     #        spikeType = spikeType,
     #        nRows = 5, nCols = 5, range=[0, 1000], bins=40,
     #        ISINWindows=20)
-    #FRVisitor = plotting_visitors.FiringRateVisitor(forceUpdate=forceUpdate)
+    FRVisitor = vis.spikes.FiringRateVisitor(winLen=2.,     # ms
+                                             winDt=.5,      # ms
+                                             forceUpdate=forceUpdate,
+                                             sliding_analysis=False)
 
-    sp.visit(gridVisitor)
-    sp.visit(isBumpVisitor)
+    #sp.visit(gridVisitor)
+    #sp.visit(isBumpVisitor)
     #sp.visit(ISIVisitor)
-    #sp.visit(FRVisitor)
+    sp.visit(FRVisitor)
 elif o.type == common.posType:
     bumpPosVisitor = vis.bumps.BumpPositionVisitor(
             tstart=0,
