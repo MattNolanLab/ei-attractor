@@ -924,4 +924,32 @@ def _get_default_config():
 
     ##############################################################################
 
+    FRSweepPlotter_config = {
+        'cbar_kw' : {
+            'location' : 'right',  # This has to match cbar_kw_e and cbar_kw_i
+        },
+            
+        'cbar_kw_e': {
+            'label'      : 'E Firing rate (Hz)',
+            'location'   : 'right',
+            'shrink'     : 0.8,
+            'pad'        : -0.05,
+            'ticks'      : ti.MultipleLocator(2),
+            'rasterized' : True,
+        },
+
+        'cbar_kw_i': {
+            'label'      : 'I Firing rate (Hz)',
+            'location'   : 'right',
+            'shrink'     : 0.8,
+            'pad'        : -0.05,
+            'ticks'      : ti.MultipleLocator(50),
+            'rasterized' : True,
+        },
+
+    }
+    _default_config['FRSweepPlotter'] = FRSweepPlotter_config
+
+    ##############################################################################
+
     return _default_config
