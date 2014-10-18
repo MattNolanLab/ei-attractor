@@ -10,11 +10,12 @@ import numpy as np
 from matplotlib.pyplot import figure, plot, pcolormesh, subplot2grid, savefig,\
         colorbar, axis, xlabel, ylabel
 
+from ..interface import DictDSVisitor
 from ...analysis.spikes import PopulationSpikes
 from ...analysis.grid_cells import SNSpatialRate2D, SNAutoCorr, cellGridnessScore
-from ...plotting.bumps  import torusFiringRate
-from ...plotting.grids  import plotSpikes2D
-from ...otherpkg.log    import log_warn, log_info
+from ...plotting.bumps import torusFiringRate
+from ...plotting.grids import plotSpikes2D
+from ...otherpkg.log import log_warn, log_info
 
 from .. import interface
 
@@ -23,7 +24,7 @@ __all__ = ['GridPlotVisitor']
 
 
 
-class GridPlotVisitor(interface.DictDSVisitor):
+class GridPlotVisitor(DictDSVisitor):
     '''
     Plot the following figures for the data set:
         * Spike map, showing the trajectory of a simulated animal and spike

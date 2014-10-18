@@ -129,7 +129,7 @@ elif o.type == common.gridsType:
                                              forceUpdate=forceUpdate,
                                              sliding_analysis=False)
 
-    #sp.visit(gridVisitor)
+    sp.visit(gridVisitor)
     #sp.visit(isBumpVisitor)
     #sp.visit(ISIVisitor)
     sp.visit(FRVisitor)
