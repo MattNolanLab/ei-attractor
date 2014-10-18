@@ -114,7 +114,7 @@ _config = {
         'fig_size': (3, 2.75),
         'bbox_rect': (.25, .35, .95, .85),
         'legend_kwargs': dict(
-            loc=(0.7, 0.4),
+            loc=(0.75, 0.5),
         ),
         'ylabel': '',
         'yticks': False,

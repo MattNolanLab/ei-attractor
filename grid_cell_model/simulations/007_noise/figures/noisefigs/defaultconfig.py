@@ -116,8 +116,8 @@ def _get_default_config():
             'rasterized': True
         },
         'sigma_title': True,
-        'vmin': -0.505,
-        'vmax': 1.141,
+        'vmin': -0.5,
+        'vmax': 1.111,
         'ann': [
             dict(
                 txt='b',

@@ -272,7 +272,6 @@ class GridnessScore(AggregateData):
         return self._gscore, self._X, self._Y
 
     def getData(self):
-        #import pdb; pdb.set_trace()
         data, X, Y = self._getRawData()
         return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
 
