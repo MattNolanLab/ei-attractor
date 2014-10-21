@@ -13,6 +13,7 @@ files=										\
 	figure_theta.py							\
 	figure_intro.py							\
 	suppFigure_gamma.py						\
+	suppFigure_grid_examples.py				\
 	suppFigure_grids_vs_bumps.py			\
 	suppFigure_grids_vs_line_fit_err.py		\
 	suppFigure_grids_vs_line_slope.py		\
