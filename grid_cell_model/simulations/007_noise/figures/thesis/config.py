@@ -11,6 +11,8 @@ _config = {
     'GridSweepsPlotter': {
         'cbar': [1, 1, 1],
         'scale_factor': .75,
+        'ylabel': [None, None, None],
+        'yticks': [True, True, True],
     },
 
     'GridExamplesPlotter': {
@@ -33,7 +35,7 @@ _config = {
             'pad': .2,
             'labelpad': 2,
         },
-        'AC_xticks': [1, 0, 1],
+        'AC_xticks': [1, 1, 1],
         'AC_yticks': [1, 1, 1],
         'AC_sigma_title': False,
 
@@ -42,7 +44,7 @@ _config = {
             'pad': .2,
             'labelpad': 2,
         },
-        'F_xticks': [1, 0, 1],
+        'F_xticks': [1, 1, 1],
         'F_yticks': [0, 0, 0],
         'F_sigma_title': False,
     },

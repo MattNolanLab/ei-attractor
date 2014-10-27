@@ -118,6 +118,8 @@ def _get_default_config():
         'sigma_title': True,
         'vmin': -0.5,
         'vmax': 1.111,
+        'ylabel': [None, '',    ''],
+        'yticks': [True, False, False],
         'ann': [
             dict(
                 txt='b',

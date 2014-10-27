@@ -62,9 +62,6 @@ class GridSweepsPlotter(SweepPlotter):
             with self.figure_and_axes(fname, sweepc) as (self.fig, self.ax):
                 # Sweep itself
                 kw = dict()
-                if ns_idx != 0:
-                    kw['ylabel'] = ''
-                    kw['yticks'] = False
                 sweeps.plotGridTrial(
                         self.data,
                         None,
@@ -77,6 +74,8 @@ class GridSweepsPlotter(SweepPlotter):
                         cbar_kw=self.myc['cbar_kw'],
                         cmap=self.cmap,
                         vmin=self.myc['vmin'], vmax=self.myc['vmax'],
+                        ylabel=self.myc['ylabel'][ns_idx],
+                        yticks=self.myc['yticks'][ns_idx],
                         ignoreNaNs=True,
                         annotations=self.myc['ann'],
                         sliceAnn=None,
