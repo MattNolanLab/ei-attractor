@@ -1,0 +1,7 @@
+# Non-python requirements
+# HDF5 library
+numpy
+scipy
+Cython
+h5py
+matplotlib

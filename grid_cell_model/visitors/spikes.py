@@ -1,14 +1,20 @@
 '''
 Visitors that perform (raw) spikes analysis.
 '''
-import numpy as np
-
-import analysis.spikes as aspikes
-from .interface import DictDSVisitor
-from otherpkg.log     import getClassLogger
+from __future__ import absolute_import, print_function
 
 import logging
+
+import numpy as np
+
+from ..analysis import spikes as aspikes
+from ..data_storage.sim_models import ei as simei
+from ..otherpkg.log import getClassLogger
+from .interface import DictDSVisitor
+
 FRLogger = getClassLogger("FiringRateVisitor", __name__)
+XCLogger = getClassLogger("SpikeTrainXCVisitor", __name__)
+statsLogger = getClassLogger("SpikeStatsVisitor", __name__)
 
 __all__ = ['FiringRateVisitor', 'SpikeTrainXCVisitor', 'SpikeStatsVisitor']
 
@@ -25,7 +31,8 @@ class FiringRateVisitor(DictDSVisitor):
 
     '''
 
-    def __init__(self, winLen, winDt, tStart=None, tEnd=None, forceUpdate=False):
+    def __init__(self, winLen, winDt, tStart=None, tEnd=None, forceUpdate=False,
+                 sliding_analysis=True):
         '''
         Initialize the visitor.
 
@@ -42,12 +49,16 @@ class FiringRateVisitor(DictDSVisitor):
             Analysis end time. If None, extract from the data
         forceUpdate : boolean, optional
             Whether to do the data analysis even if the data already exists.
+        sliding_analysis : boolean, optional
+            Whether to perform sliding window analysis. Might consume lots of
+            RAM on long simulation times.
         '''
         self.tStart      = tStart
         self.tEnd        = tEnd
         self.winLen      = winLen
         self.winDt       = winDt
         self.forceUpdate = forceUpdate
+        self.sliding     = sliding_analysis
 
 
     def _getSpikeTrain(self, data, monName, dimList):
@@ -78,19 +89,20 @@ class FiringRateVisitor(DictDSVisitor):
             FRLogger.info("Data present (FR_e), skipping.")
 
 
-        frE = a['FR_e']
-        if not ('popSliding' in frE.keys() and 'popSlidingTimes' in
-                frE.keys()):
-            FRLogger.info("Analysing (sliding FR_e)")
-            eSlidingFR, eSlidingFRt = eSp.slidingFiringRate(
-                                        tStart, tEnd, self.winDt,
-                                        self.winLen)
-            frE.update({
-                    'popSliding'      : np.mean(eSlidingFR, axis=0),
-                    'popSlidingTimes' : eSlidingFRt
-            })
-        else:
-            FRLogger.info("Data present (sliding FR_e), skipping.")
+        if self.sliding:
+            frE = a['FR_e']
+            if not ('popSliding' in frE.keys() and 'popSlidingTimes' in
+                    frE.keys()):
+                FRLogger.info("Analysing (sliding FR_e)")
+                eSlidingFR, eSlidingFRt = eSp.slidingFiringRate(
+                                            tStart, tEnd, self.winDt,
+                                            self.winLen)
+                frE.update({
+                        'popSliding'      : np.mean(eSlidingFR, axis=0),
+                        'popSlidingTimes' : eSlidingFRt
+                })
+            else:
+                FRLogger.info("Data present (sliding FR_e), skipping.")
 
 
         if (not self.folderExists(a, ['FR_i']) or self.forceUpdate):
@@ -104,19 +116,20 @@ class FiringRateVisitor(DictDSVisitor):
             FRLogger.info("Data present (FR_i), skipping.")
 
 
-        frI = a['FR_i']
-        if not ('popSliding' in frI.keys() and 'popSlidingTimes' in
-                frI.keys()):
-            FRLogger.info("Analysing (sliding FR_i)")
-            iSlidingFR, iSlidingFRt = iSp.slidingFiringRate(
-                                        tStart, tEnd, self.winDt,
-                                        self.winLen)
-            frI.update({
-                    'popSliding'      : np.mean(iSlidingFR, axis=0),
-                    'popSlidingTimes' : iSlidingFRt
-            })
-        else:
-            FRLogger.info("Data present (sliding FR_i), skipping.")
+        if self.sliding:
+            frI = a['FR_i']
+            if not ('popSliding' in frI.keys() and 'popSlidingTimes' in
+                    frI.keys()):
+                FRLogger.info("Analysing (sliding FR_i)")
+                iSlidingFR, iSlidingFRt = iSp.slidingFiringRate(
+                                            tStart, tEnd, self.winDt,
+                                            self.winLen)
+                frI.update({
+                        'popSliding'      : np.mean(iSlidingFR, axis=0),
+                        'popSlidingTimes' : iSlidingFRt
+                })
+            else:
+                FRLogger.info("Data present (sliding FR_i), skipping.")
 
 
 
@@ -172,7 +185,7 @@ class SpikeTrainXCVisitor(DictDSVisitor):
         a = data['analysis']
 
         if (self.outputName in a.keys() and not self.forceUpdate):
-            log_info("SpikeTrainXCorrelation", "Data present. Skipping analysis.")
+            XCLogger.info("Data present. Skipping analysis.")
             return
 
         spikes = simei.MonitoredSpikes(data, self.monitorName, self.NName)
@@ -222,7 +235,7 @@ class SpikeStatsVisitor(DictDSVisitor):
         a = data['analysis']
 
         if (self.outputName in a.keys() and not self.forceUpdate):
-            log_info("SpikeStatsVisitor", "Data present. Skipping analysis.")
+            statsLogger.info("Data present. Skipping analysis.")
             return
 
         spikes = simei.MonitoredSpikes(data, self.monitorName, self.NName)

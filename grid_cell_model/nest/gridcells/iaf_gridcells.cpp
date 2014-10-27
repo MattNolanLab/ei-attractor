@@ -15,6 +15,7 @@
  */
 
 #include "iaf_gridcells.h"
+#include "nmda.h"
 #include "nest_names.h"
 
 #ifdef HAVE_GSL_1_11
@@ -76,6 +77,8 @@ namespace nest
             &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::I_CLAMP_NMDA>);
         insert_(names::I_clamp_GABA_A, 
             &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::I_CLAMP_GABA_A>);
+        insert_(names::s_NMDA,
+            &iaf_gridcells::get_y_elem_<iaf_gridcells::State_::S_NMDA>);
     }
 }
 
@@ -103,7 +106,7 @@ int nest::iaf_gridcells_dynamics(double, const double y[], double f[], void* pno
     const double_t g_GABA_A     = y[S::G_GABA_A];
     const double_t I_AHP        = g_AHP    * (V - node.P.E_AHP);
     const double_t I_syn_AMPA   = g_AMPA   * (V - node.P.E_AMPA);
-    const double_t I_syn_NMDA   = g_NMDA   * (V - node.P.E_NMDA);
+    const double_t I_syn_NMDA   = g_NMDA   * (V - node.P.E_NMDA) * y[S::S_NMDA];
     const double_t I_syn_GABA_A = g_GABA_A * (V - node.P.E_GABA_A);
     
     const double_t I_spike   = node.P.Delta_T * std::exp((V - node.P.V_th) / node.P.Delta_T);
@@ -153,6 +156,7 @@ nest::iaf_gridcells::Parameters::Parameters()
       g_AHP_ad        ( false ), // bool
       V_clamp         ( -50.0 ), // mV
       g_NMDA_fraction (   0.0 ), // percent of AMPA weight
+      C_Mg            (   0.0 ), // Mg2+ concentration
       I_const         (   0.0 ), // pA
       I_ac_amp        (   0.0 ), // pA
       I_ac_freq       (   8.0 ), // Hz
@@ -244,6 +248,7 @@ void nest::iaf_gridcells::Parameters::get(DictionaryDatum &d) const
     def<double>(d, names::V_clamp,          V_clamp);
 
     def<double>(d, names::g_NMDA_fraction,  g_NMDA_fraction);
+    def<double>(d, names::C_Mg,             C_Mg);
 
     def<double>(d, names::I_const,          I_const);
     def<double>(d, names::I_ac_amp,         I_ac_amp);
@@ -296,6 +301,7 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
     updateValue<double>(d, names::V_clamp,          V_clamp);
 
     updateValue<double>(d, names::g_NMDA_fraction,  g_NMDA_fraction);
+    updateValue<double>(d, names::C_Mg,             C_Mg);
 
     updateValue<double>(d, names::I_const,          I_const);
     updateValue<double>(d, names::I_ac_amp,         I_ac_amp);
@@ -357,6 +363,9 @@ void nest::iaf_gridcells::Parameters::set(const DictionaryDatum &d)
     if (g_NMDA_fraction < 0)
         throw BadProperty("NMDA fraction of AMPA conductance must be >= 0!");
 
+    if (C_Mg < 0)
+        throw BadProperty("Mg2+ concentration must be >= 0 mM!");
+
     // TODO: check all other parameters
     
 
@@ -374,9 +383,10 @@ void nest::iaf_gridcells::State_::get(DictionaryDatum &d) const
     def<double>(d,names::g_NMDA,   y_[G_NMDA]);
     def<double>(d,names::g_GABA_A, y_[G_GABA_A]);
     def<double>(d,names::I_stim,   y_[I_STIM]);
+    def<double>(d, names::s_NMDA,  y_[S_NMDA]);
 }
 
-void nest::iaf_gridcells::State_::set(const DictionaryDatum &d, const Parameters &)
+void nest::iaf_gridcells::State_::set(const DictionaryDatum &d, const Parameters &p)
 {
     updateValue<double>(d,names::V_m,      y_[V_M]);
     updateValue<double>(d,names::g_AMPA,   y_[G_AMPA]);
@@ -387,6 +397,8 @@ void nest::iaf_gridcells::State_::set(const DictionaryDatum &d, const Parameters
     if ( y_[G_AMPA] < 0 || y_[G_NMDA] < 0 || y_[G_GABA_A] < 0 )
         throw BadProperty("Conductances must not be negative.");
 
+    // This is automatic, cannot be set by user
+    y_[S_NMDA] = nmda_mg_multiplier(y_[V_M], p.C_Mg);
 }
 
 nest::iaf_gridcells::Buffers_::Buffers_(iaf_gridcells &n)
@@ -558,10 +570,14 @@ void nest::iaf_gridcells::update(const Time &origin, const long_t from, const lo
         // set new input current
         B_.I_stim_ = B_.currents_.get_value(lag);
 
+        // Record NMDA gating variable
+        S_.y_[S::S_NMDA] = nmda_mg_multiplier(S_.y_[S::V_M], P.C_Mg);
+
         // Set clamp currents
-        S_.y_[S::I_CLAMP_AMPA]    = -S_.y_[S::G_AMPA]    * P.E_clamp_AMPA;
-        S_.y_[S::I_CLAMP_NMDA]    = -S_.y_[S::G_NMDA]    * P.E_clamp_NMDA;
-        S_.y_[S::I_CLAMP_GABA_A]  = -S_.y_[S::G_GABA_A]  * P.E_clamp_GABA_A;
+        S_.y_[S::I_CLAMP_AMPA]    = -S_.y_[S::G_AMPA]   * P.E_clamp_AMPA;
+        S_.y_[S::I_CLAMP_NMDA]    = -S_.y_[S::G_NMDA]   * P.E_clamp_NMDA *
+                                    nmda_mg_multiplier(P.V_clamp, P.C_Mg);
+        S_.y_[S::I_CLAMP_GABA_A]  = -S_.y_[S::G_GABA_A] * P.E_clamp_GABA_A;
 
         // log state data
         B_.logger_.record_data(now);

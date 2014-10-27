@@ -3,8 +3,8 @@
 Aggregate bump data into the reductions file.
 '''
 import numpy as np
-from parameters  import JobTrialSpace2D
-from submitting import flagparse
+from grid_cell_model.parameters  import JobTrialSpace2D
+from grid_cell_model.submitting import flagparse
 
 
 evenSpacingType = 'even-spacing'
@@ -60,7 +60,16 @@ for subDir in subDirs:
     sp = JobTrialSpace2D(shape, rootDir)
 
     if args.bump or args.all:
-        for suffix in ['', '_full']:
+        for suffix in ['_full']:
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'A'],
+                    trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                    output_dtype='array')
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'mu_x'],
+                    trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                    output_dtype='array')
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'mu_y'],
+                    trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                    output_dtype='array')
             sp.aggregateData(varListBase + ['bump_e'+suffix, 'sigma'],
                     trialNumList, funReduce=None, loadData=loadData,saveData=True,
                     output_dtype='array')

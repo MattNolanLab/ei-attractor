@@ -20,7 +20,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import sys
-sys.path.append('/Users/lukas/work/GridCells/grid_cell_model/simulations/007_noise/figures')
+sys.path.append('/Users/lukas/work/GridCellModel/grid_cell_model/simulations/007_noise/figures')
 
 import logging as lg
 #lg.basicConfig(level=lg.WARN)

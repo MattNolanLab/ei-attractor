@@ -1,28 +1,11 @@
-#
-#   param_sweep.py
-#
-#   Parameter sweep (2D): shared procedures.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Parameter sweep (2D): shared procedures.'''
+from __future__ import absolute_import, print_function
+
 import numpy as np
-from submitting.factory   import SubmitterFactory
-from submitting.arguments import ArgumentCreator
-from data_storage         import DataStorage
-from otherpkg.log         import log_info
+from grid_cell_model.submitting.factory import SubmitterFactory
+from grid_cell_model.submitting.arguments import ArgumentCreator
+from grid_cell_model.data_storage import DataStorage
+from grid_cell_model.otherpkg.log import log_info
 
 
 def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,

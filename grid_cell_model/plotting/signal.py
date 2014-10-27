@@ -40,7 +40,7 @@ def signalPlot(t, sig, ax, timeUnits="ms", nticks=3, nThetaTicks=None, **kw):
         Axes to plot into
     xlabel : string
         X label
-    labely : string
+    ylabel : string
         Y label
     timeUnits : string
         Time units to be appended to xlabe

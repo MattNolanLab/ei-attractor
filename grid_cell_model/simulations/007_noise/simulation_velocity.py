@@ -1,31 +1,14 @@
-#
-#   simulation_velocity.py
-#
-#   Main simulation run: Bump velocity estimation.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Main simulation run: Bump velocity estimation.'''
+from __future__ import absolute_import, print_function, division
+
 import numpy as np
 from os.path import exists
 from numpy.random       import choice
 from nest.hl_api        import NESTError
 
-from models.parameters  import getOptParser
-from models.gc_net_nest import ConstantVelocityNetwork
-from data_storage       import DataStorage
+from grid_cell_model.models.parameters  import getOptParser
+from grid_cell_model.models.gc_net_nest import ConstantVelocityNetwork
+from grid_cell_model.data_storage       import DataStorage
 
 
 parser = getOptParser()

@@ -1,10 +1,12 @@
 '''
 Interface definitions for the visitors package.
 '''
+from __future__ import absolute_import, print_function
+
 from abc import ABCMeta, abstractmethod
 import os
 
-from data_storage.sim_models.ei import extractSpikes
+from ..data_storage.sim_models.ei import extractSpikes
 
 
 class Visitor(object):

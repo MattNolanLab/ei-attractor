@@ -7,12 +7,17 @@ import time
 import matplotlib
 matplotlib.use('agg')
 
-import visitors as vis
-import visitors.bumps as bumps
-import visitors.spikes
-import visitors.plotting.spikes
-from parameters import JobTrialSpace2D
-from submitting import flagparse
+import grid_cell_model.visitors as vis
+import grid_cell_model.visitors.spikes
+import grid_cell_model.visitors.bumps
+import grid_cell_model.visitors.signals
+import grid_cell_model.visitors.plotting
+import grid_cell_model.visitors.plotting.spikes
+import grid_cell_model.visitors.plotting.grids
+from grid_cell_model.parameters import JobTrialSpace2D
+from grid_cell_model.submitting import flagparse
+
+import common.analysis as common
 
 ###############################################################################
 parser = flagparse.FlagParser()
@@ -23,8 +28,7 @@ parser.add_argument('--shapeCols',    type=int, required=True)
 parser.add_argument('--forceUpdate',  type=int, required=True)
 parser.add_argument("--output_dir",   type=str, required=True)
 parser.add_argument("--job_num",      type=int) # unused
-parser.add_argument("--type",         type=str,
-        choices=['gamma-bump', 'velocity', 'grids', 'positional'], required=True)
+parser.add_argument("--type",         type=str, choices=common.allowedTypes, required=True)
 parser.add_argument("--bumpSpeedMax", type=float)
 
 o = parser.parse_args()
@@ -39,66 +43,97 @@ trialNums = None
 sp = JobTrialSpace2D(shape, o.output_dir, dataPoints=dataPoints)
 forceUpdate = bool(o.forceUpdate)
 
+# Common parameters
+isBump_win_dt = 125.
+isBump_tstart = 0.
+isBump_tend   = None
+isBump_readme = 'Bump position estimation. Whole simulation'
+
+
 # Create visitors
-if (o.type == "gamma-bump"):
-    monName   = 'stateMonF_e'
-    stateList = ['I_clamp_GABA_A']
-    iterList  = ['g_AMPA_total', 'g_GABA_total']
-    #ACVisitor = vis.analysis_visitors.AutoCorrelationVisitor(monName, stateList,
-    #        forceUpdate=forceUpdate)
+if o.type == common.bumpType:
     bumpVisitor = vis.bumps.BumpFittingVisitor(forceUpdate=forceUpdate,
             tstart='full',
             readme='Bump fitting. Whole simulation, starting at the start of theta stimulation.',
             bumpERoot='bump_e_full',
             bumpIRoot='bump_i_full')
-    bumpPosVisitor = vis.bumps.BumpPositionVisitor(
-            tstart=0,
-            tend=None,
-            win_dt=125.0,
-            readme='Bump position estimation. Whole simulation',
-            forceUpdate=forceUpdate)
     FRVisitor = vis.spikes.FiringRateVisitor(winLen=2.,     # ms
                                              winDt=.5,      # ms
                                              forceUpdate=forceUpdate)
     FRPlotter = vis.plotting.spikes.FiringRatePlotter(rootDir='pop_fr_plots')
-    #CCVisitor = vis.CrossCorrelationVisitor(monName, stateList,
-    #        forceUpdate=forceUpdate)
-    #spikeVisitor_e = vis.SpikeStatsVisitor("spikeMon_e",
-    #        forceUpdate=forceUpdate)
+    isBumpVisitor = vis.bumps.BumpPositionVisitor(
+            tstart=isBump_tstart,
+            tend=isBump_tend,
+            win_dt=isBump_win_dt,
+            readme=isBump_readme,
+            forceUpdate=forceUpdate)
 
-    #sp.visit(ACVisitor)
-    #sp.visit(bumpVisitor)
-    sp.visit(bumpPosVisitor)
-    sp.visit(FRVisitor)
-    sp.visit(FRPlotter)
-    #sp.visit(CCVisitor)
-    #sp.visit(spikeVisitor_e)
-elif (o.type == "velocity"):
-    speedEstimator = bumps.SpeedEstimator(
-            forceUpdate=forceUpdate, axis='vertical', win_dt=50.0)
-    gainEstimator = bumps.VelocityGainEstimator(o.bumpSpeedMax,
-                                                forceUpdate=forceUpdate,
-                                                maxFitRangeIdx=10)
-    speedPlotter = bumps.SpeedPlotter(plotFittedLine=False)
+    sp.visit(bumpVisitor)
+    #sp.visit(isBumpVisitor)
+    #sp.visit(FRVisitor)
+    #sp.visit(FRPlotter)
+
+elif o.type == common.gammaType:
+    monName   = 'stateMonF_e'
+    stateList = ['I_clamp_GABA_A']
+
+    statsVisitor_e = vis.spikes.SpikeStatsVisitor("spikeMon_e",
+                                                  forceUpdate=forceUpdate)
+    ACVisitor = vis.signals.AutoCorrelationVisitor(monName, stateList,
+                                                   forceUpdate=forceUpdate)
+    CCVisitor = vis.signals.CrossCorrelationVisitor(monName, stateList,
+                                                    forceUpdate=forceUpdate)
+
+    sp.visit(ACVisitor)
+    sp.visit(CCVisitor)
+    sp.visit(statsVisitor_e)
+
+elif o.type == common.velocityType:
+    speedEstimator = vis.bumps.SpeedEstimator(
+            forceUpdate=forceUpdate,
+            axis='vertical',
+            win_dt=50.0)
+    gainEstimator = vis.bumps.VelocityGainEstimator(
+            o.bumpSpeedMax,
+            forceUpdate=forceUpdate,
+            maxFitRangeIdx=10)
+    speedPlotter = vis.bumps.SpeedPlotter(plotFittedLine=False)
 
     sp.visit(speedEstimator, trialList='all-at-once')
-    #sp.visit(gainEstimator, trialList='all-at-once')
-    #sp.visit(speedPlotter, trialList='all-at-once')
-elif (o.type == 'grids'):
+    sp.visit(gainEstimator, trialList='all-at-once')
+    sp.visit(speedPlotter, trialList='all-at-once')
+
+elif o.type == common.gridsType:
     spikeType = 'E'
-    #po = plotting_visitors.GridPlotVisitor.PlotOptions()
-    #gridVisitor = plotting_visitors.GridPlotVisitor(o.output_dir, spikeType=spikeType,
-    #        plotOptions=po, minGridnessT=300e3, forceUpdate=o.forceUpdate)
+
+    po = vis.plotting.grids.GridPlotVisitor.PlotOptions()
+    gridVisitor = vis.plotting.grids.GridPlotVisitor(
+            o.output_dir,
+            spikeType=spikeType,
+            plotOptions=po,
+            minGridnessT=300e3,
+            forceUpdate=o.forceUpdate)
+    isBumpVisitor = vis.bumps.BumpPositionVisitor(
+            tstart=isBump_tstart,
+            tend=isBump_tend,
+            win_dt=isBump_win_dt,
+            readme=isBump_readme,
+            forceUpdate=forceUpdate,
+            bumpERoot='bump_e_isBump')
     #ISIVisitor = plotting_visitors.ISIPlotVisitor(o.output_dir,
     #        spikeType = spikeType,
     #        nRows = 5, nCols = 5, range=[0, 1000], bins=40,
     #        ISINWindows=20)
-    #FRVisitor = plotting_visitors.FiringRateVisitor(forceUpdate=forceUpdate)
+    FRVisitor = vis.spikes.FiringRateVisitor(winLen=2.,     # ms
+                                             winDt=.5,      # ms
+                                             forceUpdate=forceUpdate,
+                                             sliding_analysis=False)
 
-    #sp.visit(gridVisitor)
+    sp.visit(gridVisitor)
+    #sp.visit(isBumpVisitor)
     #sp.visit(ISIVisitor)
-    #sp.visit(FRVisitor)
-elif o.type == 'positional':
+    sp.visit(FRVisitor)
+elif o.type == common.posType:
     bumpPosVisitor = vis.bumps.BumpPositionVisitor(
             tstart=0,
             tend=None,

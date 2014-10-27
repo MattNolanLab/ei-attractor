@@ -1,27 +1,8 @@
-#
-#   parameters.py
-#   
-#   Command line options
-#   
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-import copy
-from submitting import flagparse
+'''Command line options.'''
+from __future__ import absolute_import, print_function, division
 
+import copy
+from ..submitting import flagparse
 
 
 class DOptionParser(flagparse.FlagParser):
@@ -79,6 +60,7 @@ def getOptParser():
     optParser.add_argument("--pGABA_mu",              type=float, help="GABA A profile center (normalised)")
     optParser.add_argument("--pGABA_sigma",           type=float, help="GABA A profile spread (normalised)")
     optParser.add_argument("--NMDA_amount",           type=float, help="NMDA portion relative to AMPA (%%)")
+    optParser.add_argument("--C_Mg",                  type=float, help="Mg2+ concentration; used for NMDA voltage dependence")
 
     optParser.add_argument("--prefDirC_e",            type=float, help="Excitatory (E-->I) preferred direction multiplier")
     optParser.add_argument("--prefDirC_i",            type=float, help="Inhibitory (I-->E) preferred direction multiplier")
