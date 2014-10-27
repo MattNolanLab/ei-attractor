@@ -19,11 +19,12 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 '''
+The :mod:`analysis.signal` module contains functions and classes for continuous signal
+analysis
+
+The can be e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
+
 .. currentmodule:: analysis.signal
-
-The :mod:`signal` module contains functions and classes for continuous signal
-analysis: e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
-
 .. autosummary::
     autoCorrelation
     corr

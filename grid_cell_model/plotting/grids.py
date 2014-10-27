@@ -18,6 +18,7 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import absolute_import
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as mpl
@@ -25,9 +26,9 @@ from matplotlib.pyplot  import plot, xlabel, ylabel, legend, xlim, ylim, \
         tight_layout, axis, title, pcolor, colorbar, hold, subplot, gca
 from matplotlib.ticker  import MaxNLocator, LinearLocator
 
-from global_defs         import globalAxesSettings, createColorbar
-from plotting.low_level  import xScaleBar
-from analysis.grid_cells import extractSpikePositions2D
+from .global_defs         import globalAxesSettings, createColorbar
+from .low_level  import xScaleBar
+from ..analysis.grid_cells import extractSpikePositions2D
 
 lim_factor = 1.1
 
@@ -63,7 +64,7 @@ def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, diam=np.inf, ax=None,
 
 
 def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
-        scaleText=True, maxRate=True, G=None, **kw):
+        scaleText=True, maxRate=True, G=None, rateStr='Hz', **kw):
     '''
     Plot the grid-like rate map into the current axis
     '''
@@ -71,24 +72,26 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
         ax = gca()
     rateMap = ma.masked_array(rateMap, mask = np.sqrt(X**2 + Y**2) > diam/2.0)
     globalAxesSettings(ax)
-    pcolor(X, Y, rateMap, **kw)
-    axis('scaled')
-    axis('off')
-    title(titleStr, va='bottom')
+    ax.pcolor(X, Y, rateMap, **kw)
+    ax.axis('scaled')
+    ax.axis('off')
+    ax.set_title(titleStr, va='bottom')
     if (diam != np.inf):
-        xlim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
-        ylim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
+        ax.set_xlim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
+        ax.set_ylim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
     gridScaleBar(scaleBar, scaleText, ax)
     if (maxRate):
-        rStr = '{0:.1f} Hz'.format(np.max(rateMap.flatten()))
-        ax.text(1.0, 1.025, rStr, ha="right", va='bottom', fontsize='xx-small',
+        if rateStr != '':
+            rateStr = ' ' + rateStr
+        rStr = '{0:.1f}{1}'.format(np.max(rateMap.flatten()), rateStr)
+        ax.text(.9, 1.025, rStr, ha="right", va='bottom', fontsize='xx-small',
                 transform=ax.transAxes)
     if (G is not None):
         if (int(G*100)/100.0 == int(G)):
             gStr = '{0}'.format(int(G))
         else:
             gStr = '{0:.2f}'.format(G)
-        ax.text(0, 1.025, gStr, ha="left", va='bottom', fontsize='xx-small',
+        ax.text(.1, 1.025, gStr, ha="left", va='bottom', fontsize='xx-small',
                 transform=ax.transAxes)
 
 
@@ -99,13 +102,13 @@ def plotAutoCorrelation(ac, X, Y, diam=np.inf, ax=None, titleStr="",
         ax = gca()
     ac = ma.masked_array(ac, mask = np.sqrt(X**2 + Y**2) > diam)
     globalAxesSettings(ax)
-    pcolor(X, Y, ac, **kw)
-    axis('scaled')
-    axis('off')
-    title(titleStr, va='bottom')
+    ax.pcolormesh(X, Y, ac, **kw)
+    ax.axis('scaled')
+    ax.axis('off')
+    ax.set_title(titleStr, va='bottom')
     if (diam != np.inf):
-        xlim([-lim_factor*diam, lim_factor*diam])
-        ylim([-lim_factor*diam, lim_factor*diam])
+        ax.set_xlim([-lim_factor*diam, lim_factor*diam])
+        ax.set_ylim([-lim_factor*diam, lim_factor*diam])
     gridScaleBar(scaleBar, scaleText, ax)
 
 

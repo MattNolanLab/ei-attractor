@@ -92,6 +92,8 @@
  *   tau_NMDA_rise     double - rise time of NMDA synaptic conductance in ms
  *   tau_GABA_A_fall   double - decay time of GABA_A synaptic conductance in ms
  *   tau_GABA_A_rise   double - rise time of GABA_A synaptic conductance in ms
+ *
+ *   C_Mg              double - Magnesium concentration. Used in NMDA.
  * 
  * Current source parameters
  *   I_const           double - Constant external input current in pA.
@@ -123,6 +125,7 @@ namespace nest
  */
 extern "C"
 int iaf_gridcells_dynamics (double, const double*, double*, void*);
+
 
 class iaf_gridcells:
     public Archiving_Node
@@ -253,6 +256,7 @@ class iaf_gridcells:
             bool     g_AHP_ad;        //!< Whether AHP should be adapting or not
 
             double_t g_NMDA_fraction; //!< NMDA fraction of the AMPA conductance in %
+            double_t C_Mg;            //!< Magnesium concentration in mM
 
             double_t V_clamp;         //!< Ideal voltage clamp holding potential
 
@@ -316,6 +320,7 @@ class iaf_gridcells:
                 I_CLAMP_AMPA,
                 I_CLAMP_NMDA,
                 I_CLAMP_GABA_A,
+                S_NMDA,
                 STATE_VEC_SIZE
             };
 

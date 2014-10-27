@@ -49,6 +49,7 @@ defaultParameters = {
         "arenaSize"             :   180.0,        # cm
 
         "NMDA_amount"           :   2.0,          # %
+        "C_Mg"                  :      .0,        # mM; def is no Vm dependence
 
         "Iext_e_const"          :   300.0,        # pA
         "Iext_i_const"          :   200.0,        # pA

@@ -18,18 +18,22 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import numpy as np
+from __future__ import absolute_import
 from collections    import Sequence
 from os.path        import exists
-from otherpkg.log   import log_warn, log_info
+import subprocess
 
-from data_storage       import DataStorage
-from data_storage.dict  import getDictData
-from data_sets          import DictDataSet
+import numpy as np
+from ..otherpkg.log   import log_warn, log_info, getClassLogger
+
+from ..data_storage       import DataStorage
+from ..data_storage.dict  import getDictData
+from .data_sets           import DictDataSet
 
 __all__ = []
 
 
+job2DLogger = getClassLogger('JobTrialSpace2D', __name__)
 
 class DataSpace(Sequence):
     '''
@@ -63,6 +67,7 @@ class DataSpace(Sequence):
 
 
 
+trialSetLogger = getClassLogger('TrialSet', __name__)
 class TrialSet(DataSpace):
     '''
     A 1D DataSpace that contains a list of DataSet objects.
@@ -79,14 +84,14 @@ class TrialSet(DataSpace):
         if (self._dataLoaded):
             return
         try:
-            log_info("param_space", "Opening " + self._fileName)
+            trialSetLogger.debug("Opening " + self._fileName)
             self._ds = DataStorage.open(self._fileName, self._fileMode)
             DataSpace.__init__(self, self._ds['trials'], key='trials')
         except (IOError, KeyError) as e:
             self._ds = None
             msg =  "Could not open file {0}. Creating an empty DataSet instead."
-            log_warn("param_space", msg.format(self._fileName))
-            log_warn("param_space", "Error message: {0}".format(str(e)))
+            trialSetLogger.warn(msg.format(self._fileName))
+            trialSetLogger.warn("Error message: {0}".format(str(e)))
             DataSpace.__init__(self, [], key='trials')
         self._dataLoaded = True
 
@@ -99,7 +104,7 @@ class TrialSet(DataSpace):
     def __del__(self):
         if (self._dataLoaded):
             if (self._ds is not None):
-                log_info("param_space", "Closing: " + self._fileName)
+                trialSetLogger.debug("Closing: %s", self._fileName)
                 self._ds.close()
 
     def __getitem__(self, key):
@@ -110,7 +115,7 @@ class TrialSet(DataSpace):
         self._loadData()
         return DictDataSet(self._ds)
 
-    def visit(self, visitor, trialList=None):
+    def visit(self, visitor, trialList=None, **kw):
         '''
         Apply a visitor to the trials set. There are two modes: Apply the
         visitor to trials separately, or pass the raw DictDataset to the
@@ -128,14 +133,16 @@ class TrialSet(DataSpace):
             list of trials to pass on to the visitor (separately).
         '''
         if (trialList == 'all-at-once'):
-            self.getAllTrialsAsDataSet().visit(visitor, fileName=self._fileName)
+            self.getAllTrialsAsDataSet().visit(visitor,
+                                               fileName=self._fileName, **kw)
         else:
             if (trialList is None):
                 trialList = xrange(len(self))
 
             for trialIdx in trialList:
                 trial = self[trialIdx]
-                trial.visit(visitor, fileName=self._fileName, trialNum=trialIdx)
+                trial.visit(visitor, fileName=self._fileName,
+                            trialNum=trialIdx, **kw)
 
 
 class DummyTrialSet(DataSpace):
@@ -146,7 +153,7 @@ class DummyTrialSet(DataSpace):
     def __getitem__(self, key):
         raise ValueError("A DummyTrialSet cannot be indexed!")
 
-    def visit(self, visitor, trialList=None):
+    def visit(self, visitor, trialList=None, **kw):
         pass
 
 
@@ -181,7 +188,76 @@ class JobTrialSpace2D(DataSpace):
         self._loadTrials()
         self._aggregationDS = None
         self.saveDataFileName = 'reductions.h5'
+
+
+    def repackItem(self, r, c):
+        '''
+        Repack the underlying item at ``r`` and ``c`` position.
+
+        .. warning::
+
+            This applies only to HDF5, use with care.
+        '''
+
+        def _cleanUp(r, c, tmpFile):
+            job2DLogger.info('Cleaning up temporary.')
+            subprocess.call(['rm', '-f', tmpFile])
+            job2DLogger.info("Reloading the new item")
+            self._vals[r]._vals[c] = self._loadItem(r, c)
+
+        job2DLogger.info("Repacking item at %d, %d", r, c)
+        currentFile = self._getFilename(r, c)
+        tmpFile = currentFile + ".repacked"
+
+
+        job2DLogger.info("Removing current item")
+        #import pdb; pdb.set_trace()
+        self._vals[r]._vals[c] = None
+
+        # Try to repack to temporary file
+        job2DLogger.info("Repacking to temporary file...")
+        repackArgs = ['h5repack', currentFile, tmpFile]
+        if subprocess.call(repackArgs) != 0:
+            job2DLogger.warn('Repacking to %s failed.', tmpFile)
+            _cleanUp(r, c, tmpFile)
+            return
+
+        # Move temporary file to original
+        job2DLogger.info("Replacing original file")
+        moveArgs = ['mv', tmpFile, currentFile]
+        if subprocess.call(moveArgs) != 0:
+            job2DLogger.warn('Replacing original %s failed.', tmpFile)
+            _cleanUp(r, c, tmpFile)
+            return
+
+        # Reload the repacked file
+        _cleanUp(r, c, tmpFile)
+
+
+    def repackAllItems(self):
+        for row in xrange(self.shape[0]):
+            for col in xrange(self.shape[1]):
+                self.repackItems(row, col)
+
+
+    def _getFilename(self, row, col):
+        it = row * self.shape[1] + col
+        fileName = self._rootDir + '/' + self._fileFormat.format(it)
+        #job2DLogger.debug('row: %d, col: %d, filename: %s', row, col, fileName)
+        return fileName
             
+
+    def _loadItem(self, row, col):
+        # Here either we have a full data space, or a particular row
+        # and column are present in the list of selected data points.
+        # Otherwise, append an empty list, i.e. this will do nothing
+        if (self._dataPoints is None or
+                (row, col) in self._dataPoints):
+            fileName = self._getFilename(row, col)
+            return TrialSet(fileName, self._fileMode)
+        else:
+            return DummyTrialSet()
+
 
     def _loadTrials(self):
         '''
@@ -189,20 +265,10 @@ class JobTrialSpace2D(DataSpace):
         specified in the constructor.
         '''
         rowData = []
-        it = 0
         for row in xrange(self.rows):
             colData = []
             for col in xrange(self.cols):
-                # Here either we have a full data space, or a particular row
-                # and column are present in the list of selected data points.
-                # Otherwise, append an empty list, i.e. this will do nothing
-                if (self._dataPoints is None or
-                        (row, col) in self._dataPoints):
-                    fileName = self._rootDir + '/' + self._fileFormat.format(it)
-                    colData.append(TrialSet(fileName, self._fileMode))
-                else:
-                    colData.append(DummyTrialSet())
-                it += 1
+                colData.append(self._loadItem(row, col))
             rowData.append(DataSpace(colData))
         DataSpace.__init__(self, rowData)
 
@@ -217,6 +283,9 @@ class JobTrialSpace2D(DataSpace):
     def getShape(self):
         return self._shape
 
+    @property
+    def shape(self):
+        return self._shape
 
     def getIteratedParameters(self, nameList):
         if (len(nameList) != 2):
@@ -247,7 +316,7 @@ class JobTrialSpace2D(DataSpace):
     def visit(self, visitor, trialList=None):
         for r in xrange(self.rows):
             for c in xrange(self.cols):
-                self[r][c].visit(visitor, trialList)
+                self[r][c].visit(visitor, trialList=trialList, r=r, c=c)
 
 
     def _createAggregateOutput(self, trialNumList, output_dtype):
@@ -307,8 +376,8 @@ class JobTrialSpace2D(DataSpace):
 
     def _reductionFailureMsg(self, e, r, c):
         msg = 'Reduction step failed at (r, c) == ({0}, '+\
-            '{1}). Setting value as NaN.'.format(r, c)
-        log_warn('JobTrialSpace2D', msg)
+            '{1}). Setting value as NaN.'
+        log_warn('JobTrialSpace2D', msg.format(r, c))
         log_warn("JobTrialSpace2D", "Error message: {0}".format(str(e)))
 
 
@@ -319,6 +388,14 @@ class JobTrialSpace2D(DataSpace):
             return self._aggregationDS
         except IOError as e:
             return None
+
+
+    def getReduction(self, path):
+        inData = self._getAggregationDS()
+        if isinstance(path, str):
+            return inData[path]
+        else:
+            return inData.getItemChained(path)
 
 
     def aggregateData(self, varList, trialNumList, funReduce=None,
@@ -369,13 +446,12 @@ class JobTrialSpace2D(DataSpace):
         # Try to load data
         if (loadData):
             try:
-                msg = 'Loading aggregated data from file: {0}, var: {1}'
+                msg = 'Loading aggregated data from file: {0}, vars: {1}'
                 log_info('JobTrialSpace2D', msg.format(self.saveDataFileName,
-                    varList[-1]))
+                    varList))
                 inData = self._getAggregationDS()
                 if (inData is not None):
-                    retVar = inData[varList[-1]]
-                    return retVar
+                    return inData.getItemChained(varList)
                 else:
                     io_err = 'Could not open file: {0}. Performing the reduction.'
                     log_info('JobTrialSpace2D', io_err.format(self.saveDataFileName))
@@ -397,13 +473,14 @@ class JobTrialSpace2D(DataSpace):
             for c in xrange(cols):
                 self._aggregateItem(retVar, r, c, trialNumList, varList, funReduce)
 
+
         if (saveData):
-            msg = 'Saving aggregated data into file: {0}, var: {1}'
+            msg = 'Saving aggregated data into file: {0}, vars: {1}'
             log_info('JobTrialSpace2D', msg.format(self.saveDataFileName,
-                varList[-1]))
+                varList))
             outData = self._getAggregationDS()
             if (outData is not None):
-                outData[varList[-1]] = retVar
+                outData.setItemChained(varList, retVar)
             else:
                 io_err = 'Could not open file: {0}. Not saving the reduced data!'
                 log_warn('JobTrialSpace2D', io_err.format(self.saveDataFileName))

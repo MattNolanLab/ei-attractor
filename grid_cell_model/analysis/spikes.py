@@ -18,79 +18,93 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+'''
+Classes and functions for spike train analysis.
+
+.. currentmodule:: analysis.spikes
+
+Classes
+-------
+.. autosummary::
+
+    PopulationSpikes
+    TorusPopulationSpikes
+    ThetaSpikeAnalysis
+
+
+Functions
+---------
+These functions are deprecated and should not be used unless really needed.
+Please use the classes defined above.
+
+.. autosummary::
+    slidingFiringRateTuple
+    torusPopulationVector
+
+
+'''
 import numpy as np
 import scipy
 import collections
 from scipy import weave
 
 import _spikes
-from otherpkg.log import log_warn
+from grid_cell_model.otherpkg.log import log_warn
 
-__all__ = ['firingRate', 'multipleFiringRate', 'firingRateFromPairs',
-        'firingRateSlidingWindow', 'slidingFiringRateTuple',
-        'torusPopulationVector', 'torusPopulationVectorFromRates',
-        'SpikeTrain', 'PopulationSpikes', 'ThetaSpikeAnalysis']
-
-
-def firingRate(spikeTrain, tstart, tend):
-    '''
-    Compute an average firing rate of a spike train, between tstart and tend
-    spikeTrain      A list or a 1D array of spike times
-    tstart, tend    Must be the same units as spikeTrain
-    '''
-    return np.sum(np.logical_and(spikeTrain >= tstart, spikeTrain <= tend)) / \
-            (tend - tstart)
+__all__ = [ 'slidingFiringRateTuple', 'torusPopulationVector',
+        'torusPopulationVectorFromRates', 'SpikeTrain', 'PopulationSpikes',
+        'ThetaSpikeAnalysis', 'TorusPopulationSpikes']
 
 
-def multipleFiringRate(spikeTrainArray, tstart, tend):
-    '''
-    Compute an average firing rate of an array of spike trains. For each spike
-    train, return the firing rate between tstart and tend. Thus, the result will
-    be of len(spikeTrainArray)
-    '''
-    aLen = len(spikeTrainArray)
-    result = np.ndarray((aLen, ))
-    for it in xrange(aLen):
-        result[it] = firingRate(spikeTrainArray[it].flatten(), tstart, tend)
-
-    return result
-
-#def firingRateFromPairs(N, N_ids, times, tstart, tend):
+#def firingRate(spikeTrain, tstart, tend):
 #    '''
-#    Compute average firing rate for all the neurons in the range <0, N), given
-#    two arrays: N_ids (neuron ids) and times of spikes corresponding to N_ids).
+#    Compute an average firing rate of a spike train, between tstart and tend
+#    spikeTrain      A list or a 1D array of spike times
+#    tstart, tend    Must be the same units as spikeTrain
 #    '''
-#    result = np.ndarray((N, ))
-#    for n_it in xrange(N):
-#        result[n_it] = firingRate(times[N_ids == n_it], tstart, tend)
+#    return np.sum(np.logical_and(spikeTrain >= tstart, spikeTrain <= tend)) / \
+#            (tend - tstart)
+#
+#
+#def multipleFiringRate(spikeTrainArray, tstart, tend):
+#    '''
+#    Compute an average firing rate of an array of spike trains. For each spike
+#    train, return the firing rate between tstart and tend. Thus, the result will
+#    be of len(spikeTrainArray)
+#    '''
+#    aLen = len(spikeTrainArray)
+#    result = np.ndarray((aLen, ))
+#    for it in xrange(aLen):
+#        result[it] = firingRate(spikeTrainArray[it].flatten(), tstart, tend)
+#
 #    return result
-
-
-
-def firingRateSlidingWindow(spikeTrain, tstart, tend, dt, winLen):
-    '''
-    Compute sliding window firing rate for the neuron
-    dt      resolution of firing rate
-    winLen  Length of the sliding window
-
-    The spikes are computed from tstart to tend, so that the resulting array
-    length is int((tend-tstart)/dt)+1 long.
-    dt does not have to be relevant to simulation dt at all
-    '''
-    #lg.debug('Start firing rate processing')
-    szRate = int((tend-tstart)/dt)+1
-    r = np.ndarray((len(spikeTrain), szRate))
-    times = np.ndarray(szRate)
-    for n_i in xrange(len(spikeTrain)):
-        tmp = np.array(spikeTrain[n_i])
-        for t_i in xrange(szRate):
-            t = tstart + t_i*dt
-            r[n_i][t_i] = np.sum(np.logical_and(tmp > t-winLen/2, tmp <
-                t+winLen/2))
-            times[t_i] = t
-
-    #lg.debug('End firing rate processing')
-    return (r/winLen, times)
+#
+#
+#
+#def firingRateSlidingWindow(spikeTrain, tstart, tend, dt, winLen):
+#    '''
+#    Compute sliding window firing rate for the neuron
+#    dt      resolution of firing rate
+#    winLen  Length of the sliding window
+#
+#    The spikes are computed from tstart to tend, so that the resulting array
+#    length is int((tend-tstart)/dt)+1 long.
+#    dt does not have to be relevant to simulation dt at all
+#    '''
+#    #lg.debug('Start firing rate processing')
+#    szRate = int((tend-tstart)/dt)+1
+#    r = np.ndarray((len(spikeTrain), szRate))
+#    times = np.ndarray(szRate)
+#    for n_i in xrange(len(spikeTrain)):
+#        tmp = np.array(spikeTrain[n_i])
+#        for t_i in xrange(szRate):
+#            t = tstart + t_i*dt
+#            r[n_i][t_i] = np.sum(np.logical_and(tmp > t-winLen/2, tmp <
+#                t+winLen/2))
+#            times[t_i] = t
+#
+#    #lg.debug('End firing rate processing')
+#    return (r/winLen, times)
 
 
 def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
@@ -110,7 +124,10 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
 
     return  An array of shape (N, int((tend-tstart)/dt)+1
     '''
-    #print "Start sliding firing rate.."
+    tstart = float(tstart)
+    tend   = float(tend)
+    dt     = float(dt)
+    winLen = float(winLen)
     
     szRate      = int((tend-tstart)/dt)+1
     n_ids       = np.array(spikes[0])
@@ -192,10 +209,6 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
     '''
     def __init__(self, N, senders, times):
         '''
-        Initialize the population of neurons emitting spikes.
-
-        Parameters
-        ----------
         N : int
             Number of neurons in the population
         senders : 1D array
@@ -211,13 +224,9 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             raise ValueError(msg.format(N))
 
         # We are expecting senders and times as numpy arrays, if they are not,
-        # convert them
-        if not isinstance(senders, np.ndarray):
-            senders = np.array(senders)
-        if not isinstance(times, np.ndarray):
-            times = np.array(times)
-        self._senders  = senders
-        self._times    = times
+        # convert them. Moreover, senders.dtype must be int, for indexing.
+        self._senders  = np.asarray(senders, dtype=int)
+        self._times    = np.asarray(times)
         self._unpacked = [None] * self._N # unpacked version of spikes
 
 
@@ -339,7 +348,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
 
 
 
-    def spikeTrainDifference(self, idx1, idx2=None, full=True):
+    def spikeTrainDifference(self, idx1, idx2=None, full=True, reduceFun=None):
         '''
         Compute time differences between pairs of spikes of two neurons or a
         list of neurons.
@@ -352,6 +361,14 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         idx2 : int, or a sequence of ints, or None
             Index of the second neuron or a list of indexes for the second set
             of spike trains.
+        full : bool, optional
+            Not fully implemented yet. Must be set to True.
+        reduceFun : callable, optional
+            Any callable object that computes a function over an array of each
+            spike train difference. The function must take one input argument,
+            which will be the array of spike time differences for a pair of
+            neurons. The output of this function will be stored instead of the
+            default output.
         output : A 2D or 1D array of spike train autocorrelation histograms for all
             the pairs of neurons.
         
@@ -372,6 +389,9 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         if (full == False):
             raise NotImplementedError()
 
+        if (reduceFun is None):
+            reduceFun = lambda x: x
+
         if (not isinstance(idx1, collections.Iterable)):
             idx1 = [idx1]
 
@@ -380,7 +400,9 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             res = [[] for x in idx1]
             for n1 in idx1:
                 for n2 in idx2:
-                    res[n1].append(_spikes.spike_time_diff(self[n1], self[n2]))
+                    #print n1, n2, len(self[n1]), len(self[n2])
+                    res[n1].append(reduceFun(_spikes.spike_time_diff(self[n1],
+                        self[n2])))
             return res
         elif (not isinstance(idx2, collections.Iterable)):
             idx2 = [idx2]
@@ -391,11 +413,145 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
 
         res = [None] * len(idx1)
         for n in xrange(len(idx1)):
-            res[n] = _spikes.spike_time_diff(self[idx1[n]], self[idx2[n]])
+            res[n] = reduceFun(_spikes.spike_time_diff(self[idx1[n]],
+                self[idx2[n]]))
 
         return res
 
+
+    class CallableHistogram(object):
+        def __init__(self, **kw):
+            self.kw = kw
+
+        def __call__(self, x):
+            '''
+            Perform the histogram on x and return the result of
+            numpy.histogram, without bin_edges
+            '''
+            res, _ = np.histogram(x, **self.kw)
+            return res
+
+        def get_bin_edges(self):
+            _, bin_edges = np.histogram([], **self.kw)
+            return bin_edges
+
+
+    def spikeTrainXCorrelation(self, idx1, idx2, range, bins=50,
+            **kw):
+        '''
+        Compute the spike train crosscorrelation function for all pairs of
+        spike trains in the population.
+
+        Parameters (for explanation of how ``idx1`` and ``idx2`` are treated,
+        see :meth:`~PopulationSpikes.spikeTrainDifference`):
+
+        idx1 : int, or a sequence of ints
+            Index of the first neuron or a list of neurons for which to compute
+            the correlation histogram.
+        idx2 : int, or a sequence of ints, or None
+            Index of the second neuron or a list of indexes for the second set
+            of spike trains.
+        range : (lag_start, lag_end)
+            Limits of the cross-correlation function. The bins will always be
+            **centered** on the values.
+        bins : int, optional
+            Number of bins
+        kw : dict
+            Keyword arguments passed on to the numpy.histogram function
+
+        output : a 2D or 1D list
+            see :meth:`~PopulationSpikes.spikeTrainDifference`.
+        '''
+        lag_start = range[0]
+        lag_end   = range[1]
+        binWidth = (lag_end - lag_start) / (bins - 1)
+        bin_edges = np.linspace(lag_start - binWidth/2.0, lag_end +
+                binWidth/2.0, bins+1) 
+        h = self.CallableHistogram(bins=bin_edges, **kw)
+        XC = self.spikeTrainDifference(idx1, idx2, full=True, reduceFun=h)
+        bin_edges = h.get_bin_edges()
+        bin_centers = (bin_edges[0:-1] + bin_edges[1:])/2.0
+        return XC, bin_centers, bin_edges
         
+
+    def ISINeuron(self, n):
+        '''
+        Compute all interspike intervals of one neuron with ID ``n``. If the
+        number of spikes is less than 2, returns an empty array.
+        .. todo::
+            
+            Works on sorted spike trains only!
+
+        .. note::
+            If you get negative interspike intervals, you will need to sort
+            your spike times (per each neuron).
+        '''
+        spikes = self[n]
+        if (len(spikes) < 2):
+            return np.array([])
+        return spikes[1:] - spikes[0:-1]
+
+
+    def ISI(self, n=None, reduceFun=None):
+        '''
+        Return interspike interval of one or more neurons.
+
+        *Parameters:*
+
+        n : None, int, or sequence 
+            Neuron numbers. If ``n`` is None, then compute ISI stats for all
+            neurons in the population. If ``n`` is an int, compute ISIs for
+            just neuron indexed by ``n``. Otherwise ``n`` is expected to be a
+            sequence of neuron indices.
+        reduceFun : callable or None
+            A reduction function (callable object) that performs an operation
+            on all the ISIs of the population. If ``None``, nothing is done.
+            The callable has to take one input parameter, which is the sequence
+            of ISIs. This allows to cascade data processing without the need
+            for duplicating spike timing data.
+
+        output: list
+            A list of outputs (depending on parameters) for each neuron, even if ``n``
+            is an int.
+        '''
+        if (reduceFun is None):
+            reduceFun = lambda x: x
+
+        res = []
+        if (n is None):
+            for n_id in xrange(len(self)):
+                res.append(reduceFun(self.ISINeuron(n_id)))
+        elif (isinstance(n, int)):
+            res.append(reduceFun(self.ISINeuron(n)))
+        else:
+            for n_id in n:
+                res.append(reduceFun(self.ISINeuron(n_id)))
+
+        return res
+
+
+    def ISICV(self, n=None, winLen=None):
+        '''
+        Coefficients of variation of inter-spike intervals of one or more
+        neurons in the population. For the description of parameters and
+        outputs and their semantics see also :meth:`~PopulationSpikes.ISI`.
+
+        **Parameters**:
+        ``winLen`` : float, list of floats, or ``None``
+            Specify the maximal ISI value, i.e. use windowed coefficient of
+            variation. If ``None``, use the whole range.
+        '''
+        cvfunc = scipy.stats.variation
+        if (winLen is None):
+            f = scipy.stats.variation
+        elif (isinstance(winLen, collections.Sequence) or
+                isinstance(winLen, np.ndarray)):
+            f = lambda x: np.asarray([cvfunc(x[x <= wl]) for wl in winLen])
+        else:
+            f = lambda x: cvfunc(x[x <= winLen])
+        return self.ISI(n, f)
+
+
 
     #######################################################################
     # Functions implementing collections.Sequence
@@ -430,6 +586,17 @@ class TorusPopulationSpikes(PopulationSpikes):
         return self._sheetSize[0]
     def getYSize(self):
         return self._sheetSize[1]
+    def getDimensions(self):
+        return self._sheetSize
+
+    Nx = property(fget=getXSize, doc='Horizontal size of the torus')
+    Ny = property(fget=getYSize, doc='Vertical size of the torus')
+    dimensions = property(fget=getDimensions, doc='Dimensions of the torus (X, Y)')
+
+
+    def avgFiringRate(self, tStart, tEnd):
+        F = super(TorusPopulationSpikes, self).avgFiringRate(tStart, tEnd)
+        return np.reshape(F, (self.Ny, self.Nx))
 
     
     def populationVector(self, tStart, tEnd, dt, winLen):
@@ -503,6 +670,22 @@ class TorusPopulationSpikes(PopulationSpikes):
         Ny = self.getYSize()
         return np.reshape(F, (Ny, Nx, len(Ft))), Ft
 
+
+
+class TwistedTorusSpikes(TorusPopulationSpikes):
+    '''
+    Spikes arranged on twisted torus. The torus is twisted in the X direction.
+    '''
+
+    def __init__(self, senders, times, sheetSize):
+        super(TwistedTorusSpikes, self).__init__(senders, times, sheetSize)
+
+
+    def populationVector(self, tStart, tEnd, dt, winLen):
+        msg = 'populationVector() has not been implemented yet for {}. Note'+\
+                ' that this method is different for the regular torus ' +\
+                '(TorusPopulationSpikes).'
+        raise NotImplementedError(msg.format(self.__class__.__name__))
 
 
 

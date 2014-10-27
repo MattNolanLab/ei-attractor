@@ -1,29 +1,15 @@
-#
-#   submitters.py
-#
-#     Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#     
-#     This program is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
-#     (at your option) any later version.
-#     
-#     This program is distributed in the hope that it will be useful,
-#     but WITHOUT ANY WARRANTY; without even the implied warranty of
-#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#     GNU General Public License for more details.
-#     
-#     You should have received a copy of the GNU General Public License
-#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+from __future__ import absolute_import
+
 import os, subprocess
 import errno
 from datetime       import datetime
-from gc_exceptions  import SubmitError
-from otherpkg.log   import log_warn, log_info
-from data_storage   import DataStorage
+
+from ..gc_exceptions  import SubmitError
+from ..otherpkg.log   import log_warn, log_info, getClassLogger
+from ..data_storage   import DataStorage
 
 
+progSLogger = getClassLogger("ProgramSubmitter", __name__)
 
 class ProgramSubmitter(object):
     '''
@@ -32,30 +18,30 @@ class ProgramSubmitter(object):
     '''
 
     def __init__(self, argCreator, output_dir, label, timePrefix=False,
-            blocking=True, forceExisting=True, numCPU=1):
+            blocking=True, forceExisting=True, numCPU=1, createOutputDir=True,
+            ignoreSubmitErrors=False):
         '''
         Create the submitter object.
 
         Parameters
         ----------
-
         argCreator : ArgumentCreator
-
+            Argument creator
         output_dir : string
             Output directory to save data to. Unrelated to the actual output
             directory of the program that will run as the submitter cannot know
             how to force the program to output its data to this directory
-
         appLabel   : string
             Simulation run label. Each simulation will have its own directory
             created that will contain this label
-
         timePrefix : bool
             Whether to prefix the label with time before the output directory
             will be created.
-
         forceExisting : bool, optional
             When True, will not raise an error if the output directory already exists.
+        ignoreSubmitErrors : bool, optional
+            If submission of one process fails, ignore this and continue.
+            Otherwise raise an exception.
         '''
         self._ac = argCreator
         self._output_dir = output_dir
@@ -65,18 +51,24 @@ class ProgramSubmitter(object):
         else:
             self._timePrefix = timePrefix
         self._forceExisting = forceExisting
+        self._ignoreSubmitErrors = ignoreSubmitErrors
 
-        self._outputDir = self._createOutputDir()
-        try:
-            os.makedirs(self.outputDir())
-        except OSError as e:
-            if (not self._forceExisting):
-                raise e
-            if (e.errno == errno.EEXIST):
-                log_warn("root.submitters", "Output directory already exists. This"
-                    + " might overwrite files.")
-            else:
-                raise e
+        self.createOutputDir = createOutputDir
+        if self.createOutputDir:
+            self._outputDir = self._createOutputDir()
+            try:
+                os.makedirs(self.outputDir())
+            except OSError as e:
+                if (not self._forceExisting):
+                    raise e
+                if (e.errno == errno.EEXIST):
+                    log_warn("root.submitters", "Output directory already exists. This"
+                        + " might overwrite files.")
+                else:
+                    raise e
+        else:
+            self._outputDir = '__not_set__'
+            progSLogger.info('Not making output directory. Disabled by the user.')
 
         # process management
         self._pList = []
@@ -102,12 +94,11 @@ class ProgramSubmitter(object):
 
 
     def _wait(self):
-        print self._numCPU
         if (self._blocking == False or len(self._pList) < self._numCPU):
             return None
         p = self._pList.pop(0)
         errno = p.wait()
-        if (errno is not None and errno != 0):
+        if not self._ignoreSubmitErrors and (errno is not None and errno != 0):
             raise SubmitError()
         
 
@@ -127,7 +118,7 @@ class ProgramSubmitter(object):
     def waitForProcesses(self):
         self._cleanup()
 
-    def submitAll(self, startJobNum, repeat=1, dry_run=False):
+    def submitAll(self, startJobNum, repeat=1, dry_run=False, filter=None):
         '''
         Submits all the generated jobs. Parameters:
           startJobNum   Start job number index
@@ -139,10 +130,11 @@ class ProgramSubmitter(object):
         for it in range(self._ac.listSize()):
             for rep in range(repeat):
                 self._wait()
-                print "Submitting simulation " + str(it)
-                p = self.RunProgram(self._ac.getArgString(it, curr_job_num ),
-                        curr_job_num, dry_run)
-                self._addProcess(p)
+                if (filter is None) or (filter == it):
+                    print "Submitting simulation " + str(it)
+                    p = self.RunProgram(self._ac.getArgString(it, curr_job_num ),
+                            curr_job_num, dry_run)
+                    self._addProcess(p)
                 prt.append((curr_job_num, self._ac.getPrintArgString(it)))
                 curr_job_num += 1
 

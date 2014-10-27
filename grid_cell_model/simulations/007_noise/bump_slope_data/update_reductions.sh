@@ -22,7 +22,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-root_dir="../output/even_spacing/velocity/"
+root_dir="../output/even_spacing/velocity_vertical/"
 target_file="bump_slope_"
 
 I_vec="0pA 150pA 300pA"
@@ -33,5 +33,5 @@ for I in $I_vec; do
     rm -f $dst
     echo "src: $src"
     echo "dst: $dst"
-    h5copy -i $src -o $dst -s /lineFitSlope -d /lineFitSlope
+    h5copy -i $src -o $dst -s /analysis/lineFitSlope -d /lineFitSlope
 done

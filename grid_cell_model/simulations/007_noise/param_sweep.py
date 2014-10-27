@@ -1,33 +1,16 @@
-#
-#   param_sweep.py
-#
-#   Parameter sweep (2D): shared procedures.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Parameter sweep (2D): shared procedures.'''
+from __future__ import absolute_import, print_function
+
 import numpy as np
-from submitting.factory   import SubmitterFactory
-from submitting.arguments import ArgumentCreator
-from data_storage         import DataStorage
-from otherpkg.log         import log_info
+from grid_cell_model.submitting.factory import SubmitterFactory
+from grid_cell_model.submitting.arguments import ArgumentCreator
+from grid_cell_model.data_storage import DataStorage
+from grid_cell_model.otherpkg.log import log_info
 
 
 def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
         appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
-        extraIterparams={}):
+        extraIterparams={}, rc=None):
     ac = ArgumentCreator(p, printout=True)
 
     GArr = np.linspace(startG, endG, Nvals)
@@ -57,16 +40,30 @@ def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
             blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
     ac.setOption('output_dir', submitter.outputDir())
     startJobNum = 0
-    submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
+    filter = rc[0]*len(GArr) + rc[1] if rc is not None else None
+    submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run, filter=filter)
     submitter.saveIterParams(iterparams, dry_run=dry_run)
 
 
 ###############################################################################
 
-def getBumpCurrentSlope(noise_sigma, threshold=0):
-    fileName = 'bump_slope_data/bump_slope_{0}pA.h5'.format(int(noise_sigma))
+def getBumpCurrentSlope(noise_sigma, threshold=0, type=None):
+    '''
+    type : string, optional
+        If ``None`` the regular bump slope files will be used. If ``no_theta``,
+        the bump slope files specific for the simulations wihtout theta
+        oscillations will be used.
+    '''
+    if (type is None):
+        fileName = 'bump_slope_data/bump_slope_{0}pA.h5'.format(int(noise_sigma))
+    elif (type == 'no_theta'):
+        fileName = 'bump_slope_data/bump_slope_no_theta_{0}pA.h5'.format(int(noise_sigma))
+
+    log_msg = 'Using the following file for bump slope data:\n  {0}'
+    log_info("getBumpCurrentSlope", log_msg.format(fileName))
+
     ds = DataStorage.open(fileName, 'r')
-    slopes = np.abs(ds['lineFitSlope'].flatten())
+    slopes = ds['lineFitSlope'].flatten()
     ds.close()
     slopes[slopes < threshold] = np.nan
     return slopes

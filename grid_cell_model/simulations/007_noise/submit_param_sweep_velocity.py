@@ -1,25 +1,17 @@
 #!/usr/bin/env python
-#
-#   submit_param_sweep_velocity.py
-#
-#   Submit job(s) to the cluster/workstation: velocity estimation parameter
-#   sweeps (noise)
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Bump velocity gain estimation.
+
+These simulations do the following:
+    - Bump is initialized, in the beginning [0, theta_start_t], by a very
+      strong place cell input.
+    - The bump moves, with a constant speed, following **vertical** direction.
+      for the duration of the simulation.
+    - The speed is controlled by IvelMax and dIvel parameters (currently
+      [0, 100] pA, with a step of 10 pA
+    - At the end of each run, spikes from E and I population are exported to
+      the output file.
+'''
 from default_params import defaultParameters as dp
 from param_sweep    import submitParamSweep
 import logging as lg
@@ -35,7 +27,7 @@ for noise_sigma in noise_sigma_all:
 
     # Submitting
     ENV         = 'cluster'
-    simRootDir  = 'output/even_spacing/velocity'
+    simRootDir  = 'output/even_spacing/velocity_vertical'
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
     appName     = 'simulation_velocity.py'
     rtLimit     = '08:00:00'
@@ -50,8 +42,10 @@ for noise_sigma in noise_sigma_all:
     p['nthreads'] = 1
     p['ntrials']  = 10
 
-    p['IvelMax']  = 100
+    p['IvelMax']  = 200
     p['dIvel']    = 10
+
+    p['verbosity'] = 'DEBUG'
 
 
     # Range of E/I synaptic conductances

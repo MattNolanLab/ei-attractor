@@ -1,65 +1,71 @@
 #!/usr/bin/env python
 #
-#   submit_analysis_EI.py
-#
-#   Submit job(s) to the cluster/workstation: parameter sweep analysis (noise)
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Submit EI analysis jobs.
+'''
+from __future__ import absolute_import, print_function
+
 import numpy as np
-from submitting.factory   import SubmitterFactory
-from submitting.arguments import ArgumentCreator
+
+from grid_cell_model.submitting.factory   import SubmitterFactory
+from grid_cell_model.submitting.arguments import ArgumentCreator
+from grid_cell_model.submitting           import flagparse
+from grid_cell_model.submitting.flagparse import positive_int
+
+import common.analysis as common
 from param_sweep          import getSpeedPercentile
 from default_params       import defaultParameters as dp
-import logging as lg
-lg.basicConfig(level=lg.DEBUG)
+
+
+
+parser = flagparse.FlagParser()
+parser.add_argument('--row',     type=int)
+parser.add_argument('--col',     type=int)
+parser.add_argument("--where",   type=str, required=True)
+parser.add_argument("--ns",      type=int, choices=[0, 150, 300])
+parser.add_argument('--type',    type=str, choices=common.allowedTypes, required=True)
+parser.add_argument('--env',     type=str, choices=['workstation', 'cluster'], required=True)
+parser.add_argument('--nCPU',    type=positive_int, default=1)
+parser.add_argument('--rtLimit', type=str, default='00:05:00')
+parser.add_flag("--ns_all")
+parser.add_flag("--forceUpdate")
+parser.add_flag("--ignoreErrors")
+o = parser.parse_args()
+
+if not o.ns_all and o.ns is None:
+    raise RuntimeError("Must specify either --ns or --ns_all!")
+
 
 # Submitting
-ENV         = 'cluster'
+ENV         = o.env
 appName     = 'analysis_EI.py'
-rtLimit     = '00:02:00'
-numCPU      = 1
+rtLimit     = o.rtLimit
+numCPU      = o.nCPU
 blocking    = True
 timePrefix  = False
 numRepeat   = 1
 dry_run     = False
 
-gammaBumpType = 'gamma-bump'
-velocityType = 'velocity'
-gridsType = 'grids'
 
-noise_sigma_all = [0.0, 150.0, 300.0] # pA
-dirs = \
-    ('output/even_spacing/grids',      gridsType,     '{0}pA', (31, 31))
-    #('output/even_spacing/velocity',   velocityType,  '{0}pA', (31, 31))
-    #('output/even_spacing/gamma_bump', gammaBumpType, '{0}pA', (31, 31))
+ns_all = [0, 150, 300]
+shape = (31, 31)
+noise_sigmas = ns_all if o.ns_all  else [o.ns]
 
-for noise_sigma in noise_sigma_all:
+
+for noise_sigma in noise_sigmas:
     p = {}
-    simRootDir = dirs[0]
-    p['type']  = dirs[1]
-    simLabel   = dirs[2].format(int(noise_sigma))
-    rowN       = dirs[3][0]
-    colN       = dirs[3][1]
+    simRootDir = o.where
+    simLabel   = '{0}pA'.format(int(noise_sigma))
+    rowN       = shape[0]
+    colN       = shape[1]
 
-    p['shapeRows'] = rowN
-    p['shapeCols'] = colN
-    p['forceUpdate'] = 0
+    p['type']        = o.type
+    p['shapeRows']   = rowN
+    p['shapeCols']   = colN
+    p['verbosity']   = o.verbosity
+    p['forceUpdate'] = int(o.forceUpdate)
 
-    if (p['type'] == velocityType):
+    if (p['type'] == common.velocityType):
         percentile = 99.0
         p['bumpSpeedMax'] = getSpeedPercentile(percentile, dp['ratVelFName'],
                 dp['gridSep'], dp['Ne'])
@@ -69,17 +75,16 @@ for noise_sigma in noise_sigma_all:
     ac = ArgumentCreator(p, printout=True)
 
     iterparams = {
-            'row' : np.arange(rowN),
-            'col' : np.arange(colN)
-            #'row' : [10],
-            #'col' : [10]
+            'row' : np.arange(rowN) if o.row is None else [o.row],
+            'col' : np.arange(colN) if o.col is None else [o.col]
     }
     ac.insertDict(iterparams, mult=True)
 
     ###############################################################################
     submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
             rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-            blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
+            blocking=blocking, timePrefix=timePrefix, numCPU=numCPU,
+            ignoreSubmitErrors=o.ignoreErrors)
     ac.setOption('output_dir', submitter.outputDir())
     startJobNum = 0
     submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)

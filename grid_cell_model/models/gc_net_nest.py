@@ -1,40 +1,23 @@
-#
-#   gc_net_nest.py
-#
-#   Nest-specific implementation of the grid cell model
-#
-#     Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#     
-#     This program is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
-#     (at your option) any later version.
-#     
-#     This program is distributed in the hope that it will be useful,
-#     but WITHOUT ANY WARRANTY; without even the implied warranty of
-#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#     GNU General Public License for more details.
-#     
-#     You should have received a copy of the GNU General Public License
-#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Nest-specific implementation of the grid cell model.'''
+from __future__ import absolute_import, print_function
 
+import logging
 
 import numpy    as np
-import logging  as lg
-
 from numpy.random import rand, randn
 from scipy.io     import loadmat
-
-import gc_neurons
-from gc_net       import GridCellNetwork
-from place_input  import PlaceCellInput
-from place_cells  import UniformBoxPlaceCells
-from data_storage import DataStorage
-from otherpkg.log import log_info
-
 import nest
 
+from . import gc_neurons
+from .gc_net import GridCellNetwork
+from .place_input import PlaceCellInput
+from .place_cells import UniformBoxPlaceCells
+from ..data_storage import DataStorage
+from ..otherpkg.log import log_info
+
+logger = logging.getLogger(__name__)
+gcnLogger = logging.getLogger('{0}.{1}'.format(__name__,
+        "NestGridCellNetwork"))
 
 nest.Install('gridcellsmodule')
 
@@ -45,11 +28,29 @@ class PosInputs(object):
         self.pos_y = pos_y
         self.pos_dt = pos_dt
 
+    def __str__(self):
+        res = 'PosInputs:\n  pos_x: {0}\n  pos_y: {1}\n  pos_dt: {2}'.format(\
+                self.pos_x, self.pos_y, self.pos_dt)
+        return res
+
+
+class ConstPosInputs(PosInputs):
+    def __init__(self, pos_x, pos_y):
+        # dt here is irrelevant (say 1e3). This data will never get advanced
+        super(ConstPosInputs, self).__init__([float(pos_x)], [float(pos_y)],
+                1e3)
+
+    def __str__(self):
+        res = 'ConstPosInputs:\n  pos_x: {0}\n  pos_y: {1}\n  pos_dt: {2}'.format(\
+                self.pos_x, self.pos_y, self.pos_dt)
+        return res
+
 
 
 class NestGridCellNetwork(GridCellNetwork):
     def __init__(self, neuronOpts, simulationOpts):
         GridCellNetwork.__init__(self, neuronOpts, simulationOpts)
+        self.velocityInputInitialized = False
 
         self.spikeMon_e = None
         self.spikeMon_i = None
@@ -98,6 +99,8 @@ class NestGridCellNetwork(GridCellNetwork):
             clk.reinit()
 
     def _initNESTKernel(self):
+        gcnLogger.debug('Initializing NEST kernel: no. of threads: {0}'.format(\
+                self.no.nthreads))
         nest.ResetKernel()
         nest.SetKernelStatus({"resolution" : self.no.sim_dt, "print_time": False})
         nest.SetKernelStatus({"local_num_threads" : self.no.nthreads})
@@ -143,6 +146,13 @@ class NestGridCellNetwork(GridCellNetwork):
         self.endConstruction()
         self.beginSimulation()
         nest.SetKernelStatus({"print_time": bool(printTime)})
+        
+        if not self.velocityInputInitialized:
+            velMsg = "Velocity input has not been initialized. Make sure " + \
+                    "this is the desired behavior. If you have set the " +   \
+                    "'velON' parameter to 1, then this message probably " +  \
+                    "indicates a bug in the simulation code."
+            gcnLogger.warn(velMsg)
         nest.Simulate(time)
 
 
@@ -330,6 +340,8 @@ class NestGridCellNetwork(GridCellNetwork):
         if self._ratVelocitiesLoaded:
             return
 
+        logger.info('Loading rat velocities')
+
         self.ratData    = loadmat(self.no.ratVelFName)
         self.rat_dt     = self.ratData['dt'][0][0]*1e3      # units: ms
 
@@ -343,6 +355,11 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self._ratVelocitiesLoaded = True
 
+        gcnLogger.debug(\
+            'velC: {0}, bumpCurrentSlope: {1}, gridSep: {2}'.format(self.velC,
+                self.no.bumpCurrentSlope, self.no.gridSep))
+
+
 
     def setVelocityCurrentInput_e(self, prefDirs_mask=None):
         '''
@@ -350,7 +367,7 @@ class NestGridCellNetwork(GridCellNetwork):
         prefDirs_mask can be used to manipulate velocity input strength
         for each neuron.
         '''
-        print("Setting up velocity input current.")
+        logger.info("Setting up velocity input current.")
         self._loadRatVelocities()
 
 
@@ -373,12 +390,15 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1]);
         nest.SetStatus(self.E_pop, "velC"      , self.velC);
 
+        self.velocityInputInitialized = True
 
 
     def setConstantVelocityCurrent_e(self, vel, start_t=None, end_t=None):
         '''
         Set the model so that there is only a constant velocity current input.
         '''
+        gcnLogger.info('Setting up constant velocity current input: {0}'.format(\
+                vel))
         if start_t is not None:
             raise Exception("Const velocity start time cannot be overridden in this model!")
 
@@ -403,8 +423,8 @@ class NestGridCellNetwork(GridCellNetwork):
             "rat_pos_y" :  self.rat_pos_y,
             "rat_pos_dt":  self.rat_dt}) # s --> ms
 
-        print self.rat_pos_x
-        print self.rat_pos_y
+        print(self.rat_pos_x)
+        print(self.rat_pos_y)
 
         # Map velocities to currents: Here the mapping is 1:1, i.e. the
         # velocity dictates the current
@@ -416,10 +436,16 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self.setStartPlaceCells(PosInputs([0.], [.0], self.rat_dt))
 
+        self.velocityInputInitialized = True
+
 
     def setStartPlaceCells(self, posIn):
         if (len(self.PC_start) == 0):
-            print "Setting up initialization place cells"
+            gcnLogger.info("Setting up initialization place cells")
+            gcnLogger.debug("Init place cell positional input: {0}".format(\
+                    str(posIn)))
+            gcnLogger.debug("Init place cells: start: {0}, end: {1}".format(0,
+                self.no.theta_start_t))
             self.PC_start, _, _ = self.createGenericPlaceCells(
                     self.no.N_place_cells,
                     self.no.pc_start_max_rate,
@@ -428,7 +454,7 @@ class NestGridCellNetwork(GridCellNetwork):
                     end=self.no.theta_start_t,
                     posIn=posIn)
         else:
-            log_info('Initialization place cells already set. Skipping the set up')
+            gcnLogger.info('Initialization place cells already set. Skipping the set up')
 
 
     def setPlaceCells(self, start=None, end=None, posIn=None):
@@ -436,13 +462,18 @@ class NestGridCellNetwork(GridCellNetwork):
         # the correct position, i.e. the bump must be at the correct starting
         # position, which matches the actual velocity simulation place cell
         # input
-        self._loadRatVelocities()
-        startPos = PosInputs([self.rat_pos_x[0]], [self.rat_pos_y[0]],
-                self.rat_dt)
+        if posIn is None:
+            self._loadRatVelocities()
+            startPos = ConstPosInputs(self.rat_pos_x[0], self.rat_pos_y[0])
+        else:
+            startPos = ConstPosInputs(posIn.pos_x[0], posIn.pos_y[0])
         self.setStartPlaceCells(startPos)
 
         # Here the actual velocity place cells
-        print "Setting up velocity place cells"
+        gcnLogger.info("Setting up place cells. User defined positional " +\
+                "data: {0}".format('no' if posIn is None else 'yes'))
+        gcnLogger.debug("Place cell positional input: {0}".format(str(posIn)))
+
         self.PC, _, _ = self.createGenericPlaceCells(self.no.N_place_cells,
                 self.no.pc_max_rate, self.no.pc_conn_weight, start, end, posIn)
 
@@ -462,6 +493,7 @@ class NestGridCellNetwork(GridCellNetwork):
             posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
 
         if (N != 0):
+            gcnLogger.info('Setting up generic place cells')
             NTotal = N*N
 
             boxSize = [self.no.arenaSize, self.no.arenaSize]
@@ -476,7 +508,7 @@ class NestGridCellNetwork(GridCellNetwork):
             nest.SetStatus(PC, 'ctr_x', PCHelper.centers[:, 0])
             nest.SetStatus(PC, 'ctr_y', PCHelper.centers[:, 1])
 
-            npos = int(self.no.time / self.rat_dt)
+            npos = int(self.no.time / posIn.pos_dt)
             nest.SetStatus([PC[0]], params={
                 'rat_pos_x' : posIn.pos_x[0:npos],
                 'rat_pos_y' : posIn.pos_y[0:npos],
@@ -519,7 +551,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
 
         else:
-            print "Warning: trying to set up place cells with N_place_cells == 0"
+            gcnLogger.warn("trying to set up place cells with N_place_cells == 0")
 
         self._placeCellsLoaded = True
 
@@ -754,19 +786,33 @@ class ConstantVelocityNetwork(BasicGridCellNetwork):
 
         self.setConstantVelocityCurrent_e(vel)
 
-    def getSpikes(self):
+    def getSpikes(self, **kw):
         '''
         Return a dictionary of spike monitor data.
+        For keyword arguments description, see
+        :meth:`~ConstantVelocityNetwork.getMinimalSaveData`
         '''
+        espikes = kw.get('espikes', True)
+        ispikes = kw.get('ispikes', False)
+
         out = {}
-        out['spikeMon_e'] = self.getSpikeMonData(self.spikeMon_e,
-                self.E_pop[0])
+        if (espikes):
+            out['spikeMon_e'] = self.getSpikeMonData(self.spikeMon_e, self.E_pop[0])
+        if (ispikes):
+            out['spikeMon_i'] = self.getSpikeMonData(self.spikeMon_i, self.I_pop[0])
         return out
 
 
-    def getMinimalSaveData(self):
+    def getMinimalSaveData(self, **kw):
+        '''
+        Keyword arguments:
+        ``espikes`` : bool
+            Whether to return spikes from the E population. Defaults to True.
+        ``ispikes`` : bool
+            Whether to return spikes from the I population. Defaults to False.
+        '''
         out = self.getNetParams()
-        out.update(self.getSpikes())
+        out.update(self.getSpikes(**kw))
         return out
 
 

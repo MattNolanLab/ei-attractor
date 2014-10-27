@@ -1,28 +1,10 @@
-#
-#   arguments.py
-#
-#   Argument manipulation.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Argument processing and setup
+
+To submit jobs with multiple parameter sweeps/runs>
 '''
-Argument processing and setup - to submit jobs with multiple parameter
-sweeps/runs
-'''
-from gc_exceptions import DimensionException
+from __future__ import absolute_import, print_function
+
+from ..gc_exceptions import DimensionException
 
 class ArgumentCreator(object):
     '''
@@ -35,7 +17,7 @@ class ArgumentCreator(object):
     method)
     '''
     
-    def __init__(self, defaultOpts, printout=False):
+    def __init__(self, defaultOpts, printout=False, emitJobNum=True):
         '''
         defaultOpts should be a dictionary (not a list)
         '''
@@ -43,6 +25,7 @@ class ArgumentCreator(object):
         self._resList = [defaultOpts]
         self._printData = []
         self.printout = printout
+        self.emitJobNum = emitJobNum
 
         # remove job_num parameter from the list, it should be defined during
         # job submission
@@ -128,7 +111,8 @@ class ArgumentCreator(object):
                 parStr += ' --' + str(key)
             else:
                 parStr += ' --' + str(key) + ' ' + str(val)
-        parStr += ' --job_num ' + str(job_num)
+        if self.emitJobNum:
+            parStr += ' --job_num ' + str(job_num)
         return parStr
 
     def getPrintData(self):

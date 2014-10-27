@@ -49,7 +49,8 @@ def plotConnHistogram(val, **kw):
     ylabelPos       = kw.pop('ylabelPos', -0.2)
 
     globalAxesSettings(ax)
-    ax.hist(val, **kw)
+    n, _, _ = ax.hist(val, **kw)
+    print(np.max(n))
     ax.set_xlabel(xlabel)
     ax.text(ylabelPos, 0.5, ylabel, rotation=90, transform=ax.transAxes,
             va='center', ha='right')

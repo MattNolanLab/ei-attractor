@@ -63,8 +63,8 @@ import logging  as lg
 import random
 import time
 
-from gc_exceptions         import NotImplementedException
-from analysis.image        import Position2D, remapTwistedTorus
+from ..gc_exceptions import NotImplementedException
+from ..analysis.image import Position2D, remapTwistedTorus
 
 
 __all__ = ['GridCellNetwork']
@@ -133,6 +133,20 @@ class GridCellNetwork(object):
         raise NotImplementedException("GridCellNetwork.getOutgoingConnections")
 
 
+    def _shiftOnTwistedTorus(self, val, shift, dim):
+        ret = Position2D(val.x, val.y)
+        ret.x += shift.x
+        ret.y += shift.y
+
+        if ret.y < 0 or ret.y >= dim.y:
+            ret.x += dim.x / 2.0
+
+        ret.x %= dim.x
+        ret.y %= dim.y
+
+        return ret
+            
+
 
     ## Generate ring-like weights.
     #
@@ -153,8 +167,10 @@ class GridCellNetwork(object):
         dim.x = 1.0
         dim.y = self.y_dim
 
-        a.x -= prefDirC*prefDir.x
-        a.y -= prefDirC*prefDir.y
+        #a.x -= prefDirC*prefDir.x
+        #a.y -= prefDirC*prefDir.y
+        shift = Position2D(-prefDirC*prefDir.x, -prefDirC*prefDir.y)
+        a = self._shiftOnTwistedTorus(a, shift, dim)
 
         d = remapTwistedTorus(a, others, dim)
         return np.exp(-(d - mu)**2/2/sigma**2)

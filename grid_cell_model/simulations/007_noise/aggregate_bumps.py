@@ -1,61 +1,156 @@
 #!/usr/bin/env python
-#
-#   aggregate_bumps.py
-#
-#   Aggregate bump data into the reductions file.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Aggregate bump data into the reductions file.
+'''
 import numpy as np
-from parameters  import JobTrialSpace2D
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+from grid_cell_model.parameters  import JobTrialSpace2D
+from grid_cell_model.submitting import flagparse
 
 
-ns_all  = [0, 150, 300]
-ns_none = [-100]
-dirs = \
-    ("output/detailed_noise/gamma_bump/EI-3_3",  (31, 9),  ns_none)
-    #("output/detailed_noise/gamma_bump/EI-1_3",  (31, 9),  ns_none)
-    #("output/even_spacing/gamma_bump/{0}pA",     (31, 31), ns_all)
+evenSpacingType = 'even-spacing'
+detailedNoiseType = 'detailed-noise'
+allowedTypes = [evenSpacingType, detailedNoiseType]
 
-NTrials = 5
-trialNumList = xrange(NTrials)
+# Positions
+allowedPositions = ['EI-1_3', 'EI-3_1']
+detailedShape = (31, 9)
+
+# Even spacing
+evenShape     = (31, 31)
+
+parser = flagparse.FlagParser()
+parser.add_argument("type",      type=str, choices=allowedTypes,
+        metavar='type', help='Type of the aggregation. Can be one of %s' %
+        str(allowedTypes))
+parser.add_argument("where",     type=str, help='Root directory')
+
+parser.add_argument("--ns",      type=str, choices=['0pA', '150pA', '300pA'])
+parser.add_argument('--ntrials', type=int, default=5)
+parser.add_argument('--noLoadData', action='store_true')
+parser.add_argument('--position',type=str, choices=allowedPositions)
+
+parser.add_flag('--bump')
+parser.add_flag('--positions')
+parser.add_flag('--isBump')
+parser.add_flag('--uniformML')
+parser.add_flag('--AC')
+parser.add_flag('--FR_e')
+parser.add_flag('--FR_i')
+args = parser.parse_args()
+
+ns_all = ['0pA', '150pA', '300pA']
+trialNumList = range(args.ntrials)
 varListBase = ['analysis']
-loadData = False
+loadData = not args.noLoadData
 
 ################################################################################
-shape        = dirs[1]
-noise_sigmas = dirs[2]
-for noise_sigma in noise_sigmas:
-    rootDir = dirs[0].format(int(noise_sigma))
+
+# determine the iterator
+if args.type == evenSpacingType:
+    shape = evenShape
+    subDirs = ns_all if args.ns is None  else [args.ns]
+else:
+    shape = detailedShape
+    subDirs = allowedPositions if args.position is None else [args.position]
+
+for subDir in subDirs:
+    rootDir = '{0}/{1}'.format(args.where, subDir)
+    print rootDir, shape
 
     sp = JobTrialSpace2D(shape, rootDir)
-    sp.aggregateData(varListBase + ['bump_e', 'sigma'], trialNumList,
-            funReduce=None, loadData=loadData,saveData=True,
-            output_dtype='array')
-    sp.aggregateData(varListBase + ['bump_e', 'err2'], trialNumList,
-            funReduce=None, loadData=loadData, saveData=True,
-            output_dtype='array')
-    sp.aggregateData(varListBase + ['bump_e', 'bump_e_rateMap'], trialNumList,
-            funReduce=None, loadData=loadData, saveData=True,
-            output_dtype='list')
 
-    sp.aggregateData(varListBase + ['acVal'], trialNumList, funReduce=np.mean,
-            loadData=loadData, saveData=True, output_dtype='array')
-    sp.aggregateData(varListBase + ['acVec'], trialNumList, funReduce=None,
-            loadData=loadData, saveData=True, output_dtype='list')
+    if args.bump or args.all:
+        for suffix in ['_full']:
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'A'],
+                    trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                    output_dtype='array')
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'mu_x'],
+                    trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                    output_dtype='array')
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'mu_y'],
+                    trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                    output_dtype='array')
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'sigma'],
+                    trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                    output_dtype='array')
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'err2'], trialNumList,
+                    funReduce=None, loadData=loadData, saveData=True,
+                    output_dtype='array')
+            sp.aggregateData(varListBase + ['bump_e'+suffix, 'bump_e_rateMap'],
+                    trialNumList, funReduce=None, loadData=loadData, saveData=True,
+                    output_dtype='list')
+            sp.aggregateData(varListBase + ['bump_i'+suffix, 'bump_i_rateMap'],
+                    trialNumList, funReduce=None, loadData=loadData, saveData=True,
+                    output_dtype='list')
+
+    if args.positions or args.all:
+        bumpPosVars = varListBase + ['bump_e', 'positions']
+        sp.aggregateData(bumpPosVars + ['A'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['mu_x'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['mu_y'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['sigma'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['err2Sum'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['ln_L'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['lh_precision'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['times'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+
+    if args.isBump or args.all:
+        bumpPosVars = varListBase + ['bump_e', 'isBump']
+        sp.aggregateData(bumpPosVars + ['isBumpFrames'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['fracTotal'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='array')
+
+    if args.uniformML or args.all:
+        bumpPosVars = varListBase + ['bump_e', 'uniformML']
+        sp.aggregateData(bumpPosVars + ['mu'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['sigma2'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['ln_L'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['err2'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+        sp.aggregateData(bumpPosVars + ['times'],
+                trialNumList, funReduce=None, loadData=loadData,saveData=True,
+                output_dtype='list')
+
+    if args.AC or args.all:
+        sp.aggregateData(varListBase + ['acVal'], trialNumList, funReduce=np.mean,
+                loadData=loadData, saveData=True, output_dtype='array')
+        sp.aggregateData(varListBase + ['acVec'], trialNumList, funReduce=None,
+                loadData=loadData, saveData=True, output_dtype='list')
+        sp.aggregateData(varListBase + ['freq'], trialNumList, funReduce=np.mean,
+                loadData=loadData, saveData=True, output_dtype='array')
+
+    if args.FR_e or args.all:
+        FRVars = varListBase + ['FR_e']
+        sp.aggregateData(FRVars + ['popSliding'], trialNumList, funReduce=None,
+                         loadData=loadData, saveData=True, output_dtype='list')
+
+    if args.FR_i or args.all:
+        FRVars = varListBase + ['FR_i']
+        sp.aggregateData(FRVars + ['popSliding'], trialNumList, funReduce=None,
+                         loadData=loadData, saveData=True, output_dtype='list')

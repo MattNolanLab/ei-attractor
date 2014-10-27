@@ -1,57 +1,98 @@
 #!/usr/bin/env python
-#
-#   aggregate_grids.py
-#
-#   Aggregate grid field data into the reductions file.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-from parameters  import JobTrialSpace2D
-import logging as lg
-#lg.basicConfig(level=lg.WARN)
-lg.basicConfig(level=lg.INFO)
+'''
+Aggregate grid field data into the reductions file.
+'''
+import numpy as np
+from grid_cell_model.parameters import JobTrialSpace2D
+from grid_cell_model.submitting import flagparse
 
+evenSpacingType = 'even-spacing'
+detailedNoiseType = 'detailed-noise'
+allowedTypes = [evenSpacingType, detailedNoiseType]
 
-noise_sigmas = [0, 150, 300]
-dirs = \
-    ('{0}pA',    (31, 31))
+# Positions
+allowedPositions = ['EI-1_3', 'EI-3_1']
+detailedShape = (31, 9)
 
-NTrials = 3
-trialNumList = xrange(NTrials)
-shape   = dirs[1]
+# Even spacing
+evenShape     = (31, 31)
+
+parser = flagparse.FlagParser()
+parser.add_argument("type",      type=str, choices=allowedTypes,
+        metavar='types', help='Type of the aggregation. Can be one of %s' %
+        str(allowedTypes))
+parser.add_argument("where",     type=str, help='Root directory')
+parser.add_argument("--ns",      type=str, choices=["0pA", "150pA", "300pA"])
+parser.add_argument('--ntrials', type=int, default=3)
+parser.add_argument('--noLoadData', action='store_true')
+parser.add_argument('--position',type=str, choices=allowedPositions)
+parser.add_flag('--gridFields')
+parser.add_flag('--FR')
+args = parser.parse_args()
+
+ns_all = ['0pA', '150pA', '300pA']
+trialNumList = range(args.ntrials)
 varListBase = ['analysis']
-loadData = False
+loadData = not args.noLoadData
 
 ################################################################################
-for noise_sigma in noise_sigmas:
-    dir = dirs[0].format(int(noise_sigma))
-    rootDir = "output/even_spacing/grids/{0}".format(dir)
+
+# determine the iterator
+if args.type == evenSpacingType:
+    shape = evenShape
+    subDirs = ns_all if args.ns is None  else [args.ns]
+else:
+    shape = detailedShape
+    subDirs = allowedPositions if args.position is None else [args.position]
+
+for subDir in subDirs:
+    rootDir = '{0}/{1}'.format(args.where, subDir)
+    print rootDir, shape
 
     sp = JobTrialSpace2D(shape, rootDir)
-    sp.aggregateData(varListBase + ['rateMap_e'], trialNumList, funReduce=None,
-            saveData=True, loadData=loadData, output_dtype='list')
-    sp.aggregateData(varListBase + ['rateMap_e_X'], [trialNumList[0]],
-            funReduce=None, saveData=True, loadData=loadData,
-            output_dtype='list')
-    sp.aggregateData(varListBase + ['rateMap_e_Y'], [trialNumList[0]],
-            funReduce=None, saveData=True, loadData=loadData,
-            output_dtype='list')
-    sp.aggregateData(varListBase + ['gridnessScore'], trialNumList,
-            funReduce=None, saveData=True, loadData=loadData,
-            output_dtype='array')
-    sp.aggregateData(['options', 'arenaSize'], [trialNumList[0]],
-            funReduce=None, saveData=True, loadData=loadData,
-            output_dtype='array')
+
+    if args.gridFields or args.all:
+        sp.aggregateData(varListBase + ['rateMap_e'], trialNumList,
+                funReduce=None, saveData=True, loadData=loadData,
+                output_dtype='list')
+        sp.aggregateData(varListBase + ['rateMap_e_X'], [trialNumList[0]],
+                funReduce=None, saveData=True, loadData=loadData,
+                output_dtype='list')
+        sp.aggregateData(varListBase + ['rateMap_e_Y'], [trialNumList[0]],
+                funReduce=None, saveData=True, loadData=loadData,
+                output_dtype='list')
+        sp.aggregateData(varListBase + ['corr'], trialNumList, funReduce=None,
+                saveData=True, loadData=loadData, output_dtype='list')
+        sp.aggregateData(varListBase + ['corr_X'], [trialNumList[0]],
+                funReduce=None, saveData=True, loadData=loadData,
+                output_dtype='list')
+        sp.aggregateData(varListBase + ['corr_Y'], [trialNumList[0]],
+                funReduce=None, saveData=True, loadData=loadData,
+                output_dtype='list')
+        sp.aggregateData(varListBase + ['gridnessScore'], trialNumList,
+                funReduce=None, saveData=True, loadData=loadData,
+                output_dtype='array')
+        sp.aggregateData(['options', 'arenaSize'], [trialNumList[0]],
+                funReduce=None, saveData=True, loadData=loadData,
+                output_dtype='array')
+
+    if args.FR or args.all:
+        sp.aggregateData(varListBase + ['FR_e', 'avg'], trialNumList,
+                funReduce=None, saveData=True, loadData=loadData,
+                output_dtype='array')
+        sp.aggregateData(varListBase + ['FR_e', 'all'], trialNumList,
+                funReduce=None, saveData=True, loadData=loadData,
+                output_dtype='list')
+
+        # An ugly method to extract only 10 recorded I cells and average their
+        # firing rate AND store as 'all' dataset
+        def extractFR_i(x):
+            N = 10 # 10 neurons recorded, ugly, I know
+            return np.mean(x[0:N])
+        sp.aggregateData(varListBase + ['FR_i', 'avg'], trialNumList,
+                funReduce=None, saveData=True, loadData=loadData,
+                output_dtype='array')
+        sp.aggregateData(varListBase + ['FR_i', 'all'], trialNumList,
+                funReduce=extractFR_i, saveData=True, loadData=False,
+                output_dtype='array')
+

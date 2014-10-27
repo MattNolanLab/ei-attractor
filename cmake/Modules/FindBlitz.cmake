@@ -13,18 +13,24 @@ include(FindPkgConfig)
 
 execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} blitz --silence-errors --modversion OUTPUT_VARIABLE PKG_CONFIG_blitz_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+
 if(PKG_CONFIG_blitz_VERSION)
-  #use pkg-config to find blitz
-  if(CMAKE_VERSION VERSION_LESS "2.8.2")
-    pkg_check_modules(Blitz REQUIRED blitz)
-  else()
-    #starting at cmake-2.8.2, the QUIET option can be used
-    pkg_check_modules(Blitz REQUIRED QUIET blitz)
-  endif()
+    #use pkg-config to find blitz
+    message("Using pkg-config to find Blitz")
+
+    if(CMAKE_VERSION VERSION_LESS "2.8.2")
+        pkg_check_modules(Blitz REQUIRED blitz)
+    else()
+        #starting at cmake-2.8.2, the QUIET option can be used
+        pkg_check_modules(Blitz REQUIRED QUIET blitz)
+    endif()
   
-  # Resolve Blitz library to a precise path
-  set(Blitz_INCLUDE_DIR ${Blitz_INCLUDE_DIRS})
+    # Resolve Blitz library to a precise path
+    set(Blitz_INCLUDE_DIR ${Blitz_INCLUDE_DIRS})
+    set(Blitz_LIBRARY ${Blitz_LIBRARY_DIRS})
+
 else(PKG_CONFIG_blitz_VERSION)
+    message("Using native cmake functions to find Blitz")
     find_path(Blitz_INCLUDE_DIR blitz/blitz.h)
     if(Blitz_INCLUDE_DIR-NOTFOUND)
         message(FATAL_ERROR ${MSG_BLITZ_NOT_FOUND})
@@ -58,7 +64,11 @@ if(Blitz_FOUND)
   find_file(HAVE_BLITZ_TINYVEC2_H "blitz/tinyvec2.h" ${Blitz_INCLUDE_DIR})
 
   include(FindPackageHandleStandardArgs)
-  find_package_message(Blitz "Found Blitz++: ${Blitz_LIBRARIES} (>2G-pointees: ${HAVE_BLITZ_SPECIAL_TYPES}; New: ${HAVE_BLITZ_TINYVEC2_H})" "[${Blitz_LIBRARIES}][${Blitz_INCLUDE_DIR}]")
+  find_package_message(Blitz "Found Blitz++" "[${Blitz_LIBRARIES}][${Blitz_INCLUDE_DIR}]")
+  message(STATUS "  Blitz Libraries: ${Blitz_LIBRARIES}")
+  message(STATUS "  Blitz special types: (>2G-pointees: ${HAVE_BLITZ_SPECIAL_TYPES}; New: ${HAVE_BLITZ_TINYVEC2_H})")
+  message(STATUS "  Blitz Library path: ${Blitz_LIBRARY}")
+  message(STATUS "  Blitz include directory: ${Blitz_INCLUDE_DIR}")
 
 else(Blitz_FOUND)
 

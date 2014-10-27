@@ -18,14 +18,16 @@
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import absolute_import
+
 import matplotlib.pyplot as mpl
 import numpy as np
 from matplotlib.pyplot  import plot, xlabel, ylabel, legend, ylim, \
         tight_layout, axis, title, pcolormesh, colorbar, hold, subplot
 from matplotlib.ticker  import MaxNLocator, LinearLocator
-from analysis.spikes    import torusPopulationVector
 
-from global_defs        import globalAxesSettings, createColorbar
+from ..analysis.spikes import torusPopulationVector
+from .global_defs      import globalAxesSettings, createColorbar
 
 
 def bumpPosition(spikes, sheetSize, tstart, tend, dt, winLen, units="s"):
@@ -108,5 +110,24 @@ def flatFiringRate(FR, times, labely=None, labelx=None, units="ms",
     axis('tight')
     createColorbar(mpl.gca(), data=FR, label='Firing rate (Hz)')
     tight_layout()
+
+
+def plotBump(ax, rateMap, cmap='jet', minRate=False, maxRate=True, **kw):
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
+    fs = kw.pop('fontsize', 'small')
+    rx = kw.pop('rateXPos', 0.95)
+    ry = kw.pop('rateYPos', 1.025)
+    ax.pcolormesh(rateMap, cmap=cmap, **kw)
+    ax.axis("scaled")
+    ax.axis('off')
+    if (minRate):
+        minrStr = '{0:.1f} Hz'.format(np.min(rateMap.flatten()))
+        ax.text(0.1, ry, minrStr, ha="left", va='bottom', fontsize=fs,
+                transform=ax.transAxes)
+    if (maxRate):
+        maxrStr = '{0:.1f} Hz'.format(np.max(rateMap.flatten()))
+        ax.text(rx, ry, maxrStr, ha="right", va='bottom', fontsize=fs,
+                transform=ax.transAxes)
 
 

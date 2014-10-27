@@ -1,8 +1,8 @@
-find_package(PythonLibs REQUIRED)
+find_package(PythonLibrary REQUIRED)
 find_package(Numpy REQUIRED)
 find_package(Blitz REQUIRED)
 
-include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${PYTHON_INCLUDE_PATH})
 include_directories(${NUMPY_INCLUDE_DIRS})
 include_directories(${Blitz_INCLUDE_DIR})
 
