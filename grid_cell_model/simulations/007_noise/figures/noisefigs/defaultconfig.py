@@ -578,7 +578,7 @@ def _get_default_config():
         ),
 
         'plot_grid_contours': [1, 1, 1],
-        'grid_contours': [.1],
+        'grid_contours': [.5],
     }
     _default_config['MaxPopulationFRSweepsPlotter'] = MaxPopulationFRSweepsPlotter_config
 
@@ -646,7 +646,7 @@ def _get_default_config():
         'FRThreshold': 300,
 
         'plot_grid_contours': [1, 1, 1],
-        'grid_contours': [.1],
+        'grid_contours': [.5],
     }
     PSeizureSweepPlotter_config.update({
         'cbar_kw': dict(
@@ -861,6 +861,7 @@ def _get_default_config():
         'markersize': 1.5,
         'plot_ann_txt' : True,
         'theta_color': (0, 0, 0, .3),
+        'fig_saver': PdfOutputSaver(None, 'pdf')
     }
     _default_config['RasterExamplePlotter'] = RasterExamplePlotter_config
 

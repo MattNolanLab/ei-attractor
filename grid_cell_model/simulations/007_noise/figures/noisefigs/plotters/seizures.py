@@ -722,6 +722,11 @@ class RasterExamplePlotter(SweepPlotter):
         vmin = 0.
         vmax = 500.
 
+        saver = self.myc['fig_saver']
+        saver.set_file_name(self.get_fname('raster_examples'))
+        saver.ext = "pdf"
+        saver.set_backend_params(dpi=300, transparent=True)
+
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             ann_noise = ann[ns_idx]
             #data = aggr.MaxThetaPopulationFR(
@@ -810,11 +815,6 @@ class RasterExamplePlotter(SweepPlotter):
                 ax_theta.set_ylim(-.02, 1.02)
                 ax_theta.axis('off')
 
-                # Save
-                fname = (self.config['output_dir'] +
-                         "/{0}raster_examples_{1}pA_{2}_{3}.pdf".format(
-                             self.config.get('fname_prefix', ''),
-                             int(noise_sigma), r, c))
-
-                fig.savefig(fname, dpi=300, transparent=True)
+                saver.savefig(fig)
                 plt.close(fig)
+        saver.close()
