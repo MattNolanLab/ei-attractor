@@ -403,18 +403,15 @@ def _get_default_config():
     ##############################################################################
 
     GammaScatterPBumpsAllPlotter_config = {
-        'fig_size': (5., 3.2),
+        'fig_size': (4.5, 2.6),
+        'bbox_rect': (0.3, 0.22, 0.82, 0.95),
+        'xlabel': '',
         'legend_kwargs': dict(
-            loc=(0.25, 0.95),
+            loc=(1.05, 0.5),
             fontsize='small',
             frameon=False,
-            ncol=3,
             title='$\sigma$ (pA)'
         ),
-        'tight_layout_kwargs': {
-            'rect': [.05, .05, .95, .9],
-            'pad': 0,
-        },
     }
     _default_config['GammaScatterPBumpsAllPlotter'] = GammaScatterPBumpsAllPlotter_config
 
@@ -506,19 +503,15 @@ def _get_default_config():
     ##############################################################################
 
     MainScatterGridsBumpsPlotter_config = {
-        'fig_size': (5.8, 3.2),
-        'tight_layout_kwargs': {
-            'rect': (0.05, 0.05, 0.95, 0.9),
-        },
+        'fig_size': (4.5, 2.6),
+        'bbox_rect': (0.3, 0.22, 0.82, 0.95),
+        'xlabel' : '',
+        'legend': False,
         'legend_kwargs': dict(
-            loc=(0.2, 1.02),
+            loc=(1.05, 0.5),
             fontsize='small',
-            frameon=True,
-            fancybox=True,
-            framealpha=0.5,
+            frameon=False,
             handletextpad=0,
-            scatterpoints=1,
-            ncol=3,
             title='$\sigma$ (pA)'
         ),
     }

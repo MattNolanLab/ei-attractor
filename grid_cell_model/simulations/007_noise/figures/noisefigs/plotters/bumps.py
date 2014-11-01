@@ -376,14 +376,15 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
         myc = self._get_class_config()
 
         iter_list = self.config['iter_list']
-        tight_layout_kwargs = myc['tight_layout_kwargs']
+        l, b, r, t = self.myc['bbox_rect']
+        legend = self.myc.get('legend', True)
         legend_kwargs = myc['legend_kwargs']
 
-        xlabel = 'P(bumps)'
+        xlabel = self.myc.get('xlabel', 'P(bumps)')
         ylabel = 'Gridness score'
         
         fig = self._get_final_fig(myc['fig_size'])
-        ax = fig.gca()
+        ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
 
         scatterColors = ['green', 'red', 'blue']
         scatterOrders = [2, 3, 1]
@@ -408,13 +409,13 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
 
         ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
         ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-        leg = ['0', '150', '300']
-        l = ax.legend(leg, **legend_kwargs)
-        plt.setp(l.get_title(), size='small')
+        if legend:
+            leg = ['0', '150', '300']
+            l = ax.legend(leg, **legend_kwargs)
+            plt.setp(l.get_title(), size='small')
         #ax.set_ylabel(ax.get_ylabel(), y=0., ha='left')
 
         # Normal scale
-        fig.tight_layout(**tight_layout_kwargs)
         fname = self.config['output_dir'] + "/bumps_scatter_grids_vs_bumpFracTotal.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
 
@@ -423,7 +424,6 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
         ax.xaxis.set_major_locator(ti.MultipleLocator(.5))
         ax.xaxis.set_minor_locator(ti.MultipleLocator(.1))
         ax.set_xlim([-0.3, 1.002])
-        fig.tight_layout(**tight_layout_kwargs)
         fname = self.config['output_dir'] + "/bumps_scatter_grids_vs_bumpFracTotal_exp.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
 

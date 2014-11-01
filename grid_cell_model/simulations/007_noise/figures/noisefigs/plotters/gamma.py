@@ -763,10 +763,12 @@ class GammaScatterPBumpsAllPlotter(FigurePlotter):
         ps = self.env.ps
         myc = self._get_class_config()
         iter_list = self.config['iter_list']
+        l, b, r, t = self.myc['bbox_rect']
         legend_kwargs = myc['legend_kwargs']
+        xlabel = self.myc.get('xlabel', 'P(bumps)')
 
         self.fig = self._get_final_fig(myc['fig_size'])
-        self.ax = self.fig.gca()
+        self.ax = self.fig.add_axes(Bbox.from_extents(l, b, r, t))
 
         self.ax.hold('on')
         scatterColors = ['green', 'red', 'blue']
@@ -785,7 +787,7 @@ class GammaScatterPBumpsAllPlotter(FigurePlotter):
                     c=color,
                     s=10*self.config['scale_factor'],
                     linewidth=0.3,
-                    xlabel='$P_{bumps}$',
+                    xlabel=xlabel,
                     ylabel='$1^{st}$ autocorrelation peak',
                     zorder=scatterOrders[ns_idx])
             scatterPlot.plot()
@@ -794,7 +796,6 @@ class GammaScatterPBumpsAllPlotter(FigurePlotter):
         leg = ['0', '150', '300']
         l = self.ax.legend(leg, **legend_kwargs)
         plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
-        self.fig.tight_layout(**myc['tight_layout_kwargs'])
 
     def save(self, *args, **kwargs):
         # Linear scale
