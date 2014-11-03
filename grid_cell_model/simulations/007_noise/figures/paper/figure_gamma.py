@@ -62,12 +62,13 @@ if args.gridness_stats or args.all:
                 'AC_vmin': 0.03,
                 'AC_vmax': 0.594,
                 'AC_cbar_kw': dict(
-                    ticks      = matplotlib.ticker.MultipleLocator(0.1),
+                    ticks = matplotlib.ticker.MultipleLocator(0.1),
                 ),
                 'F_vmin': 31.2,
                 'F_vmax': 103,
                 'F_cbar_kw': dict(
-                    ticks      = matplotlib.ticker.MultipleLocator(25),
+                    ticks = matplotlib.ticker.MultipleLocator(25),
+                    extend = 'neither',
                 ),
             }
         }
