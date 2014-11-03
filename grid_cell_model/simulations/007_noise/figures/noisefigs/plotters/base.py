@@ -117,9 +117,10 @@ class FigurePlotter(object):
         '''
         if "ns" in kwargs:
             kwargs["ns"] = int(kwargs["ns"])
-        return "{output_dir}/{fname_prefix}{file_str}".format(
+        return "{output_dir}/{fname_prefix}{obj_prefix}{file_str}".format(
                     output_dir=self.config['output_dir'],
                     fname_prefix=self.config.get('fname_prefix', ''),
+                    obj_prefix=self.myc.get('fname_prefix', ''),
                     file_str=template.format(*args, **kwargs))
 
 
@@ -214,6 +215,18 @@ class ProbabilityPlotter(FigurePlotter):
             print(title)
         print(" MIC/MI/r^2/p/slope for %s:\t%.3f\t%.3f\t%s\t%s\t%s" %
                 (noise_sigma, mine.mic(), s.I(), r**2, p, slope))
+
+
+class DummyPlotter(FigurePlotter):
+    '''Does not plot anything. This is only for semantic identification of the
+    plotter.
+    '''
+    def __init__(self, *args, **kwargs):
+        super(DummyPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self):
+        pass
+
        
 ##############################################################################
 

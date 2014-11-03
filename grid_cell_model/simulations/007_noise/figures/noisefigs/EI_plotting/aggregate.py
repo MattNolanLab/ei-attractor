@@ -230,6 +230,27 @@ class AggregateData(object):
     def getData(self):
         raise NotImplementedError()
 
+    
+    def filter_data(self, filter_obj):
+        '''Apply a mask of a filter object to the current data.
+
+        This operation returns a new AggregateData object
+        '''
+        return FilteredData(self, filter_obj)
+
+
+class FilteredData(AggregateData):
+    '''This applies a filter mask to a data object'''
+    def __init__(self, data, filter_obj):
+        self._data = data
+        self._filter = filter_obj
+
+    def getData(self):
+        data, X, Y = self._data.getData()
+        data = np.ma.array(data, copy=True)
+        data.mask = np.logical_or(data.mask, self._filter.get_mask())
+        return data, X, Y
+
 
 class AggregateDataFilter(AggregateData):
     def __init__(self, data):
@@ -237,6 +258,13 @@ class AggregateDataFilter(AggregateData):
 
     def getData(self):
         raise NotImplementedError()
+
+    def filter_data(self, filter_obj):
+        raise RuntimeError("Check if filter-on-filter operation makes sense")
+
+    def get_mask(self):
+        data, _, _ = self.getData()
+        return np.copy(data.mask)
 
 
 class NoZeroExcitationFilter(AggregateDataFilter):
@@ -247,6 +275,19 @@ class NoZeroExcitationFilter(AggregateDataFilter):
         data, X, Y = self._data.getData()
         data = np.ma.array(data, copy=True)
         data.mask[:, 0] = True
+        return data, X, Y
+
+
+class GTFilter(AggregateDataFilter):
+    '''Only use data that are greater than threshold'''
+    def __init__(self, data, threshold):
+        self.threshold = threshold
+        super(GTFilter, self).__init__(data)
+
+    def getData(self):
+        data, X, Y = self._data.getData()
+        data = np.ma.array(data, copy=True)
+        data.mask = np.logical_or(data.mask, data <= self.threshold)
         return data, X, Y
 
 

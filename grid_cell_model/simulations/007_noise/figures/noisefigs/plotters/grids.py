@@ -19,7 +19,8 @@ from ..EI_plotting import sweeps, examples, details, scatter
 from ..EI_plotting import aggregate as aggr
 from ..EI_plotting.base import getOption, plotStateSignal
 from ..EI_plotting import scaling
-from .base import FigurePlotter, SweepPlotter, ProbabilityPlotter
+from .base import (FigurePlotter, SweepPlotter, ProbabilityPlotter,
+                   DummyPlotter)
 
 __all__ = [
     'GridSweepsPlotter',

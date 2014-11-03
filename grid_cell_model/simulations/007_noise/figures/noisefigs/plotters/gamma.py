@@ -9,10 +9,11 @@ from matplotlib.transforms import Bbox
 from grid_cell_model.parameters           import JobTrialSpace2D, DataSpace
 from grid_cell_model.plotting.global_defs import globalAxesSettings, prepareLims
 
-from ..EI_plotting          import sweeps, examples, details, scatter
-from ..EI_plotting          import aggregate as aggr, scaling
-from ..EI_plotting.base     import plotOneHist, NoiseDataSpaces
-from .base import FigurePlotter, SweepPlotter, ProbabilityPlotter
+from ..EI_plotting      import sweeps, examples, details, scatter
+from ..EI_plotting      import aggregate as aggr, scaling
+from ..EI_plotting.base import plotOneHist, NoiseDataSpaces
+from .base import (FigurePlotter, SweepPlotter, ProbabilityPlotter,
+                   DummyPlotter)
 
 __all__ = [
     'GammaSweepsPlotter',
@@ -166,11 +167,6 @@ def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
 
 # gamma example rows and columns
 
-AC_vmin = -0.09
-AC_vmax = 0.675
-F_vmin  = 30
-F_vmax  = 120
-
 ACVarList = ['acVal']
 FVarList  = ['freq']
 
@@ -194,10 +190,27 @@ class GammaSweepsPlotter(SweepPlotter):
         iter_list = self.config['iter_list']
         grids_example_idx = self.config['grids']['example_idx']
         fname_prefix = self.config.get('fname_prefix', '')
+        filter_with_gridness = self.myc.get('filter_with_gridness', False)
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             ACData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
-                                           iter_list, normalizeTicks=True)
+                                             iter_list, normalizeTicks=True)
+            gammaFData = aggr.GammaAggregateData('freq', ps.bumpGamma[ns_idx],
+                                                 iter_list,
+                                                 normalizeTicks=True)
+            gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                              normalizeTicks=True,
+                                              collapseTrials=True,
+                                              ignoreNaNs=True,
+                                              r=grids_example_idx[ns_idx][0],
+                                              c=grids_example_idx[ns_idx][1])
+
+            if filter_with_gridness:
+                gridFilter = aggr.GTFilter(gridData,
+                                           self.myc['gridness_threshold'])
+                ACData = ACData.filter_data(gridFilter)
+                gammaFData = gammaFData.filter_data(gridFilter)
+
             # Gamma power
             fname = self.get_fname("gamma_sweeps{ns}.pdf", ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
@@ -215,7 +228,8 @@ class GammaSweepsPlotter(SweepPlotter):
                         sigmaTitle=self.myc['AC_sigma_title'],
                         cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=self.myc['AC_cbar_kw'],
-                        vmin=AC_vmin, vmax=AC_vmax,
+                        vmin=self.myc['AC_vmin'],
+                        vmax=self.myc['AC_vmax'],
                         annotations=self.myc['ann'])
                 if self.myc['plot_grid_contours'][ns_idx]:
                     gridData = aggr.GridnessScore(
@@ -235,9 +249,9 @@ class GammaSweepsPlotter(SweepPlotter):
             fname = self.get_fname("gamma_freq_sweeps{ns}.pdf", ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 sweeps.plotACTrial(
-                        ps.bumpGamma[ns_idx],
-                        FVarList,
-                        iter_list,
+                        gammaFData,
+                        None,
+                        None,
                         noise_sigma=ps.noise_sigmas[ns_idx],
                         ax=ax,
                         xlabel='' if f_xticks[ns_idx] == False else None,
@@ -248,7 +262,8 @@ class GammaSweepsPlotter(SweepPlotter):
                         sigmaTitle=self.myc['F_sigma_title'],
                         cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=self.myc['F_cbar_kw'],
-                        vmin=F_vmin, vmax=F_vmax,
+                        vmin=self.myc['F_vmin'],
+                        vmax=self.myc['F_vmax'],
                         annotations=self.myc['annF'])
                 if self.myc['plot_grid_contours'][ns_idx]:
                     contours = sweeps.Contours(gridData,
@@ -929,4 +944,3 @@ class GammaFreqPBumpsProbabilityPlotter(ProbabilityPlotter):
         plt.close(fig)
 
         self.mutual_information(gammaF_all, pbumps_all)
-

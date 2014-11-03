@@ -255,6 +255,8 @@ def _get_default_config():
         'AC_xticks': [False]*3,
         'AC_yticks': [1, 0, 0],
         'AC_sigma_title': True,
+        'AC_vmin': -0.09,
+        'AC_vmax': 0.675,
 
         'F_cbar_kw': dict(
             location   = 'left',
@@ -271,6 +273,9 @@ def _get_default_config():
         'F_xticks': [True]*3,
         'F_yticks': [1, 0, 0],
         'F_sigma_title': False,
+        'F_vmin': 30,
+        'F_vmax': 120,
+
 
         'ann': [
             dict(
