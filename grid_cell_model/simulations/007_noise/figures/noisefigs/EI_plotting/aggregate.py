@@ -73,7 +73,7 @@ def aggregate2D(sp, varList, funReduce=None):
 
 
 
-def computeYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True, **kw):
+def computeYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True):
     E, I = sp.getIteratedParameters(iterList)
     if (normalize):
         Ne = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ne')
@@ -259,9 +259,6 @@ class AggregateDataFilter(AggregateData):
     def getData(self):
         raise NotImplementedError()
 
-    def filter_data(self, filter_obj):
-        raise RuntimeError("Check if filter-on-filter operation makes sense")
-
     def get_mask(self):
         data, _, _ = self.getData()
         return np.copy(data.mask)
@@ -278,6 +275,18 @@ class NoZeroExcitationFilter(AggregateDataFilter):
         return data, X, Y
 
 
+class NoZeroCouplingFilter(AggregateDataFilter):
+    def __init__(self, data):
+        super(NoZeroCouplingFilter, self).__init__(data)
+
+    def getData(self):
+        data, X, Y = self._data.getData()
+        data = np.ma.array(data, copy=True)
+        data.mask[:, 0] = True
+        data.mask[0, :] = True
+        return data, X, Y
+
+
 class GTFilter(AggregateDataFilter):
     '''Only use data that are greater than threshold'''
     def __init__(self, data, threshold):
@@ -289,6 +298,20 @@ class GTFilter(AggregateDataFilter):
         data = np.ma.array(data, copy=True)
         data.mask = np.logical_or(data.mask, data <= self.threshold)
         return data, X, Y
+
+
+class LEQFilter(AggregateDataFilter):
+    '''Only use data that are greater than threshold'''
+    def __init__(self, data, threshold):
+        self.threshold = threshold
+        super(LEQFilter, self).__init__(data)
+
+    def getData(self):
+        data, X, Y = self._data.getData()
+        data = np.ma.array(data, copy=True)
+        data.mask = np.logical_or(data.mask, data > self.threshold)
+        return data, X, Y
+
 
 
 def maskNaNs(a, really):
@@ -821,7 +844,7 @@ class AvgPopulationFR(AggregateData):
                         where = self._where)
             self._FR = np.asarray(self.sp.getReduction(path))
             self._Y, self._X = computeYX(self.sp, self.iterList,
-                                         normalizeTicks=self.normalizeTicks,
+                                         normalize=self.normalizeTicks,
                                          r=self.r, c=self.c)
 
         return self._FR, self._X, self._Y

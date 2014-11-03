@@ -929,22 +929,24 @@ def _get_default_config():
         'cbar_kw' : {
             'location' : 'right',  # This has to match cbar_kw_e and cbar_kw_i
         },
+
+        'plot_grid_contours': [1, 1, 1],
             
         'cbar_kw_e': {
-            'label'      : 'E Firing rate (Hz)',
+            'label'      : 'Mean E Firing rate (Hz)',
             'location'   : 'right',
             'shrink'     : 0.8,
             'pad'        : -0.05,
-            'ticks'      : ti.MultipleLocator(2),
+            'ticks'      : ti.LogLocator(subs=[1, 2, 4, 6, 8]),
             'rasterized' : True,
         },
 
         'cbar_kw_i': {
-            'label'      : 'I Firing rate (Hz)',
+            'label'      : 'Mean I Firing rate (Hz)',
             'location'   : 'right',
             'shrink'     : 0.8,
             'pad'        : -0.05,
-            'ticks'      : ti.MultipleLocator(50),
+            'ticks'      : ti.LogLocator(subs=[1, 2, 4, 6, 8]),
             'rasterized' : True,
         },
 
@@ -953,4 +955,21 @@ def _get_default_config():
 
     ##############################################################################
 
+    ScatterGridsFRAllPlotter_config = {
+        'fig_size': (4.2, 3),
+        'dot_size': 15,
+        'legend_kwargs': dict(
+            loc=(0.4, 0.6),
+            fontsize='small',
+            frameon=False,
+            numpoints=1,
+            title='$\sigma$ (pA)'
+        ),
+        'bbox_rect': (.2, .2, .95, .95),
+        'ylabel': 'Gridness score',
+        'yticks': True,
+    }
+    _default_config['ScatterGridsFRAllPlotter'] = ScatterGridsFRAllPlotter_config
+
+    ##############################################################################
     return _default_config
