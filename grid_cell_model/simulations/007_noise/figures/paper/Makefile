@@ -1,35 +1,34 @@
 .PHONY: clean, thesis
+.SUFFIXES: .py .dummy
 
 THESIS_DIR=~/work/PhDThesis/src
 
-files=										\
-	figure_bumps.py							\
-	figure_drifts.py 						\
-	figure_gamma.py							\
-	figure_grids.py							\
-	figure_isBump.py						\
-	figure_isbump_examples.py				\
-	figure_seizures.py						\
-	figure_velocity.py					    \
-	suppFigure_grid_examples.py			    \
-	suppFigure_gamma.py						\
-	suppFigure_grids_vs_bumps.py			\
-	suppFigure_grids_vs_line_fit_err.py		\
-	suppFigure_grids_vs_line_slope.py		\
-	suppFigure_firing_rates.py				\
-	suppFigure_line_fit_error_vs_slope.py	\
-	suppFigure_seizures.py					\
-	suppFigure_seizure_examples.py			\
-	suppFigure_velocity.py
+
+all: figure_bumps.dummy							\
+	figure_drifts.dummy 						\
+	figure_gamma.dummy							\
+	figure_grids.dummy							\
+	figure_isBump.dummy						\
+	figure_isbump_examples.dummy				\
+	figure_seizures.dummy						\
+	figure_velocity.dummy					    \
+	suppFigure_grid_examples.dummy			    \
+	suppFigure_gamma.dummy						\
+	suppFigure_grids_vs_bumps.dummy			\
+	suppFigure_grids_vs_line_fit_err.dummy		\
+	suppFigure_grids_vs_line_slope.dummy		\
+	suppFigure_firing_rates.dummy				\
+	suppFigure_line_fit_error_vs_slope.dummy	\
+	suppFigure_seizures.dummy					\
+	suppFigure_seizure_examples.dummy			\
+	suppFigure_velocity.dummy
 
 
-all: $(files)
-	for file in $(files); do 			\
-		echo;							\
-		echo "*** Running $$file ***";	\
-		echo;							\
-   		./$$file -v DEBUG || exit 1;	\
-	done
+.py.dummy:
+	echo;							\
+	echo "*** Running $$file ***";	\
+	echo;							\
+	./$< -v DEBUG || exit 1;		\
 
 clean:
 	rm -f $$(git ls-files -i --exclude-standard -o panels)
