@@ -17,6 +17,7 @@ files="
     $output_fig_dir/figureS6.pdf
     $output_fig_dir/figureS7.pdf
     $output_fig_dir/figureS8.pdf
+    $output_fig_dir/figureS9.pdf
 
     $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf
     $output_fig_dir/suppFigure_grids_vs_line_slope.pdf
