@@ -666,54 +666,55 @@ class RasterExamplePlotter(SweepPlotter):
         ps = self.env.ps
         iter_list = self.config['iter_list']
         sl, sb, sr, st = self.myc['sweep_rect']
-        tLimits = [2e3, 3e3]
+        tLimits = [2e3, 4e3]
 
         ann150_0 = dict(
-                txt='a',
+                txt='',
                 rc=(4, 4),
                 xytext_offset=(1, 1.5),
                 color='white')
         ann0_0 = dict(
-                txt='b',
+                txt='',
                 rc=(5, 15),
                 xytext_offset=(1.5, 1),
                 color='white')
         ann0_1 = dict(
-                txt='c',
+                txt='',
                 rc=(20, 15),
                 xytext_offset=(1.5, 1),
                 color='white')
         ann300_0 = dict(
-                txt='d',
-                rc=(20, 25),
-                xytext_offset=(-1.5, 1),
+                txt='',
+                rc=(5, 15),
+                xytext_offset=(1.5, 1),
                 color='white')
         ann0_2 = dict(
-                txt='e',
+                txt='',
                 rc=(15, 5),
                 xytext_offset=(.5, 2),
                 color='black')
         ann150_1 = dict(
-                txt='f',
+                txt='',
                 rc=(5, 15),
                 xytext_offset=(1.5, 1),
                 color='white')
         ann150_2 = dict(
-                txt='g',
+                txt='',
                 rc=(15, 5),
                 xytext_offset=(1.5, 1),
                 color='white')
         ann300_1 = dict(
-                txt='h',
+                txt='',
                 rc=(15, 5),
                 xytext_offset=(1.5, -1),
                 color='white')
 
 
-        ann0   = [  ann0_0,   ann0_1,   ann0_2]
-        ann150 = [ann150_0, ann150_1, ann150_2]
-        ann300 = [ann300_0, ann300_1]
+        ann0   = [  ann0_0]
+        ann150 = [ann150_1]
+        ann300 = [ann300_0]
         ann = [ann0, ann150, ann300]
+        labels = ['A', 'B', 'C']
 
         FRThreshold = myc['FRThreshold']
         thetaT = self.config['seizures']['thetaT']
@@ -727,6 +728,7 @@ class RasterExamplePlotter(SweepPlotter):
         saver.ext = "pdf"
         saver.set_backend_params(dpi=300, transparent=True)
 
+        label_it = 0
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             ann_noise = ann[ns_idx]
             #data = aggr.MaxThetaPopulationFR(
@@ -751,7 +753,7 @@ class RasterExamplePlotter(SweepPlotter):
                         cbar=True, cbar_kw=myc['cbar_kw'],
                         vmin=vmin, vmax=vmax,
                         annotations=[annotation])
-                fig.text(0.01, st, 'A', size=16, weight='bold', 
+                fig.text(0.01, st, labels[label_it], size=16, weight='bold',
                          va='bottom', ha='left')
 
                 gs = gridspec.GridSpec(3, 1, height_ratios=(2.5, 1, 1))
@@ -768,7 +770,7 @@ class RasterExamplePlotter(SweepPlotter):
                         yticks=True,
                         sigmaTitle=False,
                         ann_EI=True,
-                        scaleBar=125, scaleX=.85, scaleY=-.1,
+                        scaleBar=125, scaleX=.85, scaleY=-.05,
                         scaleTextYOffset=.03, scaleHeight=.01,
                         rasterized=True)
 
@@ -800,8 +802,8 @@ class RasterExamplePlotter(SweepPlotter):
                 gsb = .05
                 gsr = .95
                 gst = .65
-                fig.text(0.01, gst, 'B', size=16, weight='bold', 
-                         va='bottom', ha='left')
+                #fig.text(0.01, gst, 'B', size=16, weight='bold', 
+                #         va='bottom', ha='left')
                 gs.update(left=gsl, bottom=gsb, right=gsr, top=gst, hspace=.2)
 
                 ax_theta = fig.add_axes(Bbox.from_extents(gsl, gst - .015,
@@ -817,4 +819,5 @@ class RasterExamplePlotter(SweepPlotter):
 
                 saver.savefig(fig)
                 plt.close(fig)
+                label_it += 1
         saver.close()
