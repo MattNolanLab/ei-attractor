@@ -492,10 +492,9 @@ class MainBumpFormationPlotter(BumpFormationBase):
         grids_example_idx = self.config['grids']['example_idx']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-            fname = (self.config['output_dir'] +
-                     "/{0}bumps_mainFig_isBumpFracTotal_sweeps_annotated{1}.pdf".format(
-                         self.config.get('fname_prefix', ''),
-                         int(noise_sigma)))
+            fname = self.get_fname(
+                    "bumps_mainFig_isBumpFracTotal_sweeps_annotated{ns}.pdf",
+                    ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 #fig, ax = ds.getDefaultSweepFig(scale=0.8, colorBarPos='left')
                 kw = dict()
@@ -507,6 +506,7 @@ class MainBumpFormationPlotter(BumpFormationBase):
                                    ignoreNaNs=True)
                 _, _, cax = sweeps.plotSweep(data,
                         noise_sigma=noise_sigma,
+                        sigmaTitle=self.myc.get('sigmaTitle', True),
                         xlabel='' if xticks[ns_idx] == False else None,
                         xticks=xticks[ns_idx],
                         ax=ax,

@@ -194,7 +194,8 @@ class GammaSweepsPlotter(SweepPlotter):
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             ACData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
-                                             iter_list, normalizeTicks=True)
+                                             iter_list, normalizeTicks=True,
+                                             ignoreNaNs=True)
             gammaFData = aggr.GammaAggregateData('freq', ps.bumpGamma[ns_idx],
                                                  iter_list,
                                                  normalizeTicks=True)
@@ -214,17 +215,14 @@ class GammaSweepsPlotter(SweepPlotter):
             # Gamma power
             fname = self.get_fname("gamma_sweeps{ns}.pdf", ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
-                sweeps.plotACTrial(
+                sweeps.plotSweep(
                         ACData,
-                        None,
-                        None,
                         noise_sigma=ps.noise_sigmas[ns_idx],
                         ax=ax,
                         xlabel='' if ac_xticks[ns_idx] == False else None,
                         xticks=ac_xticks[ns_idx],
                         ylabel='' if ac_yticks[ns_idx] == False else None,
                         yticks=ac_yticks[ns_idx],
-                        trialNumList=None,
                         sigmaTitle=self.myc['AC_sigma_title'],
                         cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=self.myc['AC_cbar_kw'],

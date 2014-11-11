@@ -242,6 +242,10 @@ def _get_default_config():
     GammaSweepsPlotter_config = {
         'scale_factor': .9,
         'cbar': [1, 0, 0],
+        'cbar_kw' : { # This has to match cbar_kw-s below
+            'location': 'left',
+        },
+
         'AC_cbar_kw': dict(
             location   = 'left',
             ticks      = ti.MultipleLocator(0.3),
@@ -291,10 +295,6 @@ def _get_default_config():
                 color='white',
             ),
         ],
-
-        'cbar_kw' : {
-            'location': 'left',
-        },
 
         'plot_grid_contours': [0, 1, 0],
     }
@@ -478,7 +478,7 @@ def _get_default_config():
         'scale_factor': .8,
         'cbar': [0, 0, 1],
         'cbar_kw': dict(
-            label       = fracTotalText,
+            label       = "P(bumps)",
             location    = 'right',
             shrink      = 0.8,
             pad         = -.05,
