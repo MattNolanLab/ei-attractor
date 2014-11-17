@@ -234,6 +234,19 @@ def _get_default_config():
 
     ConnectionFunctionPlotter_config = {
         'fig_size': (3, 1.5),
+        'bbox_rect': (.2, .25, .95, .75),
+
+        'leg1_kwargs': dict(
+            loc=(0.02, 1.0),
+            frameon=False,
+            fontsize='x-small',
+            ncol=1
+        ),
+        'leg2_kwargs': dict(
+            loc=(0.45, 1.03),
+            frameon=False,
+            fontsize='x-small'
+        ),
     }
     _default_config['ConnectionFunctionPlotter'] = ConnectionFunctionPlotter_config
 
