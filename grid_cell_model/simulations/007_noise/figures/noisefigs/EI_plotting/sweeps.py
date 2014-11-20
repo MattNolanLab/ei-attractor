@@ -1,29 +1,11 @@
-#
-#   sweeps.py
-#
-#   Functions/classes related to parameter sweeps.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-import logging 
+'''Functions/classes related to parameter sweeps.'''
+import logging
 
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
+from scipy.interpolate import RectBivariateSpline
 
 from grid_cell_model.plotting.global_defs import globalAxesSettings
 from grid_cell_model.plotting.low_level   import symmetricDataLimits
@@ -77,7 +59,7 @@ def plotBumpSigmaTrial(aggregateData, noise_sigma, **kw):
     sigmaTitle  = kw.pop('sigmaTitle', True)
     annotations = kw.pop('annotations', None)
 
-    
+
     C, X, Y = aggregateData.getData()
     print("min(C): {0}".format(np.min(C)))
     print("max(C): {0}".format(np.max(C)))
@@ -133,7 +115,7 @@ def plotFRTrial(sp, varList, iterList, noise_sigma, trialNumList=[0],
             plotSweepAnnotation(X=X, Y=Y, ax=ax, **a)
 
     return C, ax, cax
-            
+
 
 def plotGridTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
     #kw arguments
@@ -227,7 +209,7 @@ def plotVelStdSweep(sp, iterList, noise_sigma, **kw):
 
     if (sigmaTitle):
         ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
-    
+
     return C, ax, cax
 
 
@@ -302,12 +284,9 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=None, ylabel=None,
         colorBar=False, clBarLabel="", vmin=None, vmax=None, title="",
         clbarNTicks=2, xticks=True, yticks=True, cmap=None, cbar_kw={},
         sliceAnn=None, **kw):
-    # kw arguments
     kw['rasterized'] = kw.get('rasterized', True)
-    # kw arguments (cbar)
     cbar_kw['label']       = cbar_kw.get('label', '')
     cbar_kw['shrink']      = cbar_kw.get('shrink', 0.8)
-    #cbar_kw['orientation'] = cbar_kw.get('orientation', 'vertical')
     cbar_kw['pad']         = cbar_kw.get('pad', 0.05)
     cbar_kw['ticks']       = cbar_kw.get('ticks', ti.MultipleLocator(5))
     cbar_kw['rasterized']  = cbar_kw.get('rasterized', True)
@@ -317,9 +296,17 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=None, ylabel=None,
     if ylabel is None:
         ylabel = ylabelText
 
+    dx = X[0, 1] - X[0, 0]
+    dy = Y[1, 0] - Y[0, 1]
+
     globalAxesSettings(ax)
     ax.minorticks_on()
-    mappable = ax.pcolor(X, Y, C, vmin=vmin, vmax=vmax, cmap=cmap, **kw)
+    mappable = ax.imshow(C, vmin=vmin, vmax=vmax, cmap=cmap,
+                         extent=(X[0, 0] - dx / 2., X[0, -1] + dx / 2.,
+                                 Y[0, 0] - dy / 2., Y[-1, 0] + dy / 2.),
+                         interpolation='none',
+                         origin='lower',
+                         **kw)
     cax = createColorbar(ax, mappable=mappable, **cbar_kw)
     if (colorBar == False):
         cax.set_visible(False)
@@ -344,7 +331,7 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=None, ylabel=None,
         for args in sliceAnn:
             args.update(ax=ax, X=X, Y=Y)
             plotSliceAnnotation(**args)
-        
+
 
     return C, ax, cax
 
@@ -366,7 +353,7 @@ def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
     y = xy[1]
     xo = xytext_offset[0]
     yo = xytext_offset[1]
-    
+
     ax.annotate(txt, (x, y), xytext=(x+xo, y+yo), xycoords='data',
         textcoords='data', va='center', fontweight='bold',
         zorder=10, **kw)
@@ -382,7 +369,7 @@ def plotCollapsedSweeps(noise_sigmas, data, **kw):
     xticks      = kw.pop('xticks', True)
     yticks      = kw.pop('yticks', True)
     #kw['color'] = kw.get('color', 'black')
-    
+
     if (len(noise_sigmas) != len(data)):
         raise ValueError("len(noise_sigmas) != len(data)")
 
@@ -407,12 +394,13 @@ def plotCollapsedSweeps(noise_sigmas, data, **kw):
 
 class Contours(object):
     '''Contour object on a 2D plot. Usually a paramter sweep plot'''
-    def __init__(self, data, V):
+    def __init__(self, data, V, upsample_factor=8):
         '''Create the contour object from ``data``, with contour values
         ``V``.'''
         self.data = data
         self.V = V
-    
+        self.upsample_factor = upsample_factor
+
     def plot(self, ax, V=None, **kwargs):
         '''Plot the contours into matplotlib axis.
 
@@ -430,4 +418,20 @@ class Contours(object):
         if V is None:
             V = self.V
         d, X, Y = self.data.getData()
-        ax.contour(X, Y, d, V, **kwargs)
+        # hack - add zero value to close contours
+        d = np.hstack((d, np.zeros((d.shape[0], 1))))
+        d = np.vstack((d, np.zeros((1, d.shape[1]))))
+        dx = X[0, 1] - X[0, 0]
+        dy = Y[1, 0] - Y[0, 0]
+        x_longer = X[0, :].tolist()
+        x_longer.append(X[0, -1] + dx)
+        y_longer = Y[:, 0].tolist()
+        y_longer.append(Y[-1, 0] + dy)
+        x_interp, y_interp = np.meshgrid(
+            np.linspace(x_longer[0], x_longer[-1],
+                        len(x_longer) * self.upsample_factor),
+            np.linspace(x_longer[0], y_longer[-1],
+                        len(y_longer) * self.upsample_factor))
+        spl = RectBivariateSpline(x_longer, y_longer, d.T)
+        d_interp = spl.ev(x_interp, y_interp)
+        ax.contour(x_interp, y_interp, d_interp, V, **kwargs)

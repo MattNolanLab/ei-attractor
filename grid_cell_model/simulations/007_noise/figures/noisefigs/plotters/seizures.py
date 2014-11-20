@@ -39,7 +39,7 @@ rasterLeft    = 0.28
 rasterBottom  = 0.15
 rasterRight   = 0.95
 rasterTop     = 0.8
-        
+
 
 class EIRasterPlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
@@ -49,13 +49,13 @@ class EIRasterPlotter(FigurePlotter):
         ps = self.env.ps
 
         output_dir = self.config['output_dir']
-        
+
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             scaleBar = 25 if ns_idx == 2 else None
             fig = self._get_final_fig(self.myc['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
                 rasterTop))
-            rasters.EIRaster(ps.bumpGamma[ns_idx], 
+            rasters.EIRaster(ps.bumpGamma[ns_idx],
                     noise_sigma=noise_sigma,
                     spaceType='bump',
                     r=rasterRC[ns_idx][0], c=rasterRC[ns_idx][1],
@@ -72,7 +72,7 @@ class EIRasterPlotter(FigurePlotter):
                                               self.myc['fig_ext'])
             fig.savefig(fname, dpi=300, transparent=transparent)
             plt.close()
-        
+
 
 ##############################################################################
 
@@ -123,7 +123,7 @@ class EIRatePlotter(FigurePlotter):
             rasters.plotAvgFiringRate(ps.bumpGamma[idx],
                     spaceType='bump',
                     noise_sigma=ps.noise_sigmas[idx],
-                    popType='I', 
+                    popType='I',
                     r=rasterRC[idx][0], c=rasterRC[idx][1],
                     ylabelPos=self.myc['ylabelPos'],
                     color='blue',
@@ -197,7 +197,7 @@ class MaxMeanThetaFRSweepPlotter(SweepPlotter):
 
         maxThetaFR_vmin = 2.
         maxThetaFR_vmax = 500.
-        
+
         thetaT = self.config['seizures']['thetaT']
         sig_dt = self.config['seizures']['sig_dt']
 
@@ -378,7 +378,7 @@ class MaxThetaFRHistPlotter(FigurePlotter):
         ps = self.env.ps
         output_dir = self.config['output_dir']
         iter_list = self.config['iter_list']
-        
+
         thetaT = self.config['seizures']['thetaT']
         sig_dt = self.config['seizures']['sig_dt']
 
@@ -760,7 +760,7 @@ class RasterExamplePlotter(SweepPlotter):
 
                 # EI Raster
                 ax_raster = fig.add_subplot(gs[0, 0])
-                rasters.EIRaster(ps.bumpGamma[ns_idx], 
+                rasters.EIRaster(ps.bumpGamma[ns_idx],
                         noise_sigma=noise_sigma,
                         spaceType='bump',
                         r=r, c=c,
@@ -772,7 +772,7 @@ class RasterExamplePlotter(SweepPlotter):
                         ann_EI=True,
                         scaleBar=125, scaleX=.85, scaleY=-.05,
                         scaleTextYOffset=.03, scaleHeight=.01,
-                        rasterized=True)
+                        rasterized=False)
 
 
 
@@ -802,18 +802,18 @@ class RasterExamplePlotter(SweepPlotter):
                 gsb = .05
                 gsr = .95
                 gst = .65
-                #fig.text(0.01, gst, 'B', size=16, weight='bold', 
+                #fig.text(0.01, gst, 'B', size=16, weight='bold',
                 #         va='bottom', ha='left')
                 gs.update(left=gsl, bottom=gsb, right=gsr, top=gst, hspace=.2)
 
                 ax_theta = fig.add_axes(Bbox.from_extents(gsl, gst - .015,
                                                           gsr, gst + .01))
                 t = np.arange(tLimits[0], tLimits[1]+self.dt, self.dt)
-                theta = self.const + .5 * (1. + 
+                theta = self.const + .5 * (1. +
                         np.cos(2*np.pi*self.freq*1e-3*t - np.pi)) * (1 - self.const)
                 ax_theta.fill_between(t, theta, edgecolor='None',
                                       color=self.myc['theta_color'])
-                ax_theta.set_xlim([tLimits[0], tLimits[1]]) 
+                ax_theta.set_xlim([tLimits[0], tLimits[1]])
                 ax_theta.set_ylim(-.02, 1.02)
                 ax_theta.axis('off')
 
