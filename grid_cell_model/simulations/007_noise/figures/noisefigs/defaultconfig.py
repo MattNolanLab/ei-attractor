@@ -42,7 +42,7 @@ def _get_default_config():
             'pdf.fonttype': 42,
             'mathtext.default': 'regular',
             'font.sans-serif'    : ['Helvetica', 'Avant Garde', 'Computer Modern Sans serif'],
-            
+
             'xtick.major.size'  : tick_len,
             'xtick.major.width' : tick_width,
             'xtick.minor.size'  : tick_len / 2.,
@@ -619,7 +619,7 @@ def _get_default_config():
 
     EIRasterPlotter_config = {
         'fig_size': (3, 1.9),
-        'fig_ext': 'png',
+        'fig_ext': 'pdf',
 
         'yticks': [1, 0, 0],
         'ylabelPos': -0.35,
@@ -944,7 +944,7 @@ def _get_default_config():
         },
 
         'plot_grid_contours': [1, 1, 1],
-            
+
         'cbar_kw_e': {
             'label'      : 'Mean E Firing rate (Hz)',
             'location'   : 'right',
