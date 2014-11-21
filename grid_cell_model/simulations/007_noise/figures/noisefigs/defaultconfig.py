@@ -488,7 +488,7 @@ def _get_default_config():
     ##############################################################################
 
     MainBumpFormationPlotter_config = {
-        'scale_factor': .8,
+        'scale_factor': 1.,
         'cbar': [0, 0, 1],
         'cbar_kw': dict(
             label       = "P(bumps)",
@@ -571,7 +571,8 @@ def _get_default_config():
             pad         = -0.05,
             ticks       = ti.MultipleLocator(5),
             rasterized  = True
-        )
+        ),
+        'plot_grid_contours': [1, 1, 1],
     }
     _default_config['BumpDiffResetPlotter'] = BumpDiffResetPlotter_config
 
@@ -787,6 +788,7 @@ def _get_default_config():
         'fig_size': (2.6, 2),
         'bbox_rect': (0.3, 0.35, 0.95, 0.65),
         'positions': ((5, 15), (5, 15), (5, 15)),
+        'ivel_range': 11,
     }
     _default_config['VelLinesPlotter'] = VelLinesPlotter_config
 
@@ -970,7 +972,7 @@ def _get_default_config():
 
     ScatterGridsFRAllPlotter_config = {
         'fig_size': (4.2, 3),
-        'dot_size': 15,
+        'dot_size': 6,
         'legend_kwargs': dict(
             loc=(0.4, 0.6),
             fontsize='small',

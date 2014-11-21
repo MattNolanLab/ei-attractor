@@ -70,6 +70,7 @@ _config = {
     },
 
     'MainBumpFormationPlotter': {
+        'scale_factor': .8,
         'plot_grid_contours': [0, 0, 0],
     },
 

@@ -59,7 +59,7 @@ def aggregateBar2(spList, varLists, trialNumList, func=(None, None)):
 
     noise_sigma = np.array(noise_sigma, dtype=int)
     return vars, noise_sigma
- 
+
 
 
 def getACFreqThreshold(spList, trialNumList, ACThr):
@@ -116,7 +116,7 @@ def plotThresholdComparison(spList, trialNumList, ACThrList):
     ax.xaxis.set_minor_locator(ti.AutoMinorLocator(3))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.margins(0.025)
-    
+
 
 def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
     FVarList = ['freq']
@@ -160,7 +160,7 @@ def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
     thStr = 'Frequencies with C > {0}'.format(CThreshold)
     ax.text(0.99, 1.1, thStr, transform=ax.transAxes, va='bottom',
             ha='right')
-    
+
 
 ###############################################################################
 
@@ -242,7 +242,7 @@ class GammaSweepsPlotter(SweepPlotter):
                     contours.plot(
                             ax,
                             **self.config['sweeps']['contours_kwargs'])
-            
+
             # Gamma frequency
             fname = self.get_fname("gamma_freq_sweeps{ns}.pdf", ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
@@ -269,7 +269,7 @@ class GammaSweepsPlotter(SweepPlotter):
                     contours.plot(
                             ax,
                             **self.config['sweeps']['contours_kwargs'])
-        
+
 
 
 
@@ -438,7 +438,7 @@ class ScatterGammaGridsSeparatePlotter(FigurePlotter):
 
         scatterPlot = scatter.FullScatterPlot(
                 gammaData, gridData, None, None, iter_list, None, None,
-                s=8,
+                s=12,
                 linewidth=0.3,
                 color2D=True,
                 xlabel=xlabel,
@@ -452,7 +452,7 @@ class ScatterGammaGridsSeparatePlotter(FigurePlotter):
         l = 0.8
         w = 0.165
         scatterPlot.plotColorbar(left=l, bottom=.87, right=l+w, top=.97)
-        scatterPlot.set_titleSizes(16) 
+        scatterPlot.set_titleSizes(16)
         #ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
         #ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
         #ax.set_ylim(prepareLims((-0.5, 1.2), margin=0.02))
@@ -492,7 +492,7 @@ class ScatterGammaFGridsSeparatePlotter(FigurePlotter):
 
         scatterPlot = scatter.FullScatterPlot(
                 gammaFData, gridData, None, None, iter_list, None, None,
-                s=8,
+                s=12,
                 linewidth=0.3,
                 color2D=True,
                 xlabel=xlabel,
@@ -506,14 +506,14 @@ class ScatterGammaFGridsSeparatePlotter(FigurePlotter):
         l = 0.8
         w = 0.165
         scatterPlot.plotColorbar(left=l, bottom=.87, right=l+w, top=.97)
-        scatterPlot.set_titleSizes(16) 
+        scatterPlot.set_titleSizes(16)
 
         fname = output_dir + "/suppFigure_gammaF_grids_scatter.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
 
 
 ##############################################################################
-# Scatter plot of gridness score vs. gamma power 
+# Scatter plot of gridness score vs. gamma power
 # All in one plot
 class GammaScatterAllPlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
@@ -798,7 +798,7 @@ class GammaScatterPBumpsAllPlotter(FigurePlotter):
             scatterPlot = scatter.ScatterPlot(
                     pbumpsData, gammaData, None, None, None, None, None,
                     c=color,
-                    s=10*self.config['scale_factor'],
+                    s=6*self.config['scale_factor'],
                     linewidth=0.3,
                     xlabel=xlabel,
                     ylabel='$1^{st}$ autocorrelation peak',

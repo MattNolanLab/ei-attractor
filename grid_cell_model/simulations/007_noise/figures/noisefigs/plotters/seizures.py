@@ -61,7 +61,7 @@ class EIRasterPlotter(FigurePlotter):
                     r=rasterRC[ns_idx][0], c=rasterRC[ns_idx][1],
                     ylabelPos=self.myc['ylabelPos'],
                     tLimits=tLimits,
-                    markersize=self.config['scale_factor'],
+                    markersize=2*self.config['scale_factor'],
                     ylabel='' if self.myc['yticks'][ns_idx] == False else None,
                     yticks=self.myc['yticks'][ns_idx],
                     scaleBar=scaleBar, scaleX=.85, scaleY=-.1,
@@ -500,7 +500,7 @@ class MaxFRGridsScatterAllPlotter(FigurePlotter):
             scatterPlot = scatter.ScatterPlot(
                     maxFRData, gridnessData, None, None, None, None, None,
                     c=color,
-                    s=10*self.config['scale_factor'],
+                    s=6*self.config['scale_factor'],
                     linewidth=0.3,
                     xlabel='$E-rate_{max}$',
                     ylabel='Gridness score',
@@ -629,7 +629,7 @@ class PSeizureGridsScatterAllPlotter(FigurePlotter):
             scatterPlot = scatter.ScatterPlot(
                     PSeizureData, gridnessData, None, None, None, None, None,
                     c=color,
-                    s=10*self.config['scale_factor'],
+                    s=6*self.config['scale_factor'],
                     linewidth=0.3,
                     xlabel='$P(E-rate_{max} > 300)$',
                     ylabel='',
