@@ -33,7 +33,7 @@ __all__ = [
     'GridsPBumpsProbabilityPlotter',
     'GridSimpleExamplePlotter',
 ]
-         
+
 
 ##############################################################################
 # Parameter sweeps of gridness score
@@ -123,7 +123,7 @@ class GridExamplesPlotter(FigurePlotter):
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             for idx, rc in enumerate(self.config['grids']['example_rc']):
                 # Grid field
-                fname = (self.config['output_dir'] + 
+                fname = (self.config['output_dir'] +
                             self.exampleGridFName.format(noise_sigma, idx))
                 fig = self._get_final_fig(myc['fig_size'])
                 gs = examples.plotOneGridExample(
@@ -132,14 +132,14 @@ class GridExamplesPlotter(FigurePlotter):
                         self.config['iter_list'],
                         exIdx=example_idx[idx],
                         xlabel=False, ylabel=False,
-                        xlabel2=False, ylabel2=False, 
+                        xlabel2=False, ylabel2=False,
                         maxRate=True, plotGScore=False,
                         fig=fig)
                 gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
                         top=exampleTop)
                 plt.savefig(fname, dpi=300, transparent=myc['transparent'])
                 plt.close()
-    
+
                 # Autocorrelation
                 fname = (self.config['output_dir'] +
                             self.exampleACFName.format(noise_sigma, idx))
@@ -149,7 +149,7 @@ class GridExamplesPlotter(FigurePlotter):
                 gs = examples.plotOneGridACorrExample(ps.grids[ns_idx], rc, ax=ax)
                 plt.savefig(fname, dpi=300, transparent=myc['transparent'])
                 plt.close()
-    
+
 
 ###############################################################################
 ## Grid field examples - plotted on the sheet
@@ -220,8 +220,6 @@ class GridExampleRectPlotter(FigurePlotter):
                                        maxRate=True, rateStr='',
                                        rasterized=True)
         gs.update(wspace=0.05)
-        #fig.text(letter_left, sw_bottom-div+letter_top_off, "B", va=letter_va,
-        #        ha=letter_ha, fontsize=19, fontweight='bold')
         noise_sigma_txt = "$\sigma_{{noise}}$ = {0} pA".format(int(noise_sigma))
         fig.text(nsX, nsY, noise_sigma_txt, va='center', ha='right', fontsize=19)
         return fig
@@ -231,13 +229,13 @@ class GridExampleRectPlotter(FigurePlotter):
         iter_list = self.config['iter_list']
         YXRC = [(1, 22), (1, 22), (1, 22)] # (row, col)
 
-        exWidth = 15
-        exHeight = 15
+        exWidth = 16
+        exHeight = 16
 
         exampleRC = [
-                [[0, 0], [15, 0], [0, 15], [15, 15]],
-                [[0, 0], [15, 0], [0, 15], [15, 15]],
-                [[0, 0], [15, 0], [0, 15], [15, 15]],
+                [[0, 0], [16, 0], [0, 16], [16, 16]],
+                [[0, 0], [16, 0], [0, 16], [16, 16]],
+                [[0, 0], [16, 0], [0, 16], [16, 16]],
         ]
 
         saver = self.myc['fig_saver']
@@ -258,7 +256,7 @@ class GridExampleRectPlotter(FigurePlotter):
                 fig = self.drawA4RectExamples(
                         noise_idx, exRect, YXRC[noise_idx],
                         letter=string.ascii_uppercase[strIdx])
-                
+
                 saver.savefig(fig)
                 plt.close()
                 strIdx += 1
@@ -424,7 +422,7 @@ class GridBumpScatterPlotter(FigurePlotter):
         ps = self.env.ps
         iter_list = self.config['iter_list']
         output_dir = self.config['output_dir']
-        
+
         xlabel = 'P(bumps)'
         ylabel = 'Gridness score'
 
@@ -456,7 +454,7 @@ class GridBumpScatterPlotter(FigurePlotter):
         # Normal scale
         fname = output_dir + "/suppFigure_grids_vs_bumps.pdf"
         fig.savefig(fname, dpi=300)
-        
+
         # Exponential scale
         for ns_idx, _ in enumerate(ps.noise_sigmas):
             ax = scatterPlot.axes[ns_idx]
@@ -605,7 +603,7 @@ class GridSimpleExamplePlotter(FigurePlotter):
         #    ax=ax_corr,
         #    scaleBar=50)
 
-        fname = (self.config['output_dir'] + 
+        fname = (self.config['output_dir'] +
                  'grid_spiking_and_field_example.pdf')
         fig.savefig(fname, dpi=300, transparent=myc['transparent'])
         plt.close()

@@ -57,7 +57,7 @@ def plotOneBumpExample(sp, rc, iterList, types, **kw):
     hspace    = kw.pop('hspace', 0)
     gsCoords  = kw.pop('exGsCoords', (0, 0, 1, 1))
 
-    r, c = rc[0], rc[1] 
+    r, c = rc[0], rc[1]
     spaceRect = [c, r, c, r]
     return drawBumpExamples(sp, spaceRect, iterList, gsCoords, types,
             xlabel=False, ylabel=False,
@@ -77,8 +77,8 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
         rasterized=True, fig=plt.gcf()):
     left   = spaceRect[0]
     bottom = spaceRect[1]
-    right  = spaceRect[2]
-    top    = spaceRect[3]
+    right  = min(spaceRect[2], dataSpace.shape[0] - 1)
+    top    = min(spaceRect[3], dataSpace.shape[1] - 1)
     exRow, exCol = exIdx
 
     rateMaps   = aggr.aggregate2D(dataSpace, ['rateMap_e'])
@@ -104,23 +104,13 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
     for r in range(bottom, top+1):
         for c in range(left, right+1):
             print r, c
-            rateMap   = rateMaps[r][c][trialNum]
-            if (not isinstance(rateMap, np.ndarray)):
-                continue
 
             gsRow = top - r
             gsCol = c - left
-            ax = fig.add_subplot(gs[gsRow, gsCol]) 
+
+            ax = fig.add_subplot(gs[gsRow, gsCol])
             X         = rateMaps_X[r][c][0]
             Y         = rateMaps_Y[r][c][0]
-            arenaDiam = arenaDiams[r][c][0]
-            if (plotGScore):
-                gScore = G[r][c][0]
-            else:
-                gScore = None
-            plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=scaleBar,
-                            scaleText=False, maxRate=maxRate, rateStr=rateStr,
-                            G=gScore, rasterized=rasterized, ax=ax)
 
             if (ylabel and gsCol == 0):
                 label = "{0:.2f}".format(we[r][c])
@@ -139,7 +129,22 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
                 ax.text(ylabel2Pos, weTxt_y, ylabelText, transform=trans,
                         va='center', ha='right', rotation=90,
                         fontsize=fontSize)
-            
+
+            rateMap   = rateMaps[r][c][trialNum]
+            if not isinstance(rateMap, np.ndarray):
+                ax.axis('off')  # remove empty Axes when data is missing
+                continue
+
+            arenaDiam = arenaDiams[r][c][0]
+            if (plotGScore):
+                gScore = G[r][c][0]
+            else:
+                gScore = None
+            plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=scaleBar,
+                            scaleText=False, maxRate=maxRate, rateStr=rateStr,
+                            G=gScore, rasterized=rasterized, ax=ax, ann_div=.05)
+
+
 
         # Second X label
         if (xlabel2 and r - bottom == 0):
@@ -203,7 +208,7 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, types, **kw):
 
             gsRow = top - r
             gsCol = c - left
-            ax = fig.add_subplot(gs[gsRow, gsCol]) 
+            ax = fig.add_subplot(gs[gsRow, gsCol])
             plotBump(ax, bump, **kw)
 
             if (ylabel and gsCol == 0):
@@ -223,7 +228,7 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, types, **kw):
                 ax.text(ylabel2Pos, weTxt_y, ylabelText, transform=trans,
                         va='center', ha='right', rotation=90,
                         fontsize=fontSize)
-            
+
 
         # Second X label
         if (xlabel2 and r - bottom == 0):
@@ -260,18 +265,16 @@ def plotSquareGridExample(exLeft, exBottom, sz, fileName, exIdx, sweep_ax,
 def drawEIRectSelection(ax, spaceRect, X, Y, color='black'):
     left   = spaceRect[0]
     bottom = spaceRect[1]
-    right  = spaceRect[2]
-    top    = spaceRect[3]
+    right  = min(spaceRect[2], X.shape[1] - 1)
+    top    = min(spaceRect[3], Y.shape[0] - 1)
 
-    rectLeft   = X[bottom, left]
-    rectBottom = Y[bottom, left]
-    rectRight  = X[top, right+1]
-    rectTop    = Y[top+1, right]
-    #If left==0, we need to shrink the rectangle a little
     dx = X[0, 1] - X[0, 0]
     dy = Y[1, 0] - Y[0, 0]
-    if (left == 0):
-        rectLeft += 0.2*dx
+    rectLeft   = X[bottom, left] - .5 * dx
+    rectBottom = Y[bottom, left] - .5 * dy
+    rectRight  = X[top, right] + .5 * dx
+    rectTop    = Y[top, right] + .5 * dy
+
     ax.add_patch(Rectangle((rectLeft, rectBottom), rectRight-rectLeft,
         rectTop-rectBottom, facecolor='None', lw=1, edgecolor=color))
 
