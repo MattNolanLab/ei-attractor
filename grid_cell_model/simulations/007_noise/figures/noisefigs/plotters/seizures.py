@@ -61,7 +61,7 @@ class EIRasterPlotter(FigurePlotter):
                     r=rasterRC[ns_idx][0], c=rasterRC[ns_idx][1],
                     ylabelPos=self.myc['ylabelPos'],
                     tLimits=tLimits,
-                    markersize=self.config['scale_factor'],
+                    markersize=2*self.config['scale_factor'],
                     ylabel='' if self.myc['yticks'][ns_idx] == False else None,
                     yticks=self.myc['yticks'][ns_idx],
                     scaleBar=scaleBar, scaleX=.85, scaleY=-.1,
