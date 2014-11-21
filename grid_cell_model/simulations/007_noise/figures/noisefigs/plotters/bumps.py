@@ -376,14 +376,15 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
         myc = self._get_class_config()
 
         iter_list = self.config['iter_list']
-        tight_layout_kwargs = myc['tight_layout_kwargs']
+        l, b, r, t = self.myc['bbox_rect']
+        legend = self.myc.get('legend', True)
         legend_kwargs = myc['legend_kwargs']
 
-        xlabel = 'P(bumps)'
+        xlabel = self.myc.get('xlabel', 'P(bumps)')
         ylabel = 'Gridness score'
         
         fig = self._get_final_fig(myc['fig_size'])
-        ax = fig.gca()
+        ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
 
         scatterColors = ['green', 'red', 'blue']
         scatterOrders = [2, 3, 1]
@@ -408,13 +409,13 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
 
         ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
         ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-        leg = ['0', '150', '300']
-        l = ax.legend(leg, **legend_kwargs)
-        plt.setp(l.get_title(), size='small')
+        if legend:
+            leg = ['0', '150', '300']
+            l = ax.legend(leg, **legend_kwargs)
+            plt.setp(l.get_title(), size='small')
         #ax.set_ylabel(ax.get_ylabel(), y=0., ha='left')
 
         # Normal scale
-        fig.tight_layout(**tight_layout_kwargs)
         fname = self.config['output_dir'] + "/bumps_scatter_grids_vs_bumpFracTotal.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
 
@@ -423,7 +424,6 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
         ax.xaxis.set_major_locator(ti.MultipleLocator(.5))
         ax.xaxis.set_minor_locator(ti.MultipleLocator(.1))
         ax.set_xlim([-0.3, 1.002])
-        fig.tight_layout(**tight_layout_kwargs)
         fname = self.config['output_dir'] + "/bumps_scatter_grids_vs_bumpFracTotal_exp.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
 
@@ -492,10 +492,9 @@ class MainBumpFormationPlotter(BumpFormationBase):
         grids_example_idx = self.config['grids']['example_idx']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-            fname = (self.config['output_dir'] +
-                     "/{0}bumps_mainFig_isBumpFracTotal_sweeps_annotated{1}.pdf".format(
-                         self.config.get('fname_prefix', ''),
-                         int(noise_sigma)))
+            fname = self.get_fname(
+                    "bumps_mainFig_isBumpFracTotal_sweeps_annotated{ns}.pdf",
+                    ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 #fig, ax = ds.getDefaultSweepFig(scale=0.8, colorBarPos='left')
                 kw = dict()
@@ -507,6 +506,7 @@ class MainBumpFormationPlotter(BumpFormationBase):
                                    ignoreNaNs=True)
                 _, _, cax = sweeps.plotSweep(data,
                         noise_sigma=noise_sigma,
+                        sigmaTitle=self.myc.get('sigmaTitle', True),
                         xlabel='' if xticks[ns_idx] == False else None,
                         xticks=xticks[ns_idx],
                         ax=ax,

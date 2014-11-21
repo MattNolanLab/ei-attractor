@@ -42,7 +42,7 @@ def _get_default_config():
             'pdf.fonttype': 42,
             'mathtext.default': 'regular',
             'font.sans-serif'    : ['Helvetica', 'Avant Garde', 'Computer Modern Sans serif'],
-            
+
             'xtick.major.size'  : tick_len,
             'xtick.major.width' : tick_width,
             'xtick.minor.size'  : tick_len / 2.,
@@ -234,6 +234,19 @@ def _get_default_config():
 
     ConnectionFunctionPlotter_config = {
         'fig_size': (3, 1.5),
+        'bbox_rect': (.2, .25, .95, .75),
+
+        'leg1_kwargs': dict(
+            loc=(0.02, 1.0),
+            frameon=False,
+            fontsize='x-small',
+            ncol=1
+        ),
+        'leg2_kwargs': dict(
+            loc=(0.45, 1.03),
+            frameon=False,
+            fontsize='x-small'
+        ),
     }
     _default_config['ConnectionFunctionPlotter'] = ConnectionFunctionPlotter_config
 
@@ -242,6 +255,10 @@ def _get_default_config():
     GammaSweepsPlotter_config = {
         'scale_factor': .9,
         'cbar': [1, 0, 0],
+        'cbar_kw' : { # This has to match cbar_kw-s below
+            'location': 'left',
+        },
+
         'AC_cbar_kw': dict(
             location   = 'left',
             ticks      = ti.MultipleLocator(0.3),
@@ -255,6 +272,8 @@ def _get_default_config():
         'AC_xticks': [False]*3,
         'AC_yticks': [1, 0, 0],
         'AC_sigma_title': True,
+        'AC_vmin': -0.09,
+        'AC_vmax': 0.675,
 
         'F_cbar_kw': dict(
             location   = 'left',
@@ -271,6 +290,9 @@ def _get_default_config():
         'F_xticks': [True]*3,
         'F_yticks': [1, 0, 0],
         'F_sigma_title': False,
+        'F_vmin': 30,
+        'F_vmax': 120,
+
 
         'ann': [
             dict(
@@ -286,10 +308,6 @@ def _get_default_config():
                 color='white',
             ),
         ],
-
-        'cbar_kw' : {
-            'location': 'left',
-        },
 
         'plot_grid_contours': [0, 1, 0],
     }
@@ -403,18 +421,15 @@ def _get_default_config():
     ##############################################################################
 
     GammaScatterPBumpsAllPlotter_config = {
-        'fig_size': (5., 3.2),
+        'fig_size': (4.5, 2.6),
+        'bbox_rect': (0.3, 0.22, 0.82, 0.95),
+        'xlabel': '',
         'legend_kwargs': dict(
-            loc=(0.25, 0.95),
+            loc=(1.05, 0.5),
             fontsize='small',
             frameon=False,
-            ncol=3,
             title='$\sigma$ (pA)'
         ),
-        'tight_layout_kwargs': {
-            'rect': [.05, .05, .95, .9],
-            'pad': 0,
-        },
     }
     _default_config['GammaScatterPBumpsAllPlotter'] = GammaScatterPBumpsAllPlotter_config
 
@@ -476,7 +491,7 @@ def _get_default_config():
         'scale_factor': .8,
         'cbar': [0, 0, 1],
         'cbar_kw': dict(
-            label       = fracTotalText,
+            label       = "P(bumps)",
             location    = 'right',
             shrink      = 0.8,
             pad         = -.05,
@@ -506,19 +521,15 @@ def _get_default_config():
     ##############################################################################
 
     MainScatterGridsBumpsPlotter_config = {
-        'fig_size': (5.8, 3.2),
-        'tight_layout_kwargs': {
-            'rect': (0.05, 0.05, 0.95, 0.9),
-        },
+        'fig_size': (4.5, 2.6),
+        'bbox_rect': (0.3, 0.22, 0.82, 0.95),
+        'xlabel' : '',
+        'legend': False,
         'legend_kwargs': dict(
-            loc=(0.2, 1.02),
+            loc=(1.05, 0.5),
             fontsize='small',
-            frameon=True,
-            fancybox=True,
-            framealpha=0.5,
+            frameon=False,
             handletextpad=0,
-            scatterpoints=1,
-            ncol=3,
             title='$\sigma$ (pA)'
         ),
     }
@@ -578,7 +589,7 @@ def _get_default_config():
         ),
 
         'plot_grid_contours': [1, 1, 1],
-        'grid_contours': [.1],
+        'grid_contours': [.5],
     }
     _default_config['MaxPopulationFRSweepsPlotter'] = MaxPopulationFRSweepsPlotter_config
 
@@ -608,7 +619,7 @@ def _get_default_config():
 
     EIRasterPlotter_config = {
         'fig_size': (3, 1.9),
-        'fig_ext': 'png',
+        'fig_ext': 'pdf',
 
         'yticks': [1, 0, 0],
         'ylabelPos': -0.35,
@@ -646,7 +657,7 @@ def _get_default_config():
         'FRThreshold': 300,
 
         'plot_grid_contours': [1, 1, 1],
-        'grid_contours': [.1],
+        'grid_contours': [.5],
     }
     PSeizureSweepPlotter_config.update({
         'cbar_kw': dict(
@@ -861,6 +872,7 @@ def _get_default_config():
         'markersize': 1.5,
         'plot_ann_txt' : True,
         'theta_color': (0, 0, 0, .3),
+        'fig_saver': PdfOutputSaver(None, 'pdf')
     }
     _default_config['RasterExamplePlotter'] = RasterExamplePlotter_config
 
@@ -930,22 +942,24 @@ def _get_default_config():
         'cbar_kw' : {
             'location' : 'right',  # This has to match cbar_kw_e and cbar_kw_i
         },
-            
+
+        'plot_grid_contours': [1, 1, 1],
+
         'cbar_kw_e': {
-            'label'      : 'E Firing rate (Hz)',
+            'label'      : 'Mean E Firing rate (Hz)',
             'location'   : 'right',
             'shrink'     : 0.8,
             'pad'        : -0.05,
-            'ticks'      : ti.MultipleLocator(2),
+            'ticks'      : ti.LogLocator(subs=[1, 2, 4, 6, 8]),
             'rasterized' : True,
         },
 
         'cbar_kw_i': {
-            'label'      : 'I Firing rate (Hz)',
+            'label'      : 'Mean I Firing rate (Hz)',
             'location'   : 'right',
             'shrink'     : 0.8,
             'pad'        : -0.05,
-            'ticks'      : ti.MultipleLocator(50),
+            'ticks'      : ti.LogLocator(subs=[1, 2, 4, 6, 8]),
             'rasterized' : True,
         },
 
@@ -954,4 +968,21 @@ def _get_default_config():
 
     ##############################################################################
 
+    ScatterGridsFRAllPlotter_config = {
+        'fig_size': (4.2, 3),
+        'dot_size': 15,
+        'legend_kwargs': dict(
+            loc=(0.4, 0.6),
+            fontsize='small',
+            frameon=False,
+            numpoints=1,
+            title='$\sigma$ (pA)'
+        ),
+        'bbox_rect': (.2, .2, .95, .95),
+        'ylabel': 'Gridness score',
+        'yticks': True,
+    }
+    _default_config['ScatterGridsFRAllPlotter'] = ScatterGridsFRAllPlotter_config
+
+    ##############################################################################
     return _default_config
