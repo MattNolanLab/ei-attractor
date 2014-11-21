@@ -488,7 +488,7 @@ def _get_default_config():
     ##############################################################################
 
     MainBumpFormationPlotter_config = {
-        'scale_factor': .8,
+        'scale_factor': 1.,
         'cbar': [0, 0, 1],
         'cbar_kw': dict(
             label       = "P(bumps)",
