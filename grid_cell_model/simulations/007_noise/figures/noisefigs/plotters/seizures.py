@@ -500,7 +500,7 @@ class MaxFRGridsScatterAllPlotter(FigurePlotter):
             scatterPlot = scatter.ScatterPlot(
                     maxFRData, gridnessData, None, None, None, None, None,
                     c=color,
-                    s=10*self.config['scale_factor'],
+                    s=6*self.config['scale_factor'],
                     linewidth=0.3,
                     xlabel='$E-rate_{max}$',
                     ylabel='Gridness score',
@@ -629,7 +629,7 @@ class PSeizureGridsScatterAllPlotter(FigurePlotter):
             scatterPlot = scatter.ScatterPlot(
                     PSeizureData, gridnessData, None, None, None, None, None,
                     c=color,
-                    s=10*self.config['scale_factor'],
+                    s=6*self.config['scale_factor'],
                     linewidth=0.3,
                     xlabel='$P(E-rate_{max} > 300)$',
                     ylabel='',

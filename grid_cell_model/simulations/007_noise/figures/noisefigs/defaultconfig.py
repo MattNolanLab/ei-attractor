@@ -972,7 +972,7 @@ def _get_default_config():
 
     ScatterGridsFRAllPlotter_config = {
         'fig_size': (4.2, 3),
-        'dot_size': 15,
+        'dot_size': 6,
         'legend_kwargs': dict(
             loc=(0.4, 0.6),
             fontsize='small',

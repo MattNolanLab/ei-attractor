@@ -400,7 +400,7 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
             scatterPlot = scatter.ScatterPlot(
                     isBumpData, gridData, None, None, None, None, None,
                     c=scatterColors[ns_idx],
-                    s=15*self.config['scale_factor'],
+                    s=6*self.config['scale_factor'],
                     linewidth=0.3,
                     xlabel=xlabel,
                     ylabel=ylabel,
