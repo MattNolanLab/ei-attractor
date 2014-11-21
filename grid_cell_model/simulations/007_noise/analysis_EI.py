@@ -28,7 +28,7 @@ parser.add_argument('--shapeCols',    type=int, required=True)
 parser.add_argument('--forceUpdate',  type=int, required=True)
 parser.add_argument("--output_dir",   type=str, required=True)
 parser.add_argument("--job_num",      type=int) # unused
-parser.add_argument("--type",         type=str, choices=common.allowedTypes, required=True)
+parser.add_argument("--type",         type=str, choices=common.allowedTypes, required=True, nargs="+")
 parser.add_argument("--bumpSpeedMax", type=float)
 
 o = parser.parse_args()
@@ -51,7 +51,7 @@ isBump_readme = 'Bump position estimation. Whole simulation'
 
 
 # Create visitors
-if o.type == common.bumpType:
+if common.bumpType in o.type:
     bumpVisitor = vis.bumps.BumpFittingVisitor(forceUpdate=forceUpdate,
             tstart='full',
             readme='Bump fitting. Whole simulation, starting at the start of theta stimulation.',
@@ -70,10 +70,10 @@ if o.type == common.bumpType:
 
     sp.visit(bumpVisitor)
     #sp.visit(isBumpVisitor)
-    #sp.visit(FRVisitor)
+    sp.visit(FRVisitor)
     #sp.visit(FRPlotter)
 
-elif o.type == common.gammaType:
+if common.gammaType in o.type:
     monName   = 'stateMonF_e'
     stateList = ['I_clamp_GABA_A']
 
@@ -88,7 +88,7 @@ elif o.type == common.gammaType:
     sp.visit(CCVisitor)
     sp.visit(statsVisitor_e)
 
-elif o.type == common.velocityType:
+if common.velocityType in o.type:
     speedEstimator = vis.bumps.SpeedEstimator(
             forceUpdate=forceUpdate,
             axis='vertical',
@@ -103,7 +103,7 @@ elif o.type == common.velocityType:
     sp.visit(gainEstimator, trialList='all-at-once')
     sp.visit(speedPlotter, trialList='all-at-once')
 
-elif o.type == common.gridsType:
+if common.gridsType in o.type:
     spikeType = 'E'
 
     po = vis.plotting.grids.GridPlotVisitor.PlotOptions()
@@ -133,7 +133,8 @@ elif o.type == common.gridsType:
     #sp.visit(isBumpVisitor)
     #sp.visit(ISIVisitor)
     sp.visit(FRVisitor)
-elif o.type == common.posType:
+
+if common.posType in o.type:
     bumpPosVisitor = vis.bumps.BumpPositionVisitor(
             tstart=0,
             tend=None,
@@ -141,7 +142,6 @@ elif o.type == common.posType:
             readme='Bump position estimation. Whole simulation.',
             forceUpdate=forceUpdate)
     sp.visit(bumpPosVisitor)
-else:
-    raise ValueError("Unknown analysis type option: {0}".format(o.type))
+
 
 print('Total time: %.3f s' % (time.time() - startT))
