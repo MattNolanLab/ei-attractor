@@ -33,7 +33,7 @@ class ConnectionFunctionPlotter(FigurePlotter):
         ip, = plt.plot(d, inh_profile, linewidth=linewidth, color='blue', label="I")
         icp, = plt.plot(d, [inh_const]*len(d), ':', color='blue')
 
-        ax.set_xlabel("'Distance'")
+        ax.set_xlabel(self.myc.get('xlabel', "'Distance'"))
         ax.set_ylabel('G (nS)')
         ax.yaxis.set_ticks([0, 1])
         ax.yaxis.set_ticklabels([0, '$g_{E/I}$'])
@@ -60,7 +60,7 @@ class ConnectionFunctionPlotter(FigurePlotter):
         #            (rnd_x, rnd_y), xytext=(0.4, 1.2), textcoords='axes fraction',
         #            arrowprops=arrowprops, ha='left', va='center',  size='small',
         #            color=arrow_clr, zorder=-1)
-    
+
 
     def plot(self, *args, **kwargs):
         ylabel_coords = self.myc.get('ylabel_coords', None)
