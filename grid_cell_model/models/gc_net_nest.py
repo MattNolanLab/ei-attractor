@@ -4,7 +4,6 @@ from __future__ import absolute_import, print_function
 import logging
 
 import numpy    as np
-from numpy.random import rand, randn
 from scipy.io     import loadmat
 import nest
 
@@ -74,7 +73,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
 
     def uniformDistrib(self, mean, spread, N):
-        return mean - spread/2.0 * rand(N)
+        return mean - spread/2.0 * np.random.rand(N)
 
     def _initStates(self):
         # Initialize membrane potential randomly
@@ -146,7 +145,7 @@ class NestGridCellNetwork(GridCellNetwork):
         self.endConstruction()
         self.beginSimulation()
         nest.SetKernelStatus({"print_time": bool(printTime)})
-        
+
         if not self.velocityInputInitialized:
             velMsg = "Velocity input has not been initialized. Make sure " + \
                     "this is the desired behavior. If you have set the " +   \
@@ -319,12 +318,12 @@ class NestGridCellNetwork(GridCellNetwork):
             msg = 'popType must be either \'E\' or \'I\'. Got {0}'
             raise ValueError(msg.format(popType))
 
-         
 
 
-    ############################################################################ 
+
+    ############################################################################
     #                     External sources definitions
-    ############################################################################ 
+    ############################################################################
 
     def setStartCurrent(self, force_pos=None):
         # This will either need to instantiate the start current model or set
@@ -556,9 +555,9 @@ class NestGridCellNetwork(GridCellNetwork):
         self._placeCellsLoaded = True
 
 
-    ############################################################################ 
+    ############################################################################
     #                                   Other
-    ############################################################################ 
+    ############################################################################
     def getRatData(self):
         return self.ratData
 
@@ -586,7 +585,7 @@ class NestGridCellNetwork(GridCellNetwork):
         d['prefDirs_e'     ] = self.prefDirs_e
 
         return d
-            
+
 
 
 
@@ -644,7 +643,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
                     self.Ni_x/2 - 1]
         else:
             raise ValueError("Currently stateRecordType must be 'middle-center'")
-        
+
         self.stateMonParams_e = self.getDefaultStateMonParams()
         self.stateMonParams_i = self.getDefaultStateMonParams()
 
@@ -671,7 +670,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
             self.stateMon_i
         )
 
-  
+
     def getSpikeMonData(self, mon, gidStart):
         '''
         Generate a dictionary of a spike data from the monitor ``mon``
@@ -700,7 +699,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
 
         return out
 
-    
+
     def getNetParams(self):
         out = {}
         out['options']  = self.no._einet_optdict
@@ -716,7 +715,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
 
         # Spike monitors
         out.update(self.getSpikes())
-        
+
         #Save state variables
         out['stateMon_e']   = nest.GetStatus(self.stateMon_e)
         out['stateMon_i']   = nest.GetStatus(self.stateMon_i)
