@@ -35,6 +35,7 @@ class DOptionParser(flagparse.FlagParser):
 def getOptParser():
     # Network parameters definition
     optParser = DOptionParser()
+    optParser.add_argument("--master_seed",           type=int,    help="Master random number generator seed")
     optParser.add_argument("--Ne",                    type=int,    help="Number of excitatory neurons")
     optParser.add_argument("--Ni",                    type=int,    help="Number of inhibitory neurons")
     optParser.add_argument("--ntrials",               type=int,    help="Number of trials for the parameter set")

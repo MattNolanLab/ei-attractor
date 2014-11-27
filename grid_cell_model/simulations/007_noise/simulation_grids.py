@@ -5,7 +5,7 @@ simulation with initialisation and velocity place cells active (velOn==True and
 constantPosition=False). Or a simulation in which the animal holds still at a
 specified position (constantPosition==True).
 '''
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, division
 
 import numpy as np
 from os.path            import exists
@@ -13,8 +13,10 @@ from numpy.random       import choice
 from nest.hl_api        import NESTError
 
 from grid_cell_model.models.parameters  import getOptParser
-from grid_cell_model.models.gc_net_nest import BasicGridCellNetwork, ConstPosInputs
-from grid_cell_model.data_storage       import DataStorage
+from grid_cell_model.models.gc_net_nest import (BasicGridCellNetwork,
+                                                ConstPosInputs)
+from grid_cell_model.models.seeds import TrialSeedGenerator
+from grid_cell_model.data_storage import DataStorage
 
 import logging
 logger = logging.getLogger(__name__)
@@ -26,6 +28,7 @@ parser.add_argument("--staticPos_x",      type=float, default=0.0,    help="Stat
 parser.add_argument("--staticPos_y",      type=float, default=0.0,    help="Static position Y coordinate")
 o, _ = parser.parse_args()
 
+seed_gen = TrialSeedGenerator(o.master_seed)
 
 # Do nothing when bumpCurrentSlope is NaN
 if (np.isnan(o.bumpCurrentSlope)):
@@ -52,6 +55,8 @@ overalT = 0.
 ################################################################################
 for trial_idx in range(len(d['trials']), o.ntrials):
     print("\n\t\tStarting trial no. {0}\n".format(trial_idx))
+    seed_gen.set_generators(trial_idx)
+    d['master_seed'] = o.master_seed
     d['invalidated'] = 1
     ei_net = BasicGridCellNetwork(o, simulationOpts=None,
             nrec_spikes=(nrec_spikes_e, nrec_spikes_i),
@@ -60,7 +65,9 @@ for trial_idx in range(len(d['trials']), o.ntrials):
         ei_net.setVelocityCurrentInput_e()
     posIn = ConstPosInputs(0, 0) if o.constantPosition else None
     ei_net.setPlaceCells(posIn=posIn)
-    
+    d['net_params'] = ei_net.getNetParams()  # Common settings will stay
+    d.flush()
+
     try:
         ei_net.simulate(o.time, printTime=o.printTime)
     except NESTError as e:
