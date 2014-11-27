@@ -29,7 +29,7 @@ for noise_sigma in parser.noise_sigmas:
     p['master_seed'] = 123456
     p['time']        = 10e3 if o.time is None else o.time  # ms
     p['nthreads']    = 1
-    p['ntrials']     = o.ntrials
+    p['ntrials']     = 5 if o.ntrials is None else o.ntrials
     p['verbosity']   = o.verbosity
 
     # No theta parameters

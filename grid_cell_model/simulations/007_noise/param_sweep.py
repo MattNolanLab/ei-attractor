@@ -114,16 +114,15 @@ class SubmissionParser(flagparse.FlagParser):
     '''Parse arguments for parameter sweep submission process.'''
     def __init__(self, **kwargs):
         super(SubmissionParser, self).__init__(**kwargs)
+        self.add_argument('env',     type=str,
+                          choices=['workstation', 'cluster'])
         self.add_argument("where",     type=str)
         self.add_argument('--row',     type=int)
         self.add_argument('--col',     type=int)
         self.add_argument("--ns",      type=int, choices=[0, 150, 300])
         self.add_argument("--time",    type=float)
-        self.add_argument('--ntrials', type=positive_int, default=1)
+        self.add_argument('--ntrials', type=positive_int)
         self.add_argument('--rtLimit', type=str)
-        self.add_argument('--env',     type=str,
-                          choices=['workstation', 'cluster'],
-                          required=True)
         self.add_flag('--dry_run',
                       help='Do no run anything nor save any meta-data')
 
