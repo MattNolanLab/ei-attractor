@@ -31,7 +31,6 @@ class ConnectionFunctionPlotter(FigurePlotter):
         ax.spines['right'].set_visible(False)
         ep, = plt.plot(d, exc_profile, linewidth=linewidth, color='red', label="E")
         ip, = plt.plot(d, inh_profile, linewidth=linewidth, color='blue', label="I")
-        icp, = plt.plot(d, [inh_const]*len(d), ':', color='blue')
 
         ax.set_xlabel(self.myc.get('xlabel', "'Distance'"))
         ax.set_ylabel('G (nS)')
@@ -39,12 +38,16 @@ class ConnectionFunctionPlotter(FigurePlotter):
         ax.yaxis.set_ticklabels([0, '$g_{E/I}$'])
 
         leg1 = ['E$\\rightarrow$I', 'I$\\rightarrow$E']
-        leg2 = ['I$\\rightarrow$E uniform\nrandom']
         l1 = ax.legend([ep, ip], leg1, **self.myc['leg1_kwargs'])
-        l2 = ax.legend([icp], leg2, **self.myc['leg2_kwargs'])
         plt.setp(l1.get_title(), fontsize='x-small')
-        plt.setp(l2.get_title(), fontsize='x-small')
-        ax.add_artist(l1)
+
+        # If we want the uniform random, draw it
+        if self.myc.get('uniform_random', True):
+            leg2 = ['I$\\rightarrow$E uniform\nrandom']
+            icp, = plt.plot(d, [inh_const]*len(d), ':', color='blue')
+            l2 = ax.legend([icp], leg2, **self.myc['leg2_kwargs'])
+            plt.setp(l2.get_title(), fontsize='x-small')
+            ax.add_artist(l1)
 
         ax.margins(0.02)
 

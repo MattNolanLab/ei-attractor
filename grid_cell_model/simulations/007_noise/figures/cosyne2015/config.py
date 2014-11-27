@@ -16,16 +16,19 @@ _config = {
             'fraction': .25,
         },
         'ann': None,
+        'rasterized': False,
     },
 
     'ConnectionFunctionPlotter': {
         'fig_size': (2, 1.5),
         'x_range': (0, .5, .001),
+        'xlabel': 'Distance',
         'xticks': (0, .5),
         'bbox_rect': (.31, .25, .93, .75),
+        'uniform_random': False,
 
         'leg1_kwargs': dict(
-            loc=(-.15, 1.0),
+            loc=(.2, .9),
         ),
         'leg2_kwargs': dict(
             loc=(.35, 1.03),
