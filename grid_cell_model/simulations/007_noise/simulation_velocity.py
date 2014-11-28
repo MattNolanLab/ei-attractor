@@ -3,11 +3,11 @@ from __future__ import absolute_import, print_function, division
 
 import numpy as np
 from os.path import exists
-from numpy.random       import choice
 from nest.hl_api        import NESTError
 
 from grid_cell_model.models.parameters  import getOptParser
 from grid_cell_model.models.gc_net_nest import ConstantVelocityNetwork
+from grid_cell_model.models.seeds import TrialSeedGenerator
 from grid_cell_model.data_storage       import DataStorage
 
 
@@ -25,15 +25,25 @@ d = DataStorage.open(output_fname, 'a')
 if ("trials" not in d.keys()):
     d['trials'] = []
 
+# Initialise seeds and check their consistency with previously saved data
+seed_gen = TrialSeedGenerator(o.master_seed)
+if len(d['trials']) == 0:
+    d['master_seed'] = o.master_seed
+else:
+    try:
+        seed_gen.check_master_seed(d['master_seed'], o.master_seed)
+    except ValueError as e:
+        d.close()
+        raise e
+
 overalT = 0.
 oldNTrials = len(d['trials'])
 ################################################################################
 for trial_idx in range(o.ntrials):
     print("\n\t\tStarting/appending to trial no. {0}\n".format(trial_idx))
-    if trial_idx < oldNTrials: # Trial exists
-        trialOut = d['trials'][trial_idx]
-    else:
-        trialOut = {}
+    if trial_idx >= oldNTrials:  # Create new trial
+        d['trials'].append({})
+    trialOut = d['trials'][trial_idx]
 
     # Now check if there is data in the trial and append
     if 'IvelVec' not in trialOut:
@@ -45,6 +55,7 @@ for trial_idx in range(o.ntrials):
     try:
         IvelVecAppend = np.arange(oldNIvel*o.dIvel, o.IvelMax + o.dIvel, o.dIvel)
         for Ivel in IvelVecAppend:
+            seed_gen.set_generators(trial_idx)  # Each trial is reproducible
             const_v = [0.0, -Ivel]
             ei_net = ConstantVelocityNetwork(o, simulationOpts=None, vel=const_v)
 
@@ -62,6 +73,6 @@ for trial_idx in range(o.ntrials):
         break
 
 d.close()
-print "Script total run time: {0} s".format(overalT)
+print("Script total run time: {0} s".format(overalT))
 ################################################################################
 

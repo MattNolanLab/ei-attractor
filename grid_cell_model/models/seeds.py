@@ -62,3 +62,11 @@ class TrialSeedGenerator(object):
         nest.SetKernelStatus({'grng_seed' : current_seed})
         nest.SetKernelStatus({'rng_seeds' : [current_seed + 1]})
         np.random.seed(current_seed + 2)
+
+    def check_master_seed(self, old_seed, new_seed, msg=None):
+        '''Abort if old seed is not equal new seed.'''
+        trial_logger.debug(
+            'Checking master seed consistency. Old: %d, new: %d',
+            old_seed, new_seed)
+        if old_seed != new_seed:
+            raise ValueError(msg or "Old seed != new seed. Aborting.")
