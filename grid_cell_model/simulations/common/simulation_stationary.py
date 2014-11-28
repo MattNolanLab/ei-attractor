@@ -4,10 +4,10 @@ from __future__ import absolute_import, print_function, division
 from numpy.random import choice
 from nest.hl_api  import NESTError
 
-from grid_cell_model.models.parameters  import getOptParser
+from grid_cell_model.models.parameters import getOptParser
 from grid_cell_model.models.gc_net_nest import BasicGridCellNetwork
-from grid_cell_model.data_storage       import DataStorage
-
+from grid_cell_model.models.seeds import TrialSeedGenerator
+from grid_cell_model.data_storage import DataStorage
 
 parser          = getOptParser()
 (options, args) = parser.parse_args()
@@ -18,22 +18,25 @@ d = DataStorage.open(output_fname, 'a')
 if ("trials" not in d.keys()):
     d['trials'] = []
 
+seed_gen = TrialSeedGenerator(options.master_seed)
 
 overalT = 0.
 ################################################################################
 for trial_idx in range(len(d['trials']), options.ntrials):
     print("\n\t\tStarting trial no. {0}\n".format(trial_idx))
+    seed_gen.set_generators(trial_idx)
+    d['master_seed'] = options.master_seed
     d['invalidated'] = 1
     try:
         ei_net = BasicGridCellNetwork(options, simulationOpts=None)
-        
+
         const_v = [0.0, 0.0]
         ei_net.setConstantVelocityCurrent_e(const_v)
-        
-        
+
+
         stateRecF_e = choice(ei_net.E_pop, options.gammaNSample, replace=False)
         stateRecF_i = choice(ei_net.I_pop, options.gammaNSample, replace=False)
-        
+
         stateMonF_e_params = {
                 'withtime' : False,
                 'interval' : options.sim_dt*10,
@@ -46,7 +49,10 @@ for trial_idx in range(len(d['trials']), options.ntrials):
             stateMonF_e_params, 'stateMonF_e')
         stateMonF_i = ei_net.getGenericStateMonitor(stateRecF_i,
                 stateMonF_i_params, 'stateMonF_i')
-    
+
+        d['net_params'] = ei_net.getNetParams()  # Common settings will stay
+        d.flush()
+
         ei_net.simulate(options.time, printTime=options.printTime)
         ei_net.endSimulation()
         d['trials'].append(ei_net.getAllData())
