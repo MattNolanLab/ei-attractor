@@ -1,8 +1,10 @@
 '''Main simulation run: Bump velocity estimation.'''
 from __future__ import absolute_import, print_function, division
 
-import numpy as np
 from os.path import exists
+import logging
+
+import numpy as np
 from nest.hl_api        import NESTError
 
 from grid_cell_model.models.parameters  import getOptParser
@@ -10,11 +12,18 @@ from grid_cell_model.models.gc_net_nest import ConstantVelocityNetwork
 from grid_cell_model.models.seeds import TrialSeedGenerator
 from grid_cell_model.data_storage       import DataStorage
 
+logger = logging.getLogger(__name__)
 
 parser = getOptParser()
 parser.add_argument("--IvelMax", type=float, required=True, help="Max constant velocity current input (pA)")
 parser.add_argument("--dIvel",   type=float, required=True, help="Constant velocity current input step (pA)")
 parser.add_argument("--ispikes", type=int,   choices=[0, 1], default=0, help="Whether to save spikes from the I population")
+
+def check_ivel_vec(trial):
+    if 'IvelVec' not in trial.keys() and 'IvelData' in trial.keys():
+        logger.info("Data present, but IvelVec is missing. Fixing...")
+        trial['IvelVec'] = np.arange(.0, len(trial['IvelData'])*o.dIvel, o.dIvel)
+        d.flush()
 
 (o, args) = parser.parse_args()
 
@@ -46,6 +55,9 @@ for trial_idx in range(o.ntrials):
     trialOut = d['trials'][trial_idx]
 
     # Now check if there is data in the trial and append
+    # Additionally, if data was saved but IvelVec missing, add it so that it
+    # fits the data
+    check_ivel_vec(trialOut)
     if 'IvelVec' not in trialOut:
         oldNIvel = 0
         trialOut['IvelData'] = []
@@ -62,10 +74,11 @@ for trial_idx in range(o.ntrials):
             ei_net.simulate(o.time, printTime=o.printTime)
             ei_net.endSimulation()
             trialOut['IvelData'].append(ei_net.getMinimalSaveData(ispikes=o.ispikes))
+            trialOut['IvelVec'] = np.arange(
+                .0, len(trialOut['IvelData']) * o.dIvel, o.dIvel)
             d.flush()
             constrT, simT, totalT = ei_net.printTimes()
             overalT += totalT
-        trialOut['IvelVec'] = np.arange(.0, o.IvelMax + o.dIvel, o.dIvel)
         d.flush()
     except NESTError as e:
         print("Simulation interrupted. Message: {0}".format(str(e)))
@@ -75,4 +88,3 @@ for trial_idx in range(o.ntrials):
 d.close()
 print("Script total run time: {0} s".format(overalT))
 ################################################################################
-
