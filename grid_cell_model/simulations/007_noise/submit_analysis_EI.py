@@ -19,12 +19,12 @@ from default_params       import defaultParameters as dp
 
 
 parser = flagparse.FlagParser()
+parser.add_argument('env',       type=str, choices=['workstation', 'cluster'])
+parser.add_argument("where",     type=str)
+parser.add_argument('type',      type=str, choices=common.allowedTypes, nargs="+")
 parser.add_argument('--row',     type=int)
 parser.add_argument('--col',     type=int)
-parser.add_argument("--where",   type=str, required=True)
 parser.add_argument("--ns",      type=int, choices=[0, 150, 300])
-parser.add_argument('--type',    type=str, choices=common.allowedTypes, required=True, nargs="+")
-parser.add_argument('--env',     type=str, choices=['workstation', 'cluster'], required=True)
 parser.add_argument('--nCPU',    type=positive_int, default=1)
 parser.add_argument('--rtLimit', type=str, default='00:05:00')
 parser.add_flag("--ns_all")
@@ -65,7 +65,7 @@ for noise_sigma in noise_sigmas:
     p['verbosity']   = o.verbosity
     p['forceUpdate'] = int(o.forceUpdate)
 
-    if (p['type'] == common.velocityType):
+    if common.velocityType in o.type:
         percentile = 99.0
         p['bumpSpeedMax'] = getSpeedPercentile(percentile, dp['ratVelFName'],
                 dp['gridSep'], dp['Ne'])
