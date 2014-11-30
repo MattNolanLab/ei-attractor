@@ -753,6 +753,8 @@ def _get_default_config():
     ##############################################################################
 
     VelSlopeSweepPlotter_config = {
+        'vmin': -.472,
+        'vmax': 1.353,
         'cbar': [0, 0, 1],
         'cbar_kw': dict(
             location='right',
