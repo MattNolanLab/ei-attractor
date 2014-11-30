@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 '''Submit job(s) to the cluster/workstation: grid field parameter sweeps.'''
 
-import logging as lg
 import numpy as np
 
 from param_sweep    import (submitParamSweep, getBumpCurrentSlope,
@@ -49,4 +48,3 @@ for noise_sigma in parser.noise_sigmas:
     submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
             appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
             extraIterparams, rc=parser.rowcol)
-
