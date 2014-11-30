@@ -231,8 +231,6 @@ class VelSlopeSweepPlotter(SweepPlotter):
 
         # This should be corresponding to the velLine examples as well !!
         slopeVarList = ['lineFitSlope']
-        slope_vmin = -.472
-        slope_vmax = 1.353
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
@@ -254,7 +252,7 @@ class VelSlopeSweepPlotter(SweepPlotter):
                     ax=self.ax,
                     cbar=self.myc['cbar'][ns_idx],
                     cbar_kw=self.myc['cbar_kw'],
-                    vmin=slope_vmin, vmax=slope_vmax,
+                    vmin=self.myc['vmin'], vmax=self.myc['vmax'],
                     **kw)
 
                 # Contours

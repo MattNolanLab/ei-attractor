@@ -85,5 +85,21 @@ _config = {
     'PSeizureSweepPlotter': {
         'plot_grid_contours': [0, 0, 0],
     },
-}
 
+    'VelSlopeSweepPlotter': {
+        'plot_contours': [0, 0, 0],
+        'vmin': -.5,
+        'vmax': 3.57,
+        'cbar_kw': dict(
+            location='right',
+            shrink = 0.8,
+            pad = -0.1,
+            label='Slope\n(neurons/s/pA)',
+            ticks=ti.MultipleLocator(0.6),
+        ),
+    },
+
+    'VelFitErrSweepPlotter': {
+        'plot_contours': [0, 0, 0],
+    },
+}
