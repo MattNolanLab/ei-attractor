@@ -11,6 +11,7 @@ from param_sweep    import (submitParamSweep, getBumpCurrentSlope,
 from default_params import defaultParameters as dp
 
 parser = SubmissionParser()
+parser.add_argument('--extra_qsub_params', type=str, default='')
 o = parser.parse_args()
 
 for noise_sigma in parser.noise_sigmas:
@@ -55,5 +56,6 @@ for noise_sigma in parser.noise_sigmas:
 
     ###############################################################################
     submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
-            appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
-            extraIterparams, rc=parser.rowcol)
+                     appName, rtLimit, numCPU, blocking, timePrefix, numRepeat,
+                     dry_run, extraIterparams, rc=parser.rowcol,
+                     extra_qsub_params=o.extra_qsub_params)
