@@ -30,7 +30,8 @@ class ClusterSubmitter(QsubSubmitter):
     directory. This script will be run by the qsub command.
     '''
 
-    def __init__(self, argCreator, appName, outputDir, label, **kw):
+    def __init__(self, argCreator, appName, outputDir, label,
+                 extra_qsub_params='', **kw):
         '''
         Initialize.
 
@@ -76,6 +77,7 @@ class ClusterSubmitter(QsubSubmitter):
             qsub_params += ' -pe OpenMP {0}'.format(numCPU)
         elif (numCPU < 1):
             raise ValueError("numCPU must be >= 1.")
+        qsub_params += ' ' + extra_qsub_params
         QsubSubmitter.__init__(self, argCreator, scriptName, qsub_params,
                 outputDir, label, **kw)
 

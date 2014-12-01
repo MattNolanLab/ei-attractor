@@ -13,7 +13,7 @@ from grid_cell_model.otherpkg.log import log_info
 
 def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
         appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
-        extraIterparams={}, rc=None):
+        extraIterparams={}, rc=None, **kwargs):
     ac = ArgumentCreator(p, printout=True)
 
     GArr = np.linspace(startG, endG, Nvals)
@@ -40,7 +40,7 @@ def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
     ###############################################################################
     submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
             rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-            blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
+            blocking=blocking, timePrefix=timePrefix, numCPU=numCPU, **kwargs)
     ac.setOption('output_dir', submitter.outputDir())
     startJobNum = 0
     filter = rc[0]*len(GArr) + rc[1] if rc is not None else None

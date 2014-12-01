@@ -22,7 +22,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-root_dir="../output/no_theta/velocity/"
+root_dir="../output/submission/no_theta/velocity/"
 target_file="bump_slope_no_theta_"
 
 I_vec="0pA 150pA 300pA"
@@ -33,5 +33,6 @@ for I in $I_vec; do
     rm -f $dst
     echo "src: $src"
     echo "dst: $dst"
-    h5copy -i $src -o $dst -s /lineFitSlope -d /lineFitSlope
+    h5copy -i $src -o $dst -s /analysis/lineFitSlope -d /lineFitSlope
+    h5diff -r $src $dst /analysis/lineFitSlope /lineFitSlope >log_${I}
 done

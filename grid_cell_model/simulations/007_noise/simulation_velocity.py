@@ -1,7 +1,6 @@
 '''Main simulation run: Bump velocity estimation.'''
 from __future__ import absolute_import, print_function, division
 
-from os.path import exists
 import logging
 
 import numpy as np
