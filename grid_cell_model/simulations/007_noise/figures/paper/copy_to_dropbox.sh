@@ -10,6 +10,8 @@ files="
     $output_fig_dir/figure2.pdf
     $output_fig_dir/figure3.pdf
     $output_fig_dir/figure4.pdf
+    $output_fig_dir/figure5.pdf
+    $output_fig_dir/figure6.pdf
     $output_fig_dir/figureS1.pdf
     $output_fig_dir/figureS2.pdf
     $output_fig_dir/figureS3.pdf
