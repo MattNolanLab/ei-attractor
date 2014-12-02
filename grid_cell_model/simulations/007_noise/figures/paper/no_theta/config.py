@@ -17,6 +17,11 @@ _config = {
     'const_pos_data_root':  'simulation_data/submission/no_theta/const_position',
     'singleDataRoot':       'simulation_data/submission/no_theta/single_neuron',
 
+    'GridSweepsPlotter': {
+        'vmin': -.5,
+        'vmax': 1.1,
+    },
+
     'GammaSweepsPlotter': {
         'plot_grid_contours': [0, 0, 0],
         'AC_vmin': -0.21,
