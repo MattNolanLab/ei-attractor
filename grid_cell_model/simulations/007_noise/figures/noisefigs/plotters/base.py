@@ -11,8 +11,11 @@ from matplotlib.transforms import Bbox
 from matplotlib.backends.backend_pdf import PdfPages
 
 from grid_cell_model.plotting.global_defs import globalAxesSettings
+from ..EI_plotting import sweeps
+from ..EI_plotting import aggregate as aggr
 import pyentropy
 from minepy import MINE
+
 
 logger = logging.getLogger(__name__)
 
@@ -117,9 +120,10 @@ class FigurePlotter(object):
         '''
         if "ns" in kwargs:
             kwargs["ns"] = int(kwargs["ns"])
-        return "{output_dir}/{fname_prefix}{file_str}".format(
+        return "{output_dir}/{fname_prefix}{obj_prefix}{file_str}".format(
                     output_dir=self.config['output_dir'],
                     fname_prefix=self.config.get('fname_prefix', ''),
+                    obj_prefix=self.myc.get('fname_prefix', ''),
                     file_str=template.format(*args, **kwargs))
 
 
@@ -134,7 +138,7 @@ class SweepPlotter(FigurePlotter):
     def get_fig(self):
         fig_size = np.asarray(self.config['sweeps']['fig_size'])
         return self._get_final_fig(fig_size)
-    
+
     def get_ax(self, fig):
         color_bar_pos = self._get_class_config()['cbar_kw']['location']
         l, b, w, h = self.config['sweeps']['bbox']
@@ -144,10 +148,25 @@ class SweepPlotter(FigurePlotter):
             left = .12
         else:
             left = .2
-    
+
         right = left + w
         top = b + h
         return fig.add_axes(Bbox.from_extents(left, b, right, top))
+
+    def plot_grid_contours(self, ns_idx, ax, ps_grids):
+        '''Plot grid field contours if necessary.'''
+        grids_example_idx = self.config['grids']['example_idx']
+        iter_list = self.config['iter_list']
+        if self.myc['plot_grid_contours'][ns_idx]:
+            gridData = aggr.GridnessScore(ps_grids[ns_idx], iter_list,
+                                            ignoreNaNs=True, normalizeTicks=True,
+                                            r=grids_example_idx[ns_idx][0],
+                                            c=grids_example_idx[ns_idx][1])
+            contours = sweeps.Contours(gridData,
+                    self.config['sweeps']['grid_contours'])
+            contours.plot(
+                    ax,
+                    **self.config['sweeps']['contours_kwargs'])
 
 
 class ExampleSetting(object):
@@ -167,7 +186,7 @@ class ProbabilityPlotter(FigurePlotter):
         super(ProbabilityPlotter, self).__init__(*args, **kwargs)
 
     def plotDistribution(self, X, Y, ax, noise_sigma=None, **kw):
-        xlabel = kw.get('xlabel', 'P(bump)') 
+        xlabel = kw.get('xlabel', 'P(bump)')
         ylabel = kw.get('ylabel', '$Power_\gamma$')
         yticks = kw.get('yticks', True)
         bins   = kw.get('bins', [40, 50])
@@ -193,7 +212,7 @@ class ProbabilityPlotter(FigurePlotter):
             ax.yaxis.set_ticklabels([])
 
     def mutual_information(self, X, Y, title=None, nbins_X=50, nbins_Y=50,
-            noise_sigma='all'): 
+            noise_sigma='all'):
         #import pdb; pdb.set_trace()
         no_nans_idx = np.logical_not(np.logical_or(np.isnan(X), np.isnan(Y)))
         Xq, _, _ = pyentropy.quantise(X[no_nans_idx], nbins_X)
@@ -214,7 +233,19 @@ class ProbabilityPlotter(FigurePlotter):
             print(title)
         print(" MIC/MI/r^2/p/slope for %s:\t%.3f\t%.3f\t%s\t%s\t%s" %
                 (noise_sigma, mine.mic(), s.I(), r**2, p, slope))
-       
+
+
+class DummyPlotter(FigurePlotter):
+    '''Does not plot anything. This is only for semantic identification of the
+    plotter.
+    '''
+    def __init__(self, *args, **kwargs):
+        super(DummyPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self):
+        pass
+
+
 ##############################################################################
 
 class MultiFigureSaver(object):
@@ -275,7 +306,7 @@ class PdfOutputSaver(MultiFigureSaver):
     def close(self):
         if self._saver is not None:
             self._saver.close()
-    
+
 
 class SeparateMultipageSaver(MultiFigureSaver):
     '''Create PDF documents, that are numbered by a counter. This counter is

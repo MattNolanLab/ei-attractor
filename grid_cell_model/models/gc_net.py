@@ -1,67 +1,48 @@
-#
-#   gc_net.py
-#   
-#   Simulator independent grid cell network code
-#
-#     Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#     
-#     This program is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
-#     (at your option) any later version.
-#     
-#     This program is distributed in the hope that it will be useful,
-#     but WITHOUT ANY WARRANTY; without even the implied warranty of
-#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#     GNU General Public License for more details.
-#     
-#     You should have received a copy of the GNU General Public License
-#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Simulator independent grid cell network code.
 
+  Grid cell network set up
+  ------------------------
 
-################################################################################
-#  Grid cell network set up
-#
-#  This file is a module for the grid cell network. It allows you to create a
-#  network of Exponential integrate and fire neurons. There are two populations:
-#    Stellate cells -- excitatory neurons (E)
-#    Interneurons   -- inhibitory (I)
-#
-#  In the current model, the connections are only E --> I and I --> E. That is
-#  the main idea behind the model, which is supported by experimental evidence.
-#
-#  Both neuron types can receive AMPA, NMDA and GABA_A events. NMDA is only in
-#  E --> I direction.
-#
-#  The topology of connections has several characteristics:
-#
-#   - Both neuron models are uniformly placed on a surface of a twisted torus,
-#     the sides of which are scaled as X:Y = 1:sqrt(3)/2, to accomodate the
-#     hexagonal nature of grid-cell receptive fields.
-#
-#   - The user can set the number of neurons in the larger side of the toroidal
-#     sheet (always X dimension)
-#
-#   - The connections follow a center-surround profile, i.e. either E-->I
-#     connections have a surround profile and I-->E connections have a center
-#     profile, or vice-versa. This can be used to test the effect of the type of
-#     excitatory or inhibitory profile on the stability of the attractor
-#
-#   - GABA_A connections (I-->E) can also contain extra, randomly generated
-#     inhibitory synapses onto stellate cells in order to allow generation of
-#     gamma oscillations.
-#
-#   - Technically, the basic functionality of the model (attractor emergence,
-#     oscillations), shouldn't be very dependent on the spiking neuron type.
-#     After some parameter setups/changes, one should be able to set the
-#     simulation with any kind of spiking model (leaky IaF, Hodgkin-Huxley,
-#     etc.)
-#
+  This file is a module for the grid cell network. It allows you to create a
+  network of Exponential integrate and fire neurons. There are two populations:
+    Stellate cells -- excitatory neurons (E)
+    Interneurons   -- inhibitory (I)
+
+  In the current model, the connections are only E --> I and I --> E. That is
+  the main idea behind the model, which is supported by experimental evidence.
+
+  Both neuron types can receive AMPA, NMDA and GABA_A events. NMDA is only in
+  E --> I direction.
+
+  The topology of connections has several characteristics:
+
+   - Both neuron models are uniformly placed on a surface of a twisted torus,
+     the sides of which are scaled as X:Y = 1:sqrt(3)/2, to accomodate the
+     hexagonal nature of grid-cell receptive fields.
+
+   - The user can set the number of neurons in the larger side of the toroidal
+     sheet (always X dimension)
+
+   - The connections follow a center-surround profile, i.e. either E-->I
+     connections have a surround profile and I-->E connections have a center
+     profile, or vice-versa. This can be used to test the effect of the type of
+     excitatory or inhibitory profile on the stability of the attractor
+
+   - GABA_A connections (I-->E) can also contain extra, randomly generated
+     inhibitory synapses onto stellate cells in order to allow generation of
+     gamma oscillations.
+
+   - Technically, the basic functionality of the model (attractor emergence,
+     oscillations), shouldn't be very dependent on the spiking neuron type.
+     After some parameter setups/changes, one should be able to set the
+     simulation with any kind of spiking model (leaky IaF, Hodgkin-Huxley,
+     etc.)
+'''
+
 import numpy    as np
 import logging  as lg
-import random
 import time
+import copy
 
 from ..gc_exceptions import NotImplementedException
 from ..analysis.image import Position2D, remapTwistedTorus
@@ -89,8 +70,8 @@ class GridCellNetwork(object):
         self.beginConstruction()
 
 
-        self.no = neuronOpts
-        self.so = simulationOpts
+        self.no = copy.deepcopy(neuronOpts)
+        self.so = copy.deepcopy(simulationOpts)
 
         # Setup neuron numbers for each dimension (X, Y)
         # We have a single bump and to get hexagonal receptive fields the X:Y
@@ -145,7 +126,7 @@ class GridCellNetwork(object):
         ret.y %= dim.y
 
         return ret
-            
+
 
 
     ## Generate ring-like weights.
@@ -206,8 +187,9 @@ class GridCellNetwork(object):
         '''
         Picks perc_synapses% of connections from the array and adds h to them
         '''
-        indexes = random.sample(np.arange(len(conductances)),
-                int(perc_synapses/100.0*len(conductances)))
+        indexes = np.random.choice(np.arange(len(conductances)),
+                                   size=int(perc_synapses/100.0*len(conductances)),
+                                   replace=False)
         conductances[indexes] += h
         return conductances
 
@@ -331,9 +313,9 @@ class GridCellNetwork(object):
 
 
 
-    ############################################################################ 
+    ############################################################################
     #                     External sources definitions
-    ############################################################################ 
+    ############################################################################
     def setConstantCurrent(self):
         '''
         Enable the constant current external injection. This method uses the following parameters:

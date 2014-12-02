@@ -12,11 +12,12 @@ from copy import deepcopy
 from grid_cell_model.plotting.global_defs import globalAxesSettings
 from ..EI_plotting import sweeps, scatter
 from ..EI_plotting import aggregate as aggr
-from .base import SweepPlotter
+from .base import SweepPlotter, FigurePlotter
 
 
 __all__ = [
     'FRSweepPlotter',
+    'ScatterGridsFRAllPlotter',
 ]
 
 
@@ -77,21 +78,30 @@ class FRSweepPlotter(SweepPlotter):
         ps = self.env.ps
         iter_list = self.config['iter_list']
 
-        gridTrialNumList = np.arange(self.config['grids']['ntrials'])
-        varList_e = ['FR_e',  'avg']
-        varList_i = ['FR_i',  'all']
-        exampleIdx = [(1, 22), (1, 22), (1, 22)] # (row, col)
         example_idx = self.config['grids']['example_idx']
 
-        FR_e_vmin = 0
+        FR_e_vmin = 0.12
         FR_e_vmax = 54.53
-        FR_i_vmin = 0.1
+        FR_i_vmin = 7.1
         FR_i_vmax = 295
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             # E cells
             fname_e = self.get_fname("suppFigure_grids_FR_E_{ns}.pdf",
                                      ns=noise_sigma)
+            data_e = aggr.AvgPopulationFR('FR_e/avg',
+                                          ps.grids[ns_idx], iter_list,
+                                          ignoreNaNs=True, normalizeTicks=True,
+                                          r=example_idx[ns_idx][0],
+                                          c=example_idx[ns_idx][1])
+            data_e_nozero = aggr.NoZeroCouplingFilter(data_e)
+            gridness_score = aggr.GridnessScore(
+                ps.grids[ns_idx], iter_list,
+                ignoreNaNs=True, normalizeTicks=True,
+                r=example_idx[ns_idx][0],
+                c=example_idx[ns_idx][1])
+
+
             with self.figure_and_axes(fname_e, sweepc) as (fig, ax):
                 if (ns_idx == 2):
                     cbar = True
@@ -102,22 +112,31 @@ class FRSweepPlotter(SweepPlotter):
                     kw['ylabel'] = ''
                     kw['yticks'] = False
 
-                data_e = aggr.AvgPopulationFR(
-                        'FR_e/avg',
-                        ps.grids[ns_idx], iter_list,
-                        ignoreNaNs=True, normalizeTicks=True,
-                        r=example_idx[ns_idx][0],
-                        c=example_idx[ns_idx][1])
-
                 sweeps.plotSweep(
-                        data_e,
+                        data_e_nozero,
                         noise_sigma,
                         ax=ax,
-                        xlabel='', xticks=False,
+                        #xlabel='', xticks=False,
                         cbar=cbar,
                         cbar_kw=self.myc['cbar_kw_e'],
-                        vmin=FR_e_vmin, vmax=FR_e_vmax,
+                        #vmin=FR_e_vmin, vmax=FR_e_vmax,
+                        norm=LogNorm(vmin=FR_e_vmin, vmax=FR_e_vmax),
                         **kw)
+
+                if self.myc['plot_grid_contours'][ns_idx]:
+                    contours = sweeps.Contours(gridness_score,
+                            self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                            ax,
+                            **self.config['sweeps']['contours_kwargs'])
+
+            gridness_threshold = .2
+            grids_filter    = aggr.GTFilter(gridness_score, gridness_threshold)
+            no_grids_filter = aggr.LEQFilter(gridness_score, gridness_threshold)
+            FR_grids, _, _    = data_e_nozero.filter_data(grids_filter).getData()
+            FR_no_grids, _, _ = data_e_nozero.filter_data(no_grids_filter).getData()
+            print("mean E FR (grids):    {0}".format(np.mean(FR_grids)))
+            print("mean E FR (no grids): {0}".format(np.mean(FR_no_grids)))
 
             # I cells
             fname_i = self.get_fname("suppFigure_grids_FR_I_{ns}.pdf",
@@ -129,79 +148,70 @@ class FRSweepPlotter(SweepPlotter):
                         ignoreNaNs=True, normalizeTicks=True,
                         r=example_idx[ns_idx][0],
                         c=example_idx[ns_idx][1])
-                flt_data_i = aggr.NoZeroExcitationFilter(data_i)
+                flt_data_i = aggr.NoZeroCouplingFilter(data_i)
 
                 sweeps.plotSweep(
                         flt_data_i,
                         noise_sigma,
                         ax=ax,
-                        xlabel='', xticks=False,
                         cbar=cbar,
                         cbar_kw=self.myc['cbar_kw_i'],
-                        vmin=FR_i_vmin, vmax=FR_i_vmax,
+                        norm=LogNorm(vmin=FR_i_vmin, vmax=FR_i_vmax),
                         **kw)
 
 
-###############################################################################
-## Scatter plot of gridness score vs. gamma power
-#scatterFigSize = (6.5, 3.6)
-#scatterLeft   = 0.15
-#scatterBottom = 0.2
-#scatterRight  = 0.98
-#scatterTop    = 0.95
-#scatterTransparent = True
-#
-#ignoreNaNs = True
-#
-#if args.scatterPlot or args.all:
-#    for EIType in ['E', 'I_10']:
-#        if EIType == 'E':
-#            fname = outputDir + "/suppFigure_grids_FR-scatter_FRE_vs_grids.pdf"
-#            xlabel='Mean firing rate of E cells (Hz)'
-#            legLoc = (0.8, 0.6)
-#        else:
-#            fname = outputDir + "/suppFigure_grids_FR-scatter_FRI_vs_grids.pdf"
-#            xlabel='Mean firing rate of I cells (Hz)'
-#            legLoc = (0.1, 0.6)
-#
-#        fig = plt.figure(figsize=scatterFigSize)
-#        ax = fig.add_axes(Bbox.from_extents(scatterLeft, scatterBottom, scatterRight,
-#            scatterTop))
-#
-#        NTrialsGrids = 3
-#        typesFR = ['FR', EIType]
-#        typesGrids = ['grids', 'gridnessScore']
-#        ax.hold('on')
-#        scatterColors = ['blue', 'green', 'red']
-#
-#        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-#            color = scatterColors[ns_idx]
-#            scatterPlot = scatter.ScatterPlot(
-#                    ps.grids[ns_idx], ps.grids[ns_idx], typesFR,
-#                    typesGrids, iterList, NTrialsGrids, NTrialsGrids,
-#                    c=color,
-#                    s=15,
-#                    linewidth=0.3,
-#                    xlabel=xlabel,
-#                    ylabel='Gridness score',
-#                    ignoreNaNs=ignoreNaNs)
-#            scatterPlot.plot()
-#        ax.xaxis.set_major_locator(ti.MultipleLocator(10))
-#        ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-#        ax.yaxis.set_minor_locator(ti.MultipleLocator(0.25))
-#        ax.set_xscale('log')
-#        if EIType == 'E':
-#            ax.set_xlim([0.1, None])
-#        else:
-#            ax.set_xlim([2, 300])
-#        leg = ['0', '150', '300']
-#        l = ax.legend(leg, loc=legLoc, fontsize='small', frameon=False,
-#                numpoints=1, title='$\sigma$ (pA)')
-#        plt.setp(l.get_title(), size='small')
-#
-#        fig.savefig(fname, dpi=300, transparent=scatterTransparent)
-#
-#
+##############################################################################
+# Scatter plot of gridness score vs. firing rates
+class ScatterGridsFRAllPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(ScatterGridsFRAllPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+        l, b, r, t = self.myc['bbox_rect']
+
+        scatterColors = ['green', 'red', 'blue']
+        scatterOrders = [2, 3, 1]
+
+        # E cells
+        fig = self._get_final_fig(self.myc['fig_size'])
+        ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+        ax.hold('on')
+        xlabel='Mean E firing rate (Hz)'
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            grid_data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                               ignoreNaNs=True,
+                                               normalizeTicks=False)
+            fre_data = aggr.AvgPopulationFR('FR_e/avg',
+                                            ps.grids[ns_idx], iter_list,
+                                            ignoreNaNs=True,
+                                            normalizeTicks=False)
+            color = scatterColors[ns_idx]
+            scatterPlot = scatter.ScatterPlot(
+                    fre_data, grid_data,
+                    None, None, None, None, None,
+                    c=color,
+                    s=self.myc['dot_size']*self.config['scale_factor'],
+                    linewidth=0.3,
+                    xlabel=xlabel,
+                    ylabel=self.myc['ylabel'],
+                    yticks=self.myc['yticks'],
+                    zorder=scatterOrders[ns_idx])
+            scatterPlot.plot()
+        ax.xaxis.set_major_locator(ti.MultipleLocator(10))
+        ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
+        ax.yaxis.set_minor_locator(ti.MultipleLocator(0.25))
+
+        leg = ['0', '150', '300']
+        l = ax.legend(leg, **self.myc['legend_kwargs'])
+        plt.setp(l.get_title(), size=self.myc['legend_kwargs']['fontsize'])
+
+        fname = self.get_fname("/scatter_FRE_vs_grids.pdf")
+        fig.savefig(fname, dpi=300, transparent=True)
+
+
 ###############################################################################
 #histFigSize     = (3.75, 2.2)
 #histLeft    = 0.25

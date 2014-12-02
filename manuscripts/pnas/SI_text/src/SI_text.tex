@@ -1,0 +1,820 @@
+%
+% File: SI_text.tex
+% Author: Lukas Solanka <Lukas Solanka@ed.ac.uk>
+%
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[scale=0.75]{geometry}
+\usepackage[pdftex]{graphicx}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{sfmath}
+\usepackage{multirow}
+\usepackage{color}
+
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{helvet}
+
+\newcommand{\doublespace}{%
+    \renewcommand{\baselinestretch}{1.66}\normalsize}
+\newcommand{\oneandahalfspace}{%
+    \renewcommand{\baselinestretch}{1.33}\normalsize}
+\newcommand{\singlespace}{%
+    \renewcommand{\baselinestretch}{1}\normalsize}
+
+%\doublespace
+\oneandahalfspace
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Commands to support subscript type setting
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Math commands
+\newcommand{\ssc}[3]{\ensuremath{#1_{\text{#2}_{\text{#3}}}}}
+
+\newcommand{\lamNet}{\ssc{\lambda}{net}{}}
+\newcommand{\Cm}       {\ssc{C}      {m}     {}}
+\newcommand{\Vm}       {\ssc{V}      {m}     {}}
+\newcommand{\Imem}     {\ssc{I}      {m}     {}}
+\newcommand{\Isyn}     {\ssc{I}      {syn}   {}}
+\newcommand{\Iext}     {\ssc{I}      {ext}   {}}
+\newcommand{\Iconst}   {\ssc{I}      {const} {}}
+\newcommand{\Itheta}   {\ssc{I}      {$\theta$}{}}
+\newcommand{\Atheta}   {\ssc{A}      {$\theta$}{}}
+\newcommand{\ftheta}   {\ssc{f}      {$\theta$}{}}
+\newcommand{\phitheta} {\ssc{\phi}   {$\theta$}{}}
+\newcommand{\Ivel}     {\ssc{I}      {vel}   {}}
+\newcommand{\Iplace}   {\ssc{I}      {place} {}}
+\newcommand{\gL}       {\ssc{g}      {\scriptsize{L}}  {}}
+\newcommand{\EL}       {\ssc{E}      {\scriptsize{L}}  {}}
+\newcommand{\gAHP}     {\ssc{g}      {\scriptsize{AHP}}{}}
+\newcommand{\gAHPmax}  {\ssc{g}      {\scriptsize{AHP}}{max}}
+\newcommand{\EAHP}     {\ssc{E}      {\scriptsize{AHP}}{}}
+\newcommand{\tauAHP}   {\ssc{\tau}   {\scriptsize{AHP}}{}}
+\newcommand{\VT}       {\ssc{V}      {\scriptsize{T}}  {}}
+\newcommand{\Vr}       {\ssc{V}      {r}     {}}
+\newcommand{\gGABAA}   {\ssc{g}      {\scriptsize{GABA}}{\scriptsize{A}}}
+\newcommand{\EGABAA}   {\ssc{E}      {\scriptsize{GABA}}{\scriptsize{A}}}
+\newcommand{\tauGABAA} {\ssc{\tau}   {\scriptsize{GABA}}{\scriptsize{A}}}
+\newcommand{\gAMPA}    {\ssc{g}      {\scriptsize{AMPA}}{}}
+\newcommand{\EAMPA}    {\ssc{E}      {\scriptsize{AMPA}}{}}
+\newcommand{\tauAMPA}  {\ssc{\tau}   {\scriptsize{AMPA}}{}}
+\newcommand{\gNMDA}    {\ssc{g}      {\scriptsize{NMDA}}{}}
+\newcommand{\ENMDA}    {\ssc{E}      {\scriptsize{NMDA}}{}}
+\newcommand{\tauNMDA}  {\ssc{\tau}   {\scriptsize{NMDA}}{}}
+\newcommand{\gad}      {\ssc{g}      {ad}{}}
+\newcommand{\tauad}    {\ssc{\tau}   {ad}{}}
+\newcommand{\gadinc}   {\ssc{g}      {ad}{inc}}
+\newcommand{\deltaT}   {\ssc{\Delta} {\scriptsize{T}}{}}
+
+% Dotted (derivatives commands)
+\newcommand{\dVm}    {\ssc{\dot{V}}{m}   {}}
+\newcommand{\dgAMPA} {\ssc{\dot{g}}{\scriptsize{AMPA}}{}}
+\newcommand{\dgGABAA}{\ssc{\dot{g}}{\scriptsize{GABA}}{\scriptsize{A}}}
+\newcommand{\dgNMDA} {\ssc{\dot{g}}{\scriptsize{NMDA}}{}}
+\newcommand{\dgAHP}  {\ssc{\dot{g}}{\scriptsize{AHP}} {}}
+\newcommand{\dgad}   {\ssc{\dot{g}}{\scriptsize{ad}}  {}}
+
+% Weights
+\newcommand{\wAMPA   }{\ssc{w}      {\scriptsize{AMPA}}{}}
+\newcommand{\wNMDA   }{\ssc{w}      {\scriptsize{NMDA}}{}}
+\newcommand{\cNMDA   }{\ssc{C}      {\scriptsize{NMDA}}{}}
+\newcommand{\wGABAA  }{\ssc{w}      {\scriptsize{GABA}}{\scriptsize{A}}}
+\newcommand{\sigmasub}[1]{\ssc{\sigma}{\scriptsize{#1}}{}}
+\newcommand{\Gmax    }{\ssc{G}      {max}{}}
+\newcommand{\GmaxAMPA}{\ssc{G}      {max}{\scriptsize{AMPA}}}
+\newcommand{\Ginh    }{\ssc{G}      {inh}{}}
+\newcommand{\gE      }{\ssc{g}      {\scriptsize{E}}{}}
+\newcommand{\gI      }{\ssc{g}      {\scriptsize{I}}{}}
+
+% other
+\newcommand{\dijce}{\ensuremath{d(i, j, C, \mathbf{e}_p^j)}}
+\newcommand{\dijzz}{\ensuremath{d(i, j, 0, 0)}}
+\newcommand{\lamgrid}{\ssc{\lambda}{\scriptsize{grid}}{}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\begin{center}
+{\large\bfseries
+Noise promotes independent control of gamma oscillations and grid firing by
+regulation of recurrent inhibitory and excitatory synaptic connections -
+Supporting information
+}
+\end{center}
+%\vspace{1em}
+
+\begin{flushleft}
+Lukas Solanka$^{1,2,3}$,
+Mark CW van Rossum$^{2}$,
+Matthew F Nolan$^{3}$
+\\
+\vspace{2em}
+$^1$
+Neuroinformatics Doctoral Training Centre
+\\
+$^2$
+Institute for Adaptive and Neural Computation,
+School of Informatics,
+University of Edinburgh,
+Edinburgh EH8 9AB,
+United Kingdom
+\\
+$^3$
+Centre for Integrative Physiology,
+University of Edinburgh,
+Hugh Robson Building,
+Edinburgh, EH8 9XD,
+United Kingdom
+\end{flushleft}
+
+
+
+\section*{SI Methods} \label{methods}
+
+\section{Neuron membrane and synaptic dynamics} \label{nrn_Vm_syn}
+
+Each neuron's membrane potential ($\Vm$) is governed by the passive membrane equation:
+\begin{equation}
+    \Cm \dVm   = \Imem + \Isyn + \Iext,
+    \label{eq:Vm}
+\end{equation}
+in which the total membrane current is a sum of three separate components: the
+trans-membrane current ($\Imem$), the total synaptic current ($\Isyn$), and the
+current injected externally from other brain regions ($\Iext$). 
+
+For stellate cells, the trans-membrane current
+\begin{equation}
+    \Imem = \gL(\EL-\Vm) + \gAHP(t)(\EAHP - \Vm) + \gL \deltaT \exp\left(\frac{\Vm - \VT}{\deltaT}\right)
+    \label{eq:Imem_st}
+\end{equation}
+contains the leak conductances (``L'' subscript), after-spike hyperpolarisation
+conductance (``AHP'' subscript) and an exponential part that initiates a spike
+when the membrane potential gets close to the threshold ($\VT$).  After each
+spike, there is a reset of membrane potential and the AHP conductance:
+\begin{align}
+    \Vm   & \rightarrow \Vr       \notag \\
+    \gAHP & \rightarrow \gAHPmax.
+    \label{eq:afterspike_st}
+\end{align}
+
+The FS interneurons do not posess AHP, but instead contain a simple adaptation
+term. The trans-membrane current has the following form:
+\begin{equation}
+    \Imem = (\gL + \gad(t))(\EL-\Vm) + \gL \deltaT \exp\left(\frac{\Vm - \VT}{\deltaT}\right).
+    \label{eq:Imem_fs}
+\end{equation}
+The $\gad$ term adds an extra conductance after each spike, i.e. after the
+spike:
+\begin{align}
+    \Vm   & \rightarrow \Vr       \notag \\
+    \gad  & \rightarrow \gad + \gadinc.
+    \label{eq:afterspike_fs}
+\end{align}
+
+Both AHP and adaptation conductances ($\gAHP(t)$ and $\gad$ respectively) decay
+exponentially:
+\begin{align}
+    \dgAHP   &=  -\frac{\gAHP}{\tauAHP} \notag \\
+    \dgad    &=  -\frac{\gad }{\tauad}.
+    \label{eq:dgAHPad}
+\end{align}
+
+In equations \eqref{eq:Imem_st} and \eqref{eq:Imem_fs}, the term $\deltaT$ is
+defined as the spike slope factor \citep{FourcaudTrocme:2003wz} and it measures
+the \emph{sharpness} of the spike initiation. The closer this parameter is to
+zero, the faster spike initiation will happen when $\Vm$ gets close to $\VT$.
+For the exponential integrate and fire neuron, in the limit $\deltaT
+\rightarrow 0$, the model becomes equivalent to a leaky integrate and fire
+neuron \citep{FourcaudTrocme:2003wz}.
+
+The synaptic current for each neuron is a sum of the AMPA, NMDA and
+$\text{GABA}_{\text{A}}$ synaptic currents collected from spikes of all other
+neurons:
+\begin{align}
+    \Isyn(t)  = {} & \gGABAA(t) (\EGABAA - \Vm) + \gAMPA(t) (\EAMPA - \Vm) \notag \\
+                & + \gNMDA(t) (\ENMDA - \Vm)
+    \label{eq:I_syn}
+\end{align}               
+Note that the connectivity in this model is not all-to-all, as for instance
+there are no E~$\rightarrow$~E and no I~$\rightarrow$~I connections. Therefore,
+effectively, for the I~$\rightarrow$~E connections $\gAMPA = \gNMDA = 0$, and
+for E~$\rightarrow$~I connections $\gGABAA = 0$. Connections from place cells
+were modeled as AMPA conductances only (cf.\ description of place cell inputs).
+The synaptic conductances $\gAMPA$, $\gNMDA$ and $\gGABAA$ of a postsynaptic
+neuron $i$ were modeled as exponentials with user defined time constants (see
+table \ref{tab:params_synapses} for the parameter values):
+\begin{align}
+    \dgAMPA^i  &=  -\frac{\gAMPA }{\tauAMPA}  + \sum_j \wAMPA^{ij}  \delta(t - t_j)\notag  \\
+    \dgNMDA^i  &=  -\frac{\gNMDA }{\tauNMDA}  + \sum_j \wNMDA^{ij}  \delta(t - t_j)\notag  \\
+    \dgGABAA^i &=  -\frac{\gGABAA}{\tauGABAA} + \sum_j \wGABAA^{ij} \delta(t - t_j).
+    \label{eq:dgSyn}
+\end{align}
+After each spike of a presynaptic neuron $j$, each corresponding conductance
+was incremented by $w^{ij}$.
+
+In MEC layer II, basket cells receive a potent, NMDA-mediated synaptic
+excitation \citep{JONES:1993je}. These NMDA responses are slow, lasting several
+tens of ms \citep{JONES:1993je}. In this work, NMDA synapses are thus
+represented by an exponentially decaying conductance ($\gNMDA$), with a 100 ms
+time constant (Table \ref{tab:params_synapses}).
+%For simplicity, voltage
+%dependence of the NMDA conductance has not been considered in this work.
+Both the voltage dependence and slow kinetics of NMDA receptors have been
+suggested to help maintain persistent activity in working memory networks
+\citep{Wang:1999wt}.  Here, it is the slow kinetics of $\gNMDA$ that is
+necessary to maintain the state of the network during consecutive theta cycles.
+Moreover, NMDA receptors are known to be of several variants, depending on the
+types of the subunits the receptors are composed of \citep{Paoletti:2013ht}.
+These several receptor variants have different kinetic time scales, and
+different sensitivity to the concentration of Mg$^{2+}$. In
+\citep{JONES:1993je}, the authors
+do not report, quantitatively, to what extent the amplitude of the
+NMDA-mediated synaptic responses are dependent on the Mg$^{2+}$ concentration.
+Therefore, we assume here that the slow kinetics of $\gNMDA$ is sufficient to
+stabilise the activity of the network and do not include voltage-dependence of
+NMDA conductances.
+
+
+Finally, the current external to the neuron
+\begin{equation}
+    \Iext(t) = \Iconst(t) + \Itheta(t) + \Ivel(t) + \Iplace(t)
+    \label{eq:Iext}
+\end{equation}
+consists of a constant value ($\Iconst$), a theta modulated part, modeled as
+\begin{equation}
+    \Itheta(t) = \Atheta * (1 + \sin(2\pi\ftheta t + \phitheta)),
+    \label{eq:Itheta}
+\end{equation}
+the velocity modulated current ($\Ivel$) that simulates a combination of
+head-direction input and animal speed input, and an input coming from place
+cells ($\Iplace$).  The description of the parameters in equation
+\eqref{eq:Itheta} can be found in table \ref{tab:neuron_params}.
+
+While $\Iconst$ and $\Itheta$ are simple functions of time, the velocity
+modulated current and place cell current deserve special attention and
+therefore will be described in separate sections. The velocity modulated
+current is described in section \ref{sec:Ivel} and the place cell input current
+in section \ref{sec:place_cells}.
+\begin{table}
+    \centering
+    \begin{tabular}{l | l || l | l}
+        Name       & Description               & Name       & Description               \\
+        \hline\hline
+        $\Vm$      & Membrane potential        & $\EAMPA$   & AMPA reversal potential   \\
+        $\Cm$      & Membrane capacitance      & $\gNMDA$   & NMDA conductance          \\
+        $\gL$      & Leak conductance          & $\ENMDA$   & NMDA reversal potential   \\
+        $\EL$      & Leak reversal potential   & $\Imem$    & Trans-membrane current    \\
+        $\gAHP$    & AHP conductance           & $\Isyn$    & Synaptic current          \\
+        $\tauAHP$  & AHP time constant         & $\Isyn$    & Synaptic current          \\
+        $\EAHP$    & AHP reversal potential    & $\Iext$    & External current          \\
+        $\deltaT$  & Spike initiation width    & $\Iconst$  & Constant current          \\
+        $\VT$      & Spike initiation threshold& $\Itheta$  & Theta-modulated current   \\
+        $\gGABAA$  & GABA conductance          & $\Ivel$    & Velocity current          \\
+        $\EGABAA$  & GABA reversal potential   & $\Iplace$  & Place cell current        \\
+        $\gAMPA$   & AMPA conductance          & $\tauAMPA$ & AMPA time constant        \\
+        $\tauGABAA$& GABA time constant        & $\tauNMDA$ & NMDA time constant        \\
+        $\gad$     & Adaptation conductance    & $\tauad$   & Adaptation time constant  \\
+        $\gAHPmax$ & AHP maximal value         & $\gadinc$  & Adaptation conductance incrase \\
+        $\Atheta$  & $\theta$-current amplitude& $\ftheta$  & $\theta$-current frequency  \\
+        $\phitheta$& $\theta$-current phase    &            & \\
+        $\wAMPA$   & AMPA synaptic weight      & $\wNMDA$   & NMDA synaptic weight      \\
+        $\wGABAA$  & GABA synaptic weight      &            &
+    \end{tabular}
+    \caption{Neuron parameters and their description. For the exact values used
+    in the simulations, refer to tables
+    \ref{tab:params_E}-\ref{tab:params_ext_inputs}.}
+    \label{tab:neuron_params}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Synaptic connection profiles} \label{conn_profiles}
+The two populations of excitatory and inhibitory cells are connected mutually.
+Recent experimental evidence shows that stellate cells synapse onto each other
+only via inhibitory interneurons
+\citep{Dhillon:2000ww,Pastoll:2013ff,Couey:2013fi}. The attractor model thus
+simulates only connections from excitatory to inhibitory cells and vice versa.
+Feedback connections between interneurons are also missing, however this type
+of architecture is sufficient to generate theta nested gamma oscillations even
+in their absence \citep{Pastoll:2013ff} and therefore addition of
+$I{\rightarrow}I$ connections would not qualitatively change the results.
+
+Synapse strengths of connections originating from E cells are generated by
+a Gaussian-like function with values dependent on the distance between a
+presynaptic ($j$) and postsynaptic ($i$) cell on the twisted torus:
+\begin{align}
+    \wAMPA^{ij} &= \Gmax \exp\left(
+                   \frac{-(\dijce - \mu)^2}{2 \sigmasub{exc}^2}
+                   \right), \label{eq:wAMPA} \\
+    d(i, j, C, \mathbf{e}_p)  &= | \mathbf{u}_i - \mathbf{u}_j -
+            C  \mathbf{e}_p |_{\mathrm{torus}}, \label{eq:dijce} \\
+    \wNMDA^{ij} &= \cNMDA\ \wAMPA^{ij}. \label{eq:wNMDA}
+\end{align}
+In these equations, $\mu$ is the distance of the excitatory surround from the
+position of presynaptic neuron, $\sigmasub{exc}$ is the width of the excitatory
+surround and $|\cdot|_{\mathrm{torus}}$ is a distance on the twisted torus that
+takes the boundaries of the torus into account, and $\mathbf{C}$ is the
+synaptic profile shift. The excitatory connections are
+composed of the equivalent amount of NMDA synaptic conductances. The synaptic
+strengths of NMDA is specified by a fractional constant \cNMDA. In all
+simulations, the NMDA amount constituted 2\% of the AMPA conductance.
+
+$\mathbf{e}_p$ in eq. \eqref{eq:dijce} determines the shift of the center of
+outgoing synaptic strength profile on the torus, and was used to couple the
+velocity of the bump onto the animat velocity
+\citep{Burak:2009fx,Pastoll:2013ff}. The velocity modulated input is described
+in more detail in section \ref{sec:Ivel}.
+
+%The topography of inhibitory to excitatory connections had a Gaussian profile:
+Synapse strengths of connections from I cells were generated by a Gaussian
+function
+\begin{equation}
+    \wGABAA^{ij} = \Ginh \exp\left(\frac{-d(i, j, 0, 0)^2}{2 \sigmasub{inh}^2}\right),
+    \label{eq:wGABA}
+\end{equation}
+that takes a distance between the pre- and post-synaptic neurons (\dijzz) and a
+width of the Gaussian (\sigmasub{inh}) as parameters. As can be seen from eq.
+\eqref{eq:wGABA}, inhibitory neurons do not have shifts in their outgoing
+synaptic profiles.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Velocity modulated input current } \label{sec:Ivel}
+
+All simulations of grid fields and estimations of the velocity input gain
+contain current input modulated by the speed and direction of the simulated
+animal. Although translational activity can be achieved by inputs to either of
+the populations \citep{Pastoll:2013ff}, here we have simulated velocity
+modulated inputs only onto the E cell population. All E cells are assigned a
+preferred direction vector (eq. \ref{eq:dijce}) that shifts the outgoing
+synaptic profile in the direction specified by the unit vector $\mathbf{e}_p$
+in eq. \eqref{eq:dijce}.
+
+%Figure \ref{fig:pref_directions} shows
+%the distribution of preferred directions on a smaller patch of E cells on the
+%twisted torus.
+%\begin{figure}[tb]
+%    \begin{center}
+%        \includegraphics[width=0.35\textwidth]{fig/pref_directions}
+%    \end{center}
+%    \caption{\figtitle{Distribution of preferred directions of neurons on a
+%    patch of the neural sheet.} All E neurons on the neural sheet were assigned
+%    a preferred direction of a shift of their outgoing synaptic profile. Each
+%    arrow illustrates the direction of $\mathbf{e}_p$, the unit vector from eq.
+%    \eqref{eq:dijce}. Therefore, there are four sub-populations of E cells,
+%    determined by their preferred directional vectors. Red color highlights the
+%    sub-population with their outgoing synaptic profiles shifted upwards.}
+%    \label{fig:pref_directions}
+%\end{figure}
+
+During simulated movement of the animal, the velocity modulated current
+injected into the neuron $i$ is computed as follows (here $\cdot$ is a dot
+product):
+\begin{eqnarray*}
+    I_{vel}^i(t) &=& C_v \mathbf{v}(t) \cdot \mathbf{e}_p^i \\
+    C_v          &=& \frac{N_x}{a\lamgrid}.
+\end{eqnarray*}
+The gain of the velocity input ($C_v$) is determined from the number of neurons
+the bump needs to translate in order to return to the original position
+($N_x$ (neurons); on a twisted torus this quantity is effectively the horizontal size of
+the neural sheet) divided by the product of the expected grid field spacing
+($\lamgrid$ (cm)) and a slope of the relationship between bump speed and injected
+velocity current magnitude ($a$ (neurons/s/pA)). Therefore, given a desired
+spacing between grid fields, the gain of the velocity inputs can be calibrated.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Place cell input} \label{sec:place_cells}
+
+Because of the finite network size, spiking variability, or imperfections in
+the synaptic profile functions, the position of bump attractor in the network
+might drift over time. The simulations of grid firing fields (Figure 1) and
+simulations that explored the controllability of the network by place cell
+input (Figure \ref{fig:S_pc_effectivity}) comprised a separate population of
+cells with place-like firing fields (in all other simulations the input was
+de-activated). Inputs from these cells opposed drift of the bump attractor.
+
+Place cells were simulated as independent inhomogeneous Poisson processes,
+whose rate was modulated by a Gaussian function of the simulated animal
+location. Thus, the firing rate of an $i^{\text{th}}$ place cell, $r_i$ was:
+\begin{equation}
+    r_i = \ssc{r}{max}{} \exp\left( \frac{|\mathbf{l} - \bm{\mu}_i|^2}{2
+            \ssc{\sigma}{field}{}^2} \right),
+    \label{eq:place_cell_r}
+\end{equation}
+where $\ssc{r}{max}{}$ is firing rate in the center of the place field,
+$\mathbf{l}$ is an instantaneous position of the simulated animal,
+$\bm{\mu}_i$ is the center of the place field and
+$\ssc{\sigma}{field}{}$ is the width of the place field.
+In all simulations,
+there were 900 place cells, with $\ssc{r}{max}{} = 50$ Hz, and $\sigmasub{field}
+= 20$ cm.  Spikes emitted by place cells were thus generated by independent
+Poisson processes with rate $r_i(t)$ in eq. \eqref{eq:place_cell_r}, and the
+centres of individual place fields were uniformly distributed in the arena the
+simulated animal was moving in.
+The connection weights from place cells were arranged in a divergent
+manner, so that a place cell had strongest connections with grid cells whose
+firing fields were aligned (in real space) with the firing field of the place
+cell. The connection weight from place
+cell $i$ to a grid cell $j$ decayed according to a Gaussian function
+\begin{equation}
+    g_{ji} = G_{\text{PC}}^{\text{max}} \exp\left( \frac{|\bm{\mu}_{\text{PC}}^{i} -
+    \bm{\mu}_{\text{G}}^j|^2}{2\sigma_\text{PC}^2} \right),
+    \label{eq:TG_pc_diverg_conn}
+\end{equation}
+where $G_{\text{PC}}^{\text{max}}$ is the maximal connection strength between
+two fully aligned grid and place fields, $\bm{\mu}_{\text{PC}}^{i}$ is the
+centre of the place field of the $i^{\text{th}}$ place cell,
+$\bm{\mu}_{\text{G}}^j$ is the centre of the grid field of the $j^{\text{th}}$
+grid cell that is nearest to the place cell, $\sigma_\text{PC}$ is the width of
+the synaptic profile. The parameters were set to $G_{\text{PC}}^{\text{max}}$ =
+0.5 nS and $\sigma_\text{PC}$ = 7 cm. Connections from place cell were modelled
+as AMPA conductances (eq. \ref{eq:dgSyn}).
+
+
+\section{Bump attractor initialisation} \label{sec:noise_bump_init_app}
+
+Each simulation contains an initialisation part that attempts to set the model
+into the desired state, i.e. a bump attractor. During this stage, the
+theta-modulated input is switched off and the network receives only the
+constant input source (see eq. \ref{eq:Iext}). The bump attractor might not
+form spontaneously, and instead the network could persist in a  uniform firing
+rate regime \citep{Compte:2000ul}. However, it might be possible that when
+forced into the attractor state, the network will persist (data not shown).
+Therefore, we used the place cell input as a spatially-tuned input that served
+(i) as an initialisation input in order to drive the network into an attractor
+state if this does not happen spontaneously and (ii) to initialise the bump
+attractor position so that the phase of grid firing fields match the positions
+of place fields. The initialisation phase lasted for the first 500 ms of
+simulation time, during which the firing rate of place cells were doubled, and
+the connections from place cells to grid cells were increased ten-fold.
+
+
+
+\section{Parameter space exploration} \label{sec:param_sweeps}
+The excitatory and inhibitory parameter space exploration was performed by
+varying the amount of inhibitory and excitatory synaptic strengths. Since the
+actual synaptic weights are a function of distance on the twisted torus, we
+used the maximal conductance of AMPA ($\Gmax$, eq. \ref{eq:wAMPA})
+as the $\gE$ value, and the maximal conductance of GABA synapses
+($\Ginh$, eq. \ref{eq:wGABA}) as the $\gI$ value in all the
+parameter exploration plots. Note that NMDA conductances are not counted
+towards $\gE$\ and that there is no recurrent excitation nor inhibition
+within the excitatory and inhibitory populations themselves.
+
+
+
+\section{Gridness score estimation}
+
+Gridness scores are calculated following previous studies
+\citep{Sargolini:2006ba}, by taking the spatial autocorrelation of each firing
+field (a region corresponding to a circle with radius $\lamgrid/2$ and a centre
+in the middle of the autocorrelation function has been removed) and rotating in
+steps of three degrees.  For each rotation a Pearson correlation coefficient is
+calculated with the original autocorrelation. To calculate the gridness score
+the maximum of values at 30, 90 and 150 degrees rotation was subtracted from
+the minum of the values at 60 and 120 degrees rotation.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Estimating gain of the velocity-dependent inputs}
+
+In order to estimate the precision of velocity integration in a continous
+attractor, we have performed shorter simulations in which a constant velocity
+input (in the X direction) has been injected into E cells for a period of 10
+seconds. Based on this set of simulations, the slope of the bump speed vs.
+strength of the injected velocity current has been estimated (in units of
+neurons/s/pA).  The estimation was based on the following algorithm:
+\begin{enumerate}
+    \item Estimate the range of bump speeds that need to be covered (figure
+        \ref{fig:velocity_histograms}).
+        \begin{equation}
+        s_{\text{bump}}^i =
+        \frac{N_x}{\lamgrid}*s_{\text{animal}}^i,
+        \label{eq:bump_speeds}
+        \end{equation}
+        where $s_{i}$ are the speeds of the animal/bump, estimated from forward
+        differences of the trajectory of the simulated animal, $N_x$ is the
+        horizontal size of the neural sheet (neurons), and \lamgrid is the grid
+        field spacing (cm).  These speeds will form a distribution of bump
+        speeds that the attractor must achieve in order to path integrate
+        without error (figure \ref{fig:velocity_histograms}B).
+    \item Pick a specified percentile from this distribution, i.e. the maximal
+        speed of the bump, in order to account for the specified fraction of
+        animal velocities, set this as $s_{\text{max}}$. The range of target
+        bump speeds will be $<0, s_{\text{max}}>$.
+    \item For each $I_{\text{vel}} \in \{0, 10, .., 100\}$ pA, estimate the
+        bump speed by tracking its position on the neural sheet, using
+        population estimator. Repeat this step 10 times. This step acquires
+        data for estimating the slope of bump speed vs. injected velocity
+        current relationship.
+    \item For each $I_{\text{vel}}^{\text{max}} \in \{10, 20, .., 100\}$ pA,
+        estimate a line fit on data samples with the velocity current in the
+        range of $I_{\text{vel}} \in <0, I_{\text{vel}}^{\text{max}}>$, i.e.
+        fit the line to only a subset of velocity current data points.
+    \item Remove all fits that do not fit at least $<0, s_{\text{max}}>$ on the
+        bump velocity axis.
+    \item If there are any lines left, select line with the minimal error
+        of fit (normalized by the number of data points used); otherwise select
+        line (from the original list) that covers the maximal range of bump
+        speeds.
+    \item Calculate the slope of the selected line and finish.
+\end{enumerate}
+\begin{figure}[th]
+    \begin{center}
+        \includegraphics{fig/velocity_histograms}
+    \end{center}
+    \caption{\textbf{(A)} Histogram of velocities of a simulated animal.
+    \textbf{(B)} Histogram of bump speeds derived from the animal velocities
+    estimated in eq. \eqref{eq:bump_speeds}, for different grid field spacings.}
+    \label{fig:velocity_histograms}
+\end{figure}
+
+
+\section{Simulation protocols} \label{sec:noise_protocols}
+
+\subsection{Simulations of animal movement} \label{sec:noise_grids_protocol}
+
+Simulations of animal movement have been carried out for 600 seconds.  Here,
+for each value of $\gE$ and $\gI$, the main simulation run is preceded by a
+number of shorter simulations with certain data analysis steps.  The analysis
+of the shorter simulation runs determines how much current needs to be injected
+in order for the bump of activity to track the simulated movement of an animal.
+This determines the gain of the velocity input current in order to produce grid
+fields with a specified spacing between the peaks in the firing field.  The
+result is a single number in units of neurons/s/pA, which determines the speed
+of the bump as a function of injected velocity input. The spacing between the
+individual fields of the grid firing fields was set to 60 cm in all of the
+simulations.
+
+During the main simulation run, the animal movement is simulated for 600 s.
+Each of the runs is repeated 3 times. These simulations use the estimated
+velocity response gain in order to calibrate the spacing between the grid
+firing fields.  After the simulation is finished, a neuron in the bottom-left
+corner of the torus is selected for analysis. For this cell the gridness score
+of its firing field is computed. The
+reasoning behind choosing only a single cell to estimate the gridness score is
+as follows. The grid firing fields in the network are a result of coordination
+of activity of the network as a whole. If the network forms a bump attractor
+that is able to accurately track animal movement, all cells in the network will
+have grid-like firing fields that differ only in their phases. On the other
+hand, if the bump attractor does not form, is unstable, or does not accurately
+track the position of the animal, the gridness score of all cells will be low.
+Thus, the firing field of a single cell in the network represents grid field
+computation in the network as a whole.  Moreover, this cell can be selected
+arbitrarily.
+
+
+\subsection{Short simulation runs without animal movement} \label{sec:noise_short_sims}
+
+Some of the simulation runs were used to estimate properties of bump attractors
+and nested gamma oscillations. 
+In these experiments, instead of simulating animal movement, a shorter, ten
+second simulation, was run. The velocity and place cell input were deactivated.
+Thus, the network is expected to only produce a static bump attractor and does
+not perform path integration. For each parameter setting (determined
+by $\gE$, $\gI$, and the noise level), 5 simulations were performed.  For each
+simulation run, post-synaptic currents were recorded from 25 randomly selected
+excitatory cells in the model. Thus, on each run, different cells could be
+picked up for analysis. It is in principle possible to record membrane currents
+from all the neurons. However, the amount of data generated by such simulations
+quickly becomes overwhelming (on the order of several terabytes per
+parameter exploration experiment). Thus the approach chosen here was to sample from
+the population of neurons and store the recorded state variables of only a
+subset of these. This allowed for unrestricted analysis and visualisation of
+the recorded state variables.
+
+\section{Analysis of nested gamma oscillations}
+
+We have estimated the properties of nested gamma oscillations by using
+autocorrelation functions of the inhibitory currents impinging from inhibitory
+synapses onto excitatory cells. These currents have been estimated from 25
+randomly selected excitatory cells, by clamping their membrane potential at
+-50~mV (this was done by simulating a separate process for each of the selected
+neurons, while simulating the original membrane potential according to
+eq.~\eqref{eq:Vm}).
+
+For each neuron, the current was then band-pass filtered between 20 and 200 Hz,
+autocorrelation function was computed and used to detect local maxima (first
+peak excluded). The power and frequency of the underlying oscillation was then
+estimated from the correlation value and time lag of the first detected
+autocorrelation peak. Both values were averaged over all 25 recorded neurons
+and then subsequently averaged over all simulation trials.
+
+
+\begin{table}
+    \centering
+    \begin{tabular}{| c | c | c | c |}
+        \hline
+        Name       & Units & Value (E cells) & Value (I cells) \\
+        \hline\hline
+        $\Cm$      & pF    & 211.389         & 227.3    \\
+        $\EL$      & mV    & -68.5           & -60      \\
+        $\VT$      & mV    & -50             & -45      \\
+        $\Vr$      & mV    & -68.5           & -60      \\
+        $\gL$      & nS    & 22.73           & 22.73    \\
+        $\deltaT$  & mV    & 0.4             & 0.4      \\
+        $\EAHP$    & mV    & -80             & $\times$ \\
+        $\tauAHP$  & ms    & 20              & $\times$ \\
+        $\gAHPmax$ & nS    & 5               & $\times$ \\
+        $\tauad$   & ms    & $\times$        & 7.5      \\
+        $\gadinc$  & nS    & $\times$        & 22.73    \\
+        \hline
+    \end{tabular}
+    \caption{Single neuron parameter values for all cells.}
+    \label{tab:params_E}
+\end{table}
+
+\begin{table}
+    \centering
+    \begin{tabular}{| c | c | c |}
+        \hline
+        Name       & Units & Value \\
+        \hline\hline
+        $\EAMPA$   & mV    & 0     \\
+        $\tauAMPA$ & ms    & 1     \\
+        $\ENMDA$   & mV    & 0     \\
+        $\tauNMDA$ & ms    & 100   \\
+        $\EGABAA$  & mV    & -75   \\
+        $\tauGABAA$& ms    & 5     \\
+        \hline
+    \end{tabular}
+    \caption{Parameter values for synapes.}
+    \label{tab:params_synapses}
+\end{table}
+
+\begin{table}
+    \centering
+    \begin{tabular}{| c | c | c | c |}
+        \hline
+        Name       & Units & Value (E cells) & Value (I cells) \\
+        \hline\hline
+        $\Iconst$  & pA    & 300             & 200             \\
+        $\Atheta$  & pA    & 375             & 25              \\
+        $\phitheta$& rad   & $-\pi/2$        & $-\pi/2$        \\
+        $\ftheta$  & Hz    & 8               & 8               \\
+        \hline
+    \end{tabular}
+    \caption{Parameter values for external inputs.}
+    \label{tab:params_ext_inputs}
+\end{table}
+
+\begin{table}
+    \centering
+    \begin{tabular}{| c | c | c |}
+        \hline
+        Name              & Units                        & Value   \\
+        \hline\hline
+        $\mu$             & \multirow{4}{*}{normalised}  & 0.433   \\
+        $\sigmasub{exc}$  &                              & 0.0834  \\
+        $\sigmasub{inh}$  &                              & 0.0834  \\
+        C                 &                              & 0.03    \\
+        \lamgrid          & cm                           & 60      \\
+        \hline
+    \end{tabular}
+    \caption{Parameter values for synaptic profiles.}
+    \label{tab:params_syn}
+\end{table}
+
+
+\bibliographystyle{abbrv}
+\bibliography{references}
+
+\section*{Supplementary figures}
+
+\setcounter{figure}{0}
+\renewcommand{\thefigure}{S\arabic{figure}}
+
+\begin{figure}[h!]
+    \caption{Examples of spatial firing fields. (A-L) Top: Gridness score in
+    the parameter space of the E and I synaptic strength scaling parameters
+    ($\gE$ and $\gI$ respectively). Bottom: Firing fields of a single cell
+    obtained by simulating animal movement, in the parameter region highlighted
+    by black rectangle in the parameter space plot. Above each firing field is
+    the estimated gridness score (left) and maximal firing rate in the firing
+    field (right). Blank (white) locations in the parameter space are
+    simulations that did not finish in the pre-specified time limit (5 h).
+    Noise level use in each set of simulations is shown by
+    $\sigma_{\text{noise}}$. Figure continues on next pages.}
+    \label{fig:S_grid_examples}
+\end{figure}
+
+\begin{figure}[ht!]
+    \caption{Scatter plots of gridness score vs. the amplitude of gamma
+    oscillations. (A-C) The plots show relationships between grid field
+    computations (gridness score) and the power of nested gamma oscillations
+    for deterministic networks (A), networks with moderate noise (B) and
+    networks with the highest simulated noise level (C). The strength of the
+    oscillation was obtained by computing autocorrelation functions of
+    inhibitory currents impinging onto 25 randomly selected E cells in the
+    network and detecting their first local maxima. The correlation value at
+    the first local maximum is plotted on the abscissa. Colour coding
+    determines the values of $\gE$ and $\gI$, as shown in the 2D colorbar.}
+    \label{fig:noise_scatter_gamma_grids}
+\end{figure}
+
+\begin{figure}[ht!]
+    \caption{Scatter plots of gridness score vs. detected oscillation frquency.
+    (A-C) The plots show relationships between grid field computations
+    (gridness score) and the frquency of gamma oscillations for deterministic
+    networks (A), networks with moderate noise (B) and networks with the
+    highest simulated noise level (C). The frequency of the oscillation was
+    obtained by computing autocorrelation functions of inhibitory currents
+    impinging onto 25 randomly selected E cells in the network, detecting their
+    first local maxima, and averaging over all cells.  The time lag at the
+    first local maximum yielded the frequency of the oscillation, which is
+    plotted on the abscissa. Colour coding determines the values of $\gE$ and
+    $\gI$, as shown in the 2D colorbar.}
+    \label{fig:noise_scatter_gamma_grids_freq}
+\end{figure}
+
+\begin{figure}[ht!]
+    \caption{Amplitude and frequency of gamma oscillations in the $\gE$ and
+    $\gI$ parameter regions where grid fields are robust. Amplitude (top) and
+    frequency (bottom) of detected gamma oscillations for simulations in which
+    gridness score is greater than 0.5, in deterministic networks (A), networks
+    with an intermediate level of noise (B) and in networks with the highest
+    simulated level of noise (C). The data in this figure are from simulations
+    in Figure 2.}
+    \label{fig:gamma_high_gridness}
+\end{figure}
+
+\begin{figure}[ht!]
+    \caption{Examples of activity in the network. (A-C) Top: Mean maximal
+    firing rate per theta cycle (average over 5 trials), outlining the average
+    activity during theta cycles, in the parameter space of $\gE$ and $\gI$.
+    Center and bottom: Raster plots (center) and population-average firing
+    rates (bottom) of all cells in selected locations of the E-I parameter
+    space during 16 consecutive $\theta$ cycles. Action potentials and firing
+    rates of E and I cells are colored red and blue, respectively. The position
+    in the parameter space is highlighted by an arrow. Figure continues on next
+    pages.}
+\end{figure}
+
+\begin{figure}[ht!]
+    \caption{Firing rates of E cells. (A) Average firing rate of all E cells
+    during simulations of animal movement as a function of $\gE$ and $\gI$.
+    Black contours outline simulations where gridness score is equal 0.5
+    (Figure 1). (B) Relationship between gridness score and firing frequency of
+    E cells.}
+\end{figure}
+
+\begin{figure}[ht!]
+    \caption{Calibration of the gain of the velocity inputs. (A-C) Bump
+    attractor speed as a function of the strength of the velocity current for
+    the three simulated levels of noise. Ten simulation runs were performed for
+    each level of noise (blue markers). In each run the speed of the bump was
+    calculated in response to the injected velocity input and the data were
+    used to fit a linear relationship using an stimation procedure outlined
+    in SI methods (black line). (D-F) Slope of the estimated velocity gain of
+    the attractor networks as a function of $\gE$ and $\gI$ for all simulated
+    levels of noise. (G-I) Same as in (D-F) but the plots show error of fit
+    for the estimated linear relationships.}
+\end{figure}
+
+\begin{figure}[ht!]
+    \caption{Sensitivity of bump attractor spontaneous drift to
+    variations in $\gE$ and $\gI$ and noise levels. (A) Schematic
+    of the bump attractor drift estimation procedure. The first 500 ms of a
+    simulation trial are used to initialise the bump attractor. Onset of theta
+    modulated input current was at 500 ms. The estimated centres of bump
+    attractors measured by the least squares fit of symmetric Gaussians were at
+    1 s (initial position) and 9 s (final position). The drift was then
+    estimated as the distance on twisted torus between the initial and final
+    position. Simulation time was 10 s. (B) Colour plots show bump
+    attractor drifts averaged over 5 simulation trials, for the simulated
+    ranges of excitatory and inhibitory synaptic strengths and levels of noise.
+    Networks without noise can form stable bump attractors in a subset of
+    their parameter region. Networks with noise suffer from attractor drift in
+    majority of the parameter region. Black contours show isoclines of gridness
+    score equal to 0.5.}
+\end{figure}
+
+\begin{figure}[ht!]
+    \caption{Effectivity of the place cell resetting mechanism as a function of
+    $\gE$ and $\gI$ and noise levels. (A) Illustration of the procedure to
+    estimate the difference between the bump position induced by place cells
+    and actual estimated position of the bump state, by using a sliding window
+    with 250 ms duration and 125 ms time step. The resulting distance from the
+    reset position, in one simulation run, was then an average over all sliding
+    windows. (B) Colour plots show the effectivity of place cell mechanism for
+    an average of 5 simulation runs with 10 s duration. Place cells are most
+    effective in networks with an intermediate amount of noise.}
+    \label{fig:S_pc_effectivity}
+\end{figure}
+
+\begin{figure}[ht!]
+    \caption{Effect of replacing theta frequency inputs by a constant input
+    with an equal mean amplitude. (A-C) Amplitude of detected gamma
+    oscillations (SI methods) in deterministic networks (A), networks with an
+    intermediate level of noise (B) and in networks with the highest simulated
+    level of noise (C). (D-F) Same as for (A-C) but the plots show the
+    probability of the network forming a bump attractor (SI methods). Each
+    point is a an average of five simulation runs. All data are from the same
+    simulation set.}
+\end{figure}
+\end{document}
+

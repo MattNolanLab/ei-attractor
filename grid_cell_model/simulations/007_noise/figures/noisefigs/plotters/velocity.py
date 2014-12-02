@@ -56,6 +56,7 @@ class VelLinesPlotter(FigurePlotter):
         yticks     = kw.pop('yticks', True)
         g_ann      = kw.pop('g_ann', True)
         sigma_ann  = kw.pop('sigma_ann', True)
+        ivel_range = kw.pop('ivel_range', None)
         kw['markeredgecolor'] = color
 
         r = pos[0]
@@ -63,6 +64,10 @@ class VelLinesPlotter(FigurePlotter):
         d = dataSpace[r][c].getAllTrialsAsDataSet().data
         a = d['analysis']
         IvelVec = dataSpace[r][c][trialNum].data['IvelVec']
+        if ivel_range is None:
+            ivel_range = len(IvelVec)
+        else:
+            ivel_range = min(ivel_range, len(IvelVec))
         slopes = a['bumpVelAll']
         lineFit = a['lineFitLine']
         fitIvelVec = a['fitIvelVec']
@@ -76,7 +81,8 @@ class VelLinesPlotter(FigurePlotter):
         plt.hold('on')
         globalAxesSettings(ax)
 
-        ax.plot(IvelVec, slopes.T, 'o', markerfacecolor='none', markersize=markersize, **kw)
+        ax.plot(IvelVec[0:ivel_range], slopes[:, 0:ivel_range].T, 'o',
+                markerfacecolor='none', markersize=markersize, **kw)
         #ax.errorbar(IvelVec, avgSlope, stdSlope, fmt='o-',
         #        markersize=markersize, color=color, alpha=0.5, **kw)
         ax.plot(fitIvelVec, lineFit, '-', linewidth=1, color=lineColor, **kw)
@@ -86,7 +92,7 @@ class VelLinesPlotter(FigurePlotter):
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.xaxis.set_major_locator(ti.MultipleLocator(50))
-        #ax.xaxis.set_minor_locator(ti.AutoMinorLocator(5))
+        ax.xaxis.set_minor_locator(ti.MultipleLocator(10))
         ax.yaxis.set_major_locator(ti.MultipleLocator(25))
         #ax.yaxis.set_minor_locator(ti.MultipleLocator(10))
         ax.margins(0.05)
@@ -134,12 +140,13 @@ class VelLinesPlotter(FigurePlotter):
                 noise_sigma=noise_sigma,
                 iterList=iter_list,
                 color='blue',
+                ivel_range=self.myc.get('ivel_range', None),
                 **kwargs)
 
             fname = (self.config['output_dir'] +
                      "/velocity_slope_examples_{0}.pdf".format(int(noise_sigma)))
             plt.savefig(fname, dpi=300, transparent=True)
-        
+
 
 ###############################################################################
 #EI13Root  = 'simulation_data/submission/detailed_noise/velocity/EI-1_3'
@@ -224,8 +231,6 @@ class VelSlopeSweepPlotter(SweepPlotter):
 
         # This should be corresponding to the velLine examples as well !!
         slopeVarList = ['lineFitSlope']
-        slope_vmin = -.472
-        slope_vmax = 1.353
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
@@ -247,7 +252,7 @@ class VelSlopeSweepPlotter(SweepPlotter):
                     ax=self.ax,
                     cbar=self.myc['cbar'][ns_idx],
                     cbar_kw=self.myc['cbar_kw'],
-                    vmin=slope_vmin, vmax=slope_vmax,
+                    vmin=self.myc['vmin'], vmax=self.myc['vmax'],
                     **kw)
 
                 # Contours
@@ -283,7 +288,7 @@ class VelocityRasterPlotter(FigurePlotter):
                 kw['yticks'] = False
             if idx == 2:
                 kw['scaleBar'] = 125
-            rasters.EIRaster(ps.v[idx], 
+            rasters.EIRaster(ps.v[idx],
                     noise_sigma=noise_sigma,
                     spaceType='velocity',
                     r=rasterRC[idx][0], c=rasterRC[idx][1],
@@ -298,8 +303,8 @@ class VelocityRasterPlotter(FigurePlotter):
             fig.savefig(fname.format(int(noise_sigma)), dpi=300,
                     transparent=self.myc['transparent'])
             plt.close()
-        
-        
+
+
 
 ##############################################################################
 
@@ -346,7 +351,7 @@ class VelocityRatePlotter(FigurePlotter):
             rasters.plotAvgFiringRate(ps.v[idx],
                     spaceType='velocity',
                     noise_sigma=noise_sigma,
-                    popType='I', 
+                    popType='I',
                     r=rasterRC[idx][0], c=rasterRC[idx][1],
                     color='blue',
                     ylabelPos=self.config['vel_rasters']['ylabelPos'],
@@ -381,7 +386,7 @@ class VelocityRasterZoomPlotter(FigurePlotter):
             kw = dict(scaleBar=None)
             if idx == 2:
                 kw['scaleBar'] = 25
-            rasters.EIRaster(ps.v[idx], 
+            rasters.EIRaster(ps.v[idx],
                     noise_sigma=noise_sigma,
                     spaceType='velocity',
                     r=rasterRC[idx][0], c=rasterRC[idx][1],
@@ -398,7 +403,7 @@ class VelocityRasterZoomPlotter(FigurePlotter):
             fig.savefig(fname.format(int(noise_sigma)), dpi=300,
                     transparent=transparent)
             plt.close()
-       
+
 
 ##############################################################################
 # Scatter plot of gridness score vs. bump speed line fit error

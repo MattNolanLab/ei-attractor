@@ -72,7 +72,8 @@ class SubmitterFactory(object):
             raise NotImplementedError()
         elif (envType == 'workstation'):
             Scls =  WorkstationSubmitter
-            rtLimit = kw.pop('rtLimit', None) # ignored here
+            kw.pop('rtLimit', None)            # ignored here
+            kw.pop('extra_qsub_params', None)  # ignored here
         elif (envType == 'cluster'):
             Scls = ClusterSubmitter
         else:

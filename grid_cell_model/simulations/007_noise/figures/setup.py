@@ -11,5 +11,7 @@ setup(
     install_requires=['numpy>=1.8.0',
                       'scipy>=0.13.3',
                       'matplotlib>=1.3.01',
-                      'h5py>=2.3.0']
+                      'h5py>=2.3.0',
+                      'minepy>=1.0.0',
+                      'configobj>=5.0.0']
 )

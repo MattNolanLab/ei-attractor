@@ -9,10 +9,11 @@ from matplotlib.transforms import Bbox
 from grid_cell_model.parameters           import JobTrialSpace2D, DataSpace
 from grid_cell_model.plotting.global_defs import globalAxesSettings, prepareLims
 
-from ..EI_plotting          import sweeps, examples, details, scatter
-from ..EI_plotting          import aggregate as aggr, scaling
-from ..EI_plotting.base     import plotOneHist, NoiseDataSpaces
-from .base import FigurePlotter, SweepPlotter, ProbabilityPlotter
+from ..EI_plotting      import sweeps, examples, details, scatter
+from ..EI_plotting      import aggregate as aggr, scaling
+from ..EI_plotting.base import plotOneHist, NoiseDataSpaces
+from .base import (FigurePlotter, SweepPlotter, ProbabilityPlotter,
+                   DummyPlotter)
 
 __all__ = [
     'GammaSweepsPlotter',
@@ -58,7 +59,7 @@ def aggregateBar2(spList, varLists, trialNumList, func=(None, None)):
 
     noise_sigma = np.array(noise_sigma, dtype=int)
     return vars, noise_sigma
- 
+
 
 
 def getACFreqThreshold(spList, trialNumList, ACThr):
@@ -115,7 +116,7 @@ def plotThresholdComparison(spList, trialNumList, ACThrList):
     ax.xaxis.set_minor_locator(ti.AutoMinorLocator(3))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
     ax.margins(0.025)
-    
+
 
 def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
     FVarList = ['freq']
@@ -159,17 +160,12 @@ def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
     thStr = 'Frequencies with C > {0}'.format(CThreshold)
     ax.text(0.99, 1.1, thStr, transform=ax.transAxes, va='bottom',
             ha='right')
-    
+
 
 ###############################################################################
 
 
 # gamma example rows and columns
-
-AC_vmin = -0.09
-AC_vmax = 0.675
-F_vmin  = 30
-F_vmax  = 120
 
 ACVarList = ['acVal']
 FVarList  = ['freq']
@@ -194,28 +190,44 @@ class GammaSweepsPlotter(SweepPlotter):
         iter_list = self.config['iter_list']
         grids_example_idx = self.config['grids']['example_idx']
         fname_prefix = self.config.get('fname_prefix', '')
+        filter_with_gridness = self.myc.get('filter_with_gridness', False)
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             ACData = aggr.GammaAggregateData('acVal', ps.bumpGamma[ns_idx],
-                                           iter_list, normalizeTicks=True)
+                                             iter_list, normalizeTicks=True,
+                                             ignoreNaNs=True)
+            gammaFData = aggr.GammaAggregateData('freq', ps.bumpGamma[ns_idx],
+                                                 iter_list,
+                                                 normalizeTicks=True)
+            gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                              normalizeTicks=True,
+                                              collapseTrials=True,
+                                              ignoreNaNs=True,
+                                              r=grids_example_idx[ns_idx][0],
+                                              c=grids_example_idx[ns_idx][1])
+
+            if filter_with_gridness:
+                gridFilter = aggr.GTFilter(gridData,
+                                           self.myc['gridness_threshold'])
+                ACData = ACData.filter_data(gridFilter)
+                gammaFData = gammaFData.filter_data(gridFilter)
+
             # Gamma power
             fname = self.get_fname("gamma_sweeps{ns}.pdf", ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
-                sweeps.plotACTrial(
+                sweeps.plotSweep(
                         ACData,
-                        None,
-                        None,
                         noise_sigma=ps.noise_sigmas[ns_idx],
                         ax=ax,
                         xlabel='' if ac_xticks[ns_idx] == False else None,
                         xticks=ac_xticks[ns_idx],
                         ylabel='' if ac_yticks[ns_idx] == False else None,
                         yticks=ac_yticks[ns_idx],
-                        trialNumList=None,
                         sigmaTitle=self.myc['AC_sigma_title'],
                         cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=self.myc['AC_cbar_kw'],
-                        vmin=AC_vmin, vmax=AC_vmax,
+                        vmin=self.myc['AC_vmin'],
+                        vmax=self.myc['AC_vmax'],
                         annotations=self.myc['ann'])
                 if self.myc['plot_grid_contours'][ns_idx]:
                     gridData = aggr.GridnessScore(
@@ -230,14 +242,14 @@ class GammaSweepsPlotter(SweepPlotter):
                     contours.plot(
                             ax,
                             **self.config['sweeps']['contours_kwargs'])
-            
+
             # Gamma frequency
             fname = self.get_fname("gamma_freq_sweeps{ns}.pdf", ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 sweeps.plotACTrial(
-                        ps.bumpGamma[ns_idx],
-                        FVarList,
-                        iter_list,
+                        gammaFData,
+                        None,
+                        None,
                         noise_sigma=ps.noise_sigmas[ns_idx],
                         ax=ax,
                         xlabel='' if f_xticks[ns_idx] == False else None,
@@ -248,7 +260,8 @@ class GammaSweepsPlotter(SweepPlotter):
                         sigmaTitle=self.myc['F_sigma_title'],
                         cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=self.myc['F_cbar_kw'],
-                        vmin=F_vmin, vmax=F_vmax,
+                        vmin=self.myc['F_vmin'],
+                        vmax=self.myc['F_vmax'],
                         annotations=self.myc['annF'])
                 if self.myc['plot_grid_contours'][ns_idx]:
                     contours = sweeps.Contours(gridData,
@@ -256,7 +269,7 @@ class GammaSweepsPlotter(SweepPlotter):
                     contours.plot(
                             ax,
                             **self.config['sweeps']['contours_kwargs'])
-        
+
 
 
 
@@ -425,7 +438,7 @@ class ScatterGammaGridsSeparatePlotter(FigurePlotter):
 
         scatterPlot = scatter.FullScatterPlot(
                 gammaData, gridData, None, None, iter_list, None, None,
-                s=8,
+                s=12,
                 linewidth=0.3,
                 color2D=True,
                 xlabel=xlabel,
@@ -439,7 +452,7 @@ class ScatterGammaGridsSeparatePlotter(FigurePlotter):
         l = 0.8
         w = 0.165
         scatterPlot.plotColorbar(left=l, bottom=.87, right=l+w, top=.97)
-        scatterPlot.set_titleSizes(16) 
+        scatterPlot.set_titleSizes(16)
         #ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
         #ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
         #ax.set_ylim(prepareLims((-0.5, 1.2), margin=0.02))
@@ -479,7 +492,7 @@ class ScatterGammaFGridsSeparatePlotter(FigurePlotter):
 
         scatterPlot = scatter.FullScatterPlot(
                 gammaFData, gridData, None, None, iter_list, None, None,
-                s=8,
+                s=12,
                 linewidth=0.3,
                 color2D=True,
                 xlabel=xlabel,
@@ -493,14 +506,14 @@ class ScatterGammaFGridsSeparatePlotter(FigurePlotter):
         l = 0.8
         w = 0.165
         scatterPlot.plotColorbar(left=l, bottom=.87, right=l+w, top=.97)
-        scatterPlot.set_titleSizes(16) 
+        scatterPlot.set_titleSizes(16)
 
         fname = output_dir + "/suppFigure_gammaF_grids_scatter.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
 
 
 ##############################################################################
-# Scatter plot of gridness score vs. gamma power 
+# Scatter plot of gridness score vs. gamma power
 # All in one plot
 class GammaScatterAllPlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
@@ -763,10 +776,12 @@ class GammaScatterPBumpsAllPlotter(FigurePlotter):
         ps = self.env.ps
         myc = self._get_class_config()
         iter_list = self.config['iter_list']
+        l, b, r, t = self.myc['bbox_rect']
         legend_kwargs = myc['legend_kwargs']
+        xlabel = self.myc.get('xlabel', 'P(bumps)')
 
         self.fig = self._get_final_fig(myc['fig_size'])
-        self.ax = self.fig.gca()
+        self.ax = self.fig.add_axes(Bbox.from_extents(l, b, r, t))
 
         self.ax.hold('on')
         scatterColors = ['green', 'red', 'blue']
@@ -783,9 +798,9 @@ class GammaScatterPBumpsAllPlotter(FigurePlotter):
             scatterPlot = scatter.ScatterPlot(
                     pbumpsData, gammaData, None, None, None, None, None,
                     c=color,
-                    s=10*self.config['scale_factor'],
+                    s=6*self.config['scale_factor'],
                     linewidth=0.3,
-                    xlabel='$P_{bumps}$',
+                    xlabel=xlabel,
                     ylabel='$1^{st}$ autocorrelation peak',
                     zorder=scatterOrders[ns_idx])
             scatterPlot.plot()
@@ -794,7 +809,6 @@ class GammaScatterPBumpsAllPlotter(FigurePlotter):
         leg = ['0', '150', '300']
         l = self.ax.legend(leg, **legend_kwargs)
         plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
-        self.fig.tight_layout(**myc['tight_layout_kwargs'])
 
     def save(self, *args, **kwargs):
         # Linear scale
@@ -928,4 +942,3 @@ class GammaFreqPBumpsProbabilityPlotter(ProbabilityPlotter):
         plt.close(fig)
 
         self.mutual_information(gammaF_all, pbumps_all)
-

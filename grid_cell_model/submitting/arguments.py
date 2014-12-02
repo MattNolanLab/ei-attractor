@@ -100,6 +100,15 @@ class ArgumentCreator(object):
         '''Return the size of the list of option dictionaries'''
         return len(self._resList)
 
+    def _valToString(self, val):
+        ret = ""
+        if isinstance(val, list):
+            for v in val:
+                ret += str(v) + " "
+        else:
+            ret = str(val)
+        return ret
+
     def getArgString(self, i, job_num):
         '''
         Get the argument string which should be passed on to the submitted
@@ -110,7 +119,7 @@ class ArgumentCreator(object):
             if val is None:
                 parStr += ' --' + str(key)
             else:
-                parStr += ' --' + str(key) + ' ' + str(val)
+                parStr += ' --' + str(key) + ' ' + self._valToString(val)
         if self.emitJobNum:
             parStr += ' --job_num ' + str(job_num)
         return parStr

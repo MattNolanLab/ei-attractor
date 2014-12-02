@@ -109,7 +109,7 @@ class BumpDriftAtTimePlotter(SweepPlotter):
                     kw['yticks'] = False
                 if ns_idx == 2:
                     kw['cbar'] = True
-                data = aggr.BumpDriftAtTime(bumpDriftT, 
+                data = aggr.BumpDriftAtTime(bumpDriftT,
                         ps.bumpGamma[ns_idx],
                         iter_list,
                         n_trials,
@@ -209,6 +209,7 @@ class BumpDiffResetPlotter(SweepPlotter):
                         cbar_kw=myc['cbar_kw'],
                         vmin=bumpReset_vmin, vmax=bumpReset_vmax,
                         **kw)
+                self.plot_grid_contours(ns_idx, ax, ps.grids)
 
 
 ##############################################################################
@@ -265,11 +266,11 @@ class BumpSigmaDetailedNoisePlotter(FigurePlotter):
         EI13Root  = 'simulation_data/submission/detailed_noise/gamma_bump/EI-1_3'
         EI31Root  = 'simulation_data/submission/detailed_noise/gamma_bump/EI-3_1'
         detailedShape = (31, 9)
-        
+
         EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
         EI31PS = JobTrialSpace2D(detailedShape, EI31Root)
         detailedNTrials = 5
-        
+
         ylabelPos = -0.17
         detailFigSize = (3.8, 2.6)
         detailLeft   = 0.18
@@ -363,7 +364,7 @@ class BumpSigmaDetailedNoisePlotter(FigurePlotter):
 #    fname = outputDir + "/bumps_scatter_diff_bumpFracTotal_gscore.pdf"
 #    fig.savefig(fname, dpi=300, transparent=transparent)
 #    plt.close()
-#    
+#
 #
 ##############################################################################
 # Correlate P(bump) vs gridness score
@@ -376,14 +377,15 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
         myc = self._get_class_config()
 
         iter_list = self.config['iter_list']
-        tight_layout_kwargs = myc['tight_layout_kwargs']
+        l, b, r, t = self.myc['bbox_rect']
+        legend = self.myc.get('legend', True)
         legend_kwargs = myc['legend_kwargs']
 
-        xlabel = 'P(bumps)'
+        xlabel = self.myc.get('xlabel', 'P(bumps)')
         ylabel = 'Gridness score'
-        
+
         fig = self._get_final_fig(myc['fig_size'])
-        ax = fig.gca()
+        ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
 
         scatterColors = ['green', 'red', 'blue']
         scatterOrders = [2, 3, 1]
@@ -398,7 +400,7 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
             scatterPlot = scatter.ScatterPlot(
                     isBumpData, gridData, None, None, None, None, None,
                     c=scatterColors[ns_idx],
-                    s=15*self.config['scale_factor'],
+                    s=6*self.config['scale_factor'],
                     linewidth=0.3,
                     xlabel=xlabel,
                     ylabel=ylabel,
@@ -408,13 +410,13 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
 
         ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
         ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-        leg = ['0', '150', '300']
-        l = ax.legend(leg, **legend_kwargs)
-        plt.setp(l.get_title(), size='small')
+        if legend:
+            leg = ['0', '150', '300']
+            l = ax.legend(leg, **legend_kwargs)
+            plt.setp(l.get_title(), size='small')
         #ax.set_ylabel(ax.get_ylabel(), y=0., ha='left')
 
         # Normal scale
-        fig.tight_layout(**tight_layout_kwargs)
         fname = self.config['output_dir'] + "/bumps_scatter_grids_vs_bumpFracTotal.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
 
@@ -423,7 +425,6 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
         ax.xaxis.set_major_locator(ti.MultipleLocator(.5))
         ax.xaxis.set_minor_locator(ti.MultipleLocator(.1))
         ax.set_xlim([-0.3, 1.002])
-        fig.tight_layout(**tight_layout_kwargs)
         fname = self.config['output_dir'] + "/bumps_scatter_grids_vs_bumpFracTotal_exp.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
 
@@ -445,13 +446,13 @@ class BumpFormationBase(SweepPlotter):
             rc=(5, 15),
             xytext_offset=(1.5, 1),
             color='white')
-    
+
     ann150_0 = dict(
             txt='c',
             rc=(5, 15),
             xytext_offset=(1.5, 1),
             color='white')
-    
+
     ann300_0 = dict(
             txt='d',
             rc=(15, 5),
@@ -489,13 +490,11 @@ class MainBumpFormationPlotter(BumpFormationBase):
         ps = self.env.ps
         iter_list = self.config['iter_list']
         xticks = myc['xticks']
-        grids_example_idx = self.config['grids']['example_idx']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-            fname = (self.config['output_dir'] +
-                     "/{0}bumps_mainFig_isBumpFracTotal_sweeps_annotated{1}.pdf".format(
-                         self.config.get('fname_prefix', ''),
-                         int(noise_sigma)))
+            fname = self.get_fname(
+                    "bumps_mainFig_isBumpFracTotal_sweeps_annotated{ns}.pdf",
+                    ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 #fig, ax = ds.getDefaultSweepFig(scale=0.8, colorBarPos='left')
                 kw = dict()
@@ -507,6 +506,7 @@ class MainBumpFormationPlotter(BumpFormationBase):
                                    ignoreNaNs=True)
                 _, _, cax = sweeps.plotSweep(data,
                         noise_sigma=noise_sigma,
+                        sigmaTitle=self.myc.get('sigmaTitle', True),
                         xlabel='' if xticks[ns_idx] == False else None,
                         xticks=xticks[ns_idx],
                         ax=ax,
@@ -516,16 +516,7 @@ class MainBumpFormationPlotter(BumpFormationBase):
                         annotations=self.get_ann()[ns_idx],
                         **kw)
 
-                if self.myc['plot_grid_contours'][ns_idx]:
-                    gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
-                                                  ignoreNaNs=True, normalizeTicks=True,
-                                                  r=grids_example_idx[ns_idx][0],
-                                                  c=grids_example_idx[ns_idx][1])
-                    contours = sweeps.Contours(gridData,
-                            self.config['sweeps']['grid_contours'])
-                    contours.plot(
-                            ax,
-                            **self.config['sweeps']['contours_kwargs'])
+                self.plot_grid_contours(ns_idx, ax, ps.grids)
 
 
 ##############################################################################

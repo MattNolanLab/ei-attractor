@@ -75,12 +75,15 @@ def aggregate2D(sp, varList, funReduce=None):
 
 def computeYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True, **kw):
     E, I = sp.getIteratedParameters(iterList)
+
     if (normalize):
         Ne = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ne')
         Ni = DataSpace.getNetParam(sp[r][c][trialNum].data, 'net_Ni')
     else:
         Ne = 1
         Ni = 1
+
+
     return E/Ne, I/Ni
 
 
@@ -231,12 +234,37 @@ class AggregateData(object):
         raise NotImplementedError()
 
 
+    def filter_data(self, filter_obj):
+        '''Apply a mask of a filter object to the current data.
+
+        This operation returns a new AggregateData object
+        '''
+        return FilteredData(self, filter_obj)
+
+
+class FilteredData(AggregateData):
+    '''This applies a filter mask to a data object'''
+    def __init__(self, data, filter_obj):
+        self._data = data
+        self._filter = filter_obj
+
+    def getData(self):
+        data, X, Y = self._data.getData()
+        data = np.ma.array(data, copy=True)
+        data.mask = np.logical_or(data.mask, self._filter.get_mask())
+        return data, X, Y
+
+
 class AggregateDataFilter(AggregateData):
     def __init__(self, data):
         self._data = data
 
     def getData(self):
         raise NotImplementedError()
+
+    def get_mask(self):
+        data, _, _ = self.getData()
+        return np.copy(data.mask)
 
 
 class NoZeroExcitationFilter(AggregateDataFilter):
@@ -248,6 +276,45 @@ class NoZeroExcitationFilter(AggregateDataFilter):
         data = np.ma.array(data, copy=True)
         data.mask[:, 0] = True
         return data, X, Y
+
+
+class NoZeroCouplingFilter(AggregateDataFilter):
+    def __init__(self, data):
+        super(NoZeroCouplingFilter, self).__init__(data)
+
+    def getData(self):
+        data, X, Y = self._data.getData()
+        data = np.ma.array(data, copy=True)
+        data.mask[:, 0] = True
+        data.mask[0, :] = True
+        return data, X, Y
+
+
+class GTFilter(AggregateDataFilter):
+    '''Only use data that are greater than threshold'''
+    def __init__(self, data, threshold):
+        self.threshold = threshold
+        super(GTFilter, self).__init__(data)
+
+    def getData(self):
+        data, X, Y = self._data.getData()
+        data = np.ma.array(data, copy=True)
+        data.mask = np.logical_or(data.mask, data <= self.threshold)
+        return data, X, Y
+
+
+class LEQFilter(AggregateDataFilter):
+    '''Only use data that are greater than threshold'''
+    def __init__(self, data, threshold):
+        self.threshold = threshold
+        super(LEQFilter, self).__init__(data)
+
+    def getData(self):
+        data, X, Y = self._data.getData()
+        data = np.ma.array(data, copy=True)
+        data.mask = np.logical_or(data.mask, data > self.threshold)
+        return data, X, Y
+
 
 
 def maskNaNs(a, really):
@@ -275,7 +342,7 @@ class GridnessScore(AggregateData):
         data, X, Y = self._getRawData()
         return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
 
-        
+
 class GammaAggregateData(AggregateData):
     '''Extract power of gamma oscillations from the aggregated data'''
     def __init__(self, what, space, iterList, **kw):
@@ -306,7 +373,7 @@ class GammaAggregateData(AggregateData):
 # Bumps
 class IsBump(AggregateData):
     '''Retrieve bump classification data from the space.'''
-    
+
     def __init__(self, space, iterList, ignoreNaNs=False, normalizeTicks=False,
                  **kw):
         super(IsBump, self).__init__(space, iterList, None, ignoreNaNs,
@@ -384,7 +451,7 @@ class BumpFormationFilter(IsBump):
         filt = np.logical_not(filter) if invert else filter
         mask = np.logical_or(getattr(data, 'mask', False), filt)
         return np.ma.MaskedArray(data, mask=mask)
-        
+
 
 
 
@@ -500,7 +567,7 @@ class BumpDifferencePosition(BumpPositionData):
                                 startPos, positions, torusSize)
 
         return distances, X, Y
-                    
+
 
     def getTimes(self):
         return self._timeData[self._timeData >= self.tStart]
@@ -575,7 +642,7 @@ class BumpDifferenceAtTime(BumpDifferencePosition):
                                 torusSize)
                         trialDiffs.append(d[0])
                 if len(trialDiffs) > 0:
-                    diffs[r, c] = np.mean(trialDiffs) 
+                    diffs[r, c] = np.mean(trialDiffs)
         return diffs, X, Y
 
 diffAtTLogger = logging.getLogger("{0}.{1}".format(__name__,
@@ -617,7 +684,7 @@ class BumpDriftAtTime(BumpDifferencePosition):
                         diffAtTLogger.info(msg.format(drifts[r, c], r, c))
         #totalTime = (self.tDrift - self.tStart) * 1e-3
         return drifts, X, Y
-                    
+
 
 
 
@@ -780,7 +847,7 @@ class AvgPopulationFR(AggregateData):
                         where = self._where)
             self._FR = np.asarray(self.sp.getReduction(path))
             self._Y, self._X = computeYX(self.sp, self.iterList,
-                                         normalizeTicks=self.normalizeTicks,
+                                         normalize=self.normalizeTicks,
                                          r=self.r, c=self.c)
 
         return self._FR, self._X, self._Y

@@ -1,23 +1,4 @@
-#
-#   grids.py
-#
-#   Functions for grid cell related data.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Functions for grid cell related data.'''
 from __future__ import absolute_import
 import numpy as np
 import numpy.ma as ma
@@ -64,7 +45,7 @@ def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, diam=np.inf, ax=None,
 
 
 def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
-        scaleText=True, maxRate=True, G=None, rateStr='Hz', **kw):
+        scaleText=True, maxRate=True, G=None, rateStr='Hz', ann_div=.1, **kw):
     '''
     Plot the grid-like rate map into the current axis
     '''
@@ -84,18 +65,18 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
         if rateStr != '':
             rateStr = ' ' + rateStr
         rStr = '{0:.1f}{1}'.format(np.max(rateMap.flatten()), rateStr)
-        ax.text(.9, 1.025, rStr, ha="right", va='bottom', fontsize='xx-small',
-                transform=ax.transAxes)
+        ax.text(1. - ann_div, 1.025, rStr, ha="right", va='bottom',
+                fontsize='xx-small', transform=ax.transAxes)
     if (G is not None):
         if (int(G*100)/100.0 == int(G)):
             gStr = '{0}'.format(int(G))
         else:
             gStr = '{0:.2f}'.format(G)
-        ax.text(.1, 1.025, gStr, ha="left", va='bottom', fontsize='xx-small',
-                transform=ax.transAxes)
+        ax.text(ann_div, 1.025, gStr, ha="left", va='bottom',
+                fontsize='xx-small', transform=ax.transAxes)
 
 
- 
+
 def plotAutoCorrelation(ac, X, Y, diam=np.inf, ax=None, titleStr="",
         scaleBar=None, scaleText=True, **kw):
     if (ax is None):
