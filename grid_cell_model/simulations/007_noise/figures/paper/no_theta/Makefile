@@ -4,15 +4,17 @@
 THESIS_DIR=~/work/PhDThesis/src
 
 
-all: figure_bumps.dummy							\
-	figure_drifts.dummy 						\
-	figure_gamma.dummy							\
-	figure_isBump.dummy						\
-	figure_isbump_examples.dummy				\
-	figure_seizures.dummy						\
-	suppFigure_gamma.dummy						\
-	suppFigure_seizures.dummy					\
-	suppFigure_seizure_examples.dummy			\
+all: figure_bumps.dummy					\
+	figure_drifts.dummy 				\
+	figure_gamma.dummy					\
+	figure_isBump.dummy					\
+	figure_isbump_examples.dummy		\
+	figure_seizures.dummy				\
+	figure_velocity.py				    \
+	suppFigure_gamma.dummy				\
+	suppFigure_seizures.dummy			\
+	suppFigure_seizure_examples.dummy	\
+	suppFigure_velocity.py
 
 
 .py.dummy:

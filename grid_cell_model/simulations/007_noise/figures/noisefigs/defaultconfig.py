@@ -235,9 +235,10 @@ def _get_default_config():
     ConnectionFunctionPlotter_config = {
         'fig_size': (3, 1.5),
         'bbox_rect': (.2, .25, .95, .75),
+        'uniform_random': False,
 
         'leg1_kwargs': dict(
-            loc=(0.02, 1.0),
+            loc=(.6, .9),
             frameon=False,
             fontsize='x-small',
             ncol=1

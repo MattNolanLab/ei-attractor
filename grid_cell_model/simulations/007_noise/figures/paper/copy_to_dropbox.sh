@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dst_dir=~/Dropbox/shared_data/noise/figures/
+dst_dir=~/Dropbox/Independent_grids_and_gamma/noise/figures
 output_fig_dir='output_figures'
 no_theta_output_fig_dir="no_theta/$output_fig_dir"
 panels_dir='panels'

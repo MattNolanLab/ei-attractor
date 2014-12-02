@@ -75,7 +75,7 @@ class ConnectionFunctionPlotter(FigurePlotter):
         ES_pAMPA_mu = y_dim/2.0
         ES_pAMPA_sigma = 0.5/6
         ES_pGABA_sigma = 0.5/6
-        ES_pGABA_const = 0.1
+        ES_pGABA_const = 0.013
         shift = 0.1
 
         # Excitatory surround
