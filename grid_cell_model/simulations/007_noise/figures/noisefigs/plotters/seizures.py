@@ -152,8 +152,8 @@ class MaxPopulationFRSweepsPlotter(SweepPlotter):
         iter_list = self.config['iter_list']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-            fname = (self.config['output_dir'] +
-                     "/bumps_popMaxFR_sweep{0}.pdf".format(int(noise_sigma)))
+            fname = self.get_fname("bumps_popMaxFR_sweep{ns}.pdf",
+                                   ns=noise_sigma)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
                 kw = dict()
                 if ns_idx != 0:

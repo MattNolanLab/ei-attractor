@@ -97,7 +97,7 @@ if common.velocityType in o.type:
             o.bumpSpeedMax,
             forceUpdate=forceUpdate,
             maxFitRangeIdx=10)
-    speedPlotter = vis.bumps.SpeedPlotter(plotFittedLine=False)
+    speedPlotter = vis.bumps.SpeedPlotter(plotFittedLine=True)
 
     sp.visit(speedEstimator, trialList='all-at-once')
     sp.visit(gainEstimator, trialList='all-at-once')

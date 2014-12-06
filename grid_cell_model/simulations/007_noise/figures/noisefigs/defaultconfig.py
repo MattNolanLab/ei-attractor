@@ -773,6 +773,7 @@ def _get_default_config():
 
     VelFitErrSweepPlotter_config = {
         #'scale_factor': .7,
+        'cbar': [0, 0, 1],
         'cbar_kw': dict(
             label       = 'Fit error (neurons/s)',
             location    = 'right',
@@ -781,7 +782,12 @@ def _get_default_config():
             ticks       = ti.MultipleLocator(2),
             rasterized  = True
         ),
+        'ylabel': [None, '',    ''],
+        'yticks': [1, 0, 0],
         'plot_contours' : [1, 1, 1],
+        'vmin': 0,
+        'vmax': 11.2,
+
     }
     _default_config['VelFitErrSweepPlotter'] = VelFitErrSweepPlotter_config
 
@@ -988,6 +994,16 @@ def _get_default_config():
         'yticks': True,
     }
     _default_config['ScatterGridsFRAllPlotter'] = ScatterGridsFRAllPlotter_config
+
+    ###########################################################################
+    GridsVelFitErrProbabilityPlotter_config = {
+        'fig_size': (2.7, 2.7),         # inches
+        'bbox_rect': (0.25, 0.2, 0.95, 0.9),
+        'title_size': 'medium',
+        'data_range': [[0, 11.2], [-.5, 1.2]],
+    }
+    _default_config['GridsVelFitErrProbabilityPlotter'] = GridsVelFitErrProbabilityPlotter_config
+
 
     ##############################################################################
     return _default_config

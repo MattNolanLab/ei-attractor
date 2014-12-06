@@ -22,6 +22,8 @@ files="
     $output_fig_dir/figureS8.pdf
     $output_fig_dir/figureS9.pdf
     $output_fig_dir/figureS10.pdf
+    $output_fig_dir/figureS11.pdf
+    $output_fig_dir/figureS12.pdf
 
     $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf
     $output_fig_dir/suppFigure_grids_vs_line_slope.pdf
@@ -31,11 +33,11 @@ files="
     "
 
 no_theta_files="
-    $no_theta_output_fig_dir/figure2.pdf
     $no_theta_output_fig_dir/figure3.pdf
-    $no_theta_output_fig_dir/figure3_details.pdf
     $no_theta_output_fig_dir/figure4.pdf
-    $no_theta_output_fig_dir/figureS8.pdf
+    $no_theta_output_fig_dir/figure4_details.pdf
+    $no_theta_output_fig_dir/figure5.pdf
+    $no_theta_output_fig_dir/figureS11.pdf
 "
 
 # Copy to dropbox
