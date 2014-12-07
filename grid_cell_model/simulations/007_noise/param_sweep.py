@@ -122,7 +122,7 @@ class SubmissionParser(flagparse.FlagParser):
         self.add_argument('--col',      type=int)
         self.add_argument("--ns",       type=int, choices=[0, 150, 300])
         self.add_argument("--time",     type=float)
-        self.add_argument('--ntrials',  type=positive_int)
+        self.add_argument('--ntrials',  type=positive_int, required=True)
         self.add_argument('--rtLimit',  type=str)
         self.add_argument('--printout', type=int, choices=[0, 1], default=1)
         self.add_flag('--dry_run',
