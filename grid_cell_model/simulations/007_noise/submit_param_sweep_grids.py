@@ -47,4 +47,4 @@ for noise_sigma in parser.noise_sigmas:
     ###############################################################################
     submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
             appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
-            extraIterparams, rc=parser.rowcol)
+            extraIterparams, rc=parser.rowcol, printout=o.printout)
