@@ -10,7 +10,7 @@ all: figure_bumps.dummy					\
 	figure_seizures.dummy				\
 	figure_velocity.dummy			    \
 	suppFigure_gamma.dummy				\
-	suppFigure_grid_examples.py			\
+	suppFigure_grid_examples.dummy		\
 	suppFigure_grids_vs_bumps.dummy		\
 	suppFigure_seizures.dummy			\
 	suppFigure_seizure_examples.dummy	\
