@@ -131,7 +131,7 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
                         fontsize=fontSize)
 
             rateMap   = rateMaps[r][c][trialNum]
-            if not isinstance(rateMap, np.ndarray):
+            if not isinstance(rateMap, np.ndarray) or np.isnan(G[r][c][0]):
                 ax.axis('off')  # remove empty Axes when data is missing
                 continue
 

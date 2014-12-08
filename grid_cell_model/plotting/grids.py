@@ -49,11 +49,15 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
     '''
     Plot the grid-like rate map into the current axis
     '''
+    vmin = kw.pop('vmin', 0)
     if (ax is None):
         ax = gca()
     rateMap = ma.masked_array(rateMap, mask = np.sqrt(X**2 + Y**2) > diam/2.0)
     globalAxesSettings(ax)
-    ax.pcolor(X, Y, rateMap, **kw)
+    ax.imshow(rateMap, interpolation='none',
+              extent=(X[0, 0], X[0, -1], Y[0, 0], Y[-1, 0]),
+              origin='lower',
+              rasterized=False)
     ax.axis('scaled')
     ax.axis('off')
     ax.set_title(titleStr, va='bottom')

@@ -7,11 +7,12 @@ from noisefigs.env import NoiseEnvironment
 
 import config
 
+singleDataRoot = 'simulation_data/submission/single_neuron'
+
 parser = flagparse.FlagParser()
 parser.add_flag('--grids')
 parser.add_flag('--examplesFlag')
 parser.add_flag('--detailed_noise')
-#parser.add_flag('--Vm_examples')
 parser.add_flag('--diff_sweep')
 parser.add_flag('--conn_func')
 parser.add_flag('--example_hists')
@@ -25,9 +26,6 @@ if args.grids or args.all:
 
 if args.examplesFlag or args.all:
     env.register_plotter(noisefigs.plotters.GridExamplesPlotter)
-
-#if args.Vm_examples or args.all:
-#    env.register_plotter(noisefigs.plotters.VmExamplesPlotter)
 
 if args.detailed_noise or args.all:
     env.register_plotter(noisefigs.plotters.GridDetailedNoisePlotter)

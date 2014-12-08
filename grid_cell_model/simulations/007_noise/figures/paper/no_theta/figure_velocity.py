@@ -12,6 +12,7 @@ parser.add_flag('--rasters')
 parser.add_flag('--rastersZoom')
 parser.add_flag('--rates')
 parser.add_flag('--vel_slope_sweeps')
+parser.add_flag('--vel_fiterr_prob')
 args = parser.parse_args()
 
 env = NoiseEnvironment(user_config=config.get_config())
@@ -27,5 +28,8 @@ if args.rastersZoom or args.all:
 
 if args.vel_slope_sweeps or args.all:
     env.register_plotter(noisefigs.plotters.VelSlopeSweepPlotter)
+
+if args.vel_fiterr_prob or args.all:
+    env.register_plotter(noisefigs.plotters.GridsVelFitErrProbabilityPlotter)
 
 env.plot()
