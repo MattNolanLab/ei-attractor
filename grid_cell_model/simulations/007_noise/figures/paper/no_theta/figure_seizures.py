@@ -35,7 +35,6 @@ if args.maxFRSweeps or args.all:
         noisefigs.plotters.MaxPopulationFRSweepsPlotter,
         config= {
             'MaxPopulationFRSweepsPlotter': {
-                'scale_factor': .8,
                 'fname_prefix': 'paper_',
                 'ann': None,
                 'plot_grid_contours': [1, 1, 1],
@@ -43,7 +42,6 @@ if args.maxFRSweeps or args.all:
                 'cbar_kw': dict(
                     labelpad   = 8,
                     location   = 'right',
-                    fraction   = .25,
                     shrink     = 0.8,
                     pad        = -.05,
                     rasterized = True

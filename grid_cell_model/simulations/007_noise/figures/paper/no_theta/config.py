@@ -20,6 +20,7 @@ _config = {
     'GridSweepsPlotter': {
         'vmin': -.5,
         'vmax': 1.1,
+        'sigma_title': False,
     },
 
     'GammaSweepsPlotter': {
