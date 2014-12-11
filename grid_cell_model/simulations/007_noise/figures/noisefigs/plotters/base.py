@@ -2,7 +2,6 @@
 from __future__ import absolute_import, division, print_function
 
 import logging
-from abc import ABCMeta, abstractmethod
 
 import numpy as np
 import scipy
@@ -36,26 +35,11 @@ class _FigureContextManager(object):
         return False
 
 
-class FigurePlotter(object):
-    __metaclass__ = ABCMeta
-    '''Performs plotting without returning any value.'''
+class Computation(object):
+    '''Performs computation without returning any value.'''
     def __init__(self, config, env):
         self._env = env
         self._config = config
-
-    @property
-    def config(self):
-        '''Global configuration.'''
-        return self._config
-
-    @property
-    def myc(self):
-        '''Class-specific configuration.'''
-        return self._get_class_config()
-
-    @property
-    def env(self):
-        return self._env
 
     def _get_class_config(self):
         logger.debug("Fetching config section for class <%s>",
@@ -67,10 +51,53 @@ class FigurePlotter(object):
                         self.__class__.__name__)
             return {}
 
+    @property
+    def config(self):
+        '''Global configuration.'''
+        return self._config
+
+    @property
+    def env(self):
+        return self._env
+
+    def get_fname(self, template, *args, **kwargs):
+        '''Format the template of the file name into a ready-to-use file path
+        for writing data.
+
+        Parameters
+        ----------
+        template : str
+            String of the file name template. This can be prefixed and suffixed
+            with various paths. *args and **kwargs will be passed to
+            template.format() method.
+
+        Returns
+        -------
+        fname : str
+            Fully qualifying path to save the data into.
+        '''
+        if "ns" in kwargs:
+            kwargs["ns"] = int(kwargs["ns"])
+        return "{output_dir}/{fname_prefix}{obj_prefix}{file_str}".format(
+                    output_dir=self.config['output_dir'],
+                    fname_prefix=self.config.get('fname_prefix', ''),
+                    obj_prefix=self.myc.get('fname_prefix', ''),
+                    file_str=template.format(*args, **kwargs))
+
+    @property
+    def myc(self):
+        '''Class-specific configuration.'''
+        return self._get_class_config()
+
+    def run_all(self, *args, **kwargs):
+        raise NotImplementedError()
+
+
+class FigurePlotter(Computation):
+    '''Performs plotting without returning any value.'''
     def pre_plot(self, *args, **kwargs):
         pass
 
-    @abstractmethod
     def plot(self, *args, **kwargs):
         raise NotImplementedError()
 
@@ -101,30 +128,6 @@ class FigurePlotter(object):
         final_scale = global_scale*class_scale
         fig = plt.figure(figsize=np.asarray(nominal_fig_size)*final_scale)
         return fig
-
-    def get_fname(self, template, *args, **kwargs):
-        '''Format the template of the file name into a ready-to-use file path
-        for saving the figure.
-
-        Parameters
-        ----------
-        template : str
-            String of the file name template. This can be prefixed and suffixed
-            with various paths. *args and **kwargs will be passed to
-            template.format() method.
-
-        Returns
-        -------
-        fname : str
-            Fully qualifying path to save the figure into.
-        '''
-        if "ns" in kwargs:
-            kwargs["ns"] = int(kwargs["ns"])
-        return "{output_dir}/{fname_prefix}{obj_prefix}{file_str}".format(
-                    output_dir=self.config['output_dir'],
-                    fname_prefix=self.config.get('fname_prefix', ''),
-                    obj_prefix=self.myc.get('fname_prefix', ''),
-                    file_str=template.format(*args, **kwargs))
 
 
 class SweepPlotter(FigurePlotter):
