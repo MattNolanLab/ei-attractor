@@ -1,11 +1,7 @@
 #!/usr/bin/env python
-'''
-E/I parameter sweeps in which velocity input is turned OFF, place cell input is
-on and pointing to a constant position (i.e. the animal does not move).
+'''Simulations of grid cells in which the velocity inputs are ON, but place
+cell inputs are OFF.'''
 
-Initialisation place cell inputs and "velocity" place cell input positions
-should be in sync. In this particular simulation, the position is at [0, 0].
-'''
 import numpy as np
 
 from param_sweep    import (submitParamSweep, getBumpCurrentSlope,
@@ -31,23 +27,27 @@ for noise_sigma in parser.noise_sigmas:
     numRepeat   = 1
     dry_run     = o.dry_run
 
-    p['master_seed']       = 123456
-    p['time']              = o.time or 10.5e3  # ms
-    p['nthreads']          = 1
-    p['ntrials']           = o.ntrials
-    p['bumpCurrentSlope']  = -1
-    p['velON']             = 0
-    p['constantPosition']  = 1
-    p['pcON']              = 1
-    p['stateMonDur']       = 1e3 # ms
-    p['verbosity']         = o.verbosity
+    p['master_seed']      = 123456
+    p['time']             = 600e3 if o.time is None else o.time  # ms
+    p['nthreads']         = 1
+    p['ntrials']          = o.ntrials
+    p['velON']            = 1
+    p['pcON']             = 0
+    p['constantPosition'] = 0
+    p['verbosity']        = o.verbosity
+
 
     # Range of E/I synaptic conductances
     Nvals  = 31      # Number of values for each dimension
     startG = 0.0     # nS
     endG   = 6120.0  # nS
 
+    extraIterparams = {'bumpCurrentSlope' : getBumpCurrentSlope(p['noise_sigma'],
+        threshold=-np.infty)}
+    #extraIterparams['bumpCurrentSlope'] = [1.0]
+
     ###############################################################################
     submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
                      appName, rtLimit, numCPU, blocking, timePrefix, numRepeat,
-                     dry_run, rc=parser.rowcol, printout=o.printout)
+                     dry_run, extraIterparams, rc=parser.rowcol,
+                     printout=o.printout)

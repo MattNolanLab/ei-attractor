@@ -14,7 +14,8 @@ from grid_cell_model.otherpkg.log import log_info
 def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
         appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
         extraIterparams={}, rc=None, **kwargs):
-    ac = ArgumentCreator(p, printout=True)
+    printout = kwargs.pop('printout', True)
+    ac = ArgumentCreator(p, printout=printout)
 
     GArr = np.linspace(startG, endG, Nvals)
     #GArr = [1.0]
@@ -116,13 +117,14 @@ class SubmissionParser(flagparse.FlagParser):
         super(SubmissionParser, self).__init__(**kwargs)
         self.add_argument('env',     type=str,
                           choices=['workstation', 'cluster'])
-        self.add_argument("where",     type=str)
-        self.add_argument('--row',     type=int)
-        self.add_argument('--col',     type=int)
-        self.add_argument("--ns",      type=int, choices=[0, 150, 300])
-        self.add_argument("--time",    type=float)
-        self.add_argument('--ntrials', type=positive_int)
-        self.add_argument('--rtLimit', type=str)
+        self.add_argument("where",      type=str)
+        self.add_argument('--row',      type=int)
+        self.add_argument('--col',      type=int)
+        self.add_argument("--ns",       type=int, choices=[0, 150, 300])
+        self.add_argument("--time",     type=float)
+        self.add_argument('--ntrials',  type=positive_int, required=True)
+        self.add_argument('--rtLimit',  type=str)
+        self.add_argument('--printout', type=int, choices=[0, 1], default=1)
         self.add_flag('--dry_run',
                       help='Do no run anything nor save any meta-data')
 
