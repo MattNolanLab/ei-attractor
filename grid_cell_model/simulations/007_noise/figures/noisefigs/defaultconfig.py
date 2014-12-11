@@ -1004,6 +1004,11 @@ def _get_default_config():
     }
     _default_config['GridsVelFitErrProbabilityPlotter'] = GridsVelFitErrProbabilityPlotter_config
 
+    ###########################################################################
+    _default_config['HighGridScoreFraction'] = {
+        'threshold': .5,
+    }
+
 
     ##############################################################################
     return _default_config

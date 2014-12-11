@@ -19,7 +19,7 @@ from ..EI_plotting import sweeps, examples, details, scatter
 from ..EI_plotting import aggregate as aggr
 from ..EI_plotting.base import getOption, plotStateSignal
 from ..EI_plotting import scaling
-from .base import (FigurePlotter, SweepPlotter, ProbabilityPlotter,
+from .base import (Computation, FigurePlotter, SweepPlotter, ProbabilityPlotter,
                    DummyPlotter)
 
 __all__ = [
@@ -32,6 +32,7 @@ __all__ = [
     'GridBumpScatterPlotter',
     'GridsPBumpsProbabilityPlotter',
     'GridSimpleExamplePlotter',
+    'HighGridScoreFraction',
 ]
 
 
@@ -607,3 +608,29 @@ class GridSimpleExamplePlotter(FigurePlotter):
                  'grid_spiking_and_field_example.pdf')
         fig.savefig(fname, dpi=300, transparent=myc['transparent'])
         plt.close()
+
+
+##############################################################################
+class HighGridScoreFraction(Computation):
+    '''Generate statistics of how many simulations in the Sweep are above
+    threshold.'''
+    def __init__(self, *args, **kwargs):
+        super(HighGridScoreFraction, self).__init__(*args, **kwargs)
+
+    def run_all(self, *args, **kwargs):
+        ps = self.env.ps
+        example_idx = self.config['grids']['example_idx']
+        iter_list = self.config['iter_list']
+        threshold = self.myc['threshold']
+
+        print("Gridness score > %f" % threshold)
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                      ignoreNaNs=True, normalizeTicks=True,
+                                      r=example_idx[ns_idx][0],
+                                      c=example_idx[ns_idx][1])
+            gscore, _, _ = data.getData()
+            above = np.sum(gscore > threshold)
+            print("\tsigma: %s pA, %d/%d" % (str(noise_sigma),
+                                             above,
+                                             gscore.size))
