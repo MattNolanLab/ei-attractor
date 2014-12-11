@@ -23,14 +23,13 @@ files="
     $output_fig_dir/figureS9.pdf
     $output_fig_dir/figureS10.pdf
     $output_fig_dir/figureS11.pdf
-    $output_fig_dir/figureS12.pdf
-
-    $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf
-    $output_fig_dir/suppFigure_grids_vs_line_slope.pdf
-    $output_fig_dir/suppFigure_line_fit_error_vs_slope.pdf
-    $panels_dir/suppFigure_grids_vs_bumps_exp.pdf
-    $panels_dir/suppFigure_grids_vs_bumps.pdf
     "
+
+#    $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf
+#    $output_fig_dir/suppFigure_grids_vs_line_slope.pdf
+#    $output_fig_dir/suppFigure_line_fit_error_vs_slope.pdf
+#    $panels_dir/suppFigure_grids_vs_bumps_exp.pdf
+#    $panels_dir/suppFigure_grids_vs_bumps.pdf
 
 no_theta_files="
     $no_theta_output_fig_dir/figure3.pdf
