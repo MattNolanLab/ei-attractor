@@ -185,6 +185,7 @@ def plotVelStdSweep(sp, iterList, noise_sigma, **kw):
     c          = kw.pop('c', 0)
     sigmaTitle = kw.pop('sigmaTitle', True)
     cbar       = kw.pop('cbar', True)
+    annotations = kw.pop('annotations', None)
 
 
     varList = ['analysis', 'bumpVelAll']
@@ -209,6 +210,10 @@ def plotVelStdSweep(sp, iterList, noise_sigma, **kw):
 
     if (sigmaTitle):
         ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
+
+    if (annotations is not None):
+        for a in annotations:
+            plotSweepAnnotation(X=X, Y=Y, ax=ax, **a)
 
     return C, ax, cax
 

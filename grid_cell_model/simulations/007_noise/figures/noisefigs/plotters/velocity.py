@@ -142,6 +142,7 @@ class VelLinesPlotter(FigurePlotter):
                 iterList=iter_list,
                 color='blue',
                 ivel_range=self.myc.get('ivel_range', None),
+                g_ann=self.myc.get('g_ann', True),
                 **kwargs)
 
             fname = (self.config['output_dir'] +
@@ -230,6 +231,27 @@ class VelSlopeSweepPlotter(SweepPlotter):
         iter_list = self.config['iter_list']
         grid_example_idx = self.config['grids']['example_idx']
 
+        ann0_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann150_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann300_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann = [
+            [ann0_0],
+            [ann150_0],
+            [ann300_0]
+        ]
+
         # This should be corresponding to the velLine examples as well !!
         slopeVarList = ['lineFitSlope']
 
@@ -254,6 +276,7 @@ class VelSlopeSweepPlotter(SweepPlotter):
                     cbar=self.myc['cbar'][ns_idx],
                     cbar_kw=self.myc['cbar_kw'],
                     vmin=self.myc['vmin'], vmax=self.myc['vmax'],
+                    annotations=ann[ns_idx],
                     **kw)
 
                 # Contours
@@ -552,6 +575,27 @@ class VelFitErrSweepPlotter(SweepPlotter):
         iter_list = self.config['iter_list']
         grid_example_idx = self.config['grids']['example_idx']
 
+        ann0_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann150_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann300_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann = [
+            [ann0_0],
+            [ann150_0],
+            [ann300_0]
+        ]
+
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
                      "/suppFigure_velocity_err_sweeps{}.pdf".format(int(noise_sigma)))
@@ -572,6 +616,7 @@ class VelFitErrSweepPlotter(SweepPlotter):
                         yticks=self.myc['yticks'][ns_idx],
                         vmin=self.myc['vmin'],
                         vmax=self.myc['vmax'],
+                        annotations=ann[ns_idx],
                         sigmaTitle=False)
 
                 # Contours

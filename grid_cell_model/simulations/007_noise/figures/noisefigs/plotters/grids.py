@@ -161,19 +161,14 @@ class GridExampleRectPlotter(FigurePlotter):
         super(GridExampleRectPlotter, self).__init__(*args, **kwargs)
 
     def drawSweep(self, ax, data, spaceRect):
-        sweeps.plotGridTrial(
+        sweeps.plotSweep(
                 data,
                 None,
-                None,
-                None,
-                trialNumList=None,
-                r=None, c=None,
                 ax=ax,
                 cbar=True,
                 cbar_kw=self.myc['cbar_kw'],
                 cmap=self.cmap,
                 vmin=self.myc['vmin'], vmax=self.myc['vmax'],
-                ignoreNaNs=True,
                 sliceAnn=None,
                 sigmaTitle=False)
 
@@ -243,7 +238,7 @@ class GridExampleRectPlotter(FigurePlotter):
         saver.set_file_name(self.config['output_dir'] +
                             "/suppFigure_grid_examples")
         saver.ext = "pdf"
-        saver.set_backend_params(dpi=300, transparent=True)
+        saver.set_backend_params(dpi=150, transparent=True)
 
         strIdx = 0
         for noise_idx, noise_sigma in enumerate(ps.noise_sigmas):

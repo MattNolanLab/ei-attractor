@@ -6,6 +6,7 @@ import matplotlib.ticker as ti
 from configobj import ConfigObj
 
 from .plotters.base import PdfOutputSaver
+from .plotters.base import SeparateMultipageSaver
 
 
 scale_factor = 1.
@@ -160,7 +161,7 @@ def _get_default_config():
             'rasterized': True
         },
         'vmin': -0.505,
-        'vmax': 1.141,
+        'vmax': 1.111,
 
         'fig_saver': PdfOutputSaver(None, 'pdf')
     }
@@ -538,6 +539,7 @@ def _get_default_config():
 
     ##############################################################################
     BumpDriftAtTimePlotter_config = {
+        'scale_factor': .8,
         'cbar_kw': dict(
             label       = 'Average bump drift\n(neurons)',
             location    = 'right',
@@ -565,6 +567,7 @@ def _get_default_config():
 
     ##############################################################################
     BumpDiffResetPlotter_config = {
+        'scale_factor': .8,
         'cbar_kw': dict(
             label       = 'Distance from reset\nposition (neurons)',
             location    = 'right',
@@ -754,6 +757,7 @@ def _get_default_config():
     ##############################################################################
 
     VelSlopeSweepPlotter_config = {
+        'scale_factor': .8,
         'vmin': -.472,
         'vmax': 1.353,
         'cbar': [0, 0, 1],
@@ -772,7 +776,7 @@ def _get_default_config():
     ##############################################################################
 
     VelFitErrSweepPlotter_config = {
-        #'scale_factor': .7,
+        'scale_factor': .8,
         'cbar': [0, 0, 1],
         'cbar_kw': dict(
             label       = 'Fit error (neurons/s)',
@@ -794,10 +798,12 @@ def _get_default_config():
     ##############################################################################
 
     VelLinesPlotter_config = {
-        'fig_size': (2.6, 2),
-        'bbox_rect': (0.3, 0.35, 0.95, 0.65),
+        'scale_factor': .8,
+        'fig_size': (3., 2),
+        'bbox_rect': (0.4, 0.35, 0.95, 0.65),
         'positions': ((5, 15), (5, 15), (5, 15)),
         'ivel_range': 11,
+        'g_ann': False,
     }
     _default_config['VelLinesPlotter'] = VelLinesPlotter_config
 
@@ -868,13 +874,13 @@ def _get_default_config():
     ##############################################################################
 
     RasterExamplePlotter_config = {
-        'fig_size': (8.3, 8.3),
-        'sweep_rect' : (.1, .73, .4, .95),
+        'fig_size': (6.2, 8.3),
+        'sweep_rect' : (.12, .73, .45, .95),
         'cbar_kw': dict(
             label       = "Mean $E-rate_{max}^{\\theta}$ (Hz)",
             location    = 'right',
             shrink      = 0.8,
-            pad         = -.05,
+            pad         = .05,
             ticks       = ti.MultipleLocator(250),
             rasterized  = True
         ),
@@ -883,14 +889,14 @@ def _get_default_config():
         'markersize': 1.5,
         'plot_ann_txt' : True,
         'theta_color': (0, 0, 0, .3),
-        'fig_saver': PdfOutputSaver(None, 'pdf')
+        'fig_saver': SeparateMultipageSaver(None, 'pdf')
     }
     _default_config['RasterExamplePlotter'] = RasterExamplePlotter_config
 
     ##############################################################################
 
     ScatterGammaGridsSeparatePlotter_config = {
-        'fig_size': (8.27, 11.69),
+        'fig_size': (5., 6.7),
         #'bbox_rect': (0.12, 0.17, 0.98, 0.92),
     }
     _default_config['ScatterGammaGridsSeparatePlotter'] = ScatterGammaGridsSeparatePlotter_config
@@ -898,7 +904,7 @@ def _get_default_config():
     ##############################################################################
 
     ScatterGammaFGridsSeparatePlotter_config = {
-        'fig_size': (8.27, 11.69),
+        'fig_size': (5., 6.7),
         #'bbox_rect': (0.12, 0.17, 0.98, 0.92),
     }
     _default_config['ScatterGammaFGridsSeparatePlotter'] = ScatterGammaFGridsSeparatePlotter_config
@@ -950,6 +956,7 @@ def _get_default_config():
     ##############################################################################
 
     FRSweepPlotter_config = {
+        'scale_factor': .8,
         'cbar_kw' : {
             'location' : 'right',  # This has to match cbar_kw_e and cbar_kw_i
         },

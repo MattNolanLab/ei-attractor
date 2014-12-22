@@ -449,13 +449,14 @@ class ScatterGammaGridsSeparatePlotter(FigurePlotter):
                 captionLetters=('A', 'B', 'C'),
                 fig=fig)
         scatterPlot.plot(captionLeft=-0.1, plotcolorbar=False)
-        l = 0.8
-        w = 0.165
-        scatterPlot.plotColorbar(left=l, bottom=.87, right=l+w, top=.97)
+        l = 0.87
+        w = 0.12
+        scatterPlot.plotColorbar(left=l, bottom=.9, right=l+w, top=1)
         scatterPlot.set_titleSizes(16)
-        #ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
-        #ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-        #ax.set_ylim(prepareLims((-0.5, 1.2), margin=0.02))
+        for ax in scatterPlot.axes:
+            #ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
+            ax.yaxis.set_major_locator(ti.MultipleLocator(0.3))
+            #ax.set_ylim(prepareLims((-0.5, 1.2), margin=0.02))
 
         fname = output_dir + "/suppFigure_gamma.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
@@ -503,9 +504,11 @@ class ScatterGammaFGridsSeparatePlotter(FigurePlotter):
                 captionLetters=('A', 'B', 'C'),
                 fig=fig)
         scatterPlot.plot(captionLeft=-0.1, plotcolorbar=False)
-        l = 0.8
-        w = 0.165
-        scatterPlot.plotColorbar(left=l, bottom=.87, right=l+w, top=.97)
+        for ax in scatterPlot.axes:
+            ax.yaxis.set_major_locator(ti.MultipleLocator(0.3))
+        l = 0.87
+        w = 0.12
+        scatterPlot.plotColorbar(left=l, bottom=.22, right=l+w, top=.32)
         scatterPlot.set_titleSizes(16)
 
         fname = output_dir + "/suppFigure_gammaF_grids_scatter.pdf"
