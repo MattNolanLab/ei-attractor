@@ -1,9 +1,6 @@
 .PHONY: clean, thesis
 .SUFFIXES: .py .dummy
 
-THESIS_DIR=~/work/PhDThesis/src
-
-
 all: figure_bumps.dummy					\
 	figure_drifts.dummy 				\
 	figure_gamma.dummy					\
@@ -11,11 +8,13 @@ all: figure_bumps.dummy					\
 	figure_isBump.dummy					\
 	figure_isbump_examples.dummy		\
 	figure_seizures.dummy				\
-	figure_velocity.py				    \
+	figure_velocity.dummy			    \
 	suppFigure_gamma.dummy				\
+	suppFigure_grid_examples.dummy		\
+	suppFigure_grids_vs_bumps.dummy		\
 	suppFigure_seizures.dummy			\
 	suppFigure_seizure_examples.dummy	\
-	suppFigure_velocity.py
+	suppFigure_velocity.dummy
 
 
 .py.dummy:
@@ -27,6 +26,3 @@ all: figure_bumps.dummy					\
 clean:
 	rm -f $$(git ls-files -i --exclude-standard -o panels)
 
-thesis:
-	./update_thesis.sh
-	cd $(THESIS_DIR); $(MAKE)

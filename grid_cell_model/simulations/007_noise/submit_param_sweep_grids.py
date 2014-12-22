@@ -31,6 +31,7 @@ for noise_sigma in parser.noise_sigmas:
     p['nthreads']         = 1
     p['ntrials']          = o.ntrials
     p['velON']            = 1
+    p['pcON']             = 1
     p['constantPosition'] = 0
     p['verbosity']        = o.verbosity
 
@@ -46,5 +47,6 @@ for noise_sigma in parser.noise_sigmas:
 
     ###############################################################################
     submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
-            appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
-            extraIterparams, rc=parser.rowcol)
+                     appName, rtLimit, numCPU, blocking, timePrefix, numRepeat,
+                     dry_run, extraIterparams, rc=parser.rowcol,
+                     printout=o.printout)

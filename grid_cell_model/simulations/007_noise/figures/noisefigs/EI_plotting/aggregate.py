@@ -857,6 +857,27 @@ class AvgPopulationFR(AggregateData):
         return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
 
 
+class VelocityData(AggregateData):
+    '''Velocity data.'''
+    def __init__(self, where, space, iterList, **kw):
+        super(VelocityData, self).__init__(space, iterList, None, **kw)
+        self._where = where
+        self._data = None
+        self._X  = None
+        self._Y  = None
+
+    def getData(self):
+        if self._data is None:
+            path = "{root}/{where}".format(
+                        root=self.analysisRoot[0],
+                        where = self._where)
+            self._data = self.sp.getReduction(path)
+            self._Y, self._X = computeVelYX(self.sp, self.iterList,
+                                            normalize=self.normalizeTicks,
+                                            r=self.r, c=self.c)
+        return self._data, self._X, self._Y
+
+
 ##############################################################################
 def collapseSweeps(data):
     '''

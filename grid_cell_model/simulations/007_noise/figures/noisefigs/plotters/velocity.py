@@ -16,7 +16,7 @@ from grid_cell_model.submitting import flagparse
 
 from ..EI_plotting import sweeps, details, rasters, scatter
 from ..EI_plotting import aggregate as aggr
-from .base import FigurePlotter, SweepPlotter
+from .base import FigurePlotter, SweepPlotter, ProbabilityPlotter
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,7 @@ __all__ = [
     'VelFitStdSweepPlotter',
     'VelSlopeSweepPlotter',
     'VelLinesPlotter',
+    'GridsVelFitErrProbabilityPlotter',
 ]
 
 ###############################################################################
@@ -141,6 +142,7 @@ class VelLinesPlotter(FigurePlotter):
                 iterList=iter_list,
                 color='blue',
                 ivel_range=self.myc.get('ivel_range', None),
+                g_ann=self.myc.get('g_ann', True),
                 **kwargs)
 
             fname = (self.config['output_dir'] +
@@ -229,6 +231,27 @@ class VelSlopeSweepPlotter(SweepPlotter):
         iter_list = self.config['iter_list']
         grid_example_idx = self.config['grids']['example_idx']
 
+        ann0_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann150_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann300_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann = [
+            [ann0_0],
+            [ann150_0],
+            [ann300_0]
+        ]
+
         # This should be corresponding to the velLine examples as well !!
         slopeVarList = ['lineFitSlope']
 
@@ -253,6 +276,7 @@ class VelSlopeSweepPlotter(SweepPlotter):
                     cbar=self.myc['cbar'][ns_idx],
                     cbar_kw=self.myc['cbar_kw'],
                     vmin=self.myc['vmin'], vmax=self.myc['vmax'],
+                    annotations=ann[ns_idx],
                     **kw)
 
                 # Contours
@@ -551,36 +575,53 @@ class VelFitErrSweepPlotter(SweepPlotter):
         iter_list = self.config['iter_list']
         grid_example_idx = self.config['grids']['example_idx']
 
-        errVarList = ['lineFitErr']
-        err_vmin = 0
-        err_vmax = 11.2
+        ann0_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann150_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann300_0 = dict(
+            txt='',
+            rc=(5, 15),
+            xytext_offset=(1.5, 1),
+            color='black')
+        ann = [
+            [ann0_0],
+            [ann150_0],
+            [ann300_0]
+        ]
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
                      "/suppFigure_velocity_err_sweeps{}.pdf".format(int(noise_sigma)))
-            self.data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
-                                           ignoreNaNs=True, normalizeTicks=True,
-                                           r=grid_example_idx[ns_idx][0],
-                                           c=grid_example_idx[ns_idx][1])
+            self.grid_data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                                ignoreNaNs=True,
+                                                normalizeTicks=True,
+                                                r=grid_example_idx[ns_idx][0],
+                                                c=grid_example_idx[ns_idx][1])
+            vel_data = aggr.VelocityData('lineFitErr', ps.v[ns_idx], iter_list,
+                                         ignoreNaNs=True, normalizeTicks=True)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
-                kw = {'cbar': False}
-                if (ns_idx != 0):
-                    kw['ylabel'] = ''
-                    kw['yticks'] = False
-                if (ns_idx == 2):
-                    kw['cbar'] = True
-                _, ax, cax = sweeps.plotVelTrial(ps.v[ns_idx], errVarList,
-                        iter_list,
-                        noise_sigma,
+                _, _, cax = sweeps.plotSweep(vel_data,
+                        noise_sigma=noise_sigma,
                         ax=ax,
                         cbar_kw=myc['cbar_kw'],
-                        vmin=err_vmin, vmax=err_vmax,
-                        sigmaTitle=False,
-                        **kw)
+                        cbar=self.myc['cbar'][ns_idx],
+                        ylabel=self.myc['ylabel'][ns_idx],
+                        yticks=self.myc['yticks'][ns_idx],
+                        vmin=self.myc['vmin'],
+                        vmax=self.myc['vmax'],
+                        annotations=ann[ns_idx],
+                        sigmaTitle=False)
 
                 # Contours
                 if self.myc['plot_contours'][ns_idx]:
-                    contours = sweeps.Contours(self.data,
+                    contours = sweeps.Contours(self.grid_data,
                             self.config['sweeps']['grid_contours'])
                     contours.plot(
                             ax,
@@ -641,4 +682,80 @@ class VelFitStdSweepPlotter(SweepPlotter):
                         cbar_kw=myc['cbar_kw'],
                         vmin=std_vmin, vmax=std_vmax,
                         **kw)
+
+
+class GridsVelFitErrProbabilityPlotter(ProbabilityPlotter):
+    '''Probability plots of Grids vs. velocity fit error.'''
+    def __init__(self, *args, **kwargs):
+        super(GridsVelFitErrProbabilityPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        myc = self._get_class_config()
+        iter_list = self.config['iter_list']
+        l, b, r, t = myc['bbox_rect']
+        drange = self.myc['data_range']
+
+        fiterr_all = np.empty(0)
+        gridness_all = np.empty(0)
+
+        # Separate noise sigmas
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            if ns_idx == 0:
+                mi_title = 'gridness score vs. bump line fit error'
+            else:
+                mi_title = None
+
+            gridnessData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                    normalizeTicks=False, collapseTrials=True)
+            fitErrData = aggr.VelocityData('lineFitErr', ps.v[ns_idx],
+                                           iter_list, ignoreNaNs=True,
+                                           normalizeTicks=True)
+
+            fitErrData, _, _ = fitErrData.getData()
+            gridnessData, _, _ = gridnessData.getData()
+            fiterr_all = np.hstack((fiterr_all, fitErrData.flatten()))
+            gridness_all = np.hstack((gridness_all, gridnessData.flatten()))
+
+            # gridness score vs. fit err
+            fig = self._get_final_fig(myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            self.plotDistribution(fitErrData, gridnessData, ax,
+                                  noise_sigma=noise_sigma,
+                                  range=drange,
+                                  xlabel = 'Line fit error (neurons/s/trial)',
+                                  ylabel='', yticks=False,
+                                  title_size=self.myc['title_size'])
+            ax.axis('tight')
+            ax.xaxis.set_major_locator(ti.MultipleLocator(4))
+            if 'strip_axis' in self.myc and self.myc['strip_axis']:
+                ax.axis('off')
+            fname = self.get_fname(
+                "grids_fiterr_probability_{ns}.pdf", ns=noise_sigma)
+            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
+                             transparent=True)
+            plt.close(fig)
+
+            self.mutual_information(fitErrData, gridnessData,
+                                    noise_sigma=noise_sigma,
+                                    title=mi_title)
+
+        # All together
+        fig = self._get_final_fig(myc['fig_size'])
+        ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+        self.plotDistribution(fiterr_all, gridness_all, ax,
+                xlabel = 'Line fit error (neurons/s/trial)',
+                ylabel='Gridness score',
+                range=drange,
+                title_size=self.myc['title_size'])
+        ax.axis('tight')
+        ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
+        if 'strip_axis' in self.myc and self.myc['strip_axis']:
+            ax.axis('off')
+        fname = self.get_fname("grids_fiterr_probability_all.pdf")
+        fig.savefig(fname, dpi=300, transparent=True)
+        plt.close(fig)
+
+        self.mutual_information(fiterr_all, gridness_all)
+
 

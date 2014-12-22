@@ -10,30 +10,22 @@ files="
     $output_fig_dir/figure2.pdf
     $output_fig_dir/figure3.pdf
     $output_fig_dir/figure4.pdf
-    $output_fig_dir/figureS1.pdf
-    $output_fig_dir/figureS2.pdf
-    $output_fig_dir/figureS3.pdf
-    $output_fig_dir/figureS4.pdf
-    $output_fig_dir/figureS5.pdf
-    $output_fig_dir/figureS6.pdf
-    $output_fig_dir/figureS7.pdf
-    $output_fig_dir/figureS8.pdf
-    $output_fig_dir/figureS9.pdf
-    $output_fig_dir/figureS10.pdf
-
-    $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf
-    $output_fig_dir/suppFigure_grids_vs_line_slope.pdf
-    $output_fig_dir/suppFigure_line_fit_error_vs_slope.pdf
-    $panels_dir/suppFigure_grids_vs_bumps_exp.pdf
-    $panels_dir/suppFigure_grids_vs_bumps.pdf
+    $output_fig_dir/figure5.pdf
+    $output_fig_dir/figure6.pdf
     "
 
+#    $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf
+#    $output_fig_dir/suppFigure_grids_vs_line_slope.pdf
+#    $output_fig_dir/suppFigure_line_fit_error_vs_slope.pdf
+#    $panels_dir/suppFigure_grids_vs_bumps_exp.pdf
+#    $panels_dir/suppFigure_grids_vs_bumps.pdf
+
 no_theta_files="
-    $no_theta_output_fig_dir/figure2.pdf
     $no_theta_output_fig_dir/figure3.pdf
-    $no_theta_output_fig_dir/figure3_details.pdf
     $no_theta_output_fig_dir/figure4.pdf
-    $no_theta_output_fig_dir/figureS8.pdf
+    $no_theta_output_fig_dir/figure4_details.pdf
+    $no_theta_output_fig_dir/figure5.pdf
+    $no_theta_output_fig_dir/figureS11.pdf
 "
 
 # Copy to dropbox

@@ -23,7 +23,7 @@ class NoiseEnvironment(object):
         self._config = self._load_default_config()
         self._merge_user_config(user_config)
 
-        self._plotters = []
+        self._generators = []
 
         if param_spaces is None:
             self.ps = self._get_default_param_spaces()
@@ -54,18 +54,6 @@ class NoiseEnvironment(object):
         return NoiseDataSpaces(roots, self.config['even_shape'],
                                self.config['noise_sigmas'])
 
-    #def _get_nmda_param_spaces(self):
-    #    config = self.config['nmda_roots']
-    #    roots_0 = NoiseDataSpaces.Roots(
-    #        config['0mM']['bump_data_root'],
-    #        config['0mM']['vel_data_root'],
-    #        config['0mM']['grids_data_root'])
-
-    #    roots_0p1 = NoiseDataSpaces.Roots(
-    #        config['0p1mM']['bump_data_root'],
-    #        config['0p1mM']['vel_data_root'],
-    #        config['0p1mM']['grids_data_root'])
-
     def _merge_user_config(self, user_config):
         '''Update user configuration on top of defaults.'''
         self._user_config = user_config
@@ -82,15 +70,15 @@ class NoiseEnvironment(object):
     def _init_mpl(self):
         mpl.rcParams.update(self.config['mpl'])
 
-    def register_plotter(self, plotter_cls, config=None, merge_in=True):
-        '''Register plotter class with the environment.
-        This creates a list of plotting classes together with their
+    def register_class(self, cls, config=None, merge_in=True):
+        '''Register computation class with the environment.
+        This creates a list of computation classes together with their
         configuration files. These will be then instantiated during a call to
-        the :meth:`~plot` method.
+        the :meth:`~run` method.
 
         Parameters
         ----------
-        plotter_cls : FigurePlotter
+        cls : FigurePlotter
             Plotter class to register
         config  : ConfigObj
             User-defined configuration
@@ -109,9 +97,38 @@ class NoiseEnvironment(object):
         else:
             obj_config = self.config
 
-        self._plotters.append(Plotter(plotter_cls, obj_config))
+        self._generators.append(Plotter(cls, obj_config))
+
+    def register_plotter(self, plotter_cls, config=None, merge_in=True):
+        '''Register plotter class with the environment.
+        This creates a list of plotting classes together with their
+        configuration files. These will be then instantiated during a call to
+        the :meth:`~plot` method.
+
+        Parameters
+        ----------
+        plotter_cls : FigurePlotter
+            Plotter class to register
+        config  : ConfigObj
+            User-defined configuration
+        merge_in : bool
+            If ``True``, this will be merged with the environment config
+            already present. If ``False``, ``config`` will be the only
+            configuration file present for this particular object.
+        '''
+        self.register_class(plotter_cls, config, merge_in)
+
+    def run(self):
+        '''Run everything.'''
+
+        for g in self._generators:
+            instance = g.cls(g.config, self)
+            instance.run_all()
 
     def plot(self):
-        for p in self._plotters:
-            plotter = p.cls(p.config, self)
-            plotter.run_all()
+        '''Run everything.
+
+        This runs all registered objects' computation, not just the plotters.
+        Only for compatibility with older code.
+        '''
+        self.run()

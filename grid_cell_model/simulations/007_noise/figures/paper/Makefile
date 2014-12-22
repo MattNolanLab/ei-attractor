@@ -3,7 +3,7 @@
 
 THESIS_DIR=~/work/PhDThesis/src
 
-all: fast suppFigure_grid_examples.dummy no-theta
+all: fast suppFigure_grid_examples.dummy no-theta no-pc-input
 
 fast: figure_bumps.dummy							\
 	figure_drifts.dummy 						\
@@ -26,6 +26,9 @@ fast: figure_bumps.dummy							\
 no-theta:
 	cd no_theta; $(MAKE)
 
+no-pc-input:
+	cd no_pc_input; $(MAKE)
+
 .py.dummy:
 	echo;							\
 	echo "*** Running $$file ***";	\
@@ -35,6 +38,7 @@ no-theta:
 clean:
 	rm -f $$(git ls-files -i --exclude-standard -o panels)
 	cd no_theta; $(MAKE) clean
+	cd no_pc_input; $(MAKE) clean
 
 thesis:
 	./update_thesis.sh

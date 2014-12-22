@@ -20,6 +20,7 @@ _config = {
     'GridSweepsPlotter': {
         'vmin': -.5,
         'vmax': 1.1,
+        'sigma_title': False,
     },
 
     'GammaSweepsPlotter': {
@@ -76,23 +77,23 @@ _config = {
 
     'MainBumpFormationPlotter': {
         'scale_factor': .8,
-        'plot_grid_contours': [0, 0, 0],
+        'plot_grid_contours': [1, 1, 1],
     },
 
     'BumpDriftAtTimePlotter': {
-        'plot_grid_contours': [0, 0, 0],
+        'plot_grid_contours': [1, 1, 1],
     },
 
     'MaxPopulationFRSweepsPlotter': {
-        'plot_grid_contours': [0, 0, 0],
+        'plot_grid_contours': [1, 1, 1],
     },
 
     'PSeizureSweepPlotter': {
-        'plot_grid_contours': [0, 0, 0],
+        'plot_grid_contours': [1, 1, 1],
     },
 
     'VelSlopeSweepPlotter': {
-        'plot_contours': [0, 0, 0],
+        'plot_contours': [1, 1, 1],
         'vmin': -.5,
         'vmax': 3.57,
         'cbar_kw': dict(
@@ -105,6 +106,11 @@ _config = {
     },
 
     'VelFitErrSweepPlotter': {
-        'plot_contours': [0, 0, 0],
+        'plot_contours': [1, 1, 1],
+        'vmin': 0,
+        'vmax': 15,
+        'cbar_kw': dict(
+            extend='max', extendfrac=0.1
+        ),
     },
 }

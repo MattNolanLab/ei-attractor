@@ -7,15 +7,17 @@ from noisefigs.env import NoiseEnvironment
 
 import config
 
+singleDataRoot = 'simulation_data/submission/single_neuron'
+
 parser = flagparse.FlagParser()
 parser.add_flag('--grids')
 parser.add_flag('--examplesFlag')
 parser.add_flag('--detailed_noise')
-#parser.add_flag('--Vm_examples')
 parser.add_flag('--diff_sweep')
 parser.add_flag('--conn_func')
 parser.add_flag('--example_hists')
 parser.add_flag('--grids_pbumps_prob')
+parser.add_flag('--high_gscore_frac')
 args = parser.parse_args()
 
 env = NoiseEnvironment(user_config=config.get_config())
@@ -25,9 +27,6 @@ if args.grids or args.all:
 
 if args.examplesFlag or args.all:
     env.register_plotter(noisefigs.plotters.GridExamplesPlotter)
-
-#if args.Vm_examples or args.all:
-#    env.register_plotter(noisefigs.plotters.VmExamplesPlotter)
 
 if args.detailed_noise or args.all:
     env.register_plotter(noisefigs.plotters.GridDetailedNoisePlotter)
@@ -43,5 +42,8 @@ if args.example_hists or args.all:
 
 if args.grids_pbumps_prob or args.all:
     env.register_plotter(noisefigs.plotters.GridsPBumpsProbabilityPlotter)
+
+if args.high_gscore_frac or args.all:
+    env.register_plotter(noisefigs.plotters.HighGridScoreFraction)
 
 env.plot()

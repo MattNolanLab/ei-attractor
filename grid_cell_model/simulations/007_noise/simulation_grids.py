@@ -20,8 +20,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 parser = getOptParser()
-parser.add_argument("--velON",            type=int,   choices=[0, 1], help="Velocity input ON?")
-parser.add_argument("--constantPosition", type=int,   choices=[0, 1], help="Should the animat move?")
+parser.add_argument("--velON",            type=int,   choices=[0, 1], required=True, help="Velocity input ON?")
+parser.add_argument("--pcON",             type=int,   choices=[0, 1], required=True, help="Place cell input ON?")
+parser.add_argument("--constantPosition", type=int,   choices=[0, 1], required=True, help="Should the animat move?")
 parser.add_argument("--staticPos_x",      type=float, default=0.0,    help="Static position X coordinate")
 parser.add_argument("--staticPos_y",      type=float, default=0.0,    help="Static position Y coordinate")
 o, _ = parser.parse_args()
@@ -68,8 +69,13 @@ for trial_idx in range(len(d['trials']), o.ntrials):
             stateRecParams=(stateMonParams, stateMonParams))
     if o.velON and not o.constantPosition:
         ei_net.setVelocityCurrentInput_e()
-    posIn = ConstPosInputs(0, 0) if o.constantPosition else None
-    ei_net.setPlaceCells(posIn=posIn)
+    if o.pcON:
+        # This also sets the start PCs
+        posIn = ConstPosInputs(0, 0) if o.constantPosition else None
+        ei_net.setPlaceCells(posIn=posIn)
+    else:
+        # Here the start PCs must be set explicitly
+        ei_net.setStartPlaceCells(ConstPosInputs(0, 0))
     d['net_params'] = ei_net.getNetParams()  # Common settings will stay
     d.flush()
 
