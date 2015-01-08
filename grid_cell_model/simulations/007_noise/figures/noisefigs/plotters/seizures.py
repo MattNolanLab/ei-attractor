@@ -308,7 +308,10 @@ class thresholdReduction(object):
         self.threshold = threshold
 
     def __call__(self, data):
-        return float(np.count_nonzero(data >= self.threshold)) / len(data)
+        if not isinstance(data, np.ndarray):
+            return np.nan
+        else:
+            return float(np.count_nonzero(data >= self.threshold)) / len(data)
 
 class PSeizureSweepPlotter(SweepPlotter):
     def __init__(self, *args, **kwargs):
