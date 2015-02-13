@@ -418,8 +418,8 @@ class NestGridCellNetwork(GridCellNetwork):
         # iaf_gridcells nodes so only one neuron needs setting the actual
         # values
         nest.SetStatus([self.E_pop[0]], {
-            "rat_pos_x" :  self.rat_pos_x,
-            "rat_pos_y" :  self.rat_pos_y,
+            "rat_pos_x" :  self.rat_pos_x.tolist(),
+            "rat_pos_y" :  self.rat_pos_y.tolist(),
             "rat_pos_dt":  self.rat_dt}) # s --> ms
 
         print(self.rat_pos_x)
@@ -676,7 +676,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         Generate a dictionary of a spike data from the monitor ``mon``
         '''
         st = nest.GetStatus(mon)[0]
-        st['events']['senders'] -= gidStart
+        st['events']['senders'] = np.array(st['events']['senders']) - gidStart
         return st
 
 

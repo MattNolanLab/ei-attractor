@@ -111,15 +111,13 @@ def getSpeedPercentile(p, path, grid_lambda, Nx):
     return res
 
 
-class SubmissionParser(flagparse.FlagParser):
+class SubmissionParserBase(flagparse.FlagParser):
     '''Parse arguments for parameter sweep submission process.'''
     def __init__(self, **kwargs):
-        super(SubmissionParser, self).__init__(**kwargs)
+        super(SubmissionParserBase, self).__init__(**kwargs)
         self.add_argument('env',     type=str,
                           choices=['workstation', 'cluster'])
         self.add_argument("where",      type=str)
-        self.add_argument('--row',      type=int)
-        self.add_argument('--col',      type=int)
         self.add_argument("--ns",       type=int, choices=[0, 150, 300])
         self.add_argument("--time",     type=float)
         self.add_argument('--ntrials',  type=positive_int, required=True)
@@ -131,17 +129,9 @@ class SubmissionParser(flagparse.FlagParser):
         self._opts = None
 
     def _check_opts(self):
+        '''Check whether options have been parsed.'''
         if self._opts is None:
             raise RuntimeError("You need to parse the arguments first.")
-
-    def parse_args(self, args=None, namespace=None):
-        '''Parse the arguments.'''
-        self._opts = super(SubmissionParser, self).parse_args(args, namespace)
-
-        if (self._opts.row is None) ^ (self._opts.col is None):
-            raise ValueError("Specify either both --row and --col or None!")
-
-        return self._opts
 
     @property
     def noise_sigmas(self):
@@ -149,6 +139,26 @@ class SubmissionParser(flagparse.FlagParser):
         self._check_opts()
         ns_all = [0.0, 150.0, 300.0] # pA
         return ns_all if self._opts.ns is None  else [self._opts.ns]
+
+    @property
+    def options(self):
+        '''Return the parsed options.'''
+        return self._opts
+
+    def parse_args(self, args=None, namespace=None):
+        '''Parse the arguments.'''
+        self._opts = super(SubmissionParserBase, self).parse_args(args,
+                                                                  namespace)
+        return self._opts
+
+
+class SubmissionParser(SubmissionParserBase):
+    '''Submission parser for parameter sweeps.'''
+    def __init__(self, **kwargs):
+        super(SubmissionParser, self).__init__(**kwargs)
+
+        self.add_argument('--row',      type=int)
+        self.add_argument('--col',      type=int)
 
     @property
     def rowcol(self):
@@ -160,6 +170,10 @@ class SubmissionParser(flagparse.FlagParser):
             rc = None
         return rc
 
-    @property
-    def options(self):
+    def parse_args(self, args=None, namespace=None):
+        self._opts = super(SubmissionParser, self).parse_args(args, namespace)
+
+        if (self._opts.row is None) ^ (self._opts.col is None):
+            raise ValueError("Specify either both --row and --col or None!")
+
         return self._opts
