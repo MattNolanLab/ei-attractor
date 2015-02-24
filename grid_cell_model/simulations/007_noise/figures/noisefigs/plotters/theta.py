@@ -4,8 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from grid_cell_model.plotting.signal import signalPlot
 from grid_cell_model.plotting.low_level import xScaleBar
-
-from .base import FigurePlotter
+from simtools.plotting.plotters import FigurePlotter
 
 __all__ = [
     'ThetaSignalPlotter',
@@ -32,14 +31,14 @@ class ThetaSignalPlotter(FigurePlotter):
             self.ax = self.fig.add_subplot(111)
 
             t = np.arange(0, T+self.dt, self.dt) * 1e-3
-            theta = self.const + .5 * (1. + 
+            theta = self.const + .5 * (1. +
                     np.cos(2*np.pi*self.freq*t - np.pi)) * (1 - self.const)
             self.ax.fill_between(
                     t, theta,
                     edgecolor='None',
                     color=self.myc['color'])
             self.ax.axis('off')
-            self.ax.set_xlim([t[0], t[-1]]) 
+            self.ax.set_xlim([t[0], t[-1]])
             self.ax.set_ylim(-.02, 1.02)
             self.fig.subplots_adjust(left=l, bottom=b, right=r, top=top)
 
@@ -70,7 +69,7 @@ class PACExamplePlotter(FigurePlotter):
 
             # Only theta
             t = np.arange(0, T+self.dt, self.dt)
-            theta = self.const + .5 * (1. + 
+            theta = self.const + .5 * (1. +
                     np.cos(2*np.pi*self.theta_freq*t*1e-3 - np.pi)) * (1 - self.const)
             signalPlot(
                     t, theta,
@@ -78,7 +77,7 @@ class PACExamplePlotter(FigurePlotter):
                     color=self.myc['theta_color'],
                     zeroLine=False)
             self.ax_theta.axis('off')
-            self.ax_theta.set_xlim([t[0], t[-1]]) 
+            self.ax_theta.set_xlim([t[0], t[-1]])
             self.ax_theta.set_ylim(-.2, 1.2)
             self.ax_theta.set_title('A', x=0, y=.95, size=14, weight='bold',
                                     ha='left', va='top')
@@ -93,7 +92,7 @@ class PACExamplePlotter(FigurePlotter):
                     zeroLine=False)
 
             self.ax_pac.axis('off')
-            self.ax_pac.set_xlim([t[0], t[-1]]) 
+            self.ax_pac.set_xlim([t[0], t[-1]])
             self.ax_pac.set_ylim(-1.02, 1.02)
             self.ax_pac.set_title('B', x=0, y=1, size=14, weight='bold',
                                   ha='left', va='top')
@@ -118,7 +117,7 @@ class PACExamplePlotter(FigurePlotter):
             xScaleBar(50, x=bar_x, y=.1, ax=self.ax_pac_all, size='small')
 
             self.ax_pac_all.axis('off')
-            self.ax_pac_all.set_xlim([t[0], t[-1]]) 
+            self.ax_pac_all.set_xlim([t[0], t[-1]])
             self.ax_pac_all.set_ylim(-.02, 1.5)
             self.ax_pac_all.set_title('C', x=0, y=1, size=14, weight='bold',
                                       ha='left', va='top')

@@ -15,8 +15,8 @@ from grid_cell_model.plotting.global_defs   import globalAxesSettings
 import grid_cell_model.plotting.connections as pconn
 from grid_cell_model.submitting import flagparse
 from grid_cell_model.analysis.image import Position2D
+from simtools.plotting.plotters import FigurePlotter
 
-from .base import FigurePlotter
 from ..EI_plotting import aggregate as aggr
 
 DS = DataSpace
@@ -87,7 +87,7 @@ def plotIToEBrokenAxis(sp, gIdx, neuronIdx, trialNum=0, axBoundaries=[0, 0, 1, 1
     w = right - left
     hBottom = h*axesProportions[0]
     hTop = h*axesProportions[1]
-    
+
     axBottom = fig.add_axes(Bbox.from_extents(left, bottom, right, bottom +
         hBottom))
     axTop = fig.add_axes(Bbox.from_extents(left, top - hTop, right, top),
@@ -127,7 +127,7 @@ def plotIToEBrokenAxis(sp, gIdx, neuronIdx, trialNum=0, axBoundaries=[0, 0, 1, 1
             **kwargs)
 
     return axBottom, axTop
-    
+
 
 
 
@@ -141,7 +141,7 @@ def plotOutgoing(sp, gIdx, type, neuronIdx, trialNum=0, **kw):
         Nx = DS.getNetParam(data, 'Ni_x')
         Ny = DS.getNetParam(data, 'Ni_y')
         kw['title'] = 'E cell $\\rightarrow$ I cells'
-        
+
     elif (type == 'I'):
         var = 'g_EI'
         Nx = DS.getNetParam(data, 'Ne_x')
@@ -162,7 +162,7 @@ def plotIncoming(sp, gIdx, type, neuronIdx, trialNum=0, **kw):
         Nx = DS.getNetParam(data, 'Ne_x')
         Ny = DS.getNetParam(data, 'Ne_y')
         kw['title'] = 'E cells $\\rightarrow$ I cell'
-        
+
     elif (type == 'E'):
         var = 'g_EI'
         Nx = DS.getNetParam(data, 'Ni_x')
@@ -323,7 +323,7 @@ class Burak2009ConnectionPlotter(FigurePlotter):
         ax_up.pcolor(X2.x, X2.y, w, rasterized=True)
         ax_up.set_xticks([])
         ax_up.set_yticks([])
-    
+
 
         # Shift down
         ax_down = fig.add_subplot(2, 2, 2)
@@ -332,7 +332,7 @@ class Burak2009ConnectionPlotter(FigurePlotter):
         ax_down.pcolor(X2.x, X2.y, w, rasterized=True)
         ax_down.set_xticks([])
         ax_down.set_yticks([])
-    
+
         # Shift left
         ax_left = fig.add_subplot(2, 2, 3)
         pref_theta = Position2D(1, 0)
@@ -340,7 +340,7 @@ class Burak2009ConnectionPlotter(FigurePlotter):
         ax_left.pcolor(X2.x, X2.y, w, rasterized=True)
         ax_left.set_xticks([])
         ax_left.set_yticks([])
-    
+
         # Shift right
         ax_right = fig.add_subplot(2, 2, 4)
         pref_theta = Position2D(-1, 0)
@@ -348,7 +348,7 @@ class Burak2009ConnectionPlotter(FigurePlotter):
         ax_right.pcolor(X2.x, X2.y, w, rasterized=True)
         ax_right.set_xticks([])
         ax_right.set_yticks([])
-    
+
         fig.tight_layout()
         fname = self.config['output_dir'] + "/intro_burak2009_conn_weights.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
