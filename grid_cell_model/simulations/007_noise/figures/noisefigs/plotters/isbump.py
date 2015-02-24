@@ -9,10 +9,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 
 from grid_cell_model.plotting.global_defs import globalAxesSettings, prepareLims
+from simtools.plotting.plotters import FigurePlotter
 
 from ..EI_plotting import sweeps, examples, base
 from ..EI_plotting import aggregate as aggr
-from .base import FigurePlotter, SweepPlotter
+from .base import SweepPlotter
 
 __all__ = [
     'FracTotalHistPlotter',

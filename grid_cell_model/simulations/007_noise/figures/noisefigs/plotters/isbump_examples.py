@@ -6,10 +6,11 @@ from __future__ import absolute_import, print_function
 
 import numpy as np
 import matplotlib.pyplot as plt
+from simtools.plotting.plotters import FigurePlotter
 
 from ..EI_plotting import examples, base
 from ..EI_plotting import aggregate as aggr
-from .base import FigurePlotter, ExampleSetting
+from .base import ExampleSetting
 
 __all__ = [
     'IsBumpExamplePlotter',

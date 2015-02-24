@@ -14,13 +14,13 @@ from grid_cell_model.plotting.grids import (plotSpikes2D,
                                             plotGridRateMap,
                                             plotAutoCorrelation)
 import grid_cell_model.plotting.low_level as low_level
+from simtools.plotting.plotters import Computation, FigurePlotter
 
 from ..EI_plotting import sweeps, examples, details, scatter
 from ..EI_plotting import aggregate as aggr
 from ..EI_plotting.base import getOption, plotStateSignal
 from ..EI_plotting import scaling
-from .base import (Computation, FigurePlotter, SweepPlotter, ProbabilityPlotter,
-                   DummyPlotter)
+from .base import SweepPlotter, ProbabilityPlotter, DummyPlotter
 
 __all__ = [
     'GridSweepsPlotter',
