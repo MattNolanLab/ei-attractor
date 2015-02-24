@@ -2,14 +2,15 @@
 Installation instructions for the grid cell model
 -------------------------------------------------
 
-In fact the model does not need any installation, it is recommended to work
-directly from the source directory. However there are a number of
-Prerequisites_ that the user must install in order to start simulation.
+There are a number of Prerequisites_ that the user must install in order to
+start simulation.
 
-Also it is recommended to include the grid_cell_model directory into your
-PYTHONPATH environment variables, as all the submitting scripts reference
-modules in that directory.
+Git
+===
 
+You will need git to clone this repository. After cloning, you need to
+initialize the submodules that the repository depends on by running ``git
+submodule init`` and ``git submodule update``.
 
 Prerequisites
 =============
@@ -29,7 +30,11 @@ The model requires some common prerequisites:
   tools use this code generation technique.
 
 All of these should be possible to install with your favorite installer (pip,
-easy_install, ...)
+easy_install, ...). Alternatively, it should be possible to run ``pip install
+-r requirements.txt`` in the root directory. This should install all the
+required python packages. Afterwards, you need to install the grid_cell_model
+package **in the developmental mode** by using ``setup.py`` in the root
+directory (or ``pip install -e .``)
 
 
 Brian version
@@ -48,13 +53,19 @@ If you are planning to use NEST_ for simulations, you need these extra
 programs:
 
 - C++ compiler (gcc, mingw, ...)
-- `NEST simulator`_ >= 2.0.0
+- `NEST simulator`_ == 2.2.0 (and ideally not using the later versions, since
+  there have been API changes)
 
 
 .. _brian: http://briansimulator.org
 .. _brian simulator: http://briansimulator.org
 .. _NEST: http://www.nest-initiative.org
 .. _NEST simulator: http://www.nest-initiative.org
+
+In order to run the simulations, it is also necessary to compile and install
+the gridcells NEST_ module. The module is present in
+``grid_cell_model/nest/gridcells``. Please consult the NEST_ documentation
+web page for instructions on how to install NEST_ modules.
 
 
 Running a simulation
