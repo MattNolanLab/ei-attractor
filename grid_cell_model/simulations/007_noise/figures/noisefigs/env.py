@@ -1,3 +1,4 @@
+'''Environment for the Noise project.'''
 from __future__ import absolute_import, print_function
 
 import logging
@@ -29,8 +30,8 @@ class NoiseEnvironment(Environment):
         final_config = self._merge_user_config(def_config, user_config)
         super(NoiseEnvironment, self).__init__(final_config)
 
-        # This must be after configs are initialised. They are used to determine
-        # the parameter spaces
+        # This must be after configs are initialised. They are used to
+        # determine the parameter spaces
         if param_spaces is None:
             self.ps = self._get_default_param_spaces()
         else:
@@ -44,6 +45,7 @@ class NoiseEnvironment(Environment):
         return defc.get_config()
 
     def _get_default_param_spaces(self):
+        '''Get the default parameter spaces from the configuration file.'''
         roots = NoiseDataSpaces.Roots(
             self.config['bump_data_root'],
             self.config['vel_data_root'],
@@ -64,8 +66,9 @@ class NoiseEnvironment(Environment):
                          pp.pformat(self._user_config))
         new_config.merge(self._user_config)
         logger.debug('    Final configuration:\n %s',
-            pp.pformat(new_config.dict()))
+                     pp.pformat(new_config.dict()))
         return new_config
 
     def _init_mpl(self):
+        '''Init matplotlib from the configuration file.'''
         mpl.rcParams.update(self.config['mpl'])
