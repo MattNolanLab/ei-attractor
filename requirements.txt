@@ -1,8 +1,11 @@
 # Non-python requirements
 # HDF5 library
-numpy
-scipy
-Cython
-h5py
+scipy >= 0.13
+h5py >= 2.3
 matplotlib
 ./simtools
+git+https://github.com/robince/pyentropy.git
+minepy>=1.0.0
+configobj>=5.0.0
+./grid_cell_model/simulations/007_noise/figures
+-e ./

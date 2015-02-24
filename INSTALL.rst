@@ -31,10 +31,8 @@ The model requires some common prerequisites:
 
 All of these should be possible to install with your favorite installer (pip,
 easy_install, ...). Alternatively, it should be possible to run ``pip install
--r requirements.txt`` in the root directory. This should install all the
-required python packages. Afterwards, you need to install the grid_cell_model
-package **in the developmental mode** by using ``setup.py`` in the root
-directory (or ``pip install -e .``)
+-r requirements_first.txt`` in the root directory, followed by ``pip install -r
+requirements.txt``. This should install all the required python packages.
 
 
 Brian version
