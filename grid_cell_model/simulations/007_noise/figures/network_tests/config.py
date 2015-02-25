@@ -45,10 +45,14 @@ def get_config():
         },
 
         'PopulationActivityPlotter': {
-            'raster_rect': (.075, 0.7, 0.99, 0.97),
+            'raster_rect': (.075, 0.35, 0.99, 0.97),
             'fig_saver': SeparateMultipageSaver(None, 'pdf'),
-            'fig_size': (11.02, 8.27),
+            'fig_size': (15, 6),
             't_limits': (0, 10e3),
+
+            'snapshot_tstep': 4,
+            'e_snapshots_rect': (.075, .15, 0.99, 0.25),
+            'i_snapshots_rect': (.075, .02, 0.99, 0.1),
         },
     })
 

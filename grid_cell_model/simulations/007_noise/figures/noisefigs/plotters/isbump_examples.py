@@ -20,7 +20,7 @@ __all__ = [
 # Plot examples of bump snapshots for different settings of row/col and
 # annotated sweeps corresponding to the examples.
 trialNum = 0
-nSnapshots = 8
+snapshot_tstep = 10
 exampleFigSize = (8, 1.2)
 
 class IsBumpExamplePlotter(FigurePlotter):
@@ -50,7 +50,7 @@ class IsBumpExamplePlotter(FigurePlotter):
                 FR, FRt = base.extractRateMaps(set.ps, set.r, set.c, set.trialNum)
                 isBump = aggr.IsBump(set.ps, iter_list, ignoreNaNs=True)
                 bumpQuality, _, _ = isBump._getRawData()
-                examples.plotBumpSnapshots(FR, FRt, nSnapshots,
+                examples.plotBumpSnapshots(FR, FRt, snapshot_tstep,
                         fig=fig, bumpQuality=bumpQuality[set.r, set.c, set.trialNum],
                         timeTitles=timeTitles, maxRate=False,
                         bumpQualityText="P\n(bumps)",
