@@ -18,7 +18,7 @@ def extractSpikes(mon):
     '''
     Extract spikes from a spike monitor (a dict-like object), that contains the
     relevant fields.
-    
+
     Return a tuple (senders, spikeTimes).
     '''
     e = mon['events']
@@ -32,7 +32,7 @@ def sliceSignal(t, sig, tStart, tEnd):
 
 def extractStateVariable(mon, nIdx, varStr):
     '''Extract state variable from a monitor.
-    
+
     Parameters
     ----------
     mon : list of dicts
@@ -120,4 +120,25 @@ class MonitoredSpikes(spikes.PopulationSpikes):
         spikes.PopulationSpikes.__init__(self, N, senders, times)
 
 
+class MonitoredTorusSpikes(spikes.TorusPopulationSpikes):
+    '''Spikes that extract torus data from a NEST spike monitor.'''
+    def __init__(self, data, monName, NXName, NYName):
+        '''
+        Return the senders and spike times from a monitor in the data
+        dictionary
+
+        Parameters
+        ----------
+        data : dict
+            A data dictionary containing the monitor monName.
+        monName : string
+            The spike monitor dictionary name.
+        NName : string
+            Name of the network parameter that specifies the total number of
+            neurons.
+        '''
+        Nx = data['net_attr'][NXName]
+        Ny = data['net_attr'][NYName]
+        senders, times = extractSpikes(data[monName])
+        super(MonitoredTorusSpikes, self).__init__(senders, times, (Nx, Ny))
 

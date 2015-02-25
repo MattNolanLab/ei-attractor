@@ -337,7 +337,7 @@ def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
 ##############################################################################
 # Snapshots of bumps in time
 
-def plotBumpSnapshots(FR, FRt, nSnapshots, **kw):
+def plotBumpSnapshots(FR, FRt, tstep, **kw):
     fig             = kw.pop('fig')
     timeTitles      = kw.pop('timeTitles', True)
     axesCoords      = kw.pop('axesCoords', (0.12, 0.01, 0.92, 0.7))
@@ -350,12 +350,10 @@ def plotBumpSnapshots(FR, FRt, nSnapshots, **kw):
     width  = right - left
     height = top - bottom
 
-    step = int(FRt.shape[0] / nSnapshots)
-
-    oneWidth = float(width) / nSnapshots
+    indexes = range(0, FRt.shape[0], tstep)
+    oneWidth = float(width) / len(indexes)
     l = left
     bot = bottom
-    indexes = range(0, FRt.shape[0], step)
     max = np.max(FR[:, :, indexes])
     for it in indexes:
         print it
@@ -380,8 +378,5 @@ def plotBumpSnapshots(FR, FRt, nSnapshots, **kw):
                         transform=ax.transAxes)
                 ax.text(bumpQualityX, yTitle, bumpQualityText, ha='center',
                         va='bottom', transform=ax.transAxes)
-            #if it / step == nSnapshots - 1:
-            #    ax.text(1, yTitle, "s", va='bottom', transform=ax.transAxes)
-
 
         l += oneWidth

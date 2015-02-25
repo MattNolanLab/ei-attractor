@@ -1,23 +1,4 @@
-#
-#   data_sets.py
-#
-#   Data set classes.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Data sets base classes module.'''
 
 
 class DataSet(object):
@@ -30,6 +11,7 @@ class DataSet(object):
 
     @property
     def data(self):
+        '''Container that contains data.'''
         raise NotImplementedError()
 
     @property
@@ -37,21 +19,18 @@ class DataSet(object):
         raise NotImplementedError()
 
     def visit(self, visitor, **kw):
+        '''Apply the visitor to the data set.'''
         raise NotImplementedError()
 
 
-
-
 class DictDataSet(DataSet):
-
+    '''A data set that holds a dictionary structure.'''
     def __init__(self, dataDict):
         self._d = dataDict
-
 
     @property
     def data(self):
         return self._d
-
 
     def visit(self, v, **kw):
         v.visitDictDataSet(self, **kw)
