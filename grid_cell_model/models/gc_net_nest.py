@@ -674,13 +674,42 @@ class BasicGridCellNetwork(NestGridCellNetwork):
     def getSpikeMonData(self, mon, gidStart):
         '''
         Generate a dictionary of a spike data from the monitor ``mon``
+
+        Notes
+        -----
+        NEST has some troubles with consistency in returning data in a correct
+        format on OSX and Linux. On Linux, sequential data are apparently
+        returned as np.ndarray, while on OSX the data are returned as lists.
+        This obviously causes huge data files on OSX since the data are stored
+        as lists into HDF5.
         '''
         st = nest.GetStatus(mon)[0]
-        st['events']['senders'] = np.array(st['events']['senders']) - gidStart
+        events = st['events']
+        for key in events.keys():
+            events[key] = np.asanyarray(events[key])
+        events['senders'] -= gidStart
         return st
 
+    def getStateMonData(self, mon):
+        '''
+        Generate a dictionary of state monitor data from the monitor ``mon``
 
-    def getSpikes(self):
+        Notes
+        -----
+        NEST has some troubles with consistency in returning data in a correct
+        format on OSX and Linux. On Linux, sequential data are apparently
+        returned as np.ndarray, while on OSX the data are returned as lists.
+        This obviously causes huge data files on OSX since the data are
+        serialized as lists into HDF5.
+        '''
+        out = nest.GetStatus(mon)
+        for mon_idx in range(len(out)):
+            events = out[mon_idx]['events']
+            for key in events.keys():
+                events[key] = np.asanyarray(events[key])
+        return out
+
+    def getSpikes(self, **kw):
         '''
         Return a dictionary of spike monitor data.
         '''
@@ -699,7 +728,6 @@ class BasicGridCellNetwork(NestGridCellNetwork):
 
         return out
 
-
     def getNetParams(self):
         out = {}
         out['options']  = self.no._einet_optdict
@@ -714,14 +742,16 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         out = self.getNetParams()
 
         # Spike monitors
-        out.update(self.getSpikes())
+        # Note that getSpikes() is overridden in child classes and requires the
+        # espikes and ispikes arguments.
+        out.update(self.getSpikes(espikes=True, ispikes=True))
 
         #Save state variables
-        out['stateMon_e']   = nest.GetStatus(self.stateMon_e)
-        out['stateMon_i']   = nest.GetStatus(self.stateMon_i)
+        out['stateMon_e'] = self.getStateMonData(self.stateMon_e)
+        out['stateMon_i'] = self.getStateMonData(self.stateMon_i)
         for label, val in self._extraStateMons.iteritems():
-            assert(label not in out.keys())
-            out[label] = nest.GetStatus(val)
+            assert label not in out.keys()
+            out[label] = self.getStateMonData(val)
 
         return out
 
