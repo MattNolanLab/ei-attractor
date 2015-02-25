@@ -18,7 +18,7 @@ def extractSpikes(mon):
     '''
     Extract spikes from a spike monitor (a dict-like object), that contains the
     relevant fields.
-    
+
     Return a tuple (senders, spikeTimes).
     '''
     e = mon['events']
@@ -32,7 +32,7 @@ def sliceSignal(t, sig, tStart, tEnd):
 
 def extractStateVariable(mon, nIdx, varStr):
     '''Extract state variable from a monitor.
-    
+
     Parameters
     ----------
     mon : list of dicts

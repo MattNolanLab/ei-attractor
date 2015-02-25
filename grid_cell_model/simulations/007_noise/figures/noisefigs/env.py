@@ -15,7 +15,20 @@ pp = pprint.PrettyPrinter(indent=2)
 logger = logging.getLogger(__name__)
 
 
-class NoiseEnvironment(Environment):
+class MplEnvironment(Environment):
+    '''An environment that initializes matplotlib's RC params.'''
+    def __init__(self, config=None):
+        super(MplEnvironment, self).__init__(config)
+
+        # self.config must be initialised before this
+        self._init_mpl()
+
+    def _init_mpl(self):
+        '''Init matplotlib from the configuration file.'''
+        mpl.rcParams.update(self.config['mpl'])
+
+
+class NoiseEnvironment(MplEnvironment):
     '''Plotting environment for noise data.
     Parameters
     ----------
@@ -36,9 +49,6 @@ class NoiseEnvironment(Environment):
             self.ps = self._get_default_param_spaces()
         else:
             self.ps = param_spaces
-
-        # self.config must be initialised before this
-        self._init_mpl()
 
     def _load_default_config(self):
         '''Load a default configuration for the Noise project.'''
@@ -68,7 +78,3 @@ class NoiseEnvironment(Environment):
         logger.debug('    Final configuration:\n %s',
                      pp.pformat(new_config.dict()))
         return new_config
-
-    def _init_mpl(self):
-        '''Init matplotlib from the configuration file.'''
-        mpl.rcParams.update(self.config['mpl'])
