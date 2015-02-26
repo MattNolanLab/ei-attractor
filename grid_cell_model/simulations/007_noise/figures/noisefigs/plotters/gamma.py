@@ -8,12 +8,12 @@ from matplotlib.transforms import Bbox
 
 from grid_cell_model.parameters           import JobTrialSpace2D, DataSpace
 from grid_cell_model.plotting.global_defs import globalAxesSettings, prepareLims
+from simtools.plotting.plotters import FigurePlotter
 
 from ..EI_plotting      import sweeps, examples, details, scatter
 from ..EI_plotting      import aggregate as aggr, scaling
 from ..EI_plotting.base import plotOneHist, NoiseDataSpaces
-from .base import (FigurePlotter, SweepPlotter, ProbabilityPlotter,
-                   DummyPlotter)
+from .base import SweepPlotter, ProbabilityPlotter, DummyPlotter
 
 __all__ = [
     'GammaSweepsPlotter',

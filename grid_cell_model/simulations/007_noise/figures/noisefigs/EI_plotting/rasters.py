@@ -4,17 +4,17 @@
 #   Raster plot for the E/I parameter sweeps
 #
 #       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
+#
 #       This program is free software: you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
 #       the Free Software Foundation, either version 3 of the License, or
 #       (at your option) any later version.
-#       
+#
 #       This program is distributed in the hope that it will be useful,
 #       but WITHOUT ANY WARRANTY; without even the implied warranty of
 #       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #       GNU General Public License for more details.
-#       
+#
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -51,13 +51,13 @@ def getSpikes(space, spaceType, r, c, trialNum, **kw):
 
 def EIRaster(space, spaceType, r, c, tLimits, trialNum=0, **kw):
     ESpikes, ISpikes = getSpikes(space, spaceType, r, c, trialNum, **kw)
-    ax = plotEIRaster(ESpikes, ISpikes, tLimits, **kw) 
+    ax = plotEIRaster(ESpikes, ISpikes, tLimits, **kw)
 
     return ax
 
 
 def plotEIRaster(ESpikes, ISpikes, tLimits, ylabel=None, **kw):
-    # kw arguments 
+    # kw arguments
     ax           = kw.pop('ax', plt.gca())
     yticks       = kw.pop('yticks', True)
     yticks_style = kw.pop('yticks_style', 'separate')
@@ -150,7 +150,7 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, ylabel=None, **kw):
                 unitsText=scaleText, textYOffset=scaleTextYOffset,
                 height=scaleHeight)
 
-    
+
     return ax
 
 

@@ -13,10 +13,11 @@ from matplotlib.transforms import Bbox
 from grid_cell_model.plotting.global_defs import globalAxesSettings
 from grid_cell_model.parameters import JobTrialSpace2D
 from grid_cell_model.submitting import flagparse
+from simtools.plotting.plotters import FigurePlotter
 
 from ..EI_plotting import sweeps, details, rasters, scatter
 from ..EI_plotting import aggregate as aggr
-from .base import FigurePlotter, SweepPlotter, ProbabilityPlotter
+from .base import SweepPlotter, ProbabilityPlotter
 
 logger = logging.getLogger(__name__)
 

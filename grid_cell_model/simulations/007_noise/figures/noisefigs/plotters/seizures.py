@@ -9,10 +9,11 @@ import matplotlib.ticker as ti
 from matplotlib.colors import LogNorm
 from matplotlib.transforms import Bbox
 import matplotlib.gridspec as gridspec
+from simtools.plotting.plotters import FigurePlotter
 
 from ..EI_plotting import sweeps, rasters, base, scatter
 from ..EI_plotting import aggregate as aggr
-from .base import FigurePlotter, SweepPlotter, ProbabilityPlotter
+from .base import SweepPlotter, ProbabilityPlotter
 
 __all__ = [
     'EIRasterPlotter',
