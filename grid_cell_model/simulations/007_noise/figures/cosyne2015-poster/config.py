@@ -1,6 +1,8 @@
 '''Configuration file for the FENS2014 poster figures.'''
 from __future__ import absolute_import, print_function
 
+import matplotlib.ticker as ti
+
 scale_factor = 2.5
 
 tick_width = 1. * scale_factor
@@ -36,9 +38,16 @@ _config = {
 
     },
 
+    'sweeps': {
+        'contours_kwargs': {
+            'hold': True,
+            'colors': 'k',
+            'linewidths': [1.5 * scale_factor]
+        },
+    },
 
     'GridSweepsPlotter': {
-        'scale_factor' : .8,
+        'scale_factor' : .7,
         'cbar': [1, 0, 0],
         'cbar_kw' : {
             'label': '',
@@ -58,7 +67,7 @@ _config = {
     },
 
     'GridExamplesPlotter': {
-        'scale_factor': .8,
+        'scale_factor': .7,
     },
 
     'ConnectionFunctionPlotter': {
@@ -83,7 +92,8 @@ _config = {
     },
 
     'GammaScatterAllPlotter': {
-        'fig_size': (3.2, 3.2),
+        'fig_size': (3, 2.3),
+        'dot_size': 10 * scale_factor,
         'legend_kwargs': dict(
             loc=(0, 1.),
             fontsize='small',
@@ -91,11 +101,8 @@ _config = {
             scatterpoints=1,
             ncol=3,
         ),
-        'tight_layout_kwargs': {
-            'pad': 3.,
-            'rect': (.01, .01, .99, .85),
-            'pad': 0,
-        },
+        'bbox_rect': (.225, .25, .95, .85),
+        'ylabel': 'Gridness score',
     },
 
     'MainScatterGridsBumpsPlotter': {
@@ -110,23 +117,55 @@ _config = {
     },
 
     'EIRasterPlotter': {
+        'scale_factor': .9,
         'fig_size': (3, 1.5),
         'fig_ext': 'pdf',
+        'scaleBar': [None, 25, 25],
+        'scaleX': .85,
+        'scaleY': -.05,
+
+        'plot_theta' : True,
+        'theta_rect' : [.28, .77, .95, .83],
+        'theta_color': (0, 0, 0, .3),
     },
 
     'EIRatePlotter': {
+        'scale_factor': .9,
         'fig_size': (3, .5),
-        'rateTop': .85
+        'rateTop': .8
     },
 
     'MainBumpFormationPlotter': {
+        'scale_factor': .7,
         'xticks' : [True]*3,
-        'ann': ([], [], []),
+        'ann': [
+            [dict(txt='a',
+                  rc=(5, 15),
+                  xytext_offset=(1.5, 1),
+                  color='white')],
+            [dict(txt='a',
+                  rc=(5, 15),
+                  xytext_offset=(1.5, 1),
+                  color='white')],
+            [dict(txt='a',
+                  rc=(5, 15),
+                  xytext_offset=(1.5, 1),
+                  color='white')],
+        ],
+        'cbar': [0, 1, 1],
     },
 
     'GammaSweepsPlotter': {
-        'AC_xticks': [True]*3,
+        'scale_factor': .8,
         'ann': [
+            dict(
+                txt='a',
+                rc=(5, 15),
+                xytext_offset=(1.5, 1),
+                color='white',
+            ),
+        ],
+        'annF': [
             dict(
                 txt='a',
                 rc=(5, 15),
@@ -143,13 +182,33 @@ _config = {
             [0, 0, 0],
         ],
         'sigma_titles': [
-            [1, 1, 1],
+            [0, 0, 0],
             [0, 0, 0],
         ],
 
         'xscale_kw': dict(
             x=0.75, y=.2,
         ),
+    },
+
+    'PSeizureSweepPlotter': {
+        'scale_factor': .7,
+        'cbar_kw': dict(
+            location    = 'right',
+            shrink      = 0.8,
+            pad         = -.05,
+            ticks       = ti.MultipleLocator(0.5),
+            rasterized  = True
+        ),
+
+        'ann': [
+            dict(
+                txt='a',
+                rc=(5, 15),
+                xytext_offset=(1.5, 1),
+                color='white',
+            ),
+        ],
     },
 }
 

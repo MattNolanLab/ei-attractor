@@ -15,6 +15,7 @@ parser.add_flag('--examplesFlag')
 parser.add_flag('--Vm_examples')
 parser.add_flag('--conn_func')
 parser.add_flag('--example_hists')
+parser.add_flag('--theta_signal')
 args = parser.parse_args()
 
 env = NoiseEnvironment(user_config=config.get_config())
@@ -33,5 +34,8 @@ if args.conn_func or args.all:
 
 if args.example_hists or args.all:
     env.register_plotter(noisefigs.plotters.WeightExamplesHists)
+
+if args.theta_signal or args.all:
+    env.register_plotter(noisefigs.plotters.ThetaSignalPlotter)
 
 env.plot()
