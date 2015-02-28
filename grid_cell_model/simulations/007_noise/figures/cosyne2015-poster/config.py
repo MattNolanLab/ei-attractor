@@ -58,7 +58,7 @@ _config = {
 
         'ann': [
             dict(
-                txt='a',
+                txt='b',
                 rc=(5, 15),
                 xytext_offset=(0.5, 1.5),
                 color='black'
