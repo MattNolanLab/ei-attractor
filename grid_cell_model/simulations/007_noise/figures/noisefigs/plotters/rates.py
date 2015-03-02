@@ -10,9 +10,10 @@ from matplotlib.colors import LogNorm
 from copy import deepcopy
 
 from grid_cell_model.plotting.global_defs import globalAxesSettings
+from simtools.plotting.plotters import FigurePlotter
 from ..EI_plotting import sweeps, scatter
 from ..EI_plotting import aggregate as aggr
-from .base import SweepPlotter, FigurePlotter
+from .base import SweepPlotter
 
 
 __all__ = [
@@ -48,7 +49,7 @@ def plotThresholdHist(var1, threshold1, var2, **kw):
 
     if sigmaTitle and noise_sigma is not None:
         ax.set_title('$\sigma$ = {0} pA'.format(int(noise_sigma)))
-    
+
     return h1, h2
 
 
@@ -56,7 +57,7 @@ def plotFRGridThresholded(dataSpace, threshold, FRTypes, iterList, NTrials, **kw
     ignoreNaNs  = kw.pop('ignoreNaNs', False)
 
     typesGrids = ['grids', 'gridnessScore']
-     
+
     GS, _, _ = aggr.aggregateType(dataSpace, iterList, typesGrids, NTrials,
             ignoreNaNs=ignoreNaNs, **kw)
     FR, _, _  = aggr.aggregateType(dataSpace, iterList, FRTypes, NTrials,
@@ -64,7 +65,7 @@ def plotFRGridThresholded(dataSpace, threshold, FRTypes, iterList, NTrials, **kw
 
     return plotThresholdHist(GS.flatten(), threshold, FR.flatten(), **kw)
 
-    
+
 
 ##############################################################################
 # Parameter sweeps of E and I firing rates
@@ -251,7 +252,7 @@ class ScatterGridsFRAllPlotter(FigurePlotter):
 #                    ps.grids[ns_idx], threshold, typesFR,
 #                    iterList, NTrialsGrids,
 #                    xlabel=xlabel,
-#                    ignoreNaNs=ignoreNaNs, 
+#                    ignoreNaNs=ignoreNaNs,
 #                    sigmaTitle=sigmaTitle,
 #                    noise_sigma=noise_sigma,
 #                    alpha=0.5,

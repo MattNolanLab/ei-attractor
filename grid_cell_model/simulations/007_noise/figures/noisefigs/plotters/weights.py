@@ -8,8 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 from grid_cell_model.plotting.global_defs import globalAxesSettings, createColorbar
-
-from .base import FigurePlotter
+from simtools.plotting.plotters import FigurePlotter
 
 __all__ = [
     'ConnectionFunctionPlotter',

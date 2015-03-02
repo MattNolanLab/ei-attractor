@@ -783,10 +783,21 @@ class MaxPopulationFR(PopulationFR):
     def __init__(self, space, iterList, **kw):
         super(MaxPopulationFR, self).__init__(space, iterList, **kw)
 
-    def getData(self):
+    def get_exclusion_mask(self):
+        '''Generate exclusion mask.'''
+        _, _, _, mask = self.get_full_data()
+        return np.any(mask == 1, axis=2)
+
+    def get_full_data(self):
+        '''Get data before averaging over trials.'''
         FR, X, Y = self._getRawData()
         maxFR = np.nanmax(FR, axis=3)
-        maxFR[maxFR == 5000] = np.nan
+        mask = maxFR == 5000
+        maxFR[mask] = np.nan
+        return maxFR, X, Y, mask
+
+    def getData(self):
+        maxFR, _, _, _ = self.get_full_data()
         return (np.mean(maskNaNs(maxFR, self.ignoreNaNs), axis=2), self._X,
                 self._Y)
 
@@ -796,6 +807,9 @@ class MaxThetaPopulationFR(PopulationFR):
     '''
     Extract the median/mean of the maximal population firing rate *every theta*
     cycle.
+
+    Some data has been manually excluded (specified by the mask), in order to
+    accomodate for exclusion of data in MaxPopulationFR data class.
     '''
     def __init__(self, thetaT, sig_dt, reduceFunc, space, iterList, **kw):
         super(MaxThetaPopulationFR, self).__init__(space, iterList, **kw)
@@ -803,6 +817,8 @@ class MaxThetaPopulationFR(PopulationFR):
         self.sig_dt = sig_dt
         self._trialMax = None        # Trial data, non-reduced
         self.reduceFunc = reduceFunc
+        self._max_pop_fr = MaxPopulationFR(space, iterList, **kw)
+        self._exclusion_mask = self._max_pop_fr.get_exclusion_mask()
 
     def getNonReducedData(self):
         if self._trialMax is None:
@@ -815,11 +831,13 @@ class MaxThetaPopulationFR(PopulationFR):
                 for c in xrange(self.sp.shape[1]):
                     for trialNum in xrange(nTrials):
                         rate = FR[r, c, trialNum, :]
-                        self._trialMax[r, c, trialNum] = np.max(
-                                asignal.splitSigToThetaCycles(rate,
-                                                              self.thetaT,
-                                                              self.sig_dt),
-                                axis=1)
+                        theta_sig = asignal.splitSigToThetaCycles(
+                                        rate, self.thetaT, self.sig_dt)
+                        if self._exclusion_mask[r, c] == 1:
+                            self._trialMax[r, c, trialNum] = np.nan
+                        else:
+                            self._trialMax[r, c, trialNum] = np.max(
+                                    theta_sig, axis=1)
         return self._trialMax
 
     def getData(self):
