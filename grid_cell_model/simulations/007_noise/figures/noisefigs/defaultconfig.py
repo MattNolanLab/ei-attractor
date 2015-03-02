@@ -628,6 +628,10 @@ def _get_default_config():
 
         'yticks': [1, 0, 0],
         'ylabelPos': -0.35,
+
+        'scaleBar': [None, None, 25],
+        'scaleX': .85,
+        'scaleY': -.1,
     }
     _default_config['EIRasterPlotter'] = EIRasterPlotter_config
 

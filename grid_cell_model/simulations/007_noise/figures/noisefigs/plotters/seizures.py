@@ -6,13 +6,14 @@ from __future__ import absolute_import, print_function
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
-from matplotlib.colors import LogNorm
+#from matplotlib.colors import LogNorm
 from matplotlib.transforms import Bbox
 import matplotlib.gridspec as gridspec
+from simtools.plotting.plotters import FigurePlotter
 
 from ..EI_plotting import sweeps, rasters, base, scatter
 from ..EI_plotting import aggregate as aggr
-from .base import FigurePlotter, SweepPlotter, ProbabilityPlotter
+from .base import SweepPlotter, ProbabilityPlotter
 
 __all__ = [
     'EIRasterPlotter',
@@ -42,31 +43,53 @@ rasterTop     = 0.8
 
 
 class EIRasterPlotter(FigurePlotter):
+    dt = .1  # ms
+    freq = 8. # Hz
+    const = .4 # Fraction of max. theta
+
     def __init__(self, *args, **kwargs):
         super(EIRasterPlotter, self).__init__(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
         ps = self.env.ps
+        plot_theta = self.myc.get('plot_theta', False)
 
         output_dir = self.config['output_dir']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-            scaleBar = 25 if ns_idx == 2 else None
             fig = self._get_final_fig(self.myc['fig_size'])
-            ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom, rasterRight,
-                rasterTop))
-            rasters.EIRaster(ps.bumpGamma[ns_idx],
-                    noise_sigma=noise_sigma,
-                    spaceType='bump',
-                    r=rasterRC[ns_idx][0], c=rasterRC[ns_idx][1],
-                    ylabelPos=self.myc['ylabelPos'],
-                    tLimits=tLimits,
-                    markersize=2*self.config['scale_factor'],
-                    ylabel='' if self.myc['yticks'][ns_idx] == False else None,
-                    yticks=self.myc['yticks'][ns_idx],
-                    scaleBar=scaleBar, scaleX=.85, scaleY=-.1,
-                    scaleTextYOffset=.03, scaleHeight=.005,
-                    ann_EI=True)
+
+            # Plot theta signal if requested
+            if plot_theta:
+                tl, tb, tr, tt = self.myc['theta_rect']
+                ax_theta = fig.add_axes(Bbox.from_extents(tl, tb, tr, tt))
+                t = np.arange(tLimits[0], tLimits[1]+self.dt, self.dt)
+                theta = (self.const +
+                         .5 * (1. + np.cos(2*np.pi*self.freq*1e-3*t - np.pi)) *
+                         (1 - self.const))
+                ax_theta.fill_between(t, theta, edgecolor='None',
+                                      color=self.myc['theta_color'])
+                ax_theta.set_xlim([tLimits[0], tLimits[1]])
+                ax_theta.set_ylim(-.02, 1.02)
+                ax_theta.axis('off')
+
+            ax = fig.add_axes(Bbox.from_extents(rasterLeft, rasterBottom,
+                                                rasterRight, rasterTop))
+            rasters.EIRaster(
+                ps.bumpGamma[ns_idx],
+                noise_sigma=noise_sigma,
+                spaceType='bump',
+                r=rasterRC[ns_idx][0], c=rasterRC[ns_idx][1],
+                ylabelPos=self.myc['ylabelPos'],
+                tLimits=tLimits,
+                markersize=2*self.config['scale_factor'],
+                ylabel='' if self.myc['yticks'][ns_idx] == False else None,
+                yticks=self.myc['yticks'][ns_idx],
+                scaleBar=self.myc['scaleBar'][ns_idx],
+                scaleX=self.myc['scaleX'],
+                scaleY=self.myc['scaleY'],
+                scaleTextYOffset=.03, scaleHeight=.005,
+                ann_EI=True)
 
             fname = "%s/bumps_raster%d.%s" % (output_dir, int(noise_sigma),
                                               self.myc['fig_ext'])
@@ -333,6 +356,8 @@ class PSeizureSweepPlotter(SweepPlotter):
         thetaT = self.config['seizures']['thetaT']
         sig_dt = self.config['seizures']['sig_dt']
 
+        ann = self.myc.get('ann', None)
+
         vmin = 0.
         vmax = 1.
 
@@ -347,16 +372,17 @@ class PSeizureSweepPlotter(SweepPlotter):
                 if ns_idx == 0:
                     kw['cbar'] = True
                 data = aggr.MaxThetaPopulationFR(
-                        thetaT, sig_dt, thresholdReduction(FRThreshold),
-                        ps.bumpGamma[ns_idx], iter_list,
-                        ignoreNaNs=True, normalizeTicks=True)
-                _, _, cax = sweeps.plotSweep(data,
-                        noise_sigma=noise_sigma,
-                        ax=ax,
-                        cbar_kw=myc['cbar_kw'],
-                        vmin=vmin, vmax=vmax,
-                        sigmaTitle=False,
-                        **kw)
+                    thetaT, sig_dt, thresholdReduction(FRThreshold),
+                    ps.bumpGamma[ns_idx], iter_list,
+                    ignoreNaNs=True, normalizeTicks=True)
+                sweeps.plotSweep(data,
+                                 noise_sigma=noise_sigma,
+                                 ax=ax,
+                                 cbar_kw=myc['cbar_kw'],
+                                 vmin=vmin, vmax=vmax,
+                                 sigmaTitle=False,
+                                 annotations=ann,
+                                 **kw)
                 # Contours
                 if self.myc['plot_grid_contours'][ns_idx]:
                     grids_example_idx = self.config['grids']['example_idx']

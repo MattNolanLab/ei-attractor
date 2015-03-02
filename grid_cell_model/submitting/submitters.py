@@ -100,7 +100,7 @@ class ProgramSubmitter(object):
         errno = p.wait()
         if not self._ignoreSubmitErrors and (errno is not None and errno != 0):
             raise SubmitError()
-        
+
 
     def _addProcess(self, p):
         if (p is None):

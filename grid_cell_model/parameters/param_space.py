@@ -1,23 +1,4 @@
-#
-#   param_space.py
-#
-#   Parameter spaces classes.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+''''Classes to define abstractions on parameter exploration data.'''
 from __future__ import absolute_import
 from collections    import Sequence
 from os.path        import exists
@@ -57,7 +38,7 @@ class DataSpace(Sequence):
     def __len__(self):
         return len(self._vals)
 
-    @staticmethod 
+    @staticmethod
     def getParam(data, paramStr):
         return data['options'][paramStr]
 
@@ -71,12 +52,25 @@ trialSetLogger = getClassLogger('TrialSet', __name__)
 class TrialSet(DataSpace):
     '''
     A 1D DataSpace that contains a list of DataSet objects.
+
+    Parameters
+    ----------
+    fileName : str
+        File path that contains the data for all the trials.
+    fileMode : str
+        File open mode.
+    data_set_cls : class object
+        A DataSet class object that will be created when accessing the data.
     '''
 
-    def __init__(self, fileName, fileMode):
+    def __init__(self, fileName, fileMode, data_set_cls=None):
         self._fileName = fileName
         self._fileMode = fileMode
         self._dataLoaded = False
+        if data_set_cls is None:
+            self._data_set_cls = DictDataSet
+        else:
+            self._data_set_cls = data_set_cls
         DataSpace.__init__(self, None, key='trials')
 
 
@@ -109,11 +103,11 @@ class TrialSet(DataSpace):
 
     def __getitem__(self, key):
         self._loadData()
-        return DictDataSet(self._vals[key])
+        return self._data_set_cls(self._vals[key])
 
     def getAllTrialsAsDataSet(self):
         self._loadData()
-        return DictDataSet(self._ds)
+        return self._data_set_cls(self._ds)
 
     def visit(self, visitor, trialList=None, **kw):
         '''
@@ -245,7 +239,7 @@ class JobTrialSpace2D(DataSpace):
         fileName = self._rootDir + '/' + self._fileFormat.format(it)
         #job2DLogger.debug('row: %d, col: %d, filename: %s', row, col, fileName)
         return fileName
-            
+
 
     def _loadItem(self, row, col):
         # Here either we have a full data space, or a particular row
@@ -274,7 +268,7 @@ class JobTrialSpace2D(DataSpace):
 
 
     def __len__(self):
-        return self._shape[0] 
+        return self._shape[0]
 
     def __del__(self):
         if (self._aggregationDS is not None):
@@ -486,7 +480,7 @@ class JobTrialSpace2D(DataSpace):
                 log_warn('JobTrialSpace2D', io_err.format(self.saveDataFileName))
 
         return retVar
-        
+
 
     @property
     def rootDir(self):
