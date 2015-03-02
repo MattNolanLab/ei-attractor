@@ -525,6 +525,7 @@ class GammaScatterAllPlotter(FigurePlotter):
     def plot(self, *args, **kwargs):
         ps = self.env.ps
         myc = self._get_class_config()
+        plot_legend = self.myc.get('plot_legend', False)
         legend_kwargs = myc['legend_kwargs']
         l, b, r, t = self.myc['bbox_rect']
 
@@ -553,10 +554,10 @@ class GammaScatterAllPlotter(FigurePlotter):
             scatterPlot.plot()
         self.ax.xaxis.set_major_locator(ti.MultipleLocator(0.2))
         self.ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-        #leg = ['0', '150', '300']
-        #l = self.ax.legend(leg, **legend_kwargs)
-        #plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
-        #self.fig.tight_layout(**myc['tight_layout_kwargs'])
+        if plot_legend:
+            leg = ['0', '150', '300']
+            l = self.ax.legend(leg, **legend_kwargs)
+            plt.setp(l.get_title(), size=legend_kwargs['fontsize'])
 
     def save(self, *args, **kwargs):
         fname = self.config['output_dir'] + "/gamma_scatter_gamma_grids_all.pdf"

@@ -92,16 +92,17 @@ _config = {
     },
 
     'GammaScatterAllPlotter': {
-        'fig_size': (3, 2.3),
+        'fig_size': (3.5, 2.3),
         'dot_size': 10 * scale_factor,
+        'plot_legend': True,
         'legend_kwargs': dict(
-            loc=(0, 1.),
+            loc=(.95, .6),
             fontsize='small',
             frameon=False,
             scatterpoints=1,
-            ncol=3,
+            handletextpad=0,
         ),
-        'bbox_rect': (.225, .25, .95, .85),
+        'bbox_rect': (.225, .25, .85, .85),
         'ylabel': 'Gridness score',
     },
 
