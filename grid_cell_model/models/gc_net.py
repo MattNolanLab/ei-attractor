@@ -38,17 +38,17 @@
      simulation with any kind of spiking model (leaky IaF, Hodgkin-Huxley,
      etc.)
 '''
+from __future__ import absolute_import, print_function
 
-import numpy    as np
-import logging  as lg
+import numpy as np
 import time
 import copy
 
-from ..gc_exceptions import NotImplementedException
 from ..analysis.image import Position2D, remapTwistedTorus
 
 
 __all__ = ['GridCellNetwork']
+
 
 class GridCellNetwork(object):
     '''
@@ -60,7 +60,6 @@ class GridCellNetwork(object):
     The GridCellNetwork creates two separate populations and connects them
     according to the specified connectivity rules.
     '''
-
     def __init__(self, neuronOpts, simulationOpts):
         # timers
         self._startT = time.time()
@@ -69,14 +68,13 @@ class GridCellNetwork(object):
         self._simEndT      = None
         self.beginConstruction()
 
-
         self.no = copy.deepcopy(neuronOpts)
         self.so = copy.deepcopy(simulationOpts)
 
         # Setup neuron numbers for each dimension (X, Y)
         # We have a single bump and to get hexagonal receptive fields the X:Y
         # size ratio must be 1:sqrt(3)/2
-        self.y_dim = np.sqrt(3)/2.0
+        self.y_dim = np.sqrt(3) / 2.0
         self.Ne_x = self.no.Ne
         self.Ne_y = int(np.ceil(self.no.Ne * self.y_dim)) // 2 * 2
 
@@ -86,35 +84,45 @@ class GridCellNetwork(object):
         self.net_Ne = self.Ne_x * self.Ne_y
         self.net_Ni = self.Ni_x * self.Ni_y
 
+        self.prefDirs_e = None
+        self.prefDirs_i = None
 
-
-    def simulate(self, t):
-        raise NotImplementedException("GridCellNetwork.simulate")
-
+    def simulate(self, t, printTime):
+        '''Simulate the network, after being set up.'''
+        raise NotImplementedError()
 
     def _divergentConnectEI(self, pre, post, weights):
         '''
         Simply connect a 'pre' neuron in the E population to all neurons in
         the I population from post, with given weights
         '''
-        raise NotImplementedException("GridCellNetwork._divergentConnectEI")
+        raise NotImplementedError()
 
     def _divergentConnectIE(self, pre, post, weights):
         '''
         Simply connect a 'pre' neuron in the I population to all neurons in
         the E population from post, with given weights
         '''
-        raise NotImplementedException("GridCellNetwork._divergentConnectIE")
-
-    def getOutgoingConnections(self, prePop, postPop, nid):
-        '''
-        Return an array of target neuron ids (local within postPop) and their
-        weights, of a neuron with nid, within prePop
-        '''
-        raise NotImplementedException("GridCellNetwork.getOutgoingConnections")
-
+        raise NotImplementedError()
 
     def _shiftOnTwistedTorus(self, val, shift, dim):
+        '''Shift a pair of X and Y coordinates on a twisted torus in a specified
+        direction.
+
+        Parameters
+        ----------
+        val : Position2D
+            The original coordinates.
+        shift : Position2D
+            The vector that determines the shift.
+        dim : Position2D
+            Dimensions of the twisted torus.
+
+        Returns
+        -------
+        new_coord : Position2D
+            New coordinates on the twisted torus.
+        '''
         ret = Position2D(val.x, val.y)
         ret.x += shift.x
         ret.y += shift.y
@@ -127,74 +135,71 @@ class GridCellNetwork(object):
 
         return ret
 
+    def _generateRinglikeWeights(self, a, others, mu, sigma, prefDir,
+                                 prefDirC):
+        '''Generate ring-like weights.
 
+        Here we assume that X coordinates are normalised to <0, 1), and Y
+        coordinates are normalised to <0, sqrt(3)/2) Y coordinates are twisted,
+        i.e. X will have additional position shifts when determining minimum.
 
-    ## Generate ring-like weights.
-    #
-    # Here we assume that X coordinates are normalised to <0, 1), and Y
-    # coordinates are normalised to <0, sqrt(3)/2) Y coordinates are twisted,
-    # i.e. X will have additional position shifts when determining minimum.
-    #
-    # @param a        Neuron center, normalised. A Position2D object.
-    # @param others   Positions of postsynaptic neurons. A Position2D object.
-    # @param mu       Radius of the circular function
-    # @param sigma    Width of the circular function
-    # @param prefDir  Preferred direction of the cell. A Position2D object.
-    # @param prefDirC A preferred direction coefficient. A multiplier.
-    # @return An array (1D) of normalized weights.
-    #
-    def _generateRinglikeWeights(self, a, others, mu, sigma, prefDir, prefDirC):
+        @param a        Neuron center, normalised. A Position2D object.
+        @param others   Positions of postsynaptic neurons. A Position2D object.
+        @param mu       Radius of the circular function
+        @param sigma    Width of the circular function
+        @param prefDir  Preferred direction of the cell. A Position2D object.
+        @param prefDirC A preferred direction coefficient. A multiplier.
+        @return An array (1D) of normalized weights.
+        '''
         dim = Position2D()
         dim.x = 1.0
         dim.y = self.y_dim
 
-        #a.x -= prefDirC*prefDir.x
-        #a.y -= prefDirC*prefDir.y
-        shift = Position2D(-prefDirC*prefDir.x, -prefDirC*prefDir.y)
+        # a.x -= prefDirC*prefDir.x
+        # a.y -= prefDirC*prefDir.y
+        shift = Position2D(-prefDirC * prefDir.x, -prefDirC * prefDir.y)
         a = self._shiftOnTwistedTorus(a, shift, dim)
 
         d = remapTwistedTorus(a, others, dim)
-        return np.exp(-(d - mu)**2/2/sigma**2)
+        return np.exp(-(d - mu)**2 / 2 / sigma**2)
 
-
-    ## Generate Gaussian-like weights, i.e. local connections
-    #
-    # Here we assume that X coordinates are normalised to <0, 1), and Y
-    # coordinates are normalised to <0, sqrt(3)/2) Y coordinates are twisted,
-    # i.e. X will have additional position shifts when determining minimum.
-    #
-    # @param a        Neuron center, normalised. A Position2D object.
-    # @param others   Positions of postsynaptic neurons. A Position2D object.
-    # @param sigma    Std. dev. of the Gaussian (normalised)
-    # @param prefDir  Preferred direction of the cell. A Position2D object.
-    # @param prefDirC A preferred direction coefficient. A multiplier.
-    # @return An array (1D) of normalized weights.
-    #
     def _generateGaussianWeights(self, a, others, sigma, prefDir, prefDirC):
-        #import pdb; pdb.set_trace()
+        '''Generate Gaussian-like weights, i.e. local connections
+
+        Here we assume that X coordinates are normalised to <0, 1), and Y
+        coordinates are normalised to <0, sqrt(3)/2) Y coordinates are twisted,
+        i.e. X will have additional position shifts when determining minimum.
+
+        @param a        Neuron center, normalised. A Position2D object.
+        @param others   Positions of postsynaptic neurons. A Position2D object.
+        @param sigma    Std. dev. of the Gaussian (normalised)
+        @param prefDir  Preferred direction of the cell. A Position2D object.
+        @param prefDirC A preferred direction coefficient. A multiplier.
+        @return An array (1D) of normalized weights.
+        '''
         dim = Position2D()
         dim.x = 1.0
         dim.y = self.y_dim
 
-        a.x -= prefDirC*prefDir.x
-        a.y -= prefDirC*prefDir.y
+        a.x -= prefDirC * prefDir.x
+        a.y -= prefDirC * prefDir.y
 
         d = remapTwistedTorus(a, others, dim)
-        return np.exp(-d**2/2./sigma**2)
-
+        return np.exp(-d**2 / 2. / sigma**2)
 
     def _addToConnections(self, conductances, perc_synapses, h):
         '''
         Picks perc_synapses% of connections from the array and adds h to them
         '''
-        indexes = np.random.choice(np.arange(len(conductances)),
-                                   size=int(perc_synapses/100.0*len(conductances)),
-                                   replace=False)
+        indexes = np.random.choice(
+            np.arange(len(conductances)),
+            size=int(perc_synapses / 100.0 * len(conductances)),
+            replace=False)
         conductances[indexes] += h
         return conductances
 
-
-    def _centerSurroundConnection(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma, pGABA_mu, pGABA_sigma):
+    def _centerSurroundConnection(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma,
+                                  pGABA_mu, pGABA_sigma):
         '''
         Create a center-surround excitatory and inhibitory connections between
         both populations.
@@ -216,9 +221,10 @@ class GridCellNetwork(object):
         g_AMPA_mean = self.no.g_AMPA_total / self.net_Ne
         g_GABA_mean = self.no.g_GABA_total / self.net_Ni
         g_uni_GABA_total = self.no.g_GABA_total * self.no.g_uni_GABA_frac
-        g_uni_GABA_mean = g_uni_GABA_total / self.net_Ni / self.no.uni_GABA_density
-        print "g_uni_GABA_total: ", g_uni_GABA_total
-        print "g_uni_GABA_mean: ", g_uni_GABA_mean
+        g_uni_GABA_mean = (g_uni_GABA_total / self.net_Ni /
+                           self.no.uni_GABA_density)
+        print("g_uni_GABA_total: ", g_uni_GABA_total)
+        print("g_uni_GABA_mean: ", g_uni_GABA_mean)
 
         # E --> I connections
         others_e  = Position2D()
@@ -236,7 +242,7 @@ class GridCellNetwork(object):
             y_e_norm = float(y) / self.Ne_y * self.y_dim
 
             for x in xrange(self.Ne_x):
-                it = y*self.Ne_x + x
+                it = y * self.Ne_x + x
 
                 x_e_norm = float(x) / self.Ne_x
                 a.x = x_e_norm
@@ -249,11 +255,13 @@ class GridCellNetwork(object):
                 pd_norm_e.y = 1. * pd_e[1] / self.Ni_y * self.y_dim
 
                 if AMPA_gaussian == 1:
-                    tmp_templ = self._generateGaussianWeights(a, others_e,
-                            pAMPA_sigma, pd_norm_e, self.no.prefDirC_e)
+                    tmp_templ = self._generateGaussianWeights(
+                        a, others_e, pAMPA_sigma, pd_norm_e,
+                        self.no.prefDirC_e)
                 elif AMPA_gaussian == 0:
-                    tmp_templ = self._generateRinglikeWeights(a, others_e,
-                            pAMPA_mu, pAMPA_sigma, pd_norm_e, self.no.prefDirC_e)
+                    tmp_templ = self._generateRinglikeWeights(
+                        a, others_e, pAMPA_mu, pAMPA_sigma, pd_norm_e,
+                        self.no.prefDirC_e)
                 else:
                     raise Exception('AMPA_gaussian parameters must be 0 or 1')
 
@@ -277,7 +285,7 @@ class GridCellNetwork(object):
         for y in xrange(self.Ni_y):
             y_i_norm = float(y) / self.Ni_y * self.y_dim
             for x in xrange(self.Ni_x):
-                it = y*self.Ni_x + x
+                it = y * self.Ni_x + x
                 x_i_norm = float(x) / self.Ni_x
 
                 a.x = x_i_norm
@@ -290,92 +298,54 @@ class GridCellNetwork(object):
                 pd_norm_i.y = 1. * pd_i[1] / self.Ne_y * self.y_dim
 
                 if AMPA_gaussian == 1:
-                    tmp_templ = self._generateRinglikeWeights(a, others_i,
-                            pGABA_mu, pGABA_sigma, pd_norm_i, self.no.prefDirC_i)
+                    tmp_templ = self._generateRinglikeWeights(
+                        a, others_i, pGABA_mu, pGABA_sigma, pd_norm_i,
+                        self.no.prefDirC_i)
                 elif AMPA_gaussian == 0:
-                    tmp_templ = self._generateGaussianWeights(a, others_i,
-                            pGABA_sigma, pd_norm_i, self.no.prefDirC_i)
+                    tmp_templ = self._generateGaussianWeights(
+                        a, others_i, pGABA_sigma, pd_norm_i,
+                        self.no.prefDirC_i)
                 else:
                     raise Exception('AMPA_gaussian parameters must be 0 or 1')
 
-                tmp_templ *= self.B_GABA*g_GABA_mean
-                self._addToConnections(tmp_templ,
-                        self.no.uni_GABA_density*100.0, g_uni_GABA_mean)
+                # FIXME: ugly: B_GABA is defined only in child classes
+                tmp_templ *= self.B_GABA * g_GABA_mean
+                self._addToConnections(
+                    tmp_templ, self.no.uni_GABA_density * 100.0,
+                    g_uni_GABA_mean)
                 E_nid = (tmp_templ > conn_th).nonzero()[0]
                 self._divergentConnectIE(it, E_nid, tmp_templ[E_nid])
 
-
-    def uniformInhibition(self):
-        '''
-        Create a separate set of uniform (and possibly sparse) I-->E connections.
-        '''
-        raise NotImplementedException("GridCellNetwork.uniformInhibition")
-
-
-
-    ############################################################################
+    ###########################################################################
     #                     External sources definitions
-    ############################################################################
-    def setConstantCurrent(self):
-        '''
-        Enable the constant current external injection. This method uses the following parameters:
-            Iext_e_const
-            Iext_i_const
-        '''
-        raise NotImplementedException("GridCellNetwork.setConstantCurrent")
-
-
-    def setThetaCurrent(self):
-        '''
-        Enable theta current in the network. This method uses the following parameters:
-            theta_start_t
-            theta_freq
-        '''
-        raise NotImplementedException("GridCellNetwork.setThetaCurrent")
-
-
-    def setStartCurrent(self):
-        '''
-        Set the amplitude and duration of a constant startup current. This is
-        used to kick the bump off in the beginning as it does not have to form
-        spontaneously. Parameters used:
-            startCurrent_time
-            startCurrent_amplitude
-        '''
-        raise NotImplementedException("GridCellNetwork.setStartCurrent")
-
-
-    def setVelocityCurrentInput_e(self):
+    ###########################################################################
+    def setVelocityCurrentInput_e(self, prefDirs_mask=None):
         '''
         Setup a velocity input to the excitatory population. Current input.
         '''
-        raise NotImplementedException("GridCellNetwork.setVelocityCurrentInput_e")
+        raise NotImplementedError()
 
     def setVelocityCurrentInput_i(self):
         '''
         Setup a velocity input to the inhibitory population. Current input.
         '''
-        raise NotImplementedException("GridCellNetwork.setVelocityCurrentInput_i")
+        raise NotImplementedError()
 
     def setConstantVelocityCurrent_e(self, vel):
         '''
-        Setup a constant velocity current onto E poputlaion, where vel must be a list of numbers:
+        Setup a constant velocity current onto E poputlaion, where vel must be
+        a list of numbers:
             vel = [vel_x, vel_y]
         '''
-        raise NotImplementedException("GridCellNetwork.setConstantVelocityCurrent_e")
+        raise NotImplementedError()
 
     def setConstantVelocityCurrent_i(self, vel):
         '''
-        Setup a constant velocity current onto I population, where vel must be a list of numbers:
+        Setup a constant velocity current onto I population, where vel must be
+        a list of numbers:
             vel = [vel_x, vel_y]
         '''
-        raise NotImplementedException("GridCellNetwork.setConstantVelocityCurrent_i")
-
-    def setPlaceCurrentInput(self):
-        '''
-        Setup a place cell current input that resets the bump position every user defined period.
-        '''
-        raise NotImplementedException("GridCellNetwork.setPlaceCurrentInput")
+        raise NotImplementedError()
 
     def getAttrDictionary(self):
         '''
@@ -383,7 +353,6 @@ class GridCellNetwork(object):
         need in order to work with data produced by the simulation.
         '''
         raise NotImplementedError()
-
 
     ###########################################################################
     #                           Other
@@ -393,39 +362,41 @@ class GridCellNetwork(object):
         Mark the beginning of network construction.
         '''
         self._constrStartT = time.time()
-        print "Starting network construction"
+        print("Starting network construction")
 
     def endConstruction(self):
         '''
         Mark the end of network construction.
         '''
         self._constrEndT = time.time()
-        print "Network construction finished."
+        print("Network construction finished.")
 
     def constructionTime(self):
         '''Compute network construction time'''
-        assert(self._constrStartT is not None)
-        if (self._constrEndT is None):
-            raise RuntimeError("Cannot compute contruction time. End time has not been marked yet.")
+        assert self._constrStartT is not None
+        if self._constrEndT is None:
+            raise RuntimeError("Cannot compute contruction time. End time has "
+                               "not been marked yet.")
         else:
             return self._constrEndT - self._constrStartT
 
     def beginSimulation(self):
         '''Mark beginning of the simulation'''
         self._simStartT = time.time()
-        print "Simulation has started..."
+        print("Simulation has started...")
 
     def endSimulation(self):
         '''Mark end of the simulation'''
-        self._simEndT = time.time();
-        print "Simulation finished"
+        self._simEndT = time.time()
+        print("Simulation finished")
 
     def simulationTime(self):
         '''Compute simulation time'''
-        assert(self._simStartT is not None)
-        if (self._simEndT is None):
-            raise RuntimeError("Cannot compute simulation time. End time has "+
-                "not been marked yet (no simulation has been run?).")
+        assert self._simStartT is not None
+        if self._simEndT is None:
+            raise RuntimeError("Cannot compute simulation time. End time has "
+                               "not been marked yet (no simulation has been "
+                               "run?).")
         else:
             return self._simEndT - self._simStartT
 
@@ -437,16 +408,17 @@ class GridCellNetwork(object):
 
     def _getTimes(self):
         '''Get simulation times'''
-        return (self.constructionTime(), self.simulationTime(), self.totalTime())
+        return (self.constructionTime(), self.simulationTime(),
+                self.totalTime())
 
     def printTimes(self, constrT=True, simT=True, totalT=True):
+        '''Print the different elapsed simulation times.'''
         constrT, simT, totalT = self._getTimes()
-        print "Timer statistics:"
+        print("Timer statistics:")
         print("   Construction: {0} s".format(constrT))
         print("   Simulation  : {0} s".format(simT))
         print("   Total       : {0} s".format(totalT))
         return constrT, simT, totalT
-
 
     def getPreferredDirection(self, pos_x, pos_y):
         '''
@@ -461,12 +433,11 @@ class GridCellNetwork(object):
         pos2_y = pos_y % 2
         if pos4_x == 0:
             if pos2_y == 0:
-                return [-1, 0] # Left
+                return [-1, 0]  # Left
             else:
-                return [0, -1] # Down
+                return [0, -1]  # Down
         else:
             if pos2_y == 0:
-                return [0, 1] # up
+                return [0, 1]  # up
             else:
-                return [1, 0] # Right
-
+                return [1, 0]  # Right
