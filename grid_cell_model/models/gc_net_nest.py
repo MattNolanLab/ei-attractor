@@ -161,9 +161,7 @@ class NestGridCellNetwork(GridCellNetwork):
             params={'receptor_type': self.e_receptors['AMPA']})
 
         # Connect E-->I and I-->E
-        self._centerSurroundConnection(self.no.AMPA_gaussian, self.no.pAMPA_mu,
-                                       self.no.pAMPA_sigma, self.no.pGABA_mu,
-                                       self.no.pGABA_sigma)
+        self._connect_network()
 
     def simulate(self, time, printTime=True):
         '''Run the simulation'''

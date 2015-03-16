@@ -198,35 +198,36 @@ class GridCellNetwork(object):
         conductances[indexes] += h
         return conductances
 
-    def _centerSurroundConnection(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma,
-                                  pGABA_mu, pGABA_sigma):
-        '''
-        Create a center-surround excitatory and inhibitory connections between
-        both populations.
+    def _connect_network(self):
+        '''Make network connections according to parameter settings.'''
+        self._connect_ei(self.no.AMPA_gaussian, self.no.pAMPA_mu,
+                         self.no.pAMPA_sigma)
+        self._connect_ie(self.no.AMPA_gaussian, self.no.pGABA_mu,
+                         self.no.pGABA_sigma)
+
+    def _connect_ei(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma):
+        '''Make E-->I connections, according to network options.
+
+        This doc applies to both connect_ei and connect_ie.
 
         The connections are remapped to [1.0, sqrt(3)/2], whether the topology
         is a twisted torus or just a regular torus.
 
-        AMPA_gaussian switches between two cases:
-            true    Each exciatory neuron has a 2D excitatory gaussian profile,
-                    while each inhibitory neuron has a ring-like profile
-                    pAMPA_mu, pAMPA_sigma, pGABA_sigma are used,
-                    pGABA_mu is discarded
-            false   Each excitatory neuron has a ring-like profile, while
-                    each inhibitory neuron has a gaussian profile.
-                    pAMPA_sigma, pGABA_mu, pGABA_sigma are used,
-                    pAMPA_mu is discarded
+        Parameters
+        ----------
+        AMPA_gaussian : bool
+            AMPA_gaussian switches between two cases:
+                true    Each exciatory neuron has a 2D excitatory gaussian
+                        profile, while each inhibitory neuron has a ring-like
+                        profile pAMPA_mu, pAMPA_sigma, pGABA_sigma are used,
+                        pGABA_mu is discarded
+                false   Each excitatory neuron has a ring-like profile, while
+                        each inhibitory neuron has a gaussian profile.
+                        pAMPA_sigma, pGABA_mu, pGABA_sigma are used, pAMPA_mu
+                        is discarded
         '''
-
         g_AMPA_mean = self.no.g_AMPA_total / self.net_Ne
-        g_GABA_mean = self.no.g_GABA_total / self.net_Ni
-        g_uni_GABA_total = self.no.g_GABA_total * self.no.g_uni_GABA_frac
-        g_uni_GABA_mean = (g_uni_GABA_total / self.net_Ni /
-                           self.no.uni_GABA_density)
-        print("g_uni_GABA_total: ", g_uni_GABA_total)
-        print("g_uni_GABA_mean: ", g_uni_GABA_mean)
 
-        # E --> I connections
         others_e  = Position2D()
         pd_norm_e = Position2D()
         a         = Position2D()
@@ -269,7 +270,35 @@ class GridCellNetwork(object):
                 # tmp_templ down here must be in the proper units (e.g. nS)
                 self._divergentConnectEI(it, range(self.net_Ni), tmp_templ)
 
-        # I --> E connections
+
+    def _connect_ie(self, AMPA_gaussian, pGABA_mu, pGABA_sigma):
+        '''Make I-->E connections, according to network options.
+
+        This doc applies to both connect_ei and connect_ie.
+
+        The connections are remapped to [1.0, sqrt(3)/2], whether the topology
+        is a twisted torus or just a regular torus.
+
+        Parameters
+        ----------
+        AMPA_gaussian : bool
+            AMPA_gaussian switches between two cases:
+                true    Each exciatory neuron has a 2D excitatory gaussian
+                        profile, while each inhibitory neuron has a ring-like
+                        profile pAMPA_mu, pAMPA_sigma, pGABA_sigma are used,
+                        pGABA_mu is discarded
+                false   Each excitatory neuron has a ring-like profile, while
+                        each inhibitory neuron has a gaussian profile.
+                        pAMPA_sigma, pGABA_mu, pGABA_sigma are used, pAMPA_mu
+                        is discarded
+        '''
+        g_GABA_mean = self.no.g_GABA_total / self.net_Ni
+        g_uni_GABA_total = self.no.g_GABA_total * self.no.g_uni_GABA_frac
+        g_uni_GABA_mean = (g_uni_GABA_total / self.net_Ni /
+                           self.no.uni_GABA_density)
+        print("g_uni_GABA_total: ", g_uni_GABA_total)
+        print("g_uni_GABA_mean: ", g_uni_GABA_mean)
+
         others_i  = Position2D()
         pd_norm_i = Position2D()
         a         = Position2D()
