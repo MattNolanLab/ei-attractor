@@ -140,7 +140,8 @@ class ParameterSelector(object):
         self.parser.add_argument("--E_AMPA",   type=float,  help="AMPA reversal potential (V)")
         self.parser.add_argument("--E_GABA_A", type=float,  help="GABA A reversal potential (V)")
 
-        self.parser.add_argument("--C_Mg", type=float, help="Mg2+ concentration; used for NMDA voltage dependence")
+        self.parser.add_argument("--C_Mg",        type=float, help="Mg2+ concentration; used for NMDA voltage dependence")
+        self.parser.add_argument("--NMDA_amount", type=float, help="NMDA portion relative to AMPA (%%)")
 
     def preferred_directions(self):
         '''Preferred directions.'''
@@ -160,22 +161,35 @@ class ParameterSelector(object):
         self.parser.add_argument("--connNE",       type=int,    help="Number of E neurons to sample from, to save input connection weights.")
         self.parser.add_argument("--connNI",       type=int,    help="Number of I neurons to sample from, to save input connection weights.")
 
-    def feedback_inhibition_profiles(self):
-        '''Properties of networks with feedback inhibition.'''
-        self.parser.add_argument("--AMPA_gaussian",    type=float, help="If 1, AMPA profile will be gauusian, if 0, ring-like. Can be used to swap connectivity types")
+    def ei_profile(self):
+        '''Properties of E --> I synaptic profiles.'''
+        self.parser.add_argument("--AMPA_gaussian",    type=float, help="If 1, AMPA profile will be Gaussian, if 0, ring-like. Can be used to swap connectivity types")
         self.parser.add_argument("--pAMPA_mu",         type=float, help="AMPA profile center (normalised)")
         self.parser.add_argument("--pAMPA_sigma",      type=float, help="AMPA profile spread (normalised)")
+        self.parser.add_argument("--g_AMPA_total",     type=float, help="Total AMPA connection synaptic conductance (nS)")
+        self.parser.add_argument("--g_uni_AMPA_total", type=float, help="Total AMPA connections synaptic conductance (nS)")
+        self.parser.add_argument("--uni_AMPA_density", type=float, help="Density of uniform AMPA connections (fraction)")
+
+    def ie_profile(self):
+        '''Properties of I --> E synaptic profiles.'''
         self.parser.add_argument("--pGABA_mu",         type=float, help="GABA A profile center (normalised)")
         self.parser.add_argument("--pGABA_sigma",      type=float, help="GABA A profile spread (normalised)")
 
-        self.parser.add_argument("--g_AMPA_total",     type=float,  help="Total AMPA connection synaptic conductance (nS)")
-        self.parser.add_argument("--g_AMPA_std",       type=float,  help="Std. deviation of AMPA connections synaptic conductance (nS)")
-        self.parser.add_argument("--g_uni_AMPA_total", type=float,  help="Total AMPA connections synaptic conductance (nS)")
-        self.parser.add_argument("--uni_AMPA_density", type=float,  help="Density of uniform AMPA connections (fraction)")
-        self.parser.add_argument("--g_GABA_total",     type=float,  help="Total GABA connections synaptic conductance (nS)")
-        self.parser.add_argument("--g_uni_GABA_frac",  type=float,  help="Total uniform GABA A connections synaptic conductance (fraction of g_GABA_total)")
-        self.parser.add_argument("--uni_GABA_density", type=float,  help="Density of uniform GABA A connections")
-        self.parser.add_argument("--NMDA_amount",      type=float, help="NMDA portion relative to AMPA (%%)")
+        self.parser.add_argument("--g_GABA_total",     type=float, help="Total GABA connections synaptic conductance (nS)")
+        self.parser.add_argument("--g_uni_GABA_frac",  type=float, help="Total uniform GABA A connections synaptic conductance (fraction of g_GABA_total)")
+        self.parser.add_argument("--uni_GABA_density", type=float, help="Density of uniform GABA A connections")
+
+    def ee_profile(self):
+        '''Properties of E --> E synaptic profiles.
+
+        In the current network model, E --> E connections are always
+        Gaussian-like.
+        '''
+        self.parser.add_argument("--use_EE",     type=int, choices=[0, 1], help="Whether to use the E-->E connectivity profiles.")
+        self.parser.add_argument("--pEE_sigma",  type=int, choices=[0, 1], help="E-->E profile spread (normalised).")
+        self.parser.add_argument("--g_EE_total", type=int, choices=[0, 1], help="Total AMPA amount for the E-->E connections.")
+
+
 
 
 def getOptParser():
@@ -199,6 +213,7 @@ def getOptParser():
     s.preferred_directions()
     s.spatial_properties()
     s.recording_parameters()
-    s.feedback_inhibition_profiles()
+    s.ei_profile()
+    s.ie_profile()
 
     return s.parser

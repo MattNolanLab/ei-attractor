@@ -9,11 +9,23 @@ import config
 
 parser = flagparse.FlagParser()
 parser.add_flag('--rasters_and_bumps')
+parser.add_flag('--rasters_and_bumps_test')
 args = parser.parse_args()
 
 env = MplEnvironment(config=config.get_config())
 
 if args.rasters_and_bumps or args.all:
     env.register_class(noisefigs.plotters.PopulationActivityPlotter)
+
+if args.rasters_and_bumps_test or args.all:
+    env.register_class(
+        noisefigs.plotters.PopulationActivityPlotter,
+        config={
+            'data_root'     : 'simulation_data_local/network_test/150pA',
+
+            'PopulationActivityPlotter': {
+                'fname_prefix': 'test_'
+            },
+        })
 
 env.plot()
