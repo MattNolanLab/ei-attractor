@@ -329,12 +329,13 @@ class GridCellNetwork(object):
 
     def _connect_ei_flat(self):
         '''Make E-->I connections that are distance-independent.'''
-        g_EI_mean = self.no.g_AMPA_total / self.net_Ne
-        for y in xrange(self.Ne_y):
-            for x in xrange(self.Ne_x):
-                it = y * self.Ne_x + x
-                self._divergentConnectEI(it, range(self.net_Ni),
-                                         [g_EI_mean] * self.net_Ni)
+        g_EI_mean = (self.no.g_AMPA_total / self.net_Ne /
+                     self.no.g_EI_uni_density)
+        n = int(float(self.net_Ni) * self.no.g_EI_uni_density)
+        self._randomDivergentConnectEI(range(self.net_Ne),
+                                       range(self.net_Ni),
+                                       n,
+                                       g_EI_mean)
 
     def _connect_ie_distance(self, AMPA_gaussian, pGABA_mu, pGABA_sigma):
         '''Make I-->E connections, according to network options.
@@ -412,12 +413,13 @@ class GridCellNetwork(object):
 
     def _connect_ie_flat(self):
         '''Make I-->E connections that are distance independent.'''
-        g_IE_mean = self.no.g_GABA_total / self.net_Ni
-        for y in xrange(self.Ni_y):
-            for x in xrange(self.Ni_x):
-                it = y * self.Ni_x + x
-                self._divergentConnectIE(it, range(self.net_Ne),
-                                         [g_IE_mean] * self.net_Ne)
+        g_IE_mean = (self.no.g_GABA_total / self.net_Ni /
+                     self.no.g_IE_uni_density)
+        n = int(float(self.net_Ne) * self.no.g_IE_uni_density)
+        self._randomDivergentConnectIE(range(self.net_Ni),
+                                       range(self.net_Ne),
+                                       n,
+                                       g_IE_mean)
 
     ###########################################################################
     #                     External sources definitions

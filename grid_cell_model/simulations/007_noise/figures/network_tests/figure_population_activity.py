@@ -25,8 +25,8 @@ if args.rasters_and_bumps_test or args.all:
 
             'PopulationActivityPlotter': {
                 'fname_prefix': 'test_',
-                #'fig_size': (4, 6),
-                #'t_limits': (0, 5e3),
+                'fig_size': (4, 6),
+                't_limits': (0, 2.5e3),
             },
         })
 

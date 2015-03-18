@@ -2,6 +2,7 @@
 from __future__ import absolute_import, print_function
 
 import logging
+import collections
 
 import numpy as np
 from scipy.io import loadmat
@@ -282,6 +283,40 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.DivergentConnect([self.E_pop[0] + pre], post_global,
                               model='I_AMPA_NMDA', weight=list(weights),
                               delay=[self.no.delay] * len(weights))
+
+    def _randomDivergentConnectEI(self, pre, post, n, weights):
+        '''Connect each neuron in ``pre`` (E population) to n randomly selected
+        neurons in ``post`` (I population), with weights specified in
+        ``weights``. If weights is a float then all the weights are constant.
+        '''
+        if isinstance(weights, collections.Iterable):
+            delay = [self.no.delay] * len(weights)
+        else:
+            delay = self.no.delay
+        nest.RandomDivergentConnect(
+            (self.E_pop[0] + np.asanyarray(pre)).tolist(),
+            (self.I_pop[0] + np.asanyarray(post)).tolist(),
+            n,
+            weight=weights,
+            model='I_AMPA_NMDA',
+            delay=delay)
+
+    def _randomDivergentConnectIE(self, pre, post, n, weights):
+        '''Connect each neuron in ``pre`` (I population) to n randomly selected
+        neurons in ``post`` (E population), with weights specified in
+        ``weights``. If weights is a float then all the weights are constant.
+        '''
+        if isinstance(weights, collections.Iterable):
+            delay = [self.no.delay] * len(weights)
+        else:
+            delay = self.no.delay
+        nest.RandomDivergentConnect(
+            (self.I_pop[0] + np.asanyarray(pre)).tolist(),
+            (self.E_pop[0] + np.asanyarray(post)).tolist(),
+            n,
+            weight=weights,
+            model='E_GABA_A',
+            delay=delay)
 
     def _divergentConnectIE(self, pre, post, weights):
         post_global = list(self.E_pop[0] + np.array(post))

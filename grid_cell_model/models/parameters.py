@@ -194,6 +194,8 @@ class ParameterSelector(object):
         self.parser.add_argument("--use_EE",     type=int, choices=[0, 1], help="Whether to use the E-->E connectivity profiles.")
         self.parser.add_argument("--pEE_sigma",  type=float, help="E-->E profile spread (normalised).")
         self.parser.add_argument("--g_EE_total", type=float, help="Total AMPA amount for the E-->E connections.")
+        self.parser.add_argument("--g_EI_uni_density", type=float, help="Probability of an E-->I connection.")
+        self.parser.add_argument("--g_IE_uni_density", type=float, help="Probability of an I-->E connection.")
 
 
 def getOptParser():

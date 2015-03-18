@@ -102,6 +102,9 @@ defaultParameters = {
         "g_uni_GABA_frac"       :   0.013,        # fraction of g_GABA_total
         "uni_GABA_density"      :   0.4,
 
+        "g_EI_uni_density"      :     .1,         # Probability
+        "g_IE_uni_density"      :     .1,         # Probability
+
         "E_AMPA"                :   0,            # mV
         "E_GABA_A"              :   -75,          # mV
 
