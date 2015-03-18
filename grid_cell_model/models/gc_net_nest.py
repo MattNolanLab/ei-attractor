@@ -271,6 +271,12 @@ class NestGridCellNetwork(GridCellNetwork):
         self._extraStateMons[label] = (mon)
         return mon
 
+    def _divergentConnectEE(self, pre, post, weights):
+        post_global = list(self.E_pop[0] + np.asanyarray(post))
+        nest.DivergentConnect([self.E_pop[0] + pre], post_global,
+                              model='I_AMPA_NMDA', weight=list(weights),
+                              delay=[self.no.delay] * len(weights))
+
     def _divergentConnectEI(self, pre, post, weights):
         post_global = list(self.I_pop[0] + np.array(post))
         nest.DivergentConnect([self.E_pop[0] + pre], post_global,

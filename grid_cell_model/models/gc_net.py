@@ -91,6 +91,12 @@ class GridCellNetwork(object):
         '''Simulate the network, after being set up.'''
         raise NotImplementedError()
 
+    def _divergentConnectEE(self, pre, post, weights):
+        '''Connect a ``pre`` neuron in the E population to all neurons in the E
+        population in the ``post``, with ``weights``.
+        '''
+        raise NotImplementedError()
+
     def _divergentConnectEI(self, pre, post, weights):
         '''
         Simply connect a 'pre' neuron in the E population to all neurons in
@@ -200,12 +206,63 @@ class GridCellNetwork(object):
 
     def _connect_network(self):
         '''Make network connections according to parameter settings.'''
-        self._connect_ei(self.no.AMPA_gaussian, self.no.pAMPA_mu,
-                         self.no.pAMPA_sigma)
-        self._connect_ie(self.no.AMPA_gaussian, self.no.pGABA_mu,
-                         self.no.pGABA_sigma)
+        if self.no.EI_flat:
+            self._connect_ei_flat()
+        else:
+            self._connect_ei_distance(self.no.AMPA_gaussian, self.no.pAMPA_mu,
+                                      self.no.pAMPA_sigma)
 
-    def _connect_ei(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma):
+        if self.no.IE_flat:
+            self._connect_ie_flat()
+        else:
+            self._connect_ie_distance(self.no.AMPA_gaussian, self.no.pGABA_mu,
+                                      self.no.pGABA_sigma)
+
+        if self.no.use_EE:
+            self._connect_ee(self.no.pEE_sigma)
+
+    def _connect_ee(self, pEE_sigma):
+        '''Make E-->E connections, according to network options.'''
+        g_EE_mean = self.no.g_EE_total / self.net_Ne
+        print("g_EE_mean: %f nS" % g_EE_mean)
+
+        others_e  = Position2D()
+        pd_norm_e = Position2D()
+        a         = Position2D()
+
+        X, Y = np.meshgrid(np.arange(self.Ne_x), np.arange(self.Ne_y))
+        X = 1. * X / self.Ne_x
+        Y = 1. * Y / self.Ne_y * self.y_dim
+        others_e.x = X.ravel()
+        others_e.y = Y.ravel()
+
+        self.prefDirs_e = np.ndarray((self.net_Ne, 2))
+        for y in xrange(self.Ne_y):
+            y_e_norm = float(y) / self.Ne_y * self.y_dim
+
+            for x in xrange(self.Ne_x):
+                it = y * self.Ne_x + x
+
+                x_e_norm = float(x) / self.Ne_x
+                a.x = x_e_norm
+                a.y = y_e_norm
+
+                pd_e = self.getPreferredDirection(x, y)
+                self.prefDirs_e[it, :] = pd_e
+
+                pd_norm_e.x = 1. * pd_e[0] / self.Ne_x
+                pd_norm_e.y = 1. * pd_e[1] / self.Ne_y * self.y_dim
+
+                tmp_templ = self._generateGaussianWeights(
+                    a, others_e, pEE_sigma, pd_norm_e, self.no.prefDirC_e)
+
+                tmp_templ *= g_EE_mean
+                # tmp_templ down here must be in the proper units (e.g. nS)
+                self._divergentConnectEE(it, range(self.net_Ne), tmp_templ)
+
+
+
+    def _connect_ei_distance(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma):
         '''Make E-->I connections, according to network options.
 
         This doc applies to both connect_ei and connect_ie.
@@ -270,8 +327,16 @@ class GridCellNetwork(object):
                 # tmp_templ down here must be in the proper units (e.g. nS)
                 self._divergentConnectEI(it, range(self.net_Ni), tmp_templ)
 
+    def _connect_ei_flat(self):
+        '''Make E-->I connections that are distance-independent.'''
+        g_EI_mean = self.no.g_AMPA_total / self.net_Ne
+        for y in xrange(self.Ne_y):
+            for x in xrange(self.Ne_x):
+                it = y * self.Ne_x + x
+                self._divergentConnectEI(it, range(self.net_Ni),
+                                         [g_EI_mean] * self.net_Ni)
 
-    def _connect_ie(self, AMPA_gaussian, pGABA_mu, pGABA_sigma):
+    def _connect_ie_distance(self, AMPA_gaussian, pGABA_mu, pGABA_sigma):
         '''Make I-->E connections, according to network options.
 
         This doc applies to both connect_ei and connect_ie.
@@ -344,6 +409,15 @@ class GridCellNetwork(object):
                     g_uni_GABA_mean)
                 E_nid = (tmp_templ > conn_th).nonzero()[0]
                 self._divergentConnectIE(it, E_nid, tmp_templ[E_nid])
+
+    def _connect_ie_flat(self):
+        '''Make I-->E connections that are distance independent.'''
+        g_IE_mean = self.no.g_GABA_total / self.net_Ni
+        for y in xrange(self.Ni_y):
+            for x in xrange(self.Ni_x):
+                it = y * self.Ni_x + x
+                self._divergentConnectIE(it, range(self.net_Ne),
+                                         [g_IE_mean] * self.net_Ne)
 
     ###########################################################################
     #                     External sources definitions

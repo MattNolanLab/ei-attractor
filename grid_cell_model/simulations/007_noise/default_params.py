@@ -4,17 +4,17 @@
 #   Default neuron and network parameters
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
+#
 #       This program is free software: you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
 #       the Free Software Foundation, either version 3 of the License, or
 #       (at your option) any later version.
-#       
+#
 #       This program is distributed in the hope that it will be useful,
 #       but WITHOUT ANY WARRANTY; without even the implied warranty of
 #       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #       GNU General Public License for more details.
-#       
+#
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -39,11 +39,15 @@ defaultParameters = {
 
         "gridSep"               :   60,             # cm
 
+        "EI_flat"               :   0,            # bool
+        "IE_flat"               :   0,            # bool
+        "use_EE"                :   0,            # bool
+        "AMPA_gaussian"         :   0,            # bool
+        "pEE_sigma"             :   .05,
         "pAMPA_mu"              :   y_dim/2.0,
         "pAMPA_sigma"           :   0.5/6,
         "pGABA_mu"              :   y_dim/2.0,
         "pGABA_sigma"           :   0.5/6,
-        "AMPA_gaussian"         :   0,            # bool
         "prefDirC_e"            :   4.0,
         "prefDirC_i"            :   0.0,
         "arenaSize"             :   180.0,        # cm
@@ -72,7 +76,7 @@ defaultParameters = {
         "g_AHP_e_max"           :   5.0,          # nS
         "t_ref_e"               :   0.1,          # ms
         "V_peak_e"              :   -40,          # mV
-        
+
         "taum_i"                :   10,           # ms
         "taum_i_spread"         :   0,            # ms
         "EL_i"                  :   -60,          # mV
@@ -86,7 +90,7 @@ defaultParameters = {
         "ad_tau_i_std"          :   0.5,          # ms, Unused in the simulation for now
         "ad_i_g_inc"            :   22.73,        # nS
         "V_peak_i"              :  -35,           # mV
-        
+
         "tau_AMPA"              :   1,            # ms
         "tau_NMDA_fall"         :    100,         # ms, only a single exponential used here
         "g_AMPA_total"          :   1400,         # nS
@@ -100,7 +104,7 @@ defaultParameters = {
 
         "E_AMPA"                :   0,            # mV
         "E_GABA_A"              :   -75,          # mV
-        
+
         "N_place_cells"         :   30,           # sqrt(total PC number)
         "pc_max_rate"           :   50.0,         # Hz
         "pc_conn_weight"        :   0.5,          # nS
@@ -109,14 +113,14 @@ defaultParameters = {
         "pc_start_max_rate"     :   100.0,        # Hz
         "pc_start_conn_weight"  :   5.0,          # nS
 
-        "noise_sigma"           :   150.0,        # pA            
+        "noise_sigma"           :   150.0,        # pA
         "gammaNSample"          :   25,           # No. of neurons
-        
+
         "sim_dt"                :   0.1,          # ms
         "Vclamp"                :   -50,          # mV
-        
+
         "ntrials"               :   1,
-        
+
         "output_dir"            :   _defaultOutputDir,
         "stateMonDur"           :  20e3,          # ms
 }
