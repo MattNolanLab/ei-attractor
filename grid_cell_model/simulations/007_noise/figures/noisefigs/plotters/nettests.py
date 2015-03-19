@@ -91,7 +91,9 @@ class PopulationActivityPlotter(FigurePlotter):
                                        fig=fig,
                                        axesCoords=self.myc['e_snapshots_rect'],
                                        bumpQuality=False,
-                                       timeTitles=True, maxRate=False)
+                                       timeTitles=True, maxRate=True,
+                                       fontsize='x-small',
+                                       rateYPos=-.2)
 
             fr_i, frt_i = i_spikes.slidingFiringRate(tStart, tEnd, win_dt,
                                                      winLen)
@@ -99,7 +101,8 @@ class PopulationActivityPlotter(FigurePlotter):
                                        fig=fig,
                                        axesCoords=self.myc['i_snapshots_rect'],
                                        bumpQuality=False,
-                                       timeTitles=False, maxRate=False)
+                                       timeTitles=False, maxRate=True,
+                                       fontsize='x-small')
 
             saver.savefig(fig)
         saver.close()

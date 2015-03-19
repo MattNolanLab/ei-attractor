@@ -14,7 +14,8 @@ These simulations do the following:
 '''
 import numpy as np
 
-from param_sweep import submitParamSweep, SubmissionParser
+from grid_cell_model.submitting.noise import SubmissionParser
+from param_sweep import submitParamSweep
 from default_params import defaultParameters as dp
 
 parser = SubmissionParser()
