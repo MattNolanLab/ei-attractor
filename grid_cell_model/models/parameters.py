@@ -163,6 +163,9 @@ class ParameterSelector(object):
 
     def ei_profile(self):
         '''Properties of E --> I synaptic profiles.'''
+        self.parser.add_argument("--EI_flat",
+                                 type=int, choices=[0, 1], required=True,
+                                 help="Whether the E-->I profile is flat or distance dependent.")
         self.parser.add_argument("--AMPA_gaussian",    type=float, help="If 1, AMPA profile will be Gaussian, if 0, ring-like. Can be used to swap connectivity types")
         self.parser.add_argument("--pAMPA_mu",         type=float, help="AMPA profile center (normalised)")
         self.parser.add_argument("--pAMPA_sigma",      type=float, help="AMPA profile spread (normalised)")
@@ -172,6 +175,9 @@ class ParameterSelector(object):
 
     def ie_profile(self):
         '''Properties of I --> E synaptic profiles.'''
+        self.parser.add_argument("--IE_flat",
+                                 type=int, choices=[0, 1], required=True,
+                                 help="Whether the I-->E profile is flat or distance dependent.")
         self.parser.add_argument("--pGABA_mu",         type=float, help="GABA A profile center (normalised)")
         self.parser.add_argument("--pGABA_sigma",      type=float, help="GABA A profile spread (normalised)")
 
@@ -186,10 +192,10 @@ class ParameterSelector(object):
         Gaussian-like.
         '''
         self.parser.add_argument("--use_EE",     type=int, choices=[0, 1], help="Whether to use the E-->E connectivity profiles.")
-        self.parser.add_argument("--pEE_sigma",  type=int, choices=[0, 1], help="E-->E profile spread (normalised).")
-        self.parser.add_argument("--g_EE_total", type=int, choices=[0, 1], help="Total AMPA amount for the E-->E connections.")
-
-
+        self.parser.add_argument("--pEE_sigma",  type=float, help="E-->E profile spread (normalised).")
+        self.parser.add_argument("--g_EE_total", type=float, help="Total AMPA amount for the E-->E connections.")
+        self.parser.add_argument("--g_EI_uni_density", type=float, help="Probability of an E-->I connection.")
+        self.parser.add_argument("--g_IE_uni_density", type=float, help="Probability of an I-->E connection.")
 
 
 def getOptParser():
@@ -215,5 +221,6 @@ def getOptParser():
     s.recording_parameters()
     s.ei_profile()
     s.ie_profile()
+    s.ee_profile()
 
     return s.parser

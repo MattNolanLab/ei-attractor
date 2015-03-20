@@ -24,7 +24,9 @@ if args.rasters_and_bumps_test or args.all:
             'data_root'     : 'simulation_data_local/network_test/150pA',
 
             'PopulationActivityPlotter': {
-                'fname_prefix': 'test_'
+                'fname_prefix': 'test_',
+                'fig_size': (4, 6),
+                't_limits': (0, 2.5e3),
             },
         })
 

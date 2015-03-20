@@ -91,6 +91,12 @@ class GridCellNetwork(object):
         '''Simulate the network, after being set up.'''
         raise NotImplementedError()
 
+    def _divergentConnectEE(self, pre, post, weights):
+        '''Connect a ``pre`` neuron in the E population to all neurons in the E
+        population in the ``post``, with ``weights``.
+        '''
+        raise NotImplementedError()
+
     def _divergentConnectEI(self, pre, post, weights):
         '''
         Simply connect a 'pre' neuron in the E population to all neurons in
@@ -198,35 +204,88 @@ class GridCellNetwork(object):
         conductances[indexes] += h
         return conductances
 
-    def _centerSurroundConnection(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma,
-                                  pGABA_mu, pGABA_sigma):
-        '''
-        Create a center-surround excitatory and inhibitory connections between
-        both populations.
+    def _connect_network(self):
+        '''Make network connections according to parameter settings.'''
+        if self.no.EI_flat:
+            self._connect_ei_flat()
+        else:
+            self._connect_ei_distance(self.no.AMPA_gaussian, self.no.pAMPA_mu,
+                                      self.no.pAMPA_sigma)
+
+        if self.no.IE_flat:
+            self._connect_ie_flat()
+        else:
+            self._connect_ie_distance(self.no.AMPA_gaussian, self.no.pGABA_mu,
+                                      self.no.pGABA_sigma)
+
+        if self.no.use_EE:
+            self._connect_ee(self.no.pEE_sigma)
+
+    def _connect_ee(self, pEE_sigma):
+        '''Make E-->E connections, according to network options.'''
+        g_EE_mean = self.no.g_EE_total / self.net_Ne
+        print("g_EE_mean: %f nS" % g_EE_mean)
+
+        others_e  = Position2D()
+        pd_norm_e = Position2D()
+        a         = Position2D()
+
+        X, Y = np.meshgrid(np.arange(self.Ne_x), np.arange(self.Ne_y))
+        X = 1. * X / self.Ne_x
+        Y = 1. * Y / self.Ne_y * self.y_dim
+        others_e.x = X.ravel()
+        others_e.y = Y.ravel()
+
+        self.prefDirs_e = np.ndarray((self.net_Ne, 2))
+        for y in xrange(self.Ne_y):
+            y_e_norm = float(y) / self.Ne_y * self.y_dim
+
+            for x in xrange(self.Ne_x):
+                it = y * self.Ne_x + x
+
+                x_e_norm = float(x) / self.Ne_x
+                a.x = x_e_norm
+                a.y = y_e_norm
+
+                pd_e = self.getPreferredDirection(x, y)
+                self.prefDirs_e[it, :] = pd_e
+
+                pd_norm_e.x = 1. * pd_e[0] / self.Ne_x
+                pd_norm_e.y = 1. * pd_e[1] / self.Ne_y * self.y_dim
+
+                tmp_templ = self._generateGaussianWeights(
+                    a, others_e, pEE_sigma, pd_norm_e, self.no.prefDirC_e)
+
+                # tmp_templ down here must be in the proper units (e.g. nS)
+                tmp_templ *= g_EE_mean
+                tmp_templ[it] = 0.  # do not allow autapses
+                self._divergentConnectEE(it, range(self.net_Ne), tmp_templ)
+
+
+
+    def _connect_ei_distance(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma):
+        '''Make E-->I connections, according to network options.
+
+        This doc applies to both connect_ei and connect_ie.
 
         The connections are remapped to [1.0, sqrt(3)/2], whether the topology
         is a twisted torus or just a regular torus.
 
-        AMPA_gaussian switches between two cases:
-            true    Each exciatory neuron has a 2D excitatory gaussian profile,
-                    while each inhibitory neuron has a ring-like profile
-                    pAMPA_mu, pAMPA_sigma, pGABA_sigma are used,
-                    pGABA_mu is discarded
-            false   Each excitatory neuron has a ring-like profile, while
-                    each inhibitory neuron has a gaussian profile.
-                    pAMPA_sigma, pGABA_mu, pGABA_sigma are used,
-                    pAMPA_mu is discarded
+        Parameters
+        ----------
+        AMPA_gaussian : bool
+            AMPA_gaussian switches between two cases:
+                true    Each exciatory neuron has a 2D excitatory gaussian
+                        profile, while each inhibitory neuron has a ring-like
+                        profile pAMPA_mu, pAMPA_sigma, pGABA_sigma are used,
+                        pGABA_mu is discarded
+                false   Each excitatory neuron has a ring-like profile, while
+                        each inhibitory neuron has a gaussian profile.
+                        pAMPA_sigma, pGABA_mu, pGABA_sigma are used, pAMPA_mu
+                        is discarded
         '''
-
         g_AMPA_mean = self.no.g_AMPA_total / self.net_Ne
-        g_GABA_mean = self.no.g_GABA_total / self.net_Ni
-        g_uni_GABA_total = self.no.g_GABA_total * self.no.g_uni_GABA_frac
-        g_uni_GABA_mean = (g_uni_GABA_total / self.net_Ni /
-                           self.no.uni_GABA_density)
-        print("g_uni_GABA_total: ", g_uni_GABA_total)
-        print("g_uni_GABA_mean: ", g_uni_GABA_mean)
 
-        # E --> I connections
         others_e  = Position2D()
         pd_norm_e = Position2D()
         a         = Position2D()
@@ -269,7 +328,44 @@ class GridCellNetwork(object):
                 # tmp_templ down here must be in the proper units (e.g. nS)
                 self._divergentConnectEI(it, range(self.net_Ni), tmp_templ)
 
-        # I --> E connections
+    def _connect_ei_flat(self):
+        '''Make E-->I connections that are distance-independent.'''
+        g_EI_mean = (self.no.g_AMPA_total / self.net_Ne /
+                     self.no.g_EI_uni_density)
+        n = int(float(self.net_Ni) * self.no.g_EI_uni_density)
+        self._randomDivergentConnectEI(range(self.net_Ne),
+                                       range(self.net_Ni),
+                                       n,
+                                       g_EI_mean)
+
+    def _connect_ie_distance(self, AMPA_gaussian, pGABA_mu, pGABA_sigma):
+        '''Make I-->E connections, according to network options.
+
+        This doc applies to both connect_ei and connect_ie.
+
+        The connections are remapped to [1.0, sqrt(3)/2], whether the topology
+        is a twisted torus or just a regular torus.
+
+        Parameters
+        ----------
+        AMPA_gaussian : bool
+            AMPA_gaussian switches between two cases:
+                true    Each exciatory neuron has a 2D excitatory gaussian
+                        profile, while each inhibitory neuron has a ring-like
+                        profile pAMPA_mu, pAMPA_sigma, pGABA_sigma are used,
+                        pGABA_mu is discarded
+                false   Each excitatory neuron has a ring-like profile, while
+                        each inhibitory neuron has a gaussian profile.
+                        pAMPA_sigma, pGABA_mu, pGABA_sigma are used, pAMPA_mu
+                        is discarded
+        '''
+        g_GABA_mean = self.no.g_GABA_total / self.net_Ni
+        g_uni_GABA_total = self.no.g_GABA_total * self.no.g_uni_GABA_frac
+        g_uni_GABA_mean = (g_uni_GABA_total / self.net_Ni /
+                           self.no.uni_GABA_density)
+        print("g_uni_GABA_total: ", g_uni_GABA_total)
+        print("g_uni_GABA_mean: ", g_uni_GABA_mean)
+
         others_i  = Position2D()
         pd_norm_i = Position2D()
         a         = Position2D()
@@ -315,6 +411,16 @@ class GridCellNetwork(object):
                     g_uni_GABA_mean)
                 E_nid = (tmp_templ > conn_th).nonzero()[0]
                 self._divergentConnectIE(it, E_nid, tmp_templ[E_nid])
+
+    def _connect_ie_flat(self):
+        '''Make I-->E connections that are distance independent.'''
+        g_IE_mean = (self.no.g_GABA_total / self.net_Ni /
+                     self.no.g_IE_uni_density)
+        n = int(float(self.net_Ne) * self.no.g_IE_uni_density)
+        self._randomDivergentConnectIE(range(self.net_Ni),
+                                       range(self.net_Ne),
+                                       n,
+                                       g_IE_mean)
 
     ###########################################################################
     #                     External sources definitions
