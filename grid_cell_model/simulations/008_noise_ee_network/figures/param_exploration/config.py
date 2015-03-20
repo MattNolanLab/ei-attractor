@@ -4,7 +4,6 @@ from __future__ import absolute_import, print_function
 from configobj import ConfigObj
 
 from noisefigs.plotters.base import PdfOutputSaver
-from noisefigs.plotters.base import SeparateMultipageSaver
 
 
 scale_factor = 1.
@@ -46,7 +45,6 @@ def get_config():
 
         'PopulationActivityPlotter': {
             'raster_rect': (.075, 0.35, 0.99, 0.97),
-            'fig_saver': SeparateMultipageSaver(None, 'pdf'),
             'fig_size': (15, 6),
             't_limits': (0, 10e3),
 

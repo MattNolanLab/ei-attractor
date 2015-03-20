@@ -50,9 +50,9 @@ for noise_sigma in parser.noise_sigmas:
     p['verbosity']   = o.verbosity
     p['Ivel']        = 50. if o.Ivel is None else o.Ivel  # mA
 
-    p['g_AMPA_total'] = 25.    # nS
-    p['g_GABA_total'] = 8.     # nS
-    p['g_EE_total']   = 4000.  # nS
+    p['g_AMPA_total'] = 290.    # nS
+    p['g_GABA_total'] = 410.    # nS
+    p['g_EE_total']   = 500.    # nS
 
     # No theta parameters
     p['Iext_e_const'] = 400.0   # pA
@@ -69,8 +69,8 @@ for noise_sigma in parser.noise_sigmas:
                                o.param_step)
     dummy = explored_param * 0. + p['prefDirC_e']
     iterparams = {
-        'prefDirC_e' : dummy,
-        o.explored_param : explored_param
+        'prefDirC_e': dummy,
+        o.explored_param: explored_param
     }
     ac = ArgumentCreator(p, printout=True)
     ac.insertDict(iterparams, mult=False)

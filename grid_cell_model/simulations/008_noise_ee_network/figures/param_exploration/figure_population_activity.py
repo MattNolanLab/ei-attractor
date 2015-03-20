@@ -3,9 +3,12 @@ from __future__ import absolute_import, print_function
 
 import os
 
+import matplotlib
+matplotlib.use('Agg')
 from grid_cell_model.submitting import flagparse
 import noisefigs
 from noisefigs.env import MplEnvironment
+from noisefigs.plotters.base import SeparateMultipageSaver
 
 import config
 
@@ -31,6 +34,7 @@ if args.param_exploration or args.all:
                         'fname_prefix': 'test_%s_' % file_name,
                         'fig_size': (4, 6),
                         't_limits': (0, 2.5e3),
+                        'fig_saver': SeparateMultipageSaver(None, 'pdf'),
                     },
                 })
 
