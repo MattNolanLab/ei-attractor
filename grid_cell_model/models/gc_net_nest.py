@@ -267,6 +267,9 @@ class NestGridCellNetwork(GridCellNetwork):
         @param params Parameter of the state monitors
         @return Global IDs for manipulation in the nest space
         '''
+        if len(gids) == 0:
+            logger.warn('Requested to create 0 state monitors. Ignoring...')
+            return []
         mon = nest.Create('multimeter', len(gids), params=params)
         nest.Connect(mon, gids)
         self._extraStateMons[label] = (mon)

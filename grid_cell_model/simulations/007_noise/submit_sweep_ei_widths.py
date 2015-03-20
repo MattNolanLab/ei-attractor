@@ -38,6 +38,8 @@ for noise_sigma in parser.noise_sigmas:
     p['ntrials']     = o.ntrials
     p['verbosity']   = o.verbosity
 
+    p['gammaNSample'] = 0
+
     # Range of E/I synaptic conductances and pAMPA_sigma
     Nvals_G = 61      # Number of values for g_AMPA_total
     startG  = 0.0     # nS
