@@ -256,8 +256,9 @@ class GridCellNetwork(object):
                 tmp_templ = self._generateGaussianWeights(
                     a, others_e, pEE_sigma, pd_norm_e, self.no.prefDirC_e)
 
-                tmp_templ *= g_EE_mean
                 # tmp_templ down here must be in the proper units (e.g. nS)
+                tmp_templ *= g_EE_mean
+                tmp_templ[it] = 0.  # do not allow autapses
                 self._divergentConnectEE(it, range(self.net_Ne), tmp_templ)
 
 
