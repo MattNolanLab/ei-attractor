@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import absolute_import, print_function
 
+import matplotlib; matplotlib.use('Agg')
 from grid_cell_model.submitting import flagparse
 import noisefigs
 from noisefigs.env import MplEnvironment
