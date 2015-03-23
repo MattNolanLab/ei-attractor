@@ -151,27 +151,45 @@ class DummyTrialSet(DataSpace):
         pass
 
 
-
 class JobTrialSpace2D(DataSpace):
-    def __init__(self, shape, rootDir, dataPoints=None, fileMode='r+',
-            fileFormat="job{0:05}_output.h5", forceWMode=False,
-            checkParams=False):
-        '''
-        Initialize this parameter space object.
-        TODO: this class will need a massive refactoring indeed!
+    '''A 2D parameter sweep space with a number of trials per job.
 
-        Parameters
-        ----------
-        TODO
-        '''
-        if (fileMode == 'w' and forceWMode == False):
-            raise ValueError("'w' file open mode is not allowed. Use " +
-                    "'forceWMode' to override.")
+    .. todo::
+        This class will need a massive refactoring indeed!
+
+    Parameters
+    ----------
+    shape : a pair of ints
+        Parameter space shape (rows, columns)
+    rootDir : str
+        Root directory for the space.
+    dataPoints : a list of pairs, or None
+        If this is not ``None``, then it must contain a list of coordinates in
+        the data space to restrict the data manipulation to.
+    fileMode : str
+        File mode to open the jobs in.
+    fileFormat : str
+        A template for job file name formatting.
+    forceWMode : bool
+        Whether to force write mode.
+    checkParams : bool
+        Whether to check integrity of iterated parameters.
+    metadata_extractor : MetaDataExtractor, or None
+        Extractor for the iteration metadata, i.e. which parameters have been
+        iterated, their labels, etc. If ``None``, then it will not be possible
+        to extract the iteration metadata for this parameter space.
+    '''
+    def __init__(self, shape, rootDir, dataPoints=None, fileMode='r+',
+                 fileFormat="job{0:05}_output.h5", forceWMode=False,
+                 checkParams=False, metadata_extractor=None):
+        if fileMode == 'w' and forceWMode == False:
+            raise ValueError("'w' file open mode is not allowed. Use "
+                             "'forceWMode' to override.")
         self._fileMode = fileMode
         self._shape = shape
         self._rootDir = rootDir
         self._dataPoints = dataPoints
-        if (self._dataPoints is not None):
+        if self._dataPoints is not None:
             self._partial = True
         else:
             self._partial = False
@@ -182,7 +200,14 @@ class JobTrialSpace2D(DataSpace):
         self._loadTrials()
         self._aggregationDS = None
         self.saveDataFileName = 'reductions.h5'
+        self._extractor = metadata_extractor
 
+    @property
+    def metadata(self):
+        '''Return a reference to the metadata associated with this parameter
+        space.
+        '''
+        return self._extractor
 
     def repackItem(self, r, c):
         '''
