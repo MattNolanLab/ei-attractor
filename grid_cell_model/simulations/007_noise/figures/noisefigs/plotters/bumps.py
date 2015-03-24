@@ -541,11 +541,10 @@ class GEProfileWidthBumpPlotter(BumpFormationBase):
         xlabel = self.myc.get('xlabel', None)
         xticks = myc['xticks']
         l, b, r, t = self.myc['bbox']
+        fname = self.myc.get('fname', "bumps_Pbumps_gE_pAMPA_sigma{ns}.pdf")
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-            fname = self.get_fname(
-                "bumps_Pbumps_gE_pAMPA_sigma{ns}.pdf",
-                ns=noise_sigma)
+            fname = self.get_fname(fname, ns=noise_sigma)
             fig = self._get_final_fig(self.config['sweeps']['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
             kw = dict()
