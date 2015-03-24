@@ -47,7 +47,7 @@ for noise_sigma in parser.noise_sigmas:
 
     Nvals_sigma = 11      # Number of values for pAMPA_sigma
     startSigma  = .5 / 6
-    endSigma    = 1.
+    endSigma    = .175
 
     ###############################################################################
     ac = ArgumentCreator(p, printout=o.printout)
