@@ -1,7 +1,7 @@
 ''''Classes to define abstractions on parameter exploration data.'''
 from __future__ import absolute_import
 from collections    import Sequence
-from os.path        import exists
+from os.path        import exists, basename
 import subprocess
 
 import numpy as np
@@ -73,6 +73,15 @@ class TrialSet(DataSpace):
             self._data_set_cls = data_set_cls
         DataSpace.__init__(self, None, key='trials')
 
+    @property
+    def file_path(self):
+        '''Return the full path to the file name for this trial set.'''
+        return self._fileName
+
+    @property
+    def file_name_base(self):
+        '''Return just the file name for this trial set.'''
+        return basename(self._fileName)
 
     def _loadData(self):
         if (self._dataLoaded):
