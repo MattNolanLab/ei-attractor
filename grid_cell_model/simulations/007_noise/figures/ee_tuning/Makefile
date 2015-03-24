@@ -21,8 +21,6 @@ no-pc-input:
 
 clean:
 	rm -f $$(git ls-files -i --exclude-standard -o panels)
-	cd no_theta; $(MAKE) clean
-	cd no_pc_input; $(MAKE) clean
 
 thesis:
 	./update_thesis.sh
