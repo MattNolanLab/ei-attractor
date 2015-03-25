@@ -62,6 +62,8 @@ for noise_sigma in parser.noise_sigmas:
         'prefDirC_e': dummy,
         o.explored_param: explored_param
     }
+    dimension_labels = ['prefDirC_e', o.explored_param]
+    dimensions = [1, len(explored_param)]
     ac = ArgumentCreator(p, printout=True)
     ac.insertDict(iterparams, mult=False)
 
@@ -73,4 +75,5 @@ for noise_sigma in parser.noise_sigmas:
     ac.setOption('output_dir', submitter.outputDir())
     startJobNum = 0
     submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
-    submitter.saveIterParams(iterparams, dry_run=dry_run)
+    submitter.saveIterParams(iterparams, dimension_labels, dimensions,
+                             dry_run=dry_run)

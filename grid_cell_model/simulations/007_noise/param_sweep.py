@@ -9,14 +9,16 @@ from grid_cell_model.data_storage import DataStorage
 from grid_cell_model.otherpkg.log import log_info
 
 
-def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
-        appName, rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
-        extraIterparams={}, rc=None, **kwargs):
+def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel, appName,
+                     rtLimit, numCPU, blocking, timePrefix, numRepeat, dry_run,
+                     extraIterparams=None, rc=None, **kwargs):
+    '''Submit and save metadata for the gE vs gI parameter sweep.'''
     printout = kwargs.pop('printout', True)
+    if extraIterparams is None:
+        extraIterparams = {}
     ac = ArgumentCreator(p, printout=printout)
 
     GArr = np.linspace(startG, endG, Nvals)
-    #GArr = [1.0]
     print(GArr)
 
     g_AMPA_total_arr     = []
@@ -30,21 +32,23 @@ def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
     iterparams = {
         'g_AMPA_total'      : np.array(g_AMPA_total_arr),
         'g_GABA_total'      : np.array(g_GABA_total_arr),
-        #'g_AMPA_total'      : [1400],
-        #'g_GABA_total'      : [2160]
     }
+    dimension_labels = ['g_AMPA_total', 'g_GABA_total']
+    dimensions = [Nvals, Nvals]
     iterparams.update(extraIterparams)
     ac.insertDict(iterparams, mult=False)
 
     ###############################################################################
-    submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
-            rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-            blocking=blocking, timePrefix=timePrefix, numCPU=numCPU, **kwargs)
+    submitter = SubmitterFactory.getSubmitter(
+        ac, appName, envType=ENV, rtLimit=rtLimit, output_dir=simRootDir,
+        label=simLabel, blocking=blocking, timePrefix=timePrefix, numCPU=numCPU,
+        **kwargs)
     ac.setOption('output_dir', submitter.outputDir())
     startJobNum = 0
     filter = rc[0]*len(GArr) + rc[1] if rc is not None else None
     submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run, filter=filter)
-    submitter.saveIterParams(iterparams, dry_run=dry_run)
+    submitter.saveIterParams(iterparams, dimension_labels, dimensions,
+                             dry_run=dry_run)
 
 
 ###############################################################################

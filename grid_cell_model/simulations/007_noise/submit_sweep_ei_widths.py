@@ -68,6 +68,8 @@ for noise_sigma in parser.noise_sigmas:
         'g_AMPA_total': np.array(g_AMPA_total_arr),
         'pAMPA_sigma': np.array(pAMPA_sigma_arr),
     }
+    dimension_labels = ['g_AMPA_total', 'pAMPA_sigma']
+    dimensions = [Nvals_G, Nvals_sigma]
     ac.insertDict(iterparams, mult=False)
 
     ###############################################################################
@@ -79,4 +81,5 @@ for noise_sigma in parser.noise_sigmas:
     rc_filter = rc[0]*len(sigmaArr) + rc[1] if rc is not None else None
     submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run,
                         filter=rc_filter)
-    submitter.saveIterParams(iterparams, dry_run=dry_run)
+    submitter.saveIterParams(iterparams, dimension_labels, dimensions,
+                             dry_run=dry_run)

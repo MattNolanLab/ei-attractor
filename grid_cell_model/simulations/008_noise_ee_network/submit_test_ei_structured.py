@@ -52,10 +52,11 @@ for noise_sigma in parser.noise_sigmas:
 
     p['prefDirC_e'] = 0.
 
-    iterparams = {
-        o.explored_param: np.arange(o.param_start, o.param_stop + o.param_step,
-                                    o.param_step)
-    }
+    explored_param = np.arange(o.param_start, o.param_stop + o.param_step,
+                               o.param_step)
+    iterparams = {o.explored_param: explored_param}
+    dimension_labels = [o.explored_param]
+    dimensions = [len(explored_param)]
     ac = ArgumentCreator(p, printout=True)
     ac.insertDict(iterparams, mult=False)
 
@@ -68,4 +69,5 @@ for noise_sigma in parser.noise_sigmas:
     startJobNum = 0
     submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run,
                         filter=parser.filter)
-    submitter.saveIterParams(iterparams, dry_run=dry_run)
+    submitter.saveIterParams(iterparams, dimension_labels, dimensions,
+                             dry_run=dry_run)
