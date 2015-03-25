@@ -14,20 +14,21 @@ import config
 
 parser = flagparse.FlagParser()
 parser.add_flag('--param_exploration')
+parser.add_argument('--data_root', type=str, help='Data root directory',
+                    default='simulation_data/network_test/150pA')
 args = parser.parse_args()
 
 env = MplEnvironment(config=config.get_config())
 
-data_root = 'simulation_data/network_test/150pA'
 
 if args.param_exploration or args.all:
-    for file_name in os.listdir(data_root):
+    for file_name in os.listdir(args.data_root):
         if 'job' in file_name:
             print(file_name)
             env.register_class(
                 noisefigs.plotters.PopulationActivityPlotter,
                 config={
-                    'data_root'     : data_root,
+                    'data_root'     : args.data_root,
                     'data_file_name': file_name,
 
                     'PopulationActivityPlotter': {

@@ -79,11 +79,14 @@ class SingleParameterSweepParser(SubmissionParserBase):
     def __init__(self, **kwargs):
         super(SingleParameterSweepParser, self).__init__(**kwargs)
 
-        self.add_argument('explored_param', type=str,
-                          help='Explored parameter name.')
-        self.add_argument('param_start', type=float,
-                          help='Parameter start value')
-        self.add_argument('param_stop', type=float,
-                          help='Parameter stop value')
-        self.add_argument('param_step', type=float,
-                          help='Parameter step value')
+        self.add_argument('explored_param', type=str,   help='Explored parameter name.')
+        self.add_argument('param_start',    type=float, help='Parameter start value')
+        self.add_argument('param_stop',     type=float, help='Parameter stop value')
+        self.add_argument('param_step',     type=float, help='Parameter step value')
+        self.add_argument('--filter',       type=int,   help='Restrict submission to only one value')
+
+    @property
+    def filter(self):
+        '''Return the filtered restriction submission index.'''
+        self._check_opts()
+        return self._opts.filter

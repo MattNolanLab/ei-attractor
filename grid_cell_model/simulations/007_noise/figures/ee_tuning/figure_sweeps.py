@@ -45,7 +45,7 @@ if common.pop_type in o.type:
             'output_dir'    : o.figure_dir,
 
             'PopulationActivityPlotter': {
-                'fname_prefix': 'r%02d_c%02d_' % (o.row, o.col),
+                'fname_prefix': 'r%03d_c%03d_' % (o.row, o.col),
                 'raster_rect': (.075, 0.35, 0.99, 0.97),
                 'fig_saver': SeparateMultipageSaver(None, 'pdf'),
                 'fig_size': (10, 6),

@@ -10,11 +10,11 @@ import numpy as np
 from grid_cell_model.submitting.factory import SubmitterFactory
 from grid_cell_model.submitting.arguments import ArgumentCreator
 from grid_cell_model.submitting.noise import SingleParameterSweepParser
+from grid_cell_model.submitting.flagparse import positive_int
 from default_params import defaultParameters as dp
 
 parser = SingleParameterSweepParser()
-parser.add_argument('--Ivel', type=float,
-                    help='Velocity input (pA). Default is 50 pA.')
+parser.add_argument('--nCPU',    type=positive_int, default=1)
 o = parser.parse_args()
 
 for noise_sigma in parser.noise_sigmas:
@@ -25,9 +25,9 @@ for noise_sigma in parser.noise_sigmas:
     ENV         = o.env
     simRootDir  = o.where
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
-    appName     = '../common/simulation_test_network.py'
+    appName     = '../common/simulation_stationary.py'
     rtLimit     = o.rtLimit
-    numCPU      = 1
+    numCPU      = o.nCPU
     blocking    = True
     timePrefix  = False
     numRepeat   = 1
@@ -38,7 +38,6 @@ for noise_sigma in parser.noise_sigmas:
     p['nthreads']    = 1
     p['ntrials']     = o.ntrials
     p['verbosity']   = o.verbosity
-    p['Ivel']        = 50. if o.Ivel is None else o.Ivel  # mA
 
     p['EI_flat'] = 0
     p['IE_flat'] = 0
@@ -49,7 +48,7 @@ for noise_sigma in parser.noise_sigmas:
     p['g_EE_total']   = 100.     # nS
 
     # Here, no PC inputs
-    p['pc_start_max_rate'] = .0  # Hz
+    #p['pc_start_max_rate'] = .0  # Hz
 
     p['prefDirC_e'] = 0.
 
@@ -67,5 +66,6 @@ for noise_sigma in parser.noise_sigmas:
         numCPU=numCPU)
     ac.setOption('output_dir', submitter.outputDir())
     startJobNum = 0
-    submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
+    submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run,
+                        filter=parser.filter)
     submitter.saveIterParams(iterparams, dry_run=dry_run)

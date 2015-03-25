@@ -10,10 +10,11 @@ import numpy as np
 from ..analysis import signal as asignal
 from ..analysis.signal import localExtrema, butterBandPass, autoCorrelation
 from ..data_storage.sim_models import ei as simei
-from ..otherpkg.log import log_info
-from .interface import DictDSVisitor 
+from ..otherpkg.log import log_info, getClassLogger
+from .interface import DictDSVisitor
 
 logger = logging.getLogger(__name__)
+cc_logger = getClassLogger('CrossCorrelationVisitor', __name__)
 
 
 __all__ = ['AutoCorrelationVisitor', 'CrossCorrelationVisitor']
@@ -44,7 +45,7 @@ def findFreq(ac, dt, ext_idx, ext_t):
     max_idx = np.nonzero(ext_t > 0)[0]
     if (len(max_idx) == 0):
         return (np.nan, np.nan)
-    
+
     # First local maximum ac[0] excluded
     max1_idx = ext_idx[max_idx[0]]
     max1_t   = max1_idx * dt
@@ -115,7 +116,7 @@ class AutoCorrelationVisitor(DictDSVisitor):
         For each monitored neuron, extract the (highest) frequency, value of
         the autocorrelation at the frequency and the autocorrelation function
         itself.
-    
+
         Parameters
         ----------
         mon : list of dicts
@@ -146,11 +147,11 @@ class AutoCorrelationVisitor(DictDSVisitor):
                     norm=self.norm)
             ext_idx, ext_t = localExtrema(ac)
             acVec.append(ac)
-    
+
             f, a = findFreq(ac, dt*self.dtMult, ext_idx, ext_t)
             freq.append(f)
             acval.append(a)
-    
+
         return freq, acval, acVec, dt
 
 
@@ -239,7 +240,7 @@ class CrossCorrelationVisitor(DictDSVisitor):
         '''
         Extract x-correlation statistics from a monitor.
 
-        For each pair of monitored neurons    
+        For each pair of monitored neurons
         Parameters
         ----------
         mon : list of dicts
@@ -255,7 +256,7 @@ class CrossCorrelationVisitor(DictDSVisitor):
             xcOut.append([])
             xcOut2 = xcOut[n_id1]
             for n_id2 in range(len(mon)):
-                print('n_id1, n_id2 = {0}, {1}'.format(n_id1, n_id2))
+                cc_logger.debug('n_id1, n_id2 = {0}, {1}'.format(n_id1, n_id2))
                 sig2, dt2 = simei.sumAllVariables(mon, n_id2, self.stateList)
                 if (dt1 != dt2):
                     raise ValueError('dt1 != dt2')
@@ -280,8 +281,8 @@ class CrossCorrelationVisitor(DictDSVisitor):
                     C /= np.max(C)
                 xcOut2.append(C)
         out['x-corr']['lags'] = np.arange(lag_start, lag_end+1) * dt
-        
-        
+
+
 
 
     def visitDictDataSet(self, ds, **kw):

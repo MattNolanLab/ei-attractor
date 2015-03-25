@@ -24,6 +24,8 @@ parser.add_argument('--col',     type=int)
 parser.add_argument("--ns",      type=int, choices=[0, 150, 300])
 parser.add_argument('--nCPU',    type=positive_int, default=1)
 parser.add_argument('--rtLimit', type=str, default='00:05:00')
+parser.add_argument('--shape',   type=positive_int, nargs=2,
+                    help='Parameter space shape (rows, columns)')
 parser.add_flag("--ns_all")
 parser.add_flag("--ignoreErrors")
 o = parser.parse_args()
@@ -43,7 +45,7 @@ dry_run     = False
 
 
 ns_all = [0, 150, 300]
-shape = (61, 11)
+shape = (61, 11) if o.shape is None else o.shape
 noise_sigmas = ns_all if o.ns_all  else [o.ns]
 
 for noise_sigma in noise_sigmas:
