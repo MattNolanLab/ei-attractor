@@ -168,8 +168,9 @@ class JobTrialSpace2D(DataSpace):
 
     Parameters
     ----------
-    shape : a pair of ints
-        Parameter space shape (rows, columns)
+    shape : a pair of ints, or None
+        Parameter space shape (rows, columns). If ``None``, the shape will be
+        retrieved automatically from the metadata file.
     rootDir : str
         Root directory for the space.
     dataPoints : a list of pairs, or None
@@ -195,8 +196,9 @@ class JobTrialSpace2D(DataSpace):
             raise ValueError("'w' file open mode is not allowed. Use "
                              "'forceWMode' to override.")
         self._fileMode = fileMode
-        self._shape = shape
         self._rootDir = rootDir
+        self._iter_file = None
+        self._shape = self._determine_shape(shape)
         self._dataPoints = dataPoints
         if self._dataPoints is not None:
             self._partial = True
@@ -204,12 +206,30 @@ class JobTrialSpace2D(DataSpace):
             self._partial = False
         self._fileFormat = fileFormat
         self._checkParams = checkParams
-        self.rows = shape[0]
-        self.cols = shape[1]
+        self.rows = self.shape[0]
+        self.cols = self.shape[1]
         self._loadTrials()
         self._aggregationDS = None
         self.saveDataFileName = 'reductions.h5'
         self._extractor = metadata_extractor
+
+    @property
+    def _meta_file(self):
+        '''The iteration metadata file for this space.'''
+        if self._iter_file is None:
+            self._iter_file = self._open_iter_file()
+        return self._iter_file
+
+    def _open_iter_file(self):
+        '''Open the iteration metadata file for this parameter space.'''
+        fname = "{0}/iterparams.h5".format(self._rootDir)
+        try:
+            ds = DataStorage.open(fname, 'r')
+        except IOError as e:
+            job2DLogger.error("Could not open the metadata file. Check that "
+                              "the file exists:\n\t%s", fname)
+            raise e
+        return ds
 
     @property
     def metadata(self):
@@ -305,29 +325,78 @@ class JobTrialSpace2D(DataSpace):
         return self._shape[0]
 
     def __del__(self):
-        if (self._aggregationDS is not None):
+        if self._aggregationDS is not None:
             self._aggregationDS.close()
+        # self._meta_file.close()
 
     def getShape(self):
+        '''Return the shape of this parameter space.'''
         return self._shape
 
     @property
     def shape(self):
+        '''Return the shape of the parameter space.'''
         return self._shape
 
-    def getIteratedParameters(self, nameList):
-        if (len(nameList) != 2):
-            raise ValueError("nameList must contain exactly 2 elements.")
-        iterFileName = "{0}/iterparams.h5".format(self._rootDir)
-        ds = DataStorage.open(iterFileName, 'r')
-        ret = []
-        for nm in nameList:
-            ret.append(np.reshape(ds['iterParams'][nm], self._shape))
-            if (self._checkParams):
-                self._checkIteratedParameters(nm, ret[-1])
-        ds.close()
-        return ret
+    def _determine_shape(self, custom_shape):
+        '''Determine the type of shape that should be used.
 
+        Parameters
+        ----------
+        custom_shape : a tuple of ints or None
+            If ``None``, will try to extract the shape from the metadata saved
+            with the jobs. Otherwise will use the value in this parameters.
+
+        Returns
+        -------
+        shape : a tuple of ints
+            Returns the correct shape or raises RuntimeError if it cannot be
+            determined.
+        '''
+        if custom_shape is not None:
+            return custom_shape
+
+        # Here, require that _meta_file contains the appropriate fields
+        try:
+            dims = self._meta_file['dimensions']
+            return (dims[0], dims[1])
+        except KeyError:
+            raise LookupError('Could not retrieve the dimensions of this '
+                              'space from metadata. You are probably using '
+                              'an older version of data. In that case, the '
+                              'shape of the parameter space must be specified '
+                              'explicitly.')
+
+    def getIteratedParameters(self, name_list=None):
+        '''Retrieve the iterated parameters.
+
+        Parameters
+        ----------
+        name_list : list of strings, or ``None``
+            The list of iteration parameters. Can only be left ``None`` if the
+            metadata of the space contains the iteration labels.
+
+        Returns
+        -------
+        parameters : list of 2D arrays
+            Returns a list of the iterated parameters in the format [Rows,
+            Columns]. If you need to retrieve the iteration labels, use
+            :meth:`~get_iteration_labels`
+        '''
+        if name_list is None:
+            name_list = self.get_iteration_labels()
+
+        if len(name_list) != 2:
+            raise ValueError("'name_list' parameter must contain exactly 2 "
+                             "elements.")
+
+        ret = []
+        for nm in name_list:
+            ret.append(np.reshape(self._meta_file['iterParams'][nm],
+                                  self._shape))
+            if self._checkParams:
+                self._checkIteratedParameters(nm, ret[-1])
+        return ret
 
     def _checkIteratedParameters(self, paramStr, toCheck):
         tol  = 1e-9 * np.min(toCheck.flatten())
@@ -340,6 +409,16 @@ class JobTrialSpace2D(DataSpace):
                     err = np.abs(pVal - toCheck[r][c])
                     if (err > tol):
                         raise Exception(msgStr.format(paramStr, r, c, err))
+
+    def get_iteration_labels(self):
+        '''Retrieve the iteration labels as a tuple of strings.'''
+        try:
+            return self._meta_file['dimension_labels']
+        except KeyError:
+            raise LookupError('Could not retrieve the iteration labels of '
+                              'this space from metadata. You are probably '
+                              'using an older version of data, in which case '
+                              'you cannot use this method.')
 
     def visit(self, visitor, trialList=None):
         for r in xrange(self.rows):
