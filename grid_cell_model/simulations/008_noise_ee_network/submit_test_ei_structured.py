@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''Parameter exploration simulations in which one parameter is being changed.
+'''One parameter sweep in networks with E->E and E<->I connections structured
 
 Run a network for a short time and save data. These simulations are meant to be
 run for interactive tuning of the network.
@@ -40,27 +40,22 @@ for noise_sigma in parser.noise_sigmas:
     p['verbosity']   = o.verbosity
     p['Ivel']        = 50. if o.Ivel is None else o.Ivel  # mA
 
-    p['g_AMPA_total'] = 290.    # nS
-    p['g_GABA_total'] = 410.    # nS
-    p['g_EE_total']   = 500.    # nS
+    p['EI_flat'] = 0
+    p['IE_flat'] = 0
+    p['use_EE']  = 1
 
-    # No theta parameters
-    p['Iext_e_const'] = 400.0   # pA
-    p['Iext_i_const'] = 175.0   # pA
-    p['Iext_e_theta'] = 0       # pA
-    p['Iext_i_theta'] = 0       # pA
+    p['g_AMPA_total'] = 2040.    # nS
+    p['g_GABA_total'] = 2040.    # nS
+    p['g_EE_total']   = 100.     # nS
 
     # Here, no PC inputs
     p['pc_start_max_rate'] = .0  # Hz
 
     p['prefDirC_e'] = 0.
 
-    explored_param = np.arange(o.param_start, o.param_stop + o.param_step,
-                               o.param_step)
-    dummy = explored_param * 0. + p['prefDirC_e']
     iterparams = {
-        'prefDirC_e': dummy,
-        o.explored_param: explored_param
+        o.explored_param: np.arange(o.param_start, o.param_stop + o.param_step,
+                                    o.param_step)
     }
     ac = ArgumentCreator(p, printout=True)
     ac.insertDict(iterparams, mult=False)

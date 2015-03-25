@@ -70,3 +70,20 @@ class SubmissionParser(SubmissionParserBase):
             raise ValueError("Specify either both --row and --col or None!")
 
         return self._opts
+
+
+class SingleParameterSweepParser(SubmissionParserBase):
+    '''A submission parser that runs a single parameter sweep in a specified
+    range.
+    '''
+    def __init__(self, **kwargs):
+        super(SingleParameterSweepParser, self).__init__(**kwargs)
+
+        self.add_argument('explored_param', type=str,
+                          help='Explored parameter name.')
+        self.add_argument('param_start', type=float,
+                          help='Parameter start value')
+        self.add_argument('param_stop', type=float,
+                          help='Parameter stop value')
+        self.add_argument('param_step', type=float,
+                          help='Parameter step value')
