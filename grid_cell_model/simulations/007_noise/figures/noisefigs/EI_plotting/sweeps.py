@@ -313,26 +313,26 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=None, ylabel=None,
                          origin='lower',
                          **kw)
     cax = createColorbar(ax, mappable=mappable, **cbar_kw)
-    if (colorBar == False):
+    if colorBar == False:
         cax.set_visible(False)
-    if (xlabel != ""):
+    if xlabel != "":
         ax.set_xlabel(xlabel, va='top')
         ax.xaxis.set_label_coords(0.5, -0.125)
-    if (ylabel != ""):
+    if ylabel != "":
         ax.set_ylabel(ylabel, ha='center')
         ax.yaxis.set_label_coords(-0.125, 0.5)
-    ax.xaxis.set_ticks([0, 6])
-    ax.yaxis.set_ticks([0, 6])
+    ax.xaxis.set_ticks([X[0, 0], X[0, -1]])
+    ax.yaxis.set_ticks([Y[0, 0], Y[-1, 0]])
     ax.xaxis.set_minor_locator(ti.AutoMinorLocator(6))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
     ax.axis('scaled')
-    if (not xticks):
+    if not xticks:
         ax.xaxis.set_ticklabels([])
-    if (not yticks):
+    if not yticks:
         ax.yaxis.set_ticklabels([])
 
     # slice annotations
-    if (sliceAnn is not None):
+    if sliceAnn is not None:
         for args in sliceAnn:
             args.update(ax=ax, X=X, Y=Y)
             plotSliceAnnotation(**args)

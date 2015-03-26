@@ -106,6 +106,9 @@ def computeVelYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True, **kw):
 def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
     '''
     Automatically aggregate data according to the type of the data.
+
+    .. deprecated::
+        Use the object-oriented versions instead.
     '''
     type, subType = types
     vars          = ['analysis']
@@ -219,7 +222,8 @@ class AggregateData(object):
     analysisRoot = ['analysis']
 
     def __init__(self, space, iterList, NTrials, ignoreNaNs=False,
-            normalizeTicks=False, collapseTrials=True, r=0, c=0):
+                 normalizeTicks=False, collapseTrials=True, r=0, c=0,
+                 metadata_extractor=None):
         self.sp = space
         self.iterList = iterList
         self.NTrials = NTrials
@@ -228,11 +232,11 @@ class AggregateData(object):
         self.collapseTrials = collapseTrials
         self.r = r
         self.c = c
+        self._extractor = metadata_extractor
 
-    @abstractmethod
     def getData(self):
+        '''Return data as a tuple ``data, X, Y``.'''
         raise NotImplementedError()
-
 
     def filter_data(self, filter_obj):
         '''Apply a mask of a filter object to the current data.
@@ -240,6 +244,15 @@ class AggregateData(object):
         This operation returns a new AggregateData object
         '''
         return FilteredData(self, filter_obj)
+
+    @property
+    def metadata(self):
+        '''Return a read-only reference to the metadata.
+
+        It is probably not a good idea to change anything that is mutable
+        inside the object.
+        '''
+        return self._extractor
 
 
 class FilteredData(AggregateData):
@@ -386,8 +399,7 @@ class IsBump(AggregateData):
         if self._fracTotal is None:
             path = self.analysisRoot + ['bump_e/isBump/fracTotal']
             self._fracTotal = self.sp.getReduction(path)
-            self._Y, self._X = computeYX(self.sp, self.iterList,
-                    self.normalizeTicks)
+            self._X, self._Y = self.metadata.xy_data
         return self._fracTotal, self._X, self._Y
 
     def getData(self):

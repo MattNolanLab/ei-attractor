@@ -9,6 +9,8 @@ from matplotlib.transforms import Bbox
 from grid_cell_model.plotting.global_defs import prepareLims
 from grid_cell_model.plotting.low_level   import zeroLines
 from grid_cell_model.parameters           import JobTrialSpace2D
+from grid_cell_model.parameters.metadata import (GEProfileWidthExtractor,
+                                                 EISweepExtractor)
 from simtools.plotting.plotters import FigurePlotter
 
 from ..EI_plotting import sweeps, details, examples, scatter
@@ -23,6 +25,7 @@ __all__ = [
     'BumpExamplePlotter',
     'BumpSigmaDetailedNoisePlotter',
     'MainBumpFormationPlotter',
+    'GEProfileWidthBumpPlotter',
     'MainScatterGridsBumpsPlotter',
     'MainIsBumpPlotter',
 ]
@@ -490,34 +493,84 @@ class MainBumpFormationPlotter(BumpFormationBase):
         sweepc = self._get_sweep_config()
         ps = self.env.ps
         iter_list = self.config['iter_list']
+        xlabel = self.myc.get('xlabel', None)
         xticks = myc['xticks']
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = self.get_fname(
-                    "bumps_mainFig_isBumpFracTotal_sweeps_annotated{ns}.pdf",
-                    ns=noise_sigma)
-            with self.figure_and_axes(fname, sweepc) as (fig, ax):
+                "bumps_mainFig_isBumpFracTotal_sweeps_annotated{ns}.pdf",
+                ns=noise_sigma)
+            with self.figure_and_axes(fname, sweepc) as (_, ax):
                 #fig, ax = ds.getDefaultSweepFig(scale=0.8, colorBarPos='left')
                 kw = dict()
                 if ns_idx != 0:
                     kw['ylabel'] = ''
                     kw['yticks'] = False
-                data = aggr.IsBump(ps.bumpGamma[ns_idx],
-                                   iter_list,
-                                   ignoreNaNs=True)
-                _, _, cax = sweeps.plotSweep(data,
-                        noise_sigma=noise_sigma,
-                        sigmaTitle=self.myc.get('sigmaTitle', True),
-                        xlabel='' if xticks[ns_idx] == False else None,
-                        xticks=xticks[ns_idx],
-                        ax=ax,
-                        cbar=self.myc['cbar'][ns_idx],
-                        cbar_kw=myc['cbar_kw'],
-                        vmin=self.bump_vmin, vmax=self.bump_vmax,
-                        annotations=self.get_ann()[ns_idx],
-                        **kw)
+                metadata = EISweepExtractor(ps.bumpGamma[ns_idx])
+                data = aggr.IsBump(
+                    ps.bumpGamma[ns_idx],
+                    iter_list,
+                    ignoreNaNs=True,
+                    metadata_extractor=metadata)
+                sweeps.plotSweep(
+                    data,
+                    noise_sigma=noise_sigma,
+                    sigmaTitle=self.myc.get('sigmaTitle', True),
+                    xlabel='' if xticks[ns_idx] == False else xlabel,
+                    xticks=xticks[ns_idx],
+                    ax=ax,
+                    cbar=self.myc['cbar'][ns_idx],
+                    cbar_kw=myc['cbar_kw'],
+                    vmin=self.bump_vmin, vmax=self.bump_vmax,
+                    annotations=self.get_ann()[ns_idx],
+                    **kw)
 
                 self.plot_grid_contours(ns_idx, ax, ps.grids)
+
+
+class GEProfileWidthBumpPlotter(BumpFormationBase):
+    '''Bump formation plotter for gE vs. pAMPA_sigma.'''
+    def __init__(self, *args, **kwargs):
+        super(GEProfileWidthBumpPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        myc= self._get_class_config()
+        sweepc = self._get_sweep_config()
+        ps = self.env.ps
+        iter_list = self.config['iter_list']
+        xlabel = self.myc.get('xlabel', None)
+        xticks = myc['xticks']
+        l, b, r, t = self.myc['bbox']
+        fname = self.myc.get('fname', "bumps_Pbumps_gE_pAMPA_sigma{ns}.pdf")
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fname = self.get_fname(fname, ns=noise_sigma)
+            fig = self._get_final_fig(self.config['sweeps']['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            kw = dict()
+            if ns_idx != 0:
+                kw['ylabel'] = ''
+                kw['yticks'] = False
+            metadata = GEProfileWidthExtractor(ps.bumpGamma[ns_idx])
+            data = aggr.IsBump(
+                ps.bumpGamma[ns_idx],
+                iter_list,
+                ignoreNaNs=True,
+                metadata_extractor=metadata)
+            sweeps.plotSweep(
+                data,
+                noise_sigma=noise_sigma,
+                sigmaTitle=self.myc.get('sigmaTitle', True),
+                xlabel='' if xticks[ns_idx] == False else xlabel,
+                xticks=xticks[ns_idx],
+                ax=ax,
+                cbar=self.myc['cbar'][ns_idx],
+                cbar_kw=myc['cbar_kw'],
+                vmin=self.bump_vmin, vmax=self.bump_vmax,
+                annotations=self.get_ann()[ns_idx],
+                **kw)
+            ax.axis('tight')
+            fig.savefig(fname, dpi=300, transparent=True)
 
 
 ##############################################################################
