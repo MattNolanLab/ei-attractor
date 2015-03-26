@@ -138,11 +138,12 @@ class ParameterSweepParser(SubmissionParserBase):
     def _check_filter(self):
         '''Check whether the filter has a reasonable range.'''
         msg = 'Filter cannot be greater than the size of the parameter space.'
-        if self.filter[0] >= self.dimensions[0]:
-            raise ValueError(msg)
-        if self.n_dims == 2:
-            if self.filter[1] >= self.dimensions[1]:
+        if self.filter is not None:
+            if self.filter[0] >= self.dimensions[0]:
                 raise ValueError(msg)
+            if self.n_dims == 2:
+                if self.filter[1] >= self.dimensions[1]:
+                    raise ValueError(msg)
 
     @property
     def filter(self):
@@ -155,6 +156,9 @@ class ParameterSweepParser(SubmissionParserBase):
         '''Return a linear index into iterparams for filtering the
         submission.
         '''
+        if self.filter is None:
+            return None
+        
         if self.n_dims == 1:
             return self.filter[0]
         else:
