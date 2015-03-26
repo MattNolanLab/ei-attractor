@@ -82,11 +82,8 @@ if common.gammaType in o.type:
                                                   forceUpdate=forceUpdate)
     ACVisitor = vis.signals.AutoCorrelationVisitor(monName, stateList,
                                                    forceUpdate=forceUpdate)
-    CCVisitor = vis.signals.CrossCorrelationVisitor(monName, stateList,
-                                                    forceUpdate=forceUpdate)
 
     sp.visit(ACVisitor)
-    sp.visit(CCVisitor)
     sp.visit(statsVisitor_e)
 
 if common.velocityType in o.type:
