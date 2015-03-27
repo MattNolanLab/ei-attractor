@@ -2,6 +2,7 @@
 from __future__ import absolute_import, print_function
 
 from configobj import ConfigObj
+import matplotlib.ticker as ti
 
 from noisefigs.plotters.base import PdfOutputSaver
 
@@ -51,6 +52,24 @@ def get_config():
             'snapshot_tstep': 4,
             'e_snapshots_rect': (.075, .15, 0.99, 0.25),
             'i_snapshots_rect': (.075, .02, 0.99, 0.1),
+        },
+
+        'Generic2DPBumpPlotter': {
+            'scale_factor': 1.,
+            'cbar': [1],
+            'cbar_kw': dict(
+                label       = "P(bumps)",
+                location    = 'right',
+                shrink      = 0.8,
+                pad         = .05,
+                ticks       = ti.MultipleLocator(0.5),
+                rasterized  = True
+            ),
+            'xticks': [True]*3,
+            'yticks': [True]*3,
+            'plot_grid_contours': [0],
+            'ann': [None],
+            'bbox': (.15, .17, .9, .9),
         },
     })
 

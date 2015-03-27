@@ -259,7 +259,6 @@ class JobTrialSpace2D(DataSpace):
 
 
         job2DLogger.info("Removing current item")
-        #import pdb; pdb.set_trace()
         self._vals[r]._vals[c] = None
 
         # Try to repack to temporary file
@@ -376,6 +375,9 @@ class JobTrialSpace2D(DataSpace):
             The list of iteration parameters. Can only be left ``None`` if the
             metadata of the space contains the iteration labels.
 
+        .. deprecated::
+            Use `~get_iterated_parameter` instead
+
         Returns
         -------
         parameters : list of 2D arrays
@@ -397,6 +399,12 @@ class JobTrialSpace2D(DataSpace):
             if self._checkParams:
                 self._checkIteratedParameters(nm, ret[-1])
         return ret
+
+    def get_iterated_parameter(self, dim):
+        '''Return the iterated parameter data for dimension ``dim``.'''
+        label = self.get_iteration_labels()[dim]
+        return np.reshape(self._meta_file['iterParams'][label], self._shape)
+
 
     def _checkIteratedParameters(self, paramStr, toCheck):
         tol  = 1e-9 * np.min(toCheck.flatten())
