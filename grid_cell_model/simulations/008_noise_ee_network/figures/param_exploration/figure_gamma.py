@@ -54,12 +54,14 @@ if args.gamma_gEE_EE_sigma or args.all:
                 'normalize_ticks': (True, False),  # (Y, X)
                 'normalize_type': ('E', None),
                 'xlabel': '$\sigma_{EE}$',
-                'ylabel': '$g_E$',
+                'ylabel': '',
+                'yticks': [False],
                 'bbox': (.2, .17, .85, .9),
                 'vmin': 30,
                 'vmax': 72,
                 'cbar_kw': dict(
-                    ticks = ti.MultipleLocator(10),
+                    label='Frequency (Hz)',
+                    ticks=ti.MultipleLocator(10),
                 )
                 },
         })

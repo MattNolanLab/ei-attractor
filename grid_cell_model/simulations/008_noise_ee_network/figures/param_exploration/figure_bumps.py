@@ -35,7 +35,7 @@ if args.pbumps_gEE_EE_sigma or args.all:
                 'normalize_type': ('E', None),
                 'xlabel': '$\sigma_{EE}$',
                 'ylabel': '$g_E$',
-                'bbox': (.2, .17, .9, .9),
+                'bbox': (.2, .17, .85, .9),
             },
         })
     env.plot()
