@@ -51,6 +51,51 @@ class MetaDataExtractor(object):
         return (self.x_label, self.y_label)
 
 
+class GenericExtractor(MetaDataExtractor):
+    '''A generic extractor that uses the parameter space's metadata.
+
+    Parameters
+    ----------
+    space : JobTrialSpace2D
+        The parameter space
+    normalize : A pair of bool
+        Whether to normalize the iteration data value by the total number of
+        neurons in the population.
+    normalize_type : A pair of strings
+        What population type to normalize the iteration data with (E or I).
+    '''
+    def __init__(self, space, normalize=(False, False), normalize_type=(None,
+                                                                        None)):
+        super(GenericExtractor, self).__init__(space,
+                                               space.get_iteration_labels())
+        self._normalize = normalize
+        self._normalize_type = normalize_type
+
+    def _get_n_neurons(self, pop_type):
+        '''Get the number of neurons in the population ``pop_type``.'''
+        if pop_type == 'E':
+            return DataSpace.getNetParam(self._sp[0][0][0].data, 'net_Ni')
+        else:
+            return DataSpace.getNetParam(self._sp[0][0][0].data, 'net_Ni')
+
+    def _extract_data(self, dim):
+        '''Extract the data based on dimenision number ``dim``'''
+        data = self._sp.get_iterated_parameter(dim)
+
+        if self._normalize[dim]:
+            return data / self._get_n_neurons(self._normalize_type[dim])
+        else:
+            return data
+
+    @property
+    def x_data(self):
+        return self._extract_data(1)
+
+    @property
+    def y_data(self):
+        return self._extract_data(0)
+
+
 class EISweepExtractor(MetaDataExtractor):
     '''An extractor for gE and gI iteration data.
 
