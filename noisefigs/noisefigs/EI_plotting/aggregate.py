@@ -12,6 +12,7 @@ from grid_cell_model.otherpkg.log import log_warn, getClassLogger
 from grid_cell_model.analysis.image import Position2D
 import grid_cell_model.analysis.image as image
 import grid_cell_model.analysis.signal as asignal
+from grid_cell_model.parameters.metadata import EISweepExtractor
 
 import logging
 logger = logging.getLogger(__name__)
@@ -218,7 +219,6 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
 
 
 class AggregateData(object):
-    __meta__ = ABCMeta
     analysisRoot = ['analysis']
 
     def __init__(self, space, iterList, NTrials, ignoreNaNs=False,
@@ -232,7 +232,11 @@ class AggregateData(object):
         self.collapseTrials = collapseTrials
         self.r = r
         self.c = c
-        self._extractor = metadata_extractor
+        if metadata_extractor is None:
+            self._extractor = EISweepExtractor(self.sp, r=self.r, c=self.c,
+                                               normalize=self.normalizeTicks)
+        else:
+            self._extractor = metadata_extractor
 
     def getData(self):
         '''Return data as a tuple ``data, X, Y``.'''
@@ -363,14 +367,16 @@ class GammaAggregateData(AggregateData):
         super(GammaAggregateData, self).__init__(space, iterList, None, **kw)
         self._acval = None
         self._what = what
+        self._X = None
+        self._Y = None
 
     def _getRawData(self):
+        '''Get raw trial data.'''
         if self._acval is None:
             path = self.analysisRoot + [self._what]
             gammaAggrLogger.info("Extracting data from path: %s", path)
             self._acval = self.sp.getReduction(path)
-            self._Y, self._X = computeYX(self.sp, self.iterList,
-                                         normalize=self.normalizeTicks)
+            self._X, self._Y = self.metadata.xy_data
         return self._acval, self._X, self._Y
 
     def getData(self):

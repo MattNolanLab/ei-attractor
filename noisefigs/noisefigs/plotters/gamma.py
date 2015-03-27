@@ -1,22 +1,23 @@
+'''Gamma plotters.'''
 from __future__ import absolute_import, print_function
 
 import numpy as np
-import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
-from grid_cell_model.parameters           import JobTrialSpace2D, DataSpace
-from grid_cell_model.plotting.global_defs import globalAxesSettings, prepareLims
+from grid_cell_model.parameters import JobTrialSpace2D
+from grid_cell_model.plotting.global_defs import prepareLims
+from grid_cell_model.parameters.metadata import GenericExtractor
 from simtools.plotting.plotters import FigurePlotter
 
-from ..EI_plotting      import sweeps, examples, details, scatter
-from ..EI_plotting      import aggregate as aggr, scaling
-from ..EI_plotting.base import plotOneHist, NoiseDataSpaces
-from .base import SweepPlotter, ProbabilityPlotter, DummyPlotter
+from ..EI_plotting import sweeps, examples, details, scatter
+from ..EI_plotting import aggregate as aggr
+from .base import SweepPlotter, ProbabilityPlotter
 
 __all__ = [
     'GammaSweepsPlotter',
+    'GenericGammaPlotter',
     'GammaDetailedNoisePlotter',
     'GammaExamplePlotter',
     'GammaScatterAllPlotter',
@@ -31,146 +32,76 @@ __all__ = [
 ]
 
 
-NTrials = 5
+class GenericGammaPlotter(SweepPlotter):
+    '''A generic gamma power/frequency plotter (autocorrelations).'''
+    def __init__(self, *args, **kwargs):
+        super(GenericGammaPlotter, self).__init__(*args, **kwargs)
 
-###############################################################################
+    def get_fig(self):
+        if 'fig_size' in self.myc:
+            return self._get_final_fig(self.myc['fig_size'])
+        else:
+            return super(GenericGammaPlotter, self).get_fig()
 
-def extractACExample(sp, r, c, trialNum):
-    data = sp[r][c][trialNum].data
-    ac = data['analysis']['acVec'][0]
-    dt = data['stateMonF_e'][0]['interval']
-    freq = data['analysis']['freq'][0]
-    acVal = data['analysis']['acVal'][0]
-    noise_sigma = data['options']['noise_sigma']
-    return ac, dt, freq, acVal, noise_sigma
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        normalize_type = self.myc.get('normalize_type', (None, None))
+        l, b, r, t = self.myc['bbox']
+        fname = self.myc.get('fname', "gamma_power_generic_{ns}.pdf")
 
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            metadata = GenericExtractor(ps.bumpGamma[ns_idx],
+                                        normalize=self.myc['normalize_ticks'],
+                                        normalize_type=normalize_type)
+            data = aggr.GammaAggregateData(self.myc['what'],
+                                           ps.bumpGamma[ns_idx], None,
+                                           normalizeTicks=True,
+                                           ignoreNaNs=True,
+                                           metadata_extractor=metadata)
 
-def aggregateBar2(spList, varLists, trialNumList, func=(None, None)):
-    vars = ([], [])
-    noise_sigma = []
-    for idx in xrange(len(spList)):
-        for varIdx in range(len(varLists)):
-            f = func[varIdx]
-            if f is None:
-                f = lambda x: x
-            vars[varIdx].append(f(aggr.aggregate2DTrial(spList[idx], varLists[varIdx],
-                trialNumList).flatten()))
-        noise_sigma.append(spList[idx][0][0][0].data['options']['noise_sigma'])
+            if self.myc.get('filter_with_gridness', False):
+                gridData = aggr.GridnessScore(ps.grids[ns_idx], None,
+                                              normalizeTicks=True,
+                                              collapseTrials=True,
+                                              ignoreNaNs=True)
+                gridFilter = aggr.GTFilter(gridData,
+                                           self.myc['gridness_threshold'])
+                data = data.filter_data(gridFilter)
 
-    noise_sigma = np.array(noise_sigma, dtype=int)
-    return vars, noise_sigma
+            fig = self._get_final_fig(self.config['sweeps']['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            sweeps.plotSweep(data,
+                             noise_sigma=ps.noise_sigmas[ns_idx],
+                             ax=ax,
+                             xlabel=self.myc['xlabel'],
+                             xticks=self.myc['xticks'],
+                             ylabel=self.myc['ylabel'],
+                             yticks=self.myc['yticks'],
+                             sigmaTitle=self.myc['sigma_title'],
+                             cbar=self.myc['cbar'][ns_idx],
+                             cbar_kw=self.myc['cbar_kw'],
+                             vmin=self.myc['vmin'],
+                             vmax=self.myc['vmax'],
+                             annotations=self.myc['ann'][ns_idx])
 
+            if self.myc['plot_grid_contours'][ns_idx]:
+                gridData = aggr.GridnessScore(ps.grids[ns_idx],
+                                              None,
+                                              ignoreNaNs=True,
+                                              normalizeTicks=True)
+                contours = sweeps.Contours(gridData,
+                                           self.config['sweeps']['grid_contours'])
+                contours.plot(ax,
+                              **self.config['sweeps']['contours_kwargs'])
 
+            ax.axis('tight')
+            fig.savefig(self.get_fname(fname, ns=noise_sigma), dpi=300,
+                        transparent=True)
+            plt.close(fig)
 
-def getACFreqThreshold(spList, trialNumList, ACThr):
-    varLists = [['acVal'], ['freq']]
-    vars, noise_sigma = aggregateBar2(spList, varLists, trialNumList)
-    AC = vars[0]
-    freq = vars[1]
-    ACMean   = []
-    freqMean = []
-    ACStd    = []
-    freqStd  = []
-    thrCount = []
-    for spIdx in range(len(spList)):
-        thrIdx = np.logical_and(AC[spIdx] >= ACThr,
-                np.logical_not(np.isnan(AC[spIdx])))
-        ac_filt = AC[spIdx][thrIdx]
-        ACMean.append(np.mean(ac_filt))
-        ACStd.append(np.std(ac_filt))
-        freq_filt = freq[spIdx][thrIdx]
-        freqMean.append(np.mean(freq_filt))
-        freqStd.append(np.std(freq_filt))
-        thrCount.append(float(len(AC[spIdx][thrIdx])) / len (AC[spIdx]))
-
-    return (ACMean, ACStd), (freqMean, freqStd), thrCount, noise_sigma
-
-
-def plotThresholdComparison(spList, trialNumList, ACThrList):
-    counts = []
-    noise_sigma = None
-    for ACThr in ACThrList:
-        _, _, thrCount, noise_sigma = getACFreqThreshold(spList, trialNumList,
-                ACThr)
-        counts.append(thrCount)
-    counts = np.array(counts)
-
-    print(ACThrList, counts)
-
-    ax = plt.gca()
-    globalAxesSettings(ax)
-    plt.plot(ACThrList, counts, 'o-')
-    plt.plot([0], [1], linestyle='None', marker='None')
-    ax.set_xlabel('Correlation threshold', labelpad=5)
-    ax.set_ylabel('Count', labelpad=5)
-    leg = []
-    for s in noise_sigma:
-        leg.append("{0}".format(int(s)))
-    ax.legend(leg, loc=(0.8, 0.5), title='$\sigma$ (pA)', frameon=False,
-            fontsize='small')
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(ti.MultipleLocator(0.3))
-    ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(3))
-    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    ax.margins(0.025)
-
-
-def plotFreqHistogram(spList, trialNumList, ylabelPos=-0.2, CThreshold=0.1):
-    FVarList = ['freq']
-    CVarList = ['acVal']
-    noise_sigma = [0, 150, 300]
-    colors = ['red', 'green', 'blue']
-
-    ax = plt.gca()
-    plt.hold('on')
-    globalAxesSettings(ax)
-
-    for idx, sp in enumerate(spList):
-        F = aggr.aggregate2DTrial(sp, FVarList, trialNumList).flatten()
-        C = aggr.aggregate2DTrial(sp, CVarList, trialNumList).flatten()
-        filtIdx = np.logical_and(np.logical_not(np.isnan(F)), C > CThreshold)
-        plotOneHist(F[filtIdx], bins=20, normed=True)
-    leg = []
-    for s in noise_sigma:
-        leg.append("{0}".format(int(s)))
-    l = ax.legend(leg, loc=(0.8, 0.5), title='$\sigma$ (pA)', frameon=False,
-            fontsize='x-small', ncol=1)
-    plt.setp(l.get_title(), fontsize='x-small')
-
-    ax.set_xlabel("Oscillation frequency (Hz)")
-    #ax.text(ylabelPos, 0.5, 'p(F)', rotation=90, transform=ax.transAxes,
-    #        va='center', ha='right')
-    ax.set_ylabel('p(Frequency)')
-
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_major_locator(ti.MultipleLocator(20))
-    ax.yaxis.set_major_locator(ti.MaxNLocator(4))
-    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
-    f = ti.ScalarFormatter(useMathText=True)
-    f.set_scientific(True)
-    f.set_powerlimits([0, 3])
-    ax.yaxis.set_major_formatter(f)
-    #ax.margins(0.01, 0.00)
-
-    thStr = 'Frequencies with C > {0}'.format(CThreshold)
-    ax.text(0.99, 1.1, thStr, transform=ax.transAxes, va='bottom',
-            ha='right')
-
-
-###############################################################################
-
-
-# gamma example rows and columns
-
-ACVarList = ['acVal']
-FVarList  = ['freq']
 
 class GammaSweepsPlotter(SweepPlotter):
+    NTrials = 5
     def __init__(self, *args, **kwargs):
         super(GammaSweepsPlotter, self).__init__(*args, **kwargs)
 
@@ -256,7 +187,7 @@ class GammaSweepsPlotter(SweepPlotter):
                         xticks=f_xticks[ns_idx],
                         ylabel='' if f_yticks[ns_idx] == False else None,
                         yticks=f_yticks[ns_idx],
-                        trialNumList=xrange(NTrials),
+                        trialNumList=xrange(self.NTrials),
                         sigmaTitle=self.myc['F_sigma_title'],
                         cbar=self.myc['cbar'][ns_idx],
                         cbar_kw=self.myc['F_cbar_kw'],
@@ -269,29 +200,6 @@ class GammaSweepsPlotter(SweepPlotter):
                     contours.plot(
                             ax,
                             **self.config['sweeps']['contours_kwargs'])
-
-
-
-
-#if args.threshold or args.all:
-#    ###############################################################################
-#    plt.figure(figsize=(3.5, 2))
-#    plotThresholdComparison(ps.bumpGamma,
-#            trialNumList=range(NTrials),
-#            ACThrList=np.arange(0, 0.65, 0.05))
-#    plt.tight_layout()
-#    fname = outputDir + '/gamma_AC_threshold_comparison.pdf'
-#    plt.savefig(fname, transparent=True, dpi=300)
-#
-#
-#if args.freqHist or args.all:
-#    ylabelPos = -0.16
-#    fig = plt.figure(figsize=(3.7, 2.5))
-#    plotFreqHistogram(ps.bumpGamma, range(NTrials), ylabelPos=ylabelPos)
-#    plt.tight_layout()
-#    fname = outputDir + "/gamma_freq_histograms.pdf"
-#    plt.savefig(fname, dpi=300, transparent=True)
-#
 
 
 ##############################################################################
@@ -362,7 +270,6 @@ class GammaDetailedNoisePlotter(FigurePlotter):
         fname = self.config['output_dir'] + "/gamma_detailed_noise_freq.pdf"
         plt.savefig(fname, dpi=300, transparent=True)
         plt.close()
-
 
 
 ##############################################################################

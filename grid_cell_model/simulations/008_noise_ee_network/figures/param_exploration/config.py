@@ -71,6 +71,27 @@ def get_config():
             'ann': [None],
             'bbox': (.15, .17, .9, .9),
         },
+
+        'GenericGammaPlotter': {
+            'scale_factor': 1.,
+            'cbar': [1],
+            'sigma_title': True,
+            'cbar_kw': dict(
+                label      = '$1^{st}$ autocorrelation\npeak',
+                location    = 'right',
+                shrink      = 0.8,
+                pad         = .05,
+                ticks      = ti.MultipleLocator(0.3),
+                rasterized  = True
+            ),
+            'xticks': [True]*3,
+            'yticks': [True]*3,
+            'plot_grid_contours': [0],
+            'ann': [None],
+            'bbox': (.15, .17, .9, .9),
+            'vmin': None,
+            'vmax': None,
+        },
     })
 
     ##########################################################################

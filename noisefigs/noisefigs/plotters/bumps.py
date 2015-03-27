@@ -622,6 +622,7 @@ class Generic2DPBumpPlotter(BumpFormationBase):
                 **kw)
             ax.axis('tight')
             fig.savefig(fname, dpi=300, transparent=True)
+            plt.close(fig)
 
 
 
