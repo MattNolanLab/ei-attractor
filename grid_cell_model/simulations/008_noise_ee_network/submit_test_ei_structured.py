@@ -22,10 +22,5 @@ p['g_AMPA_total'] = 2040.    # nS
 p['g_GABA_total'] = 2040.    # nS
 p['g_EE_total']   = 100.     # nS
 
-# Here, no PC inputs
-#p['pc_start_max_rate'] = .0  # Hz
-
-p['prefDirC_e'] = 0.
-
 sweep.update_user_parameters(p)
 sweep.run()

@@ -145,8 +145,9 @@ class ParameterSelector(object):
 
     def preferred_directions(self):
         '''Preferred directions.'''
-        self.parser.add_argument("--prefDirC_e", type=float, help="Excitatory (E-->I) preferred direction multiplier")
-        self.parser.add_argument("--prefDirC_i", type=float, help="Inhibitory (I-->E) preferred direction multiplier")
+        self.parser.add_argument("--prefDirC_e",  type=float, help="Excitatory (E-->I) preferred direction multiplier")
+        self.parser.add_argument("--prefDirC_ee", type=float, help="Excitatory (E-->E) preferred direction multiplier")
+        self.parser.add_argument("--prefDirC_i",  type=float, help="Inhibitory (I-->E) preferred direction multiplier")
 
     def spatial_properties(self):
         '''Properties of grid fields and arenas.'''

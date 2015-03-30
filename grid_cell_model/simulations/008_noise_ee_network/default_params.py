@@ -29,6 +29,7 @@ defaultParameters = {
         "pGABA_mu"              :   y_dim/2.0,
         "pGABA_sigma"           :   0.5/6,
         "prefDirC_e"            :   4.0,
+        "prefDirC_ee"           :   0.0,
         "prefDirC_i"            :   0.0,
         "arenaSize"             :   180.0,        # cm
 

@@ -254,13 +254,12 @@ class GridCellNetwork(object):
                 pd_norm_e.y = 1. * pd_e[1] / self.Ne_y * self.y_dim
 
                 tmp_templ = self._generateGaussianWeights(
-                    a, others_e, pEE_sigma, pd_norm_e, self.no.prefDirC_e)
+                    a, others_e, pEE_sigma, pd_norm_e, self.no.prefDirC_ee)
 
                 # tmp_templ down here must be in the proper units (e.g. nS)
                 tmp_templ *= g_EE_mean
                 tmp_templ[it] = 0.  # do not allow autapses
                 self._divergentConnectEE(it, range(self.net_Ne), tmp_templ)
-
 
 
     def _connect_ei_distance(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma):
