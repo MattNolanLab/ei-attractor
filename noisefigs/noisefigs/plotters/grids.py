@@ -65,24 +65,26 @@ class GridSweepsPlotter(SweepPlotter):
                 # Sweep itself
                 kw = dict()
                 sweeps.plotGridTrial(
-                        self.data,
-                        None,
-                        None,
-                        ps.noise_sigmas[ns_idx],
-                        trialNumList=None,
-                        r=None, c=None,
-                        ax=self.ax,
-                        cbar=self.myc['cbar'][ns_idx],
-                        cbar_kw=self.myc['cbar_kw'],
-                        cmap=self.cmap,
-                        vmin=self.myc['vmin'], vmax=self.myc['vmax'],
-                        ylabel=self.myc['ylabel'][ns_idx],
-                        yticks=self.myc['yticks'][ns_idx],
-                        ignoreNaNs=True,
-                        annotations=self.myc['ann'],
-                        sliceAnn=None,
-                        sigmaTitle=self.myc['sigma_title'],
-                        **kw)
+                    self.data,
+                    None,
+                    None,
+                    ps.noise_sigmas[ns_idx],
+                    trialNumList=None,
+                    r=None, c=None,
+                    ax=self.ax,
+                    cbar=self.myc['cbar'][ns_idx],
+                    cbar_kw=self.myc['cbar_kw'],
+                    cmap=self.cmap,
+                    vmin=self.myc['vmin'], vmax=self.myc['vmax'],
+                    xlabel=self.myc['xlabel'][ns_idx],
+                    xticks=self.myc['xticks'][ns_idx],
+                    ylabel=self.myc['ylabel'][ns_idx],
+                    yticks=self.myc['yticks'][ns_idx],
+                    ignoreNaNs=True,
+                    annotations=self.myc['ann'],
+                    sliceAnn=None,
+                    sigmaTitle=self.myc['sigma_title'],
+                    **kw)
 
                 # Contours
                 if self.myc['plot_contours'][ns_idx]:

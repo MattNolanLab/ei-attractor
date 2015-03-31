@@ -48,17 +48,20 @@ _config = {
 
     'GridSweepsPlotter': {
         'scale_factor' : .7,
-        'cbar': [1, 0, 0],
-        'cbar_kw' : {
-            'label': '',
-            'location': 'left',
-            'pad': .2,
-        },
         'sigma_title': False,
+        'ylabel' : [None, None, None],
+        'yticks' : [True, True, True],
+        'xlabel': ['', '', None],
+        'xticks': [False, False, True],
+
+        'cbar': [0, 0, 1],
+        'cbar_kw': {
+            'labelpad': 8,
+        },
 
         'ann': [
             dict(
-                txt='b',
+                txt='a',
                 rc=(5, 15),
                 xytext_offset=(0.5, 1.5),
                 color='black'
@@ -157,7 +160,23 @@ _config = {
     },
 
     'GammaSweepsPlotter': {
-        'scale_factor': .8,
+        'scale_factor': .7,
+
+        'cbar': [0, 0, 1],
+        'cbar_kw' : { # This has to match cbar_kw-s below
+            'location': 'right',
+        },
+
+        'AC_cbar_kw': dict(
+            location   = 'right',
+            pad        = -.05,
+        ),
+
+        'F_cbar_kw': dict(
+            location   = 'right',
+            pad        = -.05,
+        ),
+
         'ann': [
             dict(
                 txt='a',
