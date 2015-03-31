@@ -14,6 +14,10 @@ p = {}
 p['master_seed'] = 123456
 
 p['AMPA_gaussian'] = 1
+p['Iext_e_theta']  = 650.      # pA
+p['Iext_i_theta']  = 50.       # pA
+p['g_uni_GABA_frac'] = 0.3125  
+
 
 sweep.update_user_parameters(p)
 sweep.run()
