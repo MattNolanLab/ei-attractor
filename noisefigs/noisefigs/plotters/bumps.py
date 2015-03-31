@@ -587,8 +587,9 @@ class Generic2DPBumpPlotter(BumpFormationBase):
         iter_list = self.config['iter_list']
         xlabel = self.myc.get('xlabel', None)
         ylabel = self.myc.get('ylabel', None)
-        normalize_type = self.myc.get('normalize_type', (None, None))
         xticks = myc['xticks']
+        yticks = myc['yticks']
+        normalize_type = self.myc.get('normalize_type', (None, None))
         l, b, r, t = self.myc['bbox']
         fname = self.myc.get('fname', "bumps_pbumps_generic_{ns}.pdf")
 
@@ -614,6 +615,8 @@ class Generic2DPBumpPlotter(BumpFormationBase):
                 sigmaTitle=self.myc.get('sigmaTitle', True),
                 xlabel='' if xticks[ns_idx] == False else xlabel,
                 xticks=xticks[ns_idx],
+                ylabel='' if yticks[ns_idx] == False else ylabel,
+                yticks=yticks[ns_idx],
                 ax=ax,
                 cbar=self.myc['cbar'][ns_idx],
                 cbar_kw=myc['cbar_kw'],

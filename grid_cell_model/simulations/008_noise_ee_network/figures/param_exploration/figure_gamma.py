@@ -35,8 +35,8 @@ if args.gamma_gEE_EE_sigma or args.all:
                 'fname': "gamma_power_gEE_pEE_sigma_{ns}.pdf",
                 'normalize_ticks': (True, False),  # (Y, X)
                 'normalize_type': ('E', None),
-                'xlabel': '$\sigma_{EE}$',
-                'ylabel': '$g_E$',
+                'xlabel': '$\sigma_{E{\\rightarrow}E}$',
+                'ylabel': '$g_{E{\\rightarrow}E}$',
                 'bbox': (.2, .17, .85, .9),
                 'vmin': .0,
                 'vmax': .505,
@@ -53,7 +53,7 @@ if args.gamma_gEE_EE_sigma or args.all:
                 'fname': "gamma_freq_gEE_pEE_sigma_{ns}.pdf",
                 'normalize_ticks': (True, False),  # (Y, X)
                 'normalize_type': ('E', None),
-                'xlabel': '$\sigma_{EE}$',
+                'xlabel': '$\sigma_{E{\\rightarrow}E}$',
                 'ylabel': '',
                 'yticks': [False],
                 'bbox': (.2, .17, .85, .9),
