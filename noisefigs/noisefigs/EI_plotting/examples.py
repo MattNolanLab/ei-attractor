@@ -287,6 +287,8 @@ def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
     noise_sigma_xy = kw.pop('noise_sigma_xy', (0.95, 0.85))
     xscale_kw      = kw.pop('xscale_kw', None)
     yscale_kw      = kw.pop('yscale_kw', None)
+    monIdx_e       = kw.pop('monIdx_e', 1)
+    monIdx_i       = kw.pop('monIdx_i', 0)
 
     globalAxesSettings(ax)
     ax.spines['top'].set_visible(False)
@@ -297,10 +299,12 @@ def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
     data = ps[r][c][trialNum].data
     monEList = data['stateMon_e']
     t, Isyn_e = extractSummedSignals(monEList, ['I_clamp_GABA_A'], tStart,
-            tEnd, monIdx=1)
+                                     tEnd, monIdx=monIdx_e)
     monIList = data['stateMon_i']
-    t, Isyn_i = extractSummedSignals(monIList, ['I_clamp_AMPA',
-        'I_clamp_NMDA'], tStart, tEnd)
+    t, Isyn_i = extractSummedSignals(monIList,
+                                     ['I_clamp_AMPA', 'I_clamp_NMDA'],
+                                     tStart, tEnd,
+                                     monIdx=monIdx_i)
     Isyn_e *= 1e-3
     Isyn_i *= 1e-3
     plt.plot(t, Isyn_e, color='red')
