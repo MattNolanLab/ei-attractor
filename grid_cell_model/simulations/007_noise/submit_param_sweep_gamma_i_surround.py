@@ -9,15 +9,19 @@ from grid_cell_model.submitting.noise.templates import ParameterSweep
 from default_params import defaultParameters as dp
 
 sweep = ParameterSweep('../common/simulation_stationary.py', dp)
+parser = sweep.parser
+parser.add_argument('--Iext_e_theta', type=float, help='Cosine theta input to E cells(pA).')
+parser.add_argument('--Iext_i_theta', type=float, help='Cosine theta input to I cells (pA).')
+parser.parse_args()
 
 p = {}
 p['master_seed'] = 123456
+if parser.options.Iext_e_theta is not None:
+    p['Iext_e_theta'] = parser.options.Iext_e_theta
+if parser.options.Iext_i_theta is not None:
+    p['Iext_i_theta'] = parser.options.Iext_i_theta
 
 p['AMPA_gaussian'] = 1
-p['Iext_e_theta']  = 650.      # pA
-p['Iext_i_theta']  = 50.       # pA
-p['g_uni_GABA_frac'] = 0.3125  
-
 
 sweep.update_user_parameters(p)
 sweep.run()
