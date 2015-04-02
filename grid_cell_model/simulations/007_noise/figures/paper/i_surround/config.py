@@ -159,6 +159,10 @@ def get_config():
                     size='x-small'
                 )]],
         },
+
+        'BumpDriftAtTimePlotter': {
+            'plot_grid_contours': [0, 0, 0],
+        },
     })
 
     ##########################################################################

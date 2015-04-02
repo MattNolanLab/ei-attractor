@@ -6,7 +6,8 @@ THESIS_DIR=~/work/PhDThesis/src
 all: fast
 
 fast: \
-	figure_bumps.dummy					\
+	figure_bumps.dummy		\
+	figure_drifts.dummy		\
 	figure_gamma.dummy
 
 no-theta:
