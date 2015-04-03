@@ -122,7 +122,7 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
     bitSpikes   = np.zeros((N, szRate))
     fr          = np.zeros((N, szRate))
     dtWlen      = int(winLen/dt)
-    times       = np.arange(tstart, tend+dt, dt)
+    times       = np.linspace(tstart, tend, szRate)
     N           = int(N)
 
     #print "max(n_ids): ", np.max(n_ids)
