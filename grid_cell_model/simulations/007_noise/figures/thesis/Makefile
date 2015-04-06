@@ -12,6 +12,7 @@ files=										\
 	figure_seizures.py						\
 	figure_theta.py							\
 	figure_intro.py							\
+	figure_pastoll_et_al_rasters.py			\
 	suppFigure_gamma.py						\
 	suppFigure_grid_examples.py				\
 	suppFigure_grids_vs_bumps.py			\

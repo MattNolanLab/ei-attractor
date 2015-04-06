@@ -76,6 +76,7 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, ylabel=None, **kw):
     scaleTextYOffset = kw.pop('scaleTextYOffset', .075)
     scaleHeight  = kw.pop('scaleHeight', .02)
     scaleTextSize= kw.pop('scaleTextSize', 'small')
+    reshape_senders = kw.pop('reshape_senders', True)
     kw['markersize'] = kw.get('markersize', 1.0)
 
     if ylabel is None:
@@ -87,21 +88,22 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, ylabel=None, **kw):
     ESenders, ETimes = ESpikes.rasterData()
     ISenders, ITimes = ISpikes.rasterData()
 
-    # TO REMOVE: this is to transform the neuron number from row-wise to column
-    # wise indexes. A better solution has to be devised in the future
-    logger.warn('Nx, Ny are fixed in the code. Make sure the torus size is '+\
-            "the same as specified here.")
-    Nx, Ny = 34, 30
-    N = Nx * Ny
-    if (N != ESpikes.N or N != ISpikes.N):
-        raise ValueError("Fix the number of neurons in plotEIRaster")
-    Ex = ESenders % Nx
-    Ey = ESenders // Ny
-    ESenders = Ey + Ex * Ny
-    Ix = ISenders % Nx
-    Iy = ISenders // Ny
-    ISenders = Iy + Ix * Ny
-
+    if reshape_senders:
+        # TO REMOVE: this is to transform the neuron number from row-wise to
+        # column wise indexes. A better solution has to be devised in the
+        # future
+        logger.warn('Nx, Ny are fixed in the code. Make sure the torus size '
+                    'is the same as specified here.')
+        Nx, Ny = 34, 30
+        N = Nx * Ny
+        if (N != ESpikes.N or N != ISpikes.N):
+            raise ValueError("Fix the number of neurons in plotEIRaster")
+        Ex = ESenders % Nx
+        Ey = ESenders // Ny
+        ESenders = Ey + Ex * Ny
+        Ix = ISenders % Nx
+        Iy = ISenders // Ny
+        ISenders = Iy + Ix * Ny
 
     ISenders += ESpikes.N
 
@@ -157,23 +159,28 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, ylabel=None, **kw):
 ##############################################################################
 #                           Firing rates
 def plotAvgFiringRate(space, spaceType, noise_sigma, popType, r, c, tLimits,
-        trialNum=0, **kw):
-    # keyword arguments
-    ax           = kw.pop('ax', plt.gca())
-    sigmaTitle   = kw.pop('sigmaTitle', False)
-    kw['xlabel'] = False
-    kw['ylabel'] = kw.get('ylabel', 'r (Hz)')
-
+                      trialNum=0, **kw):
     ESpikes, ISpikes = getSpikes(space, spaceType, r, c, trialNum)
     if (popType == 'E'):
         spikes = ESpikes
     elif (popType == 'I'):
         spikes = ISpikes
 
+    return plot_avg_firing_rate_spikes(spikes, tLimits, **kw)
+
+
+def plot_avg_firing_rate_spikes(spikes, tLimits, **kw):
+    '''Plot population-average firing rate from PopulationSpikes.'''
+    # keyword arguments
+    ax           = kw.pop('ax', plt.gca())
+    sigmaTitle   = kw.pop('sigmaTitle', False)
+    dt           = kw.pop('dt', .5)
+    winLen       = kw.pop('winLen', 2.0)
+    kw['xlabel'] = False
+    kw['ylabel'] = kw.get('ylabel', 'r (Hz)')
+
     tStart = tLimits[0]
     tEnd   = tLimits[1]
-    dt     = 0.5  # ms
-    winLen = 2.0 # ms
 
     rate, times = spikes.slidingFiringRate(tStart, tEnd, dt, winLen)
     meanRate = np.mean(rate, axis=0)
