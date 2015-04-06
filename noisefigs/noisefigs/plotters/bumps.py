@@ -594,13 +594,9 @@ class Generic2DPBumpPlotter(BumpFormationBase):
         fname = self.myc.get('fname', "bumps_pbumps_generic_{ns}.pdf")
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-            fname = self.get_fname(fname, ns=noise_sigma)
+            file_name = self.get_fname(fname, ns=noise_sigma)
             fig = self._get_final_fig(self.config['sweeps']['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
-            kw = dict()
-            if ns_idx != 0:
-                kw['ylabel'] = ''
-                kw['yticks'] = False
             metadata = GenericExtractor(ps.bumpGamma[ns_idx],
                                         normalize=self.myc['normalize_ticks'],
                                         normalize_type=normalize_type)
@@ -621,10 +617,9 @@ class Generic2DPBumpPlotter(BumpFormationBase):
                 cbar=self.myc['cbar'][ns_idx],
                 cbar_kw=myc['cbar_kw'],
                 vmin=self.bump_vmin, vmax=self.bump_vmax,
-                annotations=self.get_ann()[ns_idx],
-                **kw)
+                annotations=self.get_ann()[ns_idx])
             ax.axis('tight')
-            fig.savefig(fname, dpi=300, transparent=True)
+            fig.savefig(file_name, dpi=300, transparent=True)
             plt.close(fig)
 
 

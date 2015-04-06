@@ -8,7 +8,8 @@ all: fast
 fast: \
 	figure_bumps.dummy		\
 	figure_drifts.dummy		\
-	figure_gamma.dummy
+	figure_gamma.dummy		\
+	figure_other_bump_sweeps.py
 
 no-theta:
 	cd no_theta; $(MAKE)

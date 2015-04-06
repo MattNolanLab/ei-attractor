@@ -129,7 +129,8 @@ class GammaSweepsPlotter(SweepPlotter):
                                              ignoreNaNs=True)
             gammaFData = aggr.GammaAggregateData('freq', ps.bumpGamma[ns_idx],
                                                  iter_list,
-                                                 normalizeTicks=True)
+                                                 normalizeTicks=True,
+                                                 ignoreNaNs=True)
             gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
                                               normalizeTicks=True,
                                               collapseTrials=True,

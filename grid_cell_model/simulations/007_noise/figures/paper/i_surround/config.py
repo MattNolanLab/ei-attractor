@@ -65,7 +65,7 @@ def get_config():
 
         'Generic2DPBumpPlotter': {
             'scale_factor': 1.,
-            'cbar': [1],
+            'cbar': [1, 1, 1],
             'cbar_kw': dict(
                 label       = "P(bumps)",
                 location    = 'right',
@@ -76,8 +76,8 @@ def get_config():
             ),
             'xticks': [True]*3,
             'yticks': [True]*3,
-            'plot_grid_contours': [0],
-            'ann': [None],
+            'plot_grid_contours': [0, 0, 0],
+            'ann': [None, None, None],
             'bbox': (.15, .17, .9, .9),
         },
 
