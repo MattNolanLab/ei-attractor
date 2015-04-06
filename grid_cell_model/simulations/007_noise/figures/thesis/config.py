@@ -276,7 +276,7 @@ _config = {
     },
 
     'RasterExamples': {  # Pastoll et al. rasters
-        'data_file': 'pastoll_et_al_data/thesis_rasters.h5',
+        'data_file': 'pastoll_et_al_data/thesis_rasters_movement.h5',
         'fig_size': (5.5, 4.5),
         'sweep_rect' : (.1, .73, .5, .95),
         'cbar_kw': dict(

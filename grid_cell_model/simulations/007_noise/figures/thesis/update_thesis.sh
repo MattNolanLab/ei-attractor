@@ -15,6 +15,7 @@ files="
     $output_fig_dir/suppFigure_grids_vs_bumps.pdf
     $output_fig_dir/suppFigure_grids_vs_bumps.pdf
     $output_fig_dir/pac_example_4.pdf
+    $output_fig_dir/pastoll_et_al_rasters.pdf
     "
 
 for f in $files

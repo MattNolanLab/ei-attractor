@@ -25,7 +25,7 @@ class RasterExamples(FigurePlotter):
 
     def plot(self, *args, **kwargs):
         myc= self._get_class_config()
-        tLimits = [2e3, 2.5e3]
+        tLimits = [5.e3, 6e3]
 
 
         fig = self._get_final_fig(self.myc['fig_size'])
@@ -52,7 +52,7 @@ class RasterExamples(FigurePlotter):
             yticks=True,
             sigmaTitle=False,
             ann_EI=False,
-            scaleBar=125, scaleX=.7, scaleY=-.05, scaleText='ms',
+            scaleBar=125, scaleX=.8, scaleY=-.05, scaleText='ms',
             scaleTextYOffset=.03, scaleHeight=.01,
             rasterized=False,
             reshape_senders=False)
