@@ -36,11 +36,11 @@ class RasterExamples(FigurePlotter):
         events_e = trial_data['spikeMon_e']['events']
         ESpikes = PopulationSpikes(trial_data['net_attr']['net_Ne'],
                                    events_e['senders'],
-                                   events_e['times'] * 1e3)
+                                   events_e['times'])
         events_i = trial_data['spikeMon_i']['events']
         ISpikes = PopulationSpikes(trial_data['net_attr']['net_Ni'],
                                    events_i['senders'],
-                                   events_i['times'] * 1e3)
+                                   events_i['times'])
 
         # EI Raster
         ax_raster = fig.add_subplot(gs[0, 0])

@@ -54,6 +54,13 @@ class PopulationActivityPlotter(FigurePlotter):
         data = self.trial_data
         rl, rb, rr, rt = self.myc['raster_rect']
         t_limits = self.myc['t_limits']
+        max_e_rate = self.myc.get('max_e_rate', True)
+        max_i_rate = self.myc.get('max_i_rate', True)
+        scale_bar = self.myc.get('scale_bar', 1e3)
+        scale_x = self.myc.get('scale_x', .9)
+        scale_y = self.myc.get('scale_y', -.05)
+        ann_ei = self.myc.get('ann_ei', True)
+        y_label_pos = self.myc.get('y_label_pos', -0.22)
 
         saver = self.myc['fig_saver']
         saver.set_file_name(self.get_fname('population_activity'))
@@ -74,11 +81,13 @@ class PopulationActivityPlotter(FigurePlotter):
                          sigmaTitle=False,
                          markersize=2 * self.config['scale_factor'],
                          rasterized=True,
-                         ann_EI=True,
-                         scaleBar=1000,
-                         scaleX=.9,
-                         scaleY=-.05,
-                         scaleTextYOffset=.02)
+                         ann_EI=ann_ei,
+                         scaleBar=scale_bar,
+                         scaleX=scale_x,
+                         scaleY=scale_y,
+                         scaleTextYOffset=.02,
+                         reshape_senders=self.myc['reshape_senders'],
+                         ylabelPos=y_label_pos)
 
             # E and I 2D population plots
             win_dt = 125.  # ms
@@ -91,7 +100,8 @@ class PopulationActivityPlotter(FigurePlotter):
                                        fig=fig,
                                        axesCoords=self.myc['e_snapshots_rect'],
                                        bumpQuality=False,
-                                       timeTitles=True, maxRate=True,
+                                       timeTitles=True,
+                                       maxRate=max_e_rate,
                                        fontsize='x-small',
                                        rateYPos=-.2)
 
@@ -101,7 +111,8 @@ class PopulationActivityPlotter(FigurePlotter):
                                        fig=fig,
                                        axesCoords=self.myc['i_snapshots_rect'],
                                        bumpQuality=False,
-                                       timeTitles=False, maxRate=True,
+                                       timeTitles=False,
+                                       maxRate=max_i_rate,
                                        fontsize='x-small')
 
             saver.savefig(fig)
