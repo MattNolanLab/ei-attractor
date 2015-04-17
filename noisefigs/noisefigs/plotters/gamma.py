@@ -70,19 +70,20 @@ class GenericGammaPlotter(SweepPlotter):
 
             fig = self._get_final_fig(self.config['sweeps']['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
-            sweeps.plotSweep(data,
-                             noise_sigma=ps.noise_sigmas[ns_idx],
-                             ax=ax,
-                             xlabel=self.myc['xlabel'],
-                             xticks=self.myc['xticks'][ns_idx],
-                             ylabel=self.myc['ylabel'],
-                             yticks=self.myc['yticks'][ns_idx],
-                             sigmaTitle=self.myc['sigma_title'],
-                             cbar=self.myc['cbar'][ns_idx],
-                             cbar_kw=self.myc['cbar_kw'],
-                             vmin=self.myc['vmin'],
-                             vmax=self.myc['vmax'],
-                             annotations=self.myc['ann'][ns_idx])
+            sweeps.plotSweep(
+                data,
+                noise_sigma=ps.noise_sigmas[ns_idx],
+                ax=ax,
+                xlabel=self.myc['xlabel'] if self.myc['xticks'][ns_idx] is not False else '',
+                xticks=self.myc['xticks'][ns_idx],
+                ylabel=self.myc['ylabel'] if self.myc['yticks'][ns_idx] is not False else '',
+                yticks=self.myc['yticks'][ns_idx],
+                sigmaTitle=self.myc['sigma_title'],
+                cbar=self.myc['cbar'][ns_idx],
+                cbar_kw=self.myc['cbar_kw'],
+                vmin=self.myc['vmin'],
+                vmax=self.myc['vmax'],
+                annotations=self.myc['ann'])
 
             if self.myc['plot_grid_contours'][ns_idx]:
                 gridData = aggr.GridnessScore(ps.grids[ns_idx],

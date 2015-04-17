@@ -124,11 +124,13 @@ class BumpDriftAtTimePlotter(SweepPlotter):
                                               ignoreNaNs=True, normalizeTicks=True,
                                               r=grids_example_idx[ns_idx][0],
                                               c=grids_example_idx[ns_idx][1])
-                _, _, cax = sweeps.plotSweep(data, noise_sigma=noise_sigma,
-                        ax=ax,
-                        cbar_kw=myc['cbar_kw'],
-                        vmin=drift_vmin, vmax=drift_vmax,
-                        **kw)
+                _, _, cax = sweeps.plotSweep(
+                    data, noise_sigma=noise_sigma,
+                    ax=ax,
+                    cbar_kw=myc['cbar_kw'],
+                    vmin=drift_vmin, vmax=drift_vmax,
+                    axis_setting=self.myc.get('axis_setting', 'scaled'),
+                    **kw)
 
                 if self.myc['plot_grid_contours'][ns_idx]:
                     contours = sweeps.Contours(gridData,
@@ -525,6 +527,7 @@ class MainBumpFormationPlotter(BumpFormationBase):
                     cbar_kw=myc['cbar_kw'],
                     vmin=self.bump_vmin, vmax=self.bump_vmax,
                     annotations=self.get_ann()[ns_idx],
+                    axis_setting=self.myc.get('axis_setting', 'scaled'),
                     **kw)
 
                 self.plot_grid_contours(ns_idx, ax, ps.grids)
@@ -617,7 +620,8 @@ class Generic2DPBumpPlotter(BumpFormationBase):
                 cbar=self.myc['cbar'][ns_idx],
                 cbar_kw=myc['cbar_kw'],
                 vmin=self.bump_vmin, vmax=self.bump_vmax,
-                annotations=self.get_ann()[ns_idx])
+                annotations=self.get_ann()[ns_idx],
+                axis_setting=self.myc.get('axis_setting', 'scaled'))
             ax.axis('tight')
             fig.savefig(file_name, dpi=300, transparent=True)
             plt.close(fig)

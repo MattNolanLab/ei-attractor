@@ -6,10 +6,14 @@ THESIS_DIR=~/work/PhDThesis/src
 all: fast
 
 fast: \
-	figure_bumps.dummy		\
-	figure_drifts.dummy		\
-	figure_gamma.dummy		\
-	figure_other_bump_sweeps.py
+	figure_bumps_ratio_corrected.dummy	\
+	figure_drifts_ratio_corrected.dummy	\
+	figure_gamma_ratio_corrected.dummy	\
+	figure_bumps_original.dummy			\
+	figure_drifts_original.dummy		\
+	figure_gamma_original.dummy			\
+	figure_other_bump_sweeps.py			\
+	figure_other_bump_sweeps.dummy
 
 no-theta:
 	cd no_theta; $(MAKE)

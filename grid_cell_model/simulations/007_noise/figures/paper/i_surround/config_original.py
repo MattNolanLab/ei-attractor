@@ -1,4 +1,5 @@
-'''Network test configuration file.'''
+'''I-surround plotting configuration file with original settings for the
+E-surround configuration.'''
 from __future__ import absolute_import, print_function
 
 from configobj import ConfigObj
@@ -20,12 +21,12 @@ def get_config():
         'scale_factor': scale_factor,
 
         'grids_data_root':      'None',
-        'bump_data_root':       'simulation_data/submission/i_surround/gamma_bump',
+        'bump_data_root':       'simulation_data/submission/i_surround/gamma_bump_original_e_surround',
         'vel_data_root':        None,
         'const_pos_data_root':  None,
         'singleDataRoot':       None,
 
-        'output_dir'    : 'panels/',
+        'output_dir'    : 'panels_original_e_surround/',
         'noise_sigmas'  : [0, 150, 300],
 
         # Sections

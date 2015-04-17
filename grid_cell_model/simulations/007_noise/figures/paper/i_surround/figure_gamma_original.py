@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+'''I-surround gamma plots with the original E-surround settings.'''
 from __future__ import absolute_import, print_function
 
 import copy
@@ -8,7 +9,7 @@ from grid_cell_model.submitting import flagparse
 import noisefigs
 from noisefigs.env import NoiseEnvironment
 
-import config
+import config_original as config
 
 parser = flagparse.FlagParser()
 parser.add_flag('--gamma_sweep')
