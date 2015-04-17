@@ -70,19 +70,20 @@ class GenericGammaPlotter(SweepPlotter):
 
             fig = self._get_final_fig(self.config['sweeps']['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
-            sweeps.plotSweep(data,
-                             noise_sigma=ps.noise_sigmas[ns_idx],
-                             ax=ax,
-                             xlabel=self.myc['xlabel'],
-                             xticks=self.myc['xticks'][ns_idx],
-                             ylabel=self.myc['ylabel'],
-                             yticks=self.myc['yticks'][ns_idx],
-                             sigmaTitle=self.myc['sigma_title'],
-                             cbar=self.myc['cbar'][ns_idx],
-                             cbar_kw=self.myc['cbar_kw'],
-                             vmin=self.myc['vmin'],
-                             vmax=self.myc['vmax'],
-                             annotations=self.myc['ann'][ns_idx])
+            sweeps.plotSweep(
+                data,
+                noise_sigma=ps.noise_sigmas[ns_idx],
+                ax=ax,
+                xlabel=self.myc['xlabel'] if self.myc['xticks'][ns_idx] is not False else '',
+                xticks=self.myc['xticks'][ns_idx],
+                ylabel=self.myc['ylabel'] if self.myc['yticks'][ns_idx] is not False else '',
+                yticks=self.myc['yticks'][ns_idx],
+                sigmaTitle=self.myc['sigma_title'],
+                cbar=self.myc['cbar'][ns_idx],
+                cbar_kw=self.myc['cbar_kw'],
+                vmin=self.myc['vmin'],
+                vmax=self.myc['vmax'],
+                annotations=self.myc['ann'])
 
             if self.myc['plot_grid_contours'][ns_idx]:
                 gridData = aggr.GridnessScore(ps.grids[ns_idx],
@@ -129,7 +130,8 @@ class GammaSweepsPlotter(SweepPlotter):
                                              ignoreNaNs=True)
             gammaFData = aggr.GammaAggregateData('freq', ps.bumpGamma[ns_idx],
                                                  iter_list,
-                                                 normalizeTicks=True)
+                                                 normalizeTicks=True,
+                                                 ignoreNaNs=True)
             gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
                                               normalizeTicks=True,
                                               collapseTrials=True,
@@ -280,6 +282,8 @@ class GammaExamplePlotter(FigurePlotter):
     def plot(self, *args, **kwargs):
         ps = self.env.ps
         example_rc = self.config['gamma']['example_rc']
+        mon_idx_e = self.myc.get('mon_idx_e', 1)
+        mon_idx_i = self.myc.get('mon_idx_i', 0)
 
         exampleTrialNum = 0
         exampleFigSize = (2, 1.1)
@@ -303,13 +307,16 @@ class GammaExamplePlotter(FigurePlotter):
                     xscale_kw = self.myc['xscale_kw']
                 if self.myc['sigma_titles'][idx][nsIdx]:
                     nsAnn = ns
-                examples.plotGammaExample(ps.bumpGamma[nsIdx], ax=ax,
-                        r=example_rc[idx][0], c=example_rc[idx][1],
-                        trialNum=exampleTrialNum,
-                        tStart = 2e3, tEnd=2.25e3,
-                        noise_sigma=nsAnn, noise_sigma_xy=(0.95, 1),
-                        xscale_kw=xscale_kw,
-                        yscale_kw=self.myc['yscale_kw'][idx][nsIdx])
+                examples.plotGammaExample(
+                    ps.bumpGamma[nsIdx], ax=ax,
+                    r=example_rc[idx][0], c=example_rc[idx][1],
+                    trialNum=exampleTrialNum,
+                    tStart = 2e3, tEnd=2.25e3,
+                    noise_sigma=nsAnn, noise_sigma_xy=(0.95, 1),
+                    xscale_kw=xscale_kw,
+                    yscale_kw=self.myc['yscale_kw'][idx][nsIdx],
+                    monIdx_e=mon_idx_e,
+                    monIdx_i=mon_idx_i)
                 plt.savefig(fname, dpi=300, transparent=True)
                 plt.close()
 

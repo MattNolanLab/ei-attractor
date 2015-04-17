@@ -286,9 +286,9 @@ def plotSweep(aggregateData, noise_sigma, **kw):
 
 
 def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=None, ylabel=None,
-        colorBar=False, clBarLabel="", vmin=None, vmax=None, title="",
-        clbarNTicks=2, xticks=True, yticks=True, cmap=None, cbar_kw={},
-        sliceAnn=None, **kw):
+                colorBar=False, clBarLabel="", vmin=None, vmax=None, title="",
+                clbarNTicks=2, xticks=True, yticks=True, cmap=None, cbar_kw={},
+                sliceAnn=None, axis_setting='scaled', **kw):
     kw['rasterized'] = kw.get('rasterized', True)
     cbar_kw['label']       = cbar_kw.get('label', '')
     cbar_kw['shrink']      = cbar_kw.get('shrink', 0.8)
@@ -325,7 +325,7 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=None, ylabel=None,
     ax.yaxis.set_ticks([Y[0, 0], Y[-1, 0]])
     ax.xaxis.set_minor_locator(ti.AutoMinorLocator(6))
     ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
-    ax.axis('scaled')
+    ax.axis(axis_setting)
     if not xticks:
         ax.xaxis.set_ticklabels([])
     if not yticks:

@@ -158,7 +158,7 @@ class ParameterSweepParser(SubmissionParserBase):
         '''
         if self.filter is None:
             return None
-        
+
         if self.n_dims == 1:
             return self.filter[0]
         else:
@@ -186,12 +186,13 @@ class ParameterSweepParser(SubmissionParserBase):
 
         if self.n_dims == 1:
             iterparams[self.options.param_list[0]] = np.asanyarray(self.range1)
-        if self.n_dims == 2:
+        elif self.n_dims == 2:
             data = zip(*itertools.product(self.range1, self.range2))
             iterparams[self.options.param_list[0]] = np.asanyarray(data[0])
             iterparams[self.options.param_list[1]] = np.asanyarray(data[1])
         else:
-            raise ValueError('This is a bug. n_dims must be 1 or 2.')
+            raise ValueError('This is a bug. n_dims must be 1 or 2. Got %s' %
+                             str(self.n_dims))
 
         return iterparams
 
