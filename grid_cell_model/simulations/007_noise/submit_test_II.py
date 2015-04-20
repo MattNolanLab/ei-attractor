@@ -26,5 +26,8 @@ p['verbosity'] = o.verbosity
 p['Ivel']      = 50. if o.Ivel is None else o.Ivel  # mA
 p['use_II']    = 1
 
+p['g_AMPA_total'] = 3060.   # nS
+p['g_GABA_total'] = 1020.   # nS
+
 sweep.update_user_parameters(p)
 sweep.run()
