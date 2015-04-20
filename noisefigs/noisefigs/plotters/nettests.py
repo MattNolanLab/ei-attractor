@@ -61,6 +61,7 @@ class PopulationActivityPlotter(FigurePlotter):
         scale_y = self.myc.get('scale_y', -.05)
         ann_ei = self.myc.get('ann_ei', True)
         y_label_pos = self.myc.get('y_label_pos', -0.22)
+        reshape_senders = self.myc.get('reshape_senders', True)
 
         saver = self.myc['fig_saver']
         saver.set_file_name(self.get_fname('population_activity'))
@@ -86,7 +87,7 @@ class PopulationActivityPlotter(FigurePlotter):
                          scaleX=scale_x,
                          scaleY=scale_y,
                          scaleTextYOffset=.02,
-                         reshape_senders=self.myc['reshape_senders'],
+                         reshape_senders=reshape_senders,
                          ylabelPos=y_label_pos)
 
             # E and I 2D population plots
