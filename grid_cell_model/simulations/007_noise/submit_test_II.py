@@ -8,7 +8,7 @@ from __future__ import absolute_import, print_function, division
 from grid_cell_model.submitting.noise.templates import ParameterSweep
 from default_params import defaultParameters as dp
 
-sweep = ParameterSweep('../common/simulation_test_network.py', dp)
+sweep = ParameterSweep('../common/simulation_stationary.py', dp)
 
 parser = sweep.parser
 parser.add_argument('--nthreads', type=int, default=1,
