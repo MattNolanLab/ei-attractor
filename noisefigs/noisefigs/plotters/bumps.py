@@ -17,7 +17,7 @@ from simtools.plotting.plotters import FigurePlotter
 
 from ..EI_plotting import sweeps, details, examples, scatter
 from ..EI_plotting import aggregate as aggr
-from .base import SweepPlotter
+from .base import SweepPlotter, SweepPlotter1D
 
 __all__ = [
     'BumpSigmaSweepPlotter',
@@ -604,7 +604,7 @@ class MainIsBumpPlotter(BumpFormationBase):
                         **kw)
 
 
-class Generic1DPBumpPlotter(SweepPlotter):
+class Generic1DPBumpPlotter(SweepPlotter1D):
     '''A 1D sweep plotter.
 
     Plots a 1D representation of data into a figure.
@@ -612,40 +612,14 @@ class Generic1DPBumpPlotter(SweepPlotter):
     def __init__(self, *args, **kwargs):
         super(Generic1DPBumpPlotter, self).__init__(*args, **kwargs)
 
-    def plot(self, *args, **kwargs):
-        ps = self.env.ps
-
-        xlabel = self.myc.get('xlabel', None)
-        ylabel = self.myc.get('ylabel', None)
-        xticks = self.myc['xticks']
-        yticks = self.myc['yticks']
-        l, b, r, t = self.myc['bbox']
+    def get_data(self, ns_idx):
         normalize_ticks = self.myc.get('normalize_ticks', False)
         normalize_type = self.myc.get('normalize_type', None)
-        fname = self.myc.get('fname', "generic_1d_sweep_{ns}.pdf")
 
-        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-            file_name = self.get_fname(fname, ns=noise_sigma)
-            fig = self._get_final_fig(self.config['sweeps']['fig_size'])
-            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
-            metadata = Extractor1D(ps.bumpGamma[ns_idx],
-                                   normalize=normalize_ticks,
-                                   normalize_type=normalize_type)
-            data = aggr.IsBump(ps.bumpGamma[ns_idx],
-                               None,
-                               ignoreNaNs=True,
-                               metadata_extractor=metadata)
-            sweeps.plot_1d_sweep(
-                data,
-                ax,
-                xlabel='' if xticks[ns_idx] == False else xlabel,
-                xticks=xticks[ns_idx],
-                ylabel='' if yticks[ns_idx] == False else ylabel,
-                yticks=yticks[ns_idx],
-                title=noise_sigma,
-                axis_setting=self.myc.get('axis_setting', 'scaled'))
-            ax.set_xlim(self.myc.get('xlim', (None, None)))
-            ax.set_ylim(self.myc.get('ylim', (None, None)))
-            ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
-            fig.savefig(file_name, dpi=300, transparent=True)
-            plt.close(fig)
+        metadata = Extractor1D(self.env.ps.bumpGamma[ns_idx],
+                               normalize=normalize_ticks,
+                               normalize_type=normalize_type)
+        return aggr.IsBump(self.env.ps.bumpGamma[ns_idx],
+                           None,
+                           ignoreNaNs=True,
+                           metadata_extractor=metadata)

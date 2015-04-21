@@ -164,8 +164,8 @@ class Extractor1D(GenericExtractor):
     '''Metadata extractor for only 1 dimension (Y will be ignored).'''
     def __init__(self, space, normalize=False, normalize_type=None):
         super(Extractor1D, self).__init__(space,
-                                          (normalize, False),
-                                          (normalize_type, None))
+                                          (False, normalize),
+                                          (None, normalize_type))
 
     def y_data(self):
         return None

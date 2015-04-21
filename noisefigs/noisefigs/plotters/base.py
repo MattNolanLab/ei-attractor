@@ -8,6 +8,7 @@ import scipy
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Bbox
 from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.ticker as ti
 from simtools.plotting.plotters import FigurePlotter
 
 from grid_cell_model.plotting.global_defs import globalAxesSettings
@@ -60,6 +61,58 @@ class SweepPlotter(FigurePlotter):
             contours.plot(
                     ax,
                     **self.config['sweeps']['contours_kwargs'])
+
+
+class SweepPlotter1D(FigurePlotter):
+    '''1D parameter sweep plotter.'''
+    def __init__(self, *args, **kwargs):
+        super(SweepPlotter1D, self).__init__(*args, **kwargs)
+
+    def get_data(self, ns_idx):
+        '''Retrieve the data object.
+
+        Parameters
+        ----------
+        ns_idx : int
+            Noise level index.
+
+        Returns
+        -------
+        data : AggregateData
+            The data object which will then be used to print the figure.
+        '''
+        raise NotImplementedError()
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+
+        xlabel = self.myc.get('xlabel', None)
+        ylabel = self.myc.get('ylabel', None)
+        xticks = self.myc['xticks']
+        yticks = self.myc['yticks']
+        l, b, r, t = self.myc['bbox']
+        normalize_ticks = self.myc.get('normalize_ticks', False)
+        normalize_type = self.myc.get('normalize_type', None)
+        fname = self.myc.get('fname', "generic_1d_sweep_{ns}.pdf")
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            file_name = self.get_fname(fname, ns=noise_sigma)
+            fig = self._get_final_fig(self.config['sweeps']['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            sweeps.plot_1d_sweep(
+                self.get_data(ns_idx),
+                ax,
+                xlabel='' if xticks[ns_idx] == False else xlabel,
+                xticks=xticks[ns_idx],
+                ylabel='' if yticks[ns_idx] == False else ylabel,
+                yticks=yticks[ns_idx],
+                title=noise_sigma,
+                axis_setting=self.myc.get('axis_setting', 'scaled'))
+            ax.set_xlim(self.myc.get('xlim', (None, None)))
+            ax.set_ylim(self.myc.get('ylim', (None, None)))
+            ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
+            fig.savefig(file_name, dpi=300, transparent=True)
+            plt.close(fig)
 
 
 class ExampleSetting(object):

@@ -371,6 +371,10 @@ class GammaAggregateData(AggregateData):
             self._X, self._Y = self.metadata.xy_data
         return self._acval, self._X, self._Y
 
+    def getTrialData(self):
+        '''Return non trial-averaged data.'''
+        return self._getRawData()
+
     def getData(self):
         data, X, Y = self._getRawData()
         if self.collapseTrials:
