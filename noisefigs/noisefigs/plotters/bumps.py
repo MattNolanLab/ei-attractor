@@ -11,7 +11,8 @@ from grid_cell_model.plotting.low_level   import zeroLines
 from grid_cell_model.parameters           import JobTrialSpace2D
 from grid_cell_model.parameters.metadata import (GEProfileWidthExtractor,
                                                  EISweepExtractor,
-                                                 GenericExtractor)
+                                                 GenericExtractor,
+                                                 Extractor1D)
 from simtools.plotting.plotters import FigurePlotter
 
 from ..EI_plotting import sweeps, details, examples, scatter
@@ -30,6 +31,7 @@ __all__ = [
     'Generic2DPBumpPlotter',
     'MainScatterGridsBumpsPlotter',
     'MainIsBumpPlotter',
+    'Generic1DPBumpPlotter',
 ]
 
 ###############################################################################
@@ -38,9 +40,8 @@ bumpTStart  = 500.0
 exampleRC   = ( (5, 15), (15, 5) )
 exampleIdx  = [(0, 0), (0, 0), (0, 0)] # (row, col)
 
-##############################################################################
-# Bump sigma sweeps
 class BumpSigmaSweepPlotter(SweepPlotter):
+    ''''Bump sigma sweeps.'''
     bump_vmin = 0
     bump_vmax = 0.421
 
@@ -86,9 +87,9 @@ class BumpSigmaSweepPlotter(SweepPlotter):
                         vmin=self.bump_vmin, vmax=self.bump_vmax,
                         annotations=ann, **kw)
 
-##############################################################################
-# Bump drift at a specified time
+
 class BumpDriftAtTimePlotter(SweepPlotter):
+    '''Bump drift at a specified time.'''
     def __init__(self, *args, **kwargs):
         super(BumpDriftAtTimePlotter, self).__init__(*args, **kwargs)
 
@@ -140,9 +141,8 @@ class BumpDriftAtTimePlotter(SweepPlotter):
                             **self.config['sweeps']['contours_kwargs'])
 
 
-##############################################################################
-# Distance from init position
 class BumpDiffAtInitPlotter(SweepPlotter):
+    '''Distance from init position.'''
     def __init__(self, *args, **kwargs):
         super(BumpDiffAtInitPlotter, self).__init__(*args, **kwargs)
 
@@ -178,10 +178,12 @@ class BumpDiffAtInitPlotter(SweepPlotter):
                         vmin=bumpDiff_vmin, vmax=bumpDiff_vmax,
                         **kw)
 
-##############################################################################
-# Average distance from position enforced by place cells, from theta_start_t
-# until the end of the simultion
+
 class BumpDiffResetPlotter(SweepPlotter):
+    '''Average distance from position enforced by place cells.
+
+    From theta_start_t until the end of the simultion.
+    '''
     def __init__(self, *args, **kwargs):
         super(BumpDiffResetPlotter, self).__init__(*args, **kwargs)
 
@@ -220,9 +222,8 @@ class BumpDiffResetPlotter(SweepPlotter):
                 self.plot_grid_contours(ns_idx, ax, ps.grids)
 
 
-##############################################################################
-# Bump examples
 class BumpExamplePlotter(FigurePlotter):
+    '''Bump examples.'''
     def __init__(self, *args, **kwargs):
         super(BumpExamplePlotter, self).__init__(*args, **kwargs)
 
@@ -260,10 +261,8 @@ class BumpExamplePlotter(FigurePlotter):
                     plt.close()
 
 
-##############################################################################
-# Detailed noise plots
 class BumpSigmaDetailedNoisePlotter(FigurePlotter):
-
+    '''Detailed noise plots.'''
     def __init__(self, *args, **kwargs):
         super(BumpSigmaDetailedNoisePlotter, self).__init__(*args, **kwargs)
 
@@ -323,60 +322,8 @@ class BumpSigmaDetailedNoisePlotter(FigurePlotter):
         plt.close()
 
 
-###############################################################################
-## Correlate (difference between) isBump and gridness score.
-#corrDiffFigsize = (4, 5)
-#corrDiffXLabel = "$\Delta$ P(bumps)"
-#corrDiffYLabel = '$\Delta$ Gridness score'
-#
-#def setCorrAxes(ax):
-#    ax.set_xlim(prepareLims([-1, 1]))
-#    ax.set_ylim(prepareLims([-1.5, 1.5]))
-#    ax.xaxis.set_major_locator(ti.MultipleLocator(0.5))
-#    ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-#    ax.xaxis.set_minor_locator(ti.MultipleLocator(0.25))
-#    ax.yaxis.set_minor_locator(ti.MultipleLocator(0.25))
-#    zeroLines(ax)
-#
-#
-#if args.scatter_diff_fracTotal_grids or args.all:
-#    fig = plt.Figure(corrDiffFigsize)
-#    ax = fig.add_subplot(111)
-#
-#    isBumpData = []
-#    gridData = []
-#    for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-#        isBumpData.append(aggr.IsBump(ps.bumpGamma[ns_idx], ds.iterList,
-#            ignoreNaNs=True))
-#        gridData.append(aggr.GridnessScore(ps.grids[ns_idx], ds.iterList,
-#            ignoreNaNs=True))
-#
-#    which = 0
-#    scatterPlot = scatter.DiffScatterPlot(
-#            isBumpData, gridData, None, None, None, None, None, which,
-#            s=15,
-#            linewidth=0.3,
-#            edgecolor='white',
-#            xlabel = corrDiffXLabel,
-#            ylabel = corrDiffYLabel,
-#            sigmaTitle=False,
-#            ignoreNaNs=True,
-#            cmap='Set1',
-#            ax=ax)
-#
-#    scatterPlot.plot()
-#    #ax.set_title('Difference\n $\sigma_{noise} = 150\ -\ \sigma_{noise} = 0$ pA')
-#    setCorrAxes(ax)
-#
-#    fig.tight_layout()
-#    fname = outputDir + "/bumps_scatter_diff_bumpFracTotal_gscore.pdf"
-#    fig.savefig(fname, dpi=300, transparent=transparent)
-#    plt.close()
-#
-#
-##############################################################################
-# Correlate P(bump) vs gridness score
 class MainScatterGridsBumpsPlotter(FigurePlotter):
+    '''Correlate P(bump) vs gridness score.'''
     def __init__(self, *args, **kwargs):
         super(MainScatterGridsBumpsPlotter, self).__init__(*args, **kwargs)
 
@@ -437,10 +384,8 @@ class MainScatterGridsBumpsPlotter(FigurePlotter):
         fig.savefig(fname, dpi=300, transparent=True)
 
 
-
-##############################################################################
-# Bump formation sweeps
 class BumpFormationBase(SweepPlotter):
+    '''Bump formation sweeps.'''
     bump_vmin = 0
     bump_vmax = 1.
 
@@ -484,7 +429,6 @@ class BumpFormationBase(SweepPlotter):
         ann150 = [self.ann150_0]
         ann300 = [self.ann300_0, self.ann300_1]
         return [ann0, ann150, ann300]
-
 
 
 class MainBumpFormationPlotter(BumpFormationBase):
@@ -603,11 +547,10 @@ class Generic2DPBumpPlotter(BumpFormationBase):
             metadata = GenericExtractor(ps.bumpGamma[ns_idx],
                                         normalize=self.myc['normalize_ticks'],
                                         normalize_type=normalize_type)
-            data = aggr.IsBump(
-                ps.bumpGamma[ns_idx],
-                iter_list,
-                ignoreNaNs=True,
-                metadata_extractor=metadata)
+            data = aggr.IsBump(ps.bumpGamma[ns_idx],
+                               iter_list,
+                               ignoreNaNs=True,
+                               metadata_extractor=metadata)
             sweeps.plotSweep(
                 data,
                 noise_sigma=noise_sigma,
@@ -627,10 +570,8 @@ class Generic2DPBumpPlotter(BumpFormationBase):
             plt.close(fig)
 
 
-
-##############################################################################
-# Bump formation, thresholded
 class MainIsBumpPlotter(BumpFormationBase):
+    '''Bump formation, thresholded.'''
     bumpThreshold = 0.95
 
     def __init__(self, *args, **kwargs):
@@ -662,3 +603,49 @@ class MainIsBumpPlotter(BumpFormationBase):
                         annotations=self.get_ann()[ns_idx],
                         **kw)
 
+
+class Generic1DPBumpPlotter(SweepPlotter):
+    '''A 1D sweep plotter.
+
+    Plots a 1D representation of data into a figure.
+    '''
+    def __init__(self, *args, **kwargs):
+        super(Generic1DPBumpPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+
+        xlabel = self.myc.get('xlabel', None)
+        ylabel = self.myc.get('ylabel', None)
+        xticks = self.myc['xticks']
+        yticks = self.myc['yticks']
+        l, b, r, t = self.myc['bbox']
+        normalize_ticks = self.myc.get('normalize_ticks', False)
+        normalize_type = self.myc.get('normalize_type', None)
+        fname = self.myc.get('fname', "generic_1d_sweep_{ns}.pdf")
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            file_name = self.get_fname(fname, ns=noise_sigma)
+            fig = self._get_final_fig(self.config['sweeps']['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            metadata = Extractor1D(ps.bumpGamma[ns_idx],
+                                   normalize=normalize_ticks,
+                                   normalize_type=normalize_type)
+            data = aggr.IsBump(ps.bumpGamma[ns_idx],
+                               None,
+                               ignoreNaNs=True,
+                               metadata_extractor=metadata)
+            sweeps.plot_1d_sweep(
+                data,
+                ax,
+                xlabel='' if xticks[ns_idx] == False else xlabel,
+                xticks=xticks[ns_idx],
+                ylabel='' if yticks[ns_idx] == False else ylabel,
+                yticks=yticks[ns_idx],
+                title=noise_sigma,
+                axis_setting=self.myc.get('axis_setting', 'scaled'))
+            ax.set_xlim(self.myc.get('xlim', (None, None)))
+            ax.set_ylim(self.myc.get('ylim', (None, None)))
+            ax.yaxis.set_minor_locator(ti.AutoMinorLocator(2))
+            fig.savefig(file_name, dpi=300, transparent=True)
+            plt.close(fig)

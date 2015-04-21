@@ -3,7 +3,6 @@
 
 Data aggregation, mainly parameter sweeps
 '''
-from abc import ABCMeta, abstractmethod
 import numpy as np
 import numpy.ma as ma
 
@@ -73,7 +72,6 @@ def aggregate2D(sp, varList, funReduce=None):
             trialNumList='all-at-once', saveData=True)
 
 
-
 def computeYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True, **kw):
     E, I = sp.getIteratedParameters(iterList)
 
@@ -88,7 +86,6 @@ def computeYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True, **kw):
     return E/Ne, I/Ni
 
 
-
 def computeVelYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True, **kw):
     E, I = sp.getIteratedParameters(iterList)
     if (normalize):
@@ -101,7 +98,6 @@ def computeVelYX(sp, iterList, r=0, c=0, trialNum=0, normalize=True, **kw):
         Ni = 1.0
 
     return E/Ne, I/Ni
-
 
 
 def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
@@ -215,7 +211,6 @@ def aggregateType(sp, iterList, types, NTrials, ignoreNaNs=False, **kw):
         Y, X = computeYX(sp, iterList, normalize=normalizeTicks, **kw)
 
     return data, X, Y
-
 
 
 class AggregateData(object):
@@ -333,13 +328,10 @@ class LEQFilter(AggregateDataFilter):
         return data, X, Y
 
 
-
 def maskNaNs(a, really):
     return np.ma.masked_invalid(a, copy=False) if really else a
 
 
-##############################################################################
-# Grids / score
 class GridnessScore(AggregateData):
     '''Extract gridness score from the aggregated data'''
     def __init__(self, space, iterList, **kw):
@@ -387,9 +379,6 @@ class GammaAggregateData(AggregateData):
             return data, X, Y
 
 
-
-##############################################################################
-# Bumps
 class IsBump(AggregateData):
     '''Retrieve bump classification data from the space.'''
 
@@ -407,6 +396,9 @@ class IsBump(AggregateData):
             self._fracTotal = self.sp.getReduction(path)
             self._X, self._Y = self.metadata.xy_data
         return self._fracTotal, self._X, self._Y
+
+    def getTrialData(self):
+        return self._getRawData()
 
     def getData(self):
         data, X, Y = self._getRawData()
@@ -437,7 +429,6 @@ class IsBumpCollapsed(AggregateData):
             fracTotal, X, Y = fracObj.getData()
             collapsedData.append(fracTotal.ravel())
         return np.hstack(collapsedData), X, Y
-
 
 
 class BumpFormationFilter(IsBump):
@@ -471,11 +462,8 @@ class BumpFormationFilter(IsBump):
         return np.ma.MaskedArray(data, mask=mask)
 
 
-
-
-
-
-bumpPosLogger = logging.getLogger('{0}.{1}'.format(__name__, 'BumpPositionData'))
+bumpPosLogger = logging.getLogger('{0}.{1}'.format(__name__,
+                                                   'BumpPositionData'))
 class BumpPositionData(AggregateData):
     funReduce     = None
     output_dtype  = 'list'
@@ -533,7 +521,7 @@ class BumpPositionData(AggregateData):
 
 
 bumpDiffLogger = logging.getLogger('{0}.{1}'.format(__name__,
-        'BumpDifferencePosition'))
+                                                    'BumpDifferencePosition'))
 class BumpDifferencePosition(BumpPositionData):
     '''
     Compute vectors of distances from the snapshot of the bump specified by a
@@ -621,7 +609,6 @@ class BumpAvgDifferenceFromPos(BumpDifferencePosition):
         return self._avgDiff, self._X, self._Y
 
 
-
 class BumpDifferenceAtTime(BumpDifferencePosition):
     def __init__(self, startPos, diffTime, *args, **kwargs):
         super(BumpDifferenceAtTime, self).__init__(*args, tStart=0, **kwargs)
@@ -664,9 +651,7 @@ class BumpDifferenceAtTime(BumpDifferencePosition):
         return diffs, X, Y
 
 diffAtTLogger = logging.getLogger("{0}.{1}".format(__name__,
-        'BumpDifferenceAtTime'))
-
-
+                                                   'BumpDifferenceAtTime'))
 
 
 class BumpDriftAtTime(BumpDifferencePosition):
@@ -702,8 +687,6 @@ class BumpDriftAtTime(BumpDifferencePosition):
                         diffAtTLogger.info(msg.format(drifts[r, c], r, c))
         #totalTime = (self.tDrift - self.tStart) * 1e-3
         return drifts, X, Y
-
-
 
 
 class AggregateBumpReciprocal(BumpPositionData):
@@ -754,12 +737,6 @@ class AggregateBumpReciprocal(BumpPositionData):
 
     def getTimes(self):
         return self._timeData[self._timeData >= self.tStart]
-
-
-
-
-##############################################################################
-#                            Firing rates
 
 
 class PopulationFR(AggregateData):
@@ -818,7 +795,6 @@ class MaxPopulationFR(PopulationFR):
         maxFR, _, _, _ = self.get_full_data()
         return (np.mean(maskNaNs(maxFR, self.ignoreNaNs), axis=2), self._X,
                 self._Y)
-
 
 
 class MaxThetaPopulationFR(PopulationFR):
@@ -914,7 +890,6 @@ class VelocityData(AggregateData):
         return self._data, self._X, self._Y
 
 
-##############################################################################
 def collapseSweeps(data):
     '''
     Take a list of 2D parameter sweep results, flatten all of them, and stack
