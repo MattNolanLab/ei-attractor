@@ -15,6 +15,10 @@ parser.add_argument('--nthreads', type=int, default=1,
                     help='Number of simulation threads.')
 parser.add_argument('--Ivel', type=float,
                     help='Velocity input (pA). Default is 50 pA.')
+parser.add_argument('--g_AMPA_total', type=float,
+                    help='Total E->I synapse strength (nS)')
+parser.add_argument('--g_GABA_total', type=float,
+                    help='Total I->E synapse strength (nS)')
 o = parser.parse_args()
 
 p = {}
@@ -26,8 +30,8 @@ p['verbosity'] = o.verbosity
 p['Ivel']      = 50. if o.Ivel is None else o.Ivel  # mA
 p['use_II']    = 1
 
-p['g_AMPA_total'] = 3060.   # nS
-p['g_GABA_total'] = 1020.   # nS
+p['g_AMPA_total'] = 3060. if o.g_AMPA_total is None else o.g_AMPA_total
+p['g_GABA_total'] = 1020. if o.g_GABA_total is None else o.g_GABA_total
 
 sweep.update_user_parameters(p)
 sweep.run()
