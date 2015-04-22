@@ -55,6 +55,8 @@ defaultParameters = {
         "NMDA_amount"           :   2.0,          # %
         "C_Mg"                  :      .0,        # mM; def is no Vm dependence
 
+        "probabilistic_synapses":     0,          # bool
+
         "Iext_e_const"          :   300.0,        # pA
         "Iext_i_const"          :   200.0,        # pA
         "Iext_e_theta"          :   375.0,        # pA

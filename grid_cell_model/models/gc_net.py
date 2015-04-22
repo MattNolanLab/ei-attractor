@@ -46,6 +46,8 @@ import time
 import copy
 
 from ..analysis.image import Position2D, remapTwistedTorus
+from .construction.weights import (IsomorphicConstructor,
+                                   ProbabilisticConstructor)
 
 
 __all__ = ['GridCellNetwork']
@@ -92,9 +94,33 @@ class GridCellNetwork(object):
         self.prefDirs_e = None
         self.prefDirs_i = None
 
+        self._weight_constructor = self._select_weight_constructor(neuronOpts)
+
     def simulate(self, t, printTime):
         '''Simulate the network, after being set up.'''
         raise NotImplementedError()
+
+    @staticmethod
+    def _select_weight_constructor(options):
+        '''Create an instance of the constructor, based on ``options``.
+
+        Parameters
+        ----------
+        options : dict-like
+            A mapping that contains options necessary to select the appropriate
+            constructor.
+
+        Returns
+        -------
+        constructor : WeightConstructor
+            Constructor instance.
+        '''
+        if options.probabilistic_synapses:
+            gcnLogger.debug('Selecting probabilistic contructor for weights.')
+            return ProbabilisticConstructor()
+        else:
+            gcnLogger.debug('Selecting isomorphic contructor for weights.')
+            return IsomorphicConstructor()
 
     def _divergentConnectEE(self, pre, post, weights):
         '''Connect a ``pre`` neuron in the E population to all neurons in the E
@@ -269,7 +295,6 @@ class GridCellNetwork(object):
                 tmp_templ[it] = 0.  # do not allow autapses
                 self._divergentConnectEE(it, range(self.net_Ne), tmp_templ)
 
-
     def _connect_ei_distance(self, AMPA_gaussian, pAMPA_mu, pAMPA_sigma):
         '''Make E-->I connections, according to network options.
 
@@ -332,7 +357,9 @@ class GridCellNetwork(object):
                 else:
                     raise Exception('AMPA_gaussian parameters must be 0 or 1')
 
-                tmp_templ *= g_AMPA_mean
+
+                tmp_templ = self._weight_constructor.generate_weights(
+                    tmp_templ, g_AMPA_mean)
                 # tmp_templ down here must be in the proper units (e.g. nS)
                 self._divergentConnectEI(it, range(self.net_Ni), tmp_templ)
 
@@ -415,7 +442,8 @@ class GridCellNetwork(object):
                     raise Exception('AMPA_gaussian parameters must be 0 or 1')
 
                 # FIXME: ugly: B_GABA is defined only in child classes
-                tmp_templ *= self.B_GABA * g_GABA_mean
+                tmp_templ = self._weight_constructor.generate_weights(
+                    tmp_templ, self.B_GABA * g_GABA_mean)
                 self._addToConnections(
                     tmp_templ, self.no.uni_GABA_density * 100.0,
                     g_uni_GABA_mean)
