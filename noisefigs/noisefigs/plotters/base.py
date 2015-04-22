@@ -217,6 +217,8 @@ class MultiFigureSaver(object):
     def reset(self, cnt_val=None):
         if cnt_val is not None:
             self._cnt = cnt_val
+        else:
+            self._cnt = 0
 
     def set_backend_params(self, **kwargs):
         self._backend_params = kwargs
