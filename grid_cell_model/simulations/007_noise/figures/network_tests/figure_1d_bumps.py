@@ -21,8 +21,10 @@ if args.bumps_g_II or args.all:
     new_config = deepcopy(config.get_config())
     new_config.update({
         'grids_data_root': None,
-        'bump_data_root': os.path.join('simulation_data', 'network_tests',
-                                       'test_II_connections', 'gamma_bump'),
+        'bump_data_root': os.path.join('simulation_data', 'submission',
+                                       'ii_connections',
+                                       'g_II_total_sweep',
+                                       'gamma_bump'),
         'vel_data_root':  None,
         'const_pos_data_root': None,
         'singleDataRoot': None,
@@ -36,7 +38,8 @@ if args.bumps_g_II or args.all:
         config={
             'Generic1DPBumpPlotter' : {
                 'fname' : 'bumps_Pbumps_g_II_{ns}.pdf',
-                'xlim': (-50, 1600),
+                'normalize_ticks': False,
+                'xlim': (-10, 410),
                 'ylim': (-0.05, 1.05),
             },
         }

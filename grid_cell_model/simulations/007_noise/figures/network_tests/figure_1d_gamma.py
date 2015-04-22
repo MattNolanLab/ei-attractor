@@ -21,8 +21,10 @@ if args.gamma_g_II or args.all:
     new_config = deepcopy(config.get_config())
     new_config.update({
         'grids_data_root': None,
-        'bump_data_root': os.path.join('simulation_data', 'network_tests',
-                                       'test_II_connections', 'gamma_bump'),
+        'bump_data_root': os.path.join('simulation_data', 'submission',
+                                       'ii_connections',
+                                       'g_II_total_sweep',
+                                       'gamma_bump'),
         'vel_data_root':  None,
         'const_pos_data_root': None,
         'singleDataRoot': None,
@@ -37,9 +39,10 @@ if args.gamma_g_II or args.all:
             'Generic1DGammaPlotter' : {
                 'what': 'acVal',
                 'fname' : 'gamma_power_g_II_{ns}.pdf',
+                'normalize_ticks': False,
                 'ylabel': '$1^{st}$ autocorrelation peak',
-                'xlim': (-0.05, 1.57),
-                'ylim': (-0.04, 0.4),
+                'xlim': (-10, 410),
+                'ylim': (-0.04, 0.58),
             },
         }
     )
@@ -49,8 +52,9 @@ if args.gamma_g_II or args.all:
             'Generic1DGammaPlotter' : {
                 'what': 'freq',
                 'fname' : 'gamma_freq_g_II_{ns}.pdf',
+                'normalize_ticks': False,
                 'ylabel': 'Frequency (Hz)',
-                'xlim': (-0.05, 1.57),
+                'xlim': (-10, 410),
                 'ylim': (22, 175),
             },
         }
