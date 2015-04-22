@@ -21,7 +21,7 @@ all: figure_bumps.dummy					\
 	echo;							\
 	echo "*** Running $$file ***";	\
 	echo;							\
-	./$< -v DEBUG || exit 1;		\
+	./$< -v ERROR || exit 1;		\
 
 clean:
 	rm -f $$(git ls-files -i --exclude-standard -o panels)

@@ -40,6 +40,7 @@
 '''
 from __future__ import absolute_import, print_function
 
+import logging
 import numpy as np
 import time
 import copy
@@ -48,6 +49,10 @@ from ..analysis.image import Position2D, remapTwistedTorus
 
 
 __all__ = ['GridCellNetwork']
+
+
+gcnLogger = logging.getLogger('{0}.{1}'.format(__name__,
+                                               "NestGridCellNetwork"))
 
 
 class GridCellNetwork(object):
@@ -221,6 +226,9 @@ class GridCellNetwork(object):
         if self.no.use_EE:
             self._connect_ee(self.no.pEE_sigma)
 
+        if self.no.use_II:
+            self._connect_ii_flat()
+
     def _connect_ee(self, pEE_sigma):
         '''Make E-->E connections, according to network options.'''
         g_EE_mean = self.no.g_EE_total / self.net_Ne
@@ -283,6 +291,7 @@ class GridCellNetwork(object):
                         pAMPA_sigma, pGABA_mu, pGABA_sigma are used, pAMPA_mu
                         is discarded
         '''
+        gcnLogger.info('Connecting E-->I (distance-dependent).')
         g_AMPA_mean = self.no.g_AMPA_total / self.net_Ne
 
         others_e  = Position2D()
@@ -329,6 +338,7 @@ class GridCellNetwork(object):
 
     def _connect_ei_flat(self):
         '''Make E-->I connections that are distance-independent.'''
+        gcnLogger.info('Connecting E-->I (flat).')
         g_EI_mean = (self.no.g_AMPA_total / self.net_Ne /
                      self.no.g_EI_uni_density)
         n = int(float(self.net_Ni) * self.no.g_EI_uni_density)
@@ -358,6 +368,7 @@ class GridCellNetwork(object):
                         pAMPA_sigma, pGABA_mu, pGABA_sigma are used, pAMPA_mu
                         is discarded
         '''
+        gcnLogger.info('Connecting I-->E (distance-dependent).')
         g_GABA_mean = self.no.g_GABA_total / self.net_Ni
         g_uni_GABA_total = self.no.g_GABA_total * self.no.g_uni_GABA_frac
         g_uni_GABA_mean = (g_uni_GABA_total / self.net_Ni /
@@ -413,6 +424,7 @@ class GridCellNetwork(object):
 
     def _connect_ie_flat(self):
         '''Make I-->E connections that are distance independent.'''
+        gcnLogger.info('Connecting I-->E (flat).')
         g_IE_mean = (self.no.g_GABA_total / self.net_Ni /
                      self.no.g_IE_uni_density)
         n = int(float(self.net_Ne) * self.no.g_IE_uni_density)
@@ -420,6 +432,19 @@ class GridCellNetwork(object):
                                        range(self.net_Ne),
                                        n,
                                        g_IE_mean)
+
+    def _connect_ii_flat(self):
+        '''Make I-->I connections that are distance independent.'''
+        gcnLogger.info('Connecting I-->I (flat).')
+        g_II_mean = (self.no.g_II_total / self.net_Ni /
+                     self.no.g_II_uni_density)
+        gcnLogger.debug('g_II_total: %f, g_II_mean: %f', self.no.g_II_total,
+                        g_II_mean)
+        n = int(float(self.net_Ne) * self.no.g_IE_uni_density)
+        self._randomDivergentConnectII(range(self.net_Ni),
+                                       range(self.net_Ni),
+                                       n,
+                                       g_II_mean)
 
     ###########################################################################
     #                     External sources definitions

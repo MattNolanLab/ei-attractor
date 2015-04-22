@@ -9,6 +9,7 @@ from scipy.interpolate import RectBivariateSpline
 
 from grid_cell_model.plotting.global_defs import globalAxesSettings
 from grid_cell_model.plotting.low_level   import symmetricDataLimits
+from grid_cell_model.otherpkg.log import getClassLogger
 from base                 import createColorbar
 
 from . import xlabelText, ylabelText
@@ -17,9 +18,8 @@ from .base import filterData
 
 logger = logging.getLogger(__name__)
 plotSweepLogger = logging.getLogger('{0}.{1}'.format(__name__, 'plotSweep'))
+logger_1d = getClassLogger('plot_1d_sweep', __name__)
 
-##############################################################################
-# Parameter sweeps
 def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
     #kw arguments
     r           = kw.pop('r', 0)
@@ -75,7 +75,6 @@ def plotBumpSigmaTrial(aggregateData, noise_sigma, **kw):
     return C, ax, cax
 
 
-
 def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
         trialNumList=[0], xlabel="", ylabel="", colorBar=True, clBarLabel="",
         vmin=None, vmax=None, title="", clbarNTicks=2, xticks=True,
@@ -88,6 +87,7 @@ def plotBumpErrTrial(sp, varList, iterList, thr=np.infty, r=0, c=0, mask=None,
     Y, X = aggr.computeYX(sp, iterList, r=r, c=c)
     return plot2DTrial(X, Y, C, xlabel, ylabel, colorBar, clBarLabel, vmin,
             vmax, title, clbarNTicks, xticks, yticks)
+
 
 def plotFRTrial(sp, varList, iterList, noise_sigma, trialNumList=[0],
         thr=np.infty, **kw):
@@ -218,7 +218,6 @@ def plotVelStdSweep(sp, iterList, noise_sigma, **kw):
     return C, ax, cax
 
 
-
 def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
     r           = kw.pop('r', 0)
     c           = kw.pop('c', 0)
@@ -259,8 +258,8 @@ def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
     return diffData, ax, cax
 
 
-
 def plotSweep(aggregateData, noise_sigma, **kw):
+    '''Plot a generic sweep into an Axes object.'''
     cbar            = kw.pop('cbar', True)
     annotations     = kw.pop('annotations', None)
     #symmetricLimits = kw.pop('symmetricLimits', True)
@@ -284,11 +283,11 @@ def plotSweep(aggregateData, noise_sigma, **kw):
     return data, ax, cax
 
 
-
 def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=None, ylabel=None,
                 colorBar=False, clBarLabel="", vmin=None, vmax=None, title="",
                 clbarNTicks=2, xticks=True, yticks=True, cmap=None, cbar_kw={},
                 sliceAnn=None, axis_setting='scaled', **kw):
+    '''A low level function to plot a 2D trial-average data into a plot.'''
     kw['rasterized'] = kw.get('rasterized', True)
     cbar_kw['label']       = cbar_kw.get('label', '')
     cbar_kw['shrink']      = cbar_kw.get('shrink', 0.8)
@@ -341,8 +340,8 @@ def plot2DTrial(X, Y, C, ax=plt.gca(), xlabel=None, ylabel=None,
     return C, ax, cax
 
 
-
 def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
+    '''Plot an arrow with an annotation letter into the axes.'''
     # keyword args
     ax = kw.pop('ax', plt.gca())
     kw['color']      = kw.get('color', 'black')
@@ -364,10 +363,8 @@ def plotSweepAnnotation(txt, X, Y, rc, xytext_offset, **kw):
         zorder=10, **kw)
 
 
-##############################################################################
-# Parameter sweeps collapsed into noise-dependent lines
-
 def plotCollapsedSweeps(noise_sigmas, data, **kw):
+    '''Parameter sweeps collapsed into noise-dependent lines.'''
     ax          = kw.pop('ax', plt.gca())
     xlabel      = kw.pop('xlabel', "$\sigma_{noise}$")
     ylabel      = kw.pop('ylabel', '')
@@ -440,3 +437,54 @@ class Contours(object):
         spl = RectBivariateSpline(x_longer, y_longer, d.T)
         d_interp = spl.ev(x_interp, y_interp)
         ax.contour(x_interp, y_interp, d_interp, V, **kwargs)
+
+
+def plot_1d_sweep(data, ax, xlabel, ylabel, xticks=True, yticks=True,
+                  axis_setting='scaled', title='', **kwargs):
+    '''Plot a 1D parameter Sweep.
+
+    Parameters
+    ----------
+    data : AggregateData
+        Data to plot. The first (Y/rows) dimension will be ignored.
+    ax : mpl.Axes
+        Matplotlib axes.
+    xlabel, ylabel : str
+        X/Y label strings
+    xticks, yticks : bool
+        Whether to plot ticks and number on the X/Y axes.
+    kwargs : dict
+        Keyword arguments that will be passed on to the plot function.
+    '''
+    plot_data, X, _ = data.getTrialData()
+    X = X.flatten()
+
+    logger_1d.info('min(data): %f', np.min(plot_data.flatten()))
+    logger_1d.info('max(data): %f', np.max(plot_data.flatten()))
+
+    globalAxesSettings(ax)
+    ax.minorticks_on()
+
+    if xlabel != "":
+        ax.set_xlabel(xlabel, va='top')
+        ax.xaxis.set_label_coords(0.5, -0.125)
+    if ylabel != "":
+        ax.set_ylabel(ylabel, ha='center')
+        ax.yaxis.set_label_coords(-0.125, 0.5)
+
+    ax.plot(X.flatten(), plot_data[0, :, :], 'o', color='g', markersize=5,
+            markeredgecolor='white', **kwargs)
+    if xlabel != "":
+        ax.set_xlabel(xlabel, va='top')
+        ax.xaxis.set_label_coords(0.5, -0.125)
+    if ylabel != "":
+        ax.set_ylabel(ylabel, ha='center')
+        ax.yaxis.set_label_coords(-0.157, 0.5)
+    ax.xaxis.set_ticks([X[0], X[-1]])
+    ax.xaxis.set_minor_locator(ti.AutoMinorLocator(6))
+    ax.yaxis.set_minor_locator(ti.AutoMinorLocator(6))
+    ax.axis(axis_setting)
+    if not xticks:
+        ax.xaxis.set_ticklabels([])
+    if not yticks:
+        ax.yaxis.set_ticklabels([])

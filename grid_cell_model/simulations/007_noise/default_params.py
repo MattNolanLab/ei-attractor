@@ -35,9 +35,8 @@ defaultParameters = {
         "printTime"             :   0,            # This is boolean
 
         "ratVelFName"           : '../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
-        #"ratVelFName"           : '../../../data/hafting_et_al_2005/rat_trajectory_original.mat',
 
-        "gridSep"               :   60,             # cm
+        "gridSep"               :   60,           # cm
 
         "EI_flat"               :   0,            # bool
         "IE_flat"               :   0,            # bool
@@ -105,6 +104,10 @@ defaultParameters = {
 
         "g_EI_uni_density"      :     .1,         # Probability
         "g_IE_uni_density"      :     .1,         # Probability
+
+        "use_II"                :   0,            # bool
+        "g_II_total"            :   50.,          # nS
+        "g_II_uni_density"      :   .1,           # Probability
 
         "E_AMPA"                :   0,            # mV
         "E_GABA_A"              :   -75,          # mV

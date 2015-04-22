@@ -200,7 +200,7 @@ class ParameterSweepParser(SubmissionParserBase):
     def dimensions(self):
         '''Return the sizes of the iteration parameters.'''
         dimensions = [len(self.range1)]
-        if self.range1 is not None:
+        if self.range2 is not None:
             dimensions.append(len(self.range2))
         return dimensions
 

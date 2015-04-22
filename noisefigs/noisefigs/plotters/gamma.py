@@ -8,16 +8,17 @@ from matplotlib.transforms import Bbox
 
 from grid_cell_model.parameters import JobTrialSpace2D
 from grid_cell_model.plotting.global_defs import prepareLims
-from grid_cell_model.parameters.metadata import GenericExtractor
+from grid_cell_model.parameters.metadata import GenericExtractor, Extractor1D
 from simtools.plotting.plotters import FigurePlotter
 
 from ..EI_plotting import sweeps, examples, details, scatter
 from ..EI_plotting import aggregate as aggr
-from .base import SweepPlotter, ProbabilityPlotter
+from .base import SweepPlotter, SweepPlotter1D, ProbabilityPlotter
 
 __all__ = [
     'GammaSweepsPlotter',
     'GenericGammaPlotter',
+    'Generic1DGammaPlotter',
     'GammaDetailedNoisePlotter',
     'GammaExamplePlotter',
     'GammaScatterAllPlotter',
@@ -99,6 +100,24 @@ class GenericGammaPlotter(SweepPlotter):
             fig.savefig(self.get_fname(fname, ns=noise_sigma), dpi=300,
                         transparent=True)
             plt.close(fig)
+
+
+class Generic1DGammaPlotter(SweepPlotter1D):
+    '''A generic 1D gamma power/frequency plotter (autocorrelations).'''
+    def __init__(self, *args, **kwargs):
+        super(Generic1DGammaPlotter, self).__init__(*args, **kwargs)
+
+    def get_data(self, ns_idx):
+        normalize_ticks = self.myc.get('normalize_ticks', False)
+        normalize_type = self.myc.get('normalize_type', (None, None))
+        metadata = Extractor1D(self.env.ps.bumpGamma[ns_idx],
+                               normalize=normalize_ticks,
+                               normalize_type=normalize_type)
+        return aggr.GammaAggregateData(self.myc['what'],
+                                       self.env.ps.bumpGamma[ns_idx],
+                                       None,
+                                       ignoreNaNs=True,
+                                       metadata_extractor=metadata)
 
 
 class GammaSweepsPlotter(SweepPlotter):

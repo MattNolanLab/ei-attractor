@@ -4,7 +4,7 @@
 #   Basic routines for EI plotting.
 #
 #       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
+#
 import numpy       as np
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
@@ -44,17 +44,23 @@ def getNoiseRoots(prefix, noise_sigmas):
     return roots
 
 
-def getNoiseDataSpaces(dataRoot, noise_sigmas, shape):
+def getNoiseDataSpaces(dataRoot, noise_sigmas, shape, space_cls=None):
+    if space_cls is None:
+        space_cls = JobTrialSpace2D
+
     if (dataRoot is None):
         return None
     roots = getNoiseRoots(dataRoot, noise_sigmas)
     ds = []
     for root in roots:
-        ds.append(JobTrialSpace2D(shape, root))
+        ds.append(space_cls(shape, root))
     return ds
 
 
 class NoiseDataSpaces(object):
+    '''
+    A container for the data spaces for all levels of noise.
+    '''
     class Roots(object):
         def __init__(self, *args, **kw):
             la = len(args)
@@ -72,19 +78,16 @@ class NoiseDataSpaces(object):
             for key, val in kw.iteritems():
                 setattr(self, key, val)
 
-    '''
-    A container for the data spaces for all levels of noise.
-    '''
-    def __init__(self, roots, shape, noise_sigmas):
+    def __init__(self, roots, shape, noise_sigmas, space_cls=None):
         self.bumpGamma    = getNoiseDataSpaces(roots.bump,  noise_sigmas,
-                                               shape)
+                                               shape, space_cls)
         self.v            = getNoiseDataSpaces(roots.v,     noise_sigmas,
-                                               shape)
+                                               shape, space_cls)
         self.grids        = getNoiseDataSpaces(roots.grids, noise_sigmas,
-                                               shape)
+                                               shape, space_cls)
         if hasattr(roots, 'constPos'):
             self.constPos = getNoiseDataSpaces(roots.constPos, noise_sigmas,
-                                               shape)
+                                               shape, space_cls)
         self.noise_sigmas = noise_sigmas
 
 
@@ -149,7 +152,7 @@ def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn, thetaLim, color='grey')
     ax.axhline(0.0, color='grey', linestyle=':', linewidth=0.5)
     if (yLabelOn):
         ax.text(t[-1] - 10, -50, "0 pA", ha="right", va='top', fontsize='small')
-    
+
 
 def plotOneHist(data, bins=40, normed=False, **kw):
     ax = kw.pop('ax', plt.gca())

@@ -198,6 +198,12 @@ class ParameterSelector(object):
         self.parser.add_argument("--g_EI_uni_density", type=float, help="Probability of an E-->I connection.")
         self.parser.add_argument("--g_IE_uni_density", type=float, help="Probability of an I-->E connection.")
 
+    def ii_profile(self):
+        '''Properties of I --> I synaptic profiles.'''
+        self.parser.add_argument("--use_II", type=int, choices=[0, 1], help="Whether to use the I-->I connectivity profiles.")
+        self.parser.add_argument("--g_II_total", type=float, help="Total GABA amount for the I-->I connections.")
+        self.parser.add_argument("--g_II_uni_density", type=float, help="Probability of an I-->I connection.")
+
 
 def getOptParser():
     '''Create a generic option parser.
@@ -223,5 +229,6 @@ def getOptParser():
     s.ei_profile()
     s.ie_profile()
     s.ee_profile()
+    s.ii_profile()
 
     return s.parser
