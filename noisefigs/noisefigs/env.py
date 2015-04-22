@@ -36,9 +36,13 @@ class NoiseEnvironment(MplEnvironment):
         A user-defined config that will be merged into the default config.
     param_spaces
         Do not use this really...
+    space_cls : class, or None
+        Data space class. If ``None``, the default (2D) parameter space class
+        will be used.
     '''
-    def __init__(self, user_config=None, param_spaces=None):
+    def __init__(self, user_config=None, param_spaces=None, space_cls=None):
         self._user_config = user_config
+        self._space_cls = space_cls
         def_config = self._load_default_config()
         final_config = self._merge_user_config(def_config, user_config)
         super(NoiseEnvironment, self).__init__(final_config)
@@ -62,7 +66,7 @@ class NoiseEnvironment(MplEnvironment):
             self.config['grids_data_root'],
             constPos=self.config['const_pos_data_root'])
         return NoiseDataSpaces(roots, self.config['even_shape'],
-                               self.config['noise_sigmas'])
+                               self.config['noise_sigmas'], self._space_cls)
 
     def _merge_user_config(self, def_config, user_config):
         '''Update user configuration on top of defaults.'''

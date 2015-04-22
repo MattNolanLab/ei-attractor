@@ -394,16 +394,21 @@ class JobTrialSpace2D(DataSpace):
 
         ret = []
         for nm in name_list:
-            ret.append(np.reshape(self._meta_file['iterParams'][nm],
-                                  self._shape))
-            if self._checkParams:
-                self._checkIteratedParameters(nm, ret[-1])
+            if nm is not None:
+                ret.append(np.reshape(self._meta_file['iterParams'][nm],
+                                    self._shape))
+                if self._checkParams:
+                    self._checkIteratedParameters(nm, ret[-1])
         return ret
 
     def get_iterated_parameter(self, dim):
         '''Return the iterated parameter data for dimension ``dim``.'''
         label = self.get_iteration_labels()[dim]
-        return np.reshape(self._meta_file['iterParams'][label], self._shape)
+        if label is not None:
+            return np.reshape(self._meta_file['iterParams'][label],
+                              self._shape)
+        else:
+            return None
 
 
     def _checkIteratedParameters(self, paramStr, toCheck):
@@ -607,3 +612,63 @@ class JobTrialSpace2D(DataSpace):
     def rootDir(self):
         return self._rootDir
 
+
+class JobTrialSpace1D(JobTrialSpace2D):
+    '''A 1D parameter sweep space with a number of trials per job.
+
+    .. note::
+        This parameter space behaves like the :class:`~JobTrialSpace2D`, but he
+        number of rows will be forced to be strictly 1. Thus when indexing, it
+        is necessary to use notation ``space[0][idx]``.
+
+    .. note::
+        Unlike :class:`~JobTrialSpace2D`, the shape here will be determined
+        automatically from the metadata file.
+
+    .. todo::
+        If this class is going to be used extensively, it is necessary to write
+        unit tests!
+
+    Parameters
+    ----------
+    shape : None
+        Must be set to ``None``. For backward compatibility only.
+    rootDir : str
+        Root directory for the space.
+    kwargs : keyword arguments
+        Keyword arguments passed on to :class:`~JobTrialSpace2D`.
+    '''
+    def __init__(self, shape, rootDir, **kwargs):
+        if shape is not None:
+            raise TypeError('shape must be None.')
+        super(JobTrialSpace1D, self).__init__(None, rootDir, **kwargs)
+
+    def _determine_shape(self, custom_shape):
+        '''Determine the size of this 1D parameter space.
+
+        .. note::
+            The actual shape will be represented as a 2D shape: (1, size).
+        '''
+        if custom_shape is not None:
+            return custom_shape
+
+        dims = self._meta_file['dimensions']
+        if len(dims) != 1:
+            raise TypeError('You are trying to open a 1D parameter space, '
+                            'but the actual data contains more than 1 '
+                            'dimension (%dD).' % len(dims))
+        return (1, dims[0])
+
+    def _checkIteratedParameters(self, paramStr, toCheck):
+        raise RuntimeError('This method cannot be called from within a 1D '
+                           'dataset.')
+
+    def get_iteration_labels(self):
+        try:
+            labels = self._meta_file['dimension_labels']
+            return (None, labels[0])
+        except KeyError:
+            raise LookupError('Could not retrieve the iteration labels of '
+                              'this space from metadata. You are probably '
+                              'using an older version of data, in which case '
+                              'you cannot use this method.')
