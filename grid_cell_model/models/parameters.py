@@ -143,6 +143,8 @@ class ParameterSelector(object):
         self.parser.add_argument("--C_Mg",        type=float, help="Mg2+ concentration; used for NMDA voltage dependence")
         self.parser.add_argument("--NMDA_amount", type=float, help="NMDA portion relative to AMPA (%%)")
 
+        self.parser.add_argument("--probabilistic_synapses", type=float, help="Whether the synapses are generated in a probabilistic way.")
+
     def preferred_directions(self):
         '''Preferred directions.'''
         self.parser.add_argument("--prefDirC_e",  type=float, help="Excitatory (E-->I) preferred direction multiplier")
