@@ -121,10 +121,6 @@ class BumpDriftAtTimePlotter(SweepPlotter):
                         iter_list,
                         n_trials,
                         tStart=bumpDriftTStart)
-                gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
-                                              ignoreNaNs=True, normalizeTicks=True,
-                                              r=grids_example_idx[ns_idx][0],
-                                              c=grids_example_idx[ns_idx][1])
                 _, _, cax = sweeps.plotSweep(
                     data, noise_sigma=noise_sigma,
                     ax=ax,
@@ -134,6 +130,12 @@ class BumpDriftAtTimePlotter(SweepPlotter):
                     **kw)
 
                 if self.myc['plot_grid_contours'][ns_idx]:
+                    gridData = aggr.GridnessScore(
+                        ps.grids[ns_idx], iter_list,
+                        ignoreNaNs=True,
+                        normalizeTicks=True,
+                        r=grids_example_idx[ns_idx][0],
+                        c=grids_example_idx[ns_idx][1])
                     contours = sweeps.Contours(gridData,
                             self.config['sweeps']['grid_contours'])
                     contours.plot(

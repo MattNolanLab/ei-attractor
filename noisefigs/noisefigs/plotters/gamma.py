@@ -151,14 +151,13 @@ class GammaSweepsPlotter(SweepPlotter):
                                                  iter_list,
                                                  normalizeTicks=True,
                                                  ignoreNaNs=True)
-            gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+            if filter_with_gridness:
+                gridData = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
                                               normalizeTicks=True,
                                               collapseTrials=True,
                                               ignoreNaNs=True,
                                               r=grids_example_idx[ns_idx][0],
                                               c=grids_example_idx[ns_idx][1])
-
-            if filter_with_gridness:
                 gridFilter = aggr.GTFilter(gridData,
                                            self.myc['gridness_threshold'])
                 ACData = ACData.filter_data(gridFilter)
