@@ -4,7 +4,8 @@ These are the same simulations as submit_param_sweep_gamma, except that the
 external theta current is replaced by a current with a constant amplitude that
 delivers the same charge per theta cycle.
 '''
-from param_sweep    import submitParamSweep, SubmissionParser
+from grid_cell_model.submitting.noise import SubmissionParser
+from param_sweep    import submitParamSweep
 from default_params import defaultParameters as dp
 
 parser = SubmissionParser()

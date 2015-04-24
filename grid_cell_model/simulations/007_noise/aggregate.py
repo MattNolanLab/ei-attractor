@@ -24,6 +24,8 @@ class AggregationParser(flagparse.FlagParser):
         self.add_argument('--ntrials',  type=int)
         self.add_argument('--position', type=str, choices=self.allowedPositions)
         self.add_argument('--noLoadData', action='store_true')
+        self.add_argument('--shape', type=int, nargs=2,
+                          help='Shape of the 2D parameter space (rows, columns)')
 
         self._opts = None
 
@@ -71,10 +73,13 @@ class AggregationParser(flagparse.FlagParser):
     @property
     def shape(self):
         '''Return the 2D shapes.'''
-        if self.options.type == evenSpacingType:
-            return self.evenShape
+        if self.options.shape is None:
+            if self.options.type == evenSpacingType:
+                return self.evenShape
+            else:
+                return self.detailedShape
         else:
-            return self.detailedShape
+            return (self.options.shape[0], self.options.shape[1])
 
     @property
     def load_data(self):

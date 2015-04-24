@@ -1,23 +1,3 @@
-#
-#   spikes.py
-#
-#   Functions for analysis of spike trains
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
 '''
 Classes and functions for spike train analysis.
 
@@ -51,9 +31,15 @@ from scipy import weave
 import _spikes
 from grid_cell_model.otherpkg.log import log_warn
 
-__all__ = [ 'slidingFiringRateTuple', 'torusPopulationVector',
-        'torusPopulationVectorFromRates', 'SpikeTrain', 'PopulationSpikes',
-        'ThetaSpikeAnalysis', 'TorusPopulationSpikes']
+__all__ = [
+    'slidingFiringRateTuple',
+    'torusPopulationVector',
+    'torusPopulationVectorFromRates',
+    'SpikeTrain',
+    'PopulationSpikes',
+    'ThetaSpikeAnalysis',
+    'TorusPopulationSpikes'
+]
 
 
 #def firingRate(spikeTrain, tstart, tend):
@@ -128,7 +114,7 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
     tend   = float(tend)
     dt     = float(dt)
     winLen = float(winLen)
-    
+
     szRate      = int((tend-tstart)/dt)+1
     n_ids       = np.array(spikes[0])
     spikeTimes  = np.array(spikes[1])
@@ -136,7 +122,7 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
     bitSpikes   = np.zeros((N, szRate))
     fr          = np.zeros((N, szRate))
     dtWlen      = int(winLen/dt)
-    times       = np.arange(tstart, tend+dt, dt)
+    times       = np.linspace(tstart, tend, szRate)
     N           = int(N)
 
     #print "max(n_ids): ", np.max(n_ids)
@@ -177,7 +163,7 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
 
     return fr/(winLen*1e-3), times
 
-        
+
 
 
 
@@ -265,9 +251,9 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
                 int t = times(i);
                 int s = senders(i);
                 if (s >= 0 && s < N && t >= ts && t <= te)
-                    result(s)++; 
+                    result(s)++;
                 else if (s < 0 || s >= N)
-                    std::cout << "senders is outside range <0, N)" << 
+                    std::cout << "senders is outside range <0, N)" <<
                             std::endl;
             }
         '''
@@ -352,7 +338,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         '''
         Compute time differences between pairs of spikes of two neurons or a
         list of neurons.
-        
+
         Parameters
         ----------
         idx1 : int, or a sequence of ints
@@ -371,9 +357,9 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             default output.
         output : A 2D or 1D array of spike train autocorrelation histograms for all
             the pairs of neurons.
-        
+
         The computation takes the following steps:
-        
+
          * If ``idx1`` or ``idx2`` are integers, they will be converted to a list
            of size 1.
          * If ``idx2`` is None, then the result will be a list of lists of pairs
@@ -466,20 +452,20 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         lag_end   = range[1]
         binWidth = (lag_end - lag_start) / (bins - 1)
         bin_edges = np.linspace(lag_start - binWidth/2.0, lag_end +
-                binWidth/2.0, bins+1) 
+                binWidth/2.0, bins+1)
         h = self.CallableHistogram(bins=bin_edges, **kw)
         XC = self.spikeTrainDifference(idx1, idx2, full=True, reduceFun=h)
         bin_edges = h.get_bin_edges()
         bin_centers = (bin_edges[0:-1] + bin_edges[1:])/2.0
         return XC, bin_centers, bin_edges
-        
+
 
     def ISINeuron(self, n):
         '''
         Compute all interspike intervals of one neuron with ID ``n``. If the
         number of spikes is less than 2, returns an empty array.
         .. todo::
-            
+
             Works on sorted spike trains only!
 
         .. note::
@@ -498,7 +484,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
 
         *Parameters:*
 
-        n : None, int, or sequence 
+        n : None, int, or sequence
             Neuron numbers. If ``n`` is None, then compute ISI stats for all
             neurons in the population. If ``n`` is an int, compute ISIs for
             just neuron indexed by ``n``. Otherwise ``n`` is expected to be a
@@ -598,7 +584,7 @@ class TorusPopulationSpikes(PopulationSpikes):
         F = super(TorusPopulationSpikes, self).avgFiringRate(tStart, tEnd)
         return np.reshape(F, (self.Ny, self.Nx))
 
-    
+
     def populationVector(self, tStart, tEnd, dt, winLen):
         '''
         Compute the population vector on a torus, from the spikes present. Note
@@ -625,7 +611,7 @@ class TorusPopulationSpikes(PopulationSpikes):
         sheetSize_x = self.getXSize()
         sheetSize_y = self.getYSize()
         N = sheetSize_x*sheetSize_y
-        
+
         F, tsteps = PopulationSpikes.slidingFiringRate(self, tStart, tEnd, dt,
                 winLen)
         P = np.ndarray((len(tsteps), 2), dtype=complex)
@@ -732,6 +718,3 @@ class ThetaSpikeAnalysis(PopulationSpikes):
         '''
         fr, times = self.firingRateMiddleTheta(theta_start_t, theta_freq, tend, winlen)
         return np.mean(fr, 1)
-
-
-

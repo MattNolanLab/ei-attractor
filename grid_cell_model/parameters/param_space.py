@@ -1,26 +1,7 @@
-#
-#   param_space.py
-#
-#   Parameter spaces classes.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+''''Classes to define abstractions on parameter exploration data.'''
 from __future__ import absolute_import
 from collections    import Sequence
-from os.path        import exists
+from os.path        import exists, basename
 import subprocess
 
 import numpy as np
@@ -57,7 +38,7 @@ class DataSpace(Sequence):
     def __len__(self):
         return len(self._vals)
 
-    @staticmethod 
+    @staticmethod
     def getParam(data, paramStr):
         return data['options'][paramStr]
 
@@ -71,14 +52,36 @@ trialSetLogger = getClassLogger('TrialSet', __name__)
 class TrialSet(DataSpace):
     '''
     A 1D DataSpace that contains a list of DataSet objects.
+
+    Parameters
+    ----------
+    fileName : str
+        File path that contains the data for all the trials.
+    fileMode : str
+        File open mode.
+    data_set_cls : class object
+        A DataSet class object that will be created when accessing the data.
     '''
 
-    def __init__(self, fileName, fileMode):
+    def __init__(self, fileName, fileMode, data_set_cls=None):
         self._fileName = fileName
         self._fileMode = fileMode
         self._dataLoaded = False
+        if data_set_cls is None:
+            self._data_set_cls = DictDataSet
+        else:
+            self._data_set_cls = data_set_cls
         DataSpace.__init__(self, None, key='trials')
 
+    @property
+    def file_path(self):
+        '''Return the full path to the file name for this trial set.'''
+        return self._fileName
+
+    @property
+    def file_name_base(self):
+        '''Return just the file name for this trial set.'''
+        return basename(self._fileName)
 
     def _loadData(self):
         if (self._dataLoaded):
@@ -109,11 +112,11 @@ class TrialSet(DataSpace):
 
     def __getitem__(self, key):
         self._loadData()
-        return DictDataSet(self._vals[key])
+        return self._data_set_cls(self._vals[key])
 
     def getAllTrialsAsDataSet(self):
         self._loadData()
-        return DictDataSet(self._ds)
+        return self._data_set_cls(self._ds)
 
     def visit(self, visitor, trialList=None, **kw):
         '''
@@ -157,38 +160,83 @@ class DummyTrialSet(DataSpace):
         pass
 
 
-
 class JobTrialSpace2D(DataSpace):
-    def __init__(self, shape, rootDir, dataPoints=None, fileMode='r+',
-            fileFormat="job{0:05}_output.h5", forceWMode=False,
-            checkParams=False):
-        '''
-        Initialize this parameter space object.
-        TODO: this class will need a massive refactoring indeed!
+    '''A 2D parameter sweep space with a number of trials per job.
 
-        Parameters
-        ----------
-        TODO
-        '''
-        if (fileMode == 'w' and forceWMode == False):
-            raise ValueError("'w' file open mode is not allowed. Use " +
-                    "'forceWMode' to override.")
+    .. todo::
+        This class will need a massive refactoring indeed!
+
+    Parameters
+    ----------
+    shape : a pair of ints, or None
+        Parameter space shape (rows, columns). If ``None``, the shape will be
+        retrieved automatically from the metadata file.
+    rootDir : str
+        Root directory for the space.
+    dataPoints : a list of pairs, or None
+        If this is not ``None``, then it must contain a list of coordinates in
+        the data space to restrict the data manipulation to.
+    fileMode : str
+        File mode to open the jobs in.
+    fileFormat : str
+        A template for job file name formatting.
+    forceWMode : bool
+        Whether to force write mode.
+    checkParams : bool
+        Whether to check integrity of iterated parameters.
+    metadata_extractor : MetaDataExtractor, or None
+        Extractor for the iteration metadata, i.e. which parameters have been
+        iterated, their labels, etc. If ``None``, then it will not be possible
+        to extract the iteration metadata for this parameter space.
+    '''
+    def __init__(self, shape, rootDir, dataPoints=None, fileMode='r+',
+                 fileFormat="job{0:05}_output.h5", forceWMode=False,
+                 checkParams=False, metadata_extractor=None):
+        if fileMode == 'w' and forceWMode == False:
+            raise ValueError("'w' file open mode is not allowed. Use "
+                             "'forceWMode' to override.")
         self._fileMode = fileMode
-        self._shape = shape
         self._rootDir = rootDir
+        self._iter_file = None
+        self._shape = self._determine_shape(shape)
         self._dataPoints = dataPoints
-        if (self._dataPoints is not None):
+        if self._dataPoints is not None:
             self._partial = True
         else:
             self._partial = False
         self._fileFormat = fileFormat
         self._checkParams = checkParams
-        self.rows = shape[0]
-        self.cols = shape[1]
+        self.rows = self.shape[0]
+        self.cols = self.shape[1]
         self._loadTrials()
         self._aggregationDS = None
         self.saveDataFileName = 'reductions.h5'
+        self._extractor = metadata_extractor
 
+    @property
+    def _meta_file(self):
+        '''The iteration metadata file for this space.'''
+        if self._iter_file is None:
+            self._iter_file = self._open_iter_file()
+        return self._iter_file
+
+    def _open_iter_file(self):
+        '''Open the iteration metadata file for this parameter space.'''
+        fname = "{0}/iterparams.h5".format(self._rootDir)
+        try:
+            ds = DataStorage.open(fname, 'r')
+        except IOError as e:
+            job2DLogger.error("Could not open the metadata file. Check that "
+                              "the file exists:\n\t%s", fname)
+            raise e
+        return ds
+
+    @property
+    def metadata(self):
+        '''Return a reference to the metadata associated with this parameter
+        space.
+        '''
+        return self._extractor
 
     def repackItem(self, r, c):
         '''
@@ -211,7 +259,6 @@ class JobTrialSpace2D(DataSpace):
 
 
         job2DLogger.info("Removing current item")
-        #import pdb; pdb.set_trace()
         self._vals[r]._vals[c] = None
 
         # Try to repack to temporary file
@@ -245,7 +292,7 @@ class JobTrialSpace2D(DataSpace):
         fileName = self._rootDir + '/' + self._fileFormat.format(it)
         #job2DLogger.debug('row: %d, col: %d, filename: %s', row, col, fileName)
         return fileName
-            
+
 
     def _loadItem(self, row, col):
         # Here either we have a full data space, or a particular row
@@ -274,31 +321,94 @@ class JobTrialSpace2D(DataSpace):
 
 
     def __len__(self):
-        return self._shape[0] 
+        return self._shape[0]
 
     def __del__(self):
-        if (self._aggregationDS is not None):
+        if self._aggregationDS is not None:
             self._aggregationDS.close()
+        # self._meta_file.close()
 
     def getShape(self):
+        '''Return the shape of this parameter space.'''
         return self._shape
 
     @property
     def shape(self):
+        '''Return the shape of the parameter space.'''
         return self._shape
 
-    def getIteratedParameters(self, nameList):
-        if (len(nameList) != 2):
-            raise ValueError("nameList must contain exactly 2 elements.")
-        iterFileName = "{0}/iterparams.h5".format(self._rootDir)
-        ds = DataStorage.open(iterFileName, 'r')
+    def _determine_shape(self, custom_shape):
+        '''Determine the type of shape that should be used.
+
+        Parameters
+        ----------
+        custom_shape : a tuple of ints or None
+            If ``None``, will try to extract the shape from the metadata saved
+            with the jobs. Otherwise will use the value in this parameters.
+
+        Returns
+        -------
+        shape : a tuple of ints
+            Returns the correct shape or raises RuntimeError if it cannot be
+            determined.
+        '''
+        if custom_shape is not None:
+            return custom_shape
+
+        # Here, require that _meta_file contains the appropriate fields
+        try:
+            dims = self._meta_file['dimensions']
+            return (dims[0], dims[1])
+        except KeyError:
+            raise LookupError('Could not retrieve the dimensions of this '
+                              'space from metadata. You are probably using '
+                              'an older version of data. In that case, the '
+                              'shape of the parameter space must be specified '
+                              'explicitly.')
+
+    def getIteratedParameters(self, name_list=None):
+        '''Retrieve the iterated parameters.
+
+        Parameters
+        ----------
+        name_list : list of strings, or ``None``
+            The list of iteration parameters. Can only be left ``None`` if the
+            metadata of the space contains the iteration labels.
+
+        .. deprecated::
+            Use `~get_iterated_parameter` instead
+
+        Returns
+        -------
+        parameters : list of 2D arrays
+            Returns a list of the iterated parameters in the format [Rows,
+            Columns]. If you need to retrieve the iteration labels, use
+            :meth:`~get_iteration_labels`
+        '''
+        if name_list is None:
+            name_list = self.get_iteration_labels()
+
+        if len(name_list) != 2:
+            raise ValueError("'name_list' parameter must contain exactly 2 "
+                             "elements.")
+
         ret = []
-        for nm in nameList:
-            ret.append(np.reshape(ds['iterParams'][nm], self._shape))
-            if (self._checkParams):
-                self._checkIteratedParameters(nm, ret[-1])
-        ds.close()
+        for nm in name_list:
+            if nm is not None:
+                ret.append(np.reshape(self._meta_file['iterParams'][nm],
+                                    self._shape))
+                if self._checkParams:
+                    self._checkIteratedParameters(nm, ret[-1])
         return ret
+
+    def get_iterated_parameter(self, dim):
+        '''Return the iterated parameter data for dimension ``dim``.'''
+        label = self.get_iteration_labels()[dim]
+        if label is not None:
+            return np.reshape(self._meta_file['iterParams'][label],
+                              self._shape)
+        else:
+            return None
 
 
     def _checkIteratedParameters(self, paramStr, toCheck):
@@ -312,6 +422,16 @@ class JobTrialSpace2D(DataSpace):
                     err = np.abs(pVal - toCheck[r][c])
                     if (err > tol):
                         raise Exception(msgStr.format(paramStr, r, c, err))
+
+    def get_iteration_labels(self):
+        '''Retrieve the iteration labels as a tuple of strings.'''
+        try:
+            return self._meta_file['dimension_labels']
+        except KeyError:
+            raise LookupError('Could not retrieve the iteration labels of '
+                              'this space from metadata. You are probably '
+                              'using an older version of data, in which case '
+                              'you cannot use this method.')
 
     def visit(self, visitor, trialList=None):
         for r in xrange(self.rows):
@@ -486,9 +606,69 @@ class JobTrialSpace2D(DataSpace):
                 log_warn('JobTrialSpace2D', io_err.format(self.saveDataFileName))
 
         return retVar
-        
+
 
     @property
     def rootDir(self):
         return self._rootDir
 
+
+class JobTrialSpace1D(JobTrialSpace2D):
+    '''A 1D parameter sweep space with a number of trials per job.
+
+    .. note::
+        This parameter space behaves like the :class:`~JobTrialSpace2D`, but he
+        number of rows will be forced to be strictly 1. Thus when indexing, it
+        is necessary to use notation ``space[0][idx]``.
+
+    .. note::
+        Unlike :class:`~JobTrialSpace2D`, the shape here will be determined
+        automatically from the metadata file.
+
+    .. todo::
+        If this class is going to be used extensively, it is necessary to write
+        unit tests!
+
+    Parameters
+    ----------
+    shape : None
+        Must be set to ``None``. For backward compatibility only.
+    rootDir : str
+        Root directory for the space.
+    kwargs : keyword arguments
+        Keyword arguments passed on to :class:`~JobTrialSpace2D`.
+    '''
+    def __init__(self, shape, rootDir, **kwargs):
+        if shape is not None:
+            raise TypeError('shape must be None.')
+        super(JobTrialSpace1D, self).__init__(None, rootDir, **kwargs)
+
+    def _determine_shape(self, custom_shape):
+        '''Determine the size of this 1D parameter space.
+
+        .. note::
+            The actual shape will be represented as a 2D shape: (1, size).
+        '''
+        if custom_shape is not None:
+            return custom_shape
+
+        dims = self._meta_file['dimensions']
+        if len(dims) != 1:
+            raise TypeError('You are trying to open a 1D parameter space, '
+                            'but the actual data contains more than 1 '
+                            'dimension (%dD).' % len(dims))
+        return (1, dims[0])
+
+    def _checkIteratedParameters(self, paramStr, toCheck):
+        raise RuntimeError('This method cannot be called from within a 1D '
+                           'dataset.')
+
+    def get_iteration_labels(self):
+        try:
+            labels = self._meta_file['dimension_labels']
+            return (None, labels[0])
+        except KeyError:
+            raise LookupError('Could not retrieve the iteration labels of '
+                              'this space from metadata. You are probably '
+                              'using an older version of data, in which case '
+                              'you cannot use this method.')

@@ -3,8 +3,8 @@
 
 import numpy as np
 
-from param_sweep    import (submitParamSweep, getBumpCurrentSlope,
-                            SubmissionParser)
+from grid_cell_model.submitting.noise import SubmissionParser
+from param_sweep    import submitParamSweep, getBumpCurrentSlope
 from default_params import defaultParameters as dp
 
 parser = SubmissionParser()
