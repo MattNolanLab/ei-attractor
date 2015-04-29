@@ -1050,6 +1050,14 @@ def _get_default_config():
         },
     })
 
+    _default_config['WeightGridPlotter'] = {
+        'fig_size': (3, 3),
+        'cbar_fig_size': (1, 0.5),
+        'bbox_rect': (.1, .1, .9, .9),
+        'g_idx': 15,
+        'neuron_idx': 527,
+    }
+
     ###########################################################################
     _default_config['HighGridScoreFraction'] = {
         'threshold': .5,

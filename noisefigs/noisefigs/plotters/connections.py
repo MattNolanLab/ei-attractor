@@ -4,9 +4,11 @@ Noise publication figures: connection weight figures.
 from __future__ import absolute_import, print_function
 
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
+from matplotlib.gridspec import GridSpec
 
 from grid_cell_model.parameters.param_space import JobTrialSpace2D, DataSpace
 import grid_cell_model.plotting.connections as pconn
@@ -23,6 +25,7 @@ __all__ = [
     'WeightOutI2EPlotter',
     'WeightInE2IPlotter',
     'WeightInI2EPlotter',
+    'WeightGridPlotter',
     'Burak2009ConnectionPlotter',
 ]
 
@@ -192,13 +195,14 @@ class WeightPlotter(FigurePlotter):
         return {
             'xlabel': self.myc.get('xlabel', 'Neuron #'),
             'ylabel': self.myc.get('ylabel', 'Neuron #'),
+            'use_title': self.myc.get('use_title', True),
         }
 
     def plotOutgoing(self, gIdx, type, neuronIdx, trialNum=0, **kw):
         '''Plot outgoing weights from a single neuron to all other neurons.'''
         Nx = None
         Ny = None
-        use_title = self.myc.get('use_title', True)
+        use_title = kw.pop('use_title', True)
 
         data = self.env.ps.conn[0][gIdx][trialNum].data
         if type == 'E':
@@ -223,7 +227,7 @@ class WeightPlotter(FigurePlotter):
         '''Plot incoming weights of a single neuron from all other neurons.'''
         Nx = None
         Ny = None
-        use_title = self.myc.get('use_title', True)
+        use_title = kw.pop('use_title', True)
 
         data = self.env.ps.conn[0][gIdx][trialNum].data
         if type == 'I':
@@ -322,6 +326,62 @@ class WeightInI2EPlotter(WeightPlotter):
         fig.tight_layout()
         fname = self.get_fname("/connections_pcolor_in_I2E.pdf")
         plt.savefig(fname, dpi=300, transparent=True)
+
+
+class WeightGridPlotter(WeightPlotter):
+    '''Color plots of weights of selected neurons in a grid.'''
+    def __init__(self, *args, **kwargs):
+        super(WeightGridPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        g_idx = self.myc['g_idx']
+        neuron_idx = self.myc['neuron_idx']
+        l, b, r, t = self.myc['bbox_rect']
+
+        fig = self._get_final_fig(self.myc['fig_size'])
+        gs = GridSpec(2, 2)
+        gs.update(left=l, right=r, bottom=b, top=t, hspace=0)
+
+        # E-->I outgoing
+        ax = fig.add_subplot(gs[0, 0])
+        self.plotOutgoing(g_idx, "E", neuron_idx, ax=ax, xlabel='', ylabel='',
+                          use_title=False)
+        ax.set_xticks([])
+
+        # I-->E input
+        ax = fig.add_subplot(gs[0, 1])
+        self.plotIncoming(g_idx, "E", neuron_idx, ax=ax, ylabel='', xlabel='',
+                          use_title=False)
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        # I-->E outgoing
+        ax = fig.add_subplot(gs[1, 0])
+        self.plotOutgoing(g_idx, "I", neuron_idx, ax=ax, use_title=False,
+                          xlabel='', ylabel='')
+
+        # E-->I input
+        ax = fig.add_subplot(gs[1, 1])
+        self.plotIncoming(g_idx, "I", neuron_idx, ax=ax, xlabel='', ylabel='',
+                          use_title=False)
+        ax.set_yticks([])
+
+        fname = self.get_fname("/connections_pcolor_grid.pdf")
+        plt.savefig(fname, dpi=300, transparent=True)
+        plt.close()
+
+        # Add an extra colorbar
+        fig = self._get_final_fig(self.myc['cbar_fig_size'])
+        ax_cbar = fig.add_axes([0.05, 0.80, 0.8, 0.15])
+        cbar = mpl.colorbar.ColorbarBase(ax_cbar, cmap=mpl.cm.jet,
+                                         norm=mpl.colors.Normalize(vmin=0,
+                                                                   vmax=1),
+                                         ticks=[0, 1],
+                                         orientation='horizontal')
+        ax_cbar.xaxis.set_ticklabels(['0', '$g_{E/I}$'])
+        fname_cbar = self.get_fname("/connections_pcolor_grid_colorbar.pdf")
+        plt.savefig(fname_cbar, dpi=300, transparent=True)
+        plt.close()
 
 
 class Burak2009ConnectionPlotter(FigurePlotter):

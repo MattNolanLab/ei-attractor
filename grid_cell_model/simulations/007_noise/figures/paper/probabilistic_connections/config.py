@@ -21,6 +21,7 @@ _config = {
     'vel_data_root':  os.path.join(*(DATA_ROOT + ['velocity'])),
     'const_pos_data_root': None,
     'singleDataRoot': None,
+    'connection_data_root': os.path.join(*(DATA_ROOT + ['connections'])),
 
     'GridExampleRectPlotter': {
         'fig_saver': SeparateMultipageSaver(None, 'pdf')

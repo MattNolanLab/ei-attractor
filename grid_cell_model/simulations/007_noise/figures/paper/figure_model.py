@@ -13,6 +13,7 @@ parser.add_flag('--Vm_examples')
 parser.add_flag('--conn_func')
 parser.add_flag('--example_hists')
 parser.add_flag('--weight_plots')
+parser.add_flag('--weight_grid')
 args = parser.parse_args()
 
 env = NoiseEnvironment(user_config=config.get_config())
@@ -31,5 +32,8 @@ if args.weight_plots or args.all:
     env.register_plotter(noisefigs.plotters.WeightOutI2EPlotter)
     env.register_plotter(noisefigs.plotters.WeightInE2IPlotter)
     env.register_plotter(noisefigs.plotters.WeightInI2EPlotter)
+
+if args.weight_grid or args.all:
+    env.register_plotter(noisefigs.plotters.WeightGridPlotter)
 
 env.plot()
