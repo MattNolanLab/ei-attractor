@@ -20,6 +20,7 @@ def get_config():
 
 
 def _get_default_config():
+    '''Create the default configuration object.'''
     _default_config = ConfigObj()
     _default_config.merge({
         'scale_factor': 1.,
@@ -33,6 +34,7 @@ def _get_default_config():
         'vel_data_root':        'simulation_data/submission/velocity',
         'const_pos_data_root':  'simulation_data/submission/const_position',
         'singleDataRoot':       'simulation_data/submission/single_neuron',
+        'connection_data_root': 'simulation_data/submission/connections',
 
         'even_shape': (31, 31),
         'noise_sigmas': [0, 150, 300],
@@ -1016,6 +1018,37 @@ def _get_default_config():
         'data_range': [[0, 11.2], [-.5, 1.2]],
     }
     _default_config['GridsVelFitErrProbabilityPlotter'] = GridsVelFitErrProbabilityPlotter_config
+
+    ###########################################################################
+    _default_config.update({
+        'WeightOutE2IPlotter': {
+            'fig_size': (1.75, 1.75),
+            'g_idx': 15,
+            'neuron_idx': 527,
+            'use_title': False,
+        },
+
+        'WeightOutI2EPlotter': {
+            'fig_size': (1.75, 1.75),
+            'g_idx': 15,
+            'neuron_idx': 527,
+            'use_title': False,
+        },
+
+        'WeightInE2IPlotter': {
+            'fig_size': (1.75, 1.75),
+            'g_idx': 15,
+            'neuron_idx': 527,
+            'use_title': False,
+        },
+
+        'WeightInI2EPlotter': {
+            'fig_size': (1.75, 1.75),
+            'g_idx': 15,
+            'neuron_idx': 527,
+            'use_title': False,
+        },
+    })
 
     ###########################################################################
     _default_config['HighGridScoreFraction'] = {
