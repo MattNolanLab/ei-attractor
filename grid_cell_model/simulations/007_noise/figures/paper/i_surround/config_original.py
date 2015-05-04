@@ -164,6 +164,18 @@ def get_config():
         'BumpDriftAtTimePlotter': {
             'plot_grid_contours': [0, 0, 0],
         },
+
+        'MaxPopulationFRSweepsPlotter': {
+            'cbar': [1, 0, 0],
+
+            'plot_grid_contours': [0, 0, 0],
+            'grid_contours': [.5],
+        },
+
+        'PSeizureSweepPlotter': {
+            'plot_grid_contours': [0, 0, 0],
+        },
+
     })
 
     ##########################################################################

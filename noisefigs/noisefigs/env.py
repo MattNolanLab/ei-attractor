@@ -64,7 +64,9 @@ class NoiseEnvironment(MplEnvironment):
             self.config['bump_data_root'],
             self.config['vel_data_root'],
             self.config['grids_data_root'],
-            constPos=self.config['const_pos_data_root'])
+            constPos=self.config['const_pos_data_root'],
+            conn=self.config['connection_data_root']
+        )
         return NoiseDataSpaces(roots, self.config['even_shape'],
                                self.config['noise_sigmas'], self._space_cls)
 

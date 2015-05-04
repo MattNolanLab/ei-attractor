@@ -217,10 +217,8 @@ class VelLinesPlotter(FigurePlotter):
 #
 
 
-##############################################################################
-#                           Velocity (slope) sweeps
-##############################################################################
 class VelSlopeSweepPlotter(SweepPlotter):
+    '''Velocity (slope) sweeps.'''
     def __init__(self, *args, **kwargs):
         super(VelSlopeSweepPlotter, self).__init__(*args, **kwargs)
         self.fig = None
@@ -259,10 +257,6 @@ class VelSlopeSweepPlotter(SweepPlotter):
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
                      "/velocity_slope_sweeps{0}.pdf".format(int(noise_sigma)))
-            self.data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
-                                           ignoreNaNs=True, normalizeTicks=True,
-                                           r=grid_example_idx[ns_idx][0],
-                                           c=grid_example_idx[ns_idx][1])
             with self.figure_and_axes(fname, sweepc) as (self.fig, self.ax):
                 kw = dict()
                 if (ns_idx != 0):
@@ -282,6 +276,11 @@ class VelSlopeSweepPlotter(SweepPlotter):
 
                 # Contours
                 if self.myc['plot_contours'][ns_idx]:
+                    self.data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
+                                                   ignoreNaNs=True,
+                                                   normalizeTicks=True,
+                                                   r=grid_example_idx[ns_idx][0],
+                                                   c=grid_example_idx[ns_idx][1])
                     contours = sweeps.Contours(self.data,
                             self.config['sweeps']['grid_contours'])
                     contours.plot(
@@ -561,11 +560,8 @@ class LineErrSlopeScatterPlotter(FigurePlotter):
         fig.savefig(fname, dpi=300)
 
 
-
-##############################################################################
-# Bump velocity line fit error
-#exampleRC = ( (5, 15), (15, 5) )
 class VelFitErrSweepPlotter(SweepPlotter):
+    '''Bump velocity line fit error.'''
     def __init__(self, *args, **kwargs):
         super(VelFitErrSweepPlotter, self).__init__(*args, **kwargs)
 
@@ -600,11 +596,6 @@ class VelFitErrSweepPlotter(SweepPlotter):
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = (self.config['output_dir'] +
                      "/suppFigure_velocity_err_sweeps{}.pdf".format(int(noise_sigma)))
-            self.grid_data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
-                                                ignoreNaNs=True,
-                                                normalizeTicks=True,
-                                                r=grid_example_idx[ns_idx][0],
-                                                c=grid_example_idx[ns_idx][1])
             vel_data = aggr.VelocityData('lineFitErr', ps.v[ns_idx], iter_list,
                                          ignoreNaNs=True, normalizeTicks=True)
             with self.figure_and_axes(fname, sweepc) as (fig, ax):
@@ -622,6 +613,12 @@ class VelFitErrSweepPlotter(SweepPlotter):
 
                 # Contours
                 if self.myc['plot_contours'][ns_idx]:
+                    self.grid_data = aggr.GridnessScore(
+                        ps.grids[ns_idx], iter_list,
+                        ignoreNaNs=True,
+                        normalizeTicks=True,
+                        r=grid_example_idx[ns_idx][0],
+                        c=grid_example_idx[ns_idx][1])
                     contours = sweeps.Contours(self.grid_data,
                             self.config['sweeps']['grid_contours'])
                     contours.plot(
@@ -629,29 +626,8 @@ class VelFitErrSweepPlotter(SweepPlotter):
                             **self.config['sweeps']['contours_kwargs'])
 
 
-
-## Stats
-#if args.hists or args.all:
-#    fig = plt.figure(figsize=histFigsize)
-#    ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
-#        histTop))
-#    plotErrHistogram(ps.v, ['lineFitErr'], xlabel='Fit error (neurons/s)',
-#            ylabel='p(error)')
-#    fname = outputDir + "/suppFigure_velocity_err_histograms.pdf"
-#    plt.savefig(fname, dpi=300, transparent=True)
-#
-#    fig = plt.figure(figsize=histFigsize)
-#    ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
-#        histTop))
-#    plotSlopeHistogram(ps.v, ['lineFitSlope'], xlabel='Slope (neurons/s/pA)',
-#            ylabel='p(slope)', plotLegend=True)
-#    fname = outputDir + "/suppFigure_velocity_slope_histograms.pdf"
-#    plt.savefig(fname, dpi=300, transparent=True)
-
-
-################################################################################
-# Velocity line fit std. deviation
 class VelFitStdSweepPlotter(SweepPlotter):
+    '''Velocity line fit std. deviation.'''
     def __init__(self, *args, **kwargs):
         super(VelFitStdSweepPlotter, self).__init__(*args, **kwargs)
 

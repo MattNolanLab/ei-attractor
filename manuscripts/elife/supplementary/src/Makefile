@@ -4,7 +4,7 @@
 # asi budete chtit prejmenovat:
 CO=SI_text
 IMAGES = fig/
-DROPBOX_DIR = ~/Dropbox/shared_data/noise/
+DROPBOX_DIR = ~/Dropbox/Independent_grids_and_gamma/noise/
 
 
 .PHONY: fig $(CO).pdf

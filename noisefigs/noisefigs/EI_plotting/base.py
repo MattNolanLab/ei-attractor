@@ -1,10 +1,6 @@
-#
-#   base.py
-#
-#   Basic routines for EI plotting.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#
+'''Basic routines for EI plotting.'''
+from __future__ import absolute_import, print_function, division
+
 import numpy       as np
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
@@ -20,7 +16,6 @@ from grid_cell_model.plotting.global_defs import globalAxesSettings
 from grid_cell_model.plotting.low_level   import xScaleBar
 
 
-
 theta_T = 250.0 # ms
 theta_dt = 1.0 # ms
 theta_f = 8.0  # Hz
@@ -31,10 +26,8 @@ thetaMin = -500
 thetaLim = [thetaMin, thetaMax]
 
 
-
 def getNoiseRootDir(prefix, noise_sigma):
     return  "{0}/{1}pA".format(prefix, int(noise_sigma))
-
 
 
 def getNoiseRoots(prefix, noise_sigmas):
@@ -45,16 +38,55 @@ def getNoiseRoots(prefix, noise_sigmas):
 
 
 def getNoiseDataSpaces(dataRoot, noise_sigmas, shape, space_cls=None):
+    '''Create a list of data spaces for each of the noise sigmas.
+
+    Parameters
+    ----------
+    dataRoot : str
+        Path to the root of the data.
+    noise_sigmas : list of numbers
+        A list containing the noise levels.
+    shape : A list (usually a pair) of non-negative ints
+        The shape of the parameter space.
+    space_cls : a class type or None
+        The class which will be used to create the parameter space object for
+        each noise level.
+    '''
     if space_cls is None:
         space_cls = JobTrialSpace2D
 
-    if (dataRoot is None):
+    if dataRoot is None:
         return None
+
     roots = getNoiseRoots(dataRoot, noise_sigmas)
     ds = []
     for root in roots:
         ds.append(space_cls(shape, root))
     return ds
+
+
+def getDataSpace(dataRoot, shape, space_cls=None):
+    '''Create a data space.
+
+    Parameters
+    ----------
+    dataRoot : str
+        Path to the root of the data. If ``None``, nothing will be created.
+    noise_sigmas : list of numbers
+        A list containing the noise levels.
+    shape : A list (usually a pair) of non-negative ints
+        The shape of the parameter space.
+    space_cls : a class type or None
+        The class which will be used to create the parameter space object for
+        each noise level.
+    '''
+    if space_cls is None:
+        space_cls = JobTrialSpace2D
+
+    if dataRoot is None:
+        return None
+    else:
+        return space_cls(shape, dataRoot)
 
 
 class NoiseDataSpaces(object):
@@ -88,9 +120,13 @@ class NoiseDataSpaces(object):
         if hasattr(roots, 'constPos'):
             self.constPos = getNoiseDataSpaces(roots.constPos, noise_sigmas,
                                                shape, space_cls)
+
+        if hasattr(roots, 'conn'):
+            # Here, we only use the second dimension. The shape of the 1D
+            # connection data space should match the parameter sweeps.
+            self.conn = getDataSpace(roots.conn, (1, shape[1]), space_cls)
+
         self.noise_sigmas = noise_sigmas
-
-
 
 
 def getOption(data, optStr):
@@ -119,6 +155,7 @@ def setSignalAxes(ax, leftSpineOn):
     ax.yaxis.set_major_locator(MaxNLocator(2))
     ax.yaxis.set_minor_locator(AutoMinorLocator(2))
 
+
 def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
         color='black', scaleBar=None, scaleX=0.75, scaleY=0.05, scaleText='ms',
         scaleTextSize='small'):
@@ -137,7 +174,6 @@ def plotStateSignal(ax, t, sig, leftSpineOn=True, labely="", labelyPos=-0.2,
     if (scaleBar is not None):
         xScaleBar(scaleBar, x=scaleX, y=scaleY, ax=ax, size=scaleTextSize,
                 unitsText=scaleText)
-
 
 
 def plotThetaSignal(ax, t, theta, noise_sigma, yLabelOn, thetaLim, color='grey'):
@@ -165,8 +201,7 @@ def plotOneHist(data, bins=40, normed=False, **kw):
     ax.xaxis.set_major_locator(MaxNLocator(4))
     ax.yaxis.set_major_locator(MaxNLocator(4))
 
-###############################################################################
-# Parameter sweep plotting
+
 def createColorbar(ax, **kwargs):
     cbLabel     = kwargs.pop('label', '')
     #orientation = kwargs.get('orientation', 'horizontal')
@@ -184,9 +219,6 @@ def createColorbar(ax, **kwargs):
     return cax
 
 
-
-##############################################################################
-# Filtering
 class FilteringResult(object):
     def __init__(self, filteredIndexes, retainedIndexes, missing=None):
         self._filtered = filteredIndexes
@@ -227,8 +259,6 @@ def filterData(stackedData, threshold):
             missingIndexes)
 
 
-##############################################################################
-# Data extraction
 def extractRateMaps(ps, r, c, trialNum):
     data = ps[r][c][trialNum].data
     tStart = 0.
