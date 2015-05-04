@@ -4,7 +4,8 @@ from __future__ import absolute_import, print_function
 import numpy as np
 from grid_cell_model.submitting.factory   import SubmitterFactory
 from grid_cell_model.submitting.arguments import ArgumentCreator
-
+from grid_cell_model.submitting.noise.slopes import (DefaultSelector,
+                                                     NoThetaSelector)
 from grid_cell_model.data_storage import DataStorage
 from grid_cell_model.otherpkg.log import log_info
 
@@ -55,24 +56,29 @@ def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel, appName,
 
 def getBumpCurrentSlope(noise_sigma, threshold=0, type=None):
     '''
+    Parameters
+    ----------
+    noise_sigma : int
+        Noise level (sigma of the Gaussian)
+    threshold : float
+        Threshold below which slope values will be replaced with ``NaN``.
     type : string, optional
         If ``None`` the regular bump slope files will be used. If ``no_theta``,
         the bump slope files specific for the simulations wihtout theta
         oscillations will be used.
     '''
-    if (type is None):
-        fileName = 'bump_slope_data/bump_slope_{0}pA.h5'.format(int(noise_sigma))
-    elif (type == 'no_theta'):
-        fileName = 'bump_slope_data/bump_slope_no_theta_{0}pA.h5'.format(int(noise_sigma))
+    data_root = 'bump_slope_data'
+    selector_cls = None
 
-    log_msg = 'Using the following file for bump slope data:\n  {0}'
-    log_info("getBumpCurrentSlope", log_msg.format(fileName))
+    if type is None:
+        selector_cls = DefaultSelector
+    elif type == 'no_theta':
+        selector_cls = NoThetaSelector
+    else:
+        raise ValueError('Invalid bump slope type.')
 
-    ds = DataStorage.open(fileName, 'r')
-    slopes = ds['lineFitSlope'].flatten()
-    ds.close()
-    slopes[slopes < threshold] = np.nan
-    return slopes
+    selector = selector_cls(data_root, threshold)
+    return selector.get_slopes(noise_sigma)
 
 def getSpeedPercentile(p, path, grid_lambda, Nx):
     '''

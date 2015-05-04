@@ -104,6 +104,23 @@ class ParameterSweep(SimulationTemplate):
         super(ParameterSweep, self).__init__(app_name, ParameterSweepParser(),
                                              default_parameters,
                                              user_parameters)
+        self._slope_selector = None
+
+    def set_bump_slope_selector(self, selector):
+        '''When submitting, also include the bump slope data with the network.
+
+        This should be used pretty much only with the grid field simulations
+        because all other types of simulations (stationary, velocity, etc.)
+        will ignore those options.
+
+        Parameters
+        ----------
+        selector : :class:`~grid_cell_model.submitting.noise.slopes.SlopeSelector`
+            Bump slope selector. This will determine the specific selector,
+            e.g. for the default grid fields simulations/no
+            velocity/probabilistic connections, etc.
+        '''
+        self._slope_selector = selector
 
     def run(self):
         '''Run the parameter sweep.'''
@@ -124,6 +141,10 @@ class ParameterSweep(SimulationTemplate):
 
             # Submitting
             iterparams = self.parser.iter_params
+            if self._slope_selector is not None:
+                iterparams.update({
+                    'bumpCurrentSlope' : self._slope_selector.get_slopes(
+                        noise_sigma)})
             ac = ArgumentCreator(p, printout=True)
             ac.insertDict(iterparams, mult=False)
 
