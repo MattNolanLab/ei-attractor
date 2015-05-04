@@ -3,8 +3,8 @@ from __future__ import absolute_import, print_function, division
 
 from grid_cell_model.models.parameters import getOptParser
 from grid_cell_model.models.gc_net_nest import BasicGridCellNetwork
-from grid_cell_model.data_storage import DataStorage
 from grid_cell_model.models.seeds import TrialSeedGenerator
+from simtools.storage import DataStorage
 
 
 parser = getOptParser()

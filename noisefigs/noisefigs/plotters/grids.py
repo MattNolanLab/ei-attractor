@@ -8,13 +8,13 @@ import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 
 from grid_cell_model.parameters import JobTrialSpace2D
-from grid_cell_model.data_storage import DataStorage
 from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 from grid_cell_model.plotting.grids import (plotSpikes2D,
                                             plotGridRateMap,
                                             plotAutoCorrelation)
 import grid_cell_model.plotting.low_level as low_level
 from simtools.plotting.plotters import Computation, FigurePlotter
+from simtools.storage import DataStorage
 
 from ..EI_plotting import sweeps, examples, details, scatter
 from ..EI_plotting import aggregate as aggr

@@ -9,7 +9,7 @@ from nest.hl_api        import NESTError
 from grid_cell_model.models.parameters  import getOptParser
 from grid_cell_model.models.gc_net_nest import ConstantVelocityNetwork
 from grid_cell_model.models.seeds import TrialSeedGenerator
-from grid_cell_model.data_storage       import DataStorage
+from simtools.storage import DataStorage
 
 logger = logging.getLogger(__name__)
 

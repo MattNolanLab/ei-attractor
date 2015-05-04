@@ -16,7 +16,7 @@ from ..analysis import image as image
 from ..data_storage.sim_models import ei as simei
 from ..otherpkg.log import getClassLogger
 from ..analysis.image import Position2D, fitGaussianBumpTT
-from .interface import DictDSVisitor 
+from .interface import DictDSVisitor
 from . import defaults
 
 
@@ -63,7 +63,7 @@ class BumpFittingVisitor(BumpVisitor):
     If the corresponding data is already present the visitor skips the data
     analysis and saving.
     '''
-    
+
     def __init__(self,
             forceUpdate=False,
             readme='',
@@ -189,7 +189,7 @@ def fitCircularSlope(bumpPos, times, normFac):
     x0 = np.array([0.0])  # slope
     x = leastsq(func, x0)
     return x[0][0] / 2. / np.pi * normFac
-    
+
 
 def getLineFit(X, Y):
     '''
@@ -402,7 +402,7 @@ class SpeedPlotter(DictDSVisitor):
         IvelVec = trials[0]['IvelVec'] # All the same
         a      = data[defaults.analysisRoot]
         slopes = a['bumpVelAll']
-        
+
         speedPlotLogger.info("Plotting the velocity points")
         fig = plt.figure()
         ax = fig.gca()
@@ -417,7 +417,7 @@ class SpeedPlotter(DictDSVisitor):
             leg.append('Line fit')
 
         ax.legend(leg, loc='best')
-        
+
         figPath = self.getFigPath(kw['fileName'], self.rootDir, r, c, trialNum)
         speedPlotLogger.info("Saving figure to '{0}'".format(figPath))
         fig.savefig(figPath)
@@ -562,12 +562,12 @@ class BumpPositionVisitor(BumpVisitor):
         self.win_dt = win_dt
         self.rateThreshold  = rateThreshold
         self.maxRelBumpDiam = maxRelBumpDiam
-        
+
 
     def visitDictDataSet(self, ds, **kw):
         data = ds.data
-        data.setItemChained((self.outputRoot, self.bumpERoot), {},
-                overwriteLast=False)
+        data.set_item_chained((self.outputRoot, self.bumpERoot), {},
+                              overwriteLast=False)
         out = data[self.outputRoot][self.bumpERoot]
 
         # Resolve times
@@ -618,7 +618,7 @@ class BumpPositionVisitor(BumpVisitor):
             logger.info('%s: Uniform data already present. Skipping analysis.',
                     self.__class__.__name__)
 
-        
+
         sigma = out['positions/sigma']
         A     = out['positions/A']
         bumpDiam = sigma * np.sqrt(-2. * np.log(self.rateThreshold / A))

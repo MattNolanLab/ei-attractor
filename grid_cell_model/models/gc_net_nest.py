@@ -12,7 +12,7 @@ from . import gc_neurons
 from .gc_net import GridCellNetwork
 from .place_input import PlaceCellInput
 from .place_cells import UniformBoxPlaceCells
-from ..data_storage import DataStorage
+from simtools.storage import DataStorage
 
 logger = logging.getLogger(__name__)
 gcnLogger = logging.getLogger('{0}.{1}'.format(__name__,

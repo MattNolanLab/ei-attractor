@@ -8,7 +8,7 @@ from numpy.random import rand, randn
 
 from . import gc_neurons
 from .gc_net import GridCellNetwork
-from ..data_storage import DataStorage
+from simtools.storage import DataStorage
 
 import nest
 nest.Install('gridcellsmodule')
@@ -146,7 +146,7 @@ class OneNeuronNetwork(GridCellNetwork):
         d['Ni_y'           ] = self.Ni_y
 
         return d
-            
+
 
     def getNetParams(self):
         out = {}
