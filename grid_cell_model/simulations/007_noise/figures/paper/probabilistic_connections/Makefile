@@ -6,7 +6,9 @@ all: fast
 fast: figure_bumps.dummy	\
 	figure_drifts.dummy 	\
 	figure_gamma.dummy		\
-	figure_seizures.dummy
+	figure_model.dummy		\
+	figure_seizures.dummy	\
+	suppFigure_velocity.dummy
 
 .py.dummy:
 	echo;							\

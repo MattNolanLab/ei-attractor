@@ -447,8 +447,8 @@ class NestGridCellNetwork(GridCellNetwork):
         # values
         npos = int(self.no.time / self.rat_dt)
         nest.SetStatus([self.E_pop[0]], {
-            "rat_pos_x" : self.rat_pos_x[0:npos],
-            "rat_pos_y" : self.rat_pos_y[0:npos],
+            "rat_pos_x" : self.rat_pos_x[0:npos].tolist(),
+            "rat_pos_y" : self.rat_pos_y[0:npos].tolist(),
             "rat_pos_dt": self.rat_dt})  # s --> ms
 
         nest.SetStatus(self.E_pop, "pref_dir_x", self.prefDirs_e[:, 0])
@@ -581,8 +581,8 @@ class NestGridCellNetwork(GridCellNetwork):
 
             npos = int(self.no.time / posIn.pos_dt)
             nest.SetStatus([PC[0]], params={
-                'rat_pos_x' : posIn.pos_x[0:npos],
-                'rat_pos_y' : posIn.pos_y[0:npos],
+                'rat_pos_x' : list(posIn.pos_x[0:npos]),
+                'rat_pos_y' : list(posIn.pos_y[0:npos]),
                 'rat_pos_dt': posIn.pos_dt})
 
             # test_x = nest.GetStatus([PC[0]], 'rat_pos_x')

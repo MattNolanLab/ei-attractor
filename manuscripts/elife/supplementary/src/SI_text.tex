@@ -16,6 +16,8 @@
 \usepackage[export]{adjustbox}[2011/08/13]
 \usepackage{float}
 \usepackage{lineno}
+\usepackage{hyperref}
+\usepackage[textsize=small,colorinlistoftodos,bordercolor=orange]{todonotes}
 
 \renewcommand{\familydefault}{\sfdefault}
 \usepackage{helvet}
@@ -157,6 +159,9 @@
 %United Kingdom
 %\end{flushleft}
 
+\listoftodos
+
+\clearpage
 
 
 \section*{Supplementary Methods} \label{methods}
@@ -716,6 +721,24 @@ and then subsequently averaged over all simulation trials.
 
 \section*{Figure Supplements}
 
+\setcounter{figure}{0}
+\renewcommand{\figurename}{Figure 1 - figure supplement}
+
+\begin{figure}[h!]
+    \internallinenumbers
+    \centering
+        \includegraphics{fig/output_figures/figure1S_weights.pdf}
+        \caption{Synaptic weights in scaled and probabilistic variants of the
+        network. (A) Output (top) and input (bottom) synaptic weights of an E
+        (left) and I (right) neuron in the middle of the twisted torus in a
+        network in which synaptic weights are scaled according to the synaptic
+        profile functions from Figure 1B. (B) Same as (A), but synaptic weights
+        are constant and the probability of connection between a pair of
+        neurons is scaled according to the synaptic profile functions.}
+\end{figure}
+
+\clearpage
+
 
 \begin{figure}[h!]
     \includegraphics[trim=0 0.5cm 0cm 0cm,width=\textwidth,center]{fig/panels/suppFigure_grid_examples_0}
@@ -764,7 +787,6 @@ and then subsequently averaged over all simulation trials.
 
 \setcounter{figure}{0}
 \renewcommand{\figurename}{Figure 3 - figure supplement}
-
 
 \begin{figure}[p]
     \internallinenumbers
@@ -820,6 +842,30 @@ and then subsequently averaged over all simulation trials.
 \clearpage
 
 \begin{figure}[p]
+    \internallinenumbers
+    \centering
+        \includegraphics{fig/output_figures/figure3S_prob_conn}
+    \caption{\todo[inline]{Gamma with probabilistic connections.}}
+\end{figure}
+
+\clearpage
+
+\setcounter{figure}{0}
+\renewcommand{\figurename}{Figure 4 - figure supplement}
+
+\begin{figure}[p]
+    \internallinenumbers
+    \centering
+        \includegraphics[width=0.95\textwidth]{fig/output_figures/figure4S_prob_conn}
+    \caption{\todo[inline]{Bumps with probabilistic connections.}
+        \todo[inline]{Rescale the figure properly.}
+        \todo[inline]{Add contours when grids are finished.}}
+\end{figure}
+
+
+\clearpage
+
+\begin{figure}[p]
     \centering
         \includegraphics{fig/panels/raster_examples_0.pdf}
 \end{figure}
@@ -849,6 +895,17 @@ and then subsequently averaged over all simulation trials.
     space during 16 consecutive $\theta$ cycles. Action potentials and firing
     rates of E and I cells are coloured red and blue, respectively. The position
     in the parameter space is highlighted by an arrow.}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+    \internallinenumbers
+    \centering
+        \includegraphics[width=0.95\textwidth]{fig/output_figures/figure5S_prob_conn}
+    \caption{\todo[inline]{Seizures with probabilistic connections.}
+        \todo[inline]{Rescale the figure properly.}
+        \todo[inline]{Add scatter plots if necessary after grids are finished.}}
 \end{figure}
 
 \clearpage

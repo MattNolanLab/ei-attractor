@@ -4,16 +4,14 @@ Noise publication figures: connection weight figures.
 from __future__ import absolute_import, print_function
 
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib.ticker     import MultipleLocator, AutoMinorLocator, \
-        MaxNLocator
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
+from matplotlib.gridspec import GridSpec
 
 from grid_cell_model.parameters.param_space import JobTrialSpace2D, DataSpace
-from grid_cell_model.plotting.global_defs   import globalAxesSettings
 import grid_cell_model.plotting.connections as pconn
-from grid_cell_model.submitting import flagparse
 from grid_cell_model.analysis.image import Position2D
 from simtools.plotting.plotters import FigurePlotter
 
@@ -23,22 +21,17 @@ DS = DataSpace
 
 __all__ = [
     'WeightExamplesHists',
+    'WeightOutE2IPlotter',
+    'WeightOutI2EPlotter',
+    'WeightInE2IPlotter',
+    'WeightInI2EPlotter',
+    'WeightGridPlotter',
     'Burak2009ConnectionPlotter',
 ]
 
-##############################################################################
 
-connDataRoot= 'simulation_data/submission/connections'
-shape = (1, 31)
 iterList  = ['g_AMPA_total', 'g_GABA_total']
 
-#parser = flagparse.FlagParser()
-#parser.add_flag('--hists')
-#parser.add_flag('--exampleHists')
-#parser.add_flag('-w', '--weights')
-#args = parser.parse_args()
-
-##############################################################################
 
 def plotEToI(sp, gIdx, neuronIdx, trialNum=0, **kw):
     title = kw.pop('title', 'I cell')
@@ -60,6 +53,7 @@ def plotEToI(sp, gIdx, neuronIdx, trialNum=0, **kw):
     ax.xaxis.set_ticklabels([0, '$g_E$'])
     ax.set_ylim(ylim)
 
+
 def plotIToE(sp, gIdx, neuronIdx, trialNum=0, **kw):
     title = kw.pop('title', 'E cell')
 
@@ -77,23 +71,26 @@ def plotIToE(sp, gIdx, neuronIdx, trialNum=0, **kw):
     ax.set_xlim([0, annG])
     ax.set_xticks([0, annG])
 
-def plotIToEBrokenAxis(sp, gIdx, neuronIdx, trialNum=0, axBoundaries=[0, 0, 1, 1],
-        axesProportions=(0.5, 0.5), bottomLimits=None, topLimits=None,
-        **kw):
+
+def plotIToEBrokenAxis(sp, gIdx, neuronIdx, trialNum=0, axBoundaries=None,
+                       axesProportions=(0.5, 0.5), bottomLimits=None,
+                       topLimits=None, **kw):
+    if axBoundaries is None:
+        axBoundaries = [0, 0, 1, 1]
+    left, bottom, right, top = axBoundaries
     title = kw.pop('title', 'E cell')
     fig   = kw.pop('fig', plt.gcf())
-    left, bottom, right, top = axBoundaries
     h = top - bottom
     w = right - left
     hBottom = h*axesProportions[0]
     hTop = h*axesProportions[1]
 
     axBottom = fig.add_axes(Bbox.from_extents(left, bottom, right, bottom +
-        hBottom))
+                                              hBottom))
     axTop = fig.add_axes(Bbox.from_extents(left, top - hTop, right, top),
-            sharex=axBottom)
+                         sharex=axBottom)
 
-    gE, gI = aggr.computeYX(sp, iterList)
+    _, gI = aggr.computeYX(sp, iterList)
     M      = sp[0][gIdx][trialNum].data['g_EI']
     conns  = M[neuronIdx, :]
 
@@ -101,7 +98,7 @@ def plotIToEBrokenAxis(sp, gIdx, neuronIdx, trialNum=0, axBoundaries=[0, 0, 1, 1
     kw['ylabel'] = ''
     pconn.plotConnHistogram(conns, title=title, ax=axTop, **kw)
     annG = gI[0, gIdx]
-    if (annG - int(annG) == 0):
+    if annG - int(annG) == 0:
         annG = int(annG)
     #ann = '$g_I$ = {0} nS'.format(annG)
     #fig.text(left+0.95*w, bottom+0.9*h, ann, ha='right', va='bottom',
@@ -122,93 +119,27 @@ def plotIToEBrokenAxis(sp, gIdx, neuronIdx, trialNum=0, axBoundaries=[0, 0, 1, 1
     d = .015
     kwargs = dict(transform=fig.transFigure, color='k', clip_on=False)
     axBottom.plot((left-divLen*w, left+divLen*w), (bottom+hBottom + d,
-        bottom+hBottom - d), **kwargs)
+                                                   bottom+hBottom - d),
+                  **kwargs)
     axTop.plot((left-divLen*w, left+divLen*w), (top-hTop + d, top-hTop - d),
-            **kwargs)
+               **kwargs)
 
     return axBottom, axTop
 
 
-
-
-def plotOutgoing(sp, gIdx, type, neuronIdx, trialNum=0, **kw):
-    Nx     = None
-    Ni     = None
-
-    data = sp[0][gIdx][trialNum].data
-    if (type == 'E'):
-        var = 'g_IE'
-        Nx = DS.getNetParam(data, 'Ni_x')
-        Ny = DS.getNetParam(data, 'Ni_y')
-        kw['title'] = 'E cell $\\rightarrow$ I cells'
-
-    elif (type == 'I'):
-        var = 'g_EI'
-        Nx = DS.getNetParam(data, 'Ne_x')
-        Ny = DS.getNetParam(data, 'Ne_y')
-        kw['title'] = 'I cell $\\rightarrow$ E cells'
-
-
-    conns = np.reshape(data[var][:, neuronIdx], (Ny, Nx))
-    pconn.plot2DWeightMatrix(conns, **kw)
-
-def plotIncoming(sp, gIdx, type, neuronIdx, trialNum=0, **kw):
-    Nx = None
-    Ni = None
-
-    data = sp[0][gIdx][trialNum].data
-    if (type == 'I'):
-        var = 'g_IE'
-        Nx = DS.getNetParam(data, 'Ne_x')
-        Ny = DS.getNetParam(data, 'Ne_y')
-        kw['title'] = 'E cells $\\rightarrow$ I cell'
-
-    elif (type == 'E'):
-        var = 'g_EI'
-        Nx = DS.getNetParam(data, 'Ni_x')
-        Ny = DS.getNetParam(data, 'Ni_y')
-        kw['title'] = 'I cells $\\rightarrow$ E cell'
-
-    conns = np.reshape(data[var][neuronIdx, :], (Ny, Nx))
-    pconn.plot2DWeightMatrix(conns, **kw)
-
-
-
-
-
-##############################################################################
-gIdx = 15
-neuronIdx = 0
-
-figSize = (1.75, 1.75)
-left   = 0.35
-bottom = 0.32
-right  = 0.95
-top    = 0.85
-transparent = True
-
-sp = JobTrialSpace2D(shape, connDataRoot)
-
-#if args.hists or args.all:
-#    fig = plt.figure('E2I', figsize=figSize)
-#    ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
-#    plotEToI(sp, gIdx, neuronIdx)
-#    fname = outputDir + "/figure_connections_E2I.pdf"
-#    plt.savefig(fname, dpi=300, transparent=transparent)
-#
-#
-#    fig = plt.figure('I2E', figsize=figSize)
-#    ax = fig.add_axes(Bbox.from_extents(left, bottom, right, top))
-#    plotIToE(sp, gIdx, neuronIdx, ylabel='')
-#    fname = outputDir + "/figure_connections_I2E.pdf"
-#    plt.savefig(fname, dpi=300, transparent=transparent)
-
-
 class WeightExamplesHists(FigurePlotter):
+    left   = 0.35
+    bottom = 0.32
+    right  = 0.95
+    top    = 0.85
+
+    neuronIdx = 0
+
     def __init__(self, *args, **kwargs):
         super(WeightExamplesHists, self).__init__(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
+        ps = self.env.ps
         output_dir = self.config['output_dir']
 
         exampleFigSize = (1.6, 1.4)
@@ -224,69 +155,233 @@ class WeightExamplesHists(FigurePlotter):
 
             fig = self._get_final_fig(exampleFigSize)
             ax = fig.add_axes(Bbox.from_extents(exLeft, exBottom, exRight, exTop))
-            plotEToI(sp, example[0], neuronIdx, ylabel='', title='',
+            plotEToI(ps.conn, example[0], self.neuronIdx, ylabel='', title='',
                     rwidth=0.8,
                     linewidth=0,
                     **kw)
             ax.yaxis.set_minor_locator(ti.NullLocator())
             ax.set_xlabel(ax.xaxis.get_label_text(), labelpad=-5)
             fname = output_dir + "/figure_connections_examples_E2I{0}.pdf"
-            plt.savefig(fname.format(exIdx), dpi=300, transparent=transparent)
+            plt.savefig(fname.format(exIdx), dpi=300, transparent=True)
             plt.close()
 
 
             fig = self._get_final_fig(exampleFigSize)
             axBoundaries = (exLeft, exBottom, exRight, exTop)
-            axBottom, axTop = plotIToEBrokenAxis(sp, example[1], neuronIdx,
-                    ylabel='', title='',
-                    axBoundaries=axBoundaries,
-                    axesProportions=(0.75, 0.2),
-                    bottomLimits=(0, 60),
-                    topLimits=(800, 900),
-                    rwidth=0.8,
-                    linewidth=0,
-                    **kw)
+            axBottom, axTop = plotIToEBrokenAxis(ps.conn, example[1],
+                                                 self.neuronIdx,
+                                                 ylabel='', title='',
+                                                 axBoundaries=axBoundaries,
+                                                 axesProportions=(0.75, 0.2),
+                                                 bottomLimits=(0, 60),
+                                                 topLimits=(800, 900),
+                                                 rwidth=0.8,
+                                                 linewidth=0,
+                                                 **kw)
             axBottom.set_xlabel(axBottom.xaxis.get_label_text(), labelpad=-5)
-            fig.text(exLeft - 0.27, 0.5*(bottom+top), 'Count',
+            fig.text(exLeft - 0.27, 0.5*(self.bottom+self.top), 'Count',
                     rotation=90, ha='center', va='center')
             fname = output_dir + "/figure_connections_examples_I2E{0}.pdf"
-            plt.savefig(fname.format(exIdx), dpi=300, transparent=transparent)
+            plt.savefig(fname.format(exIdx), dpi=300, transparent=True)
             plt.close()
 
 
-#if args.weights or args.all:
-#    # As a control: plot the weights from one neuron (outgoing)
-#    # E-->I
-#    fig = plt.figure(figsize=figSize)
-#    plotOutgoing(sp, gIdx, "E", neuronIdx)
-#    fig.tight_layout()
-#    fname = outputDir + "/figure_connections_pcolor_out_E2I.png"
-#    plt.savefig(fname, dpi=300, transparent=False)
-#    plt.close()
-#
-#    # I-->E
-#    fig = plt.figure(figsize=figSize)
-#    plotOutgoing(sp, gIdx, "I", neuronIdx)
-#    fig.tight_layout()
-#    fname = outputDir + "/figure_connections_pcolor_out_I2E.png"
-#    plt.savefig(fname, dpi=300, transparent=False)
-#    plt.close()
-#
-#
-#    # Out of curiosity: plot the weights to one neuron (incoming)
-#    # E-->I
-#    fig = plt.figure('g_in_E2I', figsize=figSize)
-#    plotIncoming(sp, gIdx, "I", neuronIdx)
-#    fig.tight_layout()
-#    fname = outputDir + "/figure_connections_pcolor_in_E2I.png"
-#    plt.savefig(fname, dpi=300, transparent=False)
-#
-#    # I-->E
-#    fig = plt.figure('g_in_I2E', figsize=figSize)
-#    plotIncoming(sp, gIdx, "E", neuronIdx)
-#    fig.tight_layout()
-#    fname = outputDir + "/figure_connections_pcolor_in_I2E.png"
-#    plt.savefig(fname, dpi=300, transparent=False)
+class WeightPlotter(FigurePlotter):
+    '''Color plots of incoming/outgoing synaptic weights of a single neuron.'''
+    def __init__(self, *args, **kwargs):
+        super(WeightPlotter, self).__init__(*args, **kwargs)
+
+    def _get_plotting_kwargs(self):
+        return {
+            'xlabel': self.myc.get('xlabel', 'Neuron #'),
+            'ylabel': self.myc.get('ylabel', 'Neuron #'),
+            'use_title': self.myc.get('use_title', True),
+        }
+
+    def plotOutgoing(self, gIdx, type, neuronIdx, trialNum=0, **kw):
+        '''Plot outgoing weights from a single neuron to all other neurons.'''
+        Nx = None
+        Ny = None
+        use_title = kw.pop('use_title', True)
+
+        data = self.env.ps.conn[0][gIdx][trialNum].data
+        if type == 'E':
+            var = 'g_IE'
+            Nx = DS.getNetParam(data, 'Ni_x')
+            Ny = DS.getNetParam(data, 'Ni_y')
+            kw['title'] = 'E cell $\\rightarrow$ I cells'
+
+        elif type == 'I':
+            var = 'g_EI'
+            Nx = DS.getNetParam(data, 'Ne_x')
+            Ny = DS.getNetParam(data, 'Ne_y')
+            kw['title'] = 'I cell $\\rightarrow$ E cells'
+
+        if not use_title:
+            kw['title'] = ''
+
+        conns = np.reshape(data[var][:, neuronIdx], (Ny, Nx))
+        pconn.plot2DWeightMatrix(conns, **kw)
+
+    def plotIncoming(self, gIdx, type, neuronIdx, trialNum=0, **kw):
+        '''Plot incoming weights of a single neuron from all other neurons.'''
+        Nx = None
+        Ny = None
+        use_title = kw.pop('use_title', True)
+
+        data = self.env.ps.conn[0][gIdx][trialNum].data
+        if type == 'I':
+            var = 'g_IE'
+            Nx = DS.getNetParam(data, 'Ne_x')
+            Ny = DS.getNetParam(data, 'Ne_y')
+            kw['title'] = 'E cells $\\rightarrow$ I cell'
+
+        elif type == 'E':
+            var = 'g_EI'
+            Nx = DS.getNetParam(data, 'Ni_x')
+            Ny = DS.getNetParam(data, 'Ni_y')
+            kw['title'] = 'I cells $\\rightarrow$ E cell'
+
+        if not use_title:
+            kw['title'] = ''
+
+        conns = np.reshape(data[var][neuronIdx, :], (Ny, Nx))
+        pconn.plot2DWeightMatrix(conns, **kw)
+
+
+class WeightOutE2IPlotter(WeightPlotter):
+    '''Outgoing E-->I connections.'''
+    def __init__(self, *args, **kwargs):
+        super(WeightOutE2IPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        fig_size = self.myc['fig_size']
+        g_idx = self.myc['g_idx']
+        neuron_idx = self.myc['neuron_idx']
+
+        # E-->I
+        fig = plt.figure(figsize=fig_size)
+        self.plotOutgoing(g_idx, "E", neuron_idx,
+                          **self._get_plotting_kwargs())
+        fig.tight_layout()
+        fname = self.get_fname("/connections_pcolor_out_E2I.pdf")
+        plt.savefig(fname, dpi=300, transparent=True)
+        plt.close()
+
+
+class WeightOutI2EPlotter(WeightPlotter):
+    '''Outgoing I-->E connections.'''
+    def __init__(self, *args, **kwargs):
+        super(WeightOutI2EPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        fig_size = self.myc['fig_size']
+        g_idx = self.myc['g_idx']
+        neuron_idx = self.myc['neuron_idx']
+
+        # I-->E
+        fig = plt.figure(figsize=fig_size)
+        self.plotOutgoing(g_idx, "I", neuron_idx,
+                          **self._get_plotting_kwargs())
+        fig.tight_layout()
+        fname = self.get_fname("/connections_pcolor_out_I2E.pdf")
+        plt.savefig(fname, dpi=300, transparent=True)
+        plt.close()
+
+
+class WeightInE2IPlotter(WeightPlotter):
+    '''Incoming E-->I connections.'''
+    def __init__(self, *args, **kwargs):
+        super(WeightInE2IPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        fig_size = self.myc['fig_size']
+        g_idx = self.myc['g_idx']
+        neuron_idx = self.myc['neuron_idx']
+
+        # Out of curiosity: plot the weights to one neuron (incoming)
+        # E-->I
+        fig = plt.figure('g_in_E2I', figsize=fig_size)
+        self.plotIncoming(g_idx, "I", neuron_idx,
+                          **self._get_plotting_kwargs())
+        fig.tight_layout()
+        fname = self.get_fname("/connections_pcolor_in_E2I.pdf")
+        plt.savefig(fname, dpi=300, transparent=True)
+
+
+class WeightInI2EPlotter(WeightPlotter):
+    '''Incoming I-->E connections.'''
+    def __init__(self, *args, **kwargs):
+        super(WeightInI2EPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        fig_size = self.myc['fig_size']
+        g_idx = self.myc['g_idx']
+        neuron_idx = self.myc['neuron_idx']
+
+        # I-->E
+        fig = plt.figure('g_in_I2E', figsize=fig_size)
+        self.plotIncoming(g_idx, "E", neuron_idx,
+                          **self._get_plotting_kwargs())
+        fig.tight_layout()
+        fname = self.get_fname("/connections_pcolor_in_I2E.pdf")
+        plt.savefig(fname, dpi=300, transparent=True)
+
+
+class WeightGridPlotter(WeightPlotter):
+    '''Color plots of weights of selected neurons in a grid.'''
+    def __init__(self, *args, **kwargs):
+        super(WeightGridPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        g_idx = self.myc['g_idx']
+        neuron_idx = self.myc['neuron_idx']
+        l, b, r, t = self.myc['bbox_rect']
+
+        fig = self._get_final_fig(self.myc['fig_size'])
+        gs = GridSpec(2, 2)
+        gs.update(left=l, right=r, bottom=b, top=t, hspace=0)
+
+        # E-->I outgoing
+        ax = fig.add_subplot(gs[0, 0])
+        self.plotOutgoing(g_idx, "E", neuron_idx, ax=ax, xlabel='', ylabel='',
+                          use_title=False)
+        ax.set_xticks([])
+
+        # I-->E input
+        ax = fig.add_subplot(gs[0, 1])
+        self.plotIncoming(g_idx, "E", neuron_idx, ax=ax, ylabel='', xlabel='',
+                          use_title=False)
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        # I-->E outgoing
+        ax = fig.add_subplot(gs[1, 0])
+        self.plotOutgoing(g_idx, "I", neuron_idx, ax=ax, use_title=False,
+                          xlabel='', ylabel='')
+
+        # E-->I input
+        ax = fig.add_subplot(gs[1, 1])
+        self.plotIncoming(g_idx, "I", neuron_idx, ax=ax, xlabel='', ylabel='',
+                          use_title=False)
+        ax.set_yticks([])
+
+        fname = self.get_fname("/connections_pcolor_grid.pdf")
+        plt.savefig(fname, dpi=300, transparent=True)
+        plt.close()
+
+        # Add an extra colorbar
+        fig = self._get_final_fig(self.myc['cbar_fig_size'])
+        ax_cbar = fig.add_axes([0.05, 0.80, 0.8, 0.15])
+        cbar = mpl.colorbar.ColorbarBase(ax_cbar, cmap=mpl.cm.jet,
+                                         norm=mpl.colors.Normalize(vmin=0,
+                                                                   vmax=1),
+                                         ticks=[0, 1],
+                                         orientation='horizontal')
+        ax_cbar.xaxis.set_ticklabels(['0', '$g_{E/I}$'])
+        fname_cbar = self.get_fname("/connections_pcolor_grid_colorbar.pdf")
+        plt.savefig(fname_cbar, dpi=300, transparent=True)
+        plt.close()
 
 
 class Burak2009ConnectionPlotter(FigurePlotter):
@@ -353,4 +448,3 @@ class Burak2009ConnectionPlotter(FigurePlotter):
         fname = self.config['output_dir'] + "/intro_burak2009_conn_weights.pdf"
         fig.savefig(fname, dpi=300, transparent=True)
         plt.close()
-

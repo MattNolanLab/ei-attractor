@@ -192,8 +192,6 @@ class DummyPlotter(FigurePlotter):
         pass
 
 
-##############################################################################
-
 class MultiFigureSaver(object):
     '''Matplotlib figure saver that processes several images.
 
