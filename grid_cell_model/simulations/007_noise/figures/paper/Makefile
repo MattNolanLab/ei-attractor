@@ -1,9 +1,9 @@
-.PHONY: clean, thesis, no-theta, fast
+.PHONY: clean, thesis, no-theta, fast, probabilistic-connections, ii-connections
 .SUFFIXES: .py .dummy
 
 THESIS_DIR=~/work/PhDThesis/src
 
-all: fast suppFigure_grid_examples.dummy no-theta no-pc-input
+all: fast suppFigure_grid_examples.dummy no-theta no-pc-input probabilistic-connections ii-connections
 
 fast: figure_bumps.dummy						\
 	figure_drifts.dummy 						\
@@ -43,6 +43,7 @@ clean:
 	cd no_theta; $(MAKE) clean
 	cd no_pc_input; $(MAKE) clean
 	cd probabilistic_connections; $(MAKE) clean
+	cd ii_connections; $(MAKE) clean
 
 thesis:
 	./update_thesis.sh

@@ -15,6 +15,7 @@ __all__ = [
     'DefaultSelector',
     'NoThetaSelector',
     'ProbabilisticConnectionsSelector',
+    'IIConnectionsSelector',
 ]
 
 
@@ -85,3 +86,12 @@ class ProbabilisticConnectionsSelector(SlopeSelector):
         super(ProbabilisticConnectionsSelector, self).__init__(data_root,
                                                                threshold,
                                                                template)
+
+
+class IIConnectionsSelector(SlopeSelector):
+    '''A selector that retrieves data for simulations with I-->I
+    connectivity.'''
+    def __init__(self, data_root, threshold):
+        template = 'bump_slope_ii_connections_{0}pA.h5'
+        super(IIConnectionsSelector, self).__init__(data_root, threshold,
+                                                    template)

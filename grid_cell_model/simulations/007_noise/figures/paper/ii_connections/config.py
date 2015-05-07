@@ -11,13 +11,12 @@ def get_config():
     return _config
 
 
+ROOT_DIR = ['simulation_data', 'submission', 'ii_connections', 'gE_vs_gI']
+
 _config = {
     'grids_data_root': None,
-    'bump_data_root': os.path.join('simulation_data', 'submission',
-                                    'ii_connections',
-                                    'gE_vs_gI',
-                                    'gamma_bump'),
-    'vel_data_root':  None,
+    'bump_data_root': os.path.join(*(ROOT_DIR + ['gamma_bump'])),
+    'vel_data_root':  os.path.join(*(ROOT_DIR + ['velocity'])),
     'const_pos_data_root': None,
     'singleDataRoot': None,
 
@@ -49,5 +48,20 @@ _config = {
     'BumpDriftAtTimePlotter': {
         'plot_grid_contours': [0, 0, 0],
     },
-}
 
+    'VelFitErrSweepPlotter': {
+        'plot_contours' : [0, 0, 0],
+        'vmin': 0.1,
+        'vmax': 12.101,
+    },
+
+    'VelFitStdSweepPlotter': {
+        'plot_contours' : [0, 0, 0],
+    },
+
+    'VelSlopeSweepPlotter': {
+        'plot_contours' : [0, 0, 0],
+        'vmin': -.6,
+        'vmax': 1.64,
+    },
+}
