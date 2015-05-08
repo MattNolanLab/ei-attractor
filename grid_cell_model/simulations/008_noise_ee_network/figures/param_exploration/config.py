@@ -87,7 +87,7 @@ def get_config():
             'xticks': [True]*3,
             'yticks': [True]*3,
             'plot_grid_contours': [0],
-            'ann': [None],
+            'ann': None,
             'bbox': (.15, .17, .9, .9),
             'vmin': None,
             'vmax': None,

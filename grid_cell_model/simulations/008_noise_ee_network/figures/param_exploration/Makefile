@@ -5,7 +5,9 @@ THESIS_DIR=~/work/PhDThesis/src
 
 all: fast
 
-fast: figure_population_activity.dummy
+fast: figure_population_activity.dummy	\
+	  figure_bumps.dummy				\
+	  figure_gamma.dummy
 
 no-theta:
 	cd no_theta; $(MAKE)

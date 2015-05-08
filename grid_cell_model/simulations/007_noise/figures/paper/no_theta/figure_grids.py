@@ -34,11 +34,11 @@ if args.detailed_noise or args.all:
 if args.diff_sweep or args.all:
     env.register_plotter(noisefigs.plotters.GridsDiffSweep)
 
-if args.conn_func or args.all:
-    env.register_plotter(noisefigs.plotters.ConnectionFunctionPlotter)
+#if args.conn_func or args.all:
+#    env.register_plotter(noisefigs.plotters.ConnectionFunctionPlotter)
 
-if args.example_hists or args.all:
-    env.register_plotter(noisefigs.plotters.WeightExamplesHists)
+#if args.example_hists or args.all:
+#    env.register_plotter(noisefigs.plotters.WeightExamplesHists)
 
 if args.grids_pbumps_prob or args.all:
     env.register_plotter(noisefigs.plotters.GridsPBumpsProbabilityPlotter)

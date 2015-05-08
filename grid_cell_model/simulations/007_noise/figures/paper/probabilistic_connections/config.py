@@ -16,7 +16,7 @@ def get_config():
 
 
 _config = {
-    'grids_data_root': None,
+    'grids_data_root': os.path.join(*(DATA_ROOT + ['grids'])),
     'bump_data_root': os.path.join(*(DATA_ROOT + ['gamma_bump'])),
     'vel_data_root':  os.path.join(*(DATA_ROOT + ['velocity'])),
     'const_pos_data_root': None,
@@ -71,6 +71,11 @@ _config = {
         'plot_contours' : [0, 0, 0],
         'vmin': -.24,
         'vmax': 1.3306,
+    },
+
+    'GridSweepsPlotter': {
+        'vmin': -0.5,
+        'vmax': 1.089,
     },
 }
 

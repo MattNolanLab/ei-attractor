@@ -121,10 +121,14 @@ class NoiseDataSpaces(object):
             self.constPos = getNoiseDataSpaces(roots.constPos, noise_sigmas,
                                                shape, space_cls)
 
+        self.conn = None
         if hasattr(roots, 'conn'):
             # Here, we only use the second dimension. The shape of the 1D
             # connection data space should match the parameter sweeps.
-            self.conn = getDataSpace(roots.conn, (1, shape[1]), space_cls)
+            if self.conn is not None:
+                self.conn = getDataSpace(roots.conn, (1, shape[1]), space_cls)
+            else:
+                self.conn = None
 
         self.noise_sigmas = noise_sigmas
 
