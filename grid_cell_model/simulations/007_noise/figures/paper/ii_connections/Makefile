@@ -4,6 +4,7 @@
 all: fast 
 
 fast: figure_bumps.dummy	\
+	figure_grids.dummy		\
 	figure_drifts.dummy 	\
 	figure_gamma.dummy		\
 	figure_seizures.dummy	\

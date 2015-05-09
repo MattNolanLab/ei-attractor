@@ -45,7 +45,6 @@ _config = {
     },
 
     'MaxPopulationFRSweepsPlotter': {
-        'plot_grid_contours': [0, 0, 0],
     },
 
     'PSeizureSweepPlotter': {
@@ -53,11 +52,9 @@ _config = {
     },
 
     'BumpDriftAtTimePlotter': {
-        'plot_grid_contours': [0, 0, 0],
     },
 
     'VelFitErrSweepPlotter': {
-        'plot_contours' : [0, 0, 0],
     },
 
     'VelFitStdSweepPlotter': {
