@@ -29,11 +29,9 @@ _config = {
 
 
     'MainBumpFormationPlotter': {
-        'plot_grid_contours': [0, 0, 0],
     },
 
     'GammaSweepsPlotter': {
-        'plot_grid_contours': [0, 0, 0],
 
         'AC_vmin': -0.15,
         'AC_vmax': 0.6,
@@ -52,7 +50,6 @@ _config = {
 
     'PSeizureSweepPlotter': {
         'FRThreshold': 300,
-        'plot_grid_contours': [0, 0, 0],
     },
 
     'BumpDriftAtTimePlotter': {
@@ -64,11 +61,9 @@ _config = {
     },
 
     'VelFitStdSweepPlotter': {
-        'plot_contours' : [0, 0, 0],
     },
 
     'VelSlopeSweepPlotter': {
-        'plot_contours' : [0, 0, 0],
         'vmin': -.24,
         'vmax': 1.3306,
     },

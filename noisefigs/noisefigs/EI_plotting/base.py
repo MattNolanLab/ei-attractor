@@ -125,7 +125,7 @@ class NoiseDataSpaces(object):
         if hasattr(roots, 'conn'):
             # Here, we only use the second dimension. The shape of the 1D
             # connection data space should match the parameter sweeps.
-            if self.conn is not None:
+            if shape is not None:
                 self.conn = getDataSpace(roots.conn, (1, shape[1]), space_cls)
             else:
                 self.conn = None
