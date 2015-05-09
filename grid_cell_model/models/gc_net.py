@@ -257,6 +257,7 @@ class GridCellNetwork(object):
 
     def _connect_ee(self, pEE_sigma):
         '''Make E-->E connections, according to network options.'''
+        gcnLogger.info('Connecting E-->E (distance-dependent).')
         g_EE_mean = self.no.g_EE_total / self.net_Ne
         print("g_EE_mean: %f nS" % g_EE_mean)
 
