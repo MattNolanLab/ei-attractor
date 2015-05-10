@@ -34,6 +34,47 @@ _config = {
         'F_vmax': 167,
     },
 
+    'GammaExamplePlotter': {
+        'yscale_kw': [[
+            dict(
+                scaleLen=3,
+                unitsText='nA',
+                x=.5, y=.1,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.5, y=.01,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.5, y=-.1,
+                size='x-small'
+            )],
+
+            [dict(
+                scaleLen=5,
+                unitsText='nA',
+                x=.5, y=.01,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.5, y=.05,
+                size='x-small'
+            ),
+            dict(
+                scaleLen=0.5,
+                unitsText='nA',
+                x=.55, y=0,
+                size='x-small'
+            )]],
+    },
+
     'MaxPopulationFRSweepsPlotter': {
     },
 

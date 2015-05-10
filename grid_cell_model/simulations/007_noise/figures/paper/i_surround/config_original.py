@@ -148,9 +148,9 @@ def get_config():
                     size='x-small'
                 ),
                 dict(
-                    scaleLen=0.5,
+                    scaleLen=0.3,
                     unitsText='nA',
-                    x=.5, y=.05,
+                    x=.5, y=-.1,
                     size='x-small'
                 ),
                 dict(

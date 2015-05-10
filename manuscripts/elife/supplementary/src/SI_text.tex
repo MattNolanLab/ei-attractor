@@ -832,7 +832,7 @@ and then subsequently averaged over all simulation trials.
     firing fields (left) and spatial autocorrelation plots (right) for the
     specific values of strengths of recurrent synaptic connections indicated by
     arrows in (D-F), corresponding to the three simulated noise levels.  (D-F)
-    Gridness score as a function of gE and gI for networks without noise (D;
+    Gridness score as a function of $\gE$ and $\gI$ for networks without noise (D;
     $\sigma$ = 0 pA), with noise level set to $\sigma$ = 150 pA (E), and noise
     level set to $\sigma$ = 300 pA (F). Each item in the color plot is an
     average gridness score of two simulation runs. Arrows indicate the
@@ -847,7 +847,18 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_ii_connections}
-    \caption{\todo[inline]{Grids in I$\rightarrow$I networks.}}
+    \caption{Sensitivity of grid firing to changes in inhibition in networks
+    that contain direct I$\rightarrow$I synapses. (A-C) Example
+    firing fields (left) and spatial autocorrelation plots (right) for the
+    specific values of strengths of recurrent synaptic connections indicated by
+    arrows in (D-F), corresponding to the three simulated noise levels.  (D-F)
+    Gridness score as a function of $\gE$ and $\gI$ for networks without noise (D;
+    $\sigma$ = 0 pA), with noise level set to $\sigma$ = 150 pA (E), and noise
+    level set to $\sigma$ = 300 pA (F). Each item in the color plot is an
+    average gridness score of two simulation runs. Arrows indicate the
+    positions of grid field and autocorrelation examples from simulations
+    illustrated in (A-C). Simulations that did not finish in a specified time
+    interval (6 h) are indicated by white color.}
 \end{figure}
 
 \clearpage
@@ -936,21 +947,20 @@ and then subsequently averaged over all simulation trials.
 
 \begin{figure}[H]
     \internallinenumbers
-    \caption{Sensitivity of gamma oscillations and grid fields to changes in
-    the strength of E and I synapses in networks with connection probability
-    between pairs of neurons drawn according to the synaptic profile functions
-    in Figure 1B.  (A-C) Examples of inhibitory (red) and excitatory (blue)
-    synaptic currents recorded respectively from excitatory and inhibitory
-    neurons from simulations highlighted by arrows in panels (D-F).  (D-F) Top:
-    Correlation value at the first local maximum of an autocorrelation of
-    inhibitory synaptic currents (I$\rightarrow$E cells, 25 randomly selected E
-    cells), plotted as a function of gE and gI, for networks without noise (D),
-    with noise level set to $\sigma$ = 150 pA (E), and noise level set to
-    $\sigma$ = 300 pA (F). Each point is an average over five simulation
-    trials. In these simulations velocity and place cell inputs were disabled.
-    The duration of simulations was 10 seconds.  Bottom: Frequency
-    corresponding to the peaks of the autocorrelation functions for simulations
-    in the top panels.}
+    \caption{Sensitivity of gamma oscillations to changes in the strength of E
+    and I synapses in networks with connection probability between pairs of
+    neurons drawn according to the synaptic profile functions in Figure 1B.
+    (A-C) Examples of inhibitory (red) and excitatory (blue) synaptic currents
+    recorded respectively from excitatory and inhibitory neurons from
+    simulations highlighted by arrows in panels (D-F).  (D-F) Top: Correlation
+    value at the first local maximum of an autocorrelation of inhibitory
+    synaptic currents (I$\rightarrow$E cells, 25 randomly selected E cells),
+    plotted as a function of $\gE$ and $\gI$, for networks without noise (D), with
+    noise level set to $\sigma$ = 150 pA (E), and noise level set to $\sigma$ =
+    300 pA (F). Each point is an average over five simulation trials. In these
+    simulations velocity and place cell inputs were disabled.  The duration of
+    simulations was 10 seconds.  Bottom: Frequency corresponding to the peaks
+    of the autocorrelation functions for simulations in the top panels.}
 \end{figure}
 
 \clearpage
@@ -959,7 +969,25 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics{fig/output_figures/figure3S_ii_connections}
-    \caption{\todo[inline]{Gamma with I$\rightarrow$I connections.}}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]
+    \internallinenumbers
+    \caption{Sensitivity of gamma oscillations to changes in the strength of E
+    and I synapses in networks that contain direct I$\rightarrow$I synapses.
+    (A-C) Examples of inhibitory (red) and excitatory (blue) synaptic currents
+    recorded respectively from excitatory and inhibitory neurons from
+    simulations highlighted by arrows in panels (D-F).  (D-F) Top: Correlation
+    value at the first local maximum of an autocorrelation of inhibitory
+    synaptic currents (I$\rightarrow$E cells, 25 randomly selected E cells),
+    plotted as a function of $\gE$ and $\gI$, for networks without noise (D), with
+    noise level set to $\sigma$ = 150 pA (E), and noise level set to $\sigma$ =
+    300 pA (F). Each point is an average over five simulation trials. In these
+    simulations velocity and place cell inputs were disabled.  The duration of
+    simulations was 10 seconds.  Bottom: Frequency corresponding to the peaks
+    of the autocorrelation functions for simulations in the top panels.}
 \end{figure}
 
 \clearpage
@@ -968,7 +996,26 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics{fig/output_figures/figure3S_i_surround}
-    \caption{\todo[inline]{Gamma in I-surround networks.}}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]
+    \internallinenumbers
+    \caption{Sensitivity of gamma oscillations to changes in the strength of E
+    and I synapses in networks in the I-surround configuration (cf.\
+    \cite{Pastoll:2013ff}).  (A-C) Examples of inhibitory (red) and excitatory
+    (blue) synaptic currents recorded respectively from excitatory and
+    inhibitory neurons from simulations highlighted by arrows in panels (D-F).
+    (D-F) Top: Correlation value at the first local maximum of an
+    autocorrelation of inhibitory synaptic currents (I$\rightarrow$E cells, 25
+    randomly selected E cells), plotted as a function of $\gE$ and $\gI$, for
+    networks without noise (D), with noise level set to $\sigma$ = 150 pA (E),
+    and noise level set to $\sigma$ = 300 pA (F). Each point is an average over
+    five simulation trials. In these simulations velocity and place cell inputs
+    were disabled.  The duration of simulations was 10 seconds.  Bottom:
+    Frequency corresponding to the peaks of the autocorrelation functions for
+    simulations in the top panels.}
 \end{figure}
 
 \clearpage
@@ -977,7 +1024,25 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics{fig/output_figures/figure3S_ee_connections}
-    \caption{\todo[inline]{Gamma in E$\rightarrow$E networks.}}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]
+    \internallinenumbers
+    \caption{Sensitivity of gamma oscillations to changes in the strength of E
+    and I synapses in networks that contain direct E$\rightarrow$E connections.
+    (A-C) Examples of inhibitory (red) and excitatory (blue) synaptic currents
+    recorded respectively from excitatory and inhibitory neurons from
+    simulations highlighted by arrows in panels (D-F).  (D-F) Top: Correlation
+    value at the first local maximum of an autocorrelation of inhibitory
+    synaptic currents (I$\rightarrow$E cells, 25 randomly selected E cells),
+    plotted as a function of $\gE$ and $\gI$, for networks without noise (D), with
+    noise level set to $\sigma$ = 150 pA (E), and noise level set to $\sigma$ =
+    300 pA (F). Each point is an average over five simulation trials. In these
+    simulations velocity and place cell inputs were disabled.  The duration of
+    simulations was 10 seconds.  Bottom: Frequency corresponding to the peaks
+    of the autocorrelation functions for simulations in the top panels.}
 \end{figure}
 
 \clearpage
@@ -993,10 +1058,10 @@ and then subsequently averaged over all simulation trials.
     between pairs of neurons drawn according to the synaptic profile functions
     in Figure 1B. (A) Examples of E cell population firing rate snapshots from
     simulations in which velocity and place cell inputs are inactivated. Each
-    row shows a simulation trial with a value of gE and gI highlighted by an
+    row shows a simulation trial with a value of $\gE$ and $\gI$ highlighted by an
     arrow in panel (B). The corresponding probability of bump formation
     (P(bumps)) is indicated to the left.  (B) Color plots show probability of
-    bump formation (P(bumps)), for the simulated range of gE and gI and the
+    bump formation (P(bumps)), for the simulated range of $\gE$ and $\gI$ and the
     three simulated noise levels. Each color point is an average of five 10 s
     simulation runs. Arrows show positions in the parameter space of examples
     in (A).}
@@ -1008,7 +1073,17 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure4S_ii_connections}
-    \caption{\todo[inline]{Bumps with I$\rightarrow$I connections.}}
+    \caption{Continuous attractors in networks that contain direct
+    I$\rightarrow$I synapses. (A) Examples of E cell population firing rate
+    snapshots from simulations in which velocity and place cell inputs are
+    inactivated. Each row shows a simulation trial with a value of $\gE$ and
+    $\gI$
+    highlighted by an arrow in panel (B). The corresponding probability of bump
+    formation (P(bumps)) is indicated to the left.  (B) Color plots show
+    probability of bump formation (P(bumps)), for the simulated range of $\gE$ and
+    $\gI$ and the three simulated noise levels. Each color point is an average of
+    five 10 s simulation runs. Arrows show positions in the parameter space of
+    examples in (A).}
 \end{figure}
 
 \clearpage
@@ -1017,7 +1092,17 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure4S_i_surround}
-    \caption{\todo[inline]{Bumps in I-surround networks.}}
+    \caption{Continuous attractors in networks in the I-surround configuration
+    (cf.\ \cite{Pastoll:2013ff}). (A) Examples of E cell population firing rate
+    snapshots from simulations in which velocity and place cell inputs are
+    inactivated. Each row shows a simulation trial with a value of $\gE$ and
+    $\gI$
+    highlighted by an arrow in panel (B). The corresponding probability of bump
+    formation (P(bumps)) is indicated to the left.  (B) Color plots show
+    probability of bump formation (P(bumps)), for the simulated range of $\gE$ and
+    $\gI$ and the three simulated noise levels. Each color point is an average of
+    five 10 s simulation runs. Arrows show positions in the parameter space of
+    examples in (A).}
 \end{figure}
 
 \clearpage
@@ -1026,7 +1111,17 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure4S_ee_connections}
-    \caption{\todo[inline]{Bumps in E$\rightarrow$E networks.}}
+    \caption{Continuous attractors in networks that contain direct
+    E$\rightarrow$E synapses. (A) Examples of E cell population firing rate
+    snapshots from simulations in which velocity and place cell inputs are
+    inactivated. Each row shows a simulation trial with a value of $\gE$ and
+    $\gI$
+    highlighted by an arrow in panel (B). The corresponding probability of bump
+    formation (P(bumps)) is indicated to the left.  (B) Color plots show
+    probability of bump formation (P(bumps)), for the simulated range of $\gE$ and
+    $\gI$ and the three simulated noise levels. Each color point is an average of
+    five 10 s simulation runs. Arrows show positions in the parameter space of
+    examples in (A).}
 \end{figure}
 
 \clearpage
@@ -1068,10 +1163,31 @@ and then subsequently averaged over all simulation trials.
 \begin{figure}[p]
     \internallinenumbers
     \centering
-        \includegraphics[width=0.95\textwidth]{fig/output_figures/figure5S_prob_conn}
-    \caption{\todo[inline]{Seizures with probabilistic connections.}
-        \todo[inline]{Rescale the figure properly.}
-        \todo[inline]{Add scatter plots if necessary after grids are finished.}}
+        \includegraphics[width=\textwidth]{fig/output_figures/figure5S_prob_conn}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]
+    \internallinenumbers
+    \caption{Seizure-like states in networks with connection probability
+    between pairs of neurons drawn according to the synaptic profile functions
+    in Figure 1B. (A-C) Raster plots show activity of all neurons in the
+    excitatory (red) and inhibitory (blue) populations for the duration of two
+    theta cycles (top), along with the average population firing rates for both
+    populations (center and bottom; calculated with a sliding rectangular
+    window with 2 ms duration and 0.5 ms time step), for networks where noise
+    is absent (A; $\sigma$ = 0), with noise set to $\sigma$ = 150 pA (B), and
+    with noise set to $\sigma$ = 300 pA (C). Simulations were performed in the
+    absence of animal movement and place cell input; $\gE$ = 1 nS and $\gI$ = 3 nS.
+    (D) Maximal average population firing rate of E cells estimated from the
+    whole simulation run (10 s; 500 ms at the beginning of the simulation
+    excluded) for each simulated level of noise. Each point is an average of
+    maxima from 5 simulation runs.  (E) Probability of the maximal
+    population-average firing rate during each theta cycle exceeding 300 Hz,
+    i.e. at least 60\% of E cells firing synchronously within a time period of
+    2 ms in the parameter space of $\gE$ and $\gI$. Black lines indicate regions
+    where gridness score equals 0.5.}
 \end{figure}
 
 \clearpage
@@ -1079,8 +1195,30 @@ and then subsequently averaged over all simulation trials.
 \begin{figure}[p]
     \internallinenumbers
     \centering
-        \includegraphics[width=0.95\textwidth]{fig/output_figures/figure5S_ii_connections}
-    \caption{\todo[inline]{Seizures with I$\rightarrow$I connections.}}
+        \includegraphics[width=\textwidth]{fig/output_figures/figure5S_ii_connections}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]
+    \internallinenumbers
+    \caption{Seizure-like states in networks that contain direct
+    I$\rightarrow$I synapses. (A-C) Raster plots show activity of all neurons
+    in the excitatory (red) and inhibitory (blue) populations for the duration
+    of two theta cycles (top), along with the average population firing rates
+    for both populations (center and bottom; calculated with a sliding
+    rectangular window with 2 ms duration and 0.5 ms time step), for networks
+    where noise is absent (A; $\sigma$ = 0), with noise set to $\sigma$ = 150
+    pA (B), and with noise set to $\sigma$ = 300 pA (C). Simulations were
+    performed in the absence of animal movement and place cell input; $\gE$ = 1 nS
+    and $\gI$ = 3 nS.  (D) Maximal average population firing rate of E cells
+    estimated from the whole simulation run (10 s; 500 ms at the beginning of
+    the simulation excluded) for each simulated level of noise. Each point is
+    an average of maxima from 5 simulation runs.  (E) Probability of the
+    maximal population-average firing rate during each theta cycle exceeding
+    300 Hz, i.e. at least 60\% of E cells firing synchronously within a time
+    period of 2 ms in the parameter space of $\gE$ and $\gI$. Black lines indicate
+    regions where gridness score equals 0.5.}
 \end{figure}
 
 \clearpage
@@ -1089,7 +1227,29 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure5S_i_surround}
-    \caption{\todo[inline]{Seizures in I-surround networks.}}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]
+    \internallinenumbers
+    \caption{Seizure-like states in networks in the I-surround configuration
+    (cf. \cite{Pastoll:2013ff}). (A-C) Raster plots show activity of all
+    neurons in the excitatory (red) and inhibitory (blue) populations for the
+    duration of two theta cycles (top), along with the average population
+    firing rates for both populations (center and bottom; calculated with a
+    sliding rectangular window with 2 ms duration and 0.5 ms time step), for
+    networks where noise is absent (A; $\sigma$ = 0), with noise set to
+    $\sigma$ = 150 pA (B), and with noise set to $\sigma$ = 300 pA (C).
+    Simulations were performed in the absence of animal movement and place cell
+    input; $\gE$ = 1 nS and $\gI$ = 3 nS.  (D) Maximal average population firing rate
+    of E cells estimated from the whole simulation run (10 s; 500 ms at the
+    beginning of the simulation excluded) for each simulated level of noise.
+    Each point is an average of maxima from 5 simulation runs.  (E) Probability
+    of the maximal population-average firing rate during each theta cycle
+    exceeding 300 Hz, i.e. at least 60\% of E cells firing synchronously within
+    a time period of 2 ms in the parameter space of $\gE$ and $\gI$. Black lines
+    indicate regions where gridness score equals 0.5.}
 \end{figure}
 
 \clearpage
@@ -1098,7 +1258,29 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure5S_ee_connections}
-    \caption{\todo[inline]{Seizures in E$\rightarrow$E networks.}}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]
+    \internallinenumbers
+    \caption{Seizure-like states in networks that contain direct
+    E$\rightarrow$E synapses. (A-C) Raster plots show activity of all neurons
+    in the excitatory (red) and inhibitory (blue) populations for the duration
+    of two theta cycles (top), along with the average population firing rates
+    for both populations (center and bottom; calculated with a sliding
+    rectangular window with 2 ms duration and 0.5 ms time step), for networks
+    where noise is absent (A; $\sigma$ = 0), with noise set to $\sigma$ = 150
+    pA (B), and with noise set to $\sigma$ = 300 pA (C). Simulations were
+    performed in the absence of animal movement and place cell input; $\gE$ = 1 nS
+    and $\gI$ = 3 nS.  (D) Maximal average population firing rate of E cells
+    estimated from the whole simulation run (10 s; 500 ms at the beginning of
+    the simulation excluded) for each simulated level of noise. Each point is
+    an average of maxima from 5 simulation runs.  (E) Probability of the
+    maximal population-average firing rate during each theta cycle exceeding
+    300 Hz, i.e. at least 60\% of E cells firing synchronously within a time
+    period of 2 ms in the parameter space of $\gE$ and $\gI$. Black lines indicate
+    regions where gridness score equals 0.5.}
 \end{figure}
 
 \clearpage
@@ -1234,7 +1416,18 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[center]{fig/output_figures/figure6S_ii_connections}
-    \caption{\todo[inline]{Velocity in I$\rightarrow$I networks.}}
+    \caption{Calibration of the gain of the velocity inputs in networks that
+    contain direct I$\rightarrow$I synapses. (A-C) Bump attractor speed as a
+    function of the strength of the velocity current for the three simulated
+    levels of noise. Ten simulation runs were performed for each level of noise
+    (blue markers). In each run the speed of the bump was calculated in
+    response to the injected velocity input and the data were used to fit a
+    linear relationship using an estimation procedure outlined in Supplementary
+    Methods (black line). (D-F) Slope of the estimated velocity gain of the
+    attractor networks as a function of $\gE$ and $\gI$ for all simulated
+    levels of noise. (G-I) Same as in (D-F) but the plots show error of fit for
+    the estimated linear relationships. Arrows show locations of the data
+    plotted in (A-C).}
 \end{figure}
 
 \clearpage
@@ -1243,7 +1436,19 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         %\includegraphics[center]{fig/output_figures/figure6S_ii_connections}
-    \caption{\todo[inline]{Velocity in I-surround networks. Run the simulations}}
+    \caption{Calibration of the gain of the velocity inputs in networks in the
+    I-surround configuration (cf. \cite{Pastoll:2013ff}). (A-C) Bump attractor
+    speed as a function of the strength of the velocity current for the three
+    simulated levels of noise. Ten simulation runs were performed for each
+    level of noise (blue markers). In each run the speed of the bump was
+    calculated in response to the injected velocity input and the data were
+    used to fit a linear relationship using an estimation procedure outlined in
+    Supplementary Methods (black line). (D-F) Slope of the estimated velocity
+    gain of the attractor networks as a function of $\gE$ and $\gI$ for all
+    simulated levels of noise. (G-I) Same as in (D-F) but the plots show error
+    of fit for the estimated linear relationships. Arrows show locations of the
+    data plotted in (A-C).
+    \todo[inline]{Velocity in E$\rightarrow$E networks. Run the simulations}}
 \end{figure}
 
 \clearpage
@@ -1252,7 +1457,19 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         %\includegraphics[center]{fig/output_figures/figure6S_ii_connections}
-    \caption{\todo[inline]{Velocity in E$\rightarrow$E networks. Run the simulations}}
+    \caption{Calibration of the gain of the velocity inputs in networks that
+    contain direct E$\rightarrow$E synapses. (A-C) Bump attractor speed as a
+    function of the strength of the velocity current for the three simulated
+    levels of noise. Ten simulation runs were performed for each level of noise
+    (blue markers). In each run the speed of the bump was calculated in
+    response to the injected velocity input and the data were used to fit a
+    linear relationship using an estimation procedure outlined in Supplementary
+    Methods (black line). (D-F) Slope of the estimated velocity gain of the
+    attractor networks as a function of $\gE$ and $\gI$ for all simulated
+    levels of noise. (G-I) Same as in (D-F) but the plots show error of fit for
+    the estimated linear relationships. Arrows show locations of the data
+    plotted in (A-C).
+    \todo[inline]{Velocity in E$\rightarrow$E networks. Run the simulations}}
 \end{figure}
 
 \end{document}
