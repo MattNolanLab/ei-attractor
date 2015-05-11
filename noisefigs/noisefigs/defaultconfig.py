@@ -6,7 +6,7 @@ import matplotlib.ticker as ti
 from configobj import ConfigObj
 
 from .plotters.base import PdfOutputSaver
-from .plotters.base import SeparateMultipageSaver
+from .plotters.base import SeparateMultipageSaver, ExampleSetting
 
 
 scale_factor = 1.
@@ -521,6 +521,10 @@ def _get_default_config():
 
     IsBumpExamplePlotter_config = {
         'bumpQualityX': -.9,
+        'rateColors': ['k', 'k', 'k', 'k', 'k', 'k', 'k', 'k', 'k', 'k'],
+        #'rateColors': ['k', 'yellow', 'yellow', 'yellow', 'yellow', 'yellow',
+        #               'yellow', 'yellow', 'yellow', 'yellow'],
+        'cbar_fig_size': (0.6, 0.6),
     }
     _default_config['IsBumpExamplePlotter'] = IsBumpExamplePlotter_config
 
@@ -1056,6 +1060,14 @@ def _get_default_config():
         'bbox_rect': (.1, .1, .9, .9),
         'g_idx': 15,
         'neuron_idx': 527,
+    }
+
+    _default_config['GridExampleColorbarPlotter'] = {
+        'fig_size': (0.6, 0.8),
+    }
+
+    _default_config['BumpExampleColorbarPlotter'] = {
+        'fig_size': (0.6, 0.6),
     }
 
     ###########################################################################

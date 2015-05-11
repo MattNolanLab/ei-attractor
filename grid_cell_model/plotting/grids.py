@@ -57,7 +57,8 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
     ax.imshow(rateMap, interpolation='none',
               extent=(X[0, 0], X[0, -1], Y[0, 0], Y[-1, 0]),
               origin='lower',
-              rasterized=False)
+              rasterized=False,
+              vmin=vmin)
     ax.axis('scaled')
     ax.axis('off')
     ax.set_title(titleStr, va='bottom')

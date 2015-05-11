@@ -11,6 +11,7 @@ import config
 parser = flagparse.FlagParser()
 parser.add_flag('--pbumps_sweep')
 parser.add_flag('--bump_examples')
+parser.add_flag('--bump_examples_colorbar')
 parser.add_flag('--bump_running_examples')
 parser.add_argument('--expScatter', action="store_true")
 args = parser.parse_args()
@@ -23,6 +24,9 @@ if args.pbumps_sweep or args.all:
 
 if args.bump_examples or args.all:
     env.register_plotter(noisefigs.plotters.BumpExamplePlotter)
+
+if args.bump_examples_colorbar or args.all:
+    env.register_plotter(noisefigs.plotters.BumpExampleColorbarPlotter)
 
 if args.bump_running_examples or args.all:
     env.register_plotter(noisefigs.plotters.IsBumpExamplePlotter)

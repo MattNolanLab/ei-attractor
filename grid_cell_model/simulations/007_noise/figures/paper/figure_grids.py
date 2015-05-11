@@ -10,6 +10,7 @@ import config
 parser = flagparse.FlagParser()
 parser.add_flag('--grids')
 parser.add_flag('--examplesFlag')
+parser.add_flag('--examples_colorbar')
 parser.add_flag('--detailed_noise')
 parser.add_flag('--diff_sweep')
 parser.add_flag('--grids_pbumps_prob')
@@ -23,6 +24,9 @@ if args.grids or args.all:
 
 if args.examplesFlag or args.all:
     env.register_plotter(noisefigs.plotters.GridExamplesPlotter)
+
+if args.examples_colorbar or args.all:
+    env.register_plotter(noisefigs.plotters.GridExampleColorbarPlotter)
 
 if args.detailed_noise or args.all:
     env.register_plotter(noisefigs.plotters.GridDetailedNoisePlotter)

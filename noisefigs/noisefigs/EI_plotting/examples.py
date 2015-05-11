@@ -349,6 +349,7 @@ def plotBumpSnapshots(FR, FRt, tstep, **kw):
     bumpQuality     = kw.pop('bumpQuality', False)
     bumpQualityText = kw.pop('bumpQualityText', '')
     bumpQualityX    = kw.pop('bumpQualityX', -.9)
+    maxRateColor    = kw.pop('maxRateColor', 'w')
 
     left, bottom, right, top = axesCoords
     width  = right - left
@@ -359,6 +360,8 @@ def plotBumpSnapshots(FR, FRt, tstep, **kw):
     l = left
     bot = bottom
     max = np.max(FR[:, :, indexes])
+    lastIndex = len(indexes) - 1
+    idx = 0
     for it in indexes:
         print it
         t = bot + height
@@ -367,6 +370,11 @@ def plotBumpSnapshots(FR, FRt, tstep, **kw):
 
         ax = fig.add_axes(Bbox.from_extents(l, bot, r, top))
         plotBump(ax, FR[:, :, it], vmin=0, vmax=max, rasterized=True, **kw)
+        if idx == lastIndex:
+            rateText = "%.0f Hz" % max
+            ax.text(1.05, .95, rateText, ha='left', va='top',
+                    color=maxRateColor, transform=ax.transAxes, size='small',
+                    weight='bold')
 
         if bumpQuality and it == 0:
             txt = '{0:.2f}'.format(bumpQuality)
@@ -384,3 +392,6 @@ def plotBumpSnapshots(FR, FRt, tstep, **kw):
                         va='bottom', transform=ax.transAxes)
 
         l += oneWidth
+        idx += 1
+
+    return max  # Hack, but hopefully ok for now

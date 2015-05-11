@@ -1,6 +1,7 @@
 from __future__ import absolute_import, print_function
 
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.gridspec   import GridSpec
@@ -25,6 +26,7 @@ __all__ = [
     'BumpDiffAtInitPlotter',
     'BumpDiffResetPlotter',
     'BumpExamplePlotter',
+    'BumpExampleColorbarPlotter',
     'BumpSigmaDetailedNoisePlotter',
     'MainBumpFormationPlotter',
     'GEProfileWidthBumpPlotter',
@@ -261,6 +263,24 @@ class BumpExamplePlotter(FigurePlotter):
                     gs.update(left=l, bottom=b, right=r, top=t)
                     fig.savefig(fname, dpi=300, transparent=exTransparent)
                     plt.close()
+
+
+class BumpExampleColorbarPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(BumpExampleColorbarPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        fig = self._get_final_fig(self.myc['fig_size'])
+        ax_cbar = fig.add_axes([0.05, 0.07, 0.8, 0.1])
+        cbar = mpl.colorbar.ColorbarBase(ax_cbar, cmap=mpl.cm.jet,
+                                         norm=mpl.colors.Normalize(vmin=0,
+                                                                   vmax=1),
+                                         ticks=[],
+                                         orientation='horizontal')
+        #ax_cbar.yaxis.set_ticklabels(['0', 'Max'])
+        fname_cbar = self.get_fname("bumps_examples_colorbar.pdf")
+        plt.savefig(fname_cbar, dpi=300, transparent=True)
+        plt.close()
 
 
 class BumpSigmaDetailedNoisePlotter(FigurePlotter):

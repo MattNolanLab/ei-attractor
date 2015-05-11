@@ -69,5 +69,8 @@ _config = {
         'vmin': -0.5,
         'vmax': 1.089,
     },
+
+    'IsBumpExamplePlotter': {
+    }
 }
 

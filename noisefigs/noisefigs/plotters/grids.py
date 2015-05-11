@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function
 import string
 
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
@@ -26,6 +27,7 @@ __all__ = [
     'GridSweepsPlotter',
     'GridExamplesPlotter',
     'GridExampleRectPlotter',
+    'GridExampleColorbarPlotter',
     'VmExamplesPlotter',
     'GridDetailedNoisePlotter',
     'GridsDiffSweep',
@@ -36,10 +38,8 @@ __all__ = [
 ]
 
 
-##############################################################################
-# Parameter sweeps of gridness score
-
 class GridSweepsPlotter(SweepPlotter):
+    '''Parameter sweeps of gridness score.'''
     cmap = 'jet'
     varList = ['gridnessScore']
 
@@ -95,9 +95,8 @@ class GridSweepsPlotter(SweepPlotter):
                             **self.config['sweeps']['contours_kwargs'])
 
 
-##############################################################################
-# Parameter sweeps of gridness score with a contour plot
 class ContourGridSweepsPlotter(GridSweepsPlotter):
+    '''Parameter sweeps of gridness score with a contour plot.'''
     def __init__(self, *args, **kwargs):
         super(ContourGridSweepsPlotter, self).__init__(*args, **kwargs)
 
@@ -106,11 +105,8 @@ class ContourGridSweepsPlotter(GridSweepsPlotter):
                 self, *args, plotContours=True, **kwargs)
 
 
-
-
-###############################################################################
-## Grid field examples for the main figure
 class GridExamplesPlotter(FigurePlotter):
+    '''Grid field examples for the main figure.'''
     exampleGridFName = "/grids_examples_{0}pA_{1}.pdf"
     exampleACFName = "/grids_examples_acorr_{0}pA_{1}.pdf"
 
@@ -149,14 +145,14 @@ class GridExamplesPlotter(FigurePlotter):
                 fig= self._get_final_fig(myc['fig_size'])
                 ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
                     exampleRight, exampleTop))
-                gs = examples.plotOneGridACorrExample(ps.grids[ns_idx], rc, ax=ax)
+                gs = examples.plotOneGridACorrExample(ps.grids[ns_idx], rc,
+                                                      ax=ax, vmin=0, vmax=None)
                 plt.savefig(fname, dpi=300, transparent=myc['transparent'])
                 plt.close()
 
 
-###############################################################################
-## Grid field examples - plotted on the sheet
 class GridExampleRectPlotter(FigurePlotter):
+    '''Grid field examples - plotted on the sheet.'''
     cmap = 'jet'
 
     def __init__(self, *args, **kwargs):
@@ -261,15 +257,34 @@ class GridExampleRectPlotter(FigurePlotter):
 
         saver.close()
 
-##############################################################################
-# Membrane potential examples
+
+class GridExampleColorbarPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(GridExampleColorbarPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        fig = self._get_final_fig(self.myc['fig_size'])
+        ax_cbar = fig.add_axes([0.05, 0.07, 0.1, 0.8])
+        cbar = mpl.colorbar.ColorbarBase(ax_cbar, cmap=mpl.cm.jet,
+                                         norm=mpl.colors.Normalize(vmin=0,
+                                                                   vmax=1),
+                                         ticks=[0, 1],
+                                         orientation='vertical')
+        ax_cbar.yaxis.set_ticklabels(['0', 'Max'])
+        fname_cbar = self.get_fname("grids_examples_colorbar.pdf")
+        plt.savefig(fname_cbar, dpi=300, transparent=True)
+        plt.close()
+
+
 def openJob(rootDir, noise_sigma):
     fileTemplate = "noise_sigma{0}_output.h5"
     fileName = rootDir + '/' + fileTemplate.format(int(noise_sigma))
     return DataStorage.open(fileName, 'r')
 
+
 def drawVm(data, noise_sigma, xScaleBar=None, yScaleBar=None,
         ax=plt.gca(), sigmaTitle=True):
+    '''Membrane potential examples.'''
     yScaleX = 0.5
     yScaleY = 1.1
     yScaleXOffset = 0.06
@@ -334,7 +349,6 @@ class VmExamplesPlotter(FigurePlotter):
 
 
 ##############################################################################
-# Detailed noise plots
 EI13Root  = 'simulation_data/submission/detailed_noise/grids/EI-1_3'
 EI31Root  = 'simulation_data/submission/detailed_noise/grids/EI-3_1'
 detailedShape = (31, 9)
@@ -351,6 +365,7 @@ detailRight  = 0.95
 detailTop    = 0.8
 
 class GridDetailedNoisePlotter(FigurePlotter):
+    '''Detailed noise plots.'''
     def __init__(self, *args, **kwargs):
         super(GridDetailedNoisePlotter, self).__init__(*args, **kwargs)
 
@@ -378,11 +393,9 @@ class GridDetailedNoisePlotter(FigurePlotter):
         plt.close()
 
 
-##############################################################################
-# Parameter sweep of the difference between noise_150 and noise_0
 gridTypes = ['grids', 'gridnessScore']
-
 class GridsDiffSweep(SweepPlotter):
+    '''Parameter sweep of the difference between noise_150 and noise_0.'''
     def __init__(self, *args, **kwargs):
         super(GridsDiffSweep, self).__init__(*args, **kwargs)
 
@@ -409,10 +422,8 @@ class GridsDiffSweep(SweepPlotter):
                 )
 
 
-##############################################################################
-# Scatter plot of gridness score vs. P(bump)
-##############################################################################
 class GridBumpScatterPlotter(FigurePlotter):
+    '''Scatter plot of gridness score vs. P(bump).'''
     def __init__(self, *args, **kwargs):
         super(GridBumpScatterPlotter, self).__init__(*args, **kwargs)
 
@@ -464,9 +475,8 @@ class GridBumpScatterPlotter(FigurePlotter):
         fig.savefig(fname, dpi=300)
 
 
-##############################################################################
-# Probability plots of gridness score vs gamma power
 class GridsPBumpsProbabilityPlotter(ProbabilityPlotter):
+    '''Probability plots of gridness score vs gamma power.'''
     def __init__(self, *args, **kwargs):
         super(GridsPBumpsProbabilityPlotter, self).__init__(*args, **kwargs)
 
@@ -539,7 +549,6 @@ class GridsPBumpsProbabilityPlotter(ProbabilityPlotter):
         self.mutual_information(pbumps_all, gridness_all)
 
 
-##############################################################################
 class GridSimpleExamplePlotter(FigurePlotter):
     arenaDiam = 180.0 # cm
 
@@ -607,7 +616,6 @@ class GridSimpleExamplePlotter(FigurePlotter):
         plt.close()
 
 
-##############################################################################
 class HighGridScoreFraction(Computation):
     '''Generate statistics of how many simulations in the Sweep are above
     threshold.'''
@@ -631,3 +639,4 @@ class HighGridScoreFraction(Computation):
             print("\tsigma: %s pA, %d/%d" % (str(noise_sigma),
                                              above,
                                              gscore.size))
+
