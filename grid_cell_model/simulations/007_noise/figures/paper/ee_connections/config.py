@@ -16,7 +16,7 @@ ROOT_DIR = ['simulation_data', 'submission', 'ee_connections']
 _config = {
     'grids_data_root': None,
     'bump_data_root': os.path.join(*(ROOT_DIR + ['gamma_bump'])),
-    'vel_data_root':  None,
+    'vel_data_root':  os.path.join(*(ROOT_DIR + ['velocity'])),
     'const_pos_data_root': None,
     'singleDataRoot': None,
 
@@ -99,8 +99,8 @@ _config = {
 
     'VelFitErrSweepPlotter': {
         'plot_contours': [0, 0, 0],
-        'vmin': 0.1,
-        'vmax': 12.101,
+        'vmin': 0.2,
+        'vmax': 13.93,
     },
 
     'VelFitStdSweepPlotter': {
@@ -109,7 +109,7 @@ _config = {
 
     'VelSlopeSweepPlotter': {
         'plot_contours': [0, 0, 0],
-        'vmin': -.6,
-        'vmax': 1.64,
+        'vmin': -0.26,
+        'vmax': 1.26,
     },
 }
