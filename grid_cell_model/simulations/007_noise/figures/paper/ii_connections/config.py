@@ -24,6 +24,20 @@ _config = {
         'fig_saver': SeparateMultipageSaver(None, 'pdf')
     },
 
+    'GridSweepsPlotter': {
+        'scale_factor': .9,
+        'cbar': [1, 0, 0],
+        'cbar_kw': {
+            'label': 'Gridness score',
+            'fraction': 0.25,
+            'location': 'left',
+            'shrink': 0.8,
+            'pad': .2,
+            'labelpad': 8,
+            'ticks': ti.MultipleLocator(0.5),
+            'rasterized': True
+        },
+    },
 
     'MainBumpFormationPlotter': {
     },

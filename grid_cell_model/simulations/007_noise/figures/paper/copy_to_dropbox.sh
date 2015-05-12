@@ -12,6 +12,7 @@ files="
     $output_fig_dir/figure4.pdf
     $output_fig_dir/figure5.pdf
     $output_fig_dir/figure6.pdf
+    $output_fig_dir/figure7.pdf
     "
 
 #    $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf

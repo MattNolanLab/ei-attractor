@@ -48,6 +48,12 @@ class GridSweepsPlotter(SweepPlotter):
         self.fig = None
         self.ax = None
 
+    def get_fig(self):
+        if 'fig_size' in self.myc:
+            return self._get_final_fig(self.myc['fig_size'])
+        else:
+            return super(GridSweepsPlotter, self).get_fig()
+
     def plot(self, *args, **kwargs):
         sweepc = self._get_sweep_config()
         ps = self.env.ps
