@@ -95,3 +95,12 @@ class IIConnectionsSelector(SlopeSelector):
         template = 'bump_slope_ii_connections_{0}pA.h5'
         super(IIConnectionsSelector, self).__init__(data_root, threshold,
                                                     template)
+
+
+class EEConnectionsSelector(SlopeSelector):
+    '''A selector that retrieves data for simulations with E-->E
+    connectivity.'''
+    def __init__(self, data_root, threshold):
+        template = 'bump_slope_ee_connections_{0}pA.h5'
+        super(EEConnectionsSelector, self).__init__(data_root, threshold,
+                                                    template)
