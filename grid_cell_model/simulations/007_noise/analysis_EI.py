@@ -109,6 +109,10 @@ if common.gridsType in o.type:
                                                      plotOptions=po,
                                                      minGridnessT=300e3,
                                                      forceUpdate=o.forceUpdate)
+    gridVisitor_i = vis.plotting.grids.IGridPlotVisitor(o.output_dir,
+                                                        plotOptions=po,
+                                                        minGridnessT=300e3,
+                                                        forceUpdate=o.forceUpdate)
     isBumpVisitor = vis.bumps.BumpPositionVisitor(tstart=isBump_tstart,
                                                   tend=isBump_tend,
                                                   win_dt=isBump_win_dt,
@@ -125,6 +129,7 @@ if common.gridsType in o.type:
                                              sliding_analysis=False)
 
     sp.visit(gridVisitor)
+    sp.visit(gridVisitor_i)
     #sp.visit(isBumpVisitor)
     #sp.visit(ISIVisitor)
     sp.visit(FRVisitor)

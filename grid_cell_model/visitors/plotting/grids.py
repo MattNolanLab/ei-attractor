@@ -73,9 +73,6 @@ class GridPlotVisitor(DictDSVisitor):
             Arena diameter
         smoothingSigma : float (cm), optional
             Gaussian smoothing kernel width
-        plotBump : bool, optional
-            Whether to plot bump (needs spiking activity of the whole
-            population)
         bumpTStart : float
             Start time for bump (firing rate) plots (ms)
         bumpTEnd   : float
@@ -146,12 +143,24 @@ class GridPlotVisitor(DictDSVisitor):
         s -= startT
         return np.delete(s, np.nonzero(s < 0)[0])
 
+    def _dataPresent(self, root, *keyList):
+        '''Return ``True`` if all keys in ``keyList`` are present in root,
+        otherwise return ``False``.'''
+        if self.forceUpdate:
+            return False
+
+        for key in keyList:
+            if key not in root.keys():
+                return False
+
+        return True
+
     def visitDictDataSet(self, ds, **kw):
         data = ds.data
 
-        if ('analysis' in data.keys() and not self.forceUpdate):
-            log_info("GridPlotVisitor", "Data present. Skipping analysis.")
-            return
+        if 'analysis' not in data.keys():
+            data['analysis'] = {}
+        outputRoot = data['analysis']
 
         simT = self.getOption(data, 'time') # ms
         jobNum = self.getOption(data, 'job_num')
@@ -165,7 +174,6 @@ class GridPlotVisitor(DictDSVisitor):
         rat_dt        = self.getNetParam(data, 'rat_dt')
         velocityStart = self.getOption(data, 'theta_start_t')
         monName_e     = 'spikeMon_e'
-        monName_i     = 'spikeMon_i'
 
         gridSep = self.getOption(data, 'gridSep')
         corr_cutRmin = gridSep / 2
@@ -173,112 +181,280 @@ class GridPlotVisitor(DictDSVisitor):
         spikes_e = DictDSVisitor._getNeuronSpikeTrain(data, monName_e, self.neuronNum)
         spikes_e = self._shiftSpikeTimes(spikes_e, velocityStart)
 
+        out = {}
+
+        if self.po.bump:
+            if not self._dataPresent(outputRoot, 'bump_e'):
+                figure()
+                if self.bumpTStart is None:
+                    bumpTStart = velocityStart
+                if self.bumpTEnd is None:
+                    bumpTEnd = bumpTStart + 1e3
+
+                # E population bump attractor
+                senders_e, times_e, N_e = DictDSVisitor._getSpikeTrain(
+                                                self, data, monName_e, ['Ne_x',
+                                                                        'Ne_y'])
+                sp_e = PopulationSpikes(N_e, senders_e, times_e)
+                Fe = sp_e.avgFiringRate(bumpTStart, bumpTEnd)
+                Ne_x = self.getNetParam(data, 'Ne_x')
+                Ne_y = self.getNetParam(data, 'Ne_y')
+                bump_e = np.reshape(Fe, (Ne_y, Ne_x))
+                torusFiringRate(rateMap=bump_e,
+                                labelx='',
+                                labely='Neuron #',
+                                titleStr='E firing rate')
+                savefig(fileNameTemplate + '_bump_E.png')
+                out['bump_e'] = bump_e
+            else:
+                log_info("GridPlotVisitor",
+                         "Bump data present. Skipping analysis.")
+
+        if self.po.spikes:
+            if not self._dataPresent(outputRoot, 'spikes_e', 'rat_pos_x',
+                                     'rat_pos_y', 'rat_dt'):
+                # E cell spikes
+                figure()
+                plotSpikes2D(spikes_e, pos_x, pos_y, rat_dt)
+                savefig(fileNameTemplate + '_spikePlot_E.png')
+                out['spikes_e'] = spikes_e
+                out['rat_pos_x'] = pos_x
+                out['rat_pos_y'] = pos_y
+                out['rat_dt']    = rat_dt
+            else:
+                log_info("GridPlotVisitor",
+                         "Spike data present. Skipping analysis.")
+
+        if self.po.rateMap:
+            if not self._dataPresent(outputRoot, 'rateMap_e', 'rateMap_e_X',
+                                     'rateMap_e_Y'):
+                # E cell rate map
+                figure()
+                rateMap_e, xedges_e, yedges_e = SNSpatialRate2D(
+                    spikes_e, pos_x, pos_y, rat_dt, self.arenaDiam,
+                    self.smoothingSigma)
+                rateMap_e *= 1e3 # should be Hz
+                X, Y = np.meshgrid(xedges_e, yedges_e)
+                pcolormesh(X, Y, rateMap_e)
+                colorbar()
+                axis('equal')
+                axis('off')
+                savefig('{0}_rateMap_E.png'.format(fileNameTemplate))
+                out['rateMap_e'] = rateMap_e
+                out['rateMap_e_X'] = X
+                out['rateMap_e_Y'] = Y
+            else:
+                log_info("GridPlotVisitor",
+                         "Rate map data present. Skipping analysis.")
+
+        if self.po.fft:
+            if not self._dataPresent(outputRoot, 'FFTX', 'FFTY', 'FFT'):
+                # E cell rate map FFT
+                figure()
+                FT_size = 256
+                FX_e, FY_e, PSD_e_centered = self.computeFFT(rateMap_e,
+                                                             FT_size)
+
+                pcolormesh(FX_e, FY_e, PSD_e_centered)
+                #axis('equal')
+                xlim([-10, 10])
+                ylim([-10, 10])
+                savefig('{0}_fft2_E.png'.format(fileNameTemplate))
+                out['FFTX'] = FX_e
+                out['FFTY'] = FY_e
+                out['FFT']  = PSD_e_centered
+            else:
+                log_info("GridPlotVisitor",
+                         "FFT data present. Skipping analysis.")
+
+        if self.po.sn_ac:
+            if not self._dataPresent(outputRoot, 'corr_X', 'corr_Y', 'corr'):
+                # E cell autocorrelation
+                figure()
+                corr_e, xedges_corr_e, yedges_corr_e = SNAutoCorr(
+                    rateMap_e, self.arenaDiam, self.smoothingSigma)
+                X, Y = np.meshgrid(xedges_corr_e, yedges_corr_e)
+                pcolormesh(X, Y, corr_e)
+                axis('equal')
+                axis('off')
+                savefig('{0}_rateCorr_E.png'.format(fileNameTemplate))
+                out['corr_X'] = X
+                out['corr_Y'] = Y
+                out['corr']   = corr_e
+            else:
+                log_info("GridPlotVisitor",
+                         "Single neuron AC data present. Skipping analysis.")
+
+        if self.po.gridness_ac:
+            if not self._dataPresent(outputRoot, 'gridnessScore',
+                                     'gridnessCorr', 'gridnessAngles'):
+                # E cell gridness correlations
+                figure()
+                G_e, crossCorr_e, angles_e = cellGridnessScore(
+                    rateMap_e, self.arenaDiam, self.smoothingSigma,
+                    corr_cutRmin)
+                plot(angles_e, crossCorr_e)
+                xlabel('Angle (deg.)')
+                ylabel('Corr. coefficient')
+                savefig('{0}_gridnessCorr_E.png'.format(fileNameTemplate))
+                # Gridness score valid only when T >= minGridnessT
+                spikeTimes = data['spikeMon_e']['events']['times']
+                lastSpikeT = spikeTimes[-1] if len(spikeTimes) != 0 else np.nan
+                if lastSpikeT >= self.minGridnessT:
+                    out['gridnessScore']  = G_e
+                else:
+                    log_warn('GridPlotVisitor', 'Simulation too short, G_e <- NaN')
+                    out['gridnessScore']  = np.nan
+                out['gridnessCorr']   = crossCorr_e
+                out['gridnessAngles'] = angles_e
+            else:
+                log_info("GridPlotVisitor",
+                         "Gridness AC data present. Skipping analysis.")
+
+        data['analysis'].update(out)
+
+
+class IGridPlotVisitor(GridPlotVisitor):
+    '''Grid plotting visitor that analyses fields of I cells.
+
+    This visitor does not really plot anything for now, it only performs the
+    analysis and saves the data.'''
+    def __init__(self, rootDir, neuronNum=0, arenaDiam=180.0,
+                 smoothingSigma=3.0, bumpTStart=None, bumpTEnd=None,
+                 minGridnessT=0.0, plotOptions=GridPlotVisitor.PlotOptions(),
+                 forceUpdate=False):
+        '''
+        Parameters
+        ----------
+        rootDir : string
+            Root output directory where to store the output figures.
+        neuronNum : int, optional
+            Neuron index.
+        arenaDiam : float (cm)
+            Arena diameter
+        smoothingSigma : float (cm), optional
+            Gaussian smoothing kernel width
+        bumpTStart : float
+            Start time for bump (firing rate) plots (ms)
+        bumpTEnd   : float
+            End time for bump plots (ms)
+        minGridnessT : float
+            Minimal time (determined by the time of last spike of an E cell) to
+            consider the simulation for gridness score (if less than this time,
+            gridness score will be NaN).
+        plotOptions : PlotOptions
+            A set of flags that specify what should be plotted. TODO: this is
+            broken now, since there are dependencies.
+        forceUpdate : bool
+            Whether to force data analysis and saving of the results even when
+            they already exist.
+        '''
+        super(IGridPlotVisitor, self).__init__(rootDir, 'I', neuronNum,
+                                               arenaDiam, smoothingSigma,
+                                               bumpTStart, bumpTEnd,
+                                               minGridnessT, plotOptions,
+                                               forceUpdate)
+
+
+    def visitDictDataSet(self, ds, **kw):
+        data = ds.data
+
+        if 'analysis' not in data.keys():
+            data['analysis'] = {}
+
+        if 'i_fields' in data['analysis'].keys() and not self.forceUpdate:
+            log_info("IGridPlotVisitor", "Data present. Skipping analysis.")
+            return
+
+
+        simT = self.getOption(data, 'time') # ms
+        jobNum = self.getOption(data, 'job_num')
+        trialNum = kw.get('trialNum', 0)
+        self.createOutputDirs()
+        fileNameTemplate = "{0}/{1}/job{2:05}_trial{3:03}".format(self.rootDir,
+                self.outputDir, jobNum, trialNum)
+
+        pos_x         = self.getNetParam(data, 'rat_pos_x')
+        pos_y         = self.getNetParam(data, 'rat_pos_y')
+        rat_dt        = self.getNetParam(data, 'rat_dt')
+        velocityStart = self.getOption(data, 'theta_start_t')
+        monName_i     = 'spikeMon_i'
+
+        gridSep = self.getOption(data, 'gridSep')
+        corr_cutRmin = gridSep / 2
+
         spikes_i = DictDSVisitor._getNeuronSpikeTrain(data, monName_i, self.neuronNum)
         spikes_i = self._shiftSpikeTimes(spikes_i, velocityStart)
 
         out = {}
 
         if self.po.bump:
-            figure()
             if self.bumpTStart is None:
                 bumpTStart = velocityStart
             if self.bumpTEnd is None:
                 bumpTEnd = bumpTStart + 1e3
 
-            # E population bump attractor
-            senders_e, times_e, N_e = DictDSVisitor._getSpikeTrain(
-                                            self, data, monName_e, ['Ne_x',
+            senders_i, times_i, N_i = DictDSVisitor._getSpikeTrain(
+                                            self, data, monName_i, ['Ne_x',
                                                                     'Ne_y'])
-            sp_e = PopulationSpikes(N_e, senders_e, times_e)
-            Fe = sp_e.avgFiringRate(bumpTStart, bumpTEnd)
+            sp_i = PopulationSpikes(N_i, senders_i, times_i)
+            Fe = sp_i.avgFiringRate(bumpTStart, bumpTEnd)
             Ne_x = self.getNetParam(data, 'Ne_x')
             Ne_y = self.getNetParam(data, 'Ne_y')
-            bump_e = np.reshape(Fe, (Ne_y, Ne_x))
-            torusFiringRate(
-                    rateMap  = bump_e,
-                    labelx   = '',
-                    labely   = 'Neuron #',
-                    titleStr = 'E firing rate')
-            savefig(fileNameTemplate + '_bump_E.png')
-            out['bump_e'] = bump_e
+            bump_i = np.reshape(Fe, (Ne_y, Ne_x))
+            out['bump_i'] = bump_i
 
         if self.po.spikes:
-            # E cell spikes
-            figure()
-            plotSpikes2D(spikes_e, pos_x, pos_y, rat_dt)
-            savefig(fileNameTemplate + '_spikePlot_E.png')
-            out['spikes_e'] = spikes_e
-            out['rat_pos_x'] = pos_x
-            out['rat_pos_y'] = pos_y
-            out['rat_dt']    = rat_dt
+            out['spikes_i'] = spikes_i
 
         if self.po.rateMap:
-            # E cell rate map
             figure()
-            rateMap_e, xedges_e, yedges_e = SNSpatialRate2D(spikes_e, pos_x,
+            rateMap_i, xedges_i, yedges_i = SNSpatialRate2D(spikes_i, pos_x,
                                                             pos_y, rat_dt,
                                                             self.arenaDiam,
                                                             self.smoothingSigma)
-            rateMap_e *= 1e3 # should be Hz
-            X, Y = np.meshgrid(xedges_e, yedges_e)
-            pcolormesh(X, Y, rateMap_e)
-            colorbar()
-            axis('equal')
-            axis('off')
-            savefig('{0}_rateMap_E.png'.format(fileNameTemplate))
-            out['rateMap_e'] = rateMap_e
-            out['rateMap_e_X'] = X
-            out['rateMap_e_Y'] = Y
+            rateMap_i *= 1e3 # should be Hz
+            X, Y = np.meshgrid(xedges_i, yedges_i)
+            #pcolormesh(X, Y, rateMap_i)
+            #colorbar()
+            #axis('equal')
+            #axis('off')
+            #savefig('{0}_rateMap_I.png'.format(fileNameTemplate))
+            out['rateMap_i'] = rateMap_i
+            out['rateMap_i_X'] = X
+            out['rateMap_i_Y'] = Y
 
         if self.po.fft:
-            # E cell rate map FFT
-            figure()
             FT_size = 256
-            FX_e, FY_e, PSD_e_centered = self.computeFFT(rateMap_e, FT_size)
+            FX_i, FY_i, PSD_i_centered = self.computeFFT(rateMap_i, FT_size)
 
-            pcolormesh(FX_e, FY_e, PSD_e_centered)
-            #axis('equal')
-            xlim([-10, 10])
-            ylim([-10, 10])
-            savefig('{0}_fft2_E.png'.format(fileNameTemplate))
-            out['FFTX'] = FX_e
-            out['FFTY'] = FY_e
-            out['FFT']  = PSD_e_centered
+            out['FFTX'] = FX_i
+            out['FFTY'] = FY_i
+            out['FFT']  = PSD_i_centered
 
         if self.po.sn_ac:
-            # E cell autocorrelation
-            figure()
-            corr_e, xedges_corr_e, yedges_corr_e = SNAutoCorr(rateMap_e,
+            corr_i, xedges_corr_i, yedges_corr_i = SNAutoCorr(rateMap_i,
                                                               self.arenaDiam,
                                                               self.smoothingSigma)
-            X, Y = np.meshgrid(xedges_corr_e, yedges_corr_e)
-            pcolormesh(X, Y, corr_e)
-            axis('equal')
-            axis('off')
-            savefig('{0}_rateCorr_E.png'.format(fileNameTemplate))
+            X, Y = np.meshgrid(xedges_corr_i, yedges_corr_i)
             out['corr_X'] = X
             out['corr_Y'] = Y
-            out['corr_e']   = corr_e
+            out['corr_i']   = corr_i
 
         if self.po.gridness_ac:
-            # E cell gridness correlations
-            figure()
-            G_e, crossCorr_e, angles_e = cellGridnessScore(rateMap_e,
+            G_i, crossCorr_i, angles_i = cellGridnessScore(rateMap_i,
                                                            self.arenaDiam,
                                                            self.smoothingSigma,
                                                            corr_cutRmin)
-            plot(angles_e, crossCorr_e)
-            xlabel('Angle (deg.)')
-            ylabel('Corr. coefficient')
-            savefig('{0}_gridnessCorr_E.png'.format(fileNameTemplate))
             # Gridness score valid only when T >= minGridnessT
-            lastSpikeT = data['spikeMon_e']['events']['times'][-1]
+            spikeTimes = data['spikeMon_i']['events']['times']
+            lastSpikeT = spikeTimes[-1] if len(spikeTimes) != 0 else np.nan
             if lastSpikeT >= self.minGridnessT:
-                out['gridnessScore']  = G_e
+                out['gridnessScore']  = G_i
             else:
-                log_warn('GridPlotVisitor', 'Simulation too short, G_e <- NaN')
+                log_warn('IGridPlotVisitor', 'Simulation too short, G_i <- NaN')
                 out['gridnessScore']  = np.nan
-            out['gridnessCorr']   = crossCorr_e
-            out['gridnessAngles'] = angles_e
+            out['gridnessCorr']   = crossCorr_i
+            out['gridnessAngles'] = angles_i
 
-        data['analysis'] = out
+        data['analysis']['i_fields'] = out

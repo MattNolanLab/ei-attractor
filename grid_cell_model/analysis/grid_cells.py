@@ -5,17 +5,17 @@
 #   of grid cell models.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
+#
 #       This program is free software: you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
 #       the Free Software Foundation, either version 3 of the License, or
 #       (at your option) any later version.
-#       
+#
 #       This program is distributed in the hope that it will be useful,
 #       but WITHOUT ANY WARRANTY; without even the implied warranty of
 #       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #       GNU General Public License for more details.
-#       
+#
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -50,7 +50,12 @@ def extractSpikePositions2D(spikeTimes, rat_pos_x, rat_pos_y, dt):
     neuronPos_x = rat_pos_x[neuronPos_i]
     neuronPos_y = rat_pos_y[neuronPos_i]
 
-    return (neuronPos_x, neuronPos_y, np.max(neuronPos_i))
+    if len(neuronPos_i) == 0:
+        max_i = np.nan
+    else:
+        max_i = np.max(neuronPos_i)
+
+    return (neuronPos_x, neuronPos_y, max_i)
 
 
 def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
@@ -158,11 +163,11 @@ def cellGridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
     '''
     rateMap_mean = rateMap - np.mean(np.reshape(rateMap, (1, rateMap.size)))
     autoCorr, autoC_xedges, autoC_yedges = SNAutoCorr(rateMap_mean, arenaDiam, h)
-    
+
     # Remove the center point and
     X, Y = np.meshgrid(autoC_xedges, autoC_yedges)
     autoCorr[np.sqrt(X**2 + Y**2) < corr_cutRmin] = 0
-    
+
     da = 3
     angles = range(0, 180+da, da)
     crossCorr = []
