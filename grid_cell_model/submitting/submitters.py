@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import os, subprocess
+import time
 import errno
 from datetime       import datetime
 
@@ -94,12 +95,20 @@ class ProgramSubmitter(object):
 
 
     def _wait(self):
+        '''Remove the first finished process from the process pool.'''
         if (self._blocking == False or len(self._pList) < self._numCPU):
-            return None
-        p = self._pList.pop(0)
-        errno = p.wait()
-        if not self._ignoreSubmitErrors and (errno is not None and errno != 0):
-            raise SubmitError()
+            return
+
+        while True:
+            for p_idx, p in enumerate(self._pList):
+                errno = p.poll()
+                if errno is None:
+                    time.sleep(10e-3)  # Sleep 10 ms
+                else:
+                    self._pList.pop(p_idx)
+                    if not self._ignoreSubmitErrors and (errno is not None and errno != 0):
+                        raise SubmitError()
+                    return
 
 
     def _addProcess(self, p):
