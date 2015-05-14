@@ -104,3 +104,12 @@ class EEConnectionsSelector(SlopeSelector):
         template = 'bump_slope_ee_connections_{0}pA.h5'
         super(EEConnectionsSelector, self).__init__(data_root, threshold,
                                                     template)
+
+
+class ISurroundOrigSelector(SlopeSelector):
+    '''A selector that retrieves data for the I-surround simulations (with all
+    other config as in the E-surround).'''
+    def __init__(self, data_root, threshold):
+        template = 'bump_slope_i_surround_original_{0}pA.h5'
+        super(ISurroundOrigSelector, self).__init__(data_root, threshold,
+                                                    template)
