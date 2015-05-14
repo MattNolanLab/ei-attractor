@@ -2,6 +2,8 @@
 E-surround configuration.'''
 from __future__ import absolute_import, print_function
 
+import os.path
+
 from configobj import ConfigObj
 import matplotlib.ticker as ti
 
@@ -13,6 +15,9 @@ scale_factor = 1.
 tick_width = 1. * scale_factor
 tick_len   = 6. * scale_factor
 
+ROOT_DIR = ['simulation_data', 'submission', 'i_surround',
+            'original_e_surround']
+
 
 def get_config():
     '''Return the configuration object.'''
@@ -21,8 +26,8 @@ def get_config():
         'scale_factor': scale_factor,
 
         'grids_data_root':      'None',
-        'bump_data_root':       'simulation_data/submission/i_surround/gamma_bump_original_e_surround',
-        'vel_data_root':        None,
+        'bump_data_root':       os.path.join(*(ROOT_DIR + ['gamma_bump'])),
+        'vel_data_root':        os.path.join(*(ROOT_DIR + ['velocity'])),
         'const_pos_data_root':  None,
         'singleDataRoot':       None,
 
@@ -174,6 +179,22 @@ def get_config():
 
         'PSeizureSweepPlotter': {
             'plot_grid_contours': [0, 0, 0],
+        },
+
+        'VelFitErrSweepPlotter': {
+            'plot_contours': [0, 0, 0],
+            'vmin': 0,
+            'vmax': 9.61
+        },
+
+        'VelFitStdSweepPlotter': {
+            'plot_contours': [0, 0, 0],
+        },
+
+        'VelSlopeSweepPlotter': {
+            'plot_contours': [0, 0, 0],
+            'vmin': -0.11,
+            'vmax': 1.531,
         },
 
     })
