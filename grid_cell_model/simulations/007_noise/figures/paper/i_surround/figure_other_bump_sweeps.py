@@ -6,7 +6,7 @@ from grid_cell_model.submitting import flagparse
 import noisefigs
 from noisefigs.env import NoiseEnvironment
 
-import config
+import config_original as config
 
 parser = flagparse.FlagParser()
 parser.add_flag('--pbumps_Iext_e')
@@ -24,6 +24,7 @@ if args.pbumps_Iext_e or args.all:
 
         'noise_sigmas': [0, 150, 300],
         'even_shape': None,
+        'output_dir': 'panels',
     })
     env = NoiseEnvironment(user_config=new_config)
     env.register_class(

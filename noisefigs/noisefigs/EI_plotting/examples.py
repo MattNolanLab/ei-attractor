@@ -1,3 +1,7 @@
+from __future__ import absolute_import, print_function, division
+
+from collections import namedtuple
+
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
@@ -17,6 +21,63 @@ from grid_cell_model.plotting.bumps       import plotBump
 from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 
 
+CorrData = namedtuple('CorrData', ['corr', 'corr_X', 'corr_Y', 'arenaDiams'])
+
+
+def _getCorrData(dataSpace, populationType):
+    '''Get firing field autocorrelation data.
+
+    Parameters
+    ----------
+    dataSpace : JobTrialSpace2D
+        Parameter space to extract data from.
+    populationType : str
+        Either ``E`` will extract data from the E population, or ``I`` will
+        extract data from the I population.
+
+    Returns
+    -------
+    data : CorrData
+        Named tuple that contains the data.
+    '''
+    trialNumList = None
+    if populationType == 'E':
+        corr = dataSpace.aggregateData(['analysis', 'corr'],
+                                       trialNumList=trialNumList,
+                                       saveData=False, loadData=True,
+                                       output_dtype='list')
+        corr_X = dataSpace.aggregateData(['analysis', 'corr_X'],
+                                         trialNumList=[0], saveData=False,
+                                         loadData=True, output_dtype='list')
+        corr_Y = dataSpace.aggregateData(['analysis', 'corr_Y'],
+                                         trialNumList=[0], saveData=False,
+                                         loadData=True, output_dtype='list')
+        arenaDiams = dataSpace.aggregateData(['options', 'arenaSize'],
+                                             trialNumList=[0], saveData=False,
+                                             loadData=True,
+                                             output_dtype='array')
+    elif populationType == 'I':
+        corr = dataSpace.aggregateData(['analysis', 'i_fields', 'corr_i'],
+                                       trialNumList=trialNumList,
+                                       saveData=False, loadData=True,
+                                       output_dtype='list')
+        corr_X = dataSpace.aggregateData(['analysis', 'i_fields', 'corr_X'],
+                                         trialNumList=[0], saveData=False,
+                                         loadData=True, output_dtype='list')
+        corr_Y = dataSpace.aggregateData(['analysis', 'i_fields', 'corr_Y'],
+                                         trialNumList=[0], saveData=False,
+                                         loadData=True, output_dtype='list')
+        arenaDiams = dataSpace.aggregateData(['options', 'arenaSize'],
+                                             trialNumList=[0], saveData=False,
+                                             loadData=True,
+                                             output_dtype='array')
+    else:
+        raise ValueError("Invalid population type: %s. Use either 'E' or 'I'.",
+                         populationType)
+
+    return CorrData(corr=corr, corr_X=corr_X, corr_Y=corr_Y,
+                    arenaDiams=arenaDiams)
+
 
 def plotOneGridExample(dataSpace, rc, iterList, **kw):
     r, c = rc[0], rc[1]
@@ -26,27 +87,18 @@ def plotOneGridExample(dataSpace, rc, iterList, **kw):
 
 
 def plotOneGridACorrExample(dataSpace, rc, trialNum=0, **kw):
+    populationType = kw.pop('populationType', 'E')
     ax = kw.pop('ax', plt.gca())
     kw['rasterized'] = True
 
     r, c, = rc[0], rc[1]
-    trialNumList = None
 
-    corr = dataSpace.aggregateData(['analysis', 'corr'],
-            trialNumList=trialNumList, saveData=False, loadData=True,
-            output_dtype='list')
-    corr_X = dataSpace.aggregateData(['analysis', 'corr_X'], trialNumList=[0],
-            saveData=False, loadData=True, output_dtype='list')
-    corr_Y = dataSpace.aggregateData(['analysis', 'corr_Y'], trialNumList=[0],
-            saveData=False, loadData=True, output_dtype='list')
-    arenaDiams = dataSpace.aggregateData(['options', 'arenaSize'],
-            trialNumList=[0], saveData=False, loadData=True,
-            output_dtype='array')
+    data = _getCorrData(dataSpace, populationType)
 
-    corr      = corr[r][c][trialNum]
-    corr_X    = corr_X[r][c][0]
-    corr_Y    = corr_Y[r][c][0]
-    arenaDiam = arenaDiams[r][c][0]
+    corr      = data.corr[r][c][trialNum]
+    corr_X    = data.corr_X[r][c][0]
+    corr_Y    = data.corr_Y[r][c][0]
+    arenaDiam = data.arenaDiams[r][c][0]
 
     plotAutoCorrelation(corr, corr_X, corr_Y, diam=arenaDiam, ax=ax, **kw)
 
@@ -69,25 +121,65 @@ def plotOneBumpExample(sp, rc, iterList, types, **kw):
 
 
 ##############################################################################
+RateMapData = namedtuple('RateMapData', ['rateMaps',
+                                         'rateMaps_X',
+                                         'rateMaps_Y',
+                                         'arenaDiams',
+                                         'G'])
+
+def _getRateMaps(dataSpace, populationType):
+    '''Return the rate map and gridness score data based on the population
+    type.
+
+    Parameters
+    ----------
+    dataSpace : JobTrialSpace2D
+        Data space to extract the data from.
+    populationType : str
+        Either ``E`` for extracting the data from the E population, or ``I``,
+        for extracting the data from the E population.
+
+    Returns
+    -------
+    data : RateMapData
+        The named tuple object containing all necessary data.
+    '''
+    if populationType == 'E':
+        rateMaps   = aggr.aggregate2D(dataSpace, ['rateMap_e'])
+        rateMaps_X = aggr.aggregate2D(dataSpace, ['rateMap_e_X'])
+        rateMaps_Y = aggr.aggregate2D(dataSpace, ['rateMap_e_Y'])
+        arenaDiams = dataSpace.aggregateData(['options', 'arenaSize'],
+                                            trialNumList=[0], saveData=False,
+                                            loadData=True, output_dtype='array')
+        G = aggr.aggregate2D(dataSpace, ['gridnessScore'])
+    elif populationType == 'I':
+        rateMaps   = aggr.aggregate2D(dataSpace, ['i_fields', 'rateMap_i'])
+        rateMaps_X = aggr.aggregate2D(dataSpace, ['i_fields', 'rateMap_i_X'])
+        rateMaps_Y = aggr.aggregate2D(dataSpace, ['i_fields', 'rateMap_i_Y'])
+        arenaDiams = dataSpace.aggregateData(['options', 'arenaSize'],
+                                            trialNumList=[0], saveData=False,
+                                            loadData=True, output_dtype='array')
+        G = aggr.aggregate2D(dataSpace, ['i_fields', 'gridnessScore'])
+    else:
+        raise ValueError("Unknown population type: %s, must be either 'E' or "
+                         "'I'", populationType)
+
+    return RateMapData(rateMaps=rateMaps, rateMaps_X=rateMaps_X,
+                       rateMaps_Y=rateMaps_Y, arenaDiams=arenaDiams, G=G)
+
 
 def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
         exIdx=(0, 0), xlabel=True, ylabel=True, xlabelPos=-0.2, xlabel2=True,
         ylabel2=True, ylabelPos=-0.2, xlabel2Pos=-0.6, ylabel2Pos=-0.6,
         fontSize=None, maxRate=True, rateStr='Hz', plotGScore=True,
-        rasterized=True, fig=plt.gcf()):
+        rasterized=True, fig=plt.gcf(), populationType='E'):
     left   = spaceRect[0]
     bottom = spaceRect[1]
     right  = min(spaceRect[2], dataSpace.shape[0] - 1)
     top    = min(spaceRect[3], dataSpace.shape[1] - 1)
     exRow, exCol = exIdx
 
-    rateMaps   = aggr.aggregate2D(dataSpace, ['rateMap_e'])
-    rateMaps_X = aggr.aggregate2D(dataSpace, ['rateMap_e_X'])
-    rateMaps_Y = aggr.aggregate2D(dataSpace, ['rateMap_e_Y'])
-    arenaDiams = dataSpace.aggregateData(['options', 'arenaSize'],
-            trialNumList=[0], saveData=False, loadData=True,
-            output_dtype='array')
-    G          = aggr.aggregate2D(dataSpace, ['gridnessScore'])
+    data = _getRateMaps(dataSpace, populationType)
 
     scaleBar = None
     exRows = top - bottom + 1
@@ -103,14 +195,14 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
     ax = None
     for r in range(bottom, top+1):
         for c in range(left, right+1):
-            print r, c
+            print(r, c)
 
             gsRow = top - r
             gsCol = c - left
 
             ax = fig.add_subplot(gs[gsRow, gsCol])
-            X         = rateMaps_X[r][c][0]
-            Y         = rateMaps_Y[r][c][0]
+            X         = data.rateMaps_X[r][c][0]
+            Y         = data.rateMaps_Y[r][c][0]
 
             if (ylabel and gsCol == 0):
                 label = "{0:.2f}".format(we[r][c])
@@ -130,14 +222,14 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
                         va='center', ha='right', rotation=90,
                         fontsize=fontSize)
 
-            rateMap   = rateMaps[r][c][trialNum]
-            if not isinstance(rateMap, np.ndarray) or np.isnan(G[r][c][0]):
+            rateMap   = data.rateMaps[r][c][trialNum]
+            if not isinstance(rateMap, np.ndarray) or np.isnan(data.G[r][c][0]):
                 ax.axis('off')  # remove empty Axes when data is missing
                 continue
 
-            arenaDiam = arenaDiams[r][c][0]
+            arenaDiam = data.arenaDiams[r][c][0]
             if (plotGScore):
-                gScore = G[r][c][0]
+                gScore = data.G[r][c][0]
             else:
                 gScore = None
             plotGridRateMap(rateMap, X, Y, diam=arenaDiam, scaleBar=scaleBar,
@@ -201,7 +293,7 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, types, **kw):
     ax = None
     for r in range(bottom, top+1):
         for c in range(left, right+1):
-            print r, c
+            print(r, c)
             bump = bumps[r][c][trialNum]
             if (not isinstance(bump, np.ndarray)):
                 continue
@@ -363,10 +455,10 @@ def plotBumpSnapshots(FR, FRt, tstep, **kw):
     lastIndex = len(indexes) - 1
     idx = 0
     for it in indexes:
-        print it
+        print(it)
         t = bot + height
         r = l + oneWidth - axesDiv
-        print l, bot, r, top
+        print(l, bot, r, top)
 
         ax = fig.add_axes(Bbox.from_extents(l, bot, r, top))
         plotBump(ax, FR[:, :, it], vmin=0, vmax=max, rasterized=True, **kw)

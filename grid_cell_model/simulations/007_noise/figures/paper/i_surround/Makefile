@@ -29,6 +29,8 @@ no-pc-input:
 
 clean:
 	rm -f $$(git ls-files -i --exclude-standard -o panels)
+	rm -f $$(git ls-files -i --exclude-standard -o panels_original_e_surround)
+	rm -f $$(git ls-files -i --exclude-standard -o panels_ratio_corrected)
 
 thesis:
 	./update_thesis.sh

@@ -25,7 +25,7 @@ def get_config():
     _default_config.merge({
         'scale_factor': scale_factor,
 
-        'grids_data_root':      'None',
+        'grids_data_root':      os.path.join(*(ROOT_DIR + ['grids'])),
         'bump_data_root':       os.path.join(*(ROOT_DIR + ['gamma_bump'])),
         'vel_data_root':        os.path.join(*(ROOT_DIR + ['velocity'])),
         'const_pos_data_root':  None,

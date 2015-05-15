@@ -24,6 +24,12 @@ if args.grids or args.all:
 
 if args.examplesFlag or args.all:
     env.register_plotter(noisefigs.plotters.GridExamplesPlotter)
+    env.register_plotter(noisefigs.plotters.GridExamplesPlotter,
+                         config={
+                            'GridExamplesPlotter': {
+                                'population_type': 'I'
+                            },
+                         })
 
 if args.examples_colorbar or args.all:
     env.register_plotter(noisefigs.plotters.GridExampleColorbarPlotter)

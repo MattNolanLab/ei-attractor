@@ -113,23 +113,36 @@ class ContourGridSweepsPlotter(GridSweepsPlotter):
 
 class GridExamplesPlotter(FigurePlotter):
     '''Grid field examples for the main figure.'''
-    exampleGridFName = "/grids_examples_{0}pA_{1}.pdf"
-    exampleACFName = "/grids_examples_acorr_{0}pA_{1}.pdf"
 
     def __init__(self, *args, **kwargs):
         super(GridExamplesPlotter, self).__init__(*args, **kwargs)
+
+    def _get_field_figname(self, noise_sigma, example_idx, population_type):
+        if population_type == 'E':  # Backwards compatibility
+            population_type=''
+
+        return self.get_fname("/grids_examples_{ns}pA_{idx}{pop_type}.pdf",
+                              ns=noise_sigma, idx=example_idx,
+                              pop_type=population_type)
+
+    def _get_ac_figname(self, noise_sigma, example_idx, population_type):
+        if population_type == 'E':  # Backwards compatibility
+            population_type=''
+
+        return self.get_fname(
+            "/grids_examples_acorr_{ns}pA_{idx}{pop_type}.pdf",
+            ns=noise_sigma, idx=example_idx, pop_type=population_type)
 
     def plot(self, *args, **kwargs):
         myc= self._get_class_config()
         ps = self.env.ps
         exampleLeft, exampleBottom, exampleRight, exampleTop = myc['ax_box']
         example_idx = self.config['grids']['example_idx']
+        population_type = self.myc.get('population_type', 'E')
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             for idx, rc in enumerate(self.config['grids']['example_rc']):
                 # Grid field
-                fname = (self.config['output_dir'] +
-                            self.exampleGridFName.format(noise_sigma, idx))
                 fig = self._get_final_fig(myc['fig_size'])
                 gs = examples.plotOneGridExample(
                         ps.grids[ns_idx],
@@ -139,21 +152,25 @@ class GridExamplesPlotter(FigurePlotter):
                         xlabel=False, ylabel=False,
                         xlabel2=False, ylabel2=False,
                         maxRate=True, plotGScore=False,
-                        fig=fig)
+                        fig=fig,
+                        populationType=population_type)
                 gs.update(left=exampleLeft, bottom=exampleBottom, right=exampleRight,
                         top=exampleTop)
-                plt.savefig(fname, dpi=300, transparent=myc['transparent'])
+                plt.savefig(self._get_field_figname(noise_sigma, idx,
+                                                    population_type), dpi=300,
+                            transparent=myc['transparent'])
                 plt.close()
 
                 # Autocorrelation
-                fname = (self.config['output_dir'] +
-                            self.exampleACFName.format(noise_sigma, idx))
                 fig= self._get_final_fig(myc['fig_size'])
                 ax = fig.add_axes(Bbox.from_extents(exampleLeft, exampleBottom,
                     exampleRight, exampleTop))
-                gs = examples.plotOneGridACorrExample(ps.grids[ns_idx], rc,
-                                                      ax=ax, vmin=0, vmax=None)
-                plt.savefig(fname, dpi=300, transparent=myc['transparent'])
+                gs = examples.plotOneGridACorrExample(
+                    ps.grids[ns_idx], rc, ax=ax, vmin=0, vmax=None,
+                    populationType=population_type)
+                plt.savefig(self._get_ac_figname(noise_sigma, idx,
+                                                 population_type), dpi=300,
+                            transparent=myc['transparent'])
                 plt.close()
 
 

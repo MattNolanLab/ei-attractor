@@ -9,11 +9,13 @@ from aggregate import AggregationParser
 
 parser = AggregationParser()
 parser.add_flag('--gridFields')
+parser.add_flag('--gridFields_i_cells')
 parser.add_flag('--FR')
 args = parser.parse_args()
 
 trialNumList = range(args.ntrials)
 varListBase = ['analysis']
+varListBase_i = ['analysis', 'i_fields']
 
 ################################################################################
 for subDir in parser.subdirs:
@@ -46,6 +48,29 @@ for subDir in parser.subdirs:
                          loadData=parser.load_data, output_dtype='array')
         sp.aggregateData(['options', 'arenaSize'],
                          [trialNumList[0]], funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='array')
+
+    if args.gridFields_i_cells or args.all:
+        sp.aggregateData(varListBase_i + ['rateMap_i'],
+                         trialNumList, funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='list')
+        sp.aggregateData(varListBase_i + ['rateMap_i_X'],
+                         [trialNumList[0]], funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='list')
+        sp.aggregateData(varListBase_i + ['rateMap_i_Y'],
+                         [trialNumList[0]], funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='list')
+        sp.aggregateData(varListBase_i + ['corr_i'],
+                         trialNumList, funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='list')
+        sp.aggregateData(varListBase_i + ['corr_X'],
+                         [trialNumList[0]], funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='list')
+        sp.aggregateData(varListBase_i + ['corr_Y'],
+                         [trialNumList[0]], funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='list')
+        sp.aggregateData(varListBase_i + ['gridnessScore'],
+                         trialNumList, funReduce=None, saveData=True,
                          loadData=parser.load_data, output_dtype='array')
 
     if args.FR or args.all:

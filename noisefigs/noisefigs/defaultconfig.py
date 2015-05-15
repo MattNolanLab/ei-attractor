@@ -150,6 +150,7 @@ def _get_default_config():
         'fig_size': (1, 1.2),
         'ax_box': (0.01, 0.01, 0.99, 0.85),  # l, b, r, t
         'transparent': True,
+        'population_type' : 'E',
     }
     _default_config['GridExamplesPlotter'] = GridExamplesPlotter_config
 
