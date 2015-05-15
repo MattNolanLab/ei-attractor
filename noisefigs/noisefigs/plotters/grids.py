@@ -28,6 +28,7 @@ __all__ = [
     'GridExamplesPlotter',
     'GridExampleRectPlotter',
     'GridExampleColorbarPlotter',
+    'GridnessCorrelationPlotter',
     'VmExamplesPlotter',
     'GridDetailedNoisePlotter',
     'GridsDiffSweep',
@@ -54,24 +55,51 @@ class GridSweepsPlotter(SweepPlotter):
         else:
             return super(GridSweepsPlotter, self).get_fig()
 
-    def plot(self, *args, **kwargs):
-        sweepc = self._get_sweep_config()
-        ps = self.env.ps
-        example_idx = self.config['grids']['example_idx']
+    def _get_grid_data(self, space, ns_idx, population_type):
+        '''Return grid data based on the selected population type.'''
         iter_list = self.config['iter_list']
+        example_idx = self.config['grids']['example_idx']
 
-        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-            fname = (self.config['output_dir'] +
-                     "/grids_sweeps{0}.pdf".format(int(noise_sigma)))
-            self.data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
-                                           ignoreNaNs=True, normalizeTicks=True,
+        grid_data = None
+        if population_type == 'E':
+            grid_data = aggr.GridnessScore(space, iter_list,
+                                           ignoreNaNs=True,
+                                           normalizeTicks=True,
                                            r=example_idx[ns_idx][0],
                                            c=example_idx[ns_idx][1])
+        elif population_type == 'I':
+            grid_data = aggr.IGridnessScore(space, iter_list,
+                                            ignoreNaNs=True,
+                                            normalizeTicks=True,
+                                            r=example_idx[ns_idx][0],
+                                            c=example_idx[ns_idx][1])
+        else:
+            raise ValueError("Population type can be only 'E' or 'I', got: %s",
+                             population_type)
+
+        return grid_data
+
+    def _get_population_fname(self, noise_sigma, population_type):
+        if population_type == 'E':
+            population_type = ''
+        return self.get_fname("/grids_sweeps{ns}{pop_type}.pdf".format(
+            ns=int(noise_sigma), pop_type=population_type))
+
+    def plot(self, *args, **kwargs):
+        sweepc = self._get_sweep_config()
+        example_idx = self.config['grids']['example_idx']
+        population_type = self.myc.get('population_type', 'E')
+        ps = self.env.ps
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fname = self._get_population_fname(noise_sigma, population_type)
+            data = self._get_grid_data(ps.grids[ns_idx], ns_idx,
+                                       population_type)
             with self.figure_and_axes(fname, sweepc) as (self.fig, self.ax):
                 # Sweep itself
                 kw = dict()
                 sweeps.plotGridTrial(
-                    self.data,
+                    data,
                     None,
                     None,
                     ps.noise_sigmas[ns_idx],
@@ -92,13 +120,14 @@ class GridSweepsPlotter(SweepPlotter):
                     sigmaTitle=self.myc['sigma_title'],
                     **kw)
 
-                # Contours
+                # Contours, always from E cells
                 if self.myc['plot_contours'][ns_idx]:
-                    contours = sweeps.Contours(self.data,
-                            self.config['sweeps']['grid_contours'])
+                    e_grid_data = self._get_grid_data(ps.grids[ns_idx], ns_idx,
+                                                      'E')
+                    contours = sweeps.Contours(
+                        e_grid_data, self.config['sweeps']['grid_contours'])
                     contours.plot(
-                            self.ax,
-                            **self.config['sweeps']['contours_kwargs'])
+                        self.ax, **self.config['sweeps']['contours_kwargs'])
 
 
 class ContourGridSweepsPlotter(GridSweepsPlotter):
@@ -297,6 +326,40 @@ class GridExampleColorbarPlotter(FigurePlotter):
         fname_cbar = self.get_fname("grids_examples_colorbar.pdf")
         plt.savefig(fname_cbar, dpi=300, transparent=True)
         plt.close()
+
+
+class GridnessCorrelationPlotter(FigurePlotter):
+    '''Plots correlations of the rotated spatial autocorrelation (used for
+    calculating gridness score).'''
+    def __init__(self, *args, **kwargs):
+        super(GridnessCorrelationPlotter, self).__init__(*args, **kwargs)
+
+    def _get_figname(self, noise_sigma, example_idx, population_type):
+        '''Get the figure name, depending on the population type.'''
+        return self.get_fname(
+            "/grids_corr_angles_{ns}pA_{idx}{pop_type}.pdf",
+            ns=noise_sigma, idx=example_idx, pop_type=population_type)
+
+    def plot(self, *args, **kwargs):
+        myc= self._get_class_config()
+        ps = self.env.ps
+        l, b, r, t = myc['bbox_rect']
+        #example_idx = self.config['grids']['example_idx']
+        population_type = self.myc.get('population_type', 'E')
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            for idx, rc in enumerate(self.config['grids']['example_rc']):
+                # Grid field
+                fig = self._get_final_fig(myc['fig_size'])
+                ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+                examples.plotOneCorrAngleExample(ps.grids[ns_idx],
+                                                 rc,
+                                                 ax=ax,
+                                                 populationType=population_type)
+
+                fig.savefig(self._get_figname(noise_sigma, idx,
+                                              population_type))
+                plt.close()
 
 
 def openJob(rootDir, noise_sigma):

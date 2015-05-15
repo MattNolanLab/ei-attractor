@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import absolute_import, print_function
 
+import matplotlib.ticker as ti
 from grid_cell_model.submitting import flagparse
 import noisefigs
 from noisefigs.env import NoiseEnvironment
@@ -11,6 +12,7 @@ parser = flagparse.FlagParser()
 parser.add_flag('--grids')
 parser.add_flag('--examplesFlag')
 parser.add_flag('--examples_colorbar')
+parser.add_flag('--correlation_angles')
 parser.add_flag('--detailed_noise')
 parser.add_flag('--diff_sweep')
 parser.add_flag('--grids_pbumps_prob')
@@ -21,6 +23,18 @@ env = NoiseEnvironment(user_config=config.get_config())
 
 if args.grids or args.all:
     env.register_plotter(noisefigs.plotters.GridSweepsPlotter)
+    env.register_plotter(noisefigs.plotters.GridSweepsPlotter,
+                         config={
+                             'GridSweepsPlotter': {
+                                 'population_type': 'I',
+                                 'plot_contours': [1, 1, 1],
+                                 'vmin': -0.32,
+                                 'vmax': 0.774,
+                                 'cbar_kw': {
+                                     'ticks': ti.MultipleLocator(0.2),
+                                 },
+                             }
+                         })
 
 if args.examplesFlag or args.all:
     env.register_plotter(noisefigs.plotters.GridExamplesPlotter)
@@ -33,6 +47,15 @@ if args.examplesFlag or args.all:
 
 if args.examples_colorbar or args.all:
     env.register_plotter(noisefigs.plotters.GridExampleColorbarPlotter)
+
+if args.correlation_angles or args.all:
+    env.register_plotter(noisefigs.plotters.GridnessCorrelationPlotter)
+    env.register_plotter(noisefigs.plotters.GridnessCorrelationPlotter,
+                         config={
+                             'GridnessCorrelationPlotter': {
+                                 'population_type': 'I',
+                             },
+                         })
 
 if args.detailed_noise or args.all:
     env.register_plotter(noisefigs.plotters.GridDetailedNoisePlotter)

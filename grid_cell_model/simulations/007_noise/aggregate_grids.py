@@ -46,6 +46,12 @@ for subDir in parser.subdirs:
         sp.aggregateData(varListBase + ['gridnessScore'],
                          trialNumList, funReduce=None, saveData=True,
                          loadData=parser.load_data, output_dtype='array')
+        sp.aggregateData(varListBase + ['gridnessAngles'],
+                         trialNumList, funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='list')
+        sp.aggregateData(varListBase + ['gridnessCorr'],
+                         trialNumList, funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='list')
         sp.aggregateData(['options', 'arenaSize'],
                          [trialNumList[0]], funReduce=None, saveData=True,
                          loadData=parser.load_data, output_dtype='array')
@@ -68,6 +74,12 @@ for subDir in parser.subdirs:
                          loadData=parser.load_data, output_dtype='list')
         sp.aggregateData(varListBase_i + ['corr_Y'],
                          [trialNumList[0]], funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='list')
+        sp.aggregateData(varListBase_i + ['gridnessAngles'],
+                         trialNumList, funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='list')
+        sp.aggregateData(varListBase_i + ['gridnessCorr'],
+                         trialNumList, funReduce=None, saveData=True,
                          loadData=parser.load_data, output_dtype='list')
         sp.aggregateData(varListBase_i + ['gridnessScore'],
                          trialNumList, funReduce=None, saveData=True,

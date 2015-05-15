@@ -103,6 +103,53 @@ def plotOneGridACorrExample(dataSpace, rc, trialNum=0, **kw):
     plotAutoCorrelation(corr, corr_X, corr_Y, diam=arenaDiam, ax=ax, **kw)
 
 
+def _getCorrAngleData(dataSpace, populationType):
+    '''Get data containing the correlation values and rotation angles.
+
+    Parameters
+    ----------
+    dataSpace : JobTrialSpace2D
+        Parameter space to extract the data from.
+    populationType : str
+        Either ``E`` for the E cell population, or ``I`` for I cell population.
+
+    Returns
+    -------
+    correlations, angles : lists of arrays
+        Data for correlations and corresponding angles.
+    '''
+    dataRoot = ['analysis']
+
+    if populationType == 'E':
+        pass
+    elif populationType == 'I':
+        dataRoot += ['i_fields']
+    else:
+        raise ValueError("Invalid population type: %s. Must be either 'E' or "
+                         "'I'", populationType)
+
+    correlations = dataSpace.getReduction(dataRoot + ['gridnessCorr'])
+    angles = dataSpace.getReduction(dataRoot + ['gridnessAngles'])
+
+    return correlations, angles
+
+
+def plotOneCorrAngleExample(dataSpace, rc, trialNum=0, **kw):
+    populationType = kw.pop('populationType', 'E')
+    ax = kw.pop('ax', plt.gca())
+
+    r, c = rc[0], rc[1]
+    print("Corr. angle. example; (r, c): ", r, c)
+
+    globalAxesSettings(ax)
+    correlations, angles = _getCorrAngleData(dataSpace, populationType)
+    ax.plot(angles[r][c][trialNum], correlations[r][c][trialNum])
+    ax.set_xlabel('Rotation angle (degrees)')
+    ax.set_ylabel('Correlation')
+    ax.xaxis.set_major_locator(ti.MultipleLocator(30))
+    ax.xaxis.set_major_locator(ti.MultipleLocator(30))
+
+
 def plotOneBumpExample(sp, rc, iterList, types, **kw):
     #keyword
     wspace    = kw.pop('wspace', 0)

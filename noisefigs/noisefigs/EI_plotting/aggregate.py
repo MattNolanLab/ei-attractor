@@ -352,6 +352,13 @@ class GridnessScore(AggregateData):
         return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
 
 
+class IGridnessScore(GridnessScore):
+    '''Extract gridness score of I cells from the aggregated data.'''
+    def __init__(self, space, iterList, **kw):
+       super(IGridnessScore, self).__init__(space, iterList, **kw)
+       self.analysisRoot = ['analysis', 'i_fields']
+
+
 class GammaAggregateData(AggregateData):
     '''Extract power of gamma oscillations from the aggregated data'''
     def __init__(self, what, space, iterList, **kw):

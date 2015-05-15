@@ -173,6 +173,13 @@ def _get_default_config():
     _default_config['GridExampleRectPlotter'] = GridExampleRectPlotter_config
 
     ##############################################################################
+    GridnessCorrelationPlotter_config = {
+        'fig_size': (3.5, 1.5),
+        'bbox_rect': (0.2, 0.35, 0.95, .95),
+    }
+    _default_config['GridnessCorrelationPlotter'] = GridnessCorrelationPlotter_config
+
+    ##############################################################################
 
     GridsDiffSweep_config = {
         'cbar_kw': dict(
