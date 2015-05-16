@@ -1,4 +1,5 @@
-'''I-surround plotting configuration file with Pastoll et al. settings.'''
+'''I-surround plotting configuration file with original settings for the
+E-surround configuration.'''
 from __future__ import absolute_import, print_function
 
 import os.path
@@ -14,7 +15,8 @@ scale_factor = 1.
 tick_width = 1. * scale_factor
 tick_len   = 6. * scale_factor
 
-ROOT_DIR = ['simulation_data', 'submission', 'i_surround', 'pastoll_et_al']
+ROOT_DIR = ['simulation_data', 'submission', 'i_surround',
+            'original_e_surround']
 
 
 def get_config():
@@ -23,13 +25,13 @@ def get_config():
     _default_config.merge({
         'scale_factor': scale_factor,
 
-        'grids_data_root': None,
-        'bump_data_root':  os.path.join(*(ROOT_DIR + ['gamma_bump'])),
-        'vel_data_root':   None,
+        'grids_data_root':      None,
+        'bump_data_root':       None,
+        'vel_data_root':        None,
         'const_pos_data_root':  None,
         'singleDataRoot':       None,
 
-        'output_dir'    : 'panels_pastoll_et_al/',
+        'output_dir'    : None,
         'noise_sigmas'  : [0, 150, 300],
 
         # Sections
@@ -87,7 +89,7 @@ def get_config():
 
         'GenericGammaPlotter': {
             'scale_factor': 1.,
-            'cbar': [1],
+            'cbar': [0, 0, 1],
             'sigma_title': True,
             'cbar_kw': dict(
                 label      = '$1^{st}$ autocorrelation\npeak',
@@ -98,103 +100,13 @@ def get_config():
                 rasterized  = True
             ),
             'xticks': [True]*3,
-            'yticks': [True]*3,
-            'plot_grid_contours': [0],
-            'ann': [None],
+            'yticks': [True, False, False],
+            'plot_grid_contours': [0, 0, 0],
+            'ann': None,
             'bbox': (.15, .17, .9, .9),
             'vmin': None,
             'vmax': None,
         },
-
-        'GammaSweepsPlotter': {
-            'plot_grid_contours': [0, 0, 0],
-            'AC_vmin': .08,
-            'AC_vmax': .65,
-            'AC_cbar_kw': {
-                'ticks': ti.MultipleLocator(0.1),
-            },
-            'F_vmin': 26,
-            'F_vmax': 76.4,
-            'F_cbar_kw': {
-                'ticks': ti.MultipleLocator(10),
-                'extend': 'neither',
-            },
-            },
-
-        'GammaExamplePlotter': {
-            'mon_idx_e': 1,
-            'mon_idx_i': 1,
-            'yscale_kw': [[
-                dict(
-                    scaleLen=5,
-                    unitsText='nA',
-                    x=.5, y=.1,
-                    size='x-small'
-                ),
-                dict(
-                    scaleLen=0.5,
-                    unitsText='nA',
-                    x=.5, y=.05,
-                    size='x-small'
-                ),
-                dict(
-                    scaleLen=0.5,
-                    unitsText='nA',
-                    x=.5, y=.05,
-                    size='x-small'
-                )],
-
-                [dict(
-                    scaleLen=5,
-                    unitsText='nA',
-                    x=.5, y=.1,
-                    size='x-small'
-                ),
-                dict(
-                    scaleLen=0.3,
-                    unitsText='nA',
-                    x=.5, y=-.1,
-                    size='x-small'
-                ),
-                dict(
-                    scaleLen=0.5,
-                    unitsText='nA',
-                    x=.55, y=0,
-                    size='x-small'
-                )]],
-        },
-
-        'BumpDriftAtTimePlotter': {
-            'plot_grid_contours': [0, 0, 0],
-        },
-
-        'MaxPopulationFRSweepsPlotter': {
-            'cbar': [1, 0, 0],
-
-            'plot_grid_contours': [0, 0, 0],
-            'grid_contours': [.5],
-        },
-
-        'PSeizureSweepPlotter': {
-            'plot_grid_contours': [0, 0, 0],
-        },
-
-        'VelFitErrSweepPlotter': {
-            'plot_contours': [0, 0, 0],
-            'vmin': 0,
-            'vmax': 9.61
-        },
-
-        'VelFitStdSweepPlotter': {
-            'plot_contours': [0, 0, 0],
-        },
-
-        'VelSlopeSweepPlotter': {
-            'plot_contours': [0, 0, 0],
-            'vmin': -0.11,
-            'vmax': 1.531,
-        },
-
     })
 
     ##########################################################################

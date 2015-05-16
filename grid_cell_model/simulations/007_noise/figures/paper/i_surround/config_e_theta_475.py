@@ -1,4 +1,5 @@
-'''I-surround plotting configuration file with Pastoll et al. settings.'''
+'''I-surround plotting configuration file with original settings for the
+E-surround configuration but with increased theta/constant drive to E cells.'''
 from __future__ import absolute_import, print_function
 
 import os.path
@@ -14,7 +15,7 @@ scale_factor = 1.
 tick_width = 1. * scale_factor
 tick_len   = 6. * scale_factor
 
-ROOT_DIR = ['simulation_data', 'submission', 'i_surround', 'pastoll_et_al']
+ROOT_DIR = ['simulation_data', 'submission', 'i_surround', 'e_theta_475']
 
 
 def get_config():
@@ -29,7 +30,7 @@ def get_config():
         'const_pos_data_root':  None,
         'singleDataRoot':       None,
 
-        'output_dir'    : 'panels_pastoll_et_al/',
+        'output_dir'    : 'panels_e_theta_475',
         'noise_sigmas'  : [0, 150, 300],
 
         # Sections

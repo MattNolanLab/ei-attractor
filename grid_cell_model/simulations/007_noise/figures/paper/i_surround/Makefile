@@ -6,12 +6,15 @@ THESIS_DIR=~/work/PhDThesis/src
 all: fast
 
 fast: \
-	figure_bumps_ratio_corrected.dummy	\
-	figure_drifts_ratio_corrected.dummy	\
-	figure_gamma_ratio_corrected.dummy	\
 	figure_bumps_original.dummy			\
-	figure_drifts_original.dummy		\
+	figure_bumps_ratio_corrected.dummy	\
+	figure_bumps_e_theta_475.dummy		\
 	figure_gamma_original.dummy			\
+	figure_gamma_ratio_corrected.dummy	\
+	figure_drifts_original.dummy		\
+	figure_drifts_ratio_corrected.dummy	\
+	figure_seizures_original.dummy		\
+	figure_grids_original.dummy			\
 	figure_other_bump_sweeps.py			\
 	figure_other_bump_sweeps.dummy
 
