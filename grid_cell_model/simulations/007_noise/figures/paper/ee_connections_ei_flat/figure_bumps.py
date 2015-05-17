@@ -12,6 +12,7 @@ import config
 
 parser = flagparse.FlagParser()
 parser.add_flag('--pbumps_gEE_EE_sigma')
+parser.add_flag('--pbumps_gEE_EE_sigma_AMPA_3060_GABA_1020')
 args = parser.parse_args()
 
 if args.pbumps_gEE_EE_sigma or args.all:
@@ -25,6 +26,39 @@ if args.pbumps_gEE_EE_sigma or args.all:
         'const_pos_data_root': None,
         'singleDataRoot': None,
 
+        'noise_sigmas': [0, 150, 300],
+        'even_shape': None,
+    })
+    env = NoiseEnvironment(user_config=new_config)
+    env.register_class(
+        noisefigs.plotters.Generic2DPBumpPlotter,
+        config={
+            'Generic2DPBumpPlotter': {
+                'fname': "bumps_Pbumps_gEE_pEE_sigma_{ns}.pdf",
+                'normalize_ticks': (True, False),  # (Y, X)
+                'normalize_type': ('E', None),
+                'xlabel': '$\sigma_{E{\\rightarrow}E}$',
+                'ylabel': '$g_{E{\\rightarrow}E}$',
+                'bbox': (.2, .17, .85, .9),
+
+                'cbar': [0, 0, 1],
+            },
+        })
+    env.plot()
+
+if args.pbumps_gEE_EE_sigma_AMPA_3060_GABA_1020 or args.all:
+    new_config = deepcopy(config.get_config())
+    new_config.update({
+        'grids_data_root': None,
+        'bump_data_root': join('simulation_data', 'submission',
+                               'ee_connections_ei_flat',
+                               'g_EE_total_vs_pEE_sigma_AMPA_3060_GABA_1020',
+                               'gamma_bump'),
+        'vel_data_root':  None,
+        'const_pos_data_root': None,
+        'singleDataRoot': None,
+
+        'output_dir': 'panels_AMPA_3060_GABA_1020',
         'noise_sigmas': [0, 150, 300],
         'even_shape': None,
     })

@@ -74,9 +74,23 @@ class GenericExtractor(MetaDataExtractor):
     def _get_n_neurons(self, pop_type):
         '''Get the number of neurons in the population ``pop_type``.'''
         if pop_type == 'E':
-            return DataSpace.getNetParam(self._sp[0][0][0].data, 'net_Ni')
+            try:
+                return DataSpace.getNetParam(self._sp[0][0][0].data, 'net_Ni')
+            except KeyError:
+                # Try the root 'net_params'. In newever versions of data this
+                # should work
+                return DataSpace.getNetParam(
+                    self._sp[0][0].getAllTrialsAsDataSet().data['net_params'],
+                    'net_Ni')
         else:
-            return DataSpace.getNetParam(self._sp[0][0][0].data, 'net_Ni')
+            try:
+                return DataSpace.getNetParam(self._sp[0][0][0].data, 'net_Ni')
+            except KeyError:
+                # Try the root 'net_params'. In newever versions of data this
+                # should work
+                return DataSpace.getNetParam(
+                    self._sp[0][0].getAllTrialsAsDataSet().data['net_params'],
+                    'net_Ni')
 
     def _extract_data(self, dim):
         '''Extract the data based on dimenision number ``dim``'''
