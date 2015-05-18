@@ -88,6 +88,58 @@ def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
     return  rateMap.T, xedges, yedges
 
 
+def occupancy_prob_dist(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
+    '''Calculate a probability distribution for animal positions in an arena.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    dist : numpy.ndarray
+        Probability distribution for the positional data, given the
+        discretisation of the arena. The first dimension is the y axis, the
+        second dimension is the x axis. The shape of the distribution is equal
+        to the number of items in the discretised edges of the arena.
+    '''
+    assert len(rat_pos_x) == len(rat_pos_y)
+
+    precision = arenaDiam/h
+    xedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
+    yedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
+    dx = xedges[1] - xedges[0]
+    dy = yedges[1] - yedges[0]
+
+    xedges = np.hstack((xedges, [xedges[-1] + dx]))
+    yedges = np.hstack((yedges, [yedges[-1] + dy]))
+
+    H, _, _ = np.histogram2d(rat_pos_x, rat_pos_y, bins=[xedges, yedges], normed=False)
+    return (H / len(rat_pos_x)).T
+
+
+def spatial_sparsity(rate_map, px):
+    '''Compute spatial sparsity according to Buetfering et al., 2014.
+
+    Parameters
+    ----------
+    rate_map : numpy.ndarray
+        A firing rate map, any number of dimensions. If units are in Hz, then
+        the information rate will be in bits/s.
+    px : numpy.ndarray
+        Probability density function for variable ``x``. ``px.shape`` must be
+        equal ``rate_maps.shape``
+
+    Returns
+    -------
+    S : float
+        Spatial sparsity
+    '''
+    rate_map = np.asanyarray(rate_map).flatten()
+    px = np.asanyarray(px).flatten()
+    squared_sum = np.nansum(px * rate_map) ** 2
+    sum_of_squares = np.nansum(px * rate_map**2)
+    return 1 - squared_sum / sum_of_squares
+
 
 def SNAutoCorr(rateMap, arenaDiam, h):
     precision = arenaDiam/h
