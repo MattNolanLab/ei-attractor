@@ -7,6 +7,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
+import scipy.stats
 
 from grid_cell_model.parameters import JobTrialSpace2D
 from grid_cell_model.data_storage import DataStorage
@@ -30,6 +31,8 @@ __all__ = [
     'GridExampleColorbarPlotter',
     'SpatialInfoPlotter',
     'SpatialSparsityPlotter',
+    'SpatialInfoStats',
+    'SpatialSparsityStats',
     'GridnessCorrelationPlotter',
     'VmExamplesPlotter',
     'GridDetailedNoisePlotter',
@@ -362,7 +365,6 @@ class SpatialInfoPlotter(SweepPlotter):
         sweepc = self._get_sweep_config()
         example_idx = self.config['grids']['example_idx']
         iter_list = self.config['iter_list']
-        example_idx = self.config['grids']['example_idx']
         population_type = self.myc.get('population_type', 'E')
         ps = self.env.ps
 
@@ -424,6 +426,169 @@ class SpatialSparsityPlotter(SpatialInfoPlotter):
     def _get_population_fname(self, noise_sigma, population_type):
         return self.get_fname("/grids_spatial_sparsity_{ns}{pop_type}.pdf".format(
             ns=int(noise_sigma), pop_type=population_type))
+
+
+class SpatialInfoStats(DummyPlotter):
+    '''Print spatial information statistics.'''
+
+    def __init__(self, *args, **kwargs):
+        super(SpatialInfoStats, self).__init__(*args, **kwargs)
+        self.grid_threshold = 0.5
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        example_idx = self.config['grids']['example_idx']
+        iter_list = self.config['iter_list']
+
+        print("Spatial information (bits/spike) statistics")
+        print("Filtered for gridness score > 0.5")
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            print("Processing noise_sigma == %d" % int(noise_sigma))
+
+            e_grid_data = aggr.GridnessScore(ps.grids[ns_idx],
+                                             iter_list,
+                                             ignoreNaNs=True,
+                                             normalizeTicks=False,
+                                             r=example_idx[ns_idx][0],
+                                             c=example_idx[ns_idx][1])
+            grid_filter = aggr.GTFilter(e_grid_data, self.grid_threshold)
+            e_grid_filtered = e_grid_data.filter_data(grid_filter)
+
+            e_grid_d = e_grid_filtered.pick_filtered_data()
+            print("\tE gridness mean +- SEM: %f +- %f" % (
+                np.mean(e_grid_d), scipy.stats.sem(e_grid_d)))
+            print("\tE gridness mean +- STD: %f +- %f" % (
+                np.mean(e_grid_d), np.std(e_grid_d)))
+
+            i_grid_data = aggr.IGridnessScore(ps.grids[ns_idx],
+                                              iter_list,
+                                              ignoreNaNs=True,
+                                              normalizeTicks=False,
+                                              r=example_idx[ns_idx][0],
+                                              c=example_idx[ns_idx][1])
+            i_grid_filtered = i_grid_data.filter_data(grid_filter)
+            i_grid_d= i_grid_filtered.pick_filtered_data()
+            print("\tI gridness mean +- SEM: %f +- %f" % (
+                np.mean(i_grid_d), scipy.stats.sem(i_grid_d)))
+            print("\tI gridness mean +- STD: %f +- %f" % (
+                np.mean(i_grid_d), np.std(i_grid_d)))
+            print("\tE vs. I gridness independent: p-value: ",
+                  scipy.stats.ttest_ind(e_grid_d, i_grid_d)[1])
+            print("\tE vs. I gridness related: p-value: ",
+                  scipy.stats.ttest_rel(e_grid_d, i_grid_d)[1])
+
+            e_info_data = aggr.SpatialInformation(ps.grids[ns_idx],
+                                                  iter_list,
+                                                  ignoreNaNs=True,
+                                                  normalizeTicks=True,
+                                                  r=example_idx[ns_idx][0],
+                                                  c=example_idx[ns_idx][1])
+            e_info_filtered = e_info_data.filter_data(grid_filter)
+            e_info_d= e_info_filtered.pick_filtered_data()
+            print("\tE info mean +- SEM: %f +- %f" % (
+                np.mean(e_info_d), scipy.stats.sem(e_info_d)))
+            print("\tE info mean +- STD: %f +- %f" % (
+                np.mean(e_info_d), np.std(e_info_d)))
+
+            i_info_data = aggr.ISpatialInformation(ps.grids[ns_idx],
+                                                   iter_list,
+                                                   ignoreNaNs=True,
+                                                   normalizeTicks=True,
+                                                   r=example_idx[ns_idx][0],
+                                                   c=example_idx[ns_idx][1])
+            i_info_filtered = i_info_data.filter_data(grid_filter)
+            i_info_d = i_info_filtered.pick_filtered_data()
+            print("\tI info mean +- SEM: %f +- %f" % (np.mean(i_info_d),
+                                                      scipy.stats.sem(i_info_d)))
+            print("\tI info mean +- STD: %f +- %f" % (np.mean(i_info_d),
+                                                      np.std(i_info_d)))
+            print("\tE vs. I info independent: p-value: ",
+                  scipy.stats.ttest_ind(e_info_d, i_info_d)[1])
+            print("\tE vs. I info related: p-value: ",
+                  scipy.stats.ttest_rel(e_info_d, i_info_d)[1])
+
+        print("\n")
+
+
+class SpatialSparsityStats(DummyPlotter):
+    '''Print spatial sparsity statistics.'''
+
+    def __init__(self, *args, **kwargs):
+        super(SpatialSparsityStats, self).__init__(*args, **kwargs)
+        self.grid_threshold = 0.5
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        example_idx = self.config['grids']['example_idx']
+        iter_list = self.config['iter_list']
+
+        print("Spatial sparsity statistics")
+        print("Filtered for gridness score > 0.5")
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            print("Processing noise_sigma == %d" % int(noise_sigma))
+
+            e_grid_data = aggr.GridnessScore(ps.grids[ns_idx],
+                                             iter_list,
+                                             ignoreNaNs=True,
+                                             normalizeTicks=False,
+                                             r=example_idx[ns_idx][0],
+                                             c=example_idx[ns_idx][1])
+            grid_filter = aggr.GTFilter(e_grid_data, self.grid_threshold)
+            e_grid_filtered = e_grid_data.filter_data(grid_filter)
+
+            e_grid_d = e_grid_filtered.pick_filtered_data()
+            print("\tE gridness mean +- SEM: %f +- %f" % (
+                np.mean(e_grid_d), scipy.stats.sem(e_grid_d)))
+            print("\tE gridness mean +- STD: %f +- %f" % (
+                np.mean(e_grid_d), np.std(e_grid_d)))
+
+            i_grid_data = aggr.IGridnessScore(ps.grids[ns_idx],
+                                              iter_list,
+                                              ignoreNaNs=True,
+                                              normalizeTicks=False,
+                                              r=example_idx[ns_idx][0],
+                                              c=example_idx[ns_idx][1])
+            i_grid_filtered = i_grid_data.filter_data(grid_filter)
+            i_grid_d = i_grid_filtered.pick_filtered_data()
+            print("\tI gridness mean +- SEM: %f +- %f" % (
+                np.mean(i_grid_d), scipy.stats.sem(i_grid_d)))
+            print("\tI gridness mean +- STD: %f +- %f" % (np.mean(i_grid_d),
+                                                          np.std(i_grid_d)))
+            print("\tE vs. I gridness independent: p-value: ",
+                  scipy.stats.ttest_ind(e_grid_d, i_grid_d)[1])
+            print("\tE vs. I gridness related: p-value: ",
+                  scipy.stats.ttest_rel(e_grid_d, i_grid_d)[1])
+
+            e_sparsity_data = aggr.SpatialSparsity(ps.grids[ns_idx],
+                                                   iter_list,
+                                                   ignoreNaNs=True,
+                                                   normalizeTicks=True,
+                                                   r=example_idx[ns_idx][0],
+                                                   c=example_idx[ns_idx][1])
+            e_sparsity_filtered = e_sparsity_data.filter_data(grid_filter)
+            e_sparsity_d = e_sparsity_filtered.pick_filtered_data()
+            print("\tE sparsity mean +- SEM: %f +- %f" % (
+                np.mean(e_sparsity_d),
+                scipy.stats.sem(e_sparsity_d)))
+            print("\tE sparsity mean +- STD: %f +- %f" % (
+                np.mean(e_sparsity_d), np.std(e_sparsity_d)))
+
+            i_sparsity_data = aggr.ISpatialSparsity(ps.grids[ns_idx],
+                                                    iter_list,
+                                                    ignoreNaNs=True,
+                                                    normalizeTicks=True,
+                                                    r=example_idx[ns_idx][0],
+                                                    c=example_idx[ns_idx][1])
+            i_sparsity_filtered = i_sparsity_data.filter_data(grid_filter)
+            i_sparsity_d = i_sparsity_filtered.pick_filtered_data()
+            print("\tI sparsity mean +- SEM: %f +- %f" % (
+                np.mean(i_sparsity_d), scipy.stats.sem(i_sparsity_d)))
+            print("\tI sparsity mean +- STD: %f +- %f" % (
+                np.mean(i_sparsity_d), np.std(i_sparsity_d)))
+            print("\tE vs. I sparsity independent: p-value: ",
+                  scipy.stats.ttest_ind(e_sparsity_d, i_sparsity_d)[1])
+            print("\tE vs. I sparsity related: p-value: ",
+                  scipy.stats.ttest_rel(e_sparsity_d, i_sparsity_d)[1])
 
 
 class GridnessCorrelationPlotter(FigurePlotter):

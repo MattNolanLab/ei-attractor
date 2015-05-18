@@ -12,6 +12,7 @@ parser = flagparse.FlagParser()
 parser.add_flag('--grids')
 parser.add_flag('--spatial_info')
 parser.add_flag('--sparsity')
+parser.add_flag('--spatial_info_stats')
 parser.add_flag('--examplesFlag')
 parser.add_flag('--examples_colorbar')
 parser.add_flag('--correlation_angles')
@@ -50,6 +51,10 @@ if args.spatial_info or args.all:
                                  'xticks': [True, True, True],
                              },
                          })
+
+if args.spatial_info_stats or args.all:
+    env.register_plotter(noisefigs.plotters.SpatialInfoStats)
+    env.register_plotter(noisefigs.plotters.SpatialSparsityStats)
 
 if args.sparsity or args.all:
     env.register_plotter(noisefigs.plotters.SpatialSparsityPlotter)

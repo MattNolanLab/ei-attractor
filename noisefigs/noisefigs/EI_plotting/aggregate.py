@@ -267,6 +267,11 @@ class FilteredData(AggregateData):
         data.mask = np.logical_or(data.mask, self._filter.get_mask())
         return data, X, Y
 
+    def pick_filtered_data(self):
+        '''Return a 1D flattened array only containing the filtered data.'''
+        data, _, _ = self.getData()
+        return data[data.mask == False].flatten()
+
 
 class AggregateDataFilter(AggregateData):
     def __init__(self, data):
