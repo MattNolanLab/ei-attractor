@@ -34,6 +34,12 @@ for subDir in parser.subdirs:
         sp.aggregateData(varListBase + ['rateMap_e_Y'],
                          [trialNumList[0]], funReduce=None, saveData=True,
                          loadData=parser.load_data, output_dtype='list')
+        sp.aggregateData(varListBase + ['info_specificity'],
+                         trialNumList, funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='array')
+        sp.aggregateData(varListBase + ['sparsity'],
+                         trialNumList, funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='array')
         sp.aggregateData(varListBase + ['corr'],
                          trialNumList, funReduce=None, saveData=True,
                          loadData=parser.load_data, output_dtype='list')
@@ -66,6 +72,12 @@ for subDir in parser.subdirs:
         sp.aggregateData(varListBase_i + ['rateMap_i_Y'],
                          [trialNumList[0]], funReduce=None, saveData=True,
                          loadData=parser.load_data, output_dtype='list')
+        sp.aggregateData(varListBase_i + ['info_specificity'],
+                         trialNumList, funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='array')
+        sp.aggregateData(varListBase_i + ['sparsity'],
+                         trialNumList, funReduce=None, saveData=True,
+                         loadData=parser.load_data, output_dtype='array')
         sp.aggregateData(varListBase_i + ['corr_i'],
                          trialNumList, funReduce=None, saveData=True,
                          loadData=parser.load_data, output_dtype='list')

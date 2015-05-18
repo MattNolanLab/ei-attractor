@@ -234,15 +234,24 @@ class GridPlotVisitor(DictDSVisitor):
                                      'sparsity'):
                 # E cell rate map
                 figure()
-                rateMap_e, xedges_e, yedges_e = SNSpatialRate2D(
-                    spikes_e, pos_x, pos_y, rat_dt, self.arenaDiam,
-                    self.smoothingSigma)
-                rateMap_e *= 1e3 # should be Hz
+
+                # This should speed up info/sparsity computation
+                if not self._dataPresent(outputRoot, 'rateMap_e', 'rateMap_e_X',
+                                         'rateMap_e_Y'):
+                    rateMap_e, xedges_e, yedges_e = SNSpatialRate2D(
+                        spikes_e, pos_x, pos_y, rat_dt, self.arenaDiam,
+                        self.smoothingSigma)
+                    rateMap_e *= 1e3 # should be Hz
+                    X, Y = np.meshgrid(xedges_e, yedges_e)
+                else:
+                    rateMap_e = outputRoot['rateMap_e']
+                    X = outputRoot['rateMap_e_X']
+                    Y = outputRoot['rateMap_e_Y']
+
                 px = occupancy_prob_dist(spikes_e, pos_x, pos_y, rat_dt,
                                          self.arenaDiam, self.smoothingSigma)
                 info_e = information_specificity(rateMap_e, px)
                 sparsity_e = spatial_sparsity(rateMap_e, px)
-                X, Y = np.meshgrid(xedges_e, yedges_e)
                 pcolormesh(X, Y, rateMap_e)
                 colorbar()
                 axis('equal')
@@ -429,16 +438,24 @@ class IGridPlotVisitor(GridPlotVisitor):
                                      'rateMap_i_Y', 'info_specificity',
                                      'sparsity'):
                 figure()
-                rateMap_i, xedges_i, yedges_i = SNSpatialRate2D(spikes_i, pos_x,
-                                                                pos_y, rat_dt,
-                                                                self.arenaDiam,
-                                                                self.smoothingSigma)
-                rateMap_i *= 1e3 # should be Hz
+
+                # This should speed up info/sparsity computation
+                if not self._dataPresent(outputRoot, 'rateMap_i', 'rateMap_i_X',
+                                         'rateMap_i_Y'):
+                    rateMap_i, xedges_i, yedges_i = SNSpatialRate2D(
+                        spikes_i, pos_x, pos_y, rat_dt, self.arenaDiam,
+                        self.smoothingSigma)
+                    rateMap_i *= 1e3 # should be Hz
+                    X, Y = np.meshgrid(xedges_i, yedges_i)
+                else:
+                    rateMap_i = outputRoot['rateMap_i']
+                    X = outputRoot['rateMap_i_X']
+                    Y = outputRoot['rateMap_i_Y']
+
                 px = occupancy_prob_dist(spikes_i, pos_x, pos_y, rat_dt,
                                          self.arenaDiam, self.smoothingSigma)
                 info_i = information_specificity(rateMap_i, px)
                 sparsity_i = spatial_sparsity(rateMap_i, px)
-                X, Y = np.meshgrid(xedges_i, yedges_i)
                 #pcolormesh(X, Y, rateMap_i)
                 #colorbar()
                 #axis('equal')
