@@ -25,7 +25,7 @@ def get_config():
 
         'grids_data_root': None,
         'bump_data_root':  os.path.join(*(ROOT_DIR + ['gamma_bump'])),
-        'vel_data_root':   None,
+        'vel_data_root':   os.path.join(*(ROOT_DIR + ['velocity'])),
         'const_pos_data_root':  None,
         'singleDataRoot':       None,
 
@@ -182,7 +182,7 @@ def get_config():
         'VelFitErrSweepPlotter': {
             'plot_contours': [0, 0, 0],
             'vmin': 0,
-            'vmax': 9.61
+            'vmax': 9.76
         },
 
         'VelFitStdSweepPlotter': {
@@ -191,9 +191,14 @@ def get_config():
 
         'VelSlopeSweepPlotter': {
             'plot_contours': [0, 0, 0],
-            'vmin': -0.11,
-            'vmax': 1.531,
+            'vmin': -0.13,
+            'vmax': 0.67,
         },
+
+        'VelLinesPlotter': {
+            'positions': ((25, 15), (15, 5), (5, 15)),
+            'g_ann': False,
+        }
 
     })
 
