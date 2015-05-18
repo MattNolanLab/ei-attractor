@@ -360,6 +360,63 @@ class IGridnessScore(GridnessScore):
        self.analysisRoot = ['analysis', 'i_fields']
 
 
+class SpatialInformation(AggregateData):
+    '''Extract the E cell spatial information score (information specificity,
+    bit/spike).'''
+    def __init__(self, space, iterList, **kw):
+        super(SpatialInformation, self).__init__(space, iterList, None, **kw)
+        self._info = None
+        self._X = None
+        self._Y = None
+
+    def _getRawData(self):
+        '''Get raw data - without averaging accross trials.'''
+        if self._info is None:
+            path = self.analysisRoot + ['info_specificity']
+            self._info = self.sp.getReduction(path)
+            self._X, self._Y = self.metadata.xy_data
+        return self._info, self._X, self._Y
+
+    def getData(self):
+        data, X, Y = self._getRawData()
+        return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+
+
+class ISpatialInformation(SpatialInformation):
+    '''Extract I cell spatial information score.'''
+    def __init__(self, space, iterList, **kw):
+        super(ISpatialInformation, self).__init__(space, iterList, **kw)
+        self.analysisRoot = ['analysis', 'i_fields']
+
+
+class SpatialSparsity(AggregateData):
+    '''Extract spatial sparsity for E cells.'''
+    def __init__(self, space, iterList, **kw):
+        super(SpatialSparsity, self).__init__(space, iterList, None, **kw)
+        self._sparsity = None
+        self._X = None
+        self._Y = None
+
+    def _getRawData(self):
+        '''Get raw data - without averaging accross trials.'''
+        if self._sparsity is None:
+            path = self.analysisRoot + ['sparsity']
+            self._sparsity = self.sp.getReduction(path)
+            self._X, self._Y = self.metadata.xy_data
+        return self._sparsity, self._X, self._Y
+
+    def getData(self):
+        data, X, Y = self._getRawData()
+        return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+
+
+class ISpatialSparsity(SpatialSparsity):
+    '''Spatial sparsity of I cells.'''
+    def __init__(self, space, iterList, **kw):
+        super(ISpatialSparsity, self).__init__(space, iterList, **kw)
+        self.analysisRoot = ['analysis', 'i_fields']
+
+
 class GammaAggregateData(AggregateData):
     '''Extract power of gamma oscillations from the aggregated data'''
     def __init__(self, what, space, iterList, **kw):

@@ -172,6 +172,54 @@ def _get_default_config():
     }
     _default_config['GridExampleRectPlotter'] = GridExampleRectPlotter_config
 
+    ##########################################################################
+
+    SpatialInfoPlotter_config = {
+        'cbar': [0, 0, 0],
+        'cbar_kw': {
+            'label': 'Information (bits/spike)',
+            'location': 'right',
+            'shrink': 0.8,
+            'pad': -0.15,
+            'ticks': ti.MultipleLocator(0.5),
+            'rasterized': True
+        },
+        'sigma_title': True,
+        'vmin': 0.14,
+        'vmax': 2.66,
+        'xlabel': ['', '', ''],
+        'xticks': [False, False, False],
+        'ylabel': [None, '',    ''],
+        'yticks': [True, False, False],
+
+        'plot_contours': [1, 1, 1],
+    }
+    _default_config['SpatialInfoPlotter'] = SpatialInfoPlotter_config
+
+    ##########################################################################
+
+    SpatialSparsityPlotter_config = {
+        'cbar': [0, 0, 0],
+        'cbar_kw': {
+            'label': 'Sparsity',
+            'location': 'right',
+            'shrink': 0.8,
+            'pad': -0.15,
+            'ticks': ti.MultipleLocator(0.2),
+            'rasterized': True
+        },
+        'sigma_title': True,
+        'vmin': 0.12,
+        'vmax': 0.89,
+        'xlabel': ['', '', ''],
+        'xticks': [False, False, False],
+        'ylabel': [None, '',    ''],
+        'yticks': [True, False, False],
+
+        'plot_contours': [1, 1, 1],
+    }
+    _default_config['SpatialSparsityPlotter'] = SpatialSparsityPlotter_config
+
     ##############################################################################
     GridnessCorrelationPlotter_config = {
         'fig_size': (3.5, 1.5),

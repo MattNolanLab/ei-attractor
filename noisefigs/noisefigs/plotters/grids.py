@@ -28,6 +28,8 @@ __all__ = [
     'GridExamplesPlotter',
     'GridExampleRectPlotter',
     'GridExampleColorbarPlotter',
+    'SpatialInfoPlotter',
+    'SpatialSparsityPlotter',
     'GridnessCorrelationPlotter',
     'VmExamplesPlotter',
     'GridDetailedNoisePlotter',
@@ -326,6 +328,102 @@ class GridExampleColorbarPlotter(FigurePlotter):
         fname_cbar = self.get_fname("grids_examples_colorbar.pdf")
         plt.savefig(fname_cbar, dpi=300, transparent=True)
         plt.close()
+
+
+class SpatialInfoPlotter(SweepPlotter):
+    '''Spatial information (info_specificity) plotter.'''
+    cmap = 'jet'
+
+    def __init__(self, *args, **kwargs):
+        super(SpatialInfoPlotter, self).__init__(*args, **kwargs)
+        self.fig = None
+        self.ax = None
+
+    def get_fig(self):
+        if 'fig_size' in self.myc:
+            return self._get_final_fig(self.myc['fig_size'])
+        else:
+            return super(SpatialInfoPlotter, self).get_fig()
+
+    def _get_data_cls(self, population_type):
+        if population_type == 'E':
+            return aggr.SpatialInformation
+        elif population_type == 'I':
+            return aggr.ISpatialInformation
+        else:
+            raise ValueError("Population type can be only 'E' or 'I', got: %s",
+                             population_type)
+
+    def _get_population_fname(self, noise_sigma, population_type):
+        return self.get_fname("/grids_spatial_info{ns}{pop_type}.pdf".format(
+            ns=int(noise_sigma), pop_type=population_type))
+
+    def plot(self, *args, **kwargs):
+        sweepc = self._get_sweep_config()
+        example_idx = self.config['grids']['example_idx']
+        iter_list = self.config['iter_list']
+        example_idx = self.config['grids']['example_idx']
+        population_type = self.myc.get('population_type', 'E')
+        ps = self.env.ps
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            fname = self._get_population_fname(noise_sigma, population_type)
+            data_cls = self._get_data_cls(population_type)
+            data = data_cls(ps.grids[ns_idx],
+                            iter_list,
+                            ignoreNaNs=True,
+                            normalizeTicks=True,
+                            r=example_idx[ns_idx][0],
+                            c=example_idx[ns_idx][1])
+            with self.figure_and_axes(fname, sweepc) as (self.fig, self.ax):
+                # Sweep itself
+                kw = dict()
+                sweeps.plotSweep(
+                    data,
+                    noise_sigma,
+                    ax=self.ax,
+                    cbar=self.myc['cbar'][ns_idx],
+                    cbar_kw=self.myc['cbar_kw'],
+                    cmap=self.cmap,
+                    vmin=self.myc['vmin'], vmax=self.myc['vmax'],
+                    xlabel=self.myc['xlabel'][ns_idx],
+                    xticks=self.myc['xticks'][ns_idx],
+                    ylabel=self.myc['ylabel'][ns_idx],
+                    yticks=self.myc['yticks'][ns_idx],
+                    sigmaTitle=self.myc['sigma_title'],
+                    **kw)
+
+                # Contours, always from E cells
+                if self.myc['plot_contours'][ns_idx]:
+                    e_grid_data = aggr.GridnessScore(ps.grids[ns_idx],
+                                                     iter_list,
+                                                     ignoreNaNs=True,
+                                                     normalizeTicks=True,
+                                                     r=example_idx[ns_idx][0],
+                                                     c=example_idx[ns_idx][1])
+                    contours = sweeps.Contours(
+                        e_grid_data, self.config['sweeps']['grid_contours'])
+                    contours.plot(
+                        self.ax, **self.config['sweeps']['contours_kwargs'])
+
+
+class SpatialSparsityPlotter(SpatialInfoPlotter):
+    '''Spatial sparsity plotter'''
+    def __init__(self, *args, **kwargs):
+        super(SpatialSparsityPlotter, self).__init__(*args, **kwargs)
+
+    def _get_data_cls(self, population_type):
+        if population_type == 'E':
+            return aggr.SpatialSparsity
+        elif population_type == 'I':
+            return aggr.ISpatialSparsity
+        else:
+            raise ValueError("Population type can be only 'E' or 'I', got: %s",
+                             population_type)
+
+    def _get_population_fname(self, noise_sigma, population_type):
+        return self.get_fname("/grids_spatial_sparsity_{ns}{pop_type}.pdf".format(
+            ns=int(noise_sigma), pop_type=population_type))
 
 
 class GridnessCorrelationPlotter(FigurePlotter):

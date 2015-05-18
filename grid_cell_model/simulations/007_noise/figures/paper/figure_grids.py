@@ -10,6 +10,8 @@ import config
 
 parser = flagparse.FlagParser()
 parser.add_flag('--grids')
+parser.add_flag('--spatial_info')
+parser.add_flag('--sparsity')
 parser.add_flag('--examplesFlag')
 parser.add_flag('--examples_colorbar')
 parser.add_flag('--correlation_angles')
@@ -34,6 +36,32 @@ if args.grids or args.all:
                                      'ticks': ti.MultipleLocator(0.2),
                                  },
                              }
+                         })
+
+if args.spatial_info or args.all:
+    env.register_plotter(noisefigs.plotters.SpatialInfoPlotter)
+    env.register_plotter(noisefigs.plotters.SpatialInfoPlotter,
+                         config={
+                             'SpatialInfoPlotter': {
+                                 'population_type': 'I',
+                                 'cbar': [0, 0, 1],
+                                 'sigma_title': False,
+                                 'xlabel': [None, None, None],
+                                 'xticks': [True, True, True],
+                             },
+                         })
+
+if args.sparsity or args.all:
+    env.register_plotter(noisefigs.plotters.SpatialSparsityPlotter)
+    env.register_plotter(noisefigs.plotters.SpatialSparsityPlotter,
+                         config={
+                             'SpatialSparsityPlotter': {
+                                 'population_type': 'I',
+                                 'cbar': [0, 0, 1],
+                                 'sigma_title': False,
+                                 'xlabel': [None, None, None],
+                                 'xticks': [True, True, True],
+                             },
                          })
 
 if args.examplesFlag or args.all:
