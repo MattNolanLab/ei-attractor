@@ -139,8 +139,16 @@ class EISweepExtractor(MetaDataExtractor):
         I, _ = self._sp.getIteratedParameters(self.xy_labels)
 
         if self._normalize:
-            Ni = DataSpace.getNetParam(
-                self._sp[self._r][self._c][self._trial_num].data, 'net_Ni')
+            try:
+                Ni = DataSpace.getNetParam(
+                    self._sp[self._r][self._c][self._trial_num].data, 'net_Ni')
+            except KeyError:
+                # Try the root 'net_params'. In newever versions of data this
+                # should work
+                Ni = DataSpace.getNetParam(
+                    self._sp[self._r][self._c].getAllTrialsAsDataSet().data['net_params'],
+                    'net_Ni')
+
         else:
             Ni = 1.
 
@@ -151,8 +159,13 @@ class EISweepExtractor(MetaDataExtractor):
         _, E = self._sp.getIteratedParameters(self.xy_labels)
 
         if self._normalize:
-            Ne = DataSpace.getNetParam(
-                self._sp[self._r][self._c][self._trial_num].data, 'net_Ne')
+            try:
+                Ne = DataSpace.getNetParam(
+                    self._sp[self._r][self._c][self._trial_num].data, 'net_Ne')
+            except KeyError:
+                Ne = DataSpace.getNetParam(
+                    self._sp[self._r][self._c].getAllTrialsAsDataSet().data['net_params'],
+                    'net_Ne')
         else:
             Ne = 1.
 

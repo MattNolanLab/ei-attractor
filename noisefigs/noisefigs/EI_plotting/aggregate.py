@@ -3,6 +3,7 @@
 
 Data aggregation, mainly parameter sweeps
 '''
+import collections
 import numpy as np
 import numpy.ma as ma
 
@@ -497,12 +498,25 @@ class BumpPositionData(AggregateData):
 
         trialNumList  = np.arange(self.NTrials)
         timeVars = self.analysisRoot + self._root + ['positions', 'times']
+        # QUICKFIX:
+        # If at least one data time point exists, pick it
         self._timeData = self.sp.aggregateData(timeVars,
                 trialNumList,
                 output_dtype=self.times_dtype,
                 loadData=True,
                 saveData=False,
-                funReduce=None)[0][0][0]
+                funReduce=None)
+        stop = False
+        for r in range(self.sp.shape[0]):
+            for c in range(self.sp.shape[1]):
+                if isinstance(self._timeData[r][c][0], collections.Iterable):
+                    self._timeData = self._timeData[r][c][0]
+                    stop = True
+                    break
+            if stop is True:
+                break
+        if stop is False:
+            self._timeData = self._timeData[0][0][0]
 
     def getWhat(self): return self._what
     what = property(getWhat)
@@ -517,8 +531,7 @@ class BumpPositionData(AggregateData):
                 saveData=False,
                 funReduce=None)
         if self._X is None: # or self._Y is None
-            self._Y, self._X = computeYX(self.sp, self.iterList,
-                    normalize=self.normalizeTicks, **self._kw)
+            self._X, self._Y = self.metadata.xy_data
         return data, self._X, self._Y
 
 
