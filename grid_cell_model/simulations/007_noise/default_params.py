@@ -122,6 +122,12 @@ defaultParameters = {
         "pc_start_max_rate"     :   100.0,        # Hz
         "pc_start_conn_weight"  :   5.0,          # nS
 
+        "ipc_ON"                :   0,            # bool
+        "ipc_N"                 :   30,           # sqrt(total IPC number)
+        "ipc_nconn"             :   10,
+        "ipc_max_rate"          :   50.0,         # Hz
+        "ipc_weight"            :   0.5,          # nS
+
         "noise_sigma"           :   150.0,        # pA
         "gammaNSample"          :   25,           # No. of neurons
 

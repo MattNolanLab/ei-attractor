@@ -64,9 +64,14 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self._ratVelocitiesLoaded = False
         self._placeCellsLoaded = False
+        self._i_placeCellsLoaded = False
 
         self.PC = []
         self.PC_start = []
+
+        self.IPC = []
+        self.IPCHelper = None
+        self.NIPC = None
 
         self._initNESTKernel()
         self._constructNetwork()
@@ -626,6 +631,93 @@ class NestGridCellNetwork(GridCellNetwork):
                            "== 0")
 
         self._placeCellsLoaded = True
+
+    def setIPlaceCells(self):
+        self._createIPlaceCells(self.no.ipc_N,
+                                int(self.no.ipc_nconn),
+                                self.no.ipc_max_rate,
+                                self.no.ipc_weight)
+
+    def _createIPlaceCells(self, N, Nconn_pcs, maxRate, weight, start=None, end=None,
+                          posIn=None):
+        '''
+        Generate place cells and connect them to I cells. The wiring is
+        fixed, and there is no plasticity. This method can be used more than
+        once, to set up different populations of place cells.
+
+        Here the widths of the place fields are the same as in the case of the
+        generic place cells.
+
+        Parameters
+        ----------
+        Nconn_pcs : int
+            Number of place cells connected to each I neurons.
+        '''
+        if start is None:
+            start = self.no.theta_start_t
+        if end is None:
+            end = self.no.time
+        if posIn is None:
+            self._loadRatVelocities()
+            posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
+
+        NTotal = N * N
+        PC = None
+        PCHelper = None
+
+        if N != 0:
+            gcnLogger.info('Setting up place cells connected to I cells')
+            gcnLogger.info("N: %d, Nconn_pcs: %d, maxRate: %f, weight: %f", N,
+                           int(Nconn_pcs), maxRate, weight)
+
+            boxSize = [self.no.arenaSize, self.no.arenaSize]
+            PCHelper = UniformBoxPlaceCells(boxSize, (N, N), maxRate,
+                                            self.no.pc_field_std, random=False)
+
+            PC = nest.Create('place_cell_generator', NTotal,
+                             params={'rate'      : maxRate,
+                                     'field_size': self.no.pc_field_std,
+                                     'start'     : start,
+                                     'stop'      : end})
+            nest.SetStatus(PC, 'ctr_x', PCHelper.centers[:, 0])
+            nest.SetStatus(PC, 'ctr_y', PCHelper.centers[:, 1])
+
+            npos = int(self.no.time / posIn.pos_dt)
+            nest.SetStatus([PC[0]], params={
+                'rat_pos_x' : list(posIn.pos_x[0:npos]),
+                'rat_pos_y' : list(posIn.pos_y[0:npos]),
+                'rat_pos_dt': posIn.pos_dt})
+
+            # Connections
+            # I-PCs are connected with a constant connection weight to I cells
+            nest.RandomConvergentConnect(PC,
+                                         self.I_pop,
+                                         Nconn_pcs,
+                                         weight=weight,
+                                         delay=self.no.delay,
+                                         model='PC_AMPA')
+        else:
+            gcnLogger.warn("Trying to set up I place cells with 0 place cells.")
+
+        self._i_placeCellsLoaded = True
+        self.IPC = PC
+        self.IPCHelper = PCHelper
+        self.NIPC = NTotal
+
+    def _getIPCConnections(self):
+        IStart = self.I_pop[0]
+        W = np.zeros((len(self.I_pop), len(self.IPC)))
+        for pcn in xrange(len(self.IPC)):
+            print("IPC {0} --> I neurons".format(pcn))
+            conns = nest.FindConnections([self.IPC[pcn]])
+            for i in xrange(len(conns)):
+                target = nest.GetStatus([conns[i]], 'target')
+                if target[0] in self.I_pop:
+                    W[target[0] - IStart, pcn] = nest.GetStatus([conns[i]],
+                                                                'weight')[0]
+                else:
+                    print("Target not in I_pop!")
+        return W
 
     ###########################################################################
     #                                   Other

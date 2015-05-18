@@ -65,8 +65,10 @@ for trial_idx in range(len(d['trials']), o.ntrials):
     seed_gen.set_generators(trial_idx)
     d['invalidated'] = 1
     ei_net = BasicGridCellNetwork(o, simulationOpts=None,
-            nrec_spikes=(nrec_spikes_e, nrec_spikes_i),
-            stateRecParams=(stateMonParams, stateMonParams))
+                                  nrec_spikes=(nrec_spikes_e, nrec_spikes_i),
+                                  stateRecParams=(stateMonParams,
+                                                  stateMonParams))
+
     if o.velON and not o.constantPosition:
         ei_net.setVelocityCurrentInput_e()
     if o.pcON:
@@ -76,6 +78,13 @@ for trial_idx in range(len(d['trials']), o.ntrials):
     else:
         # Here the start PCs must be set explicitly
         ei_net.setStartPlaceCells(ConstPosInputs(0, 0))
+    if o.ipc_ON:
+        if o.constantPosition:
+            raise RuntimeError("Place cells connected to I cells cannot be "
+                               "used when the constantPosition parameter is "
+                               "ON.")
+        ei_net.setIPlaceCells()
+
     d['net_params'] = ei_net.getNetParams()  # Common settings will stay
     d.flush()
 

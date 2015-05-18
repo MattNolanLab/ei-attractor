@@ -46,18 +46,20 @@ class SlopeSelector(object):
         '''Threshold for the slopes.'''
         return self._threshold
 
-    def get_slopes(self, noise_sigma):
+    def get_slopes(self, noise_sigma, flatten=True):
         '''Retrieve the slopes for the given noise parameter value.'''
         file_name = os.path.join(self.data_root, self._file_name_template)
         file_name = file_name.format(int(noise_sigma))
         baseLogger.info('Using the following file for bump slope data:\n  %s',
                         file_name)
-        return self._retrieve_slopes(file_name)
+        return self._retrieve_slopes(file_name, flatten)
 
-    def _retrieve_slopes(self, file_name):
+    def _retrieve_slopes(self, file_name, flatten):
         '''Retrieve the slopes from a file ``file_name``.'''
         ds = DataStorage.open(file_name, 'r')
-        slopes = ds['lineFitSlope'].flatten()
+        slopes = ds['lineFitSlope']
+        if flatten:
+            slopes = slopes.flatten()
         ds.close()
         slopes[slopes < self.threshold] = np.nan
         return slopes
@@ -70,6 +72,30 @@ class DefaultSelector(SlopeSelector):
         template = 'bump_slope_{0}pA.h5'
         super(DefaultSelector, self).__init__(data_root, threshold, template)
 
+
+class PickedDefaultSelector(DefaultSelector):
+    '''Bump slope selector that picks a value from the data obtained by
+    DefaultSelector and copies this slope value to all simulations.
+
+    Parameters
+    ----------
+    data_root, threshold
+    row, col : int
+        Indexes into data obtained by DefaultSelector
+    dimensions : pair of int
+        Dimensions of the resulting parameter sweep.
+    '''
+    def __init__(self, data_root, threshold, row, col, dimensions):
+        super(PickedDefaultSelector, self).__init__(data_root, threshold)
+        self._row = row
+        self._col = col
+        self._dimensions = dimensions
+
+    def get_slopes(self, noise_sigma):
+        slopes = super(PickedDefaultSelector, self).get_slopes(noise_sigma,
+                                                               flatten=False)
+        return (np.ones(self._dimensions[0] * self._dimensions[1]) *
+                slopes[self._row, self._col])
 
 class NoThetaSelector(SlopeSelector):
     '''A slope selector for no-theta simulations.'''
