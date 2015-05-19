@@ -690,12 +690,12 @@ class NestGridCellNetwork(GridCellNetwork):
 
             # Connections
             # I-PCs are connected with a constant connection weight to I cells
-            nest.RandomConvergentConnect(PC,
-                                         self.I_pop,
-                                         Nconn_pcs,
-                                         weight=weight,
-                                         delay=self.no.delay,
-                                         model='PC_AMPA')
+            for i_idx in self.I_pop:
+                pc_idx = np.random.choice(PC, Nconn_pcs, replace=False)
+                nest.ConvergentConnect(pc_idx.tolist(), [i_idx],
+                                       weight=weight,
+                                       delay=self.no.delay,
+                                       model='PC_AMPA')
         else:
             gcnLogger.warn("Trying to set up I place cells with 0 place cells.")
 
@@ -703,6 +703,7 @@ class NestGridCellNetwork(GridCellNetwork):
         self.IPC = PC
         self.IPCHelper = PCHelper
         self.NIPC = NTotal
+        #self._getIPCConnections()
 
     def _getIPCConnections(self):
         IStart = self.I_pop[0]
@@ -717,6 +718,7 @@ class NestGridCellNetwork(GridCellNetwork):
                                                                 'weight')[0]
                 else:
                     print("Target not in I_pop!")
+        import pdb; pdb.set_trace()  # XXX BREAKPOINT
         return W
 
     ###########################################################################
