@@ -139,3 +139,12 @@ class ISurroundOrigSelector(SlopeSelector):
         template = 'bump_slope_i_surround_original_{0}pA.h5'
         super(ISurroundOrigSelector, self).__init__(data_root, threshold,
                                                     template)
+
+
+class ISurroundPastollSelector(SlopeSelector):
+    '''A selector that retrieves data for the I-surround simulations (Pastoll
+    et al. configuration).'''
+    def __init__(self, data_root, threshold):
+        template = 'bump_slope_i_surround_pastoll_{0}pA.h5'
+        super(ISurroundPastollSelector, self).__init__(data_root, threshold,
+                                                       template)
