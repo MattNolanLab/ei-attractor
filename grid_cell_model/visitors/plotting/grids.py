@@ -382,7 +382,7 @@ class IGridPlotVisitor(GridPlotVisitor):
             data['analysis'] = {}
 
         if 'i_fields' not in data['analysis'].keys():
-            data['analysis']['keys'] = {}
+            data['analysis']['i_fields'] = {}
         outputRoot = data['analysis']['i_fields']
 
         simT = self.getOption(data, 'time') # ms
