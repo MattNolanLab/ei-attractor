@@ -769,7 +769,7 @@ def _get_default_config():
     PSeizureGridsScatterAllPlotter_config = {
         'FRThreshold': 300,
         'fig_size': (2.5, 2.2),         # inches
-        'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+        'bbox_rect': (0.3, 0.23, 0.92, 0.9),
         'tight_layout_kwargs': {
             'pad': .2,
         },
@@ -788,7 +788,7 @@ def _get_default_config():
 
     MaxFRGridsScatterAllPlotter_config = {
         'fig_size': (2.5, 2.2),         # inches
-        'bbox_rect': (0.3, 0.22, 0.92, 0.9),
+        'bbox_rect': (0.3, 0.23, 0.92, 0.9),
         'tight_layout_kwargs': {
             'pad': .2,
         },

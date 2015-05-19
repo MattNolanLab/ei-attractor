@@ -13,6 +13,8 @@ parser.add_flag('--rastersFlag')
 parser.add_flag('--rates')
 parser.add_flag('--maxFRSweeps')
 parser.add_flag('--seizureProportion')
+parser.add_flag('--maxFRGridsScatter')
+parser.add_flag('--PSeizureGridsScatter')
 args = parser.parse_args()
 
 env = NoiseEnvironment(user_config=config.get_config())
@@ -28,6 +30,12 @@ if args.rates or args.all:
 
 if args.maxFRSweeps or args.all:
     env.register_plotter(noisefigs.plotters.MaxPopulationFRSweepsPlotter)
+
+if args.maxFRGridsScatter or args.all:
+    env.register_plotter(noisefigs.plotters.MaxFRGridsScatterAllPlotter)
+
+if args.PSeizureGridsScatter or args.all:
+    env.register_plotter(noisefigs.plotters.PSeizureGridsScatterAllPlotter)
 
 if args.seizureProportion or args.all:
     env.register_plotter(noisefigs.plotters.PSeizureSweepPlotter)
