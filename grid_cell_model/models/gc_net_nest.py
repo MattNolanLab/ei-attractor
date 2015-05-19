@@ -718,7 +718,6 @@ class NestGridCellNetwork(GridCellNetwork):
                                                                 'weight')[0]
                 else:
                     print("Target not in I_pop!")
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
         return W
 
     ###########################################################################
