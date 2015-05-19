@@ -56,8 +56,8 @@ class PopulationActivityPlotter(FigurePlotter):
         t_limits = self.myc['t_limits']
         max_e_rate = self.myc.get('max_e_rate', True)
         max_i_rate = self.myc.get('max_i_rate', True)
-        scale_bar = self.myc.get('scale_bar', 1e3)
-        scale_x = self.myc.get('scale_x', .9)
+        scale_bar = self.myc.get('scale_bar', 500)
+        scale_x = self.myc.get('scale_x', .85)
         scale_y = self.myc.get('scale_y', -.05)
         ann_ei = self.myc.get('ann_ei', True)
         y_label_pos = self.myc.get('y_label_pos', -0.22)
@@ -97,24 +97,34 @@ class PopulationActivityPlotter(FigurePlotter):
             tEnd   = t_limits[1] - win_dt
             fr_e, frt_e = e_spikes.slidingFiringRate(tStart, tEnd, win_dt,
                                                      winLen)
-            examples.plotBumpSnapshots(fr_e, frt_e, self.myc['snapshot_tstep'],
-                                       fig=fig,
-                                       axesCoords=self.myc['e_snapshots_rect'],
-                                       bumpQuality=False,
-                                       timeTitles=True,
-                                       maxRate=max_e_rate,
-                                       fontsize='x-small',
-                                       rateYPos=-.2)
+            e_max = examples.plotBumpSnapshots(fr_e, frt_e, self.myc['snapshot_tstep'],
+                                               fig=fig,
+                                               axesCoords=self.myc['e_snapshots_rect'],
+                                               bumpQuality=False,
+                                               timeTitles=True,
+                                               maxRate=False,
+                                               fontsize='x-small',
+                                               rateYPos=-.2)
+            rateText = "%.0f Hz" % e_max
+            rect = self.myc['e_snapshots_rect']
+            fig.text(rect[2], rect[3], rateText, ha='left',
+                     va='top', size='small', weight='bold',
+                     clip_on=False)
 
             fr_i, frt_i = i_spikes.slidingFiringRate(tStart, tEnd, win_dt,
                                                      winLen)
-            examples.plotBumpSnapshots(fr_i, frt_i, self.myc['snapshot_tstep'],
-                                       fig=fig,
-                                       axesCoords=self.myc['i_snapshots_rect'],
-                                       bumpQuality=False,
-                                       timeTitles=False,
-                                       maxRate=max_i_rate,
-                                       fontsize='x-small')
+            i_max = examples.plotBumpSnapshots(fr_i, frt_i, self.myc['snapshot_tstep'],
+                                               fig=fig,
+                                               axesCoords=self.myc['i_snapshots_rect'],
+                                               bumpQuality=False,
+                                               timeTitles=False,
+                                               maxRate=False,
+                                               fontsize='x-small')
+            rateText = "%.0f Hz" % i_max
+            rect = self.myc['i_snapshots_rect']
+            fig.text(rect[2], rect[3], rateText, ha='left',
+                     va='top', size='small', weight='bold',
+                     clip_on=False)
 
             saver.savefig(fig)
         saver.close()

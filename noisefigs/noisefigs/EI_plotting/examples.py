@@ -513,7 +513,7 @@ def plotBumpSnapshots(FR, FRt, tstep, **kw):
             rateText = "%.0f Hz" % max
             ax.text(1.05, .95, rateText, ha='left', va='top',
                     color=maxRateColor, transform=ax.transAxes, size='small',
-                    weight='bold')
+                    weight='bold', clip_on=False)
 
         if bumpQuality and it == 0:
             txt = '{0:.2f}'.format(bumpQuality)

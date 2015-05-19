@@ -46,14 +46,14 @@ if common.pop_type in o.type:
 
             'PopulationActivityPlotter': {
                 'fname_prefix': 'r%03d_c%03d_' % (o.row, o.col),
-                'raster_rect': (.075, 0.35, 0.99, 0.97),
+                'raster_rect': (.075, 0.35, 0.95, 0.97),
                 'fig_saver': SeparateMultipageSaver(None, 'pdf'),
                 'fig_size': (10, 6),
                 't_limits': (0, 5e3),
 
                 'snapshot_tstep': 4,
-                'e_snapshots_rect': (.075, .15, 0.99, 0.25),
-                'i_snapshots_rect': (.075, .02, 0.99, 0.1),
+                'e_snapshots_rect': (.075, .15, 0.95, 0.25),
+                'i_snapshots_rect': (.075, .02, 0.95, 0.12),
 
             },
         })
