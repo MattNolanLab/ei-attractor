@@ -230,16 +230,16 @@ neurons:
                 & + \gNMDA(t) (\ENMDA - \Vm)
     \label{eq:I_syn}
 \end{align}               
-Note that the connectivity in this model is not all-to-all, as for instance
-there are no E~$\rightarrow$~E and no I~$\rightarrow$~I connections. Therefore,
-effectively, for the I~$\rightarrow$~E connections $\gAMPA = \gNMDA = 0$, and
-for E~$\rightarrow$~I connections $\gGABAA = 0$. \todo{Comment here on E-E, I-I
-connections.}
-Connections from place cells
+In networks that do not contain recurrent E$\rightarrow$E connections we set
+$\gAMPA = \gNMDA = 0$ for the E cells, and $\gGABAA = 0$ for I cells. In other
+networks variants (with E$\rightarrow$E or I$\rightarrow$I connectivity) these
+synaptic strengths are non-zero. E$\rightarrow$E, as well as E$\rightarrow$I
+synapses thus both contain the NMDA component. Connections from place cells
 were modeled as AMPA conductances only (cf.\ description of place cell inputs).
 The synaptic conductances $\gAMPA$, $\gNMDA$ and $\gGABAA$ of a postsynaptic
 neuron $i$ were modeled as exponentials with pre-defined time constants (see
-Supplementary Methods Table~\ref{tab:params_synapses} for the parameter values):
+Supplementary Methods Table~\ref{tab:params_synapses} for the parameter
+values):
 \begin{align}
     \dgAMPA^i  &=  -\frac{\gAMPA }{\tauAMPA}  + \sum_j \wAMPA^{ij}  \delta(t - t_j)\notag  \\
     \dgNMDA^i  &=  -\frac{\gNMDA }{\tauNMDA}  + \sum_j \wNMDA^{ij}  \delta(t - t_j)\notag  \\
@@ -380,7 +380,6 @@ $\wGABAA$ in Eq. \eqref{eq:wGABA} and the distance-independent component.
 
 \todo[inline]{Describe profiles for E-E, I-I, probabilistic connections, and
 unstructured E-I-E.}
-\todo[inline]{Describe I-surrounds configuration.}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -413,7 +412,6 @@ the neural sheet) divided by the product of the expected grid field spacing
 ($\lamgrid$ (cm)) and a slope of the relationship between bump speed and injected
 velocity current magnitude ($a$ (neurons/s/pA)). Therefore, given a desired
 spacing between grid fields, the gain of the velocity inputs can be calibrated.
-\todo[inline]{Always targeted to E cells.}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -499,17 +497,35 @@ populations themselves.
 
 
 
-\section{Gridness score estimation}
-\todo[inline]{Add spatial information/sparsity.}
+\section{Analysis of spatial firing fields}
 
 Gridness scores are calculated following previous studies
 \citep{Sargolini:2006ba}, by taking the spatial autocorrelation of each firing
 field (a region corresponding to a circle with radius $\lamgrid/2$ and a centre
 in the middle of the autocorrelation function has been removed) and rotating in
-steps of three degrees.  For each rotation a Pearson correlation coefficient is
+steps of three degrees. For each rotation a Pearson correlation coefficient is
 calculated with the original autocorrelation. To calculate the gridness score
 the maximum of values at 30, 90 and 150 degrees rotation was subtracted from
 the minimum of the values at 60 and 120 degrees rotation.
+
+Spatial information (bits/spike) was calculated according to
+\citep{Skaggs:1996du}:
+\begin{equation}
+    I = \sum_{i = 1}^N p_i \frac{\lambda_i}{\lambda} \log_2 \frac{\lambda_i}{\lambda},
+    \label{eq:spatial_info}
+\end{equation}
+where the environment is divided into $N$ bins and $p_i$ is the
+occupancy probability of bin $i$, $\lambda_i$ is the mean firing rate for bin
+$i$ and $\lambda$ is the overall mean firing rate of the cell.
+
+Spatial sparsity was calculated following \citep{Buetfering:2014gu}:
+\begin{equation}
+    S = 1 - \frac{\left(\displaystyle \sum_{i = 1}^N p_i
+    \lambda_i\right)^2}{\displaystyle \sum_{i = 1}^N p_i \lambda_i^2},
+    \label{eq:spatial_sparsity}
+\end{equation}
+where $N, p_i$ and $\lambda_i$ have the same meaning as in Eq.
+\eqref{eq:spatial_info}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -797,8 +813,16 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_default_info_scores}
-    \caption{\todo[inline]{Legend of information scores for the default grid
-    simulations.}}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]
+    \internallinenumbers
+    \caption{Spatial information and sparsity of firing fields of E and I
+    cells. (A) Spatial information of E (top) and I (bottom) cells as a
+    function of $\gE$ and $\gI$ in networks from Figure 2. (B) Same as (A), but
+    the color plots show spatial sparsity of E and I cells.}
 \end{figure}
 
 \clearpage
@@ -807,7 +831,9 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_default_i_fields}
-    \caption{\todo[inline]{Legend of default I gridness scores.}}
+    \caption{Gridness scores of I cells as a function of $\gE$ and $\gI$ for
+    networks without noise (A), with noise standard deviation $\sigma$ = 150
+    pA (B), and $\sigma$ = 300 pA (C).}
 \end{figure}
 
 \clearpage
@@ -837,12 +863,18 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_prob_conn_i_fields}
-    \caption{Firing fields of I cells in networks with probabilistic synapses.
-    (A-C) Example firing fields (left) and spatial autocorrelation plots
-    (right) for the specific values of strengths of recurrent synaptic
-    connections indicated by arrows in (D-F), corresponding to the three
-    simulated noise levels.
-    \todo[inline]{Legend of probabilistic I field examples.}}
+    \caption{Firing fields and gridness scoress of I cells in networks with
+    connection probability between pairs of neurons drawn according to the
+    synaptic profile functions in Figure 1B (A-C) Example firing fields (left)
+    and spatial autocorrelation plots (right) for the specific values of
+    strengths of recurrent synaptic connections indicated by arrows in (D-F),
+    corresponding to the three simulated noise levels.  (D-F) Gridness score as
+    a function of $\gE$ and $\gI$ for networks without noise (D; $\sigma$ = 0
+    pA), with noise level set to $\sigma$ = 150 pA (E), and noise level set to
+    $\sigma$ = 300 pA (F). Arrows indicate the positions of grid field and
+    autocorrelation examples from simulations illustrated in (A-C). Simulations
+    that did not finish in a specified time interval (8 h) are indicated by
+    white color.}
 \end{figure}
 
 \clearpage
@@ -887,14 +919,14 @@ and then subsequently averaged over all simulation trials.
 
 \clearpage
 
-\begin{figure}[p]
-    \internallinenumbers
-    \centering
-        %\includegraphics{fig/output_figures/figure3S_i_surround}
-    \caption{\todo[inline]{I-surround simulations will go here.}}
-\end{figure}
-
-\clearpage
+%\begin{figure}[p]
+%    \internallinenumbers
+%    \centering
+%        %\includegraphics{fig/output_figures/figure3S_i_surround}
+%    \caption{\todo[inline]{I-surround simulations will go here.}}
+%\end{figure}
+%
+%\clearpage
 %
 %\begin{figure}[H]
 %    \internallinenumbers
@@ -991,26 +1023,26 @@ and then subsequently averaged over all simulation trials.
 
 \clearpage
 
-\begin{figure}[p]
-    \internallinenumbers
-    \centering
-        %\includegraphics[width=0.95\textwidth]{fig/output_figures/figure4S_i_surround}
-    \caption{\todo[inline]{Put here I-surround attractor simulations if we use
-    them.}}
-    %\caption{Continuous attractors in networks in the I-surround configuration
-    %(cf.\ \cite{Pastoll:2013ff}). (A) Examples of E cell population firing rate
-    %snapshots from simulations in which velocity and place cell inputs are
-    %inactivated. Each row shows a simulation trial with a value of $\gE$ and
-    %$\gI$
-    %highlighted by an arrow in panel (B). The corresponding probability of bump
-    %formation (P(bumps)) is indicated to the left.  (B) Color plots show
-    %probability of bump formation (P(bumps)), for the simulated range of $\gE$ and
-    %$\gI$ and the three simulated noise levels. Each color point is an average of
-    %five 10 s simulation runs. Arrows show positions in the parameter space of
-    %examples in (A).}
-\end{figure}
-
-\clearpage
+%\begin{figure}[p]
+%    \internallinenumbers
+%    \centering
+%        %\includegraphics[width=0.95\textwidth]{fig/output_figures/figure4S_i_surround}
+%    \caption{\todo[inline]{Put here I-surround attractor simulations if we use
+%    them.}}
+%    %\caption{Continuous attractors in networks in the I-surround configuration
+%    %(cf.\ \cite{Pastoll:2013ff}). (A) Examples of E cell population firing rate
+%    %snapshots from simulations in which velocity and place cell inputs are
+%    %inactivated. Each row shows a simulation trial with a value of $\gE$ and
+%    %$\gI$
+%    %highlighted by an arrow in panel (B). The corresponding probability of bump
+%    %formation (P(bumps)) is indicated to the left.  (B) Color plots show
+%    %probability of bump formation (P(bumps)), for the simulated range of $\gE$ and
+%    %$\gI$ and the three simulated noise levels. Each color point is an average of
+%    %five 10 s simulation runs. Arrows show positions in the parameter space of
+%    %examples in (A).}
+%\end{figure}
+%
+%\clearpage
 
 \begin{figure}[p]
     \centering
@@ -1315,12 +1347,12 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure7S_grids_examples}
-    \caption{Sensitivity of grid firing to changes in inhibition in networks
-    that contain direct I$\rightarrow$I synapses. (A-C) Example
-    firing fields (left) and spatial autocorrelation plots (right) for the
-    specific values of strengths of recurrent synaptic connections indicated by
-    arrows in (D-F), corresponding to the three simulated noise levels.
-    \todo[inline]{I$\rightarrow$I grid examples caption.}
+    \caption{Spatial firing fields in networks that contain recurrent
+    I$\rightarrow$I synapses (A-C) Example spatial firing fields (left) and spatial
+    autocorrelation plots (right) for networks with $\gE$ = 3nS and $\gI$ = 1
+    nS (a) and networks with $\gE$ = 1 nS and $\gI$ = 3 nS (b), corresponding
+    to the three simulated noise levels. Maximal firing rate is indicated on
+    the top right of each spatial firing plot.
     \todo[inline]{Update main figure legend.}}
 \end{figure}
 
@@ -1423,7 +1455,17 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_ee_connections}
-    \caption{\todo[inline]{Grids in E$\rightarrow$E networks. Caption.}}
+    \caption{Sensitivity of grid firing to changes in inhibition and excitation
+    in networks that contain direct E$\rightarrow$E synapses. (A-C) Example
+    firing fields (left) and spatial autocorrelation plots (right) for the
+    specific values of strengths of recurrent synaptic connections indicated by
+    arrows in (D-F), corresponding to the three simulated noise levels.  (D-F)
+    Gridness score as a function of $\gE$ and $\gI$ for networks without noise (D;
+    $\sigma$ = 0 pA), with noise level set to $\sigma$ = 150 pA (E), and noise
+    level set to $\sigma$ = 300 pA (F). Each item in the color plot is an
+    average gridness score of two simulation runs. Arrows indicate the
+    positions of grid field and autocorrelation examples from simulations
+    illustrated in (A-C).}
 \end{figure}
 
 \clearpage
@@ -1567,6 +1609,12 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure7S_ee_ei_flat_networks_2}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]
+    \internallinenumbers
     \caption{\todo[inline]{Sweep and raster plot illustrations for unstructured
     E-I-E connections.}}
 \end{figure}

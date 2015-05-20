@@ -125,6 +125,7 @@ defaultParameters = {
         "ipc_ON"                :   0,            # bool
         "ipc_N"                 :   30,           # sqrt(total IPC number)
         "ipc_nconn"             :   10,
+        "ipc_field_std"         :   20.0,         # cm
         "ipc_max_rate"          :   50.0,         # Hz
         "ipc_weight"            :   0.5,          # nS
 

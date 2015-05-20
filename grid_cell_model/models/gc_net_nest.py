@@ -636,10 +636,11 @@ class NestGridCellNetwork(GridCellNetwork):
         self._createIPlaceCells(self.no.ipc_N,
                                 int(self.no.ipc_nconn),
                                 self.no.ipc_max_rate,
-                                self.no.ipc_weight)
+                                self.no.ipc_weight,
+                                self.no.ipc_field_std)
 
-    def _createIPlaceCells(self, N, Nconn_pcs, maxRate, weight, start=None, end=None,
-                          posIn=None):
+    def _createIPlaceCells(self, N, Nconn_pcs, maxRate, weight, field_std,
+                           start=None, end=None, posIn=None):
         '''
         Generate place cells and connect them to I cells. The wiring is
         fixed, and there is no plasticity. This method can be used more than
@@ -666,17 +667,18 @@ class NestGridCellNetwork(GridCellNetwork):
         PCHelper = None
 
         if N != 0:
+            import pdb; pdb.set_trace()  # XXX BREAKPOINT
             gcnLogger.info('Setting up place cells connected to I cells')
-            gcnLogger.info("N: %d, Nconn_pcs: %d, maxRate: %f, weight: %f", N,
-                           int(Nconn_pcs), maxRate, weight)
+            gcnLogger.info("N: %d, Nconn_pcs: %d, maxRate: %f, weight: %f, field_std: %f", N,
+                           int(Nconn_pcs), maxRate, weight, field_std)
 
             boxSize = [self.no.arenaSize, self.no.arenaSize]
             PCHelper = UniformBoxPlaceCells(boxSize, (N, N), maxRate,
-                                            self.no.pc_field_std, random=False)
+                                            field_std, random=False)
 
             PC = nest.Create('place_cell_generator', NTotal,
                              params={'rate'      : maxRate,
-                                     'field_size': self.no.pc_field_std,
+                                     'field_size': field_std,
                                      'start'     : start,
                                      'stop'      : end})
             nest.SetStatus(PC, 'ctr_x', PCHelper.centers[:, 0])
