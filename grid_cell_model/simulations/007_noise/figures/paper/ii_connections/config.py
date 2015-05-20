@@ -37,6 +37,7 @@ _config = {
             'ticks': ti.MultipleLocator(0.5),
             'rasterized': True
         },
+        'ann': None,
     },
 
     'MainBumpFormationPlotter': {
