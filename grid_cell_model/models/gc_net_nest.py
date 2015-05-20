@@ -667,7 +667,6 @@ class NestGridCellNetwork(GridCellNetwork):
         PCHelper = None
 
         if N != 0:
-            import pdb; pdb.set_trace()  # XXX BREAKPOINT
             gcnLogger.info('Setting up place cells connected to I cells')
             gcnLogger.info("N: %d, Nconn_pcs: %d, maxRate: %f, weight: %f, field_std: %f", N,
                            int(Nconn_pcs), maxRate, weight, field_std)
