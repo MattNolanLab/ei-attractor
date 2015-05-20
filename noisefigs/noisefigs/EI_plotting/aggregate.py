@@ -348,9 +348,7 @@ class GridnessScore(AggregateData):
         if self._gscore is None:
             path = self.analysisRoot + ['gridnessScore']
             self._gscore = self.sp.getReduction(path)
-            self._Y, self._X = computeYX(self.sp, self.iterList,
-                                         normalize=self.normalizeTicks,
-                                         r=self.r, c=self.c)
+            self._X, self._Y = self.metadata.xy_data
         return self._gscore, self._X, self._Y
 
     def getData(self):

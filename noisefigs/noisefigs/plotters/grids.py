@@ -10,6 +10,7 @@ from matplotlib.transforms import Bbox
 import scipy.stats
 
 from grid_cell_model.parameters import JobTrialSpace2D
+from grid_cell_model.parameters.metadata import GenericExtractor
 from grid_cell_model.data_storage import DataStorage
 from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 from grid_cell_model.plotting.grids import (plotSpikes2D,
@@ -26,6 +27,7 @@ from .base import SweepPlotter, ProbabilityPlotter, DummyPlotter
 
 __all__ = [
     'GridSweepsPlotter',
+    'GenericGridSweepsPlotter',
     'GridExamplesPlotter',
     'GridExampleRectPlotter',
     'GridExampleColorbarPlotter',
@@ -60,7 +62,7 @@ class GridSweepsPlotter(SweepPlotter):
         else:
             return super(GridSweepsPlotter, self).get_fig()
 
-    def _get_grid_data(self, space, ns_idx, population_type):
+    def _get_grid_data(self, space, ns_idx, population_type, metadata=None):
         '''Return grid data based on the selected population type.'''
         iter_list = self.config['iter_list']
         example_idx = self.config['grids']['example_idx']
@@ -71,13 +73,15 @@ class GridSweepsPlotter(SweepPlotter):
                                            ignoreNaNs=True,
                                            normalizeTicks=True,
                                            r=example_idx[ns_idx][0],
-                                           c=example_idx[ns_idx][1])
+                                           c=example_idx[ns_idx][1],
+                                           metadata_extractor=metadata)
         elif population_type == 'I':
             grid_data = aggr.IGridnessScore(space, iter_list,
                                             ignoreNaNs=True,
                                             normalizeTicks=True,
                                             r=example_idx[ns_idx][0],
-                                            c=example_idx[ns_idx][1])
+                                            c=example_idx[ns_idx][1],
+                                            metadata_extractor=metadata)
         else:
             raise ValueError("Population type can be only 'E' or 'I', got: %s",
                              population_type)
@@ -133,6 +137,61 @@ class GridSweepsPlotter(SweepPlotter):
                         e_grid_data, self.config['sweeps']['grid_contours'])
                     contours.plot(
                         self.ax, **self.config['sweeps']['contours_kwargs'])
+
+
+class GenericGridSweepsPlotter(GridSweepsPlotter):
+    '''Parameter sweeps of gridness score - generic iteration parameters.'''
+    cmap = 'jet'
+    varList = ['gridnessScore']
+
+    def __init__(self, *args, **kwargs):
+        super(GenericGridSweepsPlotter, self).__init__(*args, **kwargs)
+
+    def _get_population_fname(self, noise_sigma, population_type):
+        fname = self.myc.get('fname',
+                             "grids_score_generic_{ns}_{pop_type}.pdf")
+        return self.get_fname(fname, ns=int(noise_sigma),
+                              pop_type=population_type)
+
+    def plot(self, *args, **kwargs):
+        sweepc = self._get_sweep_config()
+        population_type = self.myc.get('population_type', 'E')
+        ps = self.env.ps
+        xlabel = self.myc.get('xlabel', None)
+        ylabel = self.myc.get('ylabel', None)
+        xticks = self.myc['xticks']
+        yticks = self.myc['yticks']
+        normalize_type = self.myc.get('normalize_type', (None, None))
+        l, b, r, t = self.myc['bbox']
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            metadata = GenericExtractor(ps.grids[ns_idx],
+                                        normalize=self.myc['normalize_ticks'],
+                                        normalize_type=normalize_type)
+            data = self._get_grid_data(ps.grids[ns_idx], ns_idx,
+                                       population_type,
+                                       metadata=metadata)
+            fig = self._get_final_fig(self.config['sweeps']['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            sweeps.plotSweep(
+                data,
+                noise_sigma=noise_sigma,
+                sigmaTitle=self.myc.get('sigmaTitle', True),
+                xlabel='' if xticks[ns_idx] == False else xlabel,
+                xticks=xticks[ns_idx],
+                ylabel='' if yticks[ns_idx] == False else ylabel,
+                yticks=yticks[ns_idx],
+                ax=ax,
+                cbar=self.myc['cbar'][ns_idx],
+                cbar_kw=self.myc['cbar_kw'],
+                vmin=self.myc['vmin'], vmax=self.myc['vmax'],
+                annotations=self.myc['ann'][ns_idx],
+                axis_setting=self.myc.get('axis_setting', 'scaled'))
+            ax.axis('tight')
+            fig.savefig(self._get_population_fname(noise_sigma,
+                                                   population_type), dpi=300,
+                        transparent=True)
+            plt.close(fig)
 
 
 class ContourGridSweepsPlotter(GridSweepsPlotter):

@@ -23,14 +23,14 @@ def get_config():
     _default_config.merge({
         'scale_factor': scale_factor,
 
-        'grids_data_root': None,
+        'grids_data_root': os.path.join(*(ROOT_DIR + ['grids_pc_weight_1'])),
         'bump_data_root':  os.path.join(*(ROOT_DIR + ['gamma_bump'])),
         'vel_data_root':   os.path.join(*(ROOT_DIR + ['velocity'])),
         'const_pos_data_root':  None,
         'singleDataRoot':       None,
 
         'output_dir'    : 'panels_pastoll_et_al/',
-        'noise_sigmas'  : [0, 150, 300],
+        'noise_sigmas'  : [150],
 
         # Sections
         'mpl': {
@@ -51,6 +51,15 @@ def get_config():
             'ytick.minor.size'  : tick_len / 2.,
             'ytick.minor.width' : tick_width,
             'ytick.direction'   : 'out',
+        },
+
+        'GridSweepsPlotter': {
+            'vmin': -0.468,
+            'vmax': 0.5902,
+            'cbar': [1, 1, 1],
+            'cbar_kw': {
+                'ticks': ti.MultipleLocator(0.2),
+            },
         },
 
         'MainBumpFormationPlotter': {
