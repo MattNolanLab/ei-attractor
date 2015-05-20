@@ -29,6 +29,9 @@ parser.add_argument('--g_GABA_total', type=float)
 parser.add_argument('--g_GABA_col', type=float, help='Column index into bump slope data.')
 parser.add_argument('--ipc_field_std', type=float, help='I PC field std. dev..')
 parser.add_argument('--ipc_max_rate', type=float)
+parser.add_argument('--ipc_nconn', type=int)
+parser.add_argument("--nrec_spikes_i",    type=int,   default=10,     help="Number of I cell to record spikes from. Chosen randomly.")
+parser.add_argument("--rec_spikes_probabilistic", type=int, choices=[0, 1], default=0)
 parser.parse_args()
 o = parser.options
 
@@ -40,6 +43,8 @@ sweep.set_bump_slope_selector(PickedDefaultSelector('bump_slope_data',
 
 p = {}
 p['master_seed']      = 123456
+p['nrec_spikes_i'] = o.nrec_spikes_i
+p['rec_spikes_probabilistic'] = o.rec_spikes_probabilistic
 p['g_AMPA_total'] = o.g_AMPA_total
 p['g_GABA_total'] = o.g_GABA_total
 
@@ -52,6 +57,8 @@ if parser.options.ipc_field_std is not None:
     p['ipc_field_std'] = parser.options.ipc_field_std
 if parser.options.ipc_max_rate is not None:
     p['ipc_max_rate'] = parser.options.ipc_max_rate
+if parser.options.ipc_nconn is not None:
+    p['ipc_nconn'] = parser.options.ipc_nconn
 
 sweep.update_user_parameters(p)
 sweep.run()

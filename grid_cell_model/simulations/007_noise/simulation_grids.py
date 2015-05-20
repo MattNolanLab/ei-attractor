@@ -25,6 +25,8 @@ parser.add_argument("--pcON",             type=int,   choices=[0, 1], required=T
 parser.add_argument("--constantPosition", type=int,   choices=[0, 1], required=True, help="Should the animat move?")
 parser.add_argument("--staticPos_x",      type=float, default=0.0,    help="Static position X coordinate")
 parser.add_argument("--staticPos_y",      type=float, default=0.0,    help="Static position Y coordinate")
+parser.add_argument("--nrec_spikes_i",    type=int,   default=10,     help="Number of I cell to record spikes from. Chosen randomly.")
+parser.add_argument("--rec_spikes_probabilistic", type=int, choices=[0, 1], default=0)
 o, _ = parser.parse_args()
 
 # Do nothing when bumpCurrentSlope is NaN
@@ -39,7 +41,7 @@ stateMonParams = {
         'start' : o.time - o.stateMonDur
 }
 nrec_spikes_e = None # all neurons
-nrec_spikes_i = 10
+nrec_spikes_i = o.nrec_spikes_i
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(o.output_dir,
         o.fileNamePrefix, o.job_num)
@@ -47,12 +49,12 @@ d = DataStorage.open(output_fname, 'a')
 if ("trials" not in d.keys()):
     d['trials'] = []
 
-seed_gen = TrialSeedGenerator(o.master_seed)
+seed_gen = TrialSeedGenerator(int(o.master_seed))
 if len(d['trials']) == 0:
-    d['master_seed'] = o.master_seed
+    d['master_seed'] = int(o.master_seed)
 else:
     try:
-        seed_gen.check_master_seed(d['master_seed'], o.master_seed)
+        seed_gen.check_master_seed(d['master_seed'], int(o.master_seed))
     except ValueError as e:
         d.close()
         raise e
@@ -67,7 +69,8 @@ for trial_idx in range(len(d['trials']), o.ntrials):
     ei_net = BasicGridCellNetwork(o, simulationOpts=None,
                                   nrec_spikes=(nrec_spikes_e, nrec_spikes_i),
                                   stateRecParams=(stateMonParams,
-                                                  stateMonParams))
+                                                  stateMonParams),
+                                  rec_spikes_probabilistic=o.rec_spikes_probabilistic)
 
     if o.velON and not o.constantPosition:
         ei_net.setVelocityCurrentInput_e()

@@ -363,6 +363,63 @@ class IGridnessScore(GridnessScore):
        self.analysisRoot = ['analysis', 'i_fields']
 
 
+class IPCGridnessScore(AggregateData):
+    '''Extract gridness score from the aggregated data for the I-PC simulations'''
+    def __init__(self, space, iterList, **kw):
+       super(IPCGridnessScore, self).__init__(space, iterList, None, **kw)
+       self._gscore = None
+
+    def _getRawData(self):
+        NNeurons = 10
+        trialNum = 0
+        if self._gscore is None:
+            self._gscore = np.empty((self.sp.shape[0], self.sp.shape[1], NNeurons)) * np.nan
+            for r in range(self.sp.shape[0]):
+                for c in range(self.sp.shape[1]):
+                    for nidx in range(NNeurons):
+                        try:
+                            data = self.sp[r][c][trialNum].data['analysis']['neurons'][nidx]['gridnessScore']
+                            self._gscore[r, c, nidx] = data
+                        except KeyError:
+                            self._gscore[r, c, nidx] = np.nan
+
+            self._X, self._Y = self.metadata.xy_data
+        return self._gscore, self._X, self._Y
+
+    def getData(self):
+        data, X, Y = self._getRawData()
+        return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+
+
+class IPCIGridnessScore(AggregateData):
+    '''Extract gridness score from the aggregated data for the I-PC simulations'''
+    def __init__(self, space, iterList, **kw):
+       super(IPCIGridnessScore, self).__init__(space, iterList, None, **kw)
+       self._gscore = None
+
+    def _getRawData(self):
+        NNeurons = 10
+        trialNum = 0
+        if self._gscore is None:
+            self._gscore = np.empty((self.sp.shape[0], self.sp.shape[1], NNeurons)) * np.nan
+            for r in range(self.sp.shape[0]):
+                for c in range(self.sp.shape[1]):
+                    for nidx in range(NNeurons):
+                        try:
+                            data = self.sp[r][c][trialNum].data['analysis']['i_fields']['neurons'][nidx]['gridnessScore']
+                            print(r, c, nidx, data)
+                            self._gscore[r, c, nidx] = data
+                        except KeyError:
+                            self._gscore[r, c, nidx] = np.nan
+
+            self._X, self._Y = self.metadata.xy_data
+        return self._gscore, self._X, self._Y
+
+    def getData(self):
+        data, X, Y = self._getRawData()
+        return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+
+
 class SpatialInformation(AggregateData):
     '''Extract the E cell spatial information score (information specificity,
     bit/spike).'''

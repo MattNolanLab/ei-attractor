@@ -46,7 +46,7 @@ class ParameterSelector(object):
 
     def simulation_params(self):
         '''Simulation parameters.'''
-        self.parser.add_argument("--master_seed", type=int,   help="Master random number generator seed")
+        self.parser.add_argument("--master_seed", type=float,   help="Master random number generator seed")
         self.parser.add_argument("--ntrials",     type=int,   help="Number of trials for the parameter set")
         self.parser.add_argument("--delay",       type=float, help="Synaptic delay (ms)")
         self.parser.add_argument("--nthreads",    type=int,   help="Number of threads (NEST)")

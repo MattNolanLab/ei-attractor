@@ -16,10 +16,10 @@ args = parser.parse_args()
 env = NoiseEnvironment(user_config=config.get_config())
 
 if args.grids or args.all:
-    env.register_plotter(noisefigs.plotters.GenericGridSweepsPlotter)
-    env.register_plotter(noisefigs.plotters.GenericGridSweepsPlotter,
+    env.register_plotter(noisefigs.plotters.IPCGridSweepsPlotter)
+    env.register_plotter(noisefigs.plotters.IPCGridSweepsPlotter,
                          config={
-                             'GenericGridSweepsPlotter': {
+                             'IPCGridSweepsPlotter': {
                                  'population_type': 'I',
                              }
                          })

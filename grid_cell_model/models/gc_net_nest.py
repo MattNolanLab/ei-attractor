@@ -777,7 +777,8 @@ class BasicGridCellNetwork(NestGridCellNetwork):
     def __init__(self, options, simulationOpts=None,
                  nrec_spikes=(None, None),
                  stateRecord_type='middle-center',
-                 stateRecParams=(None, None)):
+                 stateRecParams=(None, None),
+                 rec_spikes_probabilistic=False):
         '''
         TODO
         '''
@@ -792,10 +793,19 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         if self.nrecSpikes_i is None:
             self.nrecSpikes_i = self.Ni_x * self.Ni_y
 
-        self.spikeMon_e  = self.getSpikeDetector("E",
-                                                 np.arange(self.nrecSpikes_e))
-        self.spikeMon_i  = self.getSpikeDetector("I",
-                                                 np.arange(self.nrecSpikes_i))
+        if rec_spikes_probabilistic == False:
+            self.spikeMon_e  = self.getSpikeDetector("E",
+                                                     np.arange(self.nrecSpikes_e))
+            self.spikeMon_i  = self.getSpikeDetector("I",
+                                                     np.arange(self.nrecSpikes_i))
+        else:
+            self.spikeMon_e  = self.getSpikeDetector(
+                "E", np.sort(np.random.choice(len(self.E_pop), self.nrecSpikes_e,
+                                      replace=False)))
+            self.spikeMon_i  = self.getSpikeDetector(
+                "I", np.sort(np.random.choice(len(self.I_pop),
+                                              self.nrecSpikes_i,
+                                              replace=False)))
 
         # States
         if stateRecord_type == 'middle-center':
