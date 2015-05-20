@@ -23,6 +23,7 @@ from default_params import defaultParameters as dp
 
 sweep = ParameterSweep('simulation_grids.py', dp)
 parser = sweep.parser
+parser.add_argument('--pc_conn_weight', type=float, help='Connection weight from PCs to E cells (pA).')
 parser.parse_args()
 
 sweep.set_bump_slope_selector(ISurroundPastollSelector('bump_slope_data',
@@ -30,6 +31,8 @@ sweep.set_bump_slope_selector(ISurroundPastollSelector('bump_slope_data',
 
 p = {}
 p['master_seed']      = 123456
+if parser.options.pc_conn_weight is not None:
+    p['pc_conn_weight'] = parser.options.pc_conn_weight
 
 p['Iext_e_theta'] = 650.
 p['Iext_i_theta'] = 50.
