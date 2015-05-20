@@ -133,6 +133,7 @@ class ParameterSelector(object):
         '''Parameters for place celss connected to I cells.'''
         self.parser.add_argument("--ipc_ON", type=int, choices=[0, 1], help="Whether to use I place cells.")
         self.parser.add_argument("--ipc_N", type=int, help="Number of I place cells")
+        self.parser.add_argument("--ipc_field_std", type=float,  help="Std. deviation of the Gaussian specifying the place field size (cm)")
         self.parser.add_argument("--ipc_nconn", type=float, help="Number of I place cells to connect to each I cells (picked randomly)")
         self.parser.add_argument("--ipc_max_rate", type=float, help="I place cells max. firing rate (Hz).")
         self.parser.add_argument("--ipc_weight", type=float, help="Connection weight from I place cells to I cells (nS).")

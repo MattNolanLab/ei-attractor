@@ -27,6 +27,8 @@ parser.add_argument('--g_AMPA_total', type=float)
 parser.add_argument('--g_AMPA_row', type=float, help='Row index into bump slope data.')
 parser.add_argument('--g_GABA_total', type=float)
 parser.add_argument('--g_GABA_col', type=float, help='Column index into bump slope data.')
+parser.add_argument('--ipc_field_std', type=float, help='I PC field std. dev..')
+parser.add_argument('--ipc_max_rate', type=float)
 parser.parse_args()
 o = parser.options
 
@@ -46,6 +48,10 @@ p['pcON']             = 1
 p['constantPosition'] = 0
 
 p['ipc_ON'] = 1
+if parser.options.ipc_field_std is not None:
+    p['ipc_field_std'] = parser.options.ipc_field_std
+if parser.options.ipc_max_rate is not None:
+    p['ipc_max_rate'] = parser.options.ipc_max_rate
 
 sweep.update_user_parameters(p)
 sweep.run()
