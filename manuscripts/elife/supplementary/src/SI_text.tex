@@ -489,6 +489,12 @@ the synaptic profile. The parameters were set to $G_{\text{PC}}^{\text{max}}$ =
 0.5 nS and $\sigma_\text{PC}$ = 7 cm. Connections from place cells were modelled
 as AMPA conductances (eq.~\ref{eq:dgSyn}).
 
+In simulations where place cells were connected to I cells (Figure 2 -- figure
+supplement~\ref{fig:ipc}), an additional population of place cells was
+instantiated, with parameters set to \ssc{r}{max}{} = 100 Hz,
+\ssc{\sigma}{field}{} = 80 cm.  Each interneuron received connections from 3
+randomly chosen place cells, with a synaptic weight of 4 nS.
+
 
 
 \section{Bump attractor initialisation} \label{sec:noise_bump_init_app}
@@ -905,6 +911,25 @@ and then subsequently averaged over all simulation trials.
 
 \clearpage
 
+\begin{figure}[p]
+    \internallinenumbers
+    \centering
+        \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_i_place_cells}
+    \caption{Spatial firing fields in networks with place cells connected to I
+    cells through random connections. Each I cell received connections from 3
+    randomly selected place cells. (A) Examples of firing fields of E and I
+    cells from networks. Gridness score and maximal firing rate of the firing
+    field is indicated in the top left and right parts of each firing field,
+    respectively. (B) Distributions of spatial sparsity (left), spatial
+    information (centre) and gridness score (right) of 100 randomly selected
+    cells from each population of neurons. Each simulation run was repeated 10
+    times with different randomisation seed. Properties of place cells:
+    \ssc{r}{max}{}~=100 Hz, \ssc{\sigma}{field}{}~=~80 cm.}
+    \label{fig:ipc}
+\end{figure}
+
+\clearpage
+
 %\begin{figure}[p]
 %    \internallinenumbers
 %    \centering
@@ -1131,7 +1156,11 @@ and then subsequently averaged over all simulation trials.
     population-average firing rate during each theta cycle exceeding 300 Hz,
     i.e. at least 60\% of E cells firing synchronously within a time period of
     2 ms in the parameter space of $\gE$ and $\gI$. Black lines indicate regions
-    where gridness score equals 0.5.}
+    where gridness score equals 0.5.
+    (F) Scatter plots show the relationship between gridness score and the
+    maximal firing rate during the simulation (left) and the probability of the
+    maximal population-average firing rate during each theta cycle exceeding
+    300 Hz (right).}
 \end{figure}
 
 \clearpage
@@ -1427,8 +1456,11 @@ and then subsequently averaged over all simulation trials.
     an average of maxima from 5 simulation runs.  (E) Probability of the
     maximal population-average firing rate during each theta cycle exceeding
     300 Hz, i.e. at least 60\% of E cells firing synchronously within a time
-    period of 2 ms in the parameter space of $\gE$ and $\gI$. Black lines indicate
-    regions where gridness score equals 0.5.}
+    period of 2 ms in the parameter space of $\gE$ and $\gI$. Black lines
+    indicate regions where gridness score equals 0.5. (F) Scatter plots show
+    the relationship between gridness score and the maximal firing rate during
+    the simulation (left) and the probability of the maximal population-average
+    firing rate during each theta cycle exceeding 300 Hz (right).}
 \end{figure}
 
 \clearpage
@@ -1568,7 +1600,10 @@ and then subsequently averaged over all simulation trials.
     maximal population-average firing rate during each theta cycle exceeding
     300 Hz, i.e. at least 60\% of E cells firing synchronously within a time
     period of 2 ms in the parameter space of $\gE$ and $\gI$. Black lines indicate
-    regions where gridness score equals 0.5.}
+    regions where gridness score equals 0.5. (F) Scatter plots show the
+    relationship between gridness score and the maximal firing rate during the
+    simulation (left) and the probability of the maximal population-average
+    firing rate during each theta cycle exceeding 300 Hz (right).}
 \end{figure}
 
 \clearpage

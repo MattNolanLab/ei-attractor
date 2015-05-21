@@ -469,7 +469,7 @@ class IPCExamplePlotter(IPCBasePlotter):
                                 rasterized=True, G=grid_data[weight_row,
                                                              n_idx],
                                 rate_fs='x-small')
-                fname = self.get_fname("grid_example_{pop_type}_nrn_{nrnno:03}",
+                fname = self.get_fname("grid_example_{pop_type}_nrn_{nrnno:03}.pdf",
                                        pop_type=population_type,
                                        nrnno=n_idx)
                 plt.savefig(fname, dpi=300, transparent=True)

@@ -407,6 +407,10 @@ class IPCGridnessScore(AggregateData):
                         _gscore[r, idx] = data
                     except KeyError:
                         _gscore[r, idx] = np.nan
+                    except:
+                        _gscore[r, idx] = np.nan
+                        print('Could not load data, r: %d, c: %d, nidx: %d' %
+                              (r, c, nidx))
                     idx += 1
         _X, _Y = self.metadata.xy_data
 
@@ -428,6 +432,10 @@ class IPCGridnessScore(AggregateData):
                         _gscore[r, idx] = data
                     except KeyError:
                         _gscore[r, idx] = np.nan
+                    except:
+                        _gscore[r, idx] = np.nan
+                        print('Could not load data, r: %d, c: %d, nidx: %d' %
+                              (r, c, nidx))
                     idx += 1
 
         rateMaps_X = self.sp[0][0][trialNum].data['analysis']['neurons'][0]['rateMap_e_X']
@@ -481,6 +489,10 @@ class IPCIGridnessScore(AggregateData):
                         _gscore[r, idx] = data
                     except KeyError:
                         _gscore[r, idx] = np.nan
+                    except:
+                        _gscore[r, idx] = np.nan
+                        print('Could not load data, r: %d, c: %d, nidx: %d' %
+                              (r, c, nidx))
                     idx += 1
         _X, _Y = self.metadata.xy_data
 
@@ -502,6 +514,10 @@ class IPCIGridnessScore(AggregateData):
                         _gscore[r, idx] = data
                     except KeyError:
                         _gscore[r, idx] = np.nan
+                    except:
+                        _gscore[r, idx] = np.nan
+                        print('Could not load data, r: %d, c: %d, nidx: %d' %
+                              (r, c, nidx))
                     idx += 1
 
         rateMaps_X = self.sp[0][0][trialNum].data['analysis']['i_fields']['neurons'][0]['rateMap_i_X']
