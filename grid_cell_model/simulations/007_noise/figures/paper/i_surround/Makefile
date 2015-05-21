@@ -27,7 +27,7 @@ e_theta_475: \
 pastoll_et_al: \
 	figure_bumps_pastoll_et_al.dummy		\
 	figure_gamma_pastoll_et_al.dummy		\
-	figure_drift_pastoll_et_al.dummy		\
+	figure_drifts_pastoll_et_al.dummy		\
 	figure_seizures_pastoll_et_al.dummy
 
 other: \

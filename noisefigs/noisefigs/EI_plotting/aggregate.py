@@ -365,9 +365,10 @@ class IGridnessScore(GridnessScore):
 
 class IPCGridnessScore(AggregateData):
     '''Extract gridness score from the aggregated data for the I-PC simulations'''
-    def __init__(self, space, iterList, **kw):
+    def __init__(self, space, iterList, what, **kw):
        super(IPCGridnessScore, self).__init__(space, iterList, None, **kw)
        self._gscore = None
+       self._what = what
 
     def _getRawData(self):
         NNeurons = 10
@@ -378,7 +379,7 @@ class IPCGridnessScore(AggregateData):
                 for c in range(self.sp.shape[1]):
                     for nidx in range(NNeurons):
                         try:
-                            data = self.sp[r][c][trialNum].data['analysis']['neurons'][nidx]['gridnessScore']
+                            data = self.sp[r][c][trialNum].data['analysis']['neurons'][nidx][self._what]
                             self._gscore[r, c, nidx] = data
                         except KeyError:
                             self._gscore[r, c, nidx] = np.nan
@@ -389,35 +390,124 @@ class IPCGridnessScore(AggregateData):
     def getData(self):
         data, X, Y = self._getRawData()
         return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+
+    def get_weight_data(self, NNeurons=10):
+        '''Return 2D data set where row is the weight and columns are all
+        gridness scores from all neurons in all trials.'''
+        trialNum = 0
+        #NNeurons = len(self.sp[0][0][trialNum].data['analysis']['neurons'])
+
+        _gscore = np.empty((self.sp.shape[0], self.sp.shape[1] * NNeurons)) * np.nan
+        for r in range(self.sp.shape[0]):
+            idx = 0
+            for c in range(self.sp.shape[1]):
+                for nidx in range(NNeurons):
+                    try:
+                        data = self.sp[r][c][trialNum].data['analysis']['neurons'][nidx][self._what]
+                        _gscore[r, idx] = data
+                    except KeyError:
+                        _gscore[r, idx] = np.nan
+                    idx += 1
+        _X, _Y = self.metadata.xy_data
+
+        return _gscore, _Y
+
+    def get_weight_maps(self, NNeurons=10):
+        '''Return 2D data set where row is the weight and columns are all
+        firing rate maps from all neurons in all trials.'''
+        trialNum = 0
+        #NNeurons = len(self.sp[0][0][trialNum].data['analysis']['neurons'])
+
+        _gscore = np.empty((self.sp.shape[0], self.sp.shape[1] * NNeurons), dtype=object)
+        for r in range(self.sp.shape[0]):
+            idx = 0
+            for c in range(self.sp.shape[1]):
+                for nidx in range(NNeurons):
+                    try:
+                        data = self.sp[r][c][trialNum].data['analysis']['neurons'][nidx]['rateMap_e']
+                        _gscore[r, idx] = data
+                    except KeyError:
+                        _gscore[r, idx] = np.nan
+                    idx += 1
+
+        rateMaps_X = self.sp[0][0][trialNum].data['analysis']['neurons'][0]['rateMap_e_X']
+        rateMaps_Y = self.sp[0][0][trialNum].data['analysis']['neurons'][0]['rateMap_e_Y']
+
+        return _gscore, rateMaps_X, rateMaps_Y
 
 
 class IPCIGridnessScore(AggregateData):
     '''Extract gridness score from the aggregated data for the I-PC simulations'''
-    def __init__(self, space, iterList, **kw):
+    def __init__(self, space, iterList, what, **kw):
        super(IPCIGridnessScore, self).__init__(space, iterList, None, **kw)
-       self._gscore = None
+       self._what = what
 
     def _getRawData(self):
         NNeurons = 10
         trialNum = 0
-        if self._gscore is None:
-            self._gscore = np.empty((self.sp.shape[0], self.sp.shape[1], NNeurons)) * np.nan
-            for r in range(self.sp.shape[0]):
-                for c in range(self.sp.shape[1]):
-                    for nidx in range(NNeurons):
-                        try:
-                            data = self.sp[r][c][trialNum].data['analysis']['i_fields']['neurons'][nidx]['gridnessScore']
-                            print(r, c, nidx, data)
-                            self._gscore[r, c, nidx] = data
-                        except KeyError:
-                            self._gscore[r, c, nidx] = np.nan
 
-            self._X, self._Y = self.metadata.xy_data
-        return self._gscore, self._X, self._Y
+        _gscore = np.empty((self.sp.shape[0], self.sp.shape[1], NNeurons)) * np.nan
+        for r in range(self.sp.shape[0]):
+            for c in range(self.sp.shape[1]):
+                for nidx in range(NNeurons):
+                    try:
+                        data = self.sp[r][c][trialNum].data['analysis']['i_fields']['neurons'][nidx][self._what]
+                        #print(r, c, nidx, data)
+                        _gscore[r, c, nidx] = data
+                    except KeyError:
+                        _gscore[r, c, nidx] = np.nan
+
+        _X, _Y = self.metadata.xy_data
+
+        return _gscore, _X, _Y
 
     def getData(self):
         data, X, Y = self._getRawData()
         return np.mean(maskNaNs(data, self.ignoreNaNs), axis=2), X, Y
+
+    def get_weight_data(self, NNeurons=10):
+        '''Return 2D data set where row is the weight and columns are all
+        gridness scores from all neurons in all trials.'''
+        trialNum = 0
+        #NNeurons = len(self.sp[0][0][trialNum].data['analysis']['i_fields']['neurons'])
+
+        _gscore = np.empty((self.sp.shape[0], self.sp.shape[1] * NNeurons)) * np.nan
+        for r in range(self.sp.shape[0]):
+            idx = 0
+            for c in range(self.sp.shape[1]):
+                for nidx in range(NNeurons):
+                    try:
+                        data = self.sp[r][c][trialNum].data['analysis']['i_fields']['neurons'][nidx][self._what]
+                        _gscore[r, idx] = data
+                    except KeyError:
+                        _gscore[r, idx] = np.nan
+                    idx += 1
+        _X, _Y = self.metadata.xy_data
+
+        return _gscore, _Y
+
+    def get_weight_maps(self, NNeurons=10):
+        '''Return 2D data set where row is the weight and columns are all
+        firing rate maps from all neurons in all trials.'''
+        trialNum = 0
+        #NNeurons = len(self.sp[0][0][trialNum].data['analysis']['neurons'])
+
+        _gscore = np.empty((self.sp.shape[0], self.sp.shape[1] * NNeurons), dtype=object)
+        for r in range(self.sp.shape[0]):
+            idx = 0
+            for c in range(self.sp.shape[1]):
+                for nidx in range(NNeurons):
+                    try:
+                        data = self.sp[r][c][trialNum].data['analysis']['i_fields']['neurons'][nidx]['rateMap_i']
+                        _gscore[r, idx] = data
+                    except KeyError:
+                        _gscore[r, idx] = np.nan
+                    idx += 1
+
+        rateMaps_X = self.sp[0][0][trialNum].data['analysis']['i_fields']['neurons'][0]['rateMap_i_X']
+        rateMaps_Y = self.sp[0][0][trialNum].data['analysis']['i_fields']['neurons'][0]['rateMap_i_Y']
+
+        return _gscore, rateMaps_X, rateMaps_Y
 
 
 class SpatialInformation(AggregateData):

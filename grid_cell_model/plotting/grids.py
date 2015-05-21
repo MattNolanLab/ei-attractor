@@ -45,7 +45,8 @@ def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, diam=np.inf, ax=None,
 
 
 def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
-        scaleText=True, maxRate=True, G=None, rateStr='Hz', ann_div=.1, **kw):
+                    scaleText=True, maxRate=True, G=None, rateStr='Hz',
+                    ann_div=.1, rate_fs='xx-small', **kw):
     '''
     Plot the grid-like rate map into the current axis
     '''
@@ -71,14 +72,14 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
             rateStr = ' ' + rateStr
         rStr = '{0:.1f}{1}'.format(np.max(rateMap.flatten()), rateStr)
         ax.text(1. - ann_div, 1.025, rStr, ha="right", va='bottom',
-                fontsize='xx-small', transform=ax.transAxes)
+                fontsize=rate_fs, transform=ax.transAxes)
     if (G is not None):
         if (int(G*100)/100.0 == int(G)):
             gStr = '{0}'.format(int(G))
         else:
             gStr = '{0:.2f}'.format(G)
         ax.text(ann_div, 1.025, gStr, ha="left", va='bottom',
-                fontsize='xx-small', transform=ax.transAxes)
+                fontsize=rate_fs, transform=ax.transAxes)
 
 
 

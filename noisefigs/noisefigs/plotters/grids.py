@@ -5,6 +5,7 @@ import string
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
 from matplotlib.transforms import Bbox
 import scipy.stats
@@ -16,6 +17,7 @@ from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 from grid_cell_model.plotting.grids import (plotSpikes2D,
                                             plotGridRateMap,
                                             plotAutoCorrelation)
+from grid_cell_model.plotting.global_defs import globalAxesSettings
 import grid_cell_model.plotting.low_level as low_level
 from simtools.plotting.plotters import Computation, FigurePlotter
 
@@ -29,6 +31,10 @@ __all__ = [
     'GridSweepsPlotter',
     'GenericGridSweepsPlotter',
     'IPCGridSweepsPlotter',
+    'IPCScatterPlotter',
+    'IPCHistogramsPlotter',
+    'IPCExamplePlotter',
+    'IPCExampleColorbarPlotter',
     'GridExamplesPlotter',
     'GridExampleRectPlotter',
     'GridExampleColorbarPlotter',
@@ -271,6 +277,286 @@ class IPCGridSweepsPlotter(GridSweepsPlotter):
             ax.axis('tight')
             fig.savefig(self._get_population_fname(noise_sigma,
                                                    population_type), dpi=300,
+                        transparent=True)
+            plt.close(fig)
+
+
+class IPCBasePlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(IPCBasePlotter, self).__init__(*args, **kwargs)
+
+    def _get_grid_data(self, space, ns_idx, metadata=None,
+                       what='gridnessScore'):
+        '''Return grid data based on the selected population type.'''
+        iter_list = self.config['iter_list']
+        example_idx = self.config['grids']['example_idx']
+
+        e_grid_data = aggr.IPCGridnessScore(space, iter_list, what,
+                                            ignoreNaNs=True,
+                                            normalizeTicks=True,
+                                            r=example_idx[ns_idx][0],
+                                            c=example_idx[ns_idx][1],
+                                            metadata_extractor=metadata)
+
+        i_grid_data = aggr.IPCIGridnessScore(space, iter_list, what,
+                                             ignoreNaNs=True,
+                                             normalizeTicks=True,
+                                             r=example_idx[ns_idx][0],
+                                             c=example_idx[ns_idx][1],
+                                             metadata_extractor=metadata)
+        return e_grid_data, i_grid_data
+
+
+class IPCHistogramsPlotter(IPCBasePlotter):
+
+    def __init__(self, *args, **kwargs):
+        super(IPCHistogramsPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        normalize_type = self.myc.get('normalize_type', (None, None))
+        weight_row = self.myc.get('weight_row', 16)  # Determines the weight
+        hist_nbins = self.myc.get('hist_nbins', 25)
+        hist_range_grids = self.myc.get('hist_range_grids', (-0.5, 1.3))
+        hist_range_info = self.myc.get('hist_range_info', (0, 2.3))
+        hist_range_sparsity = self.myc.get('hist_range_sparsity', (0, 1))
+        l, b, r, t = self.myc['bbox']
+        n_neurons = 100
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            metadata = GenericExtractor(ps.grids[ns_idx],
+                                        normalize=self.myc['normalize_ticks'],
+                                        normalize_type=normalize_type)
+
+            # Histogram of gridness scores
+            e_gscore, i_gscore = self._get_grid_data(ps.grids[ns_idx], ns_idx,
+                                                     metadata=metadata,
+                                                     what='gridnessScore')
+            gridness_e, weight = e_gscore.get_weight_data(n_neurons)
+            gridness_e = gridness_e[weight_row, :]
+            gridness_i, _ = i_gscore.get_weight_data(n_neurons)
+            gridness_i = gridness_i[weight_row, :]
+            print("PC --> I cell weight: %.2f" % weight[weight_row, 0])
+
+
+            fig = self._get_final_fig(self.myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            globalAxesSettings(ax)
+            hist_e, edges_e = np.histogram(gridness_e, hist_nbins, normed=False,
+                                           range=hist_range_grids)
+            edges_e = edges_e + (edges_e[1] - edges_e[0]) / 2
+            hist_i, edges_i = np.histogram(gridness_i, hist_nbins, normed=False,
+                                           range=hist_range_grids)
+            edges_i = edges_i + (edges_i[1] - edges_i[0]) / 2
+            ax.plot(edges_e[0:-1], hist_e, '-', color='b')
+            ax.plot(edges_i[0:-1], hist_i, '-', color='r')
+            ax.set_xlabel('Gridness score')
+            #ax.set_ylabel('P(Gridness score)')
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.yaxis.set_ticks_position('left')
+            ax.xaxis.set_ticks_position('bottom')
+            ax.set_ylim([0, 160])
+            ax.yaxis.set_major_locator(ti.MultipleLocator(50))
+            ax.legend(['E cells', 'I cells'], frameon=False, loc=(0.4, 0.9))
+
+            fig.savefig(self.get_fname("histogram_gridness_{ns}.pdf",
+                                       ns=noise_sigma), transparent=True)
+            plt.close(fig)
+
+            # Spatial information
+            e_info, i_info = self._get_grid_data(ps.grids[ns_idx], ns_idx,
+                                                     metadata=metadata,
+                                                     what='info_specificity')
+            info_e, weight = e_info.get_weight_data(n_neurons)
+            info_e = info_e[weight_row, :]
+            info_i, _ = i_info.get_weight_data(n_neurons)
+            info_i = info_i[weight_row, :]
+
+            fig = self._get_final_fig(self.myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            globalAxesSettings(ax)
+            hist_e, edges_e = np.histogram(info_e, hist_nbins, normed=False,
+                                           range=hist_range_info)
+            edges_e = edges_e + (edges_e[1] - edges_e[0]) / 2
+            hist_i, edges_i = np.histogram(info_i, hist_nbins, normed=False,
+                                           range=hist_range_info)
+            edges_i = edges_i + (edges_i[1] - edges_i[0]) / 2
+            ax.plot(edges_e[0:-1], hist_e, '-', color='b')
+            ax.plot(edges_i[0:-1], hist_i, '-', color='r')
+            ax.set_xlabel('Spatial info(bits/spike)')
+            #ax.set_ylabel('P(Info)')
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.yaxis.set_ticks_position('left')
+            ax.xaxis.set_ticks_position('bottom')
+            ax.set_ylim([0, 1000])
+            ax.yaxis.set_major_locator(ti.MultipleLocator(250))
+            #ax.legend(['E cells', 'I cells'])
+
+            fig.savefig(self.get_fname("histogram_info_{ns}.pdf",
+                                       ns=noise_sigma), transparent=True)
+            plt.close(fig)
+
+            # Spatial sparsity
+            e_sparsity, i_sparsity = self._get_grid_data(ps.grids[ns_idx],
+                                                         ns_idx,
+                                                         metadata=metadata,
+                                                         what='sparsity')
+            sparsity_e, weight = e_sparsity.get_weight_data(n_neurons)
+            sparsity_e = sparsity_e[weight_row, :]
+            sparsity_i, _ = i_sparsity.get_weight_data(n_neurons)
+            sparsity_i = sparsity_i[weight_row, :]
+
+            fig = self._get_final_fig(self.myc['fig_size'])
+            ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+            globalAxesSettings(ax)
+            hist_e, edges_e = np.histogram(sparsity_e, hist_nbins, normed=False,
+                                           range=hist_range_sparsity)
+            edges_e = edges_e + (edges_e[1] - edges_e[0]) / 2
+            hist_i, edges_i = np.histogram(sparsity_i, hist_nbins, normed=False,
+                                           range=hist_range_sparsity)
+            edges_i = edges_i + (edges_i[1] - edges_i[0]) / 2
+            ax.plot(edges_e[0:-1], hist_e, '-', color='b')
+            ax.plot(edges_i[0:-1], hist_i, '-', color='r')
+            ax.set_xlabel('Spatial sparsity')
+            ax.set_ylabel('Frequency')
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.yaxis.set_ticks_position('left')
+            ax.xaxis.set_ticks_position('bottom')
+            ax.set_ylim([0, 1000])
+            ax.yaxis.set_major_locator(ti.MultipleLocator(250))
+
+            fig.savefig(self.get_fname("histogram_spasity_{ns}.pdf",
+                                       ns=noise_sigma), transparent=True)
+            plt.close(fig)
+
+
+class IPCExamplePlotter(IPCBasePlotter):
+    def __init__(self, *args, **kwargs):
+        super(IPCExamplePlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        normalize_type = self.myc.get('normalize_type', (None, None))
+        weight_row = self.myc.get('weight_row', 16)  # Determines the weight
+        population_type = self.myc.get('population_type', 'E')
+        l, b, r, t = self.myc['bbox']
+        n_neurons = 100
+        mult = 10
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            metadata = GenericExtractor(ps.grids[ns_idx],
+                                        normalize=self.myc['normalize_ticks'],
+                                        normalize_type=normalize_type)
+
+            # Histogram of gridness scores
+            e_data, i_data = self._get_grid_data(ps.grids[ns_idx], ns_idx,
+                                                 metadata=metadata)
+            data = e_data if population_type == 'E' else i_data
+
+            (rateMaps,
+             rateMaps_X,
+             rateMaps_Y) = data.get_weight_maps(n_neurons)
+            grid_data, _ = data.get_weight_data(n_neurons)
+            for n_idx in range(n_neurons*mult):
+                fig = self._get_final_fig(self.myc['fig_size'])
+                ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
+                current_map = rateMaps[weight_row, n_idx]
+                plotGridRateMap(current_map, rateMaps_X, rateMaps_Y,
+                                diam=180., ax=ax, maxRate=True,
+                                rasterized=True, G=grid_data[weight_row,
+                                                             n_idx],
+                                rate_fs='x-small')
+                fname = self.get_fname("grid_example_{pop_type}_nrn_{nrnno:03}",
+                                       pop_type=population_type,
+                                       nrnno=n_idx)
+                plt.savefig(fname, dpi=300, transparent=True)
+                plt.close()
+
+class IPCExampleColorbarPlotter(FigurePlotter):
+    def __init__(self, *args, **kwargs):
+        super(IPCExampleColorbarPlotter, self).__init__(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        fig = self._get_final_fig(self.myc['fig_size'])
+        ax_cbar = fig.add_axes([0.05, 0.07, 0.1, 0.8])
+        cbar = mpl.colorbar.ColorbarBase(ax_cbar, cmap=mpl.cm.jet,
+                                         norm=mpl.colors.Normalize(vmin=0,
+                                                                   vmax=1),
+                                         ticks=[0, 1],
+                                         orientation='vertical')
+        ax_cbar.yaxis.set_ticklabels(['0', 'Max'])
+        ax_cbar.set_ylabel('r (Hz)', labelpad=-5)
+        fname_cbar = self.get_fname("ipc_examples_colorbar.pdf")
+        plt.savefig(fname_cbar, dpi=300, transparent=True)
+        plt.close()
+
+
+class IPCScatterPlotter(IPCBasePlotter):
+    cmap = 'jet'
+    varList = ['gridnessScore']
+
+    def __init__(self, *args, **kwargs):
+        super(IPCScatterPlotter, self).__init__(*args, **kwargs)
+
+    def _get_population_fname(self, noise_sigma):
+        fname = self.myc.get('fname',
+                             "grids_scatter_weights_{ns}.pdf")
+        return self.get_fname(fname, ns=int(noise_sigma))
+
+    def t_test(self, weights, e_data, i_data):
+        assert np.all(e_data.shape == i_data.shape)
+        for weight_idx in range(e_data.shape[0]):
+            e_col = e_data[weight_idx, :]
+            i_col = i_data[weight_idx, :]
+            _, p_value = scipy.stats.ttest_rel(e_col, i_col)
+            print('w: %f, E mean: %f, I mean: %f, p: %f' % (weights[weight_idx],
+                                                            np.mean(e_col),
+                                                            np.mean(i_col),
+                                                            p_value))
+
+    def plot(self, *args, **kwargs):
+        ps = self.env.ps
+        #xlabel = self.myc.get('xlabel', None)
+        #ylabel = self.myc.get('ylabel', None)
+        #xticks = self.myc['xticks']
+        #yticks = self.myc['yticks']
+        normalize_type = self.myc.get('normalize_type', (None, None))
+        #l, b, r, t = self.myc['bbox']
+
+        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
+            metadata = GenericExtractor(ps.grids[ns_idx],
+                                        normalize=self.myc['normalize_ticks'],
+                                        normalize_type=normalize_type)
+            e_data, i_data = self._get_grid_data(ps.grids[ns_idx], ns_idx,
+                                                 metadata=metadata)
+
+            fig = self._get_final_fig(self.myc['fig_size'])
+            ax = fig.add_subplot(1, 1, 1)
+            e_d, weight = e_data.get_weight_data()
+            i_d, _ = i_data.get_weight_data()
+            self.t_test(weight[:, 0], e_d, i_d)
+
+            ax.plot(weight, e_d, 'o', color='b', markersize=2,
+                    markeredgecolor='none')
+            e_handle, = ax.plot(weight[:, 0], np.mean(e_d, axis=1), '-o',
+                                color='b')
+
+            ax.plot(weight, i_d, 'o', color='r', markersize=2,
+                    markeredgecolor='none')
+            i_handle, = ax.plot(weight[:, 0], np.mean(i_d, axis=1), '-o',
+                                color='r')
+            ax.set_xlabel('Weight from place cell (nS)')
+            ax.set_ylabel('Gridness score')
+            ax.legend([e_handle, i_handle], ['E cells', 'I cells'])
+            ax.axhline(y=0.5, linestyle='--', color='b')
+            ax.axhline(y=0.3, linestyle='--', color='r')
+            #ax.yaxis.set_major_locator(ti.MultipleLocator(0.1))
+
+            fig.tight_layout()
+            fig.savefig(self._get_population_fname(noise_sigma), dpi=300,
                         transparent=True)
             plt.close(fig)
 
