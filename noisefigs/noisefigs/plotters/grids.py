@@ -312,6 +312,14 @@ class IPCHistogramsPlotter(IPCBasePlotter):
     def __init__(self, *args, **kwargs):
         super(IPCHistogramsPlotter, self).__init__(*args, **kwargs)
 
+    def t_test(self, e_data, i_data, label='T test'):
+        assert np.all(e_data.shape == i_data.shape)
+        _, p_value = scipy.stats.ttest_rel(e_data, i_data)
+        print(label)
+        print('\tE mean +- STD: %f +- %f' % (np.mean(e_data), np.std(e_data)))
+        print('\tI mean +- STD: %f +- %f' % (np.mean(i_data), np.std(i_data)))
+        print('\tn = %d, p value: %e' % (len(e_data), p_value))
+
     def plot(self, *args, **kwargs):
         ps = self.env.ps
         normalize_type = self.myc.get('normalize_type', (None, None))
@@ -337,6 +345,7 @@ class IPCHistogramsPlotter(IPCBasePlotter):
             gridness_i, _ = i_gscore.get_weight_data(n_neurons)
             gridness_i = gridness_i[weight_row, :]
             print("PC --> I cell weight: %.2f" % weight[weight_row, 0])
+            self.t_test(gridness_e, gridness_i, 'T test for gridness score')
 
 
             fig = self._get_final_fig(self.myc['fig_size'])
@@ -373,6 +382,8 @@ class IPCHistogramsPlotter(IPCBasePlotter):
             info_i, _ = i_info.get_weight_data(n_neurons)
             info_i = info_i[weight_row, :]
 
+            self.t_test(info_e, info_i, 'T test for spatial info')
+
             fig = self._get_final_fig(self.myc['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
             globalAxesSettings(ax)
@@ -407,6 +418,8 @@ class IPCHistogramsPlotter(IPCBasePlotter):
             sparsity_e = sparsity_e[weight_row, :]
             sparsity_i, _ = i_sparsity.get_weight_data(n_neurons)
             sparsity_i = sparsity_i[weight_row, :]
+
+            self.t_test(sparsity_e, sparsity_i, 'T test for spatial sparsity')
 
             fig = self._get_final_fig(self.myc['fig_size'])
             ax = fig.add_axes(Bbox.from_extents(l, b, r, t))
@@ -508,7 +521,8 @@ class IPCScatterPlotter(IPCBasePlotter):
 
     def t_test(self, weights, e_data, i_data):
         assert np.all(e_data.shape == i_data.shape)
-        for weight_idx in range(e_data.shape[0]):
+        for weight_idx in [16]:  # range(e_data.shape[0]):
+            import pdb; pdb.set_trace()  # XXX BREAKPOINT
             e_col = e_data[weight_idx, :]
             i_col = i_data[weight_idx, :]
             _, p_value = scipy.stats.ttest_rel(e_col, i_col)

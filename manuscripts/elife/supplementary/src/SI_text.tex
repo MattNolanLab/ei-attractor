@@ -137,7 +137,7 @@ recurrent attractor networks - Supplementary Information
 %\vspace{1em}
 
 \begin{flushleft}
-Lukas Solanka$^{2,3}$,
+Lukas Solanka$^{1,2,3}$,
 Mark CW van Rossum$^{2}$,
 Matthew F Nolan$^{1}$
 \\
@@ -217,7 +217,7 @@ exponentially:
 
 In equations \eqref{eq:Imem_st} and \eqref{eq:Imem_fs}, the term $\deltaT$ is
 defined as the spike slope factor \citep{FourcaudTrocme:2003wz} and it measures
-the \emph{sharpness} of the spike initiation. The closer this parameter is to
+the sharpness of the spike initiation. The closer this parameter is to
 zero, the faster spike initiation will happen when $\Vm$ gets close to $\VT$.
 For the exponential integrate and fire neuron, in the limit $\deltaT
 \rightarrow 0$, the model becomes equivalent to a leaky integrate and fire
@@ -233,7 +233,7 @@ neurons:
 \end{align}               
 In networks that do not contain recurrent E$\rightarrow$E connections we set
 $\gAMPA = \gNMDA = 0$ for the E cells, and $\gGABAA = 0$ for I cells. In other
-networks variants (with E$\rightarrow$E or I$\rightarrow$I connectivity) these
+network variants (with E$\rightarrow$E or I$\rightarrow$I connectivity) these
 synaptic strengths are non-zero. E$\rightarrow$E, as well as E$\rightarrow$I
 synapses thus both contain the NMDA component. Connections from place cells
 were modeled as AMPA conductances only (cf.\ description of place cell inputs).
@@ -280,14 +280,13 @@ Finally, the current external to the neuron
 \end{equation}
 consists of a constant value ($\Iconst$), a theta modulated part, modeled as
 \begin{equation}
-    \Itheta(t) = \Atheta (1 + \sin(2\pi\ftheta t + \phitheta)),
+    \Itheta(t) = \frac{\Atheta}{2} (1 + \sin(2\pi\ftheta t + \phitheta)),
     \label{eq:Itheta}
 \end{equation}
 the velocity modulated current ($\Ivel$) that simulates a combination of
 head-direction input and animal speed input, and an input coming from place
 cells ($\Iplace$).  The description of the parameters in the equations can be
 found in Supplementary Methods Table~\ref{tab:neuron_params}.
-
 While $\Iconst$ and $\Itheta$ are simple functions of time, the velocity
 modulated current and place cell current are described separately. The velocity
 modulated current is described in Section~\ref{sec:Ivel} and the place cell
@@ -347,14 +346,13 @@ presynaptic ($j$) and postsynaptic ($i$) cell on the twisted torus:
 \end{align}
 In these equations, $\mu$ is the distance of the excitatory surround from the
 position of presynaptic neuron, $\sigmasub{exc}$ is the width of the excitatory
-surround and $|\cdot|_{\mathrm{torus}}$ is a distance on the twisted torus that
-takes the boundaries of the torus into account, and $C$ is the
+surround, $|\cdot|_{\mathrm{torus}}$ is a distance on the twisted torus that
+takes the boundaries of the torus into account and $C$ is the
 synaptic profile shift. The excitatory connections are
 composed of the equivalent amount of NMDA synaptic conductances. The synaptic
 strengths of NMDA is specified by a fractional constant \cNMDA. In all
 simulations, the NMDA amount constituted 2\% of the AMPA conductance.
-
-$\mathbf{e}_p$ in eq. \eqref{eq:dijce} determines the shift of the center of
+In eq. \eqref{eq:dijce}, $\mathbf{e}_p$ determines the shift of the center of
 outgoing synaptic strength profile on the torus, and was used to couple the
 velocity of the bump with the animal velocity
 \citep{Burak:2009fx,Pastoll:2013ff}. The velocity modulated input is described
@@ -374,9 +372,9 @@ inhibitory connectivity has been generated for which the probability of connecti
 between the pre- and post-synaptic cell was 0.4 and the weight of a connection
 was set to $0.013\gI$. The total inhibitory synaptic weight was thus a sum of
 $\wGABAA$ in Eq. \eqref{eq:wGABA} and the distance-independent component. In
-simulations with recurrent I$\rightarrow$I connectivity, I neurons were
-mutually connected with a probability of connections of 0.1 and a constant
-synaptic weight of 69 pS.
+simulations with recurrent I$\rightarrow$I connectivity (E-I-I networks), I
+neurons were mutually connected with a connection probability of 0.1 and a
+constant synaptic weight of 69 pS.
 
 In networks that contain recurrent E$\rightarrow$E connectivity, the
 connections between E cells were modelled as a Gaussian function, i.e.
@@ -385,19 +383,19 @@ similarly to eq. \eqref{eq:wGABA}:
     \wEE^{ij} = \gEE \exp\left(\frac{-\dijce^2}{2 \sigmaEE^2}\right),
     \label{eq:wEE}
 \end{equation}
-where $C$, $\mathbf{e}_p$ and \sigmaEE have the same meaning as in
-eq.~\eqref{eq:wAMPA}
+where $C$, $\mathbf{e}_p$ and $\sigmaEE$ have the same meaning as in
+eq.~\eqref{eq:wAMPA}. In these simulations, if not stated otherwise, $\gEE$ =
+0.5 nS.
 
 We have also evaluated networks in which E$\rightarrow$I and I$\rightarrow$E
-synapses are unstructured and have a constant value. Here, the E$\rightarrow$E
-synaptic weights were set according to eq. \eqref{eq:wEE}, with $\gEE$ = 0.5 nS
-and the excitatory and inhibitory synaptic weights for E$\rightarrow$I and
-I$\rightarrow$E synapses were set to $\gE / d$ and $\gI / d$ respectively,
-where $d$ is a probability of connection between the presynaptic and
-postsynaptic neuron, set to 0.1. The density factor $d$ was used in order to
-ensure equivalence of total synaptic input of a postsynaptic cell when compared
-to networks that have all-to-all connectivity
-(eqs.~\ref{eq:wAMPA},~\ref{eq:wGABA} and~\ref{eq:wEE}).
+synapses were unstructured and have a constant value. Here, the E$\rightarrow$E
+synaptic weights were set according to eq. \eqref{eq:wEE} and the excitatory
+and inhibitory synaptic weights for E$\rightarrow$I and I$\rightarrow$E
+synapses were set to $\gE / d$ and $\gI / d$ respectively, where $d$ is a
+probability of connection between the presynaptic and postsynaptic neuron, set
+to 0.1. The density factor $d$ was used in order to ensure equivalence of total
+synaptic input of a postsynaptic cell when compared to networks that have
+all-to-all connectivity (eqs.~\ref{eq:wAMPA},~\ref{eq:wGABA} and~\ref{eq:wEE}).
 
 Finally, in networks where connection strengths were generated
 probabilistically instead in an all-to-all way, the synaptic weights from E to
@@ -445,18 +443,19 @@ spacing between grid fields, the gain of the velocity inputs can be calibrated.
 
 Because of the finite network size, spiking variability, or imperfections in
 the synaptic profile functions, the position of bump attractor in the network
-might drift over time. The simulations of grid firing fields (Fig.~2 and
-Fig.~6D-I) and simulations that explored the controllability of the network by
-place cell input (Figure 6 - figure supplement~\ref{fig:S_pc_effectivity})
-comprised a separate population of cells with place-like firing fields (in all
-other simulations the input was de-activated). Inputs from these cells opposed
-drift of the bump attractor.
+might drift over time. The simulations of grid firing fields (Figure~2,~6D-I,
+7A-C and associated figure supplements) and simulations that explored the
+controllability of the network by place cell input (Figure 6 - figure
+supplement~\ref{fig:S_pc_effectivity}) comprised a separate population of cells
+with place-like firing fields connected to E cells (in all other simulations
+the input was de-activated). Inputs from these cells opposed drift of the bump
+attractor.
 
 Place cells were simulated as independent inhomogeneous Poisson processes,
 whose rate was modulated by a Gaussian function of the simulated animal
 location. Thus, the firing rate of an $i^{\text{th}}$ place cell, $r_i$ was:
 \begin{equation}
-    r_i = \ssc{r}{max}{} \exp\left( \frac{|\mathbf{l} - \bm{\mu}_i|^2}{2
+    r_i = \ssc{r}{max}{} \exp\left(- \frac{|\mathbf{l} - \bm{\mu}_i|^2}{2
             \ssc{\sigma}{field}{}^2} \right),
     \label{eq:place_cell_r}
 \end{equation}
@@ -476,7 +475,7 @@ firing fields were aligned (in real space) with the firing field of the place
 cell. The connection weight from place
 cell $i$ to a grid cell $j$ decayed according to a Gaussian function
 \begin{equation}
-    g_{ji} = G_{\text{PC}}^{\text{max}} \exp\left( \frac{|\bm{\mu}_{\text{PC}}^{i} -
+    g_{ji} = G_{\text{PC}}^{\text{max}} \exp\left(- \frac{|\bm{\mu}_{\text{PC}}^{i} -
     \bm{\mu}_{\text{G}}^j|^2}{2\sigma_\text{PC}^2} \right),
     \label{eq:TG_pc_diverg_conn}
 \end{equation}
@@ -489,9 +488,9 @@ the synaptic profile. The parameters were set to $G_{\text{PC}}^{\text{max}}$ =
 0.5 nS and $\sigma_\text{PC}$ = 7 cm. Connections from place cells were modelled
 as AMPA conductances (eq.~\ref{eq:dgSyn}).
 
-In simulations where place cells were connected to I cells (Figure 2 -- figure
-supplement~\ref{fig:ipc}), an additional population of place cells was
-instantiated, with parameters set to \ssc{r}{max}{} = 100 Hz,
+In simulations where I cells received uncorrelated spatial inputs (Figure 2 --
+figure supplement~\ref{fig:ipc}), an additional population of place cells was
+instantiated, with parameters set to \ssc{r}{max}{} = 100 Hz and
 \ssc{\sigma}{field}{} = 80 cm.  Each interneuron received connections from 3
 randomly chosen place cells, with a synaptic weight of 4 nS.
 
@@ -504,7 +503,7 @@ into the desired state, i.e.\ a bump attractor. During this stage, the
 theta-modulated input is switched off and the network receives only the
 constant input source (see eq.~\ref{eq:Iext}). The bump attractor might not
 form spontaneously, and instead the network could persist in a  uniform firing
-rate regime \citep{Compte:2000ul}. However, it might be possible that when
+rate regime~\citep{Compte:2000ul}. However, it might be possible that when
 forced into the attractor state, the network will persist (data not shown).
 Therefore, we used the place cell input as a spatially-tuned input that served
 (i) as an initialisation input in order to drive the network into an attractor
@@ -523,19 +522,23 @@ varying the amount of inhibitory and excitatory synaptic strengths. Since the
 actual synaptic weights are a function of distance on the twisted torus, we
 used the maximal conductance of AMPA ($\gE$, eq.~\ref{eq:wAMPA}) and GABA
 synapses ($\gI$, eq.~\ref{eq:wGABA}) in all the parameter exploration plots.
-Note that NMDA conductances are not counted towards $\gE$\ and that there is no
-recurrent excitation nor inhibition within the excitatory and inhibitory
-populations themselves.
-
+Note that since the amplitude of NMDA conductances was a fixed fraction of that
+ofAMPA, the strength of NMDA was also scaled as a function of $\gE$ in line
+with the scaling of the AMPA conductance and was thus implicitly counted toward
+$\gE$. Additionally, in Figure~7 -- figure
+supplement~\ref{fig:eei_unstructured}, parameter exploration simulations were
+performed in which the $\gEE$ synaptic scaling variable, as well as the the width
+of the synaptic profile of E$\rightarrow$E connections ($\sigmaEE$ in
+eq.~\ref{eq:wEE}) was used.
 
 
 \section{Analysis of spatial firing fields}
 
-Gridness scores are calculated following previous studies
+Gridness scores were calculated following previous studies
 \citep{Sargolini:2006ba}, by taking the spatial autocorrelation of each firing
 field (a region corresponding to a circle with radius $\lamgrid/2$ and a centre
 in the middle of the autocorrelation function has been removed) and rotating in
-steps of three degrees. For each rotation a Pearson correlation coefficient is
+steps of three degrees. For each rotation a Pearson correlation coefficient was
 calculated with the original autocorrelation. To calculate the gridness score
 the maximum of values at 30, 90 and 150 degrees rotation was subtracted from
 the minimum of the values at 60 and 120 degrees rotation.
@@ -546,9 +549,9 @@ Spatial information (bits/spike) was calculated according to
     I = \sum_{i = 1}^N p_i \frac{\lambda_i}{\lambda} \log_2 \frac{\lambda_i}{\lambda},
     \label{eq:spatial_info}
 \end{equation}
-where the environment is divided into $N$ bins and $p_i$ is the
-occupancy probability of bin $i$, $\lambda_i$ is the mean firing rate for bin
-$i$ and $\lambda$ is the overall mean firing rate of the cell.
+where the environment was divided into $N$ bins and $p_i$ was the
+occupancy probability of bin $i$, $\lambda_i$ was the mean firing rate for bin
+$i$ and $\lambda$ was the overall mean firing rate of the cell.
 
 Spatial sparsity was calculated following \citep{Buetfering:2014gu}:
 \begin{equation}
@@ -625,23 +628,25 @@ neurons/s/pA).  The estimation was based on the following algorithm:
 \subsection{Simulations of animal movement} \label{sec:noise_grids_protocol}
 
 Simulations of animal movement have been carried out for 600 seconds.  Here,
-for each value of $\gE$ and $\gI$, the main simulation run is preceded by a
-number of shorter simulations which determine how much current needs to be
+for each value of $\gE$ and $\gI$, the main simulation run was preceded by a
+number of shorter simulations which determined how much current needs to be
 injected in order for the bump of activity to track the simulated movement of
-an animal (Section~\ref{sec:gain_est}). This calibrates the gain of the
-velocity input current in order to produce grid fields with a specified spacing
-between the peaks in the individual firing fields. The result is a single
-number in units of neurons/s/pA, which determines the speed of the bump as a
-function of injected velocity input. The spacing between the individual fields
-of the grid firing fields was set to 60 cm in all of the simulations.
+an animal (Section~\ref{sec:gain_est}). This procedure calibrates the gain of
+the velocity input current in order to produce grid fields with a specified
+spacing between the peaks in the individual firing fields. The result is a
+single number in units of neurons/s/pA, which determines the speed of the bump
+as a function of injected velocity input. The spacing between the individual
+fields of the grid firing fields was set to 60 cm in all of the simulations.
 
-During the main simulation run, the animal movement is simulated for 600 s.
-Each of the runs is repeated 4 times for simulations in Fig.~2 and 3 times
-for simulations in Fig.~6D-I. These simulations use the estimated velocity
+During the main simulation run, the animal movement was simulated for 600 s.
+Each of the runs was repeated 4 times for simulations in Fig.~2 and 3 times
+for simulations in Fig.~6D-I and once for networks that contain additional
+recurrent synapses betwen E cells or I cells, as well as in networks with
+synapses generated probabilistically. These simulations use the estimated velocity
 response gain in order to calibrate the spacing between the grid firing fields.
-After the simulation is finished, a neuron in the bottom-left corner of the
-torus is selected for analysis. For this cell the gridness score of its firing
-field is computed. The reasoning behind choosing only a single cell to estimate
+After the simulation was finished, a neuron in the bottom-left corner of the
+torus was selected for analysis. For this cell the gridness score of its firing
+field was computed. The reasoning behind choosing only a single cell to estimate
 the gridness score is as follows. The grid firing fields in the network are a
 result of coordination of activity of the network as a whole. If the network
 forms a bump attractor that is able to accurately track animal movement, all
@@ -650,7 +655,10 @@ their phases. On the other hand, if the bump attractor does not form, is
 unstable, or does not accurately track the position of the animal, the gridness
 score of all cells will be low.  Thus, the firing field of a single cell in the
 network represents grid field computation in the network as a whole.  Moreover,
-this cell can be selected arbitrarily.
+this cell can be selected arbitrarily. This condition might not hold in
+simulations where I cells receive uncorrelated spatial inputs and therefore
+firing fields of 100 randomly selected cells from both E and I populations were
+used to calculate the gridness scores.
 
 
 \subsection{Short simulation runs without animal movement} \label{sec:noise_short_sims}
@@ -844,6 +852,27 @@ and then subsequently averaged over all simulation trials.
 \begin{figure}[p]
     \internallinenumbers
     \centering
+        \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_prob_conn}
+    \caption{Sensitivity of grid firing to changes in inhibition and excitation
+    in networks with connection probability between pairs of neurons drawn
+    according to the synaptic profile functions in Figure 1B. (A-C) Example
+    firing fields (left) and spatial autocorrelation plots (right) for the
+    specific values of strengths of recurrent synaptic connections indicated by
+    arrows in (D-F), corresponding to the three simulated noise levels.  (D-F)
+    Gridness score as a function of $\gE$ and $\gI$ for networks without noise (D;
+    $\sigma$ = 0 pA), with noise level set to $\sigma$ = 150 pA (E), and noise
+    level set to $\sigma$ = 300 pA (F). Each item in the color plot is an
+    average gridness score of two simulation runs. Arrows indicate the
+    positions of grid field and autocorrelation examples from simulations
+    illustrated in (A-C). Simulations that did not finish in a specified time
+    interval (6 h) are indicated by white color.}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+    \internallinenumbers
+    \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_default_info_scores}
 \end{figure}
 
@@ -870,61 +899,42 @@ and then subsequently averaged over all simulation trials.
 
 \clearpage
 
-\begin{figure}[p]
-    \internallinenumbers
-    \centering
-        \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_prob_conn}
-    \caption{Sensitivity of grid firing to changes in inhibition and excitation
-    in networks with connection probability between pairs of neurons drawn
-    according to the synaptic profile functions in Figure 1B. (A-C) Example
-    firing fields (left) and spatial autocorrelation plots (right) for the
-    specific values of strengths of recurrent synaptic connections indicated by
-    arrows in (D-F), corresponding to the three simulated noise levels.  (D-F)
-    Gridness score as a function of $\gE$ and $\gI$ for networks without noise (D;
-    $\sigma$ = 0 pA), with noise level set to $\sigma$ = 150 pA (E), and noise
-    level set to $\sigma$ = 300 pA (F). Each item in the color plot is an
-    average gridness score of two simulation runs. Arrows indicate the
-    positions of grid field and autocorrelation examples from simulations
-    illustrated in (A-C). Simulations that did not finish in a specified time
-    interval (6 h) are indicated by white color.}
-\end{figure}
-
-\clearpage
-
-\begin{figure}[p]
-    \internallinenumbers
-    \centering
-        \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_prob_conn_i_fields}
-    \caption{Firing fields and gridness scoress of I cells in networks with
-    connection probability between pairs of neurons drawn according to the
-    synaptic profile functions in Figure 1B (A-C) Example firing fields (left)
-    and spatial autocorrelation plots (right) for the specific values of
-    strengths of recurrent synaptic connections indicated by arrows in (D-F),
-    corresponding to the three simulated noise levels.  (D-F) Gridness score as
-    a function of $\gE$ and $\gI$ for networks without noise (D; $\sigma$ = 0
-    pA), with noise level set to $\sigma$ = 150 pA (E), and noise level set to
-    $\sigma$ = 300 pA (F). Arrows indicate the positions of grid field and
-    autocorrelation examples from simulations illustrated in (A-C). Simulations
-    that did not finish in a specified time interval (8 h) are indicated by
-    white color.}
-\end{figure}
-
-\clearpage
+%\begin{figure}[p]
+%    \internallinenumbers
+%    \centering
+%        \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_prob_conn_i_fields}
+%    \caption{Firing fields and gridness scoress of I cells in networks with
+%    connection probability between pairs of neurons drawn according to the
+%    synaptic profile functions in Figure 1B (A-C) Example firing fields (left)
+%    and spatial autocorrelation plots (right) for the specific values of
+%    strengths of recurrent synaptic connections indicated by arrows in (D-F),
+%    corresponding to the three simulated noise levels.  (D-F) Gridness score as
+%    a function of $\gE$ and $\gI$ for networks without noise (D; $\sigma$ = 0
+%    pA), with noise level set to $\sigma$ = 150 pA (E), and noise level set to
+%    $\sigma$ = 300 pA (F). Arrows indicate the positions of grid field and
+%    autocorrelation examples from simulations illustrated in (A-C). Simulations
+%    that did not finish in a specified time interval (8 h) are indicated by
+%    white color.}
+%\end{figure}
+%
+%\clearpage
 
 \begin{figure}[p]
     \internallinenumbers
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_i_place_cells}
-    \caption{Spatial firing fields in networks with place cells connected to I
-    cells through random connections. Each I cell received connections from 3
-    randomly selected place cells. (A) Examples of firing fields of E and I
+    \caption{Spatial firing fields in networks with uncorrelated spatial input
+    applied to each I cell. Each I cell received connections from 3
+    randomly selected neurons with a place like spatial firing field.
+    (A) Examples of firing fields of E and I
     cells from networks. Gridness score and maximal firing rate of the firing
     field is indicated in the top left and right parts of each firing field,
     respectively. (B) Distributions of spatial sparsity (left), spatial
     information (centre) and gridness score (right) of 100 randomly selected
     cells from each population of neurons. Each simulation run was repeated 10
     times with different randomisation seed. Properties of place cells:
-    \ssc{r}{max}{}~=100 Hz, \ssc{\sigma}{field}{}~=~80 cm.}
+    \ssc{r}{max}{}~=~100 Hz, \ssc{\sigma}{field}{}~=~80 cm. Network parameters
+    were $\gE$ = 3 nS and $\gI$ = 1 nS.}
     \label{fig:ipc}
 \end{figure}
 
@@ -1052,28 +1062,28 @@ and then subsequently averaged over all simulation trials.
 
 \clearpage
 
-\setcounter{figure}{0}
-\renewcommand{\figurename}{Figure 4 - figure supplement}
-
-\begin{figure}[p]
-    \internallinenumbers
-    \centering
-        \includegraphics[width=0.95\textwidth]{fig/output_figures/figure4S_prob_conn}
-    \caption{Continuous attractors in networks with connection probability
-    between pairs of neurons drawn according to the synaptic profile functions
-    in Figure 1B. (A) Examples of E cell population firing rate snapshots from
-    simulations in which velocity and place cell inputs are inactivated. Each
-    row shows a simulation trial with a value of $\gE$ and $\gI$ highlighted by an
-    arrow in panel (B). The corresponding probability of bump formation
-    (P(bumps)) is indicated to the left.  (B) Color plots show probability of
-    bump formation (P(bumps)), for the simulated range of $\gE$ and $\gI$ and the
-    three simulated noise levels. Each color point is an average of five 10 s
-    simulation runs. Arrows show positions in the parameter space of examples
-    in (A).}
-\end{figure}
-
-\clearpage
-
+%\setcounter{figure}{0}
+%\renewcommand{\figurename}{Figure 4 - figure supplement}
+%
+%\begin{figure}[p]
+%    \internallinenumbers
+%    \centering
+%        \includegraphics[width=0.95\textwidth]{fig/output_figures/figure4S_prob_conn}
+%    \caption{Continuous attractors in networks with connection probability
+%    between pairs of neurons drawn according to the synaptic profile functions
+%    in Figure 1B. (A) Examples of E cell population firing rate snapshots from
+%    simulations in which velocity and place cell inputs are inactivated. Each
+%    row shows a simulation trial with a value of $\gE$ and $\gI$ highlighted by an
+%    arrow in panel (B). The corresponding probability of bump formation
+%    (P(bumps)) is indicated to the left.  (B) Color plots show probability of
+%    bump formation (P(bumps)), for the simulated range of $\gE$ and $\gI$ and the
+%    three simulated noise levels. Each color point is an average of five 10 s
+%    simulation runs. Arrows show positions in the parameter space of examples
+%    in (A).}
+%\end{figure}
+%
+%\clearpage
+%
 %\begin{figure}[p]
 %    \internallinenumbers
 %    \centering
@@ -1129,42 +1139,42 @@ and then subsequently averaged over all simulation trials.
 
 \clearpage
 
-\begin{figure}[p]
-    \internallinenumbers
-    \centering
-        \includegraphics[width=\textwidth]{fig/output_figures/figure5S_prob_conn}
-\end{figure}
-
-\clearpage
-
-\begin{figure}[H]
-    \internallinenumbers
-    \caption{Seizure-like states in networks with connection probability
-    between pairs of neurons drawn according to the synaptic profile functions
-    in Figure 1B. (A-C) Raster plots show activity of all neurons in the
-    excitatory (red) and inhibitory (blue) populations for the duration of two
-    theta cycles (top), along with the average population firing rates for both
-    populations (center and bottom; calculated with a sliding rectangular
-    window with 2 ms duration and 0.5 ms time step), for networks where noise
-    is absent (A; $\sigma$ = 0), with noise set to $\sigma$ = 150 pA (B), and
-    with noise set to $\sigma$ = 300 pA (C). Simulations were performed in the
-    absence of animal movement and place cell input; $\gE$ = 1 nS and $\gI$ = 3 nS.
-    (D) Maximal average population firing rate of E cells estimated from the
-    whole simulation run (10 s; 500 ms at the beginning of the simulation
-    excluded) for each simulated level of noise. Each point is an average of
-    maxima from 5 simulation runs.  (E) Probability of the maximal
-    population-average firing rate during each theta cycle exceeding 300 Hz,
-    i.e. at least 60\% of E cells firing synchronously within a time period of
-    2 ms in the parameter space of $\gE$ and $\gI$. Black lines indicate regions
-    where gridness score equals 0.5.
-    (F) Scatter plots show the relationship between gridness score and the
-    maximal firing rate during the simulation (left) and the probability of the
-    maximal population-average firing rate during each theta cycle exceeding
-    300 Hz (right).}
-\end{figure}
-
-\clearpage
-
+%\begin{figure}[p]
+%    \internallinenumbers
+%    \centering
+%        \includegraphics[width=\textwidth]{fig/output_figures/figure5S_prob_conn}
+%\end{figure}
+%
+%\clearpage
+%
+%\begin{figure}[H]
+%    \internallinenumbers
+%    \caption{Seizure-like states in networks with connection probability
+%    between pairs of neurons drawn according to the synaptic profile functions
+%    in Figure 1B. (A-C) Raster plots show activity of all neurons in the
+%    excitatory (red) and inhibitory (blue) populations for the duration of two
+%    theta cycles (top), along with the average population firing rates for both
+%    populations (center and bottom; calculated with a sliding rectangular
+%    window with 2 ms duration and 0.5 ms time step), for networks where noise
+%    is absent (A; $\sigma$ = 0), with noise set to $\sigma$ = 150 pA (B), and
+%    with noise set to $\sigma$ = 300 pA (C). Simulations were performed in the
+%    absence of animal movement and place cell input; $\gE$ = 1 nS and $\gI$ = 3 nS.
+%    (D) Maximal average population firing rate of E cells estimated from the
+%    whole simulation run (10 s; 500 ms at the beginning of the simulation
+%    excluded) for each simulated level of noise. Each point is an average of
+%    maxima from 5 simulation runs.  (E) Probability of the maximal
+%    population-average firing rate during each theta cycle exceeding 300 Hz,
+%    i.e. at least 60\% of E cells firing synchronously within a time period of
+%    2 ms in the parameter space of $\gE$ and $\gI$. Black lines indicate regions
+%    where gridness score equals 0.5.
+%    (F) Scatter plots show the relationship between gridness score and the
+%    maximal firing rate during the simulation (left) and the probability of the
+%    maximal population-average firing rate during each theta cycle exceeding
+%    300 Hz (right).}
+%\end{figure}
+%
+%\clearpage
+%
 %\begin{figure}[p]
 %    \internallinenumbers
 %    \centering
@@ -1302,51 +1312,51 @@ and then subsequently averaged over all simulation trials.
 
 \clearpage
 
-\begin{figure}[ht!]
-    \internallinenumbers
-    \centering
-        \includegraphics[center]{fig/output_figures/figure6S_prob_conn}
-    \caption{Calibration of the gain of the velocity inputs in networks with
-    connection probability between pairs of neurons drawn according to the
-    synaptic profile functions in Figure 1B. (A-C) Bump attractor speed as a
-    function of the strength of the velocity current for the three simulated
-    levels of noise. Ten simulation runs were performed for each level of noise
-    (blue markers). In each run the speed of the bump was calculated in
-    response to the injected velocity input and the data were used to fit a
-    linear relationship using an estimation procedure outlined in Supplementary
-    Methods (black line). (D-F) Slope of the estimated velocity gain of the
-    attractor networks as a function of $\gE$ and $\gI$ for all simulated
-    levels of noise. (G-I) Same as in (D-F) but the plots show error of fit for
-    the estimated linear relationships. Arrows show locations of the data
-    plotted in (A-C).}
-\end{figure}
-
-\clearpage
-
-\begin{figure}[ht!]
-    \internallinenumbers
-    \centering
-        \includegraphics{fig/output_figures/figure6S_drift_prob_conn}
-    \caption{Sensitivity of bump attractor spontaneous drift to variations in
-    $\gE$ and $\gI$ and noise levels in networks with connections probability
-    between pairs of neurons drawn according to the synaptic profile functions
-    in Figure 1B. (A) Schematic of the bump attractor drift estimation
-    procedure. The first 500 ms of a simulation trial are used to initialise
-    the bump attractor. Onset of theta modulated input current was at 500 ms.
-    The estimated centres of bump attractors measured by the least squares fit
-    of symmetric Gaussians were at 1 s (initial position) and 9 s (final
-    position). The drift was then estimated as the distance on twisted torus
-    between the initial and final position. Simulation time was 10 s. (B)
-    Colour plots show bump attractor drifts averaged over 5 simulation trials,
-    for the simulated ranges of excitatory and inhibitory synaptic strengths
-    and levels of noise.  Networks without noise can form stable bump
-    attractors in a subset of their parameter region. Networks with noise
-    suffer from attractor drift in majority of the parameter region. Black
-    contours show isoclines of gridness score equal to 0.5.}
-\end{figure}
-
-\clearpage
-
+%\begin{figure}[ht!]
+%    \internallinenumbers
+%    \centering
+%        \includegraphics[center]{fig/output_figures/figure6S_prob_conn}
+%    \caption{Calibration of the gain of the velocity inputs in networks with
+%    connection probability between pairs of neurons drawn according to the
+%    synaptic profile functions in Figure 1B. (A-C) Bump attractor speed as a
+%    function of the strength of the velocity current for the three simulated
+%    levels of noise. Ten simulation runs were performed for each level of noise
+%    (blue markers). In each run the speed of the bump was calculated in
+%    response to the injected velocity input and the data were used to fit a
+%    linear relationship using an estimation procedure outlined in Supplementary
+%    Methods (black line). (D-F) Slope of the estimated velocity gain of the
+%    attractor networks as a function of $\gE$ and $\gI$ for all simulated
+%    levels of noise. (G-I) Same as in (D-F) but the plots show error of fit for
+%    the estimated linear relationships. Arrows show locations of the data
+%    plotted in (A-C).}
+%\end{figure}
+%
+%\clearpage
+%
+%\begin{figure}[ht!]
+%    \internallinenumbers
+%    \centering
+%        \includegraphics{fig/output_figures/figure6S_drift_prob_conn}
+%    \caption{Sensitivity of bump attractor spontaneous drift to variations in
+%    $\gE$ and $\gI$ and noise levels in networks with connections probability
+%    between pairs of neurons drawn according to the synaptic profile functions
+%    in Figure 1B. (A) Schematic of the bump attractor drift estimation
+%    procedure. The first 500 ms of a simulation trial are used to initialise
+%    the bump attractor. Onset of theta modulated input current was at 500 ms.
+%    The estimated centres of bump attractors measured by the least squares fit
+%    of symmetric Gaussians were at 1 s (initial position) and 9 s (final
+%    position). The drift was then estimated as the distance on twisted torus
+%    between the initial and final position. Simulation time was 10 s. (B)
+%    Colour plots show bump attractor drifts averaged over 5 simulation trials,
+%    for the simulated ranges of excitatory and inhibitory synaptic strengths
+%    and levels of noise.  Networks without noise can form stable bump
+%    attractors in a subset of their parameter region. Networks with noise
+%    suffer from attractor drift in majority of the parameter region. Black
+%    contours show isoclines of gridness score equal to 0.5.}
+%\end{figure}
+%
+%\clearpage
+%
 %\begin{figure}[ht!]
 %    \internallinenumbers
 %    \centering
@@ -1431,40 +1441,6 @@ and then subsequently averaged over all simulation trials.
 
 \clearpage
 
-\begin{figure}[p]
-    \internallinenumbers
-    \centering
-        \includegraphics[width=\textwidth]{fig/output_figures/figure7S_seizures}
-\end{figure}
-
-\clearpage
-
-\begin{figure}[H]
-    \internallinenumbers
-    \caption{Seizure-like states in networks that contain direct
-    I$\rightarrow$I synapses. (A-C) Raster plots show activity of all neurons
-    in the excitatory (red) and inhibitory (blue) populations for the duration
-    of two theta cycles (top), along with the average population firing rates
-    for both populations (center and bottom; calculated with a sliding
-    rectangular window with 2 ms duration and 0.5 ms time step), for networks
-    where noise is absent (A; $\sigma$ = 0), with noise set to $\sigma$ = 150
-    pA (B), and with noise set to $\sigma$ = 300 pA (C). Simulations were
-    performed in the absence of animal movement and place cell input; $\gE$ = 1 nS
-    and $\gI$ = 3 nS.  (D) Maximal average population firing rate of E cells
-    estimated from the whole simulation run (10 s; 500 ms at the beginning of
-    the simulation excluded) for each simulated level of noise. Each point is
-    an average of maxima from 5 simulation runs.  (E) Probability of the
-    maximal population-average firing rate during each theta cycle exceeding
-    300 Hz, i.e. at least 60\% of E cells firing synchronously within a time
-    period of 2 ms in the parameter space of $\gE$ and $\gI$. Black lines
-    indicate regions where gridness score equals 0.5. (F) Scatter plots show
-    the relationship between gridness score and the maximal firing rate during
-    the simulation (left) and the probability of the maximal population-average
-    firing rate during each theta cycle exceeding 300 Hz (right).}
-\end{figure}
-
-\clearpage
-
 \begin{figure}[ht!]
     \internallinenumbers
     \centering
@@ -1504,6 +1480,40 @@ and then subsequently averaged over all simulation trials.
     levels of noise. (G-I) Same as in (D-F) but the plots show error of fit for
     the estimated linear relationships. Arrows show locations of the data
     plotted in (A-C).}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+    \internallinenumbers
+    \centering
+        \includegraphics[width=\textwidth]{fig/output_figures/figure7S_seizures}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]
+    \internallinenumbers
+    \caption{Seizure-like states in networks that contain direct
+    I$\rightarrow$I synapses. (A-C) Raster plots show activity of all neurons
+    in the excitatory (red) and inhibitory (blue) populations for the duration
+    of two theta cycles (top), along with the average population firing rates
+    for both populations (center and bottom; calculated with a sliding
+    rectangular window with 2 ms duration and 0.5 ms time step), for networks
+    where noise is absent (A; $\sigma$ = 0), with noise set to $\sigma$ = 150
+    pA (B), and with noise set to $\sigma$ = 300 pA (C). Simulations were
+    performed in the absence of animal movement and place cell input; $\gE$ = 1 nS
+    and $\gI$ = 3 nS.  (D) Maximal average population firing rate of E cells
+    estimated from the whole simulation run (10 s; 500 ms at the beginning of
+    the simulation excluded) for each simulated level of noise. Each point is
+    an average of maxima from 5 simulation runs.  (E) Probability of the
+    maximal population-average firing rate during each theta cycle exceeding
+    300 Hz, i.e. at least 60\% of E cells firing synchronously within a time
+    period of 2 ms in the parameter space of $\gE$ and $\gI$. Black lines
+    indicate regions where gridness score equals 0.5. (F) Scatter plots show
+    the relationship between gridness score and the maximal firing rate during
+    the simulation (left) and the probability of the maximal population-average
+    firing rate during each theta cycle exceeding 300 Hz (right).}
 \end{figure}
 
 \clearpage
@@ -1608,48 +1618,48 @@ and then subsequently averaged over all simulation trials.
 
 \clearpage
 
-\begin{figure}[ht!]
-    \internallinenumbers
-    \centering
-        \includegraphics{fig/output_figures/figure6S_drift_ee_connections}
-    \caption{Sensitivity of bump attractor spontaneous drift to variations in
-    $\gE$ and $\gI$ and noise levels in networks that contain direct
-    E$\rightarrow$E synapses. (A) Schematic of the bump attractor drift
-    estimation procedure. The first 500 ms of a simulation trial are used to
-    initialise the bump attractor. Onset of theta modulated input current was
-    at 500 ms.  The estimated centres of bump attractors measured by the least
-    squares fit of symmetric Gaussians were at 1 s (initial position) and 9 s
-    (final position). The drift was then estimated as the distance on twisted
-    torus between the initial and final position. Simulation time was 10 s. (B)
-    Colour plots show bump attractor drifts averaged over 5 simulation trials,
-    for the simulated ranges of excitatory and inhibitory synaptic strengths
-    and levels of noise.  Networks without noise can form stable bump
-    attractors in a subset of their parameter region. Networks with noise
-    suffer from attractor drift in majority of the parameter region. Black
-    contours show isoclines of gridness score equal to 0.5.}
-\end{figure}
-
-\clearpage
-
-\begin{figure}[ht!]
-    \internallinenumbers
-    \centering
-        \includegraphics[center]{fig/output_figures/figure6S_ee_connections}
-    \caption{Calibration of the gain of the velocity inputs in networks that
-    contain direct E$\rightarrow$E synapses. (A-C) Bump attractor speed as a
-    function of the strength of the velocity current for the three simulated
-    levels of noise. Ten simulation runs were performed for each level of noise
-    (blue markers). In each run the speed of the bump was calculated in
-    response to the injected velocity input and the data were used to fit a
-    linear relationship using an estimation procedure outlined in Supplementary
-    Methods (black line). (D-F) Slope of the estimated velocity gain of the
-    attractor networks as a function of $\gE$ and $\gI$ for all simulated
-    levels of noise. (G-I) Same as in (D-F) but the plots show error of fit for
-    the estimated linear relationships. Arrows show locations of the data
-    plotted in (A-C).}
-\end{figure}
-
-\clearpage
+%\begin{figure}[ht!]
+%    \internallinenumbers
+%    \centering
+%        \includegraphics{fig/output_figures/figure6S_drift_ee_connections}
+%    \caption{Sensitivity of bump attractor spontaneous drift to variations in
+%    $\gE$ and $\gI$ and noise levels in networks that contain direct
+%    E$\rightarrow$E synapses. (A) Schematic of the bump attractor drift
+%    estimation procedure. The first 500 ms of a simulation trial are used to
+%    initialise the bump attractor. Onset of theta modulated input current was
+%    at 500 ms.  The estimated centres of bump attractors measured by the least
+%    squares fit of symmetric Gaussians were at 1 s (initial position) and 9 s
+%    (final position). The drift was then estimated as the distance on twisted
+%    torus between the initial and final position. Simulation time was 10 s. (B)
+%    Colour plots show bump attractor drifts averaged over 5 simulation trials,
+%    for the simulated ranges of excitatory and inhibitory synaptic strengths
+%    and levels of noise.  Networks without noise can form stable bump
+%    attractors in a subset of their parameter region. Networks with noise
+%    suffer from attractor drift in majority of the parameter region. Black
+%    contours show isoclines of gridness score equal to 0.5.}
+%\end{figure}
+%
+%\clearpage
+%
+%\begin{figure}[ht!]
+%    \internallinenumbers
+%    \centering
+%        \includegraphics[center]{fig/output_figures/figure6S_ee_connections}
+%    \caption{Calibration of the gain of the velocity inputs in networks that
+%    contain direct E$\rightarrow$E synapses. (A-C) Bump attractor speed as a
+%    function of the strength of the velocity current for the three simulated
+%    levels of noise. Ten simulation runs were performed for each level of noise
+%    (blue markers). In each run the speed of the bump was calculated in
+%    response to the injected velocity input and the data were used to fit a
+%    linear relationship using an estimation procedure outlined in Supplementary
+%    Methods (black line). (D-F) Slope of the estimated velocity gain of the
+%    attractor networks as a function of $\gE$ and $\gI$ for all simulated
+%    levels of noise. (G-I) Same as in (D-F) but the plots show error of fit for
+%    the estimated linear relationships. Arrows show locations of the data
+%    plotted in (A-C).}
+%\end{figure}
+%
+%\clearpage
 
 \begin{figure}[p!]
     \internallinenumbers
@@ -1691,6 +1701,7 @@ and then subsequently averaged over all simulation trials.
     $\gI$ varied in the range of 0 -- 6 nS. Simulations that produced excessive
     spiking activity and did not finish in a specified time limit (3h) are
     indicated by white color.}
+    \label{fig:eei_unstructured}
 \end{figure}
 
 \clearpage
