@@ -43,6 +43,36 @@ if args.pbumps_sweep or args.all:
 
 if args.rasters or args.all:
     shape = (31, 31)
+
+    output_dir_0 = join('simulation_data', 'submission',
+                      'ee_connections_ei_flat',
+                      'standard_sweep_g_EE_3060_pEE_sigma_0_0833',
+                      'gamma_bump', '0pA')
+    sp_0 = JobTrialSpace2D(shape, output_dir_0)
+    new_config = deepcopy(config.get_config())
+    env = MplEnvironment(config=new_config)
+    env.register_class(
+        noisefigs.plotters.PopulationActivityPlotter,
+        config={
+            'data_root'     : output_dir_0,
+            'data_file_name': sp_0[1][22].file_name_base,
+            'output_dir'    : 'panels_standard_gEE_3060',
+
+            'PopulationActivityPlotter': {
+                'fname_prefix': '0pA_r1_c22_',
+                'raster_rect': (.075, 0.35, 0.93, 0.97),
+                'fig_saver': SeparateMultipageSaver(None, 'pdf'),
+                'fig_size': (8, 6),
+                't_limits': (0, 5e3),
+
+                'snapshot_tstep': 4,
+                'e_snapshots_rect': (.075, .15, 0.93, 0.25),
+                'i_snapshots_rect': (.075, .02, 0.93, 0.12),
+            },
+        })
+    env.plot()
+
+
     output_dir = join('simulation_data', 'submission',
                       'ee_connections_ei_flat',
                       'standard_sweep_g_EE_3060_pEE_sigma_0_0833',
