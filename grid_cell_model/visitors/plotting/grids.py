@@ -7,6 +7,7 @@ import os
 import errno
 
 import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure, plot, pcolormesh, subplot2grid, savefig,\
         colorbar, axis, xlabel, ylabel
 from gridcells.analysis import information_specificity
@@ -160,14 +161,16 @@ class GridPlotVisitor(DictDSVisitor):
 
     def visitDictDataSet(self, ds, **kw):
         data = ds.data
-        Nneurons = 10
+        n_recorded = 1020
+        Nneurons = 100
 
         if 'analysis' not in data.keys():
             data['analysis'] = {}
 
         data['analysis']['neurons'] = []
 
-        for neuron_num in range(Nneurons):
+        for neuron_num in np.random.choice(n_recorded, Nneurons, replace=False):
+            print('Processing neuron #', neuron_num)
             data['analysis']['neurons'].append({})
             outputRoot = data['analysis']['neurons'][-1]
 
@@ -336,6 +339,8 @@ class GridPlotVisitor(DictDSVisitor):
                     log_info("GridPlotVisitor",
                             "Gridness AC data present. Skipping analysis.")
 
+            plt.close('all')
+
             outputRoot.update(out)
 
 
@@ -383,7 +388,8 @@ class IGridPlotVisitor(GridPlotVisitor):
 
     def visitDictDataSet(self, ds, **kw):
         data = ds.data
-        Nneurons = 10
+        n_recorded = 510
+        Nneurons = 100
 
         if 'analysis' not in data.keys():
             data['analysis'] = {}
@@ -393,7 +399,7 @@ class IGridPlotVisitor(GridPlotVisitor):
 
         data['analysis']['i_fields']['neurons'] = []
 
-        for neuron_num in range(Nneurons):
+        for neuron_num in np.random.choice(n_recorded, Nneurons, replace=False):
             data['analysis']['i_fields']['neurons'].append({})
             outputRoot = data['analysis']['i_fields']['neurons'][-1]
 
@@ -528,5 +534,7 @@ class IGridPlotVisitor(GridPlotVisitor):
                 else:
                     log_info("IGridPlotVisitor",
                             "Gridness AC data present. Skipping analysis.")
+
+            plt.close('all')
 
             outputRoot.update(out)
