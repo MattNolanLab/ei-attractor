@@ -1,7 +1,7 @@
 .PHONY: clean
 .SUFFIXES: .py .dummy
 
-all: original ratio_corrected e_const_450 e_theta_475 pastoll_et_al other
+all: original ratio_corrected e_const_375 e_const_450 e_theta_475 pastoll_et_al other
 
 original: \
 	figure_bumps_original.dummy			\
@@ -14,6 +14,10 @@ ratio_corrected: \
 	figure_bumps_ratio_corrected.dummy	\
 	figure_gamma_ratio_corrected.dummy	\
 	figure_drifts_ratio_corrected.dummy
+
+e_const_375: \
+	figure_bumps_e_const_375.dummy		\
+	figure_gamma_e_const_375.dummy
 
 e_const_450: \
 	figure_bumps_e_const_450.dummy		\
