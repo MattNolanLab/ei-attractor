@@ -465,6 +465,8 @@ class MainBumpFormationPlotter(BumpFormationBase):
         iter_list = self.config['iter_list']
         xlabel = self.myc.get('xlabel', None)
         xticks = myc['xticks']
+        vmin = self.myc.get('vmin', self.bump_vmin)
+        vmax = self.myc.get('vmax', self.bump_vmax)
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = self.get_fname(
@@ -491,7 +493,7 @@ class MainBumpFormationPlotter(BumpFormationBase):
                     ax=ax,
                     cbar=self.myc['cbar'][ns_idx],
                     cbar_kw=myc['cbar_kw'],
-                    vmin=self.bump_vmin, vmax=self.bump_vmax,
+                    vmin=vmin, vmax=vmax,
                     annotations=self.get_ann()[ns_idx],
                     axis_setting=self.myc.get('axis_setting', 'scaled'),
                     **kw)
@@ -558,6 +560,8 @@ class Generic2DPBumpPlotter(BumpFormationBase):
         ylabel = self.myc.get('ylabel', None)
         xticks = myc['xticks']
         yticks = myc['yticks']
+        vmin = self.myc.get('vmin', self.bump_vmin)
+        vmax = self.myc.get('vmax', self.bump_vmax)
         normalize_type = self.myc.get('normalize_type', (None, None))
         l, b, r, t = self.myc['bbox']
         fname = self.myc.get('fname', "bumps_pbumps_generic_{ns}.pdf")
@@ -584,7 +588,7 @@ class Generic2DPBumpPlotter(BumpFormationBase):
                 ax=ax,
                 cbar=self.myc['cbar'][ns_idx],
                 cbar_kw=myc['cbar_kw'],
-                vmin=self.bump_vmin, vmax=self.bump_vmax,
+                vmin=vmin, vmax=vmax,
                 annotations=self.get_ann()[ns_idx],
                 axis_setting=self.myc.get('axis_setting', 'scaled'))
             ax.axis('tight')
