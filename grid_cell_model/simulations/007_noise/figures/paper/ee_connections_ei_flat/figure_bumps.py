@@ -55,6 +55,11 @@ if args.pbumps_gEE_EE_sigma or args.all:
                     )],
                     None,
                 ],
+                'vmin': 0,
+                'vmax': 0.959,
+                'cbar_kw': dict(
+                    ticks = ti.MultipleLocator(0.2),
+                ),
             },
         })
     env.plot()
@@ -130,6 +135,11 @@ if args.pbumps_gEE_EE_sigma_AMPA_3060_GABA_1020 or args.all:
                     )],
                     None,
                 ],
+                'vmin': 0,
+                'vmax': 0.95,
+                'cbar_kw': dict(
+                    ticks = ti.MultipleLocator(0.2),
+                ),
             },
         })
     env.plot()

@@ -4,6 +4,7 @@ from __future__ import absolute_import, print_function
 from copy import deepcopy
 from os.path import join
 
+import matplotlib.ticker as ti
 from grid_cell_model.submitting import flagparse
 import noisefigs
 from noisefigs.env import NoiseEnvironment, MplEnvironment
@@ -38,6 +39,11 @@ if args.pbumps_sweep or args.all:
                                     )],
                                     None,
                                 ],
+                                'vmin': 0,
+                                'vmax': 0.98,
+                                'cbar_kw': dict(
+                                    ticks = ti.MultipleLocator(0.2),
+                                ),
                              },
                          })
 

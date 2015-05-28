@@ -174,11 +174,11 @@ Each neuron's membrane potential ($\Vm$) is governed by the passive membrane equ
     \Cm \dVm   = \Imem + \Isyn + \Iext + \eta,
     \label{eq:Vm}
 \end{equation}
-in which the total membrane current is a sum of three separate components: the
+in which the total membrane current is a sum of four separate components: the
 trans-membrane current ($\Imem$), the total synaptic current ($\Isyn$), the
-current injected externally from other brain regions ($\Iext$) and $\eta
-\sim \mathcal{N}$(0, $\sigma^2$) is the noise current with zero mean and appropriate
-standard deviation in the range of 0 - 300 pA. 
+current injected externally from other brain regions ($\Iext$) and $\eta \sim
+\mathcal{N}$(0, $\sigma^2$), which is the noise current with zero mean and
+appropriate standard deviation in the range of 0 - 300 pA. 
 
 For E cells, the trans-membrane current
 \begin{equation}
@@ -195,7 +195,7 @@ spike, there is a reset of membrane potential and the AHP conductance:
     \label{eq:afterspike_st}
 \end{align}
 
-The I cells do not possess AHP, but instead contain a simple adaptation
+The I cells do not possess an AHP, but instead contain a simple adaptation
 term. The trans-membrane current has the following form:
 \begin{equation}
     \Imem = (\gL + \gad(t))(\EL-\Vm) + \gL \deltaT \exp\left(\frac{\Vm - \VT}{\deltaT}\right).
@@ -263,7 +263,7 @@ Both the voltage dependence and slow kinetics of NMDA receptors have been
 suggested to help maintain persistent activity in working memory networks
 \citep{Wang:1999wt}.  Here, it is the slow kinetics of $\gNMDA$ that is
 necessary to maintain the state of the network during consecutive theta cycles.
-Moreover, NMDA receptors are known to be of several variants, depending on the
+NMDA receptors are known to be of several variants, depending on the
 types of the subunits the receptors are composed of~\citep{Paoletti:2013ht}.
 These several receptor variants have different kinetic time scales, and
 different sensitivity to the concentration of Mg$^{2+}$. In
@@ -352,10 +352,10 @@ surround, $|\cdot|_{\mathrm{torus}}$ is a distance on the twisted torus that
 takes the boundaries of the torus into account and $C$ is the
 synaptic profile shift. The excitatory connections are
 composed of the equivalent amount of NMDA synaptic conductances. The synaptic
-strengths of NMDA is specified by a fractional constant \cNMDA. In all
-simulations, the NMDA amount constituted 2\% of the AMPA conductance.
+strengths of NMDA is specified by a fractional constant $\cNMDA$. In all
+simulations, the NMDA conductance constituted 2\% of the AMPA conductance.
 In eq. \eqref{eq:dijce}, $\mathbf{e}_p$ determines the shift of the center of
-outgoing synaptic strength profile on the torus, and was used to couple the
+the outgoing synaptic strength profile on the torus, and was used to couple the
 velocity of the bump with the animal velocity
 \citep{Burak:2009fx,Pastoll:2013ff}. The velocity modulated input is described
 in more detail in Section~\ref{sec:Ivel}.
@@ -448,7 +448,7 @@ the synaptic profile functions, the position of bump attractor in the network
 might drift over time. The simulations of grid firing fields (Figure~2,~6D-I,
 7A-C and associated figure supplements) and simulations that explored the
 controllability of the network by place cell input (Figure 6 - figure
-supplement~\ref{fig:S_pc_effectivity}) comprised a separate population of cells
+supplement~\ref{fig:S_pc_effectivity}) included a separate population of cells
 with place-like firing fields connected to E cells (in all other simulations
 the input was de-activated). Inputs from these cells opposed drift of the bump
 attractor.
@@ -500,7 +500,7 @@ randomly chosen place cells, with a synaptic weight of 4 nS.
 
 \section{Bump attractor initialisation} \label{sec:noise_bump_init_app}
 
-Each simulation contains an initialisation part that attempts to set the model
+Each simulation contains an initialisation stage that attempts to set the model
 into the desired state, i.e.\ a bump attractor. During this stage, the
 theta-modulated input is switched off and the network receives only the
 constant input source (see eq.~\ref{eq:Iext}). The bump attractor might not
@@ -570,9 +570,9 @@ where $N, p_i$ and $\lambda_i$ have the same meaning as in Eq.
 
 In order to estimate the precision of velocity integration in a continuous
 attractor, we have performed shorter simulations in which a constant velocity
-input (in a vertical direction) has been injected into E cells for a period of 10
-seconds. Based on this set of simulations, the slope of the bump speed vs.\ 
-strength of the injected velocity current has been estimated (in units of
+input (in a vertical direction) was injected into E cells for a period of 10
+seconds. Based on this set of simulations, the slope of the relationship
+between bump speed and the injected velocity current was estimated (in units of
 neurons/s/pA).  The estimation was based on the following algorithm:
 \begin{enumerate}
     \item Estimate the range of bump speeds that need to be covered
@@ -595,10 +595,10 @@ neurons/s/pA).  The estimation was based on the following algorithm:
         speeds will be $<0, s_{\text{max}}>$.
     \item For each $I_{\text{vel}} \in \{0, 10, \dots, 100\}$ pA, estimate the
         bump speed by tracking its position on the neural sheet, using the
-        Gaussian fitting procedure (Methods). Repeat this step 10 times. This
-        step acquires data for estimating the slope of bump speed vs.\ injected
-        velocity
-        current relationship.
+        Gaussian fitting procedure (Section~\ref{sec:gauss_fitting}). Repeat
+        this step 10 times. This step acquires data for estimating the
+        relationship between the slope of bump speed and injected velocity
+        current.
     \item For each $I_{\text{vel}}^{\text{max}} \in \{10, 20, \dots, 100\}$ pA,
         estimate a line fit on data samples with the velocity current in the
         range of $I_{\text{vel}} \in <0, I_{\text{vel}}^{\text{max}}>$, i.e.\ 
@@ -629,16 +629,17 @@ neurons/s/pA).  The estimation was based on the following algorithm:
 
 \subsection{Simulations of animal movement} \label{sec:noise_grids_protocol}
 
-Simulations of animal movement have been carried out for 600 seconds.  Here,
-for each value of $\gE$ and $\gI$, the main simulation run was preceded by a
-number of shorter simulations which determined how much current needs to be
-injected in order for the bump of activity to track the simulated movement of
-an animal (Section~\ref{sec:gain_est}). This procedure calibrates the gain of
-the velocity input current in order to produce grid fields with a specified
-spacing between the peaks in the individual firing fields. The result is a
-single number in units of neurons/s/pA, which determines the speed of the bump
-as a function of injected velocity input. The spacing between the individual
-fields of the grid firing fields was set to 60 cm in all of the simulations.
+Simulations of animal movement were carried out for 600 seconds of simulated
+time.  Here, for each value of $\gE$ and $\gI$, the main simulation run was
+preceded by a number of shorter simulations which determined how much current
+needs to be injected in order for the bump of activity to track the simulated
+movement of an animal (Section~\ref{sec:gain_est}). This procedure calibrates
+the gain of the velocity input current in order to produce grid fields with a
+specified spacing between the peaks in the individual firing fields. The result
+is a single number in units of neurons/s/pA, which determines the speed of the
+bump as a function of injected velocity input. The spacing between the
+individual fields of the grid firing fields was set to 60 cm in all of the
+simulations.
 
 During the main simulation run, the animal movement was simulated for 600 s.
 Each of the runs was repeated 4 times for simulations in Fig.~2 and 3 times
@@ -660,7 +661,8 @@ network represents grid field computation in the network as a whole.  Moreover,
 this cell can be selected arbitrarily. This condition might not hold in
 simulations where I cells receive uncorrelated spatial inputs and therefore
 firing fields of 100 randomly selected cells from both E and I populations were
-used to calculate the gridness scores.
+used to calculate the gridness scores (Figure 2 -- figure
+supplement~\ref{fig:ipc}).
 
 
 \subsection{Short simulation runs without animal movement} \label{sec:noise_short_sims}
@@ -694,12 +696,35 @@ autocorrelation functions of the inhibitory currents impinging from inhibitory
 synapses onto excitatory cells. These currents have been estimated from 25
 randomly selected excitatory cells recorded during the simulation run.
 For each neuron, the current was then band-pass filtered between 20 and 200 Hz,
-autocorrelation function was computed and used to detect local maxima (first
-peak excluded). The power and frequency of the underlying oscillation was then
-estimated from the correlation value and time lag of the first detected
-autocorrelation peak. Both values were averaged over all 25 recorded neurons
+the autocorrelation function was computed and then used to detect local maxima
+after excluding the first peak. The power and frequency of the underlying oscillation was then
+estimated from the correlation value and from the time lag of the first detected
+autocorrelation peak respectively. Both values were averaged over all 25 recorded neurons
 and then subsequently averaged over all simulation trials.
 
+\section{Gaussian fitting procedure} \label{sec:gauss_fitting}
+
+In networks where properties of bump attractors, such as the position and
+presence of an activity bump, were estimated, we developed a procedure to fit
+Gaussian functions onto successive snapshots of network activity of E cells.
+The network activity snapshots were estimated by taking action potential times
+of all E cells and estimating their immediate firing rate using a 250 ms wide
+sliding window with a 125 ms time step. For each snapshot, the properties of a
+bump-like network activity (if it was a bump) were then estimated by fitting a
+symmetric Gaussian function to the network activity snapshots, using the
+maximum likelihood estimator under Gaussian noise (the least squares
+fititing method):
+\begin{equation}
+    B(\mathbf{X}) = A \exp\left(
+        -\frac{||\mathbf{X} - \bm{\mu}||^2}{2\sigmasub{bump}^2} \right),
+    \label{eq:noise_bump_fitting}
+\end{equation}
+where $A$ was the height of the Gaussian function, $\mathbf{X}$ was neuron position
+on the twisted torus, $\bm{\mu}$ was the centre of the Gaussian,
+$\sigmasub{bump}$ was the width of the Gaussian, and~$||\cdot||$ represents a
+distance metric on the twisted torus. The parameters fitted were $A$,
+$\bm{\mu}$ and $\sigmasub{bump}$. These parameters were then used as the basis
+for further analysis.
 
 \begin{table}
     \internallinenumbers
@@ -862,7 +887,7 @@ and then subsequently averaged over all simulation trials.
     according to the synaptic profile functions in Figure 1B. 
     (A-C) Example spatial firing fields (left) and spatial autocorrelation plots
     (right) of E and I cells for networks without noise (A; $\sigma$ = 0 pA), with noise
-    level set to $\sigma$ = 150 pA (B), and noise level set to $\sigma$ = 300 pA (C) and with the
+    set to $\sigma$ = 150 pA (B), and noise set to $\sigma$ = 300 pA (C) and with the
     strengths of recurrent synaptic connections indicated by arrows in (D-F).
     Maximal firing rate is indicated in the top right of each spatial firing plot.
     The range of spatial autocorrelations is normalized between 0 and 1. (D-F)
@@ -933,17 +958,16 @@ and then subsequently averaged over all simulation trials.
     \centering
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure2S_i_place_cells}
     \caption{Spatial firing fields in networks with uncorrelated spatial input
-    applied to each I cell. Each I cell received connections from 3
-    randomly selected neurons with a place like spatial firing field.
-    (A) Examples of firing fields of E and I
-    cells from networks. Gridness score and maximal firing rate of the firing
-    field is indicated in the top left and right parts of each firing field,
-    respectively. (B) Distributions of spatial sparsity (left), spatial
-    information (centre) and gridness score (right) of 100 randomly selected
-    cells from each population of neurons. Each simulation run was repeated 10
-    times with different randomisation seed. Properties of place cells:
-    \ssc{r}{max}{}~=~100 Hz, \ssc{\sigma}{field}{}~=~80 cm. Network parameters
-    were $\gE$ = 3 nS and $\gI$ = 1 nS.}
+    applied to each I cell. Each I cell received connections from 3 randomly
+    selected neurons with a place like spatial firing field.  (A) Examples of
+    firing fields of E and I cells. Gridness score and maximal firing rate of
+    the firing field is indicated in the top left and right parts of each
+    firing field, respectively. (B) Distributions of spatial sparsity (left),
+    spatial information (centre) and gridness score (right) of 100 randomly
+    selected cells from each population of neurons. Each simulation run was
+    repeated 10 times with different randomisation seeds. Properties of place
+    cells: \ssc{r}{max}{}~=~100 Hz, \ssc{\sigma}{field}{}~=~80 cm. Network
+    parameters were $\gE$ = 3 nS and $\gI$ = 1 nS.}
     \label{fig:ipc}
 \end{figure}
 
@@ -980,7 +1004,7 @@ and then subsequently averaged over all simulation trials.
     value at the first local maximum of an autocorrelation of inhibitory
     synaptic currents (I$\rightarrow$E cells, 25 randomly selected E cells),
     plotted as a function of $\gE$ and $\gI$, for networks without noise (D), with
-    noise level set to $\sigma$ = 150 pA (E), and noise level set to $\sigma$ =
+    noise set to $\sigma$ = 150 pA (E), and noise set to $\sigma$ =
     300 pA (F). Each point is an average over five simulation trials. In these
     simulations velocity and place cell inputs were disabled.  The duration of
     simulations was 10 seconds.  Bottom: Frequency corresponding to the peaks
@@ -1024,17 +1048,16 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics[trim=0 0.5cm 0cm 0cm]{fig/panels/suppFigure_gamma.pdf}
-    \caption{Scatter plots of gridness score vs.\ the amplitude of gamma
-    oscillations. (A-C) The plots show relationships between grid field
+    \caption{Scatter plots of gridness score as a function of the amplitude of
+    gamma oscillations. (A-C) The plots show relationships between grid field
     computations (gridness score) and the power of nested gamma oscillations
     for deterministic networks (A), networks with moderate noise (B) and
-    networks with the highest simulated noise level (C).
-    The strength of the oscillation was obtained
-    by computing autocorrelation functions of inhibitory currents impinging
-    onto 25 randomly selected E cells in the network and detecting their first
-    local maxima. The correlation value at the first local maximum is plotted
-    on the abscissa. Colour coding determines the values of $\gE$ and $\gI$, as
-    shown in the 2D colorbar.}
+    networks with the highest simulated noise level (C).  The strength of the
+    oscillation was obtained by computing autocorrelation functions of
+    inhibitory currents impinging onto 25 randomly selected E cells in the
+    network and detecting their first local maxima. The correlation value at
+    the first local maximum is plotted on the abscissa. Colour coding
+    determines the values of $\gE$ and $\gI$, as shown in the 2D colorbar.}
 \end{figure}
 
 \clearpage
@@ -1043,11 +1066,11 @@ and then subsequently averaged over all simulation trials.
     \internallinenumbers
     \centering
         \includegraphics{fig/panels/suppFigure_gammaF_grids_scatter.pdf}
-    \caption{Scatter plots of gridness score vs.\ detected oscillation
-    frequency.  (A-C) The plots show relationships between grid field
-    computations (gridness score) and the frequency of gamma oscillations for
-    deterministic networks (A), networks with moderate noise (B) and networks
-    with the highest simulated noise level (C).  The frequency of the
+    \caption{Scatter plots of gridness score as a function of the detected
+    oscillation frequency.  (A-C) The plots show relationships between grid
+    field computations (gridness score) and the frequency of gamma oscillations
+    for deterministic networks (A), networks with moderate noise (B) and
+    networks with the highest simulated noise level (C).  The frequency of the
     oscillation was obtained by computing autocorrelation functions of
     inhibitory currents impinging onto 25 randomly selected E cells in the
     network and detecting their first local maxima.  The time lag at the first
@@ -1542,9 +1565,9 @@ and then subsequently averaged over all simulation trials.
     \caption{Sensitivity of grid firing to changes in inhibition and excitation
     in networks that contain direct E$\rightarrow$E synapses. (A-C) Example
     firing fields (left) and spatial autocorrelation plots (right) for the
-    specific values of strengths of recurrent synaptic connections indicated by
+    strengths of recurrent synaptic connections indicated by
     arrows in (D-F) for networks without noise (A; $\sigma$ = 0 pA), with noise
-    level set to $\sigma$ = 150 pA (B), and noise level set to $\sigma$ = 300
+    set to $\sigma$ = 150 pA (B), and noise set to $\sigma$ = 300
     pA (C). (D-F) Gridness score as a function of $\gE$ and $\gI$ for networks
     with each noise level. Each item in the color plot is an average gridness
     score of two simulation runs. Arrows indicate the positions of grid field
@@ -1572,7 +1595,7 @@ and then subsequently averaged over all simulation trials.
     value at the first local maximum of an autocorrelation of inhibitory
     synaptic currents (I$\rightarrow$E cells, 25 randomly selected E cells),
     plotted as a function of $\gE$ and $\gI$, for networks without noise (D), with
-    noise level set to $\sigma$ = 150 pA (E), and noise level set to $\sigma$ =
+    noise set to $\sigma$ = 150 pA (E), and noise set to $\sigma$ =
     300 pA (F). Each point is an average over five simulation trials. In these
     simulations velocity and place cell inputs were disabled.  The duration of
     simulations was 10 seconds.  Bottom: Frequency corresponding to the peaks
@@ -1707,20 +1730,32 @@ and then subsequently averaged over all simulation trials.
 \begin{figure}[H]
     \internallinenumbers
     \caption{Probability of bump formation and network activity plots in
-    networks with structured E-E and unstructured E-I and I-E connections. (A)
-    Probability of bump formation as a function of the E-E synaptic scaling
-    factor ($\gEE$) and the width of the synaptic profile ($\sigmaEE$). Arrow
-    highlights the position in the parameter region corresponding to the raster
-    plots (centre) and network activity snaphots (bottom) for E and I cells.
-    Firing rate in the network activity color plots are in the range of 0 (dark
-    blue) to the maximum firing rate indicated to the right of the plot (dark
-    red). In these networks $\gE$ = 1 nS and $\gI$ = 0.1 nS. (B) Same as (A)
-    but $\gE$ = 3 nS and $\gI$ = 1 nS. (C) Same as (A) and (B) but in these
-    simulations the synaptic scaling factor of E-E connections and the width of
-    the synaptic profile were fixed ($\gEE$ = 3 nS and $\sigmaEE$ = 0.0833) and
-    $\gE$ and $\gI$ varied in the range of 0 -- 6 nS. Simulations that produced
-    excessive spiking activity and did not finish in a specified time limit
-    (3h) are indicated by white color.}
+    networks with structured E-E and unstructured E-I and I-E connections.
+    Since the presence of bump attractors is necessary for grid computation, we
+    tested whether networks with only structured E-E connections can generate
+    activity bumps. We used the Gaussian fitting procedure (cf.\
+    Section~\ref{sec:gauss_fitting}) to estimate the presence of bump
+    attractors in these networks. (A) Probability of bump formation as a
+    function of the E-E synaptic scaling factor ($\gEE$) and the width of the
+    synaptic profile ($\sigmaEE$). Arrow highlights the position in the
+    parameter space corresponding to the raster plots (centre) and network
+    activity snaphots (bottom) for E and I cells.  Firing rate in the network
+    activity color plots are in the range of 0 (dark blue) to the maximum
+    firing rate indicated to the right of the plot (dark red). In these
+    networks $\gE$ = 1 nS and $\gI$ = 0.1 nS. (B) Same as (A) but $\gE$ = 3 nS
+    and $\gI$ = 1 nS.  (C) Same as (A) and (B) but in these simulations the
+    synaptic scaling factor of E-E connections and the width of the synaptic
+    profile were fixed ($\gEE$ = 3 nS and $\sigmaEE$ = 0.0833) and $\gE$ and
+    $\gI$ varied in the range of 0 -- 6 nS. Simulations that produced excessive
+    spiking activity and did not finish in a specified time limit (3h) are
+    indicated by white color. Many networks suffer from runaway excitation and
+    inhibition (A) or generate only background synaptic activity characterised
+    by low firing rates of E and I cells (B-C). The Gaussian firing procedure
+    used to estimate the probability of bump formation can nevertheless yield
+    a high bump score due to the fact that this procedure can also classify
+    intermittent pockets of activity (A) or pockets of background activity of E
+    cells (B-C) as bump attractors. This activity, however, is not stable
+    enough to generate grid firing fields.}
     \label{fig:eei_unstructured}
 \end{figure}
 
