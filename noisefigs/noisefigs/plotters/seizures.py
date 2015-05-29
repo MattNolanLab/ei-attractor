@@ -755,7 +755,7 @@ class RasterExamplePlotter(SweepPlotter):
         saver = self.myc['fig_saver']
         saver.set_file_name(self.get_fname('raster_examples'))
         saver.ext = "pdf"
-        saver.set_backend_params(dpi=300, transparent=True)
+        saver.set_backend_params(dpi=600, transparent=True)
 
         label_it = 0
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
@@ -801,7 +801,7 @@ class RasterExamplePlotter(SweepPlotter):
                         ann_EI=True,
                         scaleBar=125, scaleX=.85, scaleY=-.05,
                         scaleTextYOffset=.03, scaleHeight=.01,
-                        rasterized=False)
+                        rasterized=True)
 
 
 
