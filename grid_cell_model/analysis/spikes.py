@@ -28,7 +28,6 @@ import scipy
 import collections
 from scipy import weave
 
-import _spikes
 from grid_cell_model.otherpkg.log import log_warn
 
 __all__ = [
@@ -332,79 +331,6 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         return self._senders, self._times
 
 
-
-
-    def spikeTrainDifference(self, idx1, idx2=None, full=True, reduceFun=None):
-        '''
-        Compute time differences between pairs of spikes of two neurons or a
-        list of neurons.
-
-        Parameters
-        ----------
-        idx1 : int, or a sequence of ints
-            Index of the first neuron or a list of neurons for which to compute
-            the correlation histogram.
-        idx2 : int, or a sequence of ints, or None
-            Index of the second neuron or a list of indexes for the second set
-            of spike trains.
-        full : bool, optional
-            Not fully implemented yet. Must be set to True.
-        reduceFun : callable, optional
-            Any callable object that computes a function over an array of each
-            spike train difference. The function must take one input argument,
-            which will be the array of spike time differences for a pair of
-            neurons. The output of this function will be stored instead of the
-            default output.
-        output : A 2D or 1D array of spike train autocorrelation histograms for all
-            the pairs of neurons.
-
-        The computation takes the following steps:
-
-         * If ``idx1`` or ``idx2`` are integers, they will be converted to a list
-           of size 1.
-         * If ``idx2`` is None, then the result will be a list of lists of pairs
-           of cross-correlations between the neurons. Even if there is only one
-           neuron. If ``full == True``, the output will be an upper triangular
-           matrix of all the pairs, i.e. it will exclude the duplicated.
-           Otherwise there will be cross correlation histograms between all the
-           pairs.
-         * if ``idx2`` is not None, then ``idx1`` and ``idx2`` must be arrays
-           of the same length, specifying the pairs to compute autocorrelation
-           for
-        '''
-        if (full == False):
-            raise NotImplementedError()
-
-        if (reduceFun is None):
-            reduceFun = lambda x: x
-
-        if (not isinstance(idx1, collections.Iterable)):
-            idx1 = [idx1]
-
-        if (idx2 is None):
-            idx2 = idx1
-            res = [[] for x in idx1]
-            for n1 in idx1:
-                for n2 in idx2:
-                    #print n1, n2, len(self[n1]), len(self[n2])
-                    res[n1].append(reduceFun(_spikes.spike_time_diff(self[n1],
-                        self[n2])))
-            return res
-        elif (not isinstance(idx2, collections.Iterable)):
-            idx2 = [idx2]
-
-        # Two arrays of pairs
-        if (len(idx1) != len(idx2)):
-            raise TypeError('Length of neuron indexes do not match!')
-
-        res = [None] * len(idx1)
-        for n in xrange(len(idx1)):
-            res[n] = reduceFun(_spikes.spike_time_diff(self[idx1[n]],
-                self[idx2[n]]))
-
-        return res
-
-
     class CallableHistogram(object):
         def __init__(self, **kw):
             self.kw = kw
@@ -420,44 +346,6 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         def get_bin_edges(self):
             _, bin_edges = np.histogram([], **self.kw)
             return bin_edges
-
-
-    def spikeTrainXCorrelation(self, idx1, idx2, range, bins=50,
-            **kw):
-        '''
-        Compute the spike train crosscorrelation function for all pairs of
-        spike trains in the population.
-
-        Parameters (for explanation of how ``idx1`` and ``idx2`` are treated,
-        see :meth:`~PopulationSpikes.spikeTrainDifference`):
-
-        idx1 : int, or a sequence of ints
-            Index of the first neuron or a list of neurons for which to compute
-            the correlation histogram.
-        idx2 : int, or a sequence of ints, or None
-            Index of the second neuron or a list of indexes for the second set
-            of spike trains.
-        range : (lag_start, lag_end)
-            Limits of the cross-correlation function. The bins will always be
-            **centered** on the values.
-        bins : int, optional
-            Number of bins
-        kw : dict
-            Keyword arguments passed on to the numpy.histogram function
-
-        output : a 2D or 1D list
-            see :meth:`~PopulationSpikes.spikeTrainDifference`.
-        '''
-        lag_start = range[0]
-        lag_end   = range[1]
-        binWidth = (lag_end - lag_start) / (bins - 1)
-        bin_edges = np.linspace(lag_start - binWidth/2.0, lag_end +
-                binWidth/2.0, bins+1)
-        h = self.CallableHistogram(bins=bin_edges, **kw)
-        XC = self.spikeTrainDifference(idx1, idx2, full=True, reduceFun=h)
-        bin_edges = h.get_bin_edges()
-        bin_centers = (bin_edges[0:-1] + bin_edges[1:])/2.0
-        return XC, bin_centers, bin_edges
 
 
     def ISINeuron(self, n):

@@ -16,7 +16,6 @@ output_local
 /VERSIONING.html
 
 # Building
-/build
 *.egg-info
 
 /git_hooks
