@@ -5,7 +5,9 @@
 *.swp
 *.swo
 *.tmp$$
+*.tdo
 .DS_Store
+._.DS_Store
 output_local
 .ropeproject
 
@@ -15,7 +17,7 @@ output_local
 
 # Building
 /build
-/*.egg-info
+*.egg-info
 
 /git_hooks
 /tags

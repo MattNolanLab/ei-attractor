@@ -52,11 +52,12 @@ isBump_readme = 'Bump position estimation. Whole simulation'
 
 # Create visitors
 if common.bumpType in o.type:
-    bumpVisitor = vis.bumps.BumpFittingVisitor(forceUpdate=forceUpdate,
-            tstart='full',
-            readme='Bump fitting. Whole simulation, starting at the start of theta stimulation.',
-            bumpERoot='bump_e_full',
-            bumpIRoot='bump_i_full')
+    bumpVisitor = vis.bumps.BumpFittingVisitor(
+        forceUpdate=forceUpdate,
+        tstart='full',
+        readme='Bump fitting. Whole simulation, starting at the start of theta stimulation.',
+        bumpERoot='bump_e_full',
+        bumpIRoot='bump_i_full')
     FRVisitor = vis.spikes.FiringRateVisitor(winLen=2.,     # ms
                                              winDt=.5,      # ms
                                              forceUpdate=forceUpdate)
@@ -69,7 +70,7 @@ if common.bumpType in o.type:
             forceUpdate=forceUpdate)
 
     sp.visit(bumpVisitor)
-    #sp.visit(isBumpVisitor)
+    sp.visit(isBumpVisitor)
     sp.visit(FRVisitor)
     #sp.visit(FRPlotter)
 
@@ -81,11 +82,8 @@ if common.gammaType in o.type:
                                                   forceUpdate=forceUpdate)
     ACVisitor = vis.signals.AutoCorrelationVisitor(monName, stateList,
                                                    forceUpdate=forceUpdate)
-    CCVisitor = vis.signals.CrossCorrelationVisitor(monName, stateList,
-                                                    forceUpdate=forceUpdate)
 
     sp.visit(ACVisitor)
-    sp.visit(CCVisitor)
     sp.visit(statsVisitor_e)
 
 if common.velocityType in o.type:
@@ -104,22 +102,23 @@ if common.velocityType in o.type:
     sp.visit(speedPlotter, trialList='all-at-once')
 
 if common.gridsType in o.type:
-    spikeType = 'E'
 
     po = vis.plotting.grids.GridPlotVisitor.PlotOptions()
-    gridVisitor = vis.plotting.grids.GridPlotVisitor(
-            o.output_dir,
-            spikeType=spikeType,
-            plotOptions=po,
-            minGridnessT=300e3,
-            forceUpdate=o.forceUpdate)
-    isBumpVisitor = vis.bumps.BumpPositionVisitor(
-            tstart=isBump_tstart,
-            tend=isBump_tend,
-            win_dt=isBump_win_dt,
-            readme=isBump_readme,
-            forceUpdate=forceUpdate,
-            bumpERoot='bump_e_isBump')
+    gridVisitor = vis.plotting.grids.GridPlotVisitor(o.output_dir,
+                                                     spikeType='E',
+                                                     plotOptions=po,
+                                                     minGridnessT=300e3,
+                                                     forceUpdate=o.forceUpdate)
+    gridVisitor_i = vis.plotting.grids.IGridPlotVisitor(o.output_dir,
+                                                        plotOptions=po,
+                                                        minGridnessT=300e3,
+                                                        forceUpdate=o.forceUpdate)
+    isBumpVisitor = vis.bumps.BumpPositionVisitor(tstart=isBump_tstart,
+                                                  tend=isBump_tend,
+                                                  win_dt=isBump_win_dt,
+                                                  readme=isBump_readme,
+                                                  forceUpdate=forceUpdate,
+                                                  bumpERoot='bump_e_isBump')
     #ISIVisitor = plotting_visitors.ISIPlotVisitor(o.output_dir,
     #        spikeType = spikeType,
     #        nRows = 5, nCols = 5, range=[0, 1000], bins=40,
@@ -130,6 +129,7 @@ if common.gridsType in o.type:
                                              sliding_analysis=False)
 
     sp.visit(gridVisitor)
+    sp.visit(gridVisitor_i)
     #sp.visit(isBumpVisitor)
     #sp.visit(ISIVisitor)
     sp.visit(FRVisitor)

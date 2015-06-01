@@ -4,9 +4,8 @@
 *.blg
 *.log
 *.out
-/noise_methods.pdf
 /velocity_estimation.pdf
-/SI_text.pdf
+/SupplementaryMethods.pdf
 *eps-converted-to.pdf
 
 /copy_to_dropbox.sh

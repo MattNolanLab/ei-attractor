@@ -10,6 +10,7 @@ import config
 parser = flagparse.FlagParser()
 parser.add_flag('--bumpSweep')
 parser.add_flag('--bumpExamples')
+parser.add_flag('--bump_examples_colorbar')
 parser.add_flag('--detailed_noise')
 parser.add_flag('--scatter_grids_fracTotal')
 parser.add_flag('--fracTotalSweepAnn')
@@ -34,6 +35,9 @@ if args.bumpSweep or args.all:
 
 if args.bumpExamples or args.all:
     env.register_plotter(noisefigs.plotters.BumpExamplePlotter)
+
+if args.bump_examples_colorbar or args.all:
+    env.register_plotter(noisefigs.plotters.BumpExampleColorbarPlotter)
 
 if args.detailed_noise or args.all:
     env.register_plotter(noisefigs.plotters.BumpSigmaDetailedNoisePlotter)

@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import os, subprocess
+import time
 import errno
 from datetime       import datetime
 
@@ -94,12 +95,20 @@ class ProgramSubmitter(object):
 
 
     def _wait(self):
+        '''Remove the first finished process from the process pool.'''
         if (self._blocking == False or len(self._pList) < self._numCPU):
-            return None
-        p = self._pList.pop(0)
-        errno = p.wait()
-        if not self._ignoreSubmitErrors and (errno is not None and errno != 0):
-            raise SubmitError()
+            return
+
+        while True:
+            for p_idx, p in enumerate(self._pList):
+                errno = p.poll()
+                if errno is None:
+                    time.sleep(10e-3)  # Sleep 10 ms
+                else:
+                    self._pList.pop(p_idx)
+                    if not self._ignoreSubmitErrors and (errno is not None and errno != 0):
+                        raise SubmitError()
+                    return
 
 
     def _addProcess(self, p):
@@ -149,29 +158,45 @@ class ProgramSubmitter(object):
 
 
 
-    def saveIterParams(self, iterParams, fileName='iterparams.h5',
-            dry_run=False):
+    def saveIterParams(self, iterParams, dimension_labels, dimensions,
+                       fileName='iterparams.h5', dry_run=False):
         '''
         Save iterated parameters.
+
+        .. todo::
+            Check the consistency of iterParams, dimension_labels and
+            dimensions.
 
         Parameters
         ----------
         iterParams : dict
             A dictionary of iterated parameters. {<name> : np.ndarray}
-
+        dimension_labels : list or tuple of strings
+            Labels of the dimensions. These have to reflect ``iterParams``.
+        dimensions : list of ints
+            Dimension for each label, must be the same length as
+            ``dimension_labels``.
         fileName : str, optional
-            An output file name, with an extension supported by the data_storage package.
+            An output file name, with an extension supported by the data_storage
+            package.
+        dry_run : bool
+            If ``True`` perform only the dry run.
         '''
-        filePath = self.outputDir() + '/' + fileName
-        log_info('root.submitters', 'Saving parameter iteration data to: {0}'.format(filePath))
-        if (dry_run):
-            log_info('root.submitters', 'Dry run: not performing the save ' +
-                    'actually.')
+        if len(dimension_labels) != len(dimensions):
+            raise ValueError("len(dimension_labels) != len(dimensions)")
+
+        filePath = os.path.join(self.outputDir(), fileName)
+        log_info('root.submitters',
+                 'Saving parameter iteration data to: {0}'.format(filePath))
+        if dry_run:
+            log_info('root.submitters', 'Dry run: not performing the save '
+                     'actually.')
         else:
             o = DataStorage.open(filePath, 'w')
             o['iterParams'] = iterParams
+            o['dimension_labels'] = list(dimension_labels)
+            o['dimensions'] = list(dimensions)
             o.close()
-
 
     def _saveAllOptions(self):
         '''Save the iterated options.'''

@@ -2,9 +2,10 @@
 #
 #
 # asi budete chtit prejmenovat:
-CO=SI_text
+CO=SupplementaryMethods
 IMAGES = fig/
-DROPBOX_DIR = ~/Dropbox/shared_data/noise/
+DROPBOX_DIR = ~/Dropbox/Independent_grids_and_gamma/noise/e_life_v2/
+DROPBOX_SRC_DIR = $(DROPBOX_DIR)/supplementary_methods_sources
 
 
 .PHONY: fig $(CO).pdf
@@ -46,3 +47,4 @@ fig:
 
 dropbox:
 	cp $(CO).pdf ${DROPBOX_DIR}
+	cp $(CO).tex sfmath.sty $(CO)Bib.bib $(DROPBOX_SRC_DIR)

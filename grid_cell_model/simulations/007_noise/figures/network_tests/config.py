@@ -54,6 +54,29 @@ def get_config():
             'e_snapshots_rect': (.075, .15, 0.99, 0.25),
             'i_snapshots_rect': (.075, .02, 0.99, 0.1),
         },
+
+
+        'Generic1DPBumpPlotter' : {
+            'normalize_ticks' : True,
+            'normalize_type' : 'I',
+            'xlabel': '$g_{I{\\rightarrow}I}$',
+            'ylabel': 'P(bumps)',
+            'bbox': (.2, .17, .85, .9),
+            'xticks': [True] * 3,
+            'yticks': [True] * 3,
+            'axis_setting': 'tight',
+        },
+
+        'Generic1DGammaPlotter' : {
+            'normalize_ticks' : True,
+            'normalize_type' : 'I',
+            'xlabel': '$g_{I{\\rightarrow}I}$',
+            'ylabel': '',
+            'bbox': (.2, .17, .85, .9),
+            'xticks': [True] * 3,
+            'yticks': [True] * 3,
+            'axis_setting': 'tight',
+        },
     })
 
     ##########################################################################
