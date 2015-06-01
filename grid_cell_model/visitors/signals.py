@@ -7,8 +7,9 @@ import logging
 
 import numpy as np
 
-from ..analysis import signal as asignal
-from ..analysis.signal import localExtrema, butterBandPass, autoCorrelation
+from gridcells.analysis.signal import corr, acorr
+
+from ..analysis.signal import localExtrema, butterBandPass
 from ..data_storage.sim_models import ei as simei
 from ..otherpkg.log import log_info, getClassLogger
 from .interface import DictDSVisitor
@@ -143,8 +144,8 @@ class AutoCorrelationVisitor(DictDSVisitor):
             sig = sig[startIdx:endIdx]
             sig = butterBandPass(sig, dt*self.dtMult, self.bandStart,
                     self.bandEnd)
-            ac = autoCorrelation(sig - np.mean(sig), max_lag=self.maxLag/dt,
-                    norm=self.norm)
+            ac = acorr(sig - np.mean(sig), max_lag=self.maxLag/dt,
+                       norm=self.norm)
             ext_idx, ext_t = localExtrema(ac)
             acVec.append(ac)
 
@@ -275,8 +276,8 @@ class CrossCorrelationVisitor(DictDSVisitor):
                     endIdx2 = endIdx1
                 sig1 = sig1[startIdx:endIdx1]
                 sig2 = sig2[startIdx:endIdx2]
-                C = asignal.corr(sig1, sig2, mode='range',
-                        lag_start=lag_start, lag_end=lag_end)
+                C = corr(sig1, sig2, mode='range', lag_start=lag_start,
+                         lag_end=lag_end)
                 if (self.norm):
                     C /= np.max(C)
                 xcOut2.append(C)

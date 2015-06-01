@@ -4,17 +4,17 @@
 #   Signal analysis tools: ffts, cwt, etc. specific to GridCells
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
+#
 #       This program is free software: you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
 #       the Free Software Foundation, either version 3 of the License, or
 #       (at your option) any later version.
-#       
+#
 #       This program is distributed in the hope that it will be useful,
 #       but WITHOUT ANY WARRANTY; without even the implied warranty of
 #       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #       GNU General Public License for more details.
-#       
+#
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -26,8 +26,6 @@ The can be e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
 
 .. currentmodule:: analysis.signal
 .. autosummary::
-    autoCorrelation
-    corr
     localExtrema
 
 ----------------------
@@ -40,13 +38,6 @@ import scipy.signal
 
 from numpy.fft.fftpack import fft
 from Wavelets import Morlet
-
-import _signal
-
-
-#__all__ = ['butterHighPass', 'butterBandPass', 'spikePhaseTrialRaster',
-#        'splitSigToThetaCycles', 'getChargeTheta', 'phaseCWT', 'CWT',
-#        'fft_real_freq', 'relativePower']
 
 
 def butterHighPass(sig, dt, f_pass):
@@ -84,12 +75,12 @@ def spikePhaseTrialRaster(spikeTimes, f, start_t=0):
 # is generated continuously.
 #
 # The last, unaligned part of the signal will be discarded.
-# 
+#
 # Phase(sig, t=0) must be 0, no phase shifts!
 #
 # @param sig   Signal with dt.
 # @param thetaT Theta period. MUST be a multiple of dt
-# @param dt     Time resolution of the signal. 
+# @param dt     Time resolution of the signal.
 def splitSigToThetaCycles(sig, thetaT, dt):
     n_ph = thetaT / dt
     q_ph = len(sig) // n_ph
@@ -165,7 +156,7 @@ def fft_real_freq(sig, dt):
 
 
 
-    
+
 
 ## Compute power from FFT data in a specified frequency range, relative to the
 # total power.
@@ -201,107 +192,6 @@ def maxPowerFrequency(Pxx, F, Frange=None):
         range = np.logical_and(F >= Frange[0], F <= Frange[1])
         return F[range][np.argmax(Pxx[range])]
 
-    
-
-def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
-    '''
-    An enhanced correlation function of two real signals, based on blitz++.
-    
-    This function uses dot product instead of FFT to compute a correlation
-    function with range restricted lags.
-
-    Thus, for a long-range of lags and big arrays it can be slower than the
-    numpy.correlate (which uses fft-based convolution). However, for arrays in
-    which the number of lags << max(a.size, b.size) the computation time might
-    be much shorter than using convolution to calculate the full correlation
-    function and taking a slice of it.
-
-    Parameters:
-
-    a, b : ndarray
-        One dimensional numpy arrays (in the current implementation, they will
-        be converted to dtype=double if not already of that type.
-
-    mode : str, optional
-        A string indicating the size of the output:
-
-          ``onesided`` : range of lags is [0, b.size - 1]
-
-          ``twosided`` : range of lags is [-(a.size - 1), b.size - 1]
-
-          ``range``    : range of lags is [-lag_start, lag_end]
-
-    lag_start, lag_end : int, optional
-        Initial and final lag value. Only used when mode == 'range'
-
-    output : numpy.ndarray with shape (1, ) and dtype.float
-        A 1D array of size depending on mode
-
-    .. note::
-        
-        This function always returns a numpy array with dtype=float.
-
-    .. seealso:: :py:func:`autoCorrelation`
-    '''
-    sz1 = a.size
-    sz2 = b.size
-    if (sz1 == 0 or sz2 == 0):
-        raise TypeError("Both input arrays must have non-zero size!")
-
-    if (mode == 'onesided'):
-        return _signal.correlation_function(a, b, 0, sz2 - 1)
-    elif (mode == 'twosided'):
-        return _signal.correlation_function(a, b, -(sz1 - 1), sz2 - 1)
-    elif (mode == 'range'):
-        lag_start = int(lag_start)
-        lag_end   = int(lag_end)
-        if (lag_start <= -sz1 or lag_end >= sz2):
-            raise ValueError("Lag range must be in the range [{0}, {1}]".format(-(sz1 - 1), sz2 - 1))
-        return _signal.correlation_function(a, b, lag_start, lag_end)
-    else:
-        raise ValueError("mode must be one of 'onesided', 'twosided', or 'range'")
-
-
-
-def autoCorrelation(sig, max_lag=None, norm=False, mode='onesided'):
-    '''
-    Compute an autocorrelation function of a real signal.
-
-    Parameters
-    ----------
-    sig : numpy.ndarray
-        The signal, 1D vector, to compute an autocorrelation of.
-
-    max_lag : int, optional
-        Maximal number of lags. If mode == 'onesided', the range of lags will
-        be [0, max_lag], i.e. the size of the output will be (max_lag+1). If mode ==
-        'twosided', the lags will be in the range [-max_lag, max_lag], and so the size
-        of the output will be 2*max_lag + 1.
-
-        If max_lag is None, then max_lag will be set to len(sig)-1
-
-    norm : bool, optional
-        Whether to normalize the auto correlation result, so that res(0) = 1
-
-    mode : string, optional
-        ``onesided`` or ``twosided``. See description of max_lag
-
-    output : numpy.ndarray
-        A 1D array, size depends on ``max_lag`` and ``mode`` parameters.
-    '''
-    if (mode == 'onesided'):
-        c = corr(sig, sig, mode='range', lag_start=0, lag_end=max_lag)
-    elif (mode == 'twosided'):
-        c = corr(sig, sig, mode='range', lag_start=-max_lag, lag_end=max_lag)
-    else:
-        raise ValueError("mode can be either 'onesided' or 'twosided'!")
-
-    if (norm):
-        c /= max(c)
-
-    return c
-
-
 
 
 ###############################################################################
@@ -315,7 +205,7 @@ def localExtrema(sig):
     ----------
     sig : numpy.ndarray
         A 1D numpy array
-    
+
     output : (numpy.ndarray, numpy.ndarray)
         A pair (idx, types) containing the positions of local extrema iniside
         ``sig`` and the type of the extrema:
@@ -327,7 +217,7 @@ def localExtrema(sig):
     der = np.diff(sig)
     der0 = (der[0:szDiff - 1] * der[1:szDiff]) < 0.
     ext_idx = np.nonzero(der0)[0]
-    dder = np.diff(der)[ext_idx] 
+    dder = np.diff(der)[ext_idx]
     ext_idx += 1    # Correction for a peak position
     ext_t = np.ndarray((dder.size, ), dtype=int)
     ext_t[dder < 0] = 1
@@ -339,7 +229,7 @@ def localExtrema(sig):
 def globalExtremum(sig, func):
     '''
     Return global maximum of a signal.
-    
+
     ``sig``
         A 1D array, in which case a global extremum will be returned as a single
         value, or a 2D array, for which an array of extrema will be returned,
@@ -363,7 +253,7 @@ def relativePeakHeight(localExtrema, cmpFun):
         raise TypeError("Cannot compute relative peak heights in an empty array.")
     elif (sz == 1):
         raise TypeError("Cannot compute relative peak heights in an array with only one element")
-        
+
     res = np.ndarray((sz, ))
     cmp = np.ndarray((2, sz-2))
 
@@ -377,7 +267,7 @@ def relativePeakHeight(localExtrema, cmpFun):
     res[0]  = hr[0]
     res[-1] = hl[-1]
     res[1:sz-1] = cmpFun(cmp, axis=0)
-    
+
     #import pdb; pdb.set_trace()
 
     return res
