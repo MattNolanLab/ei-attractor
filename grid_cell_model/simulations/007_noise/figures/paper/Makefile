@@ -8,6 +8,7 @@ all: fast \
 	suppFigure_grid_examples.dummy	\
    	ee-connections					\
    	ee_connections_ei_flat			\
+	i_place_cells					\
 	i_surround						\
 	ii_connections					\
    	no-pc-input						\
@@ -38,6 +39,9 @@ ee-connections:
 ee_connections_ei_flat:
 	cd ee_connections_ei_flat; $(MAKE)
 
+i_place_cells:
+	cd i_place_cells; $(MAKE)
+
 i_surround:
 	cd i_surround; $(MAKE)
 
@@ -61,10 +65,14 @@ probabilistic-connections:
 
 clean:
 	rm -f $$(git ls-files -i --exclude-standard -o panels)
+	cd ee_connections; $(MAKE) clean
+	cd ee_connections_ei_flat; $(MAKE) clean
+	cd i_place_cells; $(MAKE) clean
+	cd i_surround; $(MAKE) clean
+	cd ii_connections; $(MAKE) clean
 	cd no_theta; $(MAKE) clean
 	cd no_pc_input; $(MAKE) clean
 	cd probabilistic_connections; $(MAKE) clean
-	cd ii_connections; $(MAKE) clean
 
 thesis:
 	./update_thesis.sh
