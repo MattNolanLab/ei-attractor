@@ -6,7 +6,7 @@ import matplotlib.gridspec as gridspec
 from matplotlib.transforms import Bbox
 import numpy as np
 from grid_cell_model.submitting import flagparse
-from grid_cell_model.data_storage import DataStorage
+from simtools.storage import DataStorage
 from grid_cell_model.analysis.spikes import PopulationSpikes
 import noisefigs
 from noisefigs.env import NoiseEnvironment

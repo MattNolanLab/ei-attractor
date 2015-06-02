@@ -5,9 +5,9 @@ from os.path        import exists, basename
 import subprocess
 
 import numpy as np
-from ..otherpkg.log   import log_warn, log_info, getClassLogger
+from simtools.storage import DataStorage
 
-from ..data_storage       import DataStorage
+from ..otherpkg.log   import log_warn, log_info, getClassLogger
 from ..data_storage.dict  import getDictData
 from .data_sets           import DictDataSet
 
@@ -515,7 +515,7 @@ class JobTrialSpace2D(DataSpace):
         if isinstance(path, str):
             return inData[path]
         else:
-            return inData.getItemChained(path)
+            return inData.get_item_chained(path)
 
 
     def aggregateData(self, varList, trialNumList, funReduce=None,
@@ -571,7 +571,7 @@ class JobTrialSpace2D(DataSpace):
                     varList))
                 inData = self._getAggregationDS()
                 if (inData is not None):
-                    return inData.getItemChained(varList)
+                    return inData.get_item_chained(varList)
                 else:
                     io_err = 'Could not open file: {0}. Performing the reduction.'
                     log_info('JobTrialSpace2D', io_err.format(self.saveDataFileName))
@@ -600,7 +600,7 @@ class JobTrialSpace2D(DataSpace):
                 varList))
             outData = self._getAggregationDS()
             if (outData is not None):
-                outData.setItemChained(varList, retVar)
+                outData.set_item_chained(varList, retVar)
             else:
                 io_err = 'Could not open file: {0}. Not saving the reduced data!'
                 log_warn('JobTrialSpace2D', io_err.format(self.saveDataFileName))

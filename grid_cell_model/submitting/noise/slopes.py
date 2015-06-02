@@ -5,7 +5,7 @@ import os.path
 
 import numpy as np
 from grid_cell_model.otherpkg.log import getClassLogger
-from grid_cell_model.data_storage import DataStorage
+from simtools.storage import DataStorage
 
 baseLogger = getClassLogger('SlopeSelector', __name__)
 probLogger = getClassLogger('ProbabilisticConnectionsSelector', __name__)

@@ -5,9 +5,10 @@ import time
 import errno
 from datetime       import datetime
 
+from simtools.storage import DataStorage
+
 from ..gc_exceptions  import SubmitError
 from ..otherpkg.log   import log_warn, log_info, getClassLogger
-from ..data_storage   import DataStorage
 
 
 progSLogger = getClassLogger("ProgramSubmitter", __name__)
