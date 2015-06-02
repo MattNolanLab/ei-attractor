@@ -9,13 +9,29 @@ class GenericSubmissionParser(flagparse.FlagParser):
     def __init__(self, **kwargs):
         super(GenericSubmissionParser, self).__init__(**kwargs)
         self.add_argument('env',     type=str,
-                          choices=['workstation', 'cluster'])
-        self.add_argument("where",      type=str)
-        self.add_argument("--time",     type=float)
-        self.add_argument('--ntrials',  type=positive_int, required=True)
-        self.add_argument('--rtLimit',  type=str)
-        self.add_argument('--printout', type=int, choices=[0, 1], default=1)
-        self.add_argument('--nCPU',     type=positive_int, default=1)
+                          choices=['workstation', 'cluster'],
+                          help="How to run the simulations. If `workstation`, "
+                               "run locally on the current machine. If "
+                               "'cluster', run on the SGE cluster using the "
+                               "qsub command.")
+        self.add_argument("where",      type=str,
+                          help='Root directory of output data. This will be '
+                               'passed on to the simulation script.')
+        self.add_argument("--time",     type=float,
+                          help="Total simulation time (ms).")
+        self.add_argument('--ntrials',  type=positive_int, required=True,
+                          help='Number of simulation trials.')
+        self.add_argument('--rtLimit',  type=str,
+                          help='Run time limit. Applicable only when '
+                               'submitting the simulation on a cluster using '
+                               'qsub.')
+        self.add_argument('--printout', type=int, choices=[0, 1], default=1,
+                          help='Wheter to print out summary data at the end '
+                               'of simulation runs. Currently broken...')
+        self.add_argument('--nCPU',     type=positive_int, default=1,
+                          help='Number of processors when running on a '
+                               'workstation. This can be used to run several '
+                               'simulations in parallel.')
         self.add_flag('--dry_run',
                       help='Do no run anything nor save any meta-data')
 

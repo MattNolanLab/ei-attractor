@@ -14,8 +14,11 @@ class FlagParser(argparse.ArgumentParser):
 
         self.allDefault = allDefault
         self.add_argument('--' + FlagAction.allArg, action='store_true',
-                default=allDefault, help='Whether to perform all flags. This'+\
-                        ' will be disabled by setting any flag')
+                          default=allDefault,
+                          help='Whether to perform all flags. This will be '
+                               'disabled by setting any flag. This option is '
+                               'only applicable when it makes sense to select '
+                               'operations based on flags.')
         self.add_argument('-v', '--verbosity',
                 type=str,
                 choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
