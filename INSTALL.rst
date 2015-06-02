@@ -24,11 +24,16 @@ Install non-Python packages
 ---------------------------
 
 - C/C++ compiler.
+
 - `NEST simulator`_ == 2.2.0 (and ideally not using the later versions, since
-  there have been API changes).
+  there have been API changes). It is recommended to do the installation
+  process inside the Python `virtual environment`_ that you are going to use
+  for simulations.
+
 - The HDF5_ library. Most Linux/Unix distributions come with HDF5 installed.
   However, it might be worth to check the version and update to the latest one
   (>= 1.8.12). On Windows, you need to help yourself as you can...
+
 - SWIG_ >= 3.0. This is not required by the project, but it is required by the
   gridcells_ package and so is also listed here.
 
@@ -36,7 +41,7 @@ Install Python packages
 -----------------------
 
 There are a number of requirements, but once you have installed the `non-Python
-packages`_. Simply go to the root of the project and do these two steps (it is
+packages`_, change to the root of the project and do these two steps (it is
 recommended to do this in a `virtual environment`_ to avoid clashes with other
 python packages):
 
@@ -108,16 +113,29 @@ use SLI). After successful installation, do not forget to set the
 installed module (on OSX the ``DYLD_LIBRARY_PATH`` variable; see the
 instructions).
 
+To test the module, run python and run ``import nest;
+nest.Install('gridcellsmodule')``. You should get this output:
 
-.. _HDF5: https://www.hdfgroup.org/HDF5/ 
-.. _SWIG: http://www.swig.org
-.. _NEST: http://www.nest-simulator.org
-.. _NEST simulator: http://www.nest-simulator.org
-.. _Writing an extension module: http://nest.github.io/nest-simulator/extension_modules
-.. _gridcells: https://github.com/lsolanka/gridcells
-.. _virtual environment: http://docs.python-guide.org/en/latest/dev/virtualenvs/
-.. _non-python packages: `Install non-Python packages`_
+::
 
+  >>> import nest; nest.Install('gridcellsmodule')
+  
+                -- N E S T --
+  
+    Copyright (C) 2004 The NEST Initiative
+    Version 2.2.2 Jun  2 2015 12:39:12
+  
+  This program is provided AS IS and comes with
+  NO WARRANTY. See the file LICENSE for details.
+  
+  Problems or suggestions?
+    Website     : http://www.nest-initiative.org
+    Mailing list: nest_user@nest-initiative.org
+  
+  Type 'nest.help()' to find out more about NEST.
+  
+  Jun 02 13:19:24 Install [Info]:
+      loaded module Grid cells NEST module
 
 
 Running a demo simulation
@@ -134,3 +152,12 @@ This will run the simulation and save data into an appropriate directory in
 steps and make sure they are all completed successfully. If this step is
 successfull you will find some HDF5_ file(s) in the output directory and you
 are ready to run your own simulations.
+
+.. _HDF5: https://www.hdfgroup.org/HDF5/ 
+.. _SWIG: http://www.swig.org
+.. _NEST: http://www.nest-simulator.org
+.. _NEST simulator: http://www.nest-simulator.org
+.. _Writing an extension module: http://nest.github.io/nest-simulator/extension_modules
+.. _gridcells: https://github.com/lsolanka/gridcells
+.. _virtual environment: http://docs.python-guide.org/en/latest/dev/virtualenvs/
+.. _non-python packages: `Install non-Python packages`_
