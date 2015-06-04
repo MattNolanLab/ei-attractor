@@ -97,6 +97,7 @@ class PickedDefaultSelector(DefaultSelector):
         return (np.ones(self._dimensions[0] * self._dimensions[1]) *
                 slopes[self._row, self._col])
 
+
 class NoThetaSelector(SlopeSelector):
     '''A slope selector for no-theta simulations.'''
     def __init__(self, data_root, threshold):
@@ -148,3 +149,29 @@ class ISurroundPastollSelector(SlopeSelector):
         template = 'bump_slope_i_surround_pastoll_{0}pA.h5'
         super(ISurroundPastollSelector, self).__init__(data_root, threshold,
                                                        template)
+
+
+class PickedISurroundPastollSelector(ISurroundPastollSelector):
+    '''Bump slope selector that picks a value from the data obtained by
+    ISurroundPastollSelector and copies this slope value to all simulations.
+
+    Parameters
+    ----------
+    data_root, threshold
+    row, col : int
+        Indexes into data obtained by DefaultSelector
+    dimensions : pair of int
+        Dimensions of the resulting parameter sweep.
+    '''
+    def __init__(self, data_root, threshold, row, col, dimensions):
+        super(PickedISurroundPastollSelector, self).__init__(data_root,
+                                                             threshold)
+        self._row = row
+        self._col = col
+        self._dimensions = dimensions
+
+    def get_slopes(self, noise_sigma):
+        slopes = super(PickedISurroundPastollSelector,
+                       self).get_slopes(noise_sigma, flatten=False)
+        return (np.ones(self._dimensions[0] * self._dimensions[1]) *
+                slopes[self._row, self._col])
