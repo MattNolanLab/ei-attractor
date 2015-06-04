@@ -1,4 +1,4 @@
-.PHONY: clean
+.PHONY: clean, original, ratio_corrected, e_const_375, e_const_450, e_theta_475, pastoll_et_al, other
 .SUFFIXES: .py .dummy
 
 all: original ratio_corrected e_const_375 e_const_450 e_theta_475 pastoll_et_al other
@@ -35,8 +35,8 @@ pastoll_et_al: \
 	figure_seizures_pastoll_et_al.dummy
 
 other: \
-	figure_other_bump_sweeps.py			\
-	figure_other_bump_sweeps.dummy
+	figure_other_bump_sweeps.dummy			\
+	figure_other_gamma_sweeps.dummy
 
 .py.dummy:
 	echo;							\

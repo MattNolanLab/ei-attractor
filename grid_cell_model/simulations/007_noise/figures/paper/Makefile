@@ -1,4 +1,4 @@
-.PHONY: clean, thesis
+.PHONY: clean, thesis, i_surround
 
 .SUFFIXES: .py .dummy
 
@@ -9,7 +9,6 @@ all: fast \
    	ee-connections					\
    	ee_connections_ei_flat			\
 	i_place_cells					\
-	i_surround						\
 	ii_connections					\
    	no-pc-input						\
 	no-theta						\

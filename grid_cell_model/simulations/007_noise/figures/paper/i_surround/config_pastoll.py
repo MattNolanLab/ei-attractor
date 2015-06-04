@@ -30,7 +30,7 @@ def get_config():
         'singleDataRoot':       None,
 
         'output_dir'    : 'panels_pastoll_et_al/',
-        'noise_sigmas'  : [150],
+        'noise_sigmas'  : [0, 150, 300],
 
         # Sections
         'mpl': {
