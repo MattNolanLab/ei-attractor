@@ -98,7 +98,7 @@ class GridSweepsPlotter(SweepPlotter):
     def _get_population_fname(self, noise_sigma, population_type):
         if population_type == 'E':
             population_type = ''
-        return self.get_fname("/grids_sweeps{ns}{pop_type}.pdf".format(
+        return self.get_fname("grids_sweeps{ns}{pop_type}.pdf".format(
             ns=int(noise_sigma), pop_type=population_type))
 
     def plot(self, *args, **kwargs):

@@ -197,6 +197,22 @@ def get_config():
             'vmax': 1.531,
         },
 
+        'GenericGridSweepsPlotter': {
+            'cbar_kw': dict(
+                label      = 'Gridness score',
+                location    = 'right',
+                shrink      = 0.8,
+                pad         = .05,
+                ticks      = ti.MultipleLocator(0.3),
+                rasterized  = True
+            ),
+
+            'xticks': [1, 1, 1],
+            'vmin': None,
+            'vmax': None,
+            'ann': [None, None, None],
+        },
+
     })
 
     ##########################################################################
