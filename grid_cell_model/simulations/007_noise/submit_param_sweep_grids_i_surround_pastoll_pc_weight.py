@@ -31,6 +31,7 @@ parser.add_argument('--g_AMPA_total', type=float)
 parser.add_argument('--g_AMPA_row', type=float, help='Row index into bump slope data.')
 parser.add_argument('--g_GABA_total', type=float)
 parser.add_argument('--g_GABA_col', type=float, help='Column index into bump slope data.')
+parser.add_argument('--velON', type=int, choices=[0, 1], default=1, help='Set velocity input ON or OFF.')
 parser.parse_args()
 o = parser.options
 
@@ -52,7 +53,8 @@ p['Iext_e_theta'] = 650.
 p['Iext_i_theta'] = 50.
 p['g_uni_GABA_frac'] = 0.3125
 
-p['velON']            = 1
+if o.velON is not None:
+    p['velON'] = o.velON
 p['pcON']             = 1
 p['constantPosition'] = 0
 
