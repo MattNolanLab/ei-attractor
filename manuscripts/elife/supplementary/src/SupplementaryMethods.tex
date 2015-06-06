@@ -128,41 +128,41 @@
 %\resetlinenumber[724]
 \linenumbers
 
-\begin{center}
-\large{{\bfseries
-Noise promotes independent control of gamma oscillations and grid firing within
-recurrent attractor networks - Supplementary Methods
+\begin{flushleft}
+\Large{{\bfseries
+Appendix 1 \\
+Supplementary Methods
 }}
-\end{center}
+\end{flushleft}
 %\vspace{1em}
 
-\begin{flushleft}
-Lukas Solanka$^{1,2,3}$,
-Mark CW van Rossum$^{2}$,
-Matthew F Nolan$^{1}$
-\\
-\vspace{2em}
-$^1$
-Centre for Integrative Physiology,
-University of Edinburgh,
-Hugh Robson Building,
-Edinburgh, EH8 9XD,
-United Kingdom
-\\
-$^2$
-Institute for Adaptive and Neural Computation,
-\\
-$^3$
-Neuroinformatics Doctoral Training Centre,
-School of Informatics,
-University of Edinburgh,
-Edinburgh EH8 9AB,
-United Kingdom
-\end{flushleft}
-
+%\begin{flushleft}
+%Lukas Solanka$^{1,2,3}$,
+%Mark CW van Rossum$^{2}$,
+%Matthew F Nolan$^{1}$
+%\\
+%\vspace{2em}
+%$^1$
+%Centre for Integrative Physiology,
+%University of Edinburgh,
+%Hugh Robson Building,
+%Edinburgh, EH8 9XD,
+%United Kingdom
+%\\
+%$^2$
+%Institute for Adaptive and Neural Computation,
+%\\
+%$^3$
+%Neuroinformatics Doctoral Training Centre,
+%School of Informatics,
+%University of Edinburgh,
+%Edinburgh EH8 9AB,
+%United Kingdom
+%\end{flushleft}
+%
 \listoftodos
 
-\clearpage
+%\clearpage
 
 
 \section{Neuron membrane and synaptic dynamics} \label{nrn_Vm_syn}
@@ -691,13 +691,17 @@ the recorded state variables.
 We have estimated the properties of nested gamma oscillations by using
 autocorrelation functions of the inhibitory currents impinging from inhibitory
 synapses onto excitatory cells. These currents have been estimated from 25
-randomly selected excitatory cells recorded during the simulation run.
-For each neuron, the current was then band-pass filtered between 20 and 200 Hz,
-the autocorrelation function was computed and then used to detect local maxima
-after excluding the first peak. The power and frequency of the underlying oscillation was then
-estimated from the correlation value and from the time lag of the first detected
-autocorrelation peak respectively. Both values were averaged over all 25 recorded neurons
-and then subsequently averaged over all simulation trials.
+randomly selected excitatory cells recorded during the simulation run.  For
+each neuron, the current was then band-pass filtered between 20 and 200 Hz, the
+autocorrelation function was computed and then used to detect local maxima
+after excluding the first peak. The positions of local maxima were calculated
+as those points in the autocorrelation function where the first difference of
+the signal changed sign from positive to negative and thus approximated points
+where the first derivative is zero and the second derivative is negative.  The
+power and frequency of the underlying oscillation was then estimated from the
+correlation value and from the time lag of the first detected autocorrelation
+peak respectively. Both values were averaged over all 25 recorded neurons and
+then subsequently averaged over all simulation trials.
 
 \section{Gaussian fitting procedure} \label{sec:gauss_fitting}
 
