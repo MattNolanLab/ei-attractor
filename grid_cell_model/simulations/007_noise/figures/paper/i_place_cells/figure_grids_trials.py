@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-'''Grid field figures - probabilistic connections.'''
 from __future__ import absolute_import, print_function
 
 import matplotlib.ticker as ti
@@ -10,7 +9,7 @@ from noisefigs.env import NoiseEnvironment
 import config_trials as config
 
 parser = flagparse.FlagParser()
-parser.add_flag('--grids')
+#parser.add_flag('--grids')
 parser.add_flag('--scatter')
 parser.add_flag('--hist')
 parser.add_flag('--examples')
@@ -19,14 +18,14 @@ args = parser.parse_args()
 
 env = NoiseEnvironment(user_config=config.get_config())
 
-if args.grids or args.all:
-    env.register_plotter(noisefigs.plotters.IPCGridSweepsPlotter)
-    env.register_plotter(noisefigs.plotters.IPCGridSweepsPlotter,
-                         config={
-                             'IPCGridSweepsPlotter': {
-                                 'population_type': 'I',
-                             }
-                         })
+#if args.grids or args.all:
+#    env.register_plotter(noisefigs.plotters.IPCGridSweepsPlotter)
+#    env.register_plotter(noisefigs.plotters.IPCGridSweepsPlotter,
+#                         config={
+#                             'IPCGridSweepsPlotter': {
+#                                 'population_type': 'I',
+#                             }
+#                         })
 
 if args.scatter or args.all:
     env.register_plotter(noisefigs.plotters.IPCScatterPlotter)

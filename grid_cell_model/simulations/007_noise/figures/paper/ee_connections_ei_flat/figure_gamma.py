@@ -19,7 +19,7 @@ if args.gamma_gEE_EE_sigma or args.all:
     new_config = deepcopy(config.get_config())
     new_config.update({
         'grids_data_root': None,
-        'bump_data_root': ('simulation_data/g_EE_total_vs_pEE_sigma/'
+        'bump_data_root': ('simulation_data/submission/ee_connections_ei_flat/g_EE_total_vs_pEE_sigma/'
                            'gamma_bump'),
         'vel_data_root':  None,
         'const_pos_data_root': None,
