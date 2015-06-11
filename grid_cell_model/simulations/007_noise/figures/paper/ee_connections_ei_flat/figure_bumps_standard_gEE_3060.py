@@ -46,6 +46,7 @@ if args.pbumps_sweep or args.all:
                                 ),
                              },
                          })
+    env.plot()
 
 if args.rasters or args.all:
     shape = (31, 31)
@@ -106,16 +107,3 @@ if args.rasters or args.all:
             },
         })
     env.plot()
-
-
-
-#if args.bump_examples or args.all:
-#    env.register_plotter(noisefigs.plotters.BumpExamplePlotter)
-#
-#if args.bump_examples_colorbar or args.all:
-#    env.register_plotter(noisefigs.plotters.BumpExampleColorbarPlotter)
-#
-#if args.bump_running_examples or args.all:
-#    env.register_plotter(noisefigs.plotters.IsBumpExamplePlotter)
-
-env.plot()

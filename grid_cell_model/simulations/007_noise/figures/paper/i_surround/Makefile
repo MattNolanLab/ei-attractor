@@ -1,7 +1,14 @@
-.PHONY: clean, original, ratio_corrected, e_const_375, e_const_450, e_theta_475, pastoll_et_al, other
+.PHONY: clean, original, ratio_corrected, e_const_375, e_const_450, e_theta_475, pastoll_et_al, pastoll_et_al_pc_weight_3, other
 .SUFFIXES: .py .dummy
 
-all: original ratio_corrected e_const_375 e_const_450 e_theta_475 pastoll_et_al other
+all: original \
+	ratio_corrected						\
+   	e_const_375							\
+   	e_const_450							\
+   	e_theta_475							\
+   	pastoll_et_al						\
+   	pastoll_et_al_pc_weight_3			\
+   	other
 
 original: \
 	figure_bumps_original.dummy			\
@@ -34,6 +41,13 @@ pastoll_et_al: \
 	figure_drifts_pastoll_et_al.dummy		\
 	figure_seizures_pastoll_et_al.dummy
 
+pastoll_et_al_pc_weight_3: \
+	figure_bumps_pastoll_et_al_pc_weight_3.dummy		\
+	figure_gamma_pastoll_et_al_pc_weight_3.dummy		\
+	figure_grids_pastoll_et_al_pc_weight_3.dummy		\
+	figure_seizures_pastoll_et_al_pc_weight_3.dummy		\
+	suppFigure_grid_examples_pastoll_et_al_pc_weight_3.dummy
+
 other: \
 	figure_other_bump_sweeps.dummy			\
 	figure_other_gamma_sweeps.dummy
@@ -50,6 +64,7 @@ clean:
 	rm -f $$(git ls-files -i --exclude-standard -o panels_e_const_450)
 	rm -f $$(git ls-files -i --exclude-standard -o panels_e_theta_475)
 	rm -f $$(git ls-files -i --exclude-standard -o panels_pastoll_et_al)
+	rm -f $$(git ls-files -i --exclude-standard -o panels_pastoll_et_al_pc_weight_3)
 	rm -f $$(git ls-files -i --exclude-standard -o panels)
 
 thesis:

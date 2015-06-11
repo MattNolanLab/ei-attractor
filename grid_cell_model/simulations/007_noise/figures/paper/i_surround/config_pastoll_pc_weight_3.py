@@ -1,5 +1,5 @@
-'''I-surround plotting configuration file with original settings for the
-E-surround configuration.'''
+'''I-surround plotting configuration file with Pastoll et al. settings but with
+PC max. weight set to 3 nS.'''
 from __future__ import absolute_import, print_function
 
 import os.path
@@ -15,8 +15,7 @@ scale_factor = 1.
 tick_width = 1. * scale_factor
 tick_len   = 6. * scale_factor
 
-ROOT_DIR = ['simulation_data', 'submission', 'i_surround',
-            'original_e_surround']
+ROOT_DIR = ['simulation_data', 'submission', 'i_surround', 'pastoll_et_al']
 
 
 def get_config():
@@ -25,13 +24,13 @@ def get_config():
     _default_config.merge({
         'scale_factor': scale_factor,
 
-        'grids_data_root':      os.path.join(*(ROOT_DIR + ['grids'])),
-        'bump_data_root':       os.path.join(*(ROOT_DIR + ['gamma_bump'])),
-        'vel_data_root':        os.path.join(*(ROOT_DIR + ['velocity'])),
+        'grids_data_root': os.path.join(*(ROOT_DIR + ['grids_pc_weight_3'])),
+        'bump_data_root':  os.path.join(*(ROOT_DIR + ['gamma_bump'])),
+        'vel_data_root':   os.path.join(*(ROOT_DIR + ['velocity'])),
         'const_pos_data_root':  None,
         'singleDataRoot':       None,
 
-        'output_dir'    : 'panels_original_e_surround/',
+        'output_dir'    : 'panels_pastoll_et_al_pc_weight_3/',
         'noise_sigmas'  : [0, 150, 300],
 
         # Sections
@@ -55,8 +54,21 @@ def get_config():
             'ytick.direction'   : 'out',
         },
 
+        'GridSweepsPlotter': {
+            'vmin': -0.4795,
+            'vmax': 0.858,
+            'cbar': [0, 0, 1],
+            'cbar_kw': {
+                'ticks': ti.MultipleLocator(0.2),
+            },
+        },
+
+        'GridExampleRectPlotter' : {
+            'YXRC': [(1, 22), (1, 22), (1, 5)], # (row, col)
+        },
+
         'MainBumpFormationPlotter': {
-            'plot_grid_contours': [0, 0, 0],
+            'plot_grid_contours': [0, 1, 0],
         },
 
         'PopulationActivityPlotter': {
@@ -109,7 +121,7 @@ def get_config():
         },
 
         'GammaSweepsPlotter': {
-            'plot_grid_contours': [0, 0, 0],
+            'plot_grid_contours': [0, 1, 0],
             'AC_vmin': .08,
             'AC_vmax': .65,
             'AC_cbar_kw': {
@@ -173,7 +185,7 @@ def get_config():
         'MaxPopulationFRSweepsPlotter': {
             'cbar': [1, 0, 0],
 
-            'plot_grid_contours': [0, 0, 0],
+            'plot_grid_contours': [0, 1, 0],
             'grid_contours': [.5],
         },
 
@@ -184,7 +196,7 @@ def get_config():
         'VelFitErrSweepPlotter': {
             'plot_contours': [0, 0, 0],
             'vmin': 0,
-            'vmax': 9.61
+            'vmax': 9.76
         },
 
         'VelFitStdSweepPlotter': {
@@ -193,25 +205,14 @@ def get_config():
 
         'VelSlopeSweepPlotter': {
             'plot_contours': [0, 0, 0],
-            'vmin': -0.11,
-            'vmax': 1.531,
+            'vmin': -0.13,
+            'vmax': 0.67,
         },
 
-        'GenericGridSweepsPlotter': {
-            'cbar_kw': dict(
-                label      = 'Gridness score',
-                location    = 'right',
-                shrink      = 0.8,
-                pad         = .05,
-                ticks      = ti.MultipleLocator(0.3),
-                rasterized  = True
-            ),
-
-            'xticks': [1, 1, 1],
-            'vmin': None,
-            'vmax': None,
-            'ann': [None, None, None],
-        },
+        'VelLinesPlotter': {
+            'positions': ((25, 15), (15, 5), (5, 15)),
+            'g_ann': False,
+        }
 
     })
 

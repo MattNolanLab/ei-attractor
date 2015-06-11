@@ -10,7 +10,6 @@ from noisefigs.env import NoiseEnvironment
 import config_trials_weight_0 as config
 
 parser = flagparse.FlagParser()
-parser.add_flag('--grids')
 parser.add_flag('--scatter')
 parser.add_flag('--hist')
 parser.add_flag('--examples')
