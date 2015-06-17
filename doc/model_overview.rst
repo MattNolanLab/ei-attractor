@@ -10,7 +10,7 @@ scattered around the hierarchy of Python and C++ modules (see
 
 .. _fig_overview:
 
-.. figure:: images/model_overview.svg
+.. figure:: images/model_overview.*
     :align: center
 
     High level structure of the model
