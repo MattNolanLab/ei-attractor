@@ -15,8 +15,7 @@ scale_factor = 1.
 tick_width = 1. * scale_factor
 tick_len   = 6. * scale_factor
 
-ROOT_DIR = ['simulation_data', 'submission', 'i_surround',
-            'original_e_surround']
+ROOT_DIR = ['simulation_data', 'i_surround', 'original_e_surround']
 
 
 def get_config():

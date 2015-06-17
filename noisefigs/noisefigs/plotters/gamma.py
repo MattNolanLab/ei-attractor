@@ -223,8 +223,8 @@ class GammaSweepsPlotter(SweepPlotter):
 
 
 ##############################################################################
-EI13Root  = 'simulation_data/submission/detailed_noise/gamma_bump/EI-1_3'
-EI31Root  = 'simulation_data/submission/detailed_noise/gamma_bump/EI-3_1'
+EI13Root  = 'simulation_data/main_network/detailed_noise/gamma_bump/EI-1_3'
+EI31Root  = 'simulation_data/main_network/detailed_noise/gamma_bump/EI-3_1'
 detailedShape = (31, 9)
 
 EI13PS = JobTrialSpace2D(detailedShape, EI13Root)

@@ -51,7 +51,7 @@ if args.pbumps_sweep or args.all:
 if args.rasters or args.all:
     shape = (31, 31)
 
-    output_dir_0 = join('simulation_data', 'submission',
+    output_dir_0 = join('simulation_data',
                       'ee_connections_ei_flat',
                       'standard_sweep_g_EE_3060_pEE_sigma_0_0833',
                       'gamma_bump', '0pA')
@@ -80,7 +80,7 @@ if args.rasters or args.all:
     env.plot()
 
 
-    output_dir = join('simulation_data', 'submission',
+    output_dir = join('simulation_data',
                       'ee_connections_ei_flat',
                       'standard_sweep_g_EE_3060_pEE_sigma_0_0833',
                       'gamma_bump', '150pA')

@@ -152,8 +152,8 @@ class VelLinesPlotter(FigurePlotter):
 
 
 ###############################################################################
-#EI13Root  = 'simulation_data/submission/detailed_noise/velocity/EI-1_3'
-#EI31Root  = 'simulation_data/submission/detailed_noise/velocity/EI-3_1'
+#EI13Root  = 'simulation_data/main_network/detailed_noise/velocity/EI-1_3'
+#EI31Root  = 'simulation_data/main_network/detailed_noise/velocity/EI-3_1'
 #detailedShape = (31, 9)
 #
 #EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
