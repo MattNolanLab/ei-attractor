@@ -23,8 +23,7 @@ if args.pbumps_gEE_EE_sigma or args.all:
     new_config = deepcopy(config.get_config())
     new_config.update({
         'grids_data_root': None,
-        'bump_data_root': join('simulation_data', 'submission',
-                               'ee_connections_ei_flat',
+        'bump_data_root': join('simulation_data', 'ee_connections_ei_flat',
                                'g_EE_total_vs_pEE_sigma', 'gamma_bump'),
         'vel_data_root':  None,
         'const_pos_data_root': None,
@@ -67,7 +66,7 @@ if args.pbumps_gEE_EE_sigma or args.all:
 
 if args.rasters_gEE_EE_sigma or args.all:
     shape = (31, 11)
-    output_dir = join('simulation_data', 'submission',
+    output_dir = join('simulation_data',
                       'ee_connections_ei_flat', 'g_EE_total_vs_pEE_sigma',
                       'gamma_bump', '150pA')
     sp = JobTrialSpace2D(shape, output_dir)
@@ -100,7 +99,7 @@ if args.pbumps_gEE_EE_sigma_AMPA_3060_GABA_1020 or args.all:
     new_config = deepcopy(config.get_config())
     new_config.update({
         'grids_data_root': None,
-        'bump_data_root': join('simulation_data', 'submission',
+        'bump_data_root': join('simulation_data',
                                'ee_connections_ei_flat',
                                'g_EE_total_vs_pEE_sigma_AMPA_3060_GABA_1020',
                                'gamma_bump'),
@@ -148,7 +147,7 @@ if args.pbumps_gEE_EE_sigma_AMPA_3060_GABA_1020 or args.all:
 if args.rasters_gEE_EE_sigma_AMPA_3060_GABA_1020 or args.all:
     shape = (31, 11)
 
-    output_dir_0 = join('simulation_data', 'submission',
+    output_dir_0 = join('simulation_data',
                       'ee_connections_ei_flat',
                       'g_EE_total_vs_pEE_sigma_AMPA_3060_GABA_1020',
                       'gamma_bump', '0pA')
@@ -178,7 +177,7 @@ if args.rasters_gEE_EE_sigma_AMPA_3060_GABA_1020 or args.all:
     env.plot()
 
 
-    output_dir = join('simulation_data', 'submission',
+    output_dir = join('simulation_data',
                       'ee_connections_ei_flat',
                       'g_EE_total_vs_pEE_sigma_AMPA_3060_GABA_1020',
                       'gamma_bump', '150pA')

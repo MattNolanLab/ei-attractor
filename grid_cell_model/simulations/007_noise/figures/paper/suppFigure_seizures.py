@@ -5,8 +5,6 @@ from grid_cell_model.submitting import flagparse
 import noisefigs
 from noisefigs.env import NoiseEnvironment
 
-singleDataRoot = 'simulation_data/submission/single_neuron'
-
 parser = flagparse.FlagParser()
 parser.add_flag('--maxThetaFRSweeps')
 parser.add_flag('--maxThetaFRSweeps_median')

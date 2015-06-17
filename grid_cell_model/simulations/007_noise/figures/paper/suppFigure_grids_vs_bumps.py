@@ -7,8 +7,6 @@ from noisefigs.env import NoiseEnvironment
 
 import config
 
-singleDataRoot = 'simulation_data/submission/single_neuron'
-
 parser = flagparse.FlagParser()
 parser.add_flag('--scatter_plot')
 args = parser.parse_args()

@@ -9,7 +9,7 @@ import matplotlib.ticker as ti
 from noisefigs.plotters.base import SeparateMultipageSaver
 
 
-DATA_ROOT = ['simulation_data', 'submission', 'ee_connections_ei_flat',
+DATA_ROOT = ['simulation_data', 'ee_connections_ei_flat',
              'standard_sweep_g_EE_3060_pEE_sigma_0_0833']
 
 scale_factor = 1.

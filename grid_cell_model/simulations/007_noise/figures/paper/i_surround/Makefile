@@ -15,7 +15,8 @@ original: \
 	figure_gamma_original.dummy			\
 	figure_drifts_original.dummy		\
 	figure_seizures_original.dummy		\
-	figure_grids_original.dummy
+	figure_grids_original.dummy			\
+	suppFigure_velocity_original.dummy
 
 ratio_corrected: \
 	figure_bumps_ratio_corrected.dummy	\
@@ -49,8 +50,9 @@ pastoll_et_al_pc_weight_3: \
 	suppFigure_grid_examples_pastoll_et_al_pc_weight_3.dummy
 
 other: \
-	figure_other_bump_sweeps.dummy			\
-	figure_other_gamma_sweeps.dummy
+	figure_other_bump_sweeps.dummy	\
+	figure_other_gamma_sweeps.dummy	\
+	figure_other_grids_sweeps.dummy
 
 .py.dummy:
 	echo;							\

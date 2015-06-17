@@ -11,11 +11,11 @@ def get_config():
 _config = {
     #"fname_prefix": "no_theta_",
 
-    'grids_data_root':      'simulation_data/submission/no_theta/grids',
-    'bump_data_root':       'simulation_data/submission/no_theta/gamma_bump',
-    'vel_data_root':        'simulation_data/submission/no_theta/velocity',
-    'const_pos_data_root':  'simulation_data/submission/no_theta/const_position',
-    'singleDataRoot':       'simulation_data/submission/no_theta/single_neuron',
+    'grids_data_root':      'simulation_data/no_theta/grids',
+    'bump_data_root':       'simulation_data/no_theta/gamma_bump',
+    'vel_data_root':        'simulation_data/no_theta/velocity',
+    'const_pos_data_root':  'simulation_data/no_theta/const_position',
+    'singleDataRoot':       'simulation_data/no_theta/single_neuron',
 
     'GridSweepsPlotter': {
         'vmin': -.5,

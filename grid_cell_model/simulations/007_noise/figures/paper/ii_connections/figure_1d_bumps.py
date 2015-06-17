@@ -21,7 +21,7 @@ if args.bumps_g_II or args.all:
     new_config = deepcopy(config.get_config())
     new_config.update({
         'grids_data_root': None,
-        'bump_data_root': os.path.join('simulation_data', 'submission',
+        'bump_data_root': os.path.join('simulation_data',
                                        'ii_connections',
                                        'g_II_total_sweep',
                                        'gamma_bump'),

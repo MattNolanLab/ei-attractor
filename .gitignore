@@ -1,4 +1,5 @@
 /central_data_store
+/noise_grids_gamma_data
 *.pyc
 *.o
 *.so

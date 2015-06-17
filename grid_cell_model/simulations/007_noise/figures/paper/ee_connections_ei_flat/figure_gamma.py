@@ -19,7 +19,7 @@ if args.gamma_gEE_EE_sigma or args.all:
     new_config = deepcopy(config.get_config())
     new_config.update({
         'grids_data_root': None,
-        'bump_data_root': ('simulation_data/submission/ee_connections_ei_flat/g_EE_total_vs_pEE_sigma/'
+        'bump_data_root': ('simulation_data/ee_connections_ei_flat/g_EE_total_vs_pEE_sigma/'
                            'gamma_bump'),
         'vel_data_root':  None,
         'const_pos_data_root': None,
@@ -73,7 +73,7 @@ if args.gamma_gEE_EE_sigma_AMPA_3060_GABA_1020 or args.all:
     new_config = deepcopy(config.get_config())
     new_config.update({
         'grids_data_root': None,
-        'bump_data_root': join('simulation_data', 'submission',
+        'bump_data_root': join('simulation_data',
                                'ee_connections_ei_flat',
                                'g_EE_total_vs_pEE_sigma_AMPA_3060_GABA_1020',
                                'gamma_bump'),

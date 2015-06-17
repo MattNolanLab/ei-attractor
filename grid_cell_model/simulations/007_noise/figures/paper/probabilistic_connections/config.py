@@ -8,7 +8,7 @@ import matplotlib.ticker as ti
 from noisefigs.plotters.base import SeparateMultipageSaver
 
 
-DATA_ROOT = ['simulation_data', 'submission', 'probabilistic_connections']
+DATA_ROOT = ['simulation_data', 'probabilistic_connections']
 
 
 def get_config():
