@@ -6,11 +6,23 @@ import collections
 
 from simtools.storage import DataStorage
 from grid_cell_model.submitting.base.parsers import BaseParser
+from grid_cell_model.parameters.param_space import JobTrialSpace2D
 
 
 _DESCRIPTION = ("List various forms of data from parameter sweeps of grid cell "
                 "networks.")
+
 LIST_JUST_WIDTH = 6
+'''Width of the padding when printing list indices.'''
+
+
+def command_map():
+    '''Maps command to execution functions.'''
+    return {
+        Commands.print_data: print_data,
+        Commands.inspect_sweep: inspect_sweep,
+    }
+
 
 @unique
 class Errnum(IntEnum):
@@ -23,6 +35,7 @@ class Errnum(IntEnum):
 class Commands(str, Enum):
     '''Command line commands to execute.'''
     print_data = "print-data"
+    inspect_sweep = "inspect-sweep"
 
     @classmethod
     def get_choice_list(cls):
@@ -54,6 +67,44 @@ def split_data_path(path):
     return result
 
 
+def max_label_size(label_list):
+    '''Determine the maximum size of string labels.
+
+    Parameters
+    ----------
+    label_list : list of str
+        List of labels that will be printed
+
+    Returns
+    -------
+    max : int
+        Lenght of the longest label
+    '''
+    max_len = 0
+    for label in label_list:
+        if len(label) > max_len:
+            max_len = len(label)
+    return max_len
+
+
+def get_padding(label_list, pad_offset=2):
+    '''Determine the padding needed for a list of labels.
+
+    Parameters
+    ----------
+    label_list : list of str
+        List of labels that will be printed
+    pad_offset : int
+        Offset to add to the padding level.
+
+    Returns
+    -------
+    pad : int
+        Lenght of the longest label
+    '''
+    return max_label_size(label_list) + pad_offset
+
+
 def print_data_type(data):
     '''Print a data structure ``data``, depending on its type.'''
     if isinstance(data, collections.Sequence):
@@ -65,10 +116,11 @@ def print_data_type(data):
             if len(key) > max_key_len:
                 max_key_len = len(key)
 
-        for key, value in data.items():
-            print("%s%s" % (key.ljust(max_key_len + 2), str(value)))
+        for key in sorted(data.keys(), key=unicode.lower):
+            print("%s%s" % (key.ljust(max_key_len + 2), str(data[key])))
     else:
         print(data)
+
 
 def print_data(args):
     '''Print data from a file or directory containing the parameter sweep.
@@ -93,18 +145,31 @@ def print_data(args):
     return Errnum.success
 
 
+def inspect_sweep(args):
+    '''Print basic information about a parameter sweep.'''
+    space = JobTrialSpace2D(None, args.path, fileMode='r')
+    print("2D parameter sweep space with trials in '%s'" % space.rootDir)
+    print("Shape:", space.shape)
+    print("Iteration parameters:", space.get_iteration_labels())
+    print("Range of iterated parameters")
+    label_list = space.get_iteration_labels()
+    for dim, label in enumerate(label_list):
+        print("%s\n%s" % (label.ljust(get_padding(label_list)),
+                          space.get_iteration_range(dim)))
+
+
 def perform_command(args):
     '''Run the specified command.'''
     command = Commands.validate(args.command)
-
-    if command is Commands.print_data:
-        return print_data(args)
-    else:
+    try:
+        command_map()[command](args)
+    except KeyError:
         print("The command '%s' is not yet supported" % command.value)
         return Errnum.fail
 
 
 def main():
+    '''Main function.'''
     parser = BaseParser(description=_DESCRIPTION)
     parser.add_argument('command', type=str,
                         choices=Commands.get_choice_list(),
