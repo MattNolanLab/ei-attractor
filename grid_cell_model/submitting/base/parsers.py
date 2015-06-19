@@ -1,8 +1,44 @@
 '''Basic interfaces for submission parsers.'''
 from __future__ import absolute_import, print_function, division
+import argparse
+import logging
 
 from grid_cell_model.submitting           import flagparse
 from grid_cell_model.submitting.flagparse import positive_int
+
+
+class BaseParser(argparse.ArgumentParser):
+    '''A parser that allows the user to set debug level from the command
+    line.
+
+    Parameters
+    ----------
+    args : list
+        Positional arguments. Passed on to ArgumentParser.
+    kwargs : dict
+        Keyword arguments. Passed on to ArgumentParser.
+    '''
+    def __init__(self, *args, **kwargs):
+        super(BaseParser, self).__init__(*args, **kwargs)
+
+        self.add_argument(
+            '-v', '--verbosity',
+            type=str,
+            choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+            default='WARNING',
+            help='Verbosity level. Corresponds to the python logging module. '
+                 'Default is WARNING.')
+
+    def parse_args(self, args=None, namespace=None):
+        args = super(BaseParser, self).parse_args(args, namespace)
+        try:
+            level = getattr(logging, args.verbosity)
+            logging.basicConfig(level=level)
+            logging.getLogger().setLevel(level)
+        except AttributeError:
+            raise RuntimeError('Something went wrong! Cannot fetch logging attribute')
+        return args
+
 
 class GenericSubmissionParser(flagparse.FlagParser):
     '''Parse arguments for submitting generic simulation runs.'''
