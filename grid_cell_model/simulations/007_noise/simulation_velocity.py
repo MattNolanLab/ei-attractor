@@ -34,12 +34,12 @@ if ("trials" not in d.keys()):
     d['trials'] = []
 
 # Initialise seeds and check their consistency with previously saved data
-seed_gen = TrialSeedGenerator(o.master_seed)
+seed_gen = TrialSeedGenerator(int(o.master_seed))
 if len(d['trials']) == 0:
-    d['master_seed'] = o.master_seed
+    d['master_seed'] = int(o.master_seed)
 else:
     try:
-        seed_gen.check_master_seed(d['master_seed'], o.master_seed)
+        seed_gen.check_master_seed(d['master_seed'], int(o.master_seed))
     except ValueError as e:
         d.close()
         raise e
