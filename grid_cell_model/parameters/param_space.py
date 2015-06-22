@@ -280,19 +280,16 @@ class JobTrialSpace2D(DataSpace):
         # Reload the repacked file
         _cleanUp(r, c, tmpFile)
 
-
     def repackAllItems(self):
         for row in xrange(self.shape[0]):
             for col in xrange(self.shape[1]):
                 self.repackItems(row, col)
-
 
     def _getFilename(self, row, col):
         it = row * self.shape[1] + col
         fileName = self._rootDir + '/' + self._fileFormat.format(it)
         #job2DLogger.debug('row: %d, col: %d, filename: %s', row, col, fileName)
         return fileName
-
 
     def _loadItem(self, row, col):
         # Here either we have a full data space, or a particular row
@@ -304,7 +301,6 @@ class JobTrialSpace2D(DataSpace):
             return TrialSet(fileName, self._fileMode)
         else:
             return DummyTrialSet()
-
 
     def _loadTrials(self):
         '''
@@ -318,7 +314,6 @@ class JobTrialSpace2D(DataSpace):
                 colData.append(self._loadItem(row, col))
             rowData.append(DataSpace(colData))
         DataSpace.__init__(self, rowData)
-
 
     def __len__(self):
         return self._shape[0]
@@ -410,7 +405,6 @@ class JobTrialSpace2D(DataSpace):
         else:
             return None
 
-
     def _checkIteratedParameters(self, paramStr, toCheck):
         tol  = 1e-9 * np.min(toCheck.flatten())
         msgStr = "Parameter {0}:[{1}][{2}: {3}] does not match."
@@ -433,11 +427,21 @@ class JobTrialSpace2D(DataSpace):
                               'using an older version of data, in which case '
                               'you cannot use this method.')
 
+    def get_iteration_range(self, dim):
+        '''Return a vector of iterated parameter for dimension ``dim``.'''
+        param_data = self.get_iterated_parameter(dim)
+        if dim == 0:
+            return param_data[:, 0]
+        elif dim == 1:
+            return param_data[0, :]
+        else:
+            raise ValueError("Dimension %d is out of range in a 2D parameter "
+                             "sweep")
+
     def visit(self, visitor, trialList=None):
         for r in xrange(self.rows):
             for c in xrange(self.cols):
                 self[r][c].visit(visitor, trialList=trialList, r=r, c=c)
-
 
     def _createAggregateOutput(self, trialNumList, output_dtype):
         '''
@@ -467,7 +471,6 @@ class JobTrialSpace2D(DataSpace):
                     xrange(cols)] for r in xrange(rows)]
         return retVar
 
-
     def _aggregateItem(self, retVar, r, c, trialNumList, varList, funReduce):
         if (trialNumList == 'all-at-once'):
             data = self[r][c].getAllTrialsAsDataSet().data
@@ -493,13 +496,11 @@ class JobTrialSpace2D(DataSpace):
                     self._reductionFailureMsg(e, r, c)
                     retVar[r][c][trialNum] = np.nan
 
-
     def _reductionFailureMsg(self, e, r, c):
         msg = 'Reduction step failed at (r, c) == ({0}, '+\
             '{1}). Setting value as NaN.'
         log_warn('JobTrialSpace2D', msg.format(r, c))
         log_warn("JobTrialSpace2D", "Error message: {0}".format(str(e)))
-
 
     def _getAggregationDS(self):
         nm = '{0}/{1}'.format(self._rootDir, self.saveDataFileName)
@@ -509,14 +510,12 @@ class JobTrialSpace2D(DataSpace):
         except IOError as e:
             return None
 
-
     def getReduction(self, path):
         inData = self._getAggregationDS()
         if isinstance(path, str):
             return inData[path]
         else:
             return inData.get_item_chained(path)
-
 
     def aggregateData(self, varList, trialNumList, funReduce=None,
             output_dtype='array', loadData=True, saveData=False,
@@ -606,7 +605,6 @@ class JobTrialSpace2D(DataSpace):
                 log_warn('JobTrialSpace2D', io_err.format(self.saveDataFileName))
 
         return retVar
-
 
     @property
     def rootDir(self):

@@ -8,7 +8,7 @@ import logging
 
 
 class FlagParser(argparse.ArgumentParser):
-
+    '''A parser that allows an easy setting of flags from the command line.'''
     def __init__(self, allDefault=True):
         argparse.ArgumentParser.__init__(self)
 
