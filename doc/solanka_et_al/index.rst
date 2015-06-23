@@ -41,8 +41,8 @@ Figure format in the git repository
 How to reproduce main figures
 -----------------------------
 
-Figure 1
-~~~~~~~~
+Figure 1 -- model description
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are two data sets necessary to generate this figure. The first one
 generates data for the single neuron examples using the
@@ -82,8 +82,8 @@ full figure with these panels.
 
 .. _fig2:
 
-Figure 2
-~~~~~~~~
+Figure 2 -- simulations of grid fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This figure shows how changes in gE and gI influence grid firing fields. When
 running everything from scratch, there are 3 important steps in order to
@@ -319,8 +319,8 @@ these links are absolute) you will need to open it and point the editor to the
 correct files that are in *your* ``panels`` directory.
 
 
-Figures 3, 4 and 5
-~~~~~~~~~~~~~~~~~~
+Figures 3, 4 and 5 -- gamma activity, bump attractors and seizure-like activity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 All of these figures use data from the common data set which simulates a
 stationary bump attractor with velocity and place cell inputs switched off.
