@@ -1,6 +1,6 @@
 #!/bin/bash
 
-root_dir="../output/detailed_noise_vertical/velocity/"
+root_dir="../output/main_network/detailed_noise/velocity/"
 target_file="bump_slope_detailed_noise_"
 
 I_vec="EI-1_3 EI-3_1"

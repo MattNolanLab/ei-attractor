@@ -6,6 +6,17 @@
 Welcome to the documentation of the Grid Cell Model
 ===================================================
 
+.. toctree::
+    :maxdepth: 3
+    :numbered:
+
+    model_overview.rst
+    simulation_workflow.rst
+    modules/index.rst
+    solanka_et_al/index.rst
+
+
+
 Introduction
 ------------
 
@@ -24,20 +35,6 @@ The project source code is located in the `git repository
 <https://bitbucket.org/lsolanka/gridcellmodel>`_.  The up to date project
 directory structure is located in README.rst and the installation instructions
 are in INSTALL.rst in the source code repository.
-
-
-Programming documentation
--------------------------
-
-Here you will find the programming documentation for the project:
-
-.. toctree::
-    :maxdepth: 2
-
-    model_overview.rst
-    simulation_workflow.rst
-    modules/index.rst
-    solanka_et_al/index.rst
 
 
 References

@@ -22,7 +22,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-root_dir="../output/submission/ii_connections/gE_vs_gI/velocity/"
+root_dir="../output/ii_connections/gE_vs_gI/velocity/"
 target_file="bump_slope_ii_connections_"
 
 I_vec="0pA 150pA 300pA"
