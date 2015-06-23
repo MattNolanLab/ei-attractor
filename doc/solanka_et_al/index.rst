@@ -78,6 +78,8 @@ directory. The associated files are ``network_layers.png``,
 full figure with these panels.
 
 
+.. _fig2:
+
 Figure 2
 ~~~~~~~~
 
@@ -317,6 +319,125 @@ correct files that are in *your* ``panels`` directory.
 
 Figures 3, 4 and 5
 ~~~~~~~~~~~~~~~~~~
+
+All of these figures use data from the common data set which simulates a
+stationary bump attractor with velocity and place cell inputs switched off.
+Moreover, to generate scatter plots where gridness score appears on the Y axis,
+you need to have completed all the steps simulations from section
+:ref:`grids_main_3noise` because the generation process requires gridness
+scores from this data set as well.
+
+Generate common data of stationary bump attractors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This step is more straightforward, because the simulations do not use any
+velocity input calibration. Again, change the directory to the root of the
+simulation scripts (``grid_cell_model/simulations/007_noise``) and run
+
+::
+
+    $ ./submit_param_sweep_gamma.py -v DEBUG cluster output/main_network/gamma_bump/ --ntrials=5 --rtLimit="03:00:00"
+
+These simulations usually take much shorter and it should also be possible to
+run them on a simple workstation in a reasonable time with 32 -- 64 processors.
+
+Once this step is complete, it is necessary to run the analysis script (this
+will do the work for all noise levels).
+
+::
+
+    $ ./submit_analysis_EI.py --rtLimit="01:30:00" --shape 31 31 --ignoreErrors cluster output/main_network/gamma_bump/ bump gamma --ns_all
+
+And after this step is done, 'aggregate' the data into a more compact form,
+this time using 3 commands:
+
+::
+
+    $ ./aggregate_bumps.py -v DEBUG --ntrials=5 --shape 31 31 even-spacing output/main_network/gamma_bump/ --ns=0pA
+    $ ./aggregate_bumps.py -v DEBUG --ntrials=5 --shape 31 31 even-spacing output/main_network/gamma_bump/ --ns=150pA
+    $ ./aggregate_bumps.py -v DEBUG --ntrials=5 --shape 31 31 even-spacing output/main_network/gamma_bump/ --ns=300pA
+
+
+Simulations with finer noise level increase (0 -- 300 pA, 10 pA steps)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Here we need to do a similar procedure as in the description of :ref:`fig2`,
+except that the simulations will take much shorter time. First, run the
+simulation scripts, for both values of gE and gI (i.e. ``--position=EI-1_3``
+stands for gE = 1 nS; gI = 3 nS):
+
+::
+
+    $ ./submit_param_sweep_gamma_noise.py -v DEBUG --ntrials=5 --rtLimit="03:00:00" cluster output/main_network/detailed_noise/gamma_bump --position=EI-1_3
+    $ ./submit_param_sweep_gamma_noise.py -v DEBUG --ntrials=5 --rtLimit="03:00:00" cluster output/main_network/detailed_noise/gamma_bump --position=EI-3_1
+
+Now run the analysis scripts for both cases
+
+::
+
+    $ ./submit_analysis_detailed_noise.py --where=output/main_network/detailed_noise/gamma_bump/ --type gamma --env cluster --all-positions --ignoreErrors --rtLimit="01:30:00"
+    $ ./submit_analysis_detailed_noise.py --where=output/main_network/detailed_noise/gamma_bump/ --type bump --env cluster --all-positions --ignoreErrors --rtLimit="01:30:00"
+
+And when finished, 'aggregate' the data into a more compact form:
+
+::
+
+    $ ./aggregate_bumps.py -v DEBUG --shape 31 9 detailed-noise output/main_network/detailed_noise/gamma_bump/ --position=EI-1_3 --ntrials=5 --positions --AC 
+    $ ./aggregate_bumps.py -v DEBUG --shape 31 9 detailed-noise output/main_network/detailed_noise/gamma_bump/ --position=EI-3_1 --ntrials=5 --positions --AC 
+
+Again, make sure that the ``--shape 31 9`` parameter is entered exactly as it
+is here, since not doing so will produce incorrect data and the figure
+generation steps will then fail.
+
+Once this is done, you are ready to generate the figures.
+
+
+Generate the figures
+^^^^^^^^^^^^^^^^^^^^
+
+To generate the figures, change your working directory to
+``grid_cell_model/simulations/007_noise/figures/paper`` and follow the next
+steps.
+
+ 1. **Figure 3 - gamma activity** -- run: ``./figure_gamma.py``. This will
+    generate figure panels with the ``gamma_`` prefix [#gamma_fnames]_. The
+    fully assembled figure is then in ``ai/figure_gamma.ai``. As with other
+    AI files you will need to set the links to the figure panels properly when
+    you first open the file (after you have run the figure generation script).
+
+ 2. **Figure 4 - bump attractor activity** -- run ``./figure_bumps.py``. This
+    will generate figures with the ``bumps_`` prefix [#bumps_fnames]_. The
+    fully assembled figure is then in ``ai/figure_bumps.ai``.
+
+ 3. **Figure 5 - seizure-like activity** -- run ``./figure_seizures.py``. This
+    will generate figures with various (and perhaps a little confusing)
+    prefixes in the ``panels`` directory. The file names to look for are the
+    following
+
+      * ``bumps_raster*.pdf``
+
+      * ``bumps_rate*.pdf``
+
+      * ``bumps_popMaxFR_sweep*.pdf``
+
+      * ``bumps_seizureProportion_sweep0.pdf``
+
+      * ``maxFR_gridness_scatter_all.pdf``
+
+      * ``PSeizure_gridness_scatter_all.pdf``
+
+    Again, the fully assembled figure is in ``ai/figure_seizures.ai``.
+
+    
+.. [#gamma_fnames] Some file names will have a ``gammaFreq_`` prefix. This
+                   script also generates panels for Figure 3 -- figure
+                   supplement 4. These will have a ``gridness_filt_`` prefix in
+                   their file name.
+
+.. [#bumps_fnames] The file names for some of the scatter plots will be
+                   ``gamma_scatter_gamma_pbumps_all_exp.pdf`` and
+                   ``gamma_scatter_gamma_pbumps_all.pdf``.
+
 
 Figure 6
 ~~~~~~~~

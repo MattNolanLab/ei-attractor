@@ -10,7 +10,6 @@ parser.add_flag('--maxThetaFRSweeps')
 parser.add_flag('--maxThetaFRSweeps_median')
 parser.add_flag('--maxThetaFRSweeps_std')
 parser.add_flag('--maxThetaFRHist')
-parser.add_flag('--seizureProportion')
 args = parser.parse_args()
 
 #ps = ds.getDefaultParamSpaces()
