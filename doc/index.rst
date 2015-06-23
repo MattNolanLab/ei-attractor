@@ -7,7 +7,7 @@ Welcome to the documentation of the Grid Cell Model
 ===================================================
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :numbered:
 
     model_overview.rst
