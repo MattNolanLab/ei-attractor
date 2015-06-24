@@ -4,42 +4,145 @@
 Documentation for the Solanka et al., 2015 paper ([SOLANKA2015]_)
 =================================================================
 
-Data directory structure in order to regenerate figures
--------------------------------------------------------
-
-**TODO**: Highlight the necessity of keeping the correct directory structure.
-
-
-General rules of how to run simulations
----------------------------------------
-
-**TODO**:
-
-1. explain why there are several steps necessary.
-
-2. Note that when running the same script on the same directory more than
-   once, the simulations will attempt to resume instead of overwriting.
-
-3. Add note about memory requirements
+This documentation provides the necessary information to reproduce simulation
+data for all main figures, the figures themselves and some figure supplements
+in [SOLANKA2015]_. All the steps described here are necessary and have to
+complete successfully in order to reproduce the results obtained in the
+publication.
 
 
-1. Generate data by running the parameter sweep
+Prerequisite information to run simulations and generate figures
+----------------------------------------------------------------
 
-2. Analyze the data
+Before running the simulations and generating figures, you need to know the
+structure of the repository and associated important initialization steps that
+you need to perform. Only skip these if you know exactly what you are doing.
 
-3. Perform the reduction scripts
+Data directory structure necessary to regenerate the figures
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-4. Run figure generation scripts.
+.. todo::
+
+    Highlight the necessity of keeping the correct directory structure.
+
+Simulation scripts
+~~~~~~~~~~~~~~~~~~
+
+All simulations scripts for this paper are present in the
+``grid_cell_model/simulations/007_noise`` directory. They have the ``submit_``
+prefix in their file name. These scripts essentially run on top of an
+abstraction layer that allows the user to run the same set of simulations
+either on a cluster system supporting the ``qsub`` command, or on a standard
+multi-core workstation. Each script is an executable that accepts several
+parameters. For example, to reproduce some of the data for Figure 2, we would
+use the ``submit_param_sweep_grids.py`` script (see below). Every script print
+a help text when called with the ``-h`` parameter (here only a part of the help
+shown):
+
+::
+
+    $ ./submit_param_sweep_grids.py -h
+    usage: submit_param_sweep_grids.py [-h] [--all]
+                                       [-v {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+                                       [--time TIME] --ntrials NTRIALS
+                                       [--rtLimit RTLIMIT] [--printout {0,1}]
+                                       [--nCPU NCPU] [--dry_run]
+                                       [--ns {0,150,300}] [--row ROW] [--col COL]
+                                       {workstation,cluster} where
+    
+    positional arguments:
+      {workstation,cluster}
+                            How to run the simulations. If `workstation`, run
+                            locally on the current machine. If 'cluster', run on
+                            the SGE cluster using the qsub command.
+      where                 Root directory of output data. This will be passed on
+                            to the simulation script.
+    
+    optional arguments:
+      --rtLimit RTLIMIT     Run time limit. Applicable only when submitting the
+                            simulation on a cluster using qsub.
+      --nCPU NCPU           Number of processors when running on a workstation.
+                            This can be used to run several simulations in
+                            parallel.
+      --dry_run             Do no run anything nor save any meta-data
+      --ns {0,150,300}
+
+There are two important **positional arguments**. The first one selects the
+environment type (``workstation`` or ``cluster``) and the second one specifies
+the output directory of the whole simulation batch.
+
+Using a multi-core workstation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is a simpler method, because it does not require any extra environment
+settings. Simply set the environment (first) positional argument to
+``workstation`` and specify the number of jobs you want to run in parallel with
+the ``--nCPU`` parameter. This should in general match the number of cores the
+machine has. Note that some of the simulations require 100--1000 cores to
+complete in a reasonable time, while some simulations are shorter and might as
+well run in a few days when using ~30--50 cores.
+
+Using a Sun Grid Engine (SGE) cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Running on an SGE cluster can cut down the simulation time several fold by
+submitting several instances of the simulation with different parameter
+settings in parallel. However, it takes slightly more work to set up the
+environment.
+
+
+Assuming the current working directory is
+``grid_cell_model/simulations/007_noise``, the very first step is to provide
+the right settings in the ``cluster_submit.sh`` script. The settings and
+environment variables will depend on where you installed the project and what
+version of Python you are using. One way to start is to consult a sample
+version of the ``cluster_submit.sh`` script in
+``grid_cell_model/simulations/simulation_demo``, test the correct values by
+running a few short demo simulations, and then update the script in the
+``007_noise`` directory.
+
+When the ``cluster_submit.sh`` script is correctly updated, you simply run all
+the simulation commands with the first positional argument set to ``cluster``
+instead of workstation. Not that all the descriptions of commands for
+simulation submission assume that you have the cluster environment set up and
+therefore the environment positional argument is set to ``cluster``. To run the
+simulations on a multi-core workstation, simply replace ``cluster`` with
+``workstation`` and add an appropriate ``--nCPU=XX`` parameter, where ``XX`` is
+the number of cores you want to utilize for the simulation run.
+
+
+General rules about how to run simulations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. todo::
+
+    1. explain why there are several steps necessary.
+    
+    2. Note that when running the same script on the same directory more than
+       once, the simulations will attempt to resume instead of overwriting.
+    
+    3. Add note about memory requirements
+    
+    
+    1. Generate data by running the parameter sweep
+    
+    2. Analyze the data
+    
+    3. Perform the reduction scripts
+    
+    4. Run figure generation scripts.
 
 
 Figure format in the git repository
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**TODO**
+.. todo::
+
+    Describe figure format for [SOLANKA2015]_.
 
 
-How to reproduce main figures
------------------------------
+How to reproduce the figures
+----------------------------
 
 Figure 1 -- model description
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
