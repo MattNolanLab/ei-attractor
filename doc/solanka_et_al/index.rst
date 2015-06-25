@@ -23,10 +23,65 @@ Data directory structure necessary to regenerate the figures
 
 .. todo::
 
-    Highlight the necessity of keeping the correct directory structure.
+ * Highlight the necessity of keeping the correct directory structure.
+
+ * How to setup symlinks.
+
+ * Mention configs in noisefigs/paper figures.
+
+::
+
+    noise_grids_gamma
+    +-- data
+        +-- ee_connections/
+            +-- gamma_bump/
+                +-- 0pA/
+                +-- 150pA/
+                +-- 300pA/
+            +-- grids/
+            +-- velocity/
+        +-- ee_connections_ei_flat/
+            +-- g_EE_total_vs_pEE_sigma/
+            +-- g_EE_total_vs_pEE_sigma_AMPA_3060_GABA_1020/
+            +-- standard_sweep_g_EE_3060_pEE_sigma_0_0833/
+        +-- i_place_cells/
+            +-- 10_trials_rate_100_field_std_80/
+        +-- i_surround/
+            +-- pastoll_et_al/
+                +-- gamma_bump/
+                +-- grids/
+                +-- grids_pc_weight_1/
+                +-- grids_pc_weight_3/
+                +-- velocity/
+        +-- ii_connections/
+            +-- gE_vs_gI/
+                +-- gamma_bump/
+                +-- grids/
+                +-- velocity/
+        +-- main_network/
+            +-- connections/
+            +-- const_position/
+            +-- detailed_noise/
+            +-- gamma_bump/
+            +-- grids/
+            +-- grids_no_pc_input/
+            +-- grids_no_velocity/
+            +-- single_neuron/
+            +-- velocity/
+        +-- no_theta/
+            +-- gamma_bump/
+            +-- grids/
+            +-- velocity/
+        +-- probabilistic_connections/
+            +-- connections/
+            +-- gamma_bump/
+            +-- grids/
+            +-- velocity/
 
 Simulation scripts
 ~~~~~~~~~~~~~~~~~~
+
+.. highlight:: console
 
 All simulations scripts for this paper are present in the
 ``grid_cell_model/simulations/007_noise`` directory. They have the ``submit_``
@@ -37,9 +92,7 @@ multi-core workstation. Each script is an executable that accepts several
 parameters. For example, to reproduce some of the data for Figure 2, we would
 use the ``submit_param_sweep_grids.py`` script (see below). Every script print
 a help text when called with the ``-h`` parameter (here only a part of the help
-shown):
-
-::
+shown)::
 
     $ ./submit_param_sweep_grids.py -h
     usage: submit_param_sweep_grids.py [-h] [--all]
