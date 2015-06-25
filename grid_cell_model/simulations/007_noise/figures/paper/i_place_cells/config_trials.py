@@ -11,7 +11,7 @@ scale_factor = 1.
 tick_width = 1. * scale_factor
 tick_len   = 6. * scale_factor
 
-DATA_ROOT = ['simulation_data', 'submission', 'i_place_cells']
+DATA_ROOT = ['simulation_data', 'i_place_cells']
 
 
 def get_config():

@@ -18,7 +18,7 @@ if args.gamma_Iext_e or args.all:
     new_config = deepcopy(config.get_config())
     new_config.update({
         'grids_data_root': None,
-        'bump_data_root': ('simulation_data/submission/i_surround/'
+        'bump_data_root': ('simulation_data/i_surround/'
                            'gamma_bump_Iext_e_theta_vs_Iext_e_const'),
         'vel_data_root':  None,
         'const_pos_data_root': None,
@@ -88,7 +88,7 @@ if args.gamma_Iext_e_vs_uni_GABA or args.all:
     new_config = deepcopy(config.get_config())
     new_config.update({
         'grids_data_root': None,
-        'bump_data_root': ('simulation_data/submission/i_surround/'
+        'bump_data_root': ('simulation_data/i_surround/'
                            'Iext_e_const_vs_uni_GABA/gamma_bump'),
         'vel_data_root':  None,
         'const_pos_data_root': None,

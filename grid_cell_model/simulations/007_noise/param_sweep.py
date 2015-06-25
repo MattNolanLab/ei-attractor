@@ -6,8 +6,8 @@ from grid_cell_model.submitting.factory   import SubmitterFactory
 from grid_cell_model.submitting.arguments import ArgumentCreator
 from grid_cell_model.submitting.noise.slopes import (DefaultSelector,
                                                      NoThetaSelector)
-from grid_cell_model.data_storage import DataStorage
 from grid_cell_model.otherpkg.log import log_info
+from simtools.storage import DataStorage
 
 
 def submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel, appName,

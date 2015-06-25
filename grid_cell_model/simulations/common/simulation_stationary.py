@@ -7,10 +7,10 @@ from nest.hl_api import NESTError
 from grid_cell_model.models.parameters import getOptParser
 from grid_cell_model.models.gc_net_nest import BasicGridCellNetwork
 from grid_cell_model.models.seeds import TrialSeedGenerator
-from grid_cell_model.data_storage import DataStorage
 from grid_cell_model.parameters.data_sets import DictDataSet
 from grid_cell_model.visitors.spikes import SpikeStatsVisitor
 from grid_cell_model.visitors.signals import AutoCorrelationVisitor
+from simtools.storage import DataStorage
 
 
 def signal_analysis(data):

@@ -29,12 +29,12 @@ def _get_default_config():
 
         'output_dir': 'panels/',
 
-        'grids_data_root':      'simulation_data/submission/grids',
-        'bump_data_root':       'simulation_data/submission/gamma_bump',
-        'vel_data_root':        'simulation_data/submission/velocity',
-        'const_pos_data_root':  'simulation_data/submission/const_position',
-        'singleDataRoot':       'simulation_data/submission/single_neuron',
-        'connection_data_root': 'simulation_data/submission/connections',
+        'grids_data_root':      'simulation_data/main_network/grids',
+        'bump_data_root':       'simulation_data/main_network/gamma_bump',
+        'vel_data_root':        'simulation_data/main_network/velocity',
+        'const_pos_data_root':  'simulation_data/main_network/const_position',
+        'singleDataRoot':       'simulation_data/main_network/single_neuron',
+        'connection_data_root': 'simulation_data/main_network/connections',
 
         'even_shape': (31, 31),
         'noise_sigmas': [0, 150, 300],

@@ -10,7 +10,7 @@ from nest.hl_api import NESTError
 from grid_cell_model.models.parameters import getOptParser
 from grid_cell_model.models.gc_net_nest import ConstantVelocityNetwork
 from grid_cell_model.models.seeds import TrialSeedGenerator
-from grid_cell_model.data_storage import DataStorage
+from simtools.storage import DataStorage
 
 parser = getOptParser()
 (o, args) = parser.parse_args()
@@ -23,9 +23,12 @@ d['trials'] = []
 overalT = 0.
 stop = False
 ###############################################################################
-seed_gen = TrialSeedGenerator(o.master_seed)
+seed_gen = TrialSeedGenerator(int(o.master_seed))
 for trial_idx in range(o.ntrials):
     seed_gen.set_generators(trial_idx)  # Each trial is reproducible
+    d['master_seed'] = int(o.master_seed)
+    d['invalidated'] = 1
+
     const_v = [0.0, -o.Ivel]
     ei_net = ConstantVelocityNetwork(o, simulationOpts=None, vel=const_v)
     d['net_params'] = ei_net.getNetParams()  # Common settings will stay

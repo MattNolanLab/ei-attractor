@@ -46,11 +46,12 @@ if args.pbumps_sweep or args.all:
                                 ),
                              },
                          })
+    env.plot()
 
 if args.rasters or args.all:
     shape = (31, 31)
 
-    output_dir_0 = join('simulation_data', 'submission',
+    output_dir_0 = join('simulation_data',
                       'ee_connections_ei_flat',
                       'standard_sweep_g_EE_3060_pEE_sigma_0_0833',
                       'gamma_bump', '0pA')
@@ -79,7 +80,7 @@ if args.rasters or args.all:
     env.plot()
 
 
-    output_dir = join('simulation_data', 'submission',
+    output_dir = join('simulation_data',
                       'ee_connections_ei_flat',
                       'standard_sweep_g_EE_3060_pEE_sigma_0_0833',
                       'gamma_bump', '150pA')
@@ -106,16 +107,3 @@ if args.rasters or args.all:
             },
         })
     env.plot()
-
-
-
-#if args.bump_examples or args.all:
-#    env.register_plotter(noisefigs.plotters.BumpExamplePlotter)
-#
-#if args.bump_examples_colorbar or args.all:
-#    env.register_plotter(noisefigs.plotters.BumpExampleColorbarPlotter)
-#
-#if args.bump_running_examples or args.all:
-#    env.register_plotter(noisefigs.plotters.IsBumpExamplePlotter)
-
-env.plot()

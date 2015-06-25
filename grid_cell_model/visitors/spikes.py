@@ -13,10 +13,9 @@ from ..otherpkg.log import getClassLogger
 from .interface import DictDSVisitor
 
 FRLogger = getClassLogger("FiringRateVisitor", __name__)
-XCLogger = getClassLogger("SpikeTrainXCVisitor", __name__)
 statsLogger = getClassLogger("SpikeStatsVisitor", __name__)
 
-__all__ = ['FiringRateVisitor', 'SpikeTrainXCVisitor', 'SpikeStatsVisitor']
+__all__ = ['FiringRateVisitor', 'SpikeStatsVisitor']
 
 
 
@@ -135,74 +134,6 @@ class FiringRateVisitor(DictDSVisitor):
 
 ##############################################################################
 
-class SpikeTrainXCVisitor(DictDSVisitor):
-    '''
-    Compute spike train crosscorrelations between spikes of neuron of a
-    population.
-    '''
-
-    def __init__(self, monitorName, bins, lagRange=None, neuronIdx=None,
-            forceUpdate=False):
-        '''
-        Parameters:
-
-        monitorName : string
-            Name of the monitor in the data hierarchy.
-        bins : int
-            Number of bins for the cross-correlation histogram. Bin centers
-        lagRange : (tStart, tEnd)
-            Start/end time of the lags in histograms. This values will define
-            the left and right edges of the histogram. All the values outside
-            this range will be ignored.
-        neuronIdx : list of ints or None
-            List of neurons for which to compute the pairwise
-            cross-correlation. If None, use all the neurons.
-        '''
-        self.allowedMonitors = ['spikeMon_e', 'spikeMon_i']
-        if (not monitorName in self.allowedMonitors):
-            msg = "monitorName must be one of {0}".format(allowedMonitors)
-            raise ValueError(msg)
-
-        self.monitorName = monitorName
-        self.lagRange    = lagRange
-        self.bins        = bins
-        self.forceUpdate = forceUpdate
-        self.neuronIdx   = neuronIdx
-
-        if (self.monitorName == "spikeMon_e"):
-            self.NName = "net_Ne"
-            self.outputName = "XCorrelation_e"
-        elif (self.monitorName == "spikeMon_i"):
-            self.NName = "net_Ni"
-            self.outputName = "XCorrelation_i"
-
-
-    def visitDictDataSet(self, ds, **kw):
-        data = ds.data
-        
-        if (not self.folderExists(data, ['analysis'])):
-            data['analysis'] = {}
-        a = data['analysis']
-
-        if (self.outputName in a.keys() and not self.forceUpdate):
-            XCLogger.info("Data present. Skipping analysis.")
-            return
-
-        spikes = simei.MonitoredSpikes(data, self.monitorName, self.NName)
-        if (self.neuronIdx is None):
-            idx1 = range(spikes.N)
-        else:
-            idx1 = self.neuronIdx
-        correlations, bin_centers, bin_edges = spikes.spikeTrainXCorrelation(idx1, None,
-                self.lagRange, self.bins)
-
-        a[self.outputName] = dict(
-                neuronIdx    = idx1,
-                correlations = correlations,
-                bin_edges    = bin_edges,
-                bin_centers  = bin_centers)
-
-
 class SpikeStatsVisitor(DictDSVisitor):
     def __init__(self, monitorName, forceUpdate=False):
         '''
@@ -229,7 +160,7 @@ class SpikeStatsVisitor(DictDSVisitor):
 
     def visitDictDataSet(self, ds, **kw):
         data = ds.data
-        
+
         if (not self.folderExists(data, ['analysis'])):
             data['analysis'] = {}
         a = data['analysis']

@@ -7,7 +7,7 @@ from abc import abstractmethod
 import logging
 import numpy as np
 
-from interface        import DictDSVisitor 
+from interface        import DictDSVisitor
 from otherpkg.log import getClassLogger
 
 dataLogger  = getClassLogger('VelocityDataVisitor', __name__)
@@ -79,7 +79,7 @@ class VelocityConversionVisitor(VelocityDataVisitor):
 
     def manipulateData(self, data, **kw):
         try:
-            root = data.getItemChained(self.listPath[:-1])
+            root = data.get_item_chained(self.listPath[:-1])
         except KeyError as e:
             convLogger.warn("Path to '%s' does not exist. Quitting.",
                     self.listPath[-1])
@@ -92,7 +92,7 @@ class VelocityConversionVisitor(VelocityDataVisitor):
             for childKey in item.keys():
                 self._applyConversion(item, childKey)
         else:
-            targetCls = getattr(__builtins__, self.targetType, 
+            targetCls = getattr(__builtins__, self.targetType,
                     getattr(np, self.targetType))
             try:
                 newItem = targetCls(item)

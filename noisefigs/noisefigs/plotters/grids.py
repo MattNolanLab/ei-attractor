@@ -11,8 +11,8 @@ from matplotlib.transforms import Bbox
 import scipy.stats
 
 from grid_cell_model.parameters import JobTrialSpace2D
-from grid_cell_model.parameters.metadata import GenericExtractor
-from grid_cell_model.data_storage import DataStorage
+from grid_cell_model.parameters.metadata import (GenericExtractor,
+                                                 EISweepExtractor)
 from grid_cell_model.data_storage.sim_models.ei import extractSummedSignals
 from grid_cell_model.plotting.grids import (plotSpikes2D,
                                             plotGridRateMap,
@@ -20,6 +20,7 @@ from grid_cell_model.plotting.grids import (plotSpikes2D,
 from grid_cell_model.plotting.global_defs import globalAxesSettings
 import grid_cell_model.plotting.low_level as low_level
 from simtools.plotting.plotters import Computation, FigurePlotter
+from simtools.storage import DataStorage
 
 from ..EI_plotting import sweeps, examples, details, scatter
 from ..EI_plotting import aggregate as aggr
@@ -98,7 +99,7 @@ class GridSweepsPlotter(SweepPlotter):
     def _get_population_fname(self, noise_sigma, population_type):
         if population_type == 'E':
             population_type = ''
-        return self.get_fname("/grids_sweeps{ns}{pop_type}.pdf".format(
+        return self.get_fname("grids_sweeps{ns}{pop_type}.pdf".format(
             ns=int(noise_sigma), pop_type=population_type))
 
     def plot(self, *args, **kwargs):
@@ -208,21 +209,22 @@ class IPCGridSweepsPlotter(GridSweepsPlotter):
     def __init__(self, *args, **kwargs):
         super(IPCGridSweepsPlotter, self).__init__(*args, **kwargs)
 
-    def _get_grid_data(self, space, ns_idx, population_type, metadata=None):
+    def _get_grid_data(self, space, ns_idx, population_type, metadata=None,
+                       what='gridnessScore'):
         '''Return grid data based on the selected population type.'''
         iter_list = self.config['iter_list']
         example_idx = self.config['grids']['example_idx']
 
         grid_data = None
         if population_type == 'E':
-            grid_data = aggr.IPCGridnessScore(space, iter_list,
+            grid_data = aggr.IPCGridnessScore(space, iter_list, what,
                                               ignoreNaNs=True,
                                               normalizeTicks=True,
                                               r=example_idx[ns_idx][0],
                                               c=example_idx[ns_idx][1],
                                               metadata_extractor=metadata)
         elif population_type == 'I':
-            grid_data = aggr.IPCIGridnessScore(space, iter_list,
+            grid_data = aggr.IPCIGridnessScore(space, iter_list, what,
                                                ignoreNaNs=True,
                                                normalizeTicks=True,
                                                r=example_idx[ns_idx][0],
@@ -522,7 +524,6 @@ class IPCScatterPlotter(IPCBasePlotter):
     def t_test(self, weights, e_data, i_data):
         assert np.all(e_data.shape == i_data.shape)
         for weight_idx in [16]:  # range(e_data.shape[0]):
-            import pdb; pdb.set_trace()  # XXX BREAKPOINT
             e_col = e_data[weight_idx, :]
             i_col = i_data[weight_idx, :]
             _, p_value = scipy.stats.ttest_rel(e_col, i_col)
@@ -697,10 +698,12 @@ class GridExampleRectPlotter(FigurePlotter):
 
         sweepsRect = sw_left, sw_bottom, sw_right-sw_left, sw_top-sw_bottom
         ax_sweeps = fig.add_axes(sweepsRect)
+        metadata = EISweepExtractor(ps.grids[ns_idx],
+                                    r=example_idx[ns_idx][0],
+                                    c=example_idx[ns_idx][1])
         data = aggr.GridnessScore(ps.grids[ns_idx], iter_list,
                                   ignoreNaNs=True, normalizeTicks=True,
-                                  r=example_idx[ns_idx][0],
-                                  c=example_idx[ns_idx][1])
+                                  metadata_extractor=metadata)
         self.drawSweep(ax_sweeps, data, exRect)
         fig.text(letter_left, sw_top+letter_top_off, letter, va=letter_va,
                  ha=letter_ha, fontsize=19, fontweight='bold')
@@ -719,7 +722,7 @@ class GridExampleRectPlotter(FigurePlotter):
     def plot(self, *args, **kwargs):
         ps = self.env.ps
         iter_list = self.config['iter_list']
-        YXRC = [(1, 22), (1, 22), (1, 22)] # (row, col)
+        YXRC = self.myc.get('YXRC', [(1, 22), (1, 22), (1, 22)]) # (row, col)
 
         exWidth = 16
         exHeight = 16
@@ -1139,8 +1142,8 @@ class VmExamplesPlotter(FigurePlotter):
 
 
 ##############################################################################
-EI13Root  = 'simulation_data/submission/detailed_noise/grids/EI-1_3'
-EI31Root  = 'simulation_data/submission/detailed_noise/grids/EI-3_1'
+EI13Root  = 'simulation_data/main_network/detailed_noise/grids/EI-1_3'
+EI31Root  = 'simulation_data/main_network/detailed_noise/grids/EI-3_1'
 detailedShape = (31, 9)
 
 EI13PS = JobTrialSpace2D(detailedShape, EI13Root)

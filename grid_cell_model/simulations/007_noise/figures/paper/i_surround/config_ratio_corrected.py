@@ -20,7 +20,7 @@ def get_config():
         'scale_factor': scale_factor,
 
         'grids_data_root':      'None',
-        'bump_data_root':       'simulation_data/submission/i_surround/gamma_bump_ratio_corrected',
+        'bump_data_root':       'simulation_data/i_surround/gamma_bump_ratio_corrected',
         'vel_data_root':        None,
         'const_pos_data_root':  None,
         'singleDataRoot':       None,
