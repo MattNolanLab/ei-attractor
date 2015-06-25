@@ -16,11 +16,17 @@
 \usepackage[export]{adjustbox}[2011/08/13]
 \usepackage{float}
 \usepackage{lineno}
-\usepackage{hyperref}
 \usepackage[textsize=small,colorinlistoftodos,bordercolor=orange,disable]{todonotes}
+\usepackage{etoolbox}
 
 \renewcommand{\familydefault}{\sfdefault}
 \usepackage{helvet}
+
+\usepackage[pdftex,bookmarksopen=true]{hyperref}
+
+% Set this to true if you also want to include figures in the PDF
+\newtoggle{withFigures}
+\settoggle{withFigures}{false}
 
 \newcommand{\doublespace}{%
     \renewcommand{\baselinestretch}{1.66}\normalsize}
@@ -137,35 +143,8 @@ Appendix 1 \\
 Supplementary Methods
 }}
 \end{flushleft}
-%\vspace{1em}
 
-%\begin{flushleft}
-%Lukas Solanka$^{1,2,3}$,
-%Mark CW van Rossum$^{2}$,
-%Matthew F Nolan$^{1}$
-%\\
-%\vspace{2em}
-%$^1$
-%Centre for Integrative Physiology,
-%University of Edinburgh,
-%Hugh Robson Building,
-%Edinburgh, EH8 9XD,
-%United Kingdom
-%\\
-%$^2$
-%Institute for Adaptive and Neural Computation,
-%\\
-%$^3$
-%Neuroinformatics Doctoral Training Centre,
-%School of Informatics,
-%University of Edinburgh,
-%Edinburgh EH8 9AB,
-%United Kingdom
-%\end{flushleft}
-%
 \listoftodos
-
-%\clearpage
 
 
 \section{Neuron membrane and synaptic dynamics} \label{nrn_Vm_syn}
@@ -209,6 +188,15 @@ spike:
     \gad  & \rightarrow \gad + \gadinc.
     \label{eq:afterspike_fs}
 \end{align}
+We used adaptation for the I cells in order to include refractory properties
+after each spike. The frequency vs.\ current (F-I) relationship of the standard
+leaky integrate-and-fire neuron model has a steep slope right after the firing
+threshold has been crossed. This is an undesirable property because a neuron's
+firing rate is overly sensitive to small current changes. To linearize the F-I
+curve we used adaptation. The adaptation was not specifically tuned to produce
+the current model behavior and other mechanisms could be used as well (e.g.\
+after-spike hyperpolarization as was done in the case of E cells).
+
 
 Both AHP and adaptation conductances ($\gAHP(t)$ and $\gad$ respectively) decay
 exponentially:
@@ -289,7 +277,15 @@ consists of a constant value ($\Iconst$), a theta modulated part, modeled as
 the velocity modulated current ($\Ivel$) that simulates a combination of
 head-direction input and animal speed input, and an input coming from place
 cells ($\Iplace$).  The description of the parameters in the equations can be
-found in Supplementary Methods Table~\ref{tab:neuron_params}.
+found in Supplementary Methods Table~\ref{tab:neuron_params}. The theta current
+drive is the sum of a constant amplitude positive current ($\Iconst$) and a
+current with sinusoidal waveform ($\Itheta$). The constant component of the
+drive is required to activate the circuit. If it is removed then the circuit
+becomes silent. The sinusoidal waveform has a frequency of 8 Hz. This is chosen
+to reflect the frequency of theta oscillations in behaving animals. The
+amplitude is chosen to produce theta modulation of interneuron firing similar
+to that observed in behaving animals (cf. \citep{Chrobak:1998vr}) and in
+ex-vivo models of theta-nested gamma activity (cf. \citep{Pastoll:2013ff}).
 While $\Iconst$ and $\Itheta$ are simple functions of time, the velocity
 modulated current and place cell current are described separately. The velocity
 modulated current is described in Section~\ref{sec:Ivel} and the place cell
@@ -354,7 +350,10 @@ takes the boundaries of the torus into account and $C$ is the
 synaptic profile shift. The excitatory connections are
 composed of the equivalent amount of NMDA synaptic conductances. The synaptic
 strengths of NMDA is specified by a fractional constant $\cNMDA$. In all
-simulations, the NMDA conductance constituted 2\% of the AMPA conductance.
+simulations, the NMDA conductance constituted 2\% of the AMPA conductance,
+which was an amount necessary to retain the information about the position of
+the bump attractor during consecutive theta cycles, while no too high to
+prevent generation of nested gamma oscillations.
 In eq. \eqref{eq:dijce}, $\mathbf{e}_p$ determines the shift of the center of
 the outgoing synaptic strength profile on the torus, and was used to couple the
 velocity of the bump with the animal velocity
@@ -489,7 +488,12 @@ $\bm{\mu}_{\text{G}}^j$ is the centre of the grid field of the $j^{\text{th}}$
 grid cell that is nearest to the place cell, $\sigma_\text{PC}$ is the width of
 the synaptic profile. The parameters were set to $G_{\text{PC}}^{\text{max}}$ =
 0.5 nS and $\sigma_\text{PC}$ = 7 cm. Connections from place cells were modelled
-as AMPA conductances (eq.~\ref{eq:dgSyn}).
+as AMPA conductances only (eq.~\ref{eq:dgSyn}). This was sufficient for the
+purpose of opposing drift of the bump attractor and we therefore do not include
+any more biological detail into these connections.
+%Since a different input was
+%used to oppose attractor drift in the previous version of the model (cf.
+%\citet{Pastoll:2013ff}),
 
 In simulations where I cells received uncorrelated spatial inputs (Figure~2 --
 figure supplement~5), an additional population of place cells was
@@ -815,12 +819,18 @@ for further analysis.
 
 \clearpage
 
-\section*{Figure Supplements}
 
 \setcounter{figure}{0}
 \makeatletter
 \renewcommand{\fnum@figure}[1]{\textbf{\figurename~\thefigure}}
 \makeatother
+
+\iftoggle{withFigures} {
+% Use figures if this is true. You need the files put in correct paths to do
+% this. Use only when compiling the combined manuscript+SI PDF file.
+
+\section*{Figure Supplements}
+
 \renewcommand{\figurename}{Figure 1 - figure supplement}
 
 \begin{figure}[h!]
@@ -1093,9 +1103,19 @@ for further analysis.
 
 \clearpage
 
-%\setcounter{figure}{0}
-%\renewcommand{\figurename}{Figure 4 - figure supplement}
-%
+\setcounter{figure}{0}
+\renewcommand{\figurename}{Figure 4 - figure supplement}
+
+\begin{figure}[ht!]
+    \internallinenumbers
+    \centering
+        \includegraphics{fig/output_figures/Figure4_S1}
+    \caption{}
+\end{figure}
+
+\clearpage
+
+
 %\begin{figure}[p]
 %    \internallinenumbers
 %    \centering
@@ -1268,15 +1288,6 @@ for further analysis.
     \internallinenumbers
     \centering
         \includegraphics{fig/output_figures/Figure6_S5}
-    \caption{}
-\end{figure}
-
-\clearpage
-
-\begin{figure}[ht!]
-    \internallinenumbers
-    \centering
-        \includegraphics{fig/output_figures/Figure6_S6}
     \caption{}
 \end{figure}
 
@@ -1522,6 +1533,8 @@ for further analysis.
         \includegraphics[width=0.95\textwidth]{fig/output_figures/figure7S_ee_ei_flat_networks_2}
     \caption{}
 \end{figure}
+
+}  % iftoggle
 
 \end{document}
 

@@ -4,7 +4,7 @@
 # asi budete chtit prejmenovat:
 CO=SupplementaryMethods
 IMAGES = fig/
-DROPBOX_DIR = ~/Dropbox/Independent_grids_and_gamma/noise/e_life_v2/
+DROPBOX_DIR = ~/Dropbox/Independent_grids_and_gamma/noise/e_life_v3/
 DROPBOX_SRC_DIR = $(DROPBOX_DIR)/supplementary_methods_sources
 
 
@@ -16,6 +16,9 @@ final:
 	cd fig; $(MAKE) grafy
 	$(MAKE) pdf
 
+once:
+	pdflatex $(CO)
+
 pdf: fig $(CO).pdf
 
 $(CO).ps: $(CO).dvi
@@ -24,6 +27,7 @@ $(CO).ps: $(CO).dvi
 $(CO).pdf: 
 	pdflatex $(CO)
 	bibtex $(CO)
+	pdflatex $(CO)
 	pdflatex $(CO)
 
 $(CO).dvi: $(CO).tex $(CO).bib fig
