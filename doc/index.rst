@@ -32,7 +32,7 @@ Project source code and installation instructions
 -------------------------------------------------
 
 The project source code is located in the `git repository
-<https://bitbucket.org/lsolanka/gridcellmodel>`_.  The up to date project
+<https://github.com/lsolanka/ei-attractor>`_.  The up to date project
 directory structure is located in README.rst and the installation instructions
 are in INSTALL.rst in the source code repository.
 
