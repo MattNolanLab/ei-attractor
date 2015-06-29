@@ -1,13 +1,14 @@
 '''
-.. currentmodule:: plotting.colors
+.. currentmodule:: grid_cell_model.plotting.colors
 
-The :py:mod:`~plotting.colors` module takes care of defining and manipulating
-colors for non matplotlib-native tasks.
+The :py:mod:`~grid_cell_model.plotting.colors` module takes care of defining
+and manipulating colors for non matplotlib-native tasks.
 '''
 import numpy as np
 import matplotlib.colors
 
 class Colormap2D(matplotlib.colors.ListedColormap):
+    '''A 2D color map.'''
 
     def __init__(self, size, XColor, YColor, baseColor=[0, 0, 0],
             name='from_list'):

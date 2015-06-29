@@ -330,6 +330,7 @@ MOCK_MODULES = [
     'scipy.ndimage.interpolation', 'scipy.optimize',
     'scipy.io',
     'matplotlib', 'matplotlib.axes', 'matplotlib.pyplot', 'matplotlib.patches',
+    'matplotlib.ticker', 'matplotlib.colors', 'matplotlib.transforms',
     'grid_cell_model.analysis.Wavelets',
 ]
 
