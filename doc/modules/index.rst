@@ -9,3 +9,4 @@ Documentation of the grid_cell_model package
 
     analysis/index
     models/index
+    parameters/index
