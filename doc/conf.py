@@ -325,14 +325,18 @@ class NestMock(Mock):
 
 
 MOCK_MODULES = [
-    'numpy', 'numpy.ma', 'numpy.fft', 'numpy.fft.fftpack', 'numpy.random',
-    'scipy', 'scipy.integrate', 'scipy.signal', 'scipy.ndimage',
-    'scipy.ndimage.interpolation', 'scipy.optimize',
+    'numpy', 'numpy.ma', 'numpy.ma.core', 'numpy.fft', 'numpy.fft.fftpack',
+    'numpy.random', 'numpy.core', 'numpy.core.umath',
+    'scipy', 'scipy.integrate', 'scipy.signal', 'scipy.ndimage', 'scipy.stats',
+    'scipy.ndimage.interpolation', 'scipy.optimize', 'scipy.interpolate',
     'scipy.io',
     'matplotlib', 'matplotlib.axes', 'matplotlib.pyplot', 'matplotlib.patches',
     'matplotlib.ticker', 'matplotlib.colors', 'matplotlib.transforms',
+    'matplotlib.colorbar', 'matplotlib.gridspec', 'matplotlib.backends',
+    'matplotlib.backends.backend_pdf',
     'grid_cell_model.analysis.Wavelets',
     'gridcells', 'gridcells.analysis', 'gridcells.analysis.signal',
+    'pyentropy', 'minepy',
 ]
 
 for mod_name in MOCK_MODULES:

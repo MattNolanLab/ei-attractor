@@ -30,6 +30,7 @@ class MplEnvironment(Environment):
 
 class NoiseEnvironment(MplEnvironment):
     '''Plotting environment for noise data.
+
     Parameters
     ----------
     user_config : dict or ConfigObj

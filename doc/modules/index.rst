@@ -13,3 +13,4 @@ Documentation of the grid_cell_model package
     plotting/index
     submitting/index
     visitors/index
+    noisefigs/index
