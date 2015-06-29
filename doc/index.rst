@@ -50,6 +50,7 @@ References
 
 
 .. _bitbucket git repository: www.bitbucket.com/lsolanka/GridCellModel
+.. _gridcells: http://gridcells.readthedocs.org
 
 
 Indices and tables

@@ -29,15 +29,22 @@ sys.path.insert(0, os.path.abspath('../grid_cell_model'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.pngmath',
-              'sphinx.ext.mathjax',
-              'sphinx.ext.autodoc',
-              'sphinx.ext.autosummary',
-              'sphinx.ext.todo',
-              'numpydoc']
+extensions = [
+    'sphinx.ext.pngmath',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.todo',
+    'sphinx.ext.inheritance_diagram',
+    'numpydoc'
+]
 
 # Include todos?
 todo_include_todos = True
+#
+# Fix an issue with nonexistent documents:
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978
+numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -267,3 +274,9 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+
+# inheritance
+inheritance_graph_attrs = dict(rankdir="TB", fontsize=14, ratio='compress')
+graphviz_output_format = 'svg'
+

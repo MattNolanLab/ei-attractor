@@ -1,14 +1,20 @@
-'''
-Classes and functions for spike train analysis.
+'''Classes and functions for spike train analysis.
 
-.. currentmodule:: analysis.spikes
+.. currentmodule:: grid_cell_model.analysis.spikes
 
 Classes
 -------
+
+.. inheritance-diagram:: gridcells.analysis.spikes
+                         gridcells.analysis.bumps.SingleBumpPopulation
+    :parts: 2
+
 .. autosummary::
 
+    SpikeTrain
     PopulationSpikes
     TorusPopulationSpikes
+    TwistedTorusSpikes
     ThetaSpikeAnalysis
 
 
@@ -33,11 +39,11 @@ from grid_cell_model.otherpkg.log import log_warn
 __all__ = [
     'slidingFiringRateTuple',
     'torusPopulationVector',
-    'torusPopulationVectorFromRates',
     'SpikeTrain',
     'PopulationSpikes',
     'ThetaSpikeAnalysis',
-    'TorusPopulationSpikes'
+    'TorusPopulationSpikes',
+    'TwistedTorusSpikes',
 ]
 
 
@@ -100,14 +106,24 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
 
     Parameters
     ----------
-    spikes  A pair (n_id, spikes)
-    N       Total number of neurons
-    tstart  When the firing rate will start (ms)
-    tend    End time of firing rate (ms)
-    dt      Sliding window dt - not related to simulation time (ms)
-    winLen  Length of the sliding window (ms). Must be >= dt.
+    spikes : numpy.ndarray
+        A pair (n_id, spikes)
+    N : int
+        Total number of neurons
+    tstart : float
+        When the firing rate will start (ms)
+    tend : float
+        End time of firing rate (ms)
+    dt : float
+        Sliding window dt - not related to simulation time (ms)
+    winLen : float
+        Length of the sliding window (ms). Must be >= dt.
 
-    return  An array of shape (N, int((tend-tstart)/dt)+1
+    Returns
+    -------
+    output : numpy.ndarray
+        An array of shape (N, int((tend-tstart)/dt)+1 which contains firing
+        rates for all neurons and each time step.
     '''
     tstart = float(tstart)
     tend   = float(tend)
@@ -163,9 +179,6 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
     return fr/(winLen*1e-3), times
 
 
-
-
-
 def torusPopulationVector(spikes, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=1.0):
     '''
     This function is deprecated. Use the OO version instead
@@ -177,7 +190,6 @@ def torusPopulationVector(spikes, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=
     return torusPopulationVectorFromRates((F, tsteps), sheetSize)
 
 
-
 class SpikeTrain(object):
     '''
     A base class for handling spike trains.
@@ -186,11 +198,11 @@ class SpikeTrain(object):
         raise NotImplementedError()
 
 
-
 class PopulationSpikes(SpikeTrain, collections.Sequence):
-    '''
-    Class to handle a population of spikes and a set of methods to do analysis
-    on the *whole* population.
+    '''Spikes of a neural population.
+
+    Defines spikes of an ordered set of neurons and a set of methods to do
+    analysis on the *whole* population.
     '''
     def __init__(self, N, senders, times):
         '''
@@ -410,7 +422,8 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         neurons in the population. For the description of parameters and
         outputs and their semantics see also :meth:`~PopulationSpikes.ISI`.
 
-        **Parameters**:
+        Parameters
+        ----------
         ``winLen`` : float, list of floats, or ``None``
             Specify the maximal ISI value, i.e. use windowed coefficient of
             variation. If ``None``, use the whole range.
@@ -439,10 +452,6 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
 
     def __len__(self):
         return self._N
-
-
-
-
 
 
 class TorusPopulationSpikes(PopulationSpikes):
@@ -545,7 +554,6 @@ class TorusPopulationSpikes(PopulationSpikes):
         return np.reshape(F, (Ny, Nx, len(Ft))), Ft
 
 
-
 class TwistedTorusSpikes(TorusPopulationSpikes):
     '''
     Spikes arranged on twisted torus. The torus is twisted in the X direction.
@@ -560,8 +568,6 @@ class TwistedTorusSpikes(TorusPopulationSpikes):
                 ' that this method is different for the regular torus ' +\
                 '(TorusPopulationSpikes).'
         raise NotImplementedError(msg.format(self.__class__.__name__))
-
-
 
 
 class ThetaSpikeAnalysis(PopulationSpikes):
