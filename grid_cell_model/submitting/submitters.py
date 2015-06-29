@@ -1,3 +1,18 @@
+'''Simulation submitters.
+
+.. currentmodule:: grid_cell_model.submitting.submitters
+
+.. autosummary::
+
+    ProgramSubmitter
+    GenericSubmitter
+    QsubSubmitter
+
+.. inheritance-diagram:: grid_cell_model.submitting.submitters
+                         grid_cell_model.submitting.python
+                         grid_cell_model.submitting.arguments
+    :parts: 2
+'''
 from __future__ import absolute_import
 
 import os, subprocess
@@ -241,7 +256,6 @@ class ProgramSubmitter(object):
         f.close()
 
 
-
 class GenericSubmitter(ProgramSubmitter):
     '''
     Submit jobs on a generic multiprocessor machine, either by blocking them, or
@@ -259,7 +273,6 @@ class GenericSubmitter(ProgramSubmitter):
         else:
             p = subprocess.Popen(cmdStr, shell=True)
         return p
-
 
 
 class QsubSubmitter(ProgramSubmitter):

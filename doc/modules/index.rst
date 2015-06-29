@@ -11,3 +11,4 @@ Documentation of the grid_cell_model package
     models/index
     parameters/index
     plotting/index
+    submitting/index

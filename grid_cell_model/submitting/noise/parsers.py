@@ -1,4 +1,17 @@
-'''Noise-related submission parsers.'''
+'''Submission parsers specific to the Noise project [SOLANKA2015]_
+
+.. currentmodule:: grid_cell_model.submitting.noise.parsers
+
+Classes
+-------
+
+.. autosummary::
+
+    SubmissionParserBase
+    SubmissionParser
+    ParameterSweepParser
+    SingleParameterSweepParser
+'''
 from __future__ import absolute_import, print_function, division
 import itertools
 
@@ -175,7 +188,6 @@ class ParameterSweepParser(SubmissionParserBase):
         if self.range2 is not None:
             dimensions.append(len(self.range2))
         return dimensions
-
 
 
 class SingleParameterSweepParser(SubmissionParserBase):
