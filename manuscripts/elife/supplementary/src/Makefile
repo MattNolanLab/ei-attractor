@@ -51,4 +51,4 @@ fig:
 
 dropbox:
 	cp $(CO).pdf ${DROPBOX_DIR}
-	cp $(CO).tex sfmath.sty $(CO)Bib.bib $(DROPBOX_SRC_DIR)
+	cp $(CO).tex sfmath.sty $(CO)Bib.bib velocity_histograms.pdf $(DROPBOX_SRC_DIR)
