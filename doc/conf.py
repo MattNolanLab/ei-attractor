@@ -280,3 +280,59 @@ texinfo_documents = [
 inheritance_graph_attrs = dict(rankdir="TB", fontsize=14, ratio='compress')
 graphviz_output_format = 'svg'
 
+
+##############################################################################
+class Mock(object):
+
+    __all__ = []
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            mockType = type(name, (), {})
+            mockType.__module__ = __name__
+            return mockType
+        else:
+            return Mock()
+
+
+class NestMock(Mock):
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            mockType = type(name, (), {})
+            mockType.__module__ = __name__
+            return mockType
+        else:
+            return NestMock()
+
+    def Install(self, *args, **kwargs):
+        pass
+
+
+MOCK_MODULES = [
+    'numpy', 'numpy.ma', 'numpy.fft', 'numpy.fft.fftpack', 'numpy.random',
+    'scipy', 'scipy.integrate', 'scipy.signal', 'scipy.ndimage',
+    'scipy.ndimage.interpolation', 'scipy.optimize',
+    'scipy.io',
+    'matplotlib', 'matplotlib.axes', 'matplotlib.pyplot', 'matplotlib.patches',
+    'grid_cell_model.analysis.Wavelets',
+]
+
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = Mock()
+sys.modules['nest'] = NestMock()

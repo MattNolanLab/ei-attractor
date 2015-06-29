@@ -8,3 +8,4 @@ Documentation of the grid_cell_model package
     :maxdepth: 2
 
     analysis/index
+    models/index

@@ -8,7 +8,6 @@ Data analysis package
     :maxdepth: 1
     :numbered:
 
-    Wavelet
     clustering
     definitions
     grid_cells

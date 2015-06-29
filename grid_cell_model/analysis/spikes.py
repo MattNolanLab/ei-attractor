@@ -5,8 +5,8 @@
 Classes
 -------
 
-.. inheritance-diagram:: gridcells.analysis.spikes
-                         gridcells.analysis.bumps.SingleBumpPopulation
+.. inheritance-diagram:: grid_cell_model.analysis.spikes
+                         grid_cell_model.analysis.image.SingleBumpPopulation
     :parts: 2
 
 .. autosummary::

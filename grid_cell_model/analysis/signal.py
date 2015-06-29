@@ -36,9 +36,9 @@ Functions
 
 import numpy as np
 import scipy.signal
-
 from numpy.fft.fftpack import fft
-from Wavelets import Morlet
+
+from .Wavelets import Morlet
 
 __all__ = ['butterHighPass', 'butterBandPass', 'spikePhaseTrialRaster',
            'splitSigToThetaCycles', 'getChargeTheta', 'phaseCWT', 'CWT',

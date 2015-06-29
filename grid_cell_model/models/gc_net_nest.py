@@ -1,4 +1,17 @@
-'''Nest-specific implementation of the grid cell model.'''
+'''Nest-specific implementation of the grid cell model.
+
+.. currentmodule:: grid_cell_model.models.gc_net_nest
+
+Classes
+-------
+.. autosummary::
+
+    NestGridCellNetwork
+    BasicGridCellNetwork
+    ConstantVelocityNetwork
+    PosInputs
+    ConstPosInputs
+'''
 from __future__ import absolute_import, print_function
 
 import logging
@@ -754,7 +767,8 @@ class NestGridCellNetwork(GridCellNetwork):
 
 
 class BasicGridCellNetwork(NestGridCellNetwork):
-    '''
+    '''The default grid cell network.
+
     A grid cell network that generates the common network and creates a basic
     set of spike monitors and state monitors which are generically usable in
     most of the simulation setups.
@@ -1005,10 +1019,11 @@ class ConstantVelocityNetwork(BasicGridCellNetwork):
 
     def getMinimalSaveData(self, **kw):
         '''
-        Keyword arguments:
-        ``espikes`` : bool
+        Parameters
+        ----------
+        espikes : bool
             Whether to return spikes from the E population. Defaults to True.
-        ``ispikes`` : bool
+        ispikes : bool
             Whether to return spikes from the I population. Defaults to False.
         '''
         out = self.getNetParams()

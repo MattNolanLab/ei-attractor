@@ -1,23 +1,16 @@
-#
-#   place_input.py
-#
-#   Place cell input simulation class.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Place cell input simulation class.
+
+.. currentmodule:: grid_cell_model.models.place_cells
+
+.. note::
+
+    This is an older code which was used in [PASTOLL2013]_. It is only used to
+    define connection weights from place cells to E cells in the current
+    version of the model. Otherwise use the NEST place cell model which is
+    defined in
+    :meth:`~grid_cell_model.models.gc_net_nest.NestGridCellNetwork.setPlaceCells`
+
+'''
 import numpy as np
 
 from scipy.io import loadmat
@@ -27,7 +20,8 @@ class PlaceCellInput(object):
     '''
     Place cell input class. One can define an arena size (circular) and then
     probe the template for an input to a population of neurons that should
-    center the attractor bump of activity to a desired location.
+    center the attractor bump of activity to a desired location. This class can
+    also be used to set up connection weights from place cells to E cells.
 
     This can be used to reset the bump to a correct position
     '''
@@ -56,16 +50,16 @@ class PlaceCellInput(object):
         self.dx = self.gridsep_x/Ne_x;
 
         #import pdb; pdb.set_trace()
-        
+
         X, Y = np.meshgrid(np.arange(arenaSize*2/self.dx) * self.dx, np.arange(arenaSize*2/self.dx) * self.dx);
-        
+
         X = 1. * (X - arenaSize)
         Y = 1. * (Y - arenaSize)
-        
+
         X_mod = np.abs(np.mod(X - self.gridsep_x/2 - gridCenter[0], self.gridsep_x) - self.gridsep_x/2)
         Y_mod = np.abs(np.mod(Y - self.gridsep_y/2 - gridCenter[1], self.gridsep_y) - self.gridsep_y/2)
         arena1 = np.exp(-(X_mod**2 + Y_mod**2)/2/self.sigma**2)
-        
+
         shift_x = self.gridsep_x*np.cos(np.pi/3)
         shift_y = self.gridsep_x*np.sin(np.pi/3)
         arena2 = np.exp(-( (X_mod - shift_x)**2 + (Y_mod-shift_y)**2)/2/self.sigma**2)
@@ -95,28 +89,28 @@ if __name__=="__main__":
     arenaSize = 180.
     gridsep = 70            # cm
     gridCenter = [0, 0]
-    
+
     pc = PlaceCellInput(Ne_x, Ne_y, arenaSize, gridsep, gridCenter)
     pcolormesh(pc.X, pc.Y, pc.arena); axis('equal'); show()
     pcolormesh(pc.arena); axis('equal'); show()
     pcolormesh(pc.getSheetInput(.0, .0)); show()
-    
-    
+
+
     vel_fname = '../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
     ratData = loadmat(vel_fname)
     pos_x = ratData['pos_x'].flatten()
     pos_y = ratData['pos_y'].flatten()
-    
+
     print "Testing dimensions of input..."
     for it in xrange(len(pos_x)):
         tmp = pc.getSheetInput(pos_x[it], pos_y[it])
         if len(tmp) != Ne_y or len(tmp[0]) != Ne_x:
             raise Exception()
-    
+
         #print len(tmp[0]), len(tmp)
         #print it
     print "OK\n"
-    
+
 
     print "Testing grid cell heat map"
     neuronNums = [10, 20, 10*Ne_x+10, 20*Ne_x+10]
@@ -158,5 +152,5 @@ if __name__=="__main__":
         ylabel('Y position (cm)')
         title('Neuron no. ' + str(neuronNum))
         savefig('grid_field_heat_map_{0:04}.png'.format(neuronNum))
-            
+
 

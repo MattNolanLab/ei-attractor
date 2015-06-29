@@ -1,4 +1,16 @@
-'''Command line options.'''
+'''Command line options for attractor networks.
+
+Use this to effectively define/select which command line arguments should be
+used for the network.
+
+Classes / Functions
+-------------------
+.. autosummary::
+
+    DOptionParser
+    ParameterSelector
+    getOptParser
+'''
 from __future__ import absolute_import, print_function, division
 
 import copy
