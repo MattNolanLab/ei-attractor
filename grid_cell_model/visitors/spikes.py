@@ -1,8 +1,16 @@
-'''
-Visitors that perform (raw) spikes analysis.
+'''Visitors that perform (raw) spikes analysis.
+
+.. currentmodule:: grid_cell_model.visitors.spikes
+
+Classes
+-------
+
+.. autosummary::
+
+    FiringRateVisitor
+    SpikeStatsVisitor
 '''
 from __future__ import absolute_import, print_function
-
 import logging
 
 import numpy as np
@@ -18,18 +26,13 @@ statsLogger = getClassLogger("SpikeStatsVisitor", __name__)
 __all__ = ['FiringRateVisitor', 'SpikeStatsVisitor']
 
 
-
-##############################################################################
-#                           Firing rates
-
 class FiringRateVisitor(DictDSVisitor):
     '''
     Determine various firing rate statistics of a population of neurons on the
     spiking data dataset:
+
         * Average firing rate of all the neurons.
-
     '''
-
     def __init__(self, winLen, winDt, tStart=None, tEnd=None, forceUpdate=False,
                  sliding_analysis=True):
         '''
@@ -58,7 +61,6 @@ class FiringRateVisitor(DictDSVisitor):
         self.winDt       = winDt
         self.forceUpdate = forceUpdate
         self.sliding     = sliding_analysis
-
 
     def _getSpikeTrain(self, data, monName, dimList):
         senders, times, N = DictDSVisitor._getSpikeTrain(self, data, monName,
@@ -130,9 +132,6 @@ class FiringRateVisitor(DictDSVisitor):
             else:
                 FRLogger.info("Data present (sliding FR_i), skipping.")
 
-
-
-##############################################################################
 
 class SpikeStatsVisitor(DictDSVisitor):
     def __init__(self, monitorName, forceUpdate=False):

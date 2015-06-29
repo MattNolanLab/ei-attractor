@@ -12,3 +12,4 @@ Documentation of the grid_cell_model package
     parameters/index
     plotting/index
     submitting/index
+    visitors/index

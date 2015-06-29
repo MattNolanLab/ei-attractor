@@ -1,5 +1,19 @@
-'''
-Visitors that perform data analysis on signals (i.e. voltage clamp data).
+'''Visitors that perform data analysis on signals
+
+.. currentmodule:: grid_cell_model.visitors.signals
+
+These could be membrane potentials, voltage clamp data, synaptic currents, etc.
+
+Classes
+-------
+
+.. inheritance-diagram:: grid_cell_model.visitors.signals
+    :parts: 2
+
+.. autosummary::
+
+    AutoCorrelationVisitor
+    CrossCorrelationVisitor
 '''
 from __future__ import absolute_import, print_function
 
@@ -53,8 +67,6 @@ def findFreq(ac, dt, ext_idx, ext_t):
     max1     = ac[max1_idx]
 
     return (1./max1_t, max1)
-
-
 
 
 class AutoCorrelationVisitor(DictDSVisitor):
@@ -190,7 +202,6 @@ class AutoCorrelationVisitor(DictDSVisitor):
             log_info("AutoCorrelationVisitor", "Data present. Skipping analysis.")
 
 
-
 class CrossCorrelationVisitor(DictDSVisitor):
     '''
     A visitor that computes a cross-correlation function between a set of state
@@ -238,10 +249,10 @@ class CrossCorrelationVisitor(DictDSVisitor):
 
 
     def extractCCStat(self, mon, out):
-        '''
-        Extract x-correlation statistics from a monitor.
+        '''Extract x-correlation statistics from a monitor.
 
-        For each pair of monitored neurons
+        This is done for each pair of monitored neurons
+
         Parameters
         ----------
         mon : list of dicts

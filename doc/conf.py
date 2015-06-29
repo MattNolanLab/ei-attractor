@@ -332,6 +332,7 @@ MOCK_MODULES = [
     'matplotlib', 'matplotlib.axes', 'matplotlib.pyplot', 'matplotlib.patches',
     'matplotlib.ticker', 'matplotlib.colors', 'matplotlib.transforms',
     'grid_cell_model.analysis.Wavelets',
+    'gridcells', 'gridcells.analysis', 'gridcells.analysis.signal',
 ]
 
 for mod_name in MOCK_MODULES:
