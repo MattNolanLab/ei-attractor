@@ -1,8 +1,8 @@
 .. _solanka_et_al:
 
-=================================================================
-Documentation for the Solanka et al., 2015 paper ([SOLANKA2015]_)
-=================================================================
+=======================================================
+Documentation for Solanka et al., 2015 ([SOLANKA2015]_)
+=======================================================
 
 This documentation provides the necessary information to reproduce simulation
 data for all main figures, the figures themselves and some figure supplements
@@ -1003,11 +1003,3 @@ for the main figures, some of them need the whole cycles of velocity
 calibration / grid field simulations. You can find the simulation scripts in
 ``grid_cell_model/simulations/007_noise`` and the figure generation sripts in
 the ``figures/paper`` sub-directory.
-
-
-References
-----------
-
-.. [SOLANKA2015] Solanka, L, van Rossum, M.C.W., and Nolan, M.F. (2015). Noise
-   promotes independent control of gamma oscillations and grid firing within
-   recurrent attractor networks. In Preparation.

@@ -59,8 +59,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Grid cell modeling and data analysis'
-copyright = u'2013, Lukas Solanka'
+project = u'ei-attractor'
+copyright = u'2010-2015, Lukas Solanka'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -83,7 +83,7 @@ release = '0.1'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', 'data_descriptions/*']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
