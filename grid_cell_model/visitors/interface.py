@@ -1,5 +1,15 @@
-'''
-Interface definitions for the visitors package.
+'''Interface definitions for the visitors package.
+
+.. currentmodule:: grid_cell_model.visitors.interface
+
+Classes
+-------
+
+.. autosummary::
+
+    Visitor
+    DictDSVisitor
+    EmptyDSVisitor
 '''
 from __future__ import absolute_import, print_function
 
@@ -134,7 +144,7 @@ class DictDSVisitor(Visitor):
         monName : string
             Name of the monitor
         n : int
-            Neuron number. 
+            Neuron number.
         output : numpy array
             Spikes of the selected neuron
         '''
@@ -150,4 +160,4 @@ class EmptyDSVisitor(DictDSVisitor):
     '''
     def __init__(self):
         pass
-    
+

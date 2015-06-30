@@ -1,4 +1,30 @@
-'''Base classes for figure plotters'''
+'''Base classes for figure plotters.
+
+.. currentmodule:: noisefigs.plotters.base
+
+Base plotter classes
+--------------------
+
+.. autosummary::
+
+    SweepPlotter
+    SweepPlotter1D
+    ExampleSetting
+    ProbabilityPlotter
+    DummyPlotter
+
+Figure savers
+-------------
+
+These classes are used to save multi-page figures either in one file or in
+separate numbered files.
+
+.. autosummary::
+
+    MultiFigureSaver
+    PdfOutputSaver
+    SeparateMultipageSaver
+'''
 from __future__ import absolute_import, division, print_function
 
 import logging

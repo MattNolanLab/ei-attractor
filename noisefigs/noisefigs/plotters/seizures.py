@@ -1,5 +1,25 @@
-'''
-Figure illustrating seizures.
+'''Figures illustrating seizures.
+
+.. currentmodule:: noisefigs.plotters.seizures
+
+Classes
+-------
+
+.. autosummary::
+
+    EIRasterPlotter
+    EIRatePlotter
+    MaxPopulationFRSweepsPlotter
+    MaxMeanThetaFRSweepPlotter
+    MaxStdThetaFRSweepPlotter
+    MaxMedianThetaFRSweepPlotter
+    MaxThetaFRHistPlotter
+    PSeizureSweepPlotter
+    MaxFRGridsProbabilityPlotter
+    MaxFRGridsScatterAllPlotter
+    PSeizureGridsProbabilityPlotter
+    PSeizureGridsScatterAllPlotter
+    RasterExamplePlotter
 '''
 from __future__ import absolute_import, print_function
 
@@ -43,6 +63,7 @@ rasterTop     = 0.8
 
 
 class EIRasterPlotter(FigurePlotter):
+    '''Raster plots of spikes from both E and I populations.'''
     dt = .1  # ms
     freq = 8. # Hz
     const = .4 # Fraction of max. theta
@@ -97,9 +118,10 @@ class EIRasterPlotter(FigurePlotter):
             plt.close()
 
 
-##############################################################################
-
 class EIRatePlotter(FigurePlotter):
+    '''Raster plots of population-average firing rates from both E and I
+    populations.
+    '''
     def __init__(self, *args, **kwargs):
         super(EIRatePlotter, self).__init__(*args, **kwargs)
 
@@ -157,14 +179,14 @@ class EIRatePlotter(FigurePlotter):
             plt.close()
 
 
-
-
 ##############################################################################
 # Seizure measure - max firing rate for the whole simulation
 maxFR_vmin = 0
 maxFR_vmax = 500.
 
 class MaxPopulationFRSweepsPlotter(SweepPlotter):
+    '''Sweeps of global maximum of population-average firing rate during the
+    simulation.'''
     def __init__(self, *args, **kwargs):
         super(MaxPopulationFRSweepsPlotter, self).__init__(*args, **kwargs)
 
@@ -205,10 +227,9 @@ class MaxPopulationFRSweepsPlotter(SweepPlotter):
                             ax,
                             **self.config['sweeps']['contours_kwargs'])
 
-##############################################################################
-# Seizure measure - max firing rate per theta cycle
-# mean
+
 class MaxMeanThetaFRSweepPlotter(SweepPlotter):
+    '''Seizure measure - max firing rate per theta cycle -- mean.'''
     def __init__(self, *args, **kwargs):
         super(MaxMeanThetaFRSweepPlotter, self).__init__(*args, **kwargs)
 
@@ -248,8 +269,8 @@ class MaxMeanThetaFRSweepPlotter(SweepPlotter):
                         **kw)
 
 
-# median
 class MaxMedianThetaFRSweepPlotter(SweepPlotter):
+    '''Seizure measure - max firing rate per theta cycle -- median.'''
     def __init__(self, *args, **kwargs):
         super(MaxMedianThetaFRSweepPlotter, self).__init__(*args, **kwargs)
 
@@ -288,8 +309,8 @@ class MaxMedianThetaFRSweepPlotter(SweepPlotter):
                         **kw)
 
 
-# std
 class MaxStdThetaFRSweepPlotter(SweepPlotter):
+    '''Seizure measure - max firing rate per theta cycle -- std. deviation.'''
     def __init__(self, *args, **kwargs):
         super(MaxStdThetaFRSweepPlotter, self).__init__(*args, **kwargs)
 
@@ -323,10 +344,8 @@ class MaxStdThetaFRSweepPlotter(SweepPlotter):
                         **kw)
 
 
-##############################################################################
-# Proportion of cycles with max firing rate larger than threshold, i.e. number
-# of seizures during the simulation
 class thresholdReduction(object):
+    '''A reduction that performs a thresholding operation.'''
     def __init__(self, threshold):
         self.threshold = threshold
 
@@ -336,7 +355,13 @@ class thresholdReduction(object):
         else:
             return float(np.count_nonzero(data >= self.threshold)) / len(data)
 
+
 class PSeizureSweepPlotter(SweepPlotter):
+    '''Number of theta cycles with seizures - P(E_rate_max > 300).
+
+    Proportion of cycles with max firing rate larger than threshold, i.e.
+    number of seizures during the simulation
+    '''
     def __init__(self, *args, **kwargs):
         super(PSeizureSweepPlotter, self).__init__(*args, **kwargs)
 
@@ -397,9 +422,8 @@ class PSeizureSweepPlotter(SweepPlotter):
                             **self.config['sweeps']['contours_kwargs'])
 
 
-##############################################################################
-#       Histograms of maxima of firing rates during theta cycles
 class MaxThetaFRHistPlotter(FigurePlotter):
+    '''Histograms of maxima of firing rates during theta cycles.'''
     def __init__(self, *args, **kwargs):
         super(MaxThetaFRHistPlotter, self).__init__(*args, **kwargs)
 
@@ -430,10 +454,8 @@ class MaxThetaFRHistPlotter(FigurePlotter):
             plt.close()
 
 
-
-##############################################################################
-# Probability plots of gridness score vs max. firing rate
 class MaxFRGridsProbabilityPlotter(ProbabilityPlotter):
+    '''Probability plots of gridness score vs max. firing rate.'''
     def __init__(self, *args, **kwargs):
         super(MaxFRGridsProbabilityPlotter, self).__init__(*args, **kwargs)
 
@@ -499,9 +521,9 @@ class MaxFRGridsProbabilityPlotter(ProbabilityPlotter):
 
         self.mutual_information(maxFR_all, gridness_all)
 
-##############################################################################
-# Scatter plot of gridness score vs. max firing rate
+
 class MaxFRGridsScatterAllPlotter(FigurePlotter):
+    '''Scatter plot of gridness score vs. max firing rate.'''
     def __init__(self, *args, **kwargs):
         super(MaxFRGridsScatterAllPlotter, self).__init__(*args, **kwargs)
 
@@ -549,9 +571,8 @@ class MaxFRGridsScatterAllPlotter(FigurePlotter):
         self.fig.savefig(fname, dpi=300, transparent=True)
 
 
-##############################################################################
-# Probability plots of gridness score vs seizure proportion
 class PSeizureGridsProbabilityPlotter(ProbabilityPlotter):
+    '''Probability plots of gridness score vs seizure proportion.'''
     def __init__(self, *args, **kwargs):
         super(PSeizureGridsProbabilityPlotter, self).__init__(*args, **kwargs)
 
@@ -623,9 +644,8 @@ class PSeizureGridsProbabilityPlotter(ProbabilityPlotter):
         self.mutual_information(gridness_all, PSeizure_all)
 
 
-##############################################################################
-# P(E-rate_max) vs gridness score scatter plot
 class PSeizureGridsScatterAllPlotter(FigurePlotter):
+    '''P(E-rate_max) vs gridness score scatter plot.'''
     def __init__(self, *args, **kwargs):
         super(PSeizureGridsScatterAllPlotter, self).__init__(*args, **kwargs)
 
@@ -678,10 +698,8 @@ class PSeizureGridsScatterAllPlotter(FigurePlotter):
         self.fig.savefig(fname, dpi=300, transparent=True)
 
 
-
-##############################################################################
-# Seizure measure - max firing rate for the whole simulation
 class RasterExamplePlotter(SweepPlotter):
+    '''Examples of raster plots for the seizure figures.'''
     dt = .1  # ms
     freq = 8. # Hz
     const = .4 # Fraction of max. theta

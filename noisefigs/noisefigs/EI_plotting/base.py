@@ -1,4 +1,32 @@
-'''Basic routines for EI plotting.'''
+'''Initialisation routines for E-I plotting.
+
+.. currentmodule:: noisefigs.EI_plotting.base
+
+Classes
+-------
+
+.. autosummary::
+    NoiseDataSpaces
+    FilteringResult
+
+Functions
+---------
+
+.. autosummary::
+
+    getNoiseRootDir
+    getNoiseRoots
+    getNoiseDataSpaces
+    getDataSpace
+    generateThetaSignal
+    setSignalAxes
+    plotStateSignal
+    plotThetaSignal
+    plotOneHist
+    createColorbar
+    filterData
+    extractRateMaps
+'''
 from __future__ import absolute_import, print_function, division
 
 import numpy       as np
@@ -243,7 +271,8 @@ class FilteringResult(object):
 
 
 def filterData(stackedData, threshold):
-    '''
+    '''Filter some data.
+
     Gridness must be more than the threshold in at least one of the noise
     levels, otherwise the values will be masked.
     '''

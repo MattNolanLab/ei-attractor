@@ -1,28 +1,15 @@
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
 '''
 Simple clustering techniques.
 
-.. currentmodule:: analysis.clustering
 
-
-Functions
+Classes
 ---------
+
 .. autosummary::
+
+    ClusteredData
+    MergedClusters
+    ThresholdClusters
 
 '''
 import numpy as np
@@ -117,7 +104,7 @@ class ClusteredData(collections.Sequence):
 
 
 
-        
+
     ##########################################################################
     # collections.Sequence method implementations
     def __getitem__(self, key):
@@ -164,7 +151,7 @@ class ThresholdClusters(ClusteredData):
 
             Cluster ``i`` will contain data that fit
             :math::
-            
+
                 thresholds[dim][i] <= data[dim] < thresholds[dim][i+1]
 
             Therefore, the number of clusters (segments) per each dimension
@@ -178,7 +165,7 @@ class ThresholdClusters(ClusteredData):
 
         self._thresholds = thresholds
         self._ndims = len(self._data)
-        
+
         self._set_clusters(self._doClustering(True, 0))
 
 
@@ -193,7 +180,7 @@ class ThresholdClusters(ClusteredData):
                 msg = ("Threshold list for dimension {0} is not in ascending"+\
                         "order: {1}").format(thIdx, thresholds)
                 raise ValueError(msg)
- 
+
 
     def _doClustering(self, currentRestriction, currentDim):
         currThresholds = self._thresholds[currentDim]
@@ -209,7 +196,7 @@ class ThresholdClusters(ClusteredData):
                 result.append(np.nonzero(myRestriction)[0])
 
         return result
-            
+
 
     def _numClusters(self):
         nClusters = 1
@@ -217,4 +204,4 @@ class ThresholdClusters(ClusteredData):
             nClusters *= len(t) - 1
         return nClusters
 
-    
+

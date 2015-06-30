@@ -1,6 +1,6 @@
-'''Argument processing and setup
+'''Argument processing and setup.
 
-To submit jobs with multiple parameter sweeps/runs>
+To submit jobs with multiple parameter sweeps/runs.
 '''
 from __future__ import absolute_import, print_function
 
@@ -16,7 +16,6 @@ class ArgumentCreator(object):
     optioins. After that, one can insert one of the following (see doc for each
     method)
     '''
-    
     def __init__(self, defaultOpts, printout=False, emitJobNum=True):
         '''
         defaultOpts should be a dictionary (not a list)
@@ -83,18 +82,15 @@ class ArgumentCreator(object):
         for opts in self._resList:
             opts[key] = val
 
-
     def getOptionDict(self, i):
         '''
         Get option dictionary from the batch list, with index i
         '''
         return self._resList[i]
 
-
     def optionList(self):
         '''Get the list of all options'''
         return self._resList
-
 
     def listSize(self):
         '''Return the size of the list of option dictionaries'''

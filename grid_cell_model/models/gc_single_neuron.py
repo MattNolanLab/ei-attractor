@@ -1,5 +1,14 @@
-'''A model that simulates a single neuron with theta input. One neuron from E
-and I population.'''
+'''Single neuron models.
+
+.. inheritance-diagram:: NeuronAndGenerator
+    :parts: 2
+
+
+.. autosummary::
+
+    OneNeuronNetwork
+    NeuronAndGenerator
+'''
 
 import numpy    as np
 import logging  as lg
@@ -155,13 +164,28 @@ class OneNeuronNetwork(GridCellNetwork):
         return out
 
 
+    def fixStateMon(self, mon_list):
+        '''Force numpy ndarray onto monitor data.
+
+        On OS X the data for the monitor are obtained as lists and not numpy
+        arrays. This causes a big problem when saving the data to HDF5.
+        '''
+        for monitor in mon_list:
+            events = monitor['events']
+            for key in events.keys():
+                events[key] = np.asanyarray(events[key])
+        return mon_list
+
     def saveData(self):
-        output_fname = "{0}/{1}noise_sigma{2}_output.h5".format(self.no.output_dir,
-                self.no.fileNamePrefix, int(self.no.noise_sigma))
+        output_fname = "{0}/{1}noise_sigma{2}_output.h5".format(
+            self.no.output_dir, self.no.fileNamePrefix,
+            int(self.no.noise_sigma))
 
         out = self.getNetParams()
         out['stateMon_e']   = nest.GetStatus(self.stateMon_e)
         out['stateMon_i']   = nest.GetStatus(self.stateMon_i)
+        self.fixStateMon(out['stateMon_e'])
+        self.fixStateMon(out['stateMon_i'])
 
         d = DataStorage.open(output_fname, 'w')
         d.update(out)

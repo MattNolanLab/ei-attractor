@@ -1,14 +1,26 @@
-'''
-Data manipulation visitors. Visitors that do some specific/generic
-manipulations with the data they receive.
+'''Data manipulation visitors.
+
+.. currentmodule:: grid_cell_model.visitors.data_manipulation
+
+Visitors that do some specific/generic manipulations with the data they
+receive.
+
+Classes
+-------
+
+.. autosummary::
+
+    VelocityDataVisitor
+    VelocityPruningVisitor
+    VelocityConversionVisitor
 '''
 import collections
 from abc import abstractmethod
 import logging
 import numpy as np
 
-from interface        import DictDSVisitor
-from otherpkg.log import getClassLogger
+from .interface import DictDSVisitor
+from ..otherpkg.log import getClassLogger
 
 dataLogger  = getClassLogger('VelocityDataVisitor', __name__)
 pruneLogger = getClassLogger('VelocityPruningVisitor', __name__)

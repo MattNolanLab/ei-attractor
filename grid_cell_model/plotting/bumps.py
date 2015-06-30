@@ -1,23 +1,15 @@
-#
-#   bumps.py
-#
-#   Functions for plotting attractor bump related data.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Functions for plotting attractor bump related data.
+
+Functions
+---------
+
+.. autosummary::
+
+    bumpPosition
+    torusFiringRate
+    flatFiringRate
+    plotBump
+'''
 from __future__ import absolute_import
 
 import matplotlib.pyplot as mpl
@@ -49,7 +41,6 @@ def bumpPosition(spikes, sheetSize, tstart, tend, dt, winLen, units="s"):
     legend(['X', 'Y'], loc='upper left')
     ylim([-Ne_x/2 - 5, Ne_x/2 + 5])
     tight_layout()
-
 
 
 def torusFiringRate(rateMap, labelx, labely=None, titleStr="", clbar=True,

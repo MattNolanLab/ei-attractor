@@ -1,3 +1,16 @@
+'''Theta signal plotters.
+
+.. currentmodule:: noisefigs.plotters.theta
+
+Classes
+-------
+
+.. autosummary::
+
+    ThetaSignalPlotter
+    PACExamplePlotter
+'''
+
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
@@ -10,8 +23,6 @@ __all__ = [
     'ThetaSignalPlotter',
     'PACExamplePlotter',
 ]
-
-##############################################################################
 
 class ThetaSignalPlotter(FigurePlotter):
     '''Theta signal plotter.'''
@@ -48,7 +59,6 @@ class ThetaSignalPlotter(FigurePlotter):
             plt.close(self.fig)
 
 
-##############################################################################
 class PACExamplePlotter(FigurePlotter):
     '''Phase-amplitude coupling example plotter.'''
     dt = .1  # ms

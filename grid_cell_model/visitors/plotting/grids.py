@@ -1,5 +1,16 @@
-'''
-Grid field plotting visitors.
+'''Grid field plotting visitors.
+
+.. currentmodule:: grid_cell_model.visitors.plotting.grids
+
+Classes
+-------
+
+.. autosummary::
+
+    GridPlotVisitor
+    GridPlotVisitor.PlotOptions
+    GridPlotVisitor.BumpOnly
+    IGridPlotVisitor
 '''
 from __future__ import absolute_import, print_function
 
@@ -23,8 +34,10 @@ from ...otherpkg.log import log_warn, log_info
 from .. import interface
 
 
-__all__ = ['GridPlotVisitor']
-
+__all__ = [
+    'GridPlotVisitor',
+    'IGridPlotVisitor',
+]
 
 
 class GridPlotVisitor(DictDSVisitor):
@@ -373,7 +386,6 @@ class IGridPlotVisitor(GridPlotVisitor):
                                                bumpTStart, bumpTEnd,
                                                minGridnessT, plotOptions,
                                                forceUpdate)
-
 
     def visitDictDataSet(self, ds, **kw):
         data = ds.data

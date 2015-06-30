@@ -1,14 +1,17 @@
-====================
-Grid cell repository
-====================
+===================
+E-I attractor model
+===================
 
-This repository holds the source code of the Grid Cell model. It is based
-partly on Python (numpy, scipy, matplotlib) and/or C++ (NEST simulator).
+This repository holds the source code for the Excitatory-Inhibitory attractor
+model which was used in [SOLANKA2015]_. It is based partly on Python (numpy,
+scipy, matplotlib) and/or C++ (NEST simulator).
+
 
 Installation
 ============
 
-For installation information, see the INSTALL.rst file.
+For installation information, see the ``INSTALL.rst`` file. This file also
+contains information on how to build the documentation only.
 
 
 Repository content
@@ -23,8 +26,8 @@ necessary components.
     preprocessing scripts.
 
 *doc/*
-    Documentation files. Not much there now, however there is ample
-    documentation in the form of docstrings.
+    Documentation files. Please read ``INSTALL.rst`` on how to build the
+    documentation. This does not require installing the whole project.
 
 *grid_cell_model/*
     Grid cell model simulation scripts and source files. This is the main
@@ -43,3 +46,12 @@ necessary components.
 
 
 .. _simtools: https://github.com/lsolanka/simtools
+
+
+References
+==========
+
+.. [SOLANKA2015] Solanka, L, van Rossum, M.C.W., and Nolan, M.F. (2015). Noise
+   promotes independent control of gamma oscillations and grid firing within
+   recurrent attractor networks. In Preparation.
+

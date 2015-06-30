@@ -1,4 +1,8 @@
-'''Manipulate random seeds during the simulation.'''
+'''Manipulate random seeds during the simulation.
+
+.. currentmodule:: grid_cell_model.models.seeds
+
+'''
 
 import numpy as np
 import nest

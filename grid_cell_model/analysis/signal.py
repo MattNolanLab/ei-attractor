@@ -1,43 +1,50 @@
-#
-#   signal.py
-#
-#   Signal analysis tools: ffts, cwt, etc. specific to GridCells
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-'''
-The :mod:`analysis.signal` module contains functions and classes for continuous signal
-analysis
+'''Signal analysis tools.
 
-The can be e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
+The :mod:`analysis.signal` module contains functions and classes for continuous
+signal analysis. This can be e.g. filtering, slicing, correlation analysis,
+up/down-sampling, etc.
 
-.. currentmodule:: analysis.signal
+.. note::
+    Some of these functions are re-implemented and with much better
+    documentation in the gridcells_ package.
+
+.. currentmodule:: grid_cell_model.analysis.signal
+
+.. _gridcells: http://gridcells.readthedocs.org
+
+Functions
+---------
+
 .. autosummary::
+
+    butterHighPass
+    butterBandPass
+    spikePhaseTrialRaster
+    splitSigToThetaCycles
+    getChargeTheta
+    phaseCWT
+    CWT
+    fft_real_freq
+    relativePower
+    maxPowerFrequency
     localExtrema
-
-----------------------
-
-
+    globalExtremum
+    relativePeakHeight
+    downSample
+    sliceSignal
 '''
 
 import numpy as np
 import scipy.signal
-
 from numpy.fft.fftpack import fft
-from Wavelets import Morlet
+
+from .Wavelets import Morlet
+
+__all__ = ['butterHighPass', 'butterBandPass', 'spikePhaseTrialRaster',
+           'splitSigToThetaCycles', 'getChargeTheta', 'phaseCWT', 'CWT',
+           'fft_real_freq', 'relativePower', 'maxPowerFrequency',
+           'localExtrema', 'globalExtremum', 'relativePeakHeight',
+           'downSample', 'sliceSignal']
 
 
 def butterHighPass(sig, dt, f_pass):
@@ -209,6 +216,7 @@ def localExtrema(sig):
     output : (numpy.ndarray, numpy.ndarray)
         A pair (idx, types) containing the positions of local extrema iniside
         ``sig`` and the type of the extrema:
+
             * type > 0 means local maximum
             * type < 0 is local minimum
     '''

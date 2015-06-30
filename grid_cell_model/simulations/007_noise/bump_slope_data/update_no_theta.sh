@@ -22,7 +22,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-root_dir="../output/submission/no_theta/velocity/"
+root_dir="../output/no_theta/velocity/"
 target_file="bump_slope_no_theta_"
 
 I_vec="0pA 150pA 300pA"

@@ -1,3 +1,18 @@
+'''Simulation submitters.
+
+.. currentmodule:: grid_cell_model.submitting.submitters
+
+.. autosummary::
+
+    ProgramSubmitter
+    GenericSubmitter
+    QsubSubmitter
+
+.. inheritance-diagram:: grid_cell_model.submitting.submitters
+                         grid_cell_model.submitting.python
+                         grid_cell_model.submitting.arguments
+    :parts: 2
+'''
 from __future__ import absolute_import
 
 import os, subprocess
@@ -183,7 +198,8 @@ class ProgramSubmitter(object):
         dry_run : bool
             If ``True`` perform only the dry run.
         '''
-        if len(dimension_labels) != len(dimensions):
+        if ((dimension_labels is not None and dimensions is not None) and
+            len(dimension_labels) != len(dimensions)):
             raise ValueError("len(dimension_labels) != len(dimensions)")
 
         filePath = os.path.join(self.outputDir(), fileName)
@@ -195,8 +211,10 @@ class ProgramSubmitter(object):
         else:
             o = DataStorage.open(filePath, 'w')
             o['iterParams'] = iterParams
-            o['dimension_labels'] = list(dimension_labels)
-            o['dimensions'] = list(dimensions)
+            if dimension_labels is not None:
+                o['dimension_labels'] = list(dimension_labels)
+            if dimensions is not None:
+                o['dimensions'] = list(dimensions)
             o.close()
 
     def _saveAllOptions(self):
@@ -238,7 +256,6 @@ class ProgramSubmitter(object):
         f.close()
 
 
-
 class GenericSubmitter(ProgramSubmitter):
     '''
     Submit jobs on a generic multiprocessor machine, either by blocking them, or
@@ -256,7 +273,6 @@ class GenericSubmitter(ProgramSubmitter):
         else:
             p = subprocess.Popen(cmdStr, shell=True)
         return p
-
 
 
 class QsubSubmitter(ProgramSubmitter):

@@ -1,4 +1,16 @@
-''''Classes to define abstractions on parameter exploration data.'''
+''''Classes to define abstractions on parameter exploration data.
+
+Classes
+-------
+
+.. autosummary::
+
+    DataSpace
+    TrialSet
+    DummyTrialSet
+    JobTrialSpace2D
+    JobTrialSpace1D
+'''
 from __future__ import absolute_import
 from collections    import Sequence
 from os.path        import exists, basename
@@ -11,7 +23,13 @@ from ..otherpkg.log   import log_warn, log_info, getClassLogger
 from ..data_storage.dict  import getDictData
 from .data_sets           import DictDataSet
 
-__all__ = []
+__all__ = [
+    'DataSpace',
+    'TrialSet',
+    'DummyTrialSet',
+    'JobTrialSpace2D',
+    'JobTrialSpace1D',
+]
 
 
 job2DLogger = getClassLogger('JobTrialSpace2D', __name__)
@@ -555,6 +573,9 @@ class JobTrialSpace2D(DataSpace):
             a key taken from the last item of varList
         output : A 3D numpy array if trialNumList is a list, or a 2D array
                  otherwise
+
+        Returns
+        -------
             All the aggregated data
         '''
         if (self._partial):

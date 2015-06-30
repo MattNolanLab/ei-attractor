@@ -1,3 +1,35 @@
+'''Figure plotters for grid field-related data.
+
+.. currentmodule:: noisefigs.plotters.grids
+
+Classes
+-------
+
+.. autosummary::
+
+    GridSweepsPlotter
+    GenericGridSweepsPlotter
+    IPCGridSweepsPlotter
+    IPCScatterPlotter
+    IPCHistogramsPlotter
+    IPCExamplePlotter
+    IPCExampleColorbarPlotter
+    GridExamplesPlotter
+    GridExampleRectPlotter
+    GridExampleColorbarPlotter
+    SpatialInfoPlotter
+    SpatialSparsityPlotter
+    SpatialInfoStats
+    SpatialSparsityStats
+    GridnessCorrelationPlotter
+    VmExamplesPlotter
+    GridDetailedNoisePlotter
+    GridsDiffSweep
+    GridBumpScatterPlotter
+    GridsPBumpsProbabilityPlotter
+    GridSimpleExamplePlotter
+    HighGridScoreFraction
+'''
 from __future__ import absolute_import, print_function
 
 import string
@@ -203,6 +235,9 @@ class GenericGridSweepsPlotter(GridSweepsPlotter):
 
 
 class IPCGridSweepsPlotter(GridSweepsPlotter):
+    '''Grid score sweep in networks with uncorrelated spatial input to I
+    cells.
+    '''
     cmap = 'jet'
     varList = ['gridnessScore']
 
@@ -310,7 +345,7 @@ class IPCBasePlotter(FigurePlotter):
 
 
 class IPCHistogramsPlotter(IPCBasePlotter):
-
+    '''Histograms in networks with uncorrelated spatial input to I cells.'''
     def __init__(self, *args, **kwargs):
         super(IPCHistogramsPlotter, self).__init__(*args, **kwargs)
 
@@ -449,6 +484,8 @@ class IPCHistogramsPlotter(IPCBasePlotter):
 
 
 class IPCExamplePlotter(IPCBasePlotter):
+    '''Field examples in networks with uncorrelated spatial input to I
+    cells.'''
     def __init__(self, *args, **kwargs):
         super(IPCExamplePlotter, self).__init__(*args, **kwargs)
 
@@ -490,7 +527,9 @@ class IPCExamplePlotter(IPCBasePlotter):
                 plt.savefig(fname, dpi=300, transparent=True)
                 plt.close()
 
+
 class IPCExampleColorbarPlotter(FigurePlotter):
+    '''Colorbar for networks with uncorrelated spatial input to I cells.'''
     def __init__(self, *args, **kwargs):
         super(IPCExampleColorbarPlotter, self).__init__(*args, **kwargs)
 
@@ -510,6 +549,8 @@ class IPCExampleColorbarPlotter(FigurePlotter):
 
 
 class IPCScatterPlotter(IPCBasePlotter):
+    '''Scatter plot in networks with uncorrelated spatial input to I cells.
+    '''
     cmap = 'jet'
     varList = ['gridnessScore']
 
@@ -574,7 +615,6 @@ class IPCScatterPlotter(IPCBasePlotter):
             fig.savefig(self._get_population_fname(noise_sigma), dpi=300,
                         transparent=True)
             plt.close(fig)
-
 
 
 class ContourGridSweepsPlotter(GridSweepsPlotter):
@@ -1115,6 +1155,7 @@ def drawVm(data, noise_sigma, xScaleBar=None, yScaleBar=None,
 
 
 class VmExamplesPlotter(FigurePlotter):
+    '''Examples of membrane potential for single neurons.'''
     def __init__(self, *args, **kwargs):
         super(VmExamplesPlotter, self).__init__(*args, **kwargs)
 

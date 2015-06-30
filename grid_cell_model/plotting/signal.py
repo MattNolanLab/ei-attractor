@@ -1,23 +1,4 @@
-#
-#   signal.py
-#
-#   Signal plotting functions
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Signal plotting functions.'''
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ti
@@ -73,7 +54,7 @@ def signalPlot(t, sig, ax, timeUnits="ms", nticks=3, nThetaTicks=None, **kw):
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     w = t[-1] - t[0]
-    ax.set_xlim([t[0] - xmargin*w, t[-1] + xmargin*w]) 
+    ax.set_xlim([t[0] - xmargin*w, t[-1] + xmargin*w])
 
     if (zeroLine):
         color  = rcp['grid.color']
@@ -88,12 +69,14 @@ def EIPlot(E, I, labelx=None, labely="", holdVal='on', timeUnits="ms",
     '''
     Plot a double plot of E and I variable.
 
-    *E*
-        A pair (sig, times)
-    *I*
-        A pair (sig, times)
-    *holdVal*
-        value to pass on to the hold() function
+    Parameters
+    ----------
+    E : A pair (sig, times)
+        Excitatory variable.
+    I : A pair (sig, times)
+        Inhibitory variable.
+    holdVal : str
+        Value to pass on to the hold() function
     '''
 
     plt.hold('on')
@@ -138,4 +121,4 @@ def EIPlot(E, I, labelx=None, labely="", holdVal='on', timeUnits="ms",
 #    else:
 #        ax.text(ylabelPos, 0.5, ylabel, rotation=90, transform=ax.transAxes,
 #                va='center', ha='center')
-#    
+#

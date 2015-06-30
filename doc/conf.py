@@ -13,10 +13,16 @@
 
 import sys, os
 
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if on_rtd:
+    print('Inside RTD environment!')
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../grid_cell_model'))
+sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../simtools'))
+sys.path.insert(0, os.path.abspath('../noisefigs'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -25,11 +31,22 @@ sys.path.insert(0, os.path.abspath('../grid_cell_model'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.pngmath',
-              'sphinx.ext.mathjax',
-              'sphinx.ext.autodoc',
-              'sphinx.ext.autosummary',
-              'numpydoc']
+extensions = [
+    'sphinx.ext.pngmath',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.todo',
+    'sphinx.ext.inheritance_diagram',
+    'numpydoc'
+]
+
+# Include todos?
+todo_include_todos = True
+#
+# Fix an issue with nonexistent documents:
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978
+numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -44,8 +61,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Grid cell modeling and data analysis'
-copyright = u'2013, Lukas Solanka'
+project = u'ei-attractor'
+copyright = u'2010-2015, Lukas Solanka'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -68,7 +85,7 @@ release = '0.1'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', 'data_descriptions/*']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -95,7 +112,22 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+if on_rtd:
+    html_theme = 'default'
+    html_context = {
+        'css_files': [
+            'https://media.readthedocs.org/css/sphinx_rtd_theme.css',
+            'https://media.readthedocs.org/css/readthedocs-doc-embed.css',
+            '_static/theme_overrides.css',
+        ],
+    }
+else:
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+    def setup(app):
+        app.add_stylesheet('theme_overrides.css')
+
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -244,3 +276,72 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+
+# inheritance
+inheritance_graph_attrs = dict(rankdir="TB", fontsize=14, ratio='compress')
+graphviz_output_format = 'svg'
+
+
+##############################################################################
+class Mock(object):
+
+    __all__ = []
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            mockType = type(name, (), {})
+            mockType.__module__ = __name__
+            return mockType
+        else:
+            return Mock()
+
+
+class NestMock(Mock):
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            mockType = type(name, (), {})
+            mockType.__module__ = __name__
+            return mockType
+        else:
+            return NestMock()
+
+    def Install(self, *args, **kwargs):
+        pass
+
+
+MOCK_MODULES = [
+    'numpy', 'numpy.ma', 'numpy.ma.core', 'numpy.fft', 'numpy.fft.fftpack',
+    'numpy.random', 'numpy.core', 'numpy.core.umath',
+    'scipy', 'scipy.integrate', 'scipy.signal', 'scipy.ndimage', 'scipy.stats',
+    'scipy.ndimage.interpolation', 'scipy.optimize', 'scipy.interpolate',
+    'scipy.io',
+    'matplotlib', 'matplotlib.axes', 'matplotlib.pyplot', 'matplotlib.patches',
+    'matplotlib.ticker', 'matplotlib.colors', 'matplotlib.transforms',
+    'matplotlib.colorbar', 'matplotlib.gridspec', 'matplotlib.backends',
+    'matplotlib.backends.backend_pdf',
+    'grid_cell_model.analysis.Wavelets',
+    'gridcells', 'gridcells.analysis', 'gridcells.analysis.signal',
+    'pyentropy', 'minepy',
+    'configobj',
+]
+
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = Mock()
+sys.modules['nest'] = NestMock()

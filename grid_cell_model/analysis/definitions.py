@@ -1,31 +1,13 @@
-#
-#   definitions.py
-#
-#   Type definitions common to the whole package.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+Type definitions common to the whole package.
+'''
 
-
-## A range object.
-#
-# Defines low bound (start) and high bound (stop)
-#
 class Range(object):
+    '''A range object.
 
+    Defines low bound (start) and high bound (stop). Pretty much useless
+    because python has a native range object.
+    '''
     def __init__(self, start, stop):
         self.start = start
         self.stop = stop

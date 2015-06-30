@@ -1,5 +1,19 @@
-'''
-Noise publication figures: connection weight figures.
+'''Connection weight figures.
+
+.. currentmodule:: noisefigs.plotters.connections
+
+Classes
+-------
+
+.. autosummary::
+
+    WeightExamplesHists
+    WeightOutE2IPlotter
+    WeightOutI2EPlotter
+    WeightInE2IPlotter
+    WeightInI2EPlotter
+    WeightGridPlotter
+    Burak2009ConnectionPlotter
 '''
 from __future__ import absolute_import, print_function
 

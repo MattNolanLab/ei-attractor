@@ -1,4 +1,7 @@
-'''Basic simulation templates.'''
+'''Basic simulation templates.
+
+.. currentmodule:: grid_cell_model.submitting.base.templates
+'''
 from __future__ import absolute_import, print_function, division
 
 from ..noise.templates import SimulationTemplate
