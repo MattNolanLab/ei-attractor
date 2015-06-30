@@ -47,6 +47,11 @@ necessary components.
 
 .. _simtools: https://github.com/lsolanka/simtools
 
+License
+=======
+
+``ei-attractor`` is distributed under the GPL license. See ``LICENSE.txt`` in
+the root of the repository.
 
 References
 ==========
