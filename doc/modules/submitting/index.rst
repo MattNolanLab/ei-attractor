@@ -6,7 +6,6 @@ Submitting simulations
 
 .. toctree::
     :maxdepth: 1
-    :numbered:
 
     submitters
     arguments

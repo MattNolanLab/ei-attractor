@@ -6,7 +6,6 @@ Data analysis package
 
 .. toctree::
     :maxdepth: 1
-    :numbered:
 
     clustering
     definitions

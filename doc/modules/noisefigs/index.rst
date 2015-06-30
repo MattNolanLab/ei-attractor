@@ -10,8 +10,7 @@ but inspecting the code itself might prove useful for code re-usability.
 
 .. toctree::
     :maxdepth: 1
-    :numbered:
 
-    env.rst
+    env
     EI_plotting/index
     plotters/index

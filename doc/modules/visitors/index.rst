@@ -6,7 +6,6 @@ Data analysis visitors
 
 .. toctree::
     :maxdepth: 1
-    :numbered:
 
     bumps
     data_manipulation

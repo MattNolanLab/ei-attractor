@@ -6,7 +6,6 @@ Plotting
 
 .. toctree::
     :maxdepth: 1
-    :numbered:
 
     bumps
     colors

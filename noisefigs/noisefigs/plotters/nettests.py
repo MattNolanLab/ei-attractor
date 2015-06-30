@@ -1,4 +1,15 @@
-'''Plotters for network testing.'''
+'''Plotters for network testing.
+
+.. currentmodule:: noisefigs.plotters.nettests
+
+Classes
+-------
+
+.. autosummary::
+
+    EIDataSet
+    PopulationActivityPlotter
+'''
 from __future__ import absolute_import, print_function
 
 import os.path
@@ -14,6 +25,7 @@ from noisefigs.EI_plotting.rasters import plotEIRaster
 from ..EI_plotting import examples
 
 __all__ = [
+    'EIDataSet',
     'PopulationActivityPlotter',
 ]
 

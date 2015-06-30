@@ -6,7 +6,6 @@ Simulation models
 
 .. toctree::
     :maxdepth: 1
-    :numbered:
 
     gc_net
     gc_net_nest
