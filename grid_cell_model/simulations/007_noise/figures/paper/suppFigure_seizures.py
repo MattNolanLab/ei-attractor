@@ -19,9 +19,6 @@ env = NoiseEnvironment()
 if args.maxThetaFRSweeps or args.all:
     env.register_plotter(noisefigs.plotters.MaxMeanThetaFRSweepPlotter)
 
-if args.seizureProportion or args.all:
-    env.register_plotter(noisefigs.plotters.PSeizureSweepPlotter)
-
 if args.maxThetaFRSweeps_std or args.all:
     env.register_plotter(noisefigs.plotters.MaxStdThetaFRSweepPlotter)
 

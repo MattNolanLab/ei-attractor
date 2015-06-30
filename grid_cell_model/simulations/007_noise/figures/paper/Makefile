@@ -23,7 +23,6 @@ fast: figure_bumps.dummy						\
 	figure_grids.dummy							\
 	figure_model.dummy							\
 	figure_isBump.dummy							\
-	figure_isbump_examples.dummy				\
 	figure_seizures.dummy						\
 	figure_velocity.dummy					    \
 	suppFigure_gamma.dummy						\
