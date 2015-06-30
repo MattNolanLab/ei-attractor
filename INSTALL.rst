@@ -1,6 +1,6 @@
--------------------------------------------------
-Installation instructions for the grid cell model
--------------------------------------------------
+==============================================
+Installation instructions for ``ei-attractor``
+==============================================
 
 Please follow all the following instructions carefully. Skip through the relevant
 sections only if you know what you are doing.
@@ -12,6 +12,29 @@ Download and initialize the repository
 You will need git to clone this repository using git. After cloning, you need
 to initialize the submodules that the repository depends on by running ``git
 submodule init`` and ``git submodule update``.
+
+
+How to compile the documentation only
+=====================================
+
+The documentation source files are in the ``doc`` directory. After downloading
+and initializing the repository (see previous step), do the following steps:
+
+  #. (optional) Install `virtual environment`_, create an empty one and
+     activate it. This is highly recommended, but if you do not want to do
+     this step, use the ``--user`` parameter to ``pip`` when running the next
+     steps.
+
+  #. In the root of the project, run ``pip install -r requirements_doc.txt``.
+     This will use ``requirements_doc.txt`` to install Sphinx_ and associated
+     package.
+
+  #. Change your working directory to ``doc`` and run ``make html``. Only the
+     HTML version of the documentation has been tested.
+
+The documentation files are in ``_build/html`` and the main page is
+``index.html``. If you would like to install the whole project (and run
+simulations, build figures, etc.) follow the next steps.
 
 
 Install the project
@@ -161,3 +184,4 @@ are ready to run your own simulations.
 .. _gridcells: https://github.com/lsolanka/gridcells
 .. _virtual environment: http://docs.python-guide.org/en/latest/dev/virtualenvs/
 .. _non-python packages: `Install non-Python packages`_
+.. _Sphinx: http://sphinx-doc.org
