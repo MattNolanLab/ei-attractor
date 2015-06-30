@@ -20,7 +20,9 @@ if on_rtd:
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../grid_cell_model'))
+sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../simtools'))
+sys.path.insert(0, os.path.abspath('../noisefigs'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -337,6 +339,7 @@ MOCK_MODULES = [
     'grid_cell_model.analysis.Wavelets',
     'gridcells', 'gridcells.analysis', 'gridcells.analysis.signal',
     'pyentropy', 'minepy',
+    'configobj',
 ]
 
 for mod_name in MOCK_MODULES:

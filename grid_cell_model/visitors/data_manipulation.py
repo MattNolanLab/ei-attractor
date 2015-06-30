@@ -19,8 +19,8 @@ from abc import abstractmethod
 import logging
 import numpy as np
 
-from interface        import DictDSVisitor
-from otherpkg.log import getClassLogger
+from .interface import DictDSVisitor
+from ..otherpkg.log import getClassLogger
 
 dataLogger  = getClassLogger('VelocityDataVisitor', __name__)
 pruneLogger = getClassLogger('VelocityPruningVisitor', __name__)
