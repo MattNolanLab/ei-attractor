@@ -1,4 +1,16 @@
-'''Noise related submission templates.'''
+'''Noise related simulation submission templates.
+
+.. currentmodule:: grid_cell_model.submitting.noise.templates
+
+Classes
+-------
+
+.. autosummary::
+
+    SimulationTemplate
+    BasicNoiseSimulation
+    ParameterSweep
+'''
 from __future__ import absolute_import, print_function, division
 
 from grid_cell_model.submitting.factory import SubmitterFactory

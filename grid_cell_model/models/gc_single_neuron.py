@@ -1,5 +1,14 @@
-'''A model that simulates a single neuron with theta input. One neuron from E
-and I population.'''
+'''Single neuron models.
+
+.. inheritance-diagram:: NeuronAndGenerator
+    :parts: 2
+
+
+.. autosummary::
+
+    OneNeuronNetwork
+    NeuronAndGenerator
+'''
 
 import numpy    as np
 import logging  as lg

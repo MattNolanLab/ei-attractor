@@ -1,5 +1,29 @@
-'''
-Visitors related to bumps.
+'''Visitors related to bumps.
+
+.. currentmodule:: grid_cell_model.visitors.bumps
+
+Classes
+-------
+
+.. autosummary::
+
+    BumpVisitor
+    BumpFittingVisitor
+    SpeedEstimator
+    SpeedPlotter
+    VelocityGainEstimator
+    BumpPositionVisitor
+
+Functions
+---------
+
+.. autosummary::
+
+    fitCircularSlope
+    getLineFit
+    fitBumpSpeed
+    nanPaddedArray
+    plotVelocity
 '''
 from __future__ import absolute_import, print_function
 
@@ -26,7 +50,19 @@ speedPlotLogger = getClassLogger('SpeedPlotter', __name__)
 velGainLogger   = getClassLogger('VelocityGainEstimator', __name__)
 
 
-__all__ = ['BumpFittingVisitor', 'VelocityGainEstimator']
+__all__ = [
+    'BumpVisitor',
+    'BumpFittingVisitor',
+    'SpeedEstimator',
+    'SpeedPlotter',
+    'VelocityGainEstimator',
+    'BumpPositionVisitor',
+    'fitCircularSlope',
+    'getLineFit',
+    'fitBumpSpeed',
+    'nanPaddedArray',
+    'plotVelocity',
+]
 
 class BumpVisitor(DictDSVisitor):
     __meta__ = ABCMeta
@@ -51,19 +87,17 @@ class BumpVisitor(DictDSVisitor):
         return senders, times, (N_x, N_y)
 
 
-
 class BumpFittingVisitor(BumpVisitor):
-    '''
+    '''Fits Gaussian functions onto population activity.
+
     The bump fitting visitor takes spikes of the neural population (in the
-    dictionary data set provided) and tries to
-    fit a Gaussian shaped function to the population firing rate map (which is
-    assumed to be a twisted torus). It saves the data under the 'analysis' key
-    into the dataset.
+    dictionary data set provided) and tries to fit a Gaussian shaped function
+    to the population firing rate map (which is assumed to be a twisted torus).
+    It saves the data under the 'analysis' key into the dataset.
 
     If the corresponding data is already present the visitor skips the data
     analysis and saving.
     '''
-
     def __init__(self,
             forceUpdate=False,
             readme='',
@@ -160,14 +194,17 @@ class BumpFittingVisitor(BumpVisitor):
                     self.__class__.__name__)
 
 
-###############################################################################
-
-
 def fitCircularSlope(bumpPos, times, normFac):
-    '''
+    '''Extract velocity of a bump moving on a torus.
+
     Fit a (circular) slope line onto velocity response of the bump and extract
     the slope (velocity), in neurons/s. The start position of the bump is
     ignored here (i.e. bumpPos -= bumpPos[0])
+
+    .. note::
+
+        This function only works properly with a regular torus (not the twisted
+        one).
 
     Parameters
     ----------
@@ -534,15 +571,13 @@ class VelocityGainEstimator(BumpVisitor):
         })
 
 
-
-##############################################################################
-# Bump position visitor
 class BumpPositionVisitor(BumpVisitor):
-    '''
+    '''Determines bump positions during succesive time intervals.
+
     A visitor that estimates position of the bump attractor by fitting a
     Gaussian function onto the population vector.
 
-    The population firing is sliced onto windows of len winLen
+    The population firing is sliced onto windows of len ``winLen``.
     '''
     def __init__(self,
             forceUpdate=False,

@@ -1,23 +1,17 @@
-#
-#   rasters.py
-#
-#   Raster plot for the E/I parameter sweeps
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Raster plots for E-I parameter sweeps.
+
+.. currentmodule:: noisefigs.EI_plotting.rasters
+
+Functions
+---------
+
+.. autosummary::
+
+    EIRaster
+    plotEIRaster
+    plotAvgFiringRate
+    plot_avg_firing_rate_spikes
+'''
 import logging
 
 import numpy as np
@@ -32,8 +26,6 @@ from grid_cell_model.plotting.signal            import signalPlot
 
 logger = logging.getLogger(__name__)
 
-##############################################################################
-# Raster plots
 def getSpikes(space, spaceType, r, c, trialNum, **kw):
     if (spaceType == 'velocity'):
         IvelIdx = kw.get('IvelIdx', 5) # Should correspond to Ivel==50 pA
@@ -50,6 +42,7 @@ def getSpikes(space, spaceType, r, c, trialNum, **kw):
 
 
 def EIRaster(space, spaceType, r, c, tLimits, trialNum=0, **kw):
+    '''Extract E and I spikes from the parameter space and plot them.'''
     ESpikes, ISpikes = getSpikes(space, spaceType, r, c, trialNum, **kw)
     ax = plotEIRaster(ESpikes, ISpikes, tLimits, **kw)
 
@@ -57,6 +50,7 @@ def EIRaster(space, spaceType, r, c, tLimits, trialNum=0, **kw):
 
 
 def plotEIRaster(ESpikes, ISpikes, tLimits, ylabel=None, **kw):
+    '''Plot a raster plot E and I spikes.'''
     # kw arguments
     ax           = kw.pop('ax', plt.gca())
     yticks       = kw.pop('yticks', True)
@@ -156,10 +150,9 @@ def plotEIRaster(ESpikes, ISpikes, tLimits, ylabel=None, **kw):
     return ax
 
 
-##############################################################################
-#                           Firing rates
 def plotAvgFiringRate(space, spaceType, noise_sigma, popType, r, c, tLimits,
                       trialNum=0, **kw):
+    '''Plot population-average firing rates of either E or I populations.'''
     ESpikes, ISpikes = getSpikes(space, spaceType, r, c, trialNum)
     if (popType == 'E'):
         spikes = ESpikes

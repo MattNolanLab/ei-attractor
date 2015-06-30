@@ -1,4 +1,33 @@
-'''Slope manipulations for the noise simulations.'''
+'''Slope manipulations specific to [SOLANKA2015]_
+
+.. currentmodule:: grid_cell_model.submitting.noise.slopes
+
+These classes read bump slope data from the HDF5 files stored in the repository
+in ``grid_cell_model/simulations/007_noise/bump_slope_data``. Each simulation
+uses its specific slope extractor that accesses an appropriate file.
+
+.. warning::
+
+    In general, it is not good to manipulate these classes unless you
+    **exactly** know what you are doing, although there should not be any
+    problems in adding new slope extractors.
+
+Classes
+-------
+
+.. autosummary::
+
+    SlopeSelector
+    DefaultSelector
+    PickedDefaultSelector
+    NoThetaSelector
+    ProbabilisticConnectionsSelector
+    IIConnectionsSelector
+    EEConnectionsSelector
+    ISurroundOrigSelector
+    ISurroundPastollSelector
+    PickedISurroundPastollSelector
+'''
 from __future__ import absolute_import, print_function, division
 
 import os.path
@@ -12,10 +41,16 @@ probLogger = getClassLogger('ProbabilisticConnectionsSelector', __name__)
 
 
 __all__ = [
+    'SlopeSelector',
     'DefaultSelector',
+    'PickedDefaultSelector',
     'NoThetaSelector',
     'ProbabilisticConnectionsSelector',
     'IIConnectionsSelector',
+    'EEConnectionsSelector',
+    'ISurroundOrigSelector',
+    'ISurroundPastollSelector',
+    'PickedISurroundPastollSelector',
 ]
 
 
@@ -75,7 +110,9 @@ class DefaultSelector(SlopeSelector):
 
 class PickedDefaultSelector(DefaultSelector):
     '''Bump slope selector that picks a value from the data obtained by
-    DefaultSelector and copies this slope value to all simulations.
+    DefaultSelector.
+
+    The picked value is then copied to all simulation runs.
 
     Parameters
     ----------
@@ -134,8 +171,11 @@ class EEConnectionsSelector(SlopeSelector):
 
 
 class ISurroundOrigSelector(SlopeSelector):
-    '''A selector that retrieves data for the I-surround simulations (with all
-    other config as in the E-surround).'''
+    '''I-surround slope selector with other parameters default.
+
+    A selector that retrieves data for the I-surround simulations (with all
+    other config as in the E-surround).
+    '''
     def __init__(self, data_root, threshold):
         template = 'bump_slope_i_surround_original_{0}pA.h5'
         super(ISurroundOrigSelector, self).__init__(data_root, threshold,
@@ -152,7 +192,9 @@ class ISurroundPastollSelector(SlopeSelector):
 
 
 class PickedISurroundPastollSelector(ISurroundPastollSelector):
-    '''Bump slope selector that picks a value from the data obtained by
+    '''Picks one value from :class:`~ISurroundPastollSelector`.
+
+    Bump slope selector that picks a value from the data obtained by
     ISurroundPastollSelector and copies this slope value to all simulations.
 
     Parameters

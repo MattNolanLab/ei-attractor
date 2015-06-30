@@ -1,10 +1,18 @@
-#
-#   scatter.py
-#
-#   Scatter plots for GridCells.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#
+'''Scatter plots for E-I networks.
+
+.. currentmodule:: noisefigs.EI_plotting.scatter
+
+Classes
+-------
+
+.. autosummary::
+
+    ScatterPlotBase
+    RawScatterPlot
+    ScatterPlot
+    FullScatterPlot
+    DiffScatterPlot
+'''
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
@@ -17,7 +25,6 @@ from grid_cell_model.plotting.colors      import Colormap2D
 
 from . import xlabelTextShort, ylabelTextShort
 from . import aggregate as aggr
-
 
 
 class ScatterPlotBase(object):
@@ -72,7 +79,7 @@ class ScatterPlotBase(object):
         noise_sigma = kw.pop('noise_sigma', None)
 
         globalAxesSettings(ax)
-                
+
         kw['edgecolor'] = 'white'
         if (self.colors is not None):
             kw['c'] = self.colors
@@ -133,7 +140,6 @@ class ScatterPlotBase(object):
         print("r: {0}, c: {1}".format(r, c))
 
 
-
 class RawScatterPlot(ScatterPlotBase):
     def __init__(self, templateSpace, X, Y, **kw):
         spaceSizes = ScatterPlotBase.determineSpaceSizes(templateSpace)
@@ -175,7 +181,6 @@ class ScatterPlot(RawScatterPlot):
             RawScatterPlot.__init__(self, self.space1, X, Y, **kw)
 
 
-
 class FullScatterPlot(object):
     '''
     Create a figure with scatter plots for all noise levels, plus a 2D colorbar
@@ -199,7 +204,7 @@ class FullScatterPlot(object):
                 currentKw['noise_sigma'] = self.noise_sigmas[spIdx]
             if (spIdx != len(spaces1) - 1):
                 currentKw['xlabel'] = ''
-           
+
             if isinstance(sp1, aggr.AggregateData):
                 data1, _, _ = sp1.getData()
                 data2, _, _ = sp2.getData()
@@ -235,16 +240,14 @@ class FullScatterPlot(object):
         self.scatterPlots[0].plotColorbar(self.colorBarAx)
 
 
-
 class DiffScatterPlot(RawScatterPlot):
-    '''
-    Plot a scatter plot of differences between the spaces, i.e. noise levels.
-    '''
+    '''Plot a scatter plot of differences between the spaces, i.e. noise
+    levels.'''
     def __init__(self, spaces1, spaces2, types1, types2, iterList, NTrials1,
             NTrials2, which, **kw):
         '''
-        **Parameters:**
-
+        Parameters
+        ----------
         which : int
             Index into the difference array. Value of `0` means ``diffArray[1]
             - diffArray[0]``.

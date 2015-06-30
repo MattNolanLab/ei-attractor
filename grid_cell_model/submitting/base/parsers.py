@@ -1,4 +1,12 @@
-'''Basic interfaces for submission parsers.'''
+'''Basic interfaces for submission parsers.
+
+Classes
+-------
+.. autosummary::
+
+    BaseParser
+    GenericSubmissionParser
+'''
 from __future__ import absolute_import, print_function, division
 import argparse
 import logging

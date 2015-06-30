@@ -29,15 +29,22 @@ sys.path.insert(0, os.path.abspath('../grid_cell_model'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.pngmath',
-              'sphinx.ext.mathjax',
-              'sphinx.ext.autodoc',
-              'sphinx.ext.autosummary',
-              'sphinx.ext.todo',
-              'numpydoc']
+extensions = [
+    'sphinx.ext.pngmath',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.todo',
+    'sphinx.ext.inheritance_diagram',
+    'numpydoc'
+]
 
 # Include todos?
 todo_include_todos = True
+#
+# Fix an issue with nonexistent documents:
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978
+numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -267,3 +274,71 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+
+# inheritance
+inheritance_graph_attrs = dict(rankdir="TB", fontsize=14, ratio='compress')
+graphviz_output_format = 'svg'
+
+
+##############################################################################
+class Mock(object):
+
+    __all__ = []
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            mockType = type(name, (), {})
+            mockType.__module__ = __name__
+            return mockType
+        else:
+            return Mock()
+
+
+class NestMock(Mock):
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            mockType = type(name, (), {})
+            mockType.__module__ = __name__
+            return mockType
+        else:
+            return NestMock()
+
+    def Install(self, *args, **kwargs):
+        pass
+
+
+MOCK_MODULES = [
+    'numpy', 'numpy.ma', 'numpy.ma.core', 'numpy.fft', 'numpy.fft.fftpack',
+    'numpy.random', 'numpy.core', 'numpy.core.umath',
+    'scipy', 'scipy.integrate', 'scipy.signal', 'scipy.ndimage', 'scipy.stats',
+    'scipy.ndimage.interpolation', 'scipy.optimize', 'scipy.interpolate',
+    'scipy.io',
+    'matplotlib', 'matplotlib.axes', 'matplotlib.pyplot', 'matplotlib.patches',
+    'matplotlib.ticker', 'matplotlib.colors', 'matplotlib.transforms',
+    'matplotlib.colorbar', 'matplotlib.gridspec', 'matplotlib.backends',
+    'matplotlib.backends.backend_pdf',
+    'grid_cell_model.analysis.Wavelets',
+    'gridcells', 'gridcells.analysis', 'gridcells.analysis.signal',
+    'pyentropy', 'minepy',
+]
+
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = Mock()
+sys.modules['nest'] = NestMock()

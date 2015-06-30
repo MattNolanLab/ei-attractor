@@ -1,3 +1,23 @@
+'''Plotting of various grid field and autocorrelation examples.
+
+.. currentmodule:: noisefigs.EI_plotting.examples
+
+Functions
+---------
+
+.. autosummary::
+
+    plotOneGridExample
+    plotOneGridACorrExample
+    plotOneCorrAngleExample
+    plotOneBumpExample
+    drawGridExamples
+    drawBumpExamples
+    plotSquareGridExample
+    drawEIRectSelection
+    plotGammaExample
+    plotBumpSnapshots
+'''
 from __future__ import absolute_import, print_function, division
 
 from collections import namedtuple
@@ -80,6 +100,7 @@ def _getCorrData(dataSpace, populationType):
 
 
 def plotOneGridExample(dataSpace, rc, iterList, **kw):
+    '''Plot an example of one grid firing field.'''
     r, c = rc[0], rc[1]
     spaceRect = (c, r, c, r)
     gsCoords  = kw.pop('gsCoords', (0, 0, 1, 1))
@@ -87,6 +108,7 @@ def plotOneGridExample(dataSpace, rc, iterList, **kw):
 
 
 def plotOneGridACorrExample(dataSpace, rc, trialNum=0, **kw):
+    '''Plot an example of one autocorrelation of a grid firing field.'''
     populationType = kw.pop('populationType', 'E')
     ax = kw.pop('ax', plt.gca())
     kw['rasterized'] = True
@@ -135,6 +157,9 @@ def _getCorrAngleData(dataSpace, populationType):
 
 
 def plotOneCorrAngleExample(dataSpace, rc, trialNum=0, **kw):
+    '''A plot of one example of correlation coefficients of rotated
+    autocorrelations.
+    '''
     populationType = kw.pop('populationType', 'E')
     ax = kw.pop('ax', plt.gca())
 
@@ -151,6 +176,7 @@ def plotOneCorrAngleExample(dataSpace, rc, trialNum=0, **kw):
 
 
 def plotOneBumpExample(sp, rc, iterList, types, **kw):
+    '''An example of a bump snapshot for one item in the parameter space.'''
     #keyword
     wspace    = kw.pop('wspace', 0)
     hspace    = kw.pop('hspace', 0)
@@ -164,7 +190,6 @@ def plotOneBumpExample(sp, rc, iterList, types, **kw):
             fontsize='x-small',
             rateYPos=1.05, rateXPos=0.98,
             **kw)
-
 
 
 ##############################################################################
@@ -220,6 +245,7 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
         ylabel2=True, ylabelPos=-0.2, xlabel2Pos=-0.6, ylabel2Pos=-0.6,
         fontSize=None, maxRate=True, rateStr='Hz', plotGScore=True,
         rasterized=True, fig=plt.gcf(), populationType='E'):
+    '''Draw a grid-like plot of grid field examples.'''
     left   = spaceRect[0]
     bottom = spaceRect[1]
     right  = min(spaceRect[2], dataSpace.shape[0] - 1)
@@ -297,8 +323,10 @@ def drawGridExamples(dataSpace, spaceRect, iterList, gsCoords, trialNum=0,
 
 
 def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, types, **kw):
-    '''
-    TODO: code duplication
+    '''Draw a grid-like plot of bump attractor (network activity) examples.
+
+    .. todo::
+        code duplication
     '''
     # kw processing
     trialNum   = kw.pop('trialNum', 0)
@@ -383,6 +411,7 @@ def drawBumpExamples(dataSpace, spaceRect, iterList, gsCoords, types, **kw):
 def plotSquareGridExample(exLeft, exBottom, sz, fileName, exIdx, sweep_ax,
         sweepDataSpace, iterList, exGsCoords, wspace=0, hspace=0,
         figSize=(2.1,2.1), **kw):
+    '''Draw grid field examples into a square grid.'''
     # Create the example plot
     fig = plt.figure(figsize=figSize)
 
@@ -400,8 +429,8 @@ def plotSquareGridExample(exLeft, exBottom, sz, fileName, exIdx, sweep_ax,
         drawEIRectSelection(sweep_ax, exRect, X, Y)
 
 
-
 def drawEIRectSelection(ax, spaceRect, X, Y, color='black'):
+    '''Draw a rectangular box on top of a parameter sweep.'''
     left   = spaceRect[0]
     bottom = spaceRect[1]
     right  = min(spaceRect[2], X.shape[1] - 1)
@@ -418,9 +447,8 @@ def drawEIRectSelection(ax, spaceRect, X, Y, color='black'):
         rectTop-rectBottom, facecolor='None', lw=1, edgecolor=color))
 
 
-
-
 def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
+    '''Plot examples of gamma activity.'''
     ax             = kw.pop('ax', plt.gca())
     noise_sigma    = kw.pop('noise_sigma', None)
     noise_sigma_xy = kw.pop('noise_sigma_xy', (0.95, 0.85))
@@ -477,10 +505,8 @@ def plotGammaExample(ps, r, c, trialNum, tStart, tEnd, **kw):
         yScaleBar(**yscale_kw)
 
 
-##############################################################################
-# Snapshots of bumps in time
-
 def plotBumpSnapshots(FR, FRt, tstep, **kw):
+    '''Snapshots of bumps in time.'''
     fig             = kw.pop('fig')
     timeTitles      = kw.pop('timeTitles', True)
     axesCoords      = kw.pop('axesCoords', (0.12, 0.01, 0.92, 0.7))

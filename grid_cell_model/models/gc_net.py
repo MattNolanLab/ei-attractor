@@ -1,42 +1,65 @@
 '''Simulator independent grid cell network code.
 
-  Grid cell network set up
-  ------------------------
+.. currentmodule:: grid_cell_model.models.gc_net
 
-  This file is a module for the grid cell network. It allows you to create a
-  network of Exponential integrate and fire neurons. There are two populations:
-    Stellate cells -- excitatory neurons (E)
-    Interneurons   -- inhibitory (I)
+Attractor network setup
+-----------------------
 
-  In the current model, the connections are only E --> I and I --> E. That is
-  the main idea behind the model, which is supported by experimental evidence.
+This file is a module for the grid cell network. It allows you to create a
+network of exponential integrate and fire neurons. There are two populations:
 
-  Both neuron types can receive AMPA, NMDA and GABA_A events. NMDA is only in
-  E --> I direction.
+  * Stellate cells -- excitatory neurons (E)
 
-  The topology of connections has several characteristics:
+  * Interneurons   -- inhibitory (I)
 
-   - Both neuron models are uniformly placed on a surface of a twisted torus,
-     the sides of which are scaled as X:Y = 1:sqrt(3)/2, to accomodate the
-     hexagonal nature of grid-cell receptive fields.
+In the basic version of the  model, the connections are only E --> I and I -->
+E. That is the main idea behind the model.  However, it is possible to also add
+E --> E and I --> I connections in various forms, see
+`~grid_cell_model.models.parameters`.
 
-   - The user can set the number of neurons in the larger side of the toroidal
-     sheet (always X dimension)
+Both neuron types can receive AMPA, NMDA and GABA_A events. NMDA is only in the
+E --> I direction.
 
-   - The connections follow a center-surround profile, i.e. either E-->I
-     connections have a surround profile and I-->E connections have a center
-     profile, or vice-versa. This can be used to test the effect of the type of
-     excitatory or inhibitory profile on the stability of the attractor
+The topology of connections has several characteristics:
 
-   - GABA_A connections (I-->E) can also contain extra, randomly generated
-     inhibitory synapses onto stellate cells in order to allow generation of
-     gamma oscillations.
+ - Both neuron models are uniformly placed on a surface of a twisted torus,
+   the sides of which are scaled as X:Y = 1:sqrt(3)/2, to accomodate the
+   hexagonal nature of grid-cell receptive fields.
 
-   - Technically, the basic functionality of the model (attractor emergence,
-     oscillations), shouldn't be very dependent on the spiking neuron type.
-     After some parameter setups/changes, one should be able to set the
-     simulation with any kind of spiking model (leaky IaF, Hodgkin-Huxley,
-     etc.)
+ - The user can set the number of neurons in the larger side of the toroidal
+   sheet (always X dimension)
+
+ - The connections follow a center-surround profile, i.e. either E-->I
+   connections have a surround profile and I-->E connections have a center
+   profile, or vice-versa. This can be used to test the effect of the type of
+   excitatory or inhibitory profile on the stability of the attractor.
+
+   In addition, it is possible to select whether connections are
+   distance-dependent, as described in the previous paragraph, or 'flat', which
+   means that the connection weight does not depend on the distance between the
+   pair of neurons on the twisted torus. Another variant of connections is the
+   *probabilistic* synapses. Here, the probability of connection instead of the
+   weight is scaled according to the centre-surround principle. See the
+   ``probabilistic_synapses`` parameter.
+
+ - GABA_A connections (I-->E) can also contain extra, distance-independent,
+   inhibitory synapses onto stellate cells in order to promote generation of
+   gamma oscillations.
+
+ - Technically, the basic functionality of the model (attractor emergence,
+   oscillations), shouldn't be very dependent on the spiking neuron type.
+   After some parameter setups/changes, one should be able to set the
+   simulation with any kind of spiking model (leaky IaF, Hodgkin-Huxley,
+   etc.)
+
+
+Class hierarchy of the attractor networks
+-----------------------------------------
+
+.. inheritance-diagram:: grid_cell_model.models.gc_net_nest
+                         grid_cell_model.models.gc_single_neuron
+    :parts: 2
+
 '''
 from __future__ import absolute_import, print_function
 
@@ -493,7 +516,8 @@ class GridCellNetwork(object):
     def setConstantVelocityCurrent_e(self, vel):
         '''
         Setup a constant velocity current onto E poputlaion, where vel must be
-        a list of numbers:
+        a list of numbers::
+
             vel = [vel_x, vel_y]
         '''
         raise NotImplementedError()
@@ -501,7 +525,8 @@ class GridCellNetwork(object):
     def setConstantVelocityCurrent_i(self, vel):
         '''
         Setup a constant velocity current onto I population, where vel must be
-        a list of numbers:
+        a list of numbers::
+
             vel = [vel_x, vel_y]
         '''
         raise NotImplementedError()

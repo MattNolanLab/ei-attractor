@@ -1,4 +1,32 @@
-'''Functions/classes related to parameter sweeps.'''
+'''Parameter sweep plotting.
+
+.. currentmodule:: noisefigs.EI_plotting.sweeps
+
+Functions
+---------
+
+.. autosummary::
+
+    plotSweep
+    plot2DTrial
+    plotACTrial
+    plotBumpSigmaTrial
+    plotGridTrial
+    plotVelTrial
+    plotVelStdSweep
+    plotDiffTrial
+    plotSweepAnnotation
+    plotCollapsedSweeps
+    plot_1d_sweep
+
+Classes
+-------
+
+.. autosummary::
+
+    Contours
+
+'''
 import logging
 
 import numpy as np
@@ -21,6 +49,7 @@ plotSweepLogger = logging.getLogger('{0}.{1}'.format(__name__, 'plotSweep'))
 logger_1d = getClassLogger('plot_1d_sweep', __name__)
 
 def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
+    '''Plot parameter sweep of gamma autocorrelation peaks.'''
     #kw arguments
     r           = kw.pop('r', 0)
     c           = kw.pop('c', 0)
@@ -50,6 +79,10 @@ def plotACTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
 
 
 def plotBumpSigmaTrial(aggregateData, noise_sigma, **kw):
+    '''Plot bump sigma (width) parameter sweep.
+
+    This is a very early version and in fact it is not used in [SOLANKA2015]_.
+    '''
     #kw arguments
     r           = kw.pop('r', 0)
     c           = kw.pop('c', 0)
@@ -118,6 +151,7 @@ def plotFRTrial(sp, varList, iterList, noise_sigma, trialNumList=[0],
 
 
 def plotGridTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
+    '''Plot a parameter sweep of gridness score.'''
     #kw arguments
     r           = kw.pop('r', 0)
     c           = kw.pop('c', 0)
@@ -154,6 +188,10 @@ def plotGridTrial(sp, varList, iterList, noise_sigma, trialNumList=[0], **kw):
 
 
 def plotVelTrial(sp, varList, iterList, noise_sigma, **kw):
+    '''Plot a parameter sweep of velocity data.
+
+    These are either bump slope or line fit error.
+    '''
     # process kwargs
     r           = kw.pop('r', 0)
     c           = kw.pop('c', 0)
@@ -180,6 +218,7 @@ def plotVelTrial(sp, varList, iterList, noise_sigma, **kw):
 
 
 def plotVelStdSweep(sp, iterList, noise_sigma, **kw):
+    '''Plot a parameter sweep of the standard deviation of bump velocities.'''
     # process kwargs
     r          = kw.pop('r', 0)
     c          = kw.pop('c', 0)
@@ -219,6 +258,7 @@ def plotVelStdSweep(sp, iterList, noise_sigma, **kw):
 
 
 def plotDiffTrial(spList, iterList, which, NTrials, types, **kw):
+    '''Plot a parameter sweep of the difference in sweep data.'''
     r           = kw.pop('r', 0)
     c           = kw.pop('c', 0)
     cbar        = kw.pop('cbar', True)

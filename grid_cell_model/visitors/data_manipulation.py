@@ -1,6 +1,18 @@
-'''
-Data manipulation visitors. Visitors that do some specific/generic
-manipulations with the data they receive.
+'''Data manipulation visitors.
+
+.. currentmodule:: grid_cell_model.visitors.data_manipulation
+
+Visitors that do some specific/generic manipulations with the data they
+receive.
+
+Classes
+-------
+
+.. autosummary::
+
+    VelocityDataVisitor
+    VelocityPruningVisitor
+    VelocityConversionVisitor
 '''
 import collections
 from abc import abstractmethod

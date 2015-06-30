@@ -4,4 +4,12 @@
 Data analysis package
 =====================
 
-.. automodule:: analysis
+.. toctree::
+    :maxdepth: 1
+
+    clustering
+    definitions
+    grid_cells
+    image
+    signal
+    spikes

@@ -1,7 +1,16 @@
-'''
-.. currentmodule:: plotting.low_level
+'''Low level plotting sub-routines.
 
-Low level plotting sub-routines.
+.. currentmodule:: grid_cell_model.plotting.low_level
+
+Functions
+---------
+.. autosummary::
+
+    xScaleBar
+    yScaleBar
+    removeAllSpines
+    zeroLines
+    symmetricDataLimits
 '''
 import numpy as np
 
@@ -16,7 +25,8 @@ def xScaleBar(scaleLen, x, y, ax=None, height=0.02, color='black',
     '''
     Plot a horizontal (X) scale bar into the axes.
 
-    **Parameters:**
+    Parameters
+    ----------
     scaleLen : float
         Size of the scale (X) in data coordinates.
     ax : mpl.axes.Axes
@@ -32,7 +42,7 @@ def xScaleBar(scaleLen, x, y, ax=None, height=0.02, color='black',
         Color of the bar.
     unitsText : string
         Units drawn below the scale bar.
-    size 
+    size
         Size of the text below the scale bar.
     textYOffset : float
         Offset of the text from the scale bar. Positive value is a downward
@@ -61,7 +71,8 @@ def yScaleBar(scaleLen, x, y, ax=None, width=0.0075, color='black',
     '''
     Plot a vertical (Y) scale bar into the axes.
 
-    **Parameters:**
+    Parameters
+    ----------
     scaleLen : float
         Size of the scale (X) in data coordinates.
     ax : mpl.axes.Axes
@@ -77,7 +88,7 @@ def yScaleBar(scaleLen, x, y, ax=None, width=0.0075, color='black',
         Color of the bar.
     unitsText : string
         Units drawn below the scale bar.
-    size 
+    size
         Size of the text below the scale bar.
     textXOffset : float
         Offset of the text from the scale bar. Positive value is a leftward

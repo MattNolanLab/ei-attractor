@@ -1,4 +1,24 @@
-'''Functions for grid cell related data.'''
+'''Functions for grid cell related data.
+
+.. currentmodule:: grid_cell_model.plotting.grids
+
+.. note::
+
+    Some of these functions have been refactored into the gridcells_ package.
+    It is advised to use this package rather than this code.
+
+.. _gridcells: http://gridcells.readthedocs.org/
+
+
+Functions
+---------
+.. autosummary::
+
+    gridScaleBar
+    plotSpikes2D
+    plotGridRateMap
+    plotAutoCorrelation
+'''
 from __future__ import absolute_import
 import numpy as np
 import numpy.ma as ma
@@ -22,6 +42,7 @@ def gridScaleBar(scaleLen, scaleText, ax):
         xScaleBar(scaleLen, x=0.7, y=-0.00, ax=ax, height=0.015,
                 unitsText=unitsText, size='small')
 
+
 def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, diam=np.inf, ax=None,
         titleStr='', scaleBar=None, scaleText=True, spikeDotSize=5):
     '''
@@ -41,7 +62,6 @@ def plotSpikes2D(spikeTimes, rat_pos_x, rat_pos_y, dt, diam=np.inf, ax=None,
         xlim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
         ylim([-lim_factor*diam/2.0, lim_factor*diam/2.0])
     gridScaleBar(scaleBar, scaleText, ax)
-
 
 
 def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
@@ -80,7 +100,6 @@ def plotGridRateMap(rateMap, X, Y, diam, ax=None, titleStr="", scaleBar=None,
             gStr = '{0:.2f}'.format(G)
         ax.text(ann_div, 1.025, gStr, ha="left", va='bottom',
                 fontsize=rate_fs, transform=ax.transAxes)
-
 
 
 def plotAutoCorrelation(ac, X, Y, diam=np.inf, ax=None, titleStr="",

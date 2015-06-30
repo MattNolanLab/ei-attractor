@@ -1,6 +1,15 @@
-#!/usr/bin/env python
-'''
-Figure showing where bumps are and where they are not.
+'''Figures showing where bumps are and where they are not.
+
+.. currentmodule:: noisefigs.plotters.isbump
+
+Classes
+-------
+
+.. autosummary::
+
+    FracTotalHistPlotter
+    FracTotalSweepAnnPlotter
+    IsBumpPlotter
 '''
 from __future__ import absolute_import, print_function
 

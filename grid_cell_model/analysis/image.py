@@ -1,28 +1,29 @@
-'''
-Classes and functions for analysis of image-like structures.
+'''Classes and functions for analysis of image-like structures.
 
-.. currentmodule:: analysis.image
+.. currentmodule:: grid_cell_model.analysis.image
 
 Classes
 -------
-
 .. autosummary::
 
-    SingleBumpPopulation
     Position2D
+    FittingParams
+    SymmetricGaussianParams
+    MLFit
+    MLFitList
     MLGaussianFit
-    LikelihoodGaussianInitParams
-
+    MLGaussianFitList
+    SingleBumpPopulation
 
 
 Functions
 ---------
-
 .. autosummary::
 
     remapTwistedTorus
     fitGaussianTT
     fitGaussianBumpTT
+    fitMaximumLikelihood
 
 
 '''
@@ -62,14 +63,12 @@ class Position2D(object):
         return len(self.x)
 
 
-
 class FittingParams(object):
     __meta__ = ABCMeta
 
     @abstractmethod
     def __init__(self):
         raise NotImplementedError()
-
 
 
 class SymmetricGaussianParams(FittingParams):
@@ -79,8 +78,6 @@ class SymmetricGaussianParams(FittingParams):
         self.mu_y = mu_y
         self.sigma = sigma
         self.err2 = err2
-
-
 
 
 ##############################################################################
@@ -208,16 +205,16 @@ class MLGaussianFitList(MLGaussianFit, collections.Sequence):
 
 def remapTwistedTorus(a, others, dim):
     ''' Calculate a distance between ``a`` and ``others`` on a twisted torus.
-    
+
     Take ``a`` which is a 2D position and others, which is a vector of 2D
     positions and compute the distances between them based on the topology of
     the twisted torus.
-    
+
     If you just want to remap a function of (X, Y), set a==[[0, 0]].
 
     Parameters
     ----------
-    
+
     a : a Position2D instance
         Specifies the initial position. ``a.x`` and ``a.y`` must be convertible
         to floats
@@ -231,7 +228,7 @@ def remapTwistedTorus(a, others, dim):
     -------
     An array of positions, always of the length of others
     '''
-    
+
 
     a_x      = float(a.x)
     a_y      = float(a.y)
@@ -268,7 +265,7 @@ def remapTwistedTorus(a, others, dim):
         ret(i) = MIN(d7, MIN(d6, MIN(d5, MIN(d4, MIN(d3, MIN(d2, d1))))));
     }
     '''
-    
+
     weave.inline(code,
         ['others_x', 'others_y', 'szO', 'ret', 'a_x', 'a_y', 'x_dim', 'y_dim'],
         type_converters=weave.converters.blitz,
@@ -294,24 +291,25 @@ def fitGaussianTT(sig_f, i):
     it is circular only.
 
     The function fitted looks like this:
-    .. math::
 
-        f(\mathbf{X}) = |A| \exp\left{\frac{-||X - mu||^2}{2*\sigma^2}\right},
+    .. math::
+        f(\mathbf{X}) = |A| \exp\left\{\\frac{-|\mathbf{X} -
+            \mathbf{\mu}|^2}{2\sigma^2}\\right\}
 
     where :math:`||\cdot||` is a distance metric on the twisted torus.
 
-    Paramters
-    ---------
+    Parameters
+    ----------
     sig_f : np.ndarray
         A 2D array that specified the signal to fit the Gaussian onto. The
         dimensions of the torus will be inferred from the shape of `sig_f`:
         (dim.y, dim.x) = `sig_f.shape`.
-    i : SymmetricGaussianParams
+    i : :class:`~SymmetricGaussianParams`
         Guassian initialisation parameters. The `err2` field will be ignored.
 
     Returns
     -------
-    :class:`MLGaussianFit`
+    output : :class:`MLGaussianFit`
         Estimated values, together with maximum likelihood value and precision
         (inverse variance of noise: *NOT* of the fitted Gaussian).
     '''
@@ -432,7 +430,7 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
             logger.debug('%s:: fitting: %d/%d, %.3f/%.3f ',
                     fitCallable.__name__, tIdx+1, len(Ft), Ft[tIdx], Ft[-1])
             fitParams = fitCallable(F[:, :, tIdx])
-            
+
             if fullErr == False:
                 fitParams.err2 = np.sum(fitParams.err2)
 
@@ -442,18 +440,18 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
 
     def bumpPosition(self, tStart, tEnd, dt, winLen, fullErr=True):
         '''Estimate bump positions during the simulation time.
-        
-            1. Use :py:meth:`~.slidingFiringRate`
+
+            1. Use :py:meth:`~slidingFiringRate`
 
             2. Apply the bump position estimation procedure to each of the
                population activity items.
 
         Parameters
         ----------
-            tStart, tEnd, dt, winLen
-                As in :py:meth:`~analysis.spikes.slidingFiringRate`.
-            fullErr : bool
-                If ``True``, save the full error of fit. Otherwise a sum only.
+        tStart, tEnd, dt, winLen
+            As in :py:meth:`~analysis.spikes.slidingFiringRate`.
+        fullErr : bool
+            If ``True``, save the full error of fit. Otherwise a sum only.
 
         Returns
         -------
@@ -467,22 +465,22 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
         '''
         return self._performFit(tStart, tEnd, dt, winLen, fitGaussianBumpTT,
                 MLGaussianFitList, fullErr=fullErr)
-            
+
 
     def uniformFit(self, tStart, tEnd, dt, winLen, fullErr=True):
         '''Estimate the mean firing rate using maximum likelihood estimator
         (:func:`~analysis.image.fitMaximumLikelihood`)
-        
-            1. Use :py:meth:`~.slidingFiringRate`.
+
+            1. Use :py:meth:`~slidingFiringRate`.
 
             2. Apply the estimator.
 
         Parameters
         ----------
-            tStart, tEnd, dt, winLen
-                As in :py:meth:`~analysis.spikes.slidingFiringRate`.
-            fullErr : bool
-                If ``True``, save the full error of fit. Otherwise a sum only.
+        tStart, tEnd, dt, winLen
+            As in :py:meth:`~analysis.spikes.slidingFiringRate`.
+        fullErr : bool
+            If ``True``, save the full error of fit. Otherwise a sum only.
 
         Returns
         -------

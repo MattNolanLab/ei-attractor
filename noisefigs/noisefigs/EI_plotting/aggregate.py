@@ -1,7 +1,66 @@
-'''
-.. currentmodule:: EI_plotting.aggregate
+'''Data aggregation, mainly parameter sweeps.
 
-Data aggregation, mainly parameter sweeps
+.. currentmodule:: noisefigs.EI_plotting.aggregate
+
+This module provides data structures which are used to plot mostly 2D parameter
+sweep data in various forms. The main data structure is the
+:class:`~AggregateData` class which transforms raw data (usually form the
+:class:`~grid_cell_model.parameters.JobTrialSpace2D` object) into a form that
+is usable for plotting the parameter sweeps.
+
+Old and deprecated functions
+----------------------------
+
+.. autosummary::
+
+    aggregate2DTrial
+    aggregate2D
+    computeYX
+    computeVelYX
+    aggregateType
+
+Data structures
+---------------
+
+.. autosummary::
+
+    AggregateData
+    FilteredData
+    GridnessScore
+    IGridnessScore
+    IPCGridnessScore
+    IPCIGridnessScore
+    SpatialInformation
+    ISpatialInformation
+    SpatialSparsity
+    ISpatialSparsity
+    GammaAggregateData
+    IsBump
+    IsBumpCollapsed
+    BumpPositionData
+    BumpDifferencePosition
+    BumpAvgDifferenceFromPos
+    BumpDifferenceAtTime
+    BumpDriftAtTime
+    AggregateBumpReciprocal
+    PopulationFR
+    MaxPopulationFR
+    MaxThetaPopulationFR
+    AvgPopulationFR
+    VelocityData
+
+
+Filters
+-------
+
+.. autosummary::
+
+    AggregateDataFilter
+    NoZeroExcitationFilter
+    NoZeroCouplingFilter
+    GTFilter
+    LEQFilter
+    BumpFormationFilter
 '''
 import collections
 import numpy as np
@@ -18,12 +77,54 @@ import logging
 logger = logging.getLogger(__name__)
 gammaAggrLogger = getClassLogger('GammaAggregateData', __name__)
 
+__all__ = [
+    'aggregate2DTrial',
+    'aggregate2D',
+    'computeYX',
+    'computeVelYX',
+    'aggregateType',
+
+    'AggregateData',
+    'FilteredData',
+    'GridnessScore',
+    'IGridnessScore',
+    'IPCGridnessScore',
+    'IPCIGridnessScore',
+    'SpatialInformation',
+    'ISpatialInformation',
+    'SpatialSparsity',
+    'ISpatialSparsity',
+    'GammaAggregateData',
+    'IsBump',
+    'IsBumpCollapsed',
+    'BumpPositionData',
+    'BumpDifferencePosition',
+    'BumpAvgDifferenceFromPos',
+    'BumpDifferenceAtTime',
+    'BumpDriftAtTime',
+    'AggregateBumpReciprocal',
+    'PopulationFR',
+    'MaxPopulationFR',
+    'MaxThetaPopulationFR',
+    'AvgPopulationFR',
+    'VelocityData',
+
+    'AggregateDataFilter',
+    'NoZeroExcitationFilter',
+    'NoZeroCouplingFilter',
+    'GTFilter',
+    'LEQFilter',
+    'BumpFormationFilter',
+]
+
 
 def aggregate2DTrial(sp, varList, trialNumList, fReduce=np.mean,
         ignoreNaNs=False):
-    '''
-    Aggregate all the data from a 2D ParamSpace, applying fReduce on the trials
-    of all the data sets in the parameter space.
+    '''Aggregate all the data from a 2D Parameter space
+    (:class:`~grid_cell_model.parameters.param_space.JobTrialSpace2D`).
+
+    In the process, apply ``fReduce`` on the trials of all the data sets in the
+    parameter space.
 
     Parameters
     ----------
@@ -50,7 +151,8 @@ def aggregate2DTrial(sp, varList, trialNumList, fReduce=np.mean,
 
 
 def aggregate2D(sp, varList, funReduce=None):
-    '''
+    '''Aggregate all the data from a 2D ParamSpace
+
     Aggregate all the data from a 2D ParamSpace, applying fReduce on the trials
     of all the data sets in the parameter space, however the data is retrieved
     from the top-level of the data hierarchy, i.e. sp['analysis']. funReduce is
@@ -644,7 +746,9 @@ class IsBump(AggregateData):
 
 
 class IsBumpCollapsed(AggregateData):
-    '''Take a list of data spaces and aggregate them and their trials (fracTotal
+    '''Collapsed version of the bump formation metric.
+
+    Take a list of data spaces and aggregate them and their trials (fracTotal
     data set) into one vector usable for histogram calculation.'''
 
     def __init__(self, spaces, iterList, ignoreNaNs=False,

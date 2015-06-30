@@ -1,3 +1,26 @@
+'''Plotters for various bump related data.
+
+.. currentmodule:: noisefigs.plotters.bumps
+
+Classes
+-------
+
+.. autosummary::
+
+    BumpSigmaSweepPlotter
+    BumpDriftAtTimePlotter
+    BumpDiffAtInitPlotter
+    BumpDiffResetPlotter
+    BumpExamplePlotter
+    BumpExampleColorbarPlotter
+    BumpSigmaDetailedNoisePlotter
+    MainBumpFormationPlotter
+    GEProfileWidthBumpPlotter
+    Generic2DPBumpPlotter
+    MainScatterGridsBumpsPlotter
+    MainIsBumpPlotter
+    Generic1DPBumpPlotter
+'''
 from __future__ import absolute_import, print_function
 
 import numpy as np
@@ -43,7 +66,7 @@ exampleRC   = ( (5, 15), (15, 5) )
 exampleIdx  = [(0, 0), (0, 0), (0, 0)] # (row, col)
 
 class BumpSigmaSweepPlotter(SweepPlotter):
-    ''''Bump sigma sweeps.'''
+    '''Bump sigma sweeps.'''
     bump_vmin = 0
     bump_vmax = 0.421
 
@@ -266,6 +289,7 @@ class BumpExamplePlotter(FigurePlotter):
 
 
 class BumpExampleColorbarPlotter(FigurePlotter):
+    '''Colorbar for bump examples.'''
     def __init__(self, *args, **kwargs):
         super(BumpExampleColorbarPlotter, self).__init__(*args, **kwargs)
 
