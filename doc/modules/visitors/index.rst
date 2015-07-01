@@ -13,4 +13,5 @@ Data analysis visitors
     signals
     spikes
     plotting.grids
+    plotting.grids_ipc
     plotting.spikes

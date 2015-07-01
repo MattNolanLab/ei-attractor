@@ -14,6 +14,7 @@ import grid_cell_model.visitors.signals
 import grid_cell_model.visitors.plotting
 import grid_cell_model.visitors.plotting.spikes
 import grid_cell_model.visitors.plotting.grids
+import grid_cell_model.visitors.plotting.grids_ipc
 from grid_cell_model.parameters import JobTrialSpace2D
 from grid_cell_model.submitting import flagparse
 
@@ -133,6 +134,32 @@ if common.gridsType in o.type:
     #sp.visit(isBumpVisitor)
     #sp.visit(ISIVisitor)
     sp.visit(FRVisitor)
+
+if common.gridsIPCType in o.type:
+    # This is solely for the purpose of analyzing simulations where a
+    # population of place cells is connected to I cells.
+
+    po = vis.plotting.grids_ipc.GridPlotVisitor.PlotOptions()
+    ipc_gridVisitor = vis.plotting.grids_ipc.GridPlotVisitor(
+        o.output_dir,
+        spikeType='E',
+        plotOptions=po,
+        minGridnessT=300e3,
+        forceUpdate=o.forceUpdate)
+    ipc_gridVisitor_i = vis.plotting.grids_ipc.IGridPlotVisitor(
+        o.output_dir,
+        plotOptions=po,
+        minGridnessT=300e3,
+        forceUpdate=o.forceUpdate)
+    ipc_FRVisitor = vis.spikes.FiringRateVisitor(
+        winLen=2.,     # ms
+        winDt=.5,      # ms
+        forceUpdate=forceUpdate,
+        sliding_analysis=False)
+
+    sp.visit(ipc_gridVisitor)
+    sp.visit(ipc_gridVisitor_i)
+    sp.visit(ipc_FRVisitor)
 
 if common.posType in o.type:
     bumpPosVisitor = vis.bumps.BumpPositionVisitor(
