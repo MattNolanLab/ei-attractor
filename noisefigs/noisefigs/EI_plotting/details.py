@@ -1,23 +1,14 @@
-#
-#   details.py
-#
-#   All sorts of detailed plot of the E/I sweeps.
-#
-#       Copyright (C) 2013  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''Plotting parameter sweeps of the detailed noise levels.
+
+.. currentmodule:: noisefigs.EI_plotting.details
+
+Functions used in [SOLANKA2015]_
+--------------------------------
+
+.. autosummary::
+
+    plotDetailedNoise
+'''
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
@@ -27,8 +18,7 @@ from . import xlabelText, ylabelText
 from . import aggregate as aggr
 from grid_cell_model.plotting.global_defs import globalAxesSettings
 
-##############################################################################
-# Slices through parameter spaces
+
 def decideLabels(type):
     if (type == 'horizontal'):
         xlabel = xlabelText
@@ -156,7 +146,7 @@ def plotGridnessSlice(paramSpaces, rowSlice, colSlice, type, NTrials=1, **kw):
             txt = '{0} = {1} nS'.format(labels['titleText'], sliceG)
         ax.set_title(txt, x=0.99, y=0.92, va='bottom', ha='right',
                 fontsize='small')
-        
+
     return ax
 
 
@@ -190,11 +180,6 @@ def plotSliceAnnotation(ax, X, Y, sliceSpan, type, **kw):
         raise ValueError()
 
 
-
-
-
-##############################################################################
-# Detailed noise levels
 def plotDetailedNoise(sp, NTrials, types, **kw):
     xlabel                = kw.pop('xlabel', '$\sigma_{noise}$ (pA)')
     ylabel                = kw.pop('ylabel', '')
@@ -241,6 +226,6 @@ def plotDetailedNoise(sp, NTrials, types, **kw):
     ax.margins(0.03, 0.03)
 
     return ax, p1, l1
-       
 
-        
+
+

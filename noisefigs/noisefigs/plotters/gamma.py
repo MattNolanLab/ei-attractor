@@ -1,4 +1,27 @@
-'''Gamma plotters.'''
+'''Plotters for gamma oscillation-related data.
+
+.. currentmodule:: noisefigs.plotters.gamma
+
+Classes
+-------
+
+.. autosummary::
+
+    GammaSweepsPlotter
+    GenericGammaPlotter
+    Generic1DGammaPlotter
+    GammaDetailedNoisePlotter
+    GammaExamplePlotter
+    GammaScatterAllPlotter
+    GammaFreqGridsScatterAllPlotter
+    ScatterGammaGridsSeparatePlotter
+    ScatterGammaFGridsSeparatePlotter
+    GammaScatterPBumpsAllPlotter
+    GammaPBumpsProbabilityPlotter
+    GammaFreqPBumpsProbabilityPlotter
+    GammaGridsProbabilityPlotter
+    GammaFreqGridsProbabilityPlotter
+'''
 from __future__ import absolute_import, print_function
 
 import numpy as np
@@ -121,6 +144,7 @@ class Generic1DGammaPlotter(SweepPlotter1D):
 
 
 class GammaSweepsPlotter(SweepPlotter):
+    '''Gamma frequency and power sweep plotter.'''
     NTrials = 5
     def __init__(self, *args, **kwargs):
         super(GammaSweepsPlotter, self).__init__(*args, **kwargs)
@@ -223,8 +247,8 @@ class GammaSweepsPlotter(SweepPlotter):
 
 
 ##############################################################################
-EI13Root  = 'simulation_data/submission/detailed_noise/gamma_bump/EI-1_3'
-EI31Root  = 'simulation_data/submission/detailed_noise/gamma_bump/EI-3_1'
+EI13Root  = 'simulation_data/main_network/detailed_noise/gamma_bump/EI-1_3'
+EI31Root  = 'simulation_data/main_network/detailed_noise/gamma_bump/EI-3_1'
 detailedShape = (31, 9)
 
 EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
@@ -238,6 +262,7 @@ detailRight  = 0.98
 detailTop    = 0.9
 
 class GammaDetailedNoisePlotter(FigurePlotter):
+    '''Gamma frequency/power for the detailed noise levels.'''
     ylabelPos = -0.17
 
     def __init__(self, *args, **kwargs):
@@ -292,8 +317,8 @@ class GammaDetailedNoisePlotter(FigurePlotter):
         plt.close()
 
 
-##############################################################################
 class GammaExamplePlotter(FigurePlotter):
+    '''Gamma activity exmaples.'''
     def __init__(self, *args, **kwargs):
         super(GammaExamplePlotter, self).__init__(*args, **kwargs)
 
@@ -339,9 +364,8 @@ class GammaExamplePlotter(FigurePlotter):
                 plt.close()
 
 
-##############################################################################
-# Separate scatter plot of gridness score vs. gamma power
 class ScatterGammaGridsSeparatePlotter(FigurePlotter):
+    '''Separate scatter plot of gridness score vs. gamma power.'''
     def __init__(self, *args, **kwargs):
         super(ScatterGammaGridsSeparatePlotter, self).__init__(*args, **kwargs)
 
@@ -394,9 +418,8 @@ class ScatterGammaGridsSeparatePlotter(FigurePlotter):
         fig.savefig(fname, dpi=300, transparent=True)
 
 
-##############################################################################
-# Separate scatter plot of gridness score vs. gamma frequency
 class ScatterGammaFGridsSeparatePlotter(FigurePlotter):
+    '''Separate scatter plot of gridness score vs. gamma frequency.'''
     def __init__(self, *args, **kwargs):
         super(ScatterGammaFGridsSeparatePlotter, self).__init__(*args, **kwargs)
 
@@ -447,10 +470,8 @@ class ScatterGammaFGridsSeparatePlotter(FigurePlotter):
         fig.savefig(fname, dpi=300, transparent=True)
 
 
-##############################################################################
-# Scatter plot of gridness score vs. gamma power
-# All in one plot
 class GammaScatterAllPlotter(FigurePlotter):
+    '''Scatter plot of gridness score vs. gamma power, all in one plot.'''
     def __init__(self, *args, **kwargs):
         super(GammaScatterAllPlotter, self).__init__(*args, **kwargs)
 
@@ -496,10 +517,8 @@ class GammaScatterAllPlotter(FigurePlotter):
         self.fig.savefig(fname, dpi=300, transparent=True)
 
 
-##############################################################################
-# Scatter plot of gridness score vs. gamma frequency
-# All in one plot
 class GammaFreqGridsScatterAllPlotter(FigurePlotter):
+    '''Scatter plot of gridness score vs. gamma frequency, all in one plot.'''
     def __init__(self, *args, **kwargs):
         super(GammaFreqGridsScatterAllPlotter, self).__init__(*args, **kwargs)
 
@@ -548,9 +567,8 @@ class GammaFreqGridsScatterAllPlotter(FigurePlotter):
         self.fig.savefig(fname, dpi=300, transparent=True)
 
 
-##############################################################################
-# Probability plots of gridness score vs gamma power
 class GammaGridsProbabilityPlotter(ProbabilityPlotter):
+    '''Probability plots of gridness score vs gamma power.'''
     def __init__(self, *args, **kwargs):
         super(GammaGridsProbabilityPlotter, self).__init__(*args, **kwargs)
 
@@ -625,9 +643,8 @@ class GammaGridsProbabilityPlotter(ProbabilityPlotter):
         self.mutual_information(gamma_all, gridness_all)
 
 
-##############################################################################
-# Probability plots of gridness score vs gamma frequency
 class GammaFreqGridsProbabilityPlotter(ProbabilityPlotter):
+    '''Probability plots of gridness score vs gamma frequency.'''
     def __init__(self, *args, **kwargs):
         super(GammaFreqGridsProbabilityPlotter, self).__init__(*args, **kwargs)
 
@@ -701,10 +718,8 @@ class GammaFreqGridsProbabilityPlotter(ProbabilityPlotter):
         self.mutual_information(gammaF_all, gridness_all)
 
 
-##############################################################################
-# Scatter plot of gamma power vs P_{bumps}
-# All in one plot
 class GammaScatterPBumpsAllPlotter(FigurePlotter):
+    '''Scatter plot of gamma power vs P_{bumps}, all in one plot.'''
     def __init__(self, *args, **kwargs):
         super(GammaScatterPBumpsAllPlotter, self).__init__(*args, **kwargs)
 
@@ -817,9 +832,8 @@ class GammaPBumpsProbabilityPlotter(ProbabilityPlotter):
         self.mutual_information(gamma_all, pbumps_all)
 
 
-##############################################################################
-# Gamma frequency vs. P_Bumps
 class GammaFreqPBumpsProbabilityPlotter(ProbabilityPlotter):
+    '''Gamma frequency vs. P_Bumps probability plotter.'''
     def __init__(self, *args, **kwargs):
         super(GammaFreqPBumpsProbabilityPlotter, self).__init__(*args, **kwargs)
 

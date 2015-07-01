@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-'''
-Bump velocity gain estimation.
+'''Bump velocity gain estimation.
 
 These simulations do the following:
     - Bump is initialized, in the beginning [0, theta_start_t], by a very
@@ -30,7 +29,7 @@ for noise_sigma in parser.noise_sigmas:
     simRootDir  = o.where
     simLabel    = '{0}pA'.format(int(p['noise_sigma']))
     appName     = 'simulation_velocity.py'
-    rtLimit     = o.rtLimit or '08:00:00'
+    rtLimit     = o.rtLimit or '12:00:00'
     numCPU      = 1
     blocking    = True
     timePrefix  = False
@@ -43,7 +42,7 @@ for noise_sigma in parser.noise_sigmas:
     p['nthreads']    = 1
     p['ntrials']     = 10
 
-    p['IvelMax']     = 200
+    p['IvelMax']     = 100
     p['dIvel']       = 10
 
     p['verbosity']   = 'DEBUG'

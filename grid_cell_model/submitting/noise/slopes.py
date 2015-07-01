@@ -1,21 +1,56 @@
-'''Slope manipulations for the noise simulations.'''
+'''Slope manipulations specific to [SOLANKA2015]_
+
+.. currentmodule:: grid_cell_model.submitting.noise.slopes
+
+These classes read bump slope data from the HDF5 files stored in the repository
+in ``grid_cell_model/simulations/007_noise/bump_slope_data``. Each simulation
+uses its specific slope extractor that accesses an appropriate file.
+
+.. warning::
+
+    In general, it is not good to manipulate these classes unless you
+    **exactly** know what you are doing, although there should not be any
+    problems in adding new slope extractors.
+
+Classes
+-------
+
+.. autosummary::
+
+    SlopeSelector
+    DefaultSelector
+    PickedDefaultSelector
+    NoThetaSelector
+    ProbabilisticConnectionsSelector
+    IIConnectionsSelector
+    EEConnectionsSelector
+    ISurroundOrigSelector
+    ISurroundPastollSelector
+    PickedISurroundPastollSelector
+'''
 from __future__ import absolute_import, print_function, division
 
 import os.path
 
 import numpy as np
 from grid_cell_model.otherpkg.log import getClassLogger
-from grid_cell_model.data_storage import DataStorage
+from simtools.storage import DataStorage
 
 baseLogger = getClassLogger('SlopeSelector', __name__)
 probLogger = getClassLogger('ProbabilisticConnectionsSelector', __name__)
 
 
 __all__ = [
+    'SlopeSelector',
     'DefaultSelector',
+    'PickedDefaultSelector',
     'NoThetaSelector',
     'ProbabilisticConnectionsSelector',
     'IIConnectionsSelector',
+    'EEConnectionsSelector',
+    'ISurroundOrigSelector',
+    'ISurroundPastollSelector',
+    'PickedISurroundPastollSelector',
 ]
 
 
@@ -75,7 +110,9 @@ class DefaultSelector(SlopeSelector):
 
 class PickedDefaultSelector(DefaultSelector):
     '''Bump slope selector that picks a value from the data obtained by
-    DefaultSelector and copies this slope value to all simulations.
+    DefaultSelector.
+
+    The picked value is then copied to all simulation runs.
 
     Parameters
     ----------
@@ -96,6 +133,7 @@ class PickedDefaultSelector(DefaultSelector):
                                                                flatten=False)
         return (np.ones(self._dimensions[0] * self._dimensions[1]) *
                 slopes[self._row, self._col])
+
 
 class NoThetaSelector(SlopeSelector):
     '''A slope selector for no-theta simulations.'''
@@ -133,8 +171,11 @@ class EEConnectionsSelector(SlopeSelector):
 
 
 class ISurroundOrigSelector(SlopeSelector):
-    '''A selector that retrieves data for the I-surround simulations (with all
-    other config as in the E-surround).'''
+    '''I-surround slope selector with other parameters default.
+
+    A selector that retrieves data for the I-surround simulations (with all
+    other config as in the E-surround).
+    '''
     def __init__(self, data_root, threshold):
         template = 'bump_slope_i_surround_original_{0}pA.h5'
         super(ISurroundOrigSelector, self).__init__(data_root, threshold,
@@ -148,3 +189,31 @@ class ISurroundPastollSelector(SlopeSelector):
         template = 'bump_slope_i_surround_pastoll_{0}pA.h5'
         super(ISurroundPastollSelector, self).__init__(data_root, threshold,
                                                        template)
+
+
+class PickedISurroundPastollSelector(ISurroundPastollSelector):
+    '''Picks one value from :class:`~ISurroundPastollSelector`.
+
+    Bump slope selector that picks a value from the data obtained by
+    ISurroundPastollSelector and copies this slope value to all simulations.
+
+    Parameters
+    ----------
+    data_root, threshold
+    row, col : int
+        Indexes into data obtained by DefaultSelector
+    dimensions : pair of int
+        Dimensions of the resulting parameter sweep.
+    '''
+    def __init__(self, data_root, threshold, row, col, dimensions):
+        super(PickedISurroundPastollSelector, self).__init__(data_root,
+                                                             threshold)
+        self._row = row
+        self._col = col
+        self._dimensions = dimensions
+
+    def get_slopes(self, noise_sigma):
+        slopes = super(PickedISurroundPastollSelector,
+                       self).get_slopes(noise_sigma, flatten=False)
+        return (np.ones(self._dimensions[0] * self._dimensions[1]) *
+                slopes[self._row, self._col])

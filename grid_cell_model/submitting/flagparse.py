@@ -1,21 +1,31 @@
-'''
-.. currentmodule:: flagparser
+'''Command line argument parser with support for easy flags.
 
-Figure plotting flag parser
+.. currentmodule:: grid_cell_model.submitting.flagparse
+
+Classes / Functions
+-------------------
+.. autosummary::
+
+    FlagParser
+    FlagAction
+    positive_int
 '''
 import argparse
 import logging
 
 
 class FlagParser(argparse.ArgumentParser):
-
+    '''A parser that allows an easy setting of flags from the command line.'''
     def __init__(self, allDefault=True):
         argparse.ArgumentParser.__init__(self)
 
         self.allDefault = allDefault
         self.add_argument('--' + FlagAction.allArg, action='store_true',
-                default=allDefault, help='Whether to perform all flags. This'+\
-                        ' will be disabled by setting any flag')
+                          default=allDefault,
+                          help='Whether to perform all flags. This will be '
+                               'disabled by setting any flag. This option is '
+                               'only applicable when it makes sense to select '
+                               'operations based on flags.')
         self.add_argument('-v', '--verbosity',
                 type=str,
                 choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
@@ -39,7 +49,6 @@ class FlagParser(argparse.ArgumentParser):
         return args
 
 
-
 class FlagAction(argparse.Action):
     allArg = 'all'
 
@@ -61,6 +70,7 @@ class FlagAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.allArg, False)
         setattr(namespace, self.dest, self.const)
+
 
 ##############################################################################
 # User-defined type checkers

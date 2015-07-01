@@ -1,33 +1,29 @@
-'''Noise-related submission parsers.'''
+'''Submission parsers specific to the Noise project [SOLANKA2015]_
+
+.. currentmodule:: grid_cell_model.submitting.noise.parsers
+
+Classes
+-------
+
+.. autosummary::
+
+    SubmissionParserBase
+    SubmissionParser
+    ParameterSweepParser
+    SingleParameterSweepParser
+'''
 from __future__ import absolute_import, print_function, division
 import itertools
 
 import numpy as np
-from grid_cell_model.submitting           import flagparse
-from grid_cell_model.submitting.flagparse import positive_int
+from ..base.parsers import GenericSubmissionParser
 
-class SubmissionParserBase(flagparse.FlagParser):
+class SubmissionParserBase(GenericSubmissionParser):
     '''Parse arguments for parameter sweep submission process.'''
     def __init__(self, **kwargs):
         super(SubmissionParserBase, self).__init__(**kwargs)
-        self.add_argument('env',     type=str,
-                          choices=['workstation', 'cluster'])
-        self.add_argument("where",      type=str)
         self.add_argument("--ns",       type=int, choices=[0, 150, 300])
-        self.add_argument("--time",     type=float)
-        self.add_argument('--ntrials',  type=positive_int, required=True)
-        self.add_argument('--rtLimit',  type=str)
-        self.add_argument('--printout', type=int, choices=[0, 1], default=1)
-        self.add_argument('--nCPU',     type=positive_int, default=1)
-        self.add_flag('--dry_run',
-                      help='Do no run anything nor save any meta-data')
-
         self._opts = None
-
-    def _check_opts(self):
-        '''Check whether options have been parsed.'''
-        if self._opts is None:
-            raise RuntimeError("You need to parse the arguments first.")
 
     @property
     def noise_sigmas(self):
@@ -35,17 +31,6 @@ class SubmissionParserBase(flagparse.FlagParser):
         self._check_opts()
         ns_all = [0.0, 150.0, 300.0] # pA
         return ns_all if self._opts.ns is None  else [self._opts.ns]
-
-    @property
-    def options(self):
-        '''Return the parsed options.'''
-        return self._opts
-
-    def parse_args(self, args=None, namespace=None):
-        '''Parse the arguments.'''
-        self._opts = super(SubmissionParserBase, self).parse_args(args,
-                                                                  namespace)
-        return self._opts
 
 
 class SubmissionParser(SubmissionParserBase):
@@ -203,7 +188,6 @@ class ParameterSweepParser(SubmissionParserBase):
         if self.range2 is not None:
             dimensions.append(len(self.range2))
         return dimensions
-
 
 
 class SingleParameterSweepParser(SubmissionParserBase):

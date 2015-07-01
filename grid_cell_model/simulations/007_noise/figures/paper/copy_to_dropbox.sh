@@ -1,32 +1,45 @@
 #!/bin/bash
 
-dst_dir=~/Dropbox/Independent_grids_and_gamma/noise/e_life_v2/figures
+dst_dir=~/Dropbox/Independent_grids_and_gamma/noise/e_life_v3/figures
+supp_dst_dir=~/Dropbox/Independent_grids_and_gamma/noise/e_life_v3/figure_supplements
 output_fig_dir='output_figures'
-no_theta_output_fig_dir="no_theta/$output_fig_dir"
 panels_dir='panels'
 
 files="
-    $output_fig_dir/figure1.pdf
-    $output_fig_dir/figure2.pdf
-    $output_fig_dir/figure3.pdf
-    $output_fig_dir/figure4.pdf
-    $output_fig_dir/figure5.pdf
-    $output_fig_dir/figure6.pdf
-    $output_fig_dir/figure7.pdf
-    "
+$output_fig_dir/Figure1.pdf
+$output_fig_dir/Figure2.pdf
+$output_fig_dir/Figure3.pdf
+$output_fig_dir/Figure4.pdf
+$output_fig_dir/Figure5.pdf
+$output_fig_dir/Figure6.pdf
+$output_fig_dir/Figure7.pdf
+"
 
-#    $output_fig_dir/suppFigure_grids_vs_line_fit_err.pdf
-#    $output_fig_dir/suppFigure_grids_vs_line_slope.pdf
-#    $output_fig_dir/suppFigure_line_fit_error_vs_slope.pdf
-#    $panels_dir/suppFigure_grids_vs_bumps_exp.pdf
-#    $panels_dir/suppFigure_grids_vs_bumps.pdf
-
-no_theta_files="
-    $no_theta_output_fig_dir/figure3.pdf
-    $no_theta_output_fig_dir/figure4.pdf
-    $no_theta_output_fig_dir/figure4_details.pdf
-    $no_theta_output_fig_dir/figure5.pdf
-    $no_theta_output_fig_dir/figureS11.pdf
+supplementary_files="
+$output_fig_dir/Figure1_S1.pdf
+$output_fig_dir/Figure2_S2.pdf
+$output_fig_dir/Figure2_S3.pdf
+$output_fig_dir/Figure2_S4.pdf
+$output_fig_dir/Figure2_S5.pdf
+$output_fig_dir/Figure3_S1.pdf
+$output_fig_dir/Figure3_S2.pdf
+$output_fig_dir/Figure3_S3.pdf
+$output_fig_dir/Figure3_S4.pdf
+$output_fig_dir/Figure4_S1.pdf
+$output_fig_dir/Figure6_S1.pdf
+$output_fig_dir/Figure6_S2.pdf
+$output_fig_dir/Figure6_S3.pdf
+$output_fig_dir/Figure6_S4.pdf
+$output_fig_dir/Figure6_S5.pdf
+$output_fig_dir/Figure7_S1.pdf
+$output_fig_dir/Figure7_S2.pdf
+$output_fig_dir/Figure7_S3.pdf
+$output_fig_dir/Figure7_S4.pdf
+$output_fig_dir/Figure7_S5.pdf
+$output_fig_dir/Figure7_S6.pdf
+$output_fig_dir/Figure7_S7.pdf
+$output_fig_dir/Figure7_S8.pdf
+$output_fig_dir/Figure7_S9.pdf
 "
 
 # Copy to dropbox
@@ -39,19 +52,15 @@ do
     cp -rv $f $dst_dir
 done
 
-cp -r panels $dst_dir/
+#cp -r panels $dst_dir/
 
-
-echo "Copying no theta figures to dropbox..."
-no_theta_dst_dir=$dst_dir/no_theta
-echo $no_theta_files
+# Copy to dropbox
+echo "Copying to supplementary figures to dropbox..."
+echo $supplementary_files
 echo
-ls $no_theta_dst_dir
-for f in $no_theta_files
+ls $supp_dst_dir
+for f in $supplementary_files
 do
-    cp -rv $f $no_theta_dst_dir
+    cp -rv $f $supp_dst_dir
 done
-
-cp -r no_theta/panels $no_theta_dst_dir/
-echo "Done"
 

@@ -1,4 +1,15 @@
-'''Firing rate plotters.'''
+'''Firing rate plotters.
+
+.. currentmodule:: noisefigs.plotters.rates
+
+Classes
+-------
+
+.. autosummary::
+
+    FRSweepPlotter
+    ScatterGridsFRAllPlotter
+'''
 from __future__ import absolute_import, print_function
 
 import numpy as np
@@ -66,10 +77,8 @@ def plotFRGridThresholded(dataSpace, threshold, FRTypes, iterList, NTrials, **kw
     return plotThresholdHist(GS.flatten(), threshold, FR.flatten(), **kw)
 
 
-
-##############################################################################
-# Parameter sweeps of E and I firing rates
 class FRSweepPlotter(SweepPlotter):
+    '''Parameter sweeps of E and I firing rates.'''
     def __init__(self, *args, **kwargs):
         super(FRSweepPlotter, self).__init__(*args, **kwargs)
 
@@ -161,9 +170,8 @@ class FRSweepPlotter(SweepPlotter):
                         **kw)
 
 
-##############################################################################
-# Scatter plot of gridness score vs. firing rates
 class ScatterGridsFRAllPlotter(FigurePlotter):
+    '''Scatter plot of gridness score vs. firing rates.'''
     def __init__(self, *args, **kwargs):
         super(ScatterGridsFRAllPlotter, self).__init__(*args, **kwargs)
 
@@ -211,64 +219,3 @@ class ScatterGridsFRAllPlotter(FigurePlotter):
 
         fname = self.get_fname("/scatter_FRE_vs_grids.pdf")
         fig.savefig(fname, dpi=300, transparent=True)
-
-
-###############################################################################
-#histFigSize     = (3.75, 2.2)
-#histLeft    = 0.25
-#histBottom  = 0.3
-#histRight   = 0.95
-#histTop     = 0.8
-#histTransparent = True
-#
-#if args.FRHistograms or args.all:
-#    for EIType in ['E', 'I_10']:
-#        if EIType == 'E':
-#            fname = outputDir + "/suppFigure_grids_FR-histogram_FRE{0}.pdf"
-#            xlabel='Firing rate of E cells (Hz)'
-#            legLoc = (0.8, 0.6)
-#            dataRange = (0, 10)
-#            sigmaTitle = True
-#        else:
-#            fname = outputDir + "/suppFigure_grids_FR-histogram_FRI{0}.pdf"
-#            xlabel='Firing rate of I cells (Hz)'
-#            legLoc = (0.1, 0.6)
-#            dataRange = (0, 200)
-#            sigmaTitle = False
-#
-#        NTrialsGrids = 3
-#        typesFR = ['FR', EIType]
-#        threshold = 0.20 # Gridness score threshold
-#        kw = {}
-#        kw['range'] = dataRange
-#        kw['bins'] = 20
-#
-#        for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
-#            fig = plt.figure(figsize=histFigSize)
-#            ax = fig.add_axes(Bbox.from_extents(histLeft, histBottom, histRight,
-#                histTop))
-#
-#            plotFRGridThresholded(
-#                    ps.grids[ns_idx], threshold, typesFR,
-#                    iterList, NTrialsGrids,
-#                    xlabel=xlabel,
-#                    ignoreNaNs=ignoreNaNs,
-#                    sigmaTitle=sigmaTitle,
-#                    noise_sigma=noise_sigma,
-#                    alpha=0.5,
-#                    normed=True,
-#                    **kw)
-#            #ax.xaxis.set_major_locator(ti.MultipleLocator(10))
-#            #ax.yaxis.set_major_locator(ti.MultipleLocator(0.5))
-#            #ax.yaxis.set_minor_locator(ti.MultipleLocator(0.25))
-#
-#            if (ns_idx == 0 and EIType == 'E'):
-#                leg = ['$gridness < {0}$'.format(threshold),
-#                        '$gridness \geq {0}$'.format(threshold)]
-#                l = ax.legend(leg, loc=(0.5, 0.5), fontsize='small',
-#                        frameon=False)
-#
-#            fig.savefig(fname.format(int(noise_sigma)), dpi=300,
-#                    transparent=histTransparent)
-#            plt.close()
-#

@@ -1,5 +1,19 @@
-'''
-Visitors that perform data analysis on signals (i.e. voltage clamp data).
+'''Visitors that perform data analysis on signals
+
+.. currentmodule:: grid_cell_model.visitors.signals
+
+These could be membrane potentials, voltage clamp data, synaptic currents, etc.
+
+Classes
+-------
+
+.. inheritance-diagram:: grid_cell_model.visitors.signals
+    :parts: 2
+
+.. autosummary::
+
+    AutoCorrelationVisitor
+    CrossCorrelationVisitor
 '''
 from __future__ import absolute_import, print_function
 
@@ -7,8 +21,9 @@ import logging
 
 import numpy as np
 
-from ..analysis import signal as asignal
-from ..analysis.signal import localExtrema, butterBandPass, autoCorrelation
+from gridcells.analysis.signal import corr, acorr
+
+from ..analysis.signal import localExtrema, butterBandPass
 from ..data_storage.sim_models import ei as simei
 from ..otherpkg.log import log_info, getClassLogger
 from .interface import DictDSVisitor
@@ -52,8 +67,6 @@ def findFreq(ac, dt, ext_idx, ext_t):
     max1     = ac[max1_idx]
 
     return (1./max1_t, max1)
-
-
 
 
 class AutoCorrelationVisitor(DictDSVisitor):
@@ -143,8 +156,8 @@ class AutoCorrelationVisitor(DictDSVisitor):
             sig = sig[startIdx:endIdx]
             sig = butterBandPass(sig, dt*self.dtMult, self.bandStart,
                     self.bandEnd)
-            ac = autoCorrelation(sig - np.mean(sig), max_lag=self.maxLag/dt,
-                    norm=self.norm)
+            ac = acorr(sig - np.mean(sig), max_lag=self.maxLag/dt,
+                       norm=self.norm)
             ext_idx, ext_t = localExtrema(ac)
             acVec.append(ac)
 
@@ -187,7 +200,6 @@ class AutoCorrelationVisitor(DictDSVisitor):
             a['ac_dt'] = dt
         else:
             log_info("AutoCorrelationVisitor", "Data present. Skipping analysis.")
-
 
 
 class CrossCorrelationVisitor(DictDSVisitor):
@@ -237,10 +249,10 @@ class CrossCorrelationVisitor(DictDSVisitor):
 
 
     def extractCCStat(self, mon, out):
-        '''
-        Extract x-correlation statistics from a monitor.
+        '''Extract x-correlation statistics from a monitor.
 
-        For each pair of monitored neurons
+        This is done for each pair of monitored neurons
+
         Parameters
         ----------
         mon : list of dicts
@@ -275,8 +287,8 @@ class CrossCorrelationVisitor(DictDSVisitor):
                     endIdx2 = endIdx1
                 sig1 = sig1[startIdx:endIdx1]
                 sig2 = sig2[startIdx:endIdx2]
-                C = asignal.corr(sig1, sig2, mode='range',
-                        lag_start=lag_start, lag_end=lag_end)
+                C = corr(sig1, sig2, mode='range', lag_start=lag_start,
+                         lag_end=lag_end)
                 if (self.norm):
                     C /= np.max(C)
                 xcOut2.append(C)

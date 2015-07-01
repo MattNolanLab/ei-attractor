@@ -1,4 +1,17 @@
-'''Nest-specific implementation of the grid cell model.'''
+'''Nest-specific implementation of the grid cell model.
+
+.. currentmodule:: grid_cell_model.models.gc_net_nest
+
+Classes
+-------
+.. autosummary::
+
+    NestGridCellNetwork
+    BasicGridCellNetwork
+    ConstantVelocityNetwork
+    PosInputs
+    ConstPosInputs
+'''
 from __future__ import absolute_import, print_function
 
 import logging
@@ -12,7 +25,7 @@ from . import gc_neurons
 from .gc_net import GridCellNetwork
 from .place_input import PlaceCellInput
 from .place_cells import UniformBoxPlaceCells
-from ..data_storage import DataStorage
+from simtools.storage import DataStorage
 
 logger = logging.getLogger(__name__)
 gcnLogger = logging.getLogger('{0}.{1}'.format(__name__,
@@ -754,7 +767,8 @@ class NestGridCellNetwork(GridCellNetwork):
 
 
 class BasicGridCellNetwork(NestGridCellNetwork):
-    '''
+    '''The default grid cell network.
+
     A grid cell network that generates the common network and creates a basic
     set of spike monitors and state monitors which are generically usable in
     most of the simulation setups.
@@ -777,7 +791,8 @@ class BasicGridCellNetwork(NestGridCellNetwork):
     def __init__(self, options, simulationOpts=None,
                  nrec_spikes=(None, None),
                  stateRecord_type='middle-center',
-                 stateRecParams=(None, None)):
+                 stateRecParams=(None, None),
+                 rec_spikes_probabilistic=False):
         '''
         TODO
         '''
@@ -792,10 +807,19 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         if self.nrecSpikes_i is None:
             self.nrecSpikes_i = self.Ni_x * self.Ni_y
 
-        self.spikeMon_e  = self.getSpikeDetector("E",
-                                                 np.arange(self.nrecSpikes_e))
-        self.spikeMon_i  = self.getSpikeDetector("I",
-                                                 np.arange(self.nrecSpikes_i))
+        if rec_spikes_probabilistic == False:
+            self.spikeMon_e  = self.getSpikeDetector("E",
+                                                     np.arange(self.nrecSpikes_e))
+            self.spikeMon_i  = self.getSpikeDetector("I",
+                                                     np.arange(self.nrecSpikes_i))
+        else:
+            self.spikeMon_e  = self.getSpikeDetector(
+                "E", np.sort(np.random.choice(len(self.E_pop), self.nrecSpikes_e,
+                                      replace=False)))
+            self.spikeMon_i  = self.getSpikeDetector(
+                "I", np.sort(np.random.choice(len(self.I_pop),
+                                              self.nrecSpikes_i,
+                                              replace=False)))
 
         # States
         if stateRecord_type == 'middle-center':
@@ -995,10 +1019,11 @@ class ConstantVelocityNetwork(BasicGridCellNetwork):
 
     def getMinimalSaveData(self, **kw):
         '''
-        Keyword arguments:
-        ``espikes`` : bool
+        Parameters
+        ----------
+        espikes : bool
             Whether to return spikes from the E population. Defaults to True.
-        ``ispikes`` : bool
+        ispikes : bool
             Whether to return spikes from the I population. Defaults to False.
         '''
         out = self.getNetParams()

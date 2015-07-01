@@ -20,7 +20,7 @@ _config = ConfigObj({
     'iter_list': ['g_AMPA_total', 'pAMPA_sigma'],
 
     'grids_data_root':      None,
-    'bump_data_root':       'simulation_data/pAMPA_sigma/sigma_sweep',
+    'bump_data_root':       'simulation_data/other/ee_fine_tuning/pAMPA_sigma/sigma_sweep',
     'vel_data_root':        None,
     'const_pos_data_root':  None,
     'singleDataRoot':       None,

@@ -7,7 +7,7 @@ from noisefigs.env import NoiseEnvironment
 
 import config
 
-singleDataRoot = 'simulation_data/submission/single_neuron'
+singleDataRoot = 'simulation_data/single_neuron'
 
 parser = flagparse.FlagParser()
 parser.add_flag('--grids')

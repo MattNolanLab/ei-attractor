@@ -11,14 +11,14 @@ scale_factor = 1.
 tick_width = 1. * scale_factor
 tick_len   = 6. * scale_factor
 
-DATA_ROOT = ['simulation_data', 'submission', 'i_place_cells']
+DATA_ROOT = ['simulation_data', 'i_place_cells']
 
 
 def get_config():
     '''Return the configuration object.'''
     _default_config = ConfigObj()
     _default_config.merge({
-        'grids_data_root': os.path.join(*(DATA_ROOT + ['grids'])),
+        'grids_data_root': os.path.join(*(DATA_ROOT + ['grids_max_rate_100_field_std_80'])),
         'bump_data_root': None,
         'vel_data_root':  None,
         'const_pos_data_root': None,
@@ -52,7 +52,7 @@ def get_config():
             'ytick.direction'   : 'out',
         },
 
-        'GenericGridSweepsPlotter': {
+        'IPCGridSweepsPlotter': {
             'scale_factor': 1.,
             'cbar': [1, 1, 1],
             'cbar_kw': dict(

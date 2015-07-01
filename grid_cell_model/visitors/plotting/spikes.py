@@ -1,5 +1,7 @@
-'''
-Visitors that perform plotting of spikes.
+'''Visitors that perform plotting of spikes.
+
+.. currentmodule:: grid_cell_model.visitors.plotting.spikes
+
 '''
 from __future__ import absolute_import, print_function
 
@@ -47,24 +49,24 @@ class FiringRatePlotter(interface.DictDSVisitor):
         data = ds.data
         a = data['analysis']
         fig = plt.figure(figsize=self.figSize)
-        
+
         # E firing rate
         FR_e  = a['FR_e']['popSliding']
         FRt_e = a['FR_e']['popSlidingTimes']
-        
+
         axE = fig.add_subplot(211)
         signalPlot(FRt_e, FR_e, axE, color='red')
-        axE.set_ylabel('E rate (Hz)') 
+        axE.set_ylabel('E rate (Hz)')
         axE.set_xlim([0, FRt_e[-1]])
 
 
         # I firing rate
         FR_i  = a['FR_i']['popSliding']
         FRt_i = a['FR_i']['popSlidingTimes']
-        
+
         axI = fig.add_subplot(212)
         signalPlot(FRt_i, FR_i, axI, color='blue')
-        axI.set_ylabel('I rate (Hz)') 
+        axI.set_ylabel('I rate (Hz)')
         axI.set_xlim([0, FRt_i[-1]])
 
         fig.suptitle("gE idx: {r}, gI idx: {c}, trial: {tr}".format(
@@ -147,13 +149,13 @@ class FiringRatePlotter(interface.DictDSVisitor):
 #            monName = 'spikeMon_i'
 #            NName   = 'net_Ni'
 #
-#         
+#
 #        # Pick the most-spiking neurons
 #        spikes = MonitoredSpikes(data, monName, NName)
 #        rate = spikes.avgFiringRate(0, simT)
 #        maxRateIdx = np.argsort(rate)
 #        ISIs = spikes.ISI(maxRateIdx[0:self.nRows*self.nCols])
-#        
+#
 #        ## ISI histogram plots
 #        #fig = plt.figure(figsize=(11.69, 6.57))
 #        #gs = plt.GridSpec(self.nRows, self.nCols)
@@ -163,7 +165,7 @@ class FiringRatePlotter(interface.DictDSVisitor):
 #        #        if (it >= spikes.N):
 #        #            break
 #
-#        #        ax = plt.subplot(gs[r, c]) 
+#        #        ax = plt.subplot(gs[r, c])
 #        #        ax.hist(ISIs[it], **self.hist_kw)
 #        #        if (r == self.nRows - 1):
 #        #            ax.set_xlabel('ISI (ms)')
@@ -188,7 +190,7 @@ class FiringRatePlotter(interface.DictDSVisitor):
 #                    if (it >= spikes.N):
 #                        break
 #
-#                    ax = plt.subplot(gs[r, c]) 
+#                    ax = plt.subplot(gs[r, c])
 #                    ax.plot(winLens, CVs[it])
 #                    if (r == self.nRows - 1):
 #                        ax.set_xlabel('Window (ms)')
@@ -200,4 +202,4 @@ class FiringRatePlotter(interface.DictDSVisitor):
 #            fname = '{0}_isi_CV_window.pdf'.format(fileNameTemplate)
 #            fig.savefig(fname)
 #
-#        
+#

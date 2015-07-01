@@ -1,109 +1,187 @@
--------------------------------------------------
-Installation instructions for the grid cell model
--------------------------------------------------
+==============================================
+Installation instructions for ``ei-attractor``
+==============================================
 
-There are a number of Prerequisites_ that the user must install in order to
-start simulation.
+Please follow all the following instructions carefully. Skip through the relevant
+sections only if you know what you are doing.
 
-Git
-===
 
-You will need git to clone this repository. After cloning, you need to
-initialize the submodules that the repository depends on by running ``git
+Download and initialize the repository
+======================================
+
+You will need git to clone this repository using git. After cloning, you need
+to initialize the submodules that the repository depends on by running ``git
 submodule init`` and ``git submodule update``.
 
-Prerequisites
-=============
 
-The model requires some common prerequisites:
+How to compile the documentation only
+=====================================
 
-- Python 2.6/2.7
-- numpy  >= 1.6.2
-- scipy  >= 0.11.0
-- ideally matplotlib >= 1.1.1
-- in some cases the hdf5 library, but this is rather optional. If you don't
-  want to use hdf5 in your simulation scripts, you will need to set the
-  correct output data format (this is currently in a TODO state).
-- Currently, the model also requires the gcc C++ compiler, as some of the
-  network setup routines are implemented using C++ code generator from the
-  scipy package (weave) to speed up network setup. Also, some data analysis
-  tools use this code generation technique.
+The documentation source files are in the ``doc`` directory. After downloading
+and initializing the repository (see previous step), do the following steps:
 
-All of these should be possible to install with your favorite installer (pip,
-easy_install, ...). Alternatively, it should be possible to run ``pip install
--r requirements_first.txt`` in the root directory, followed by ``pip install -r
-requirements.txt``. This should install all the required python packages.
+  #. (optional) Install `virtual environment`_, create an empty one and
+     activate it. This is highly recommended, but if you do not want to do
+     this step, use the ``--user`` parameter to ``pip`` when running the next
+     steps.
 
+  #. In the root of the project, run ``pip install -r requirements_doc.txt``.
+     This will use ``requirements_doc.txt`` to install Sphinx_ and associated
+     package.
 
-Brian version
--------------
+  #. Change your working directory to ``doc`` and run ``make html``. Only the
+     HTML version of the documentation has been tested.
 
-If you are planning to use brian_ (which is obsolete however), you will need to
-install the `brian simulator`_ (>= 1.4.0).
-
-However, the brian version is no longer maintained.
+The documentation files are in ``_build/html`` and the main page is
+``index.html``. If you would like to install the whole project (and run
+simulations, build figures, etc.) follow the next steps.
 
 
-NEST version
-------------
+Install the project
+===================
 
-If you are planning to use NEST_ for simulations, you need these extra
-programs:
+The model requires some prerequisites, in particular, it requires some
+non-python packages and some python packages.
 
-- C++ compiler (gcc, mingw, ...)
+Install non-Python packages
+---------------------------
+
+- C/C++ compiler.
+
 - `NEST simulator`_ == 2.2.0 (and ideally not using the later versions, since
-  there have been API changes)
+  there have been API changes). It is recommended to do the installation
+  process inside the Python `virtual environment`_ that you are going to use
+  for simulations.
+
+- The HDF5_ library. Most Linux/Unix distributions come with HDF5 installed.
+  However, it might be worth to check the version and update to the latest one
+  (>= 1.8.12). On Windows, you need to help yourself as you can...
+
+- SWIG_ >= 3.0. This is not required by the project, but it is required by the
+  gridcells_ package and so is also listed here.
+
+Install Python packages
+-----------------------
+
+There are a number of requirements, but once you have installed the `non-Python
+packages`_, change to the root of the project and do these two steps (it is
+recommended to do this in a `virtual environment`_ to avoid clashes with other
+python packages):
+
+1. ``pip install -r requirements_first.txt``
+2. ``pip install -r requirements.txt``
+
+Make sure that there are no errors during the process and that all the packages
+are installed successfully.
 
 
-.. _brian: http://briansimulator.org
-.. _brian simulator: http://briansimulator.org
-.. _NEST: http://www.nest-initiative.org
-.. _NEST simulator: http://www.nest-initiative.org
+Make sure PyNEST is properly installed
+--------------------------------------
 
-In order to run the simulations, it is also necessary to compile and install
-the gridcells NEST_ module. The module is present in
-``grid_cell_model/nest/gridcells``. Please consult the NEST_ documentation
-web page for instructions on how to install NEST_ modules.
+Try to change directory to somewhere outside of the NEST_ installation root
+directory. Then try to run python and import the ``nest`` package: ``import
+nest``. If you see something like: 
 
+::
 
-Running a simulation
-====================
+  >>> import nest
+  
+                -- N E S T --
+  
+    Copyright (C) 2004 The NEST Initiative
+    Version 2.2.2 Jun  2 2015 09:37:25
+  
+  This program is provided AS IS and comes with
+  NO WARRANTY. See the file LICENSE for details.
+  
+  Problems or suggestions?
+    Website     : http://www.nest-initiative.org
+    Mailing list: nest_user@nest-initiative.org
+  
+  Type 'nest.help()' to find out more about NEST.
 
-All the simulation scripts are in the grid_cell_model/simulations directory.
-For every separate simulation step, create one subdirectory with a meaningful
-name and organize your simulation runs and data into that folder.
+Then the installation was successful. If you see an import error:
 
-There are several types of files:
+::
 
-*default_params.py*
-    Contains default parameters for this particular set of simulations. Each
-    specific setup within the simulation directory can then override these
-    default parameters.
+  >>> import nest
+  Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+  ImportError: No module named nest
 
-*submit_\*.py*
-    A script that submits a particular simulation run(s). It can run a single
-    simulation or one can define a parameter sweep over a given range of
-    parameters.
+then there is a problem. There are several ways how to troubleshoot this. One
+option is to set the ``PYTHONPATH`` environment variable to point to the installed
+package. However, if you are using the `virtual environment`_ (highly
+recommended anyway), the best solution is to do the following steps:
 
-    As an example on how to override the default parameters, see for instance
-    005_figures/submit_bump_stability.py
+1. Activate your virtual environment
 
-    These scripts are **simulator independent**.
-
-*simulation_\*.py*
-    A script that performs the actual simulation run. It sets up the model and
-    the parameters, runs the simulation and extracts all the necessary output
-    data, and usually saves the data into a user-specified file format
-    (currently a MAT file).
-
-    These scripts are usually simulator dependent, at least for now. That means
-    that a Brian version will not work with a NEST version.
-
-The submitting scripts currently support submitting to a workstation or to Sun
-Grid Engine cluster (using qsub). This can be selected inside the submit_*.py
-script. Also, the workstation runs can be submitted in a blocking mode (each
-successive simulation waits until the previous one has finished) or in a
-non-blocking mode (all simulations are run at once concurrently). See the
-blocking parameter in these scripts.
+2. After installing NEST_ itself (``make and make install``), change to
+   directory ``pynest`` *inside* the NEST_ source package and run ``pip
+   install``. This should install all the necessary Python bindings into your
+   virtual environment.  After this, change directory to *outside* the NEST_
+   source package and repeat the steps above to test whether PyNEST is present.
 
 
+Install the grid cell NEST_ module
+----------------------------------
+
+It is also necessary to compile and install the gridcells NEST_ module, which
+is a set of C++ classes describing the behavior of single neurons within the
+simulator kernel. The module is present in ``grid_cell_model/nest/gridcells``.
+Please follow the instructions in `Writing an extension module`_ on the NEST_
+website. There is no need to set up anything related to SLI (unless you want to
+use SLI). After successful installation, do not forget to set the
+``LD_LIBRARY_PATH`` environment variable to point to the location of the
+installed module (on OSX the ``DYLD_LIBRARY_PATH`` variable; see the
+instructions).
+
+To test the module, run python and run ``import nest;
+nest.Install('gridcellsmodule')``. You should get this output:
+
+::
+
+  >>> import nest; nest.Install('gridcellsmodule')
+  
+                -- N E S T --
+  
+    Copyright (C) 2004 The NEST Initiative
+    Version 2.2.2 Jun  2 2015 12:39:12
+  
+  This program is provided AS IS and comes with
+  NO WARRANTY. See the file LICENSE for details.
+  
+  Problems or suggestions?
+    Website     : http://www.nest-initiative.org
+    Mailing list: nest_user@nest-initiative.org
+  
+  Type 'nest.help()' to find out more about NEST.
+  
+  Jun 02 13:19:24 Install [Info]:
+      loaded module Grid cells NEST module
+
+
+Running a demo simulation
+=========================
+
+Change directory to ``grid_cell_model/simulations/simulation_demo`` and run
+``./submit_test_EI.py -h``. This should print the help and description of the
+simulation parameters. The typical usage of the way simulations are submitted
+in this project is ``./submit_test_EI.py -v DEBUG --time=1e3 --ntrials=1
+workstation output_dir``.
+
+This will run the simulation and save data into an appropriate directory in
+``output_dir``. If you get any errors, you need to go back to the previous
+steps and make sure they are all completed successfully. If this step is
+successfull you will find some HDF5_ file(s) in the output directory and you
+are ready to run your own simulations.
+
+.. _HDF5: https://www.hdfgroup.org/HDF5/ 
+.. _SWIG: http://www.swig.org
+.. _NEST: http://www.nest-simulator.org
+.. _NEST simulator: http://www.nest-simulator.org
+.. _Writing an extension module: http://nest.github.io/nest-simulator/extension_modules
+.. _gridcells: https://github.com/lsolanka/gridcells
+.. _virtual environment: http://docs.python-guide.org/en/latest/dev/virtualenvs/
+.. _non-python packages: `Install non-Python packages`_
+.. _Sphinx: http://sphinx-doc.org

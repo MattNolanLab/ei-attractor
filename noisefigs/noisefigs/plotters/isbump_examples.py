@@ -1,6 +1,16 @@
-'''
+'''Examples of consecutive snapshots of network activity.
+
+.. currentmodule:: noisefigs.plotters.isbump_examples
+
 Figure showing examples of consecutive snapshots of population firing rates,
 together with the fraction of snaphots classified as those with bumps.
+
+Classes
+-------
+
+.. autosummary::
+
+    IsBumpExamplePlotter
 '''
 from __future__ import absolute_import, print_function
 
@@ -18,13 +28,16 @@ __all__ = [
 ]
 
 ##############################################################################
-# Plot examples of bump snapshots for different settings of row/col and
-# annotated sweeps corresponding to the examples.
 trialNum = 0
 snapshot_tstep = 10
 exampleFigSize = (8, 1.2)
 
 class IsBumpExamplePlotter(FigurePlotter):
+    '''Plot examples of successive bump snapshots.
+
+    These snapshots can be plotted for different settings of row/col and
+    annotated sweeps corresponding to the examples.
+    '''
     def __init__(self, *args, **kwargs):
         super(IsBumpExamplePlotter, self).__init__(*args, **kwargs)
 

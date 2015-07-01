@@ -1,3 +1,26 @@
+'''Plotters for various bump related data.
+
+.. currentmodule:: noisefigs.plotters.bumps
+
+Classes
+-------
+
+.. autosummary::
+
+    BumpSigmaSweepPlotter
+    BumpDriftAtTimePlotter
+    BumpDiffAtInitPlotter
+    BumpDiffResetPlotter
+    BumpExamplePlotter
+    BumpExampleColorbarPlotter
+    BumpSigmaDetailedNoisePlotter
+    MainBumpFormationPlotter
+    GEProfileWidthBumpPlotter
+    Generic2DPBumpPlotter
+    MainScatterGridsBumpsPlotter
+    MainIsBumpPlotter
+    Generic1DPBumpPlotter
+'''
 from __future__ import absolute_import, print_function
 
 import numpy as np
@@ -43,7 +66,7 @@ exampleRC   = ( (5, 15), (15, 5) )
 exampleIdx  = [(0, 0), (0, 0), (0, 0)] # (row, col)
 
 class BumpSigmaSweepPlotter(SweepPlotter):
-    ''''Bump sigma sweeps.'''
+    '''Bump sigma sweeps.'''
     bump_vmin = 0
     bump_vmax = 0.421
 
@@ -266,6 +289,7 @@ class BumpExamplePlotter(FigurePlotter):
 
 
 class BumpExampleColorbarPlotter(FigurePlotter):
+    '''Colorbar for bump examples.'''
     def __init__(self, *args, **kwargs):
         super(BumpExampleColorbarPlotter, self).__init__(*args, **kwargs)
 
@@ -292,8 +316,8 @@ class BumpSigmaDetailedNoisePlotter(FigurePlotter):
         iter_list = self.config['iter_list']
         sigma_bump_text = self.config['bump_sigma']['sigma_bump_text']
 
-        EI13Root  = 'simulation_data/submission/detailed_noise/gamma_bump/EI-1_3'
-        EI31Root  = 'simulation_data/submission/detailed_noise/gamma_bump/EI-3_1'
+        EI13Root  = 'simulation_data/main_network/detailed_noise/gamma_bump/EI-1_3'
+        EI31Root  = 'simulation_data/main_network/detailed_noise/gamma_bump/EI-3_1'
         detailedShape = (31, 9)
 
         EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
@@ -465,6 +489,8 @@ class MainBumpFormationPlotter(BumpFormationBase):
         iter_list = self.config['iter_list']
         xlabel = self.myc.get('xlabel', None)
         xticks = myc['xticks']
+        vmin = self.myc.get('vmin', self.bump_vmin)
+        vmax = self.myc.get('vmax', self.bump_vmax)
 
         for ns_idx, noise_sigma in enumerate(ps.noise_sigmas):
             fname = self.get_fname(
@@ -491,7 +517,7 @@ class MainBumpFormationPlotter(BumpFormationBase):
                     ax=ax,
                     cbar=self.myc['cbar'][ns_idx],
                     cbar_kw=myc['cbar_kw'],
-                    vmin=self.bump_vmin, vmax=self.bump_vmax,
+                    vmin=vmin, vmax=vmax,
                     annotations=self.get_ann()[ns_idx],
                     axis_setting=self.myc.get('axis_setting', 'scaled'),
                     **kw)
@@ -558,6 +584,8 @@ class Generic2DPBumpPlotter(BumpFormationBase):
         ylabel = self.myc.get('ylabel', None)
         xticks = myc['xticks']
         yticks = myc['yticks']
+        vmin = self.myc.get('vmin', self.bump_vmin)
+        vmax = self.myc.get('vmax', self.bump_vmax)
         normalize_type = self.myc.get('normalize_type', (None, None))
         l, b, r, t = self.myc['bbox']
         fname = self.myc.get('fname', "bumps_pbumps_generic_{ns}.pdf")
@@ -584,7 +612,7 @@ class Generic2DPBumpPlotter(BumpFormationBase):
                 ax=ax,
                 cbar=self.myc['cbar'][ns_idx],
                 cbar_kw=myc['cbar_kw'],
-                vmin=self.bump_vmin, vmax=self.bump_vmax,
+                vmin=vmin, vmax=vmax,
                 annotations=self.get_ann()[ns_idx],
                 axis_setting=self.myc.get('axis_setting', 'scaled'))
             ax.axis('tight')

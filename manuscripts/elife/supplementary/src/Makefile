@@ -2,9 +2,10 @@
 #
 #
 # asi budete chtit prejmenovat:
-CO=SI_text
+CO=SupplementaryMethods
 IMAGES = fig/
-DROPBOX_DIR = ~/Dropbox/Independent_grids_and_gamma/noise/e_life_v2/
+DROPBOX_DIR = ~/Dropbox/Independent_grids_and_gamma/noise/e_life_v3/
+DROPBOX_SRC_DIR = $(DROPBOX_DIR)/supplementary_methods_sources
 
 
 .PHONY: fig $(CO).pdf
@@ -15,6 +16,9 @@ final:
 	cd fig; $(MAKE) grafy
 	$(MAKE) pdf
 
+once:
+	pdflatex $(CO)
+
 pdf: fig $(CO).pdf
 
 $(CO).ps: $(CO).dvi
@@ -23,6 +27,7 @@ $(CO).ps: $(CO).dvi
 $(CO).pdf: 
 	pdflatex $(CO)
 	bibtex $(CO)
+	pdflatex $(CO)
 	pdflatex $(CO)
 
 $(CO).dvi: $(CO).tex $(CO).bib fig
@@ -46,3 +51,4 @@ fig:
 
 dropbox:
 	cp $(CO).pdf ${DROPBOX_DIR}
+	cp $(CO).tex sfmath.sty $(CO)Bib.bib velocity_histograms.pdf $(DROPBOX_SRC_DIR)

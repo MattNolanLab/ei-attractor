@@ -1,4 +1,18 @@
-'''Handle metadata of parameter spaces.'''
+'''Handle metadata of parameter spaces.
+
+This module was created to extract some meta-data from the 1D/2D parameter
+spaces (output of simulations).
+
+Classes
+-------
+.. autosummary::
+
+    MetaDataExtractor
+    GenericExtractor
+    EISweepExtractor
+    GEProfileWidthExtractor
+    Extractor1D
+'''
 from __future__ import absolute_import, print_function, division
 
 from .param_space import DataSpace

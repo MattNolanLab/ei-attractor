@@ -15,8 +15,7 @@ scale_factor = 1.
 tick_width = 1. * scale_factor
 tick_len   = 6. * scale_factor
 
-ROOT_DIR = ['simulation_data', 'submission', 'i_surround',
-            'original_e_surround']
+ROOT_DIR = ['simulation_data', 'i_surround', 'original_e_surround']
 
 
 def get_config():
@@ -195,6 +194,22 @@ def get_config():
             'plot_contours': [0, 0, 0],
             'vmin': -0.11,
             'vmax': 1.531,
+        },
+
+        'GenericGridSweepsPlotter': {
+            'cbar_kw': dict(
+                label      = 'Gridness score',
+                location    = 'right',
+                shrink      = 0.8,
+                pad         = .05,
+                ticks      = ti.MultipleLocator(0.3),
+                rasterized  = True
+            ),
+
+            'xticks': [1, 1, 1],
+            'vmin': None,
+            'vmax': None,
+            'ann': [None, None, None],
         },
 
     })

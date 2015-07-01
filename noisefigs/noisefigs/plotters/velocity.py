@@ -1,7 +1,23 @@
-#!/usr/bin/env python
-#
-'''
-Everything related to velocity: sweeps, lines, etc.
+'''Everything related to velocity: sweeps, lines, etc.
+
+.. currentmodule:: noisefigs.plotters.velocity
+
+Classes
+-------
+
+.. autosummary::
+
+    VelocityRasterPlotter
+    VelocityRatePlotter
+    VelocityRasterZoomPlotter
+    GridsLineErrScatterPlotter
+    GridsLineSlopeScatterPlotter
+    LineErrSlopeScatterPlotter
+    VelFitErrSweepPlotter
+    VelFitStdSweepPlotter
+    VelSlopeSweepPlotter
+    VelLinesPlotter
+    GridsVelFitErrProbabilityPlotter
 '''
 import logging
 
@@ -40,9 +56,8 @@ __all__ = [
 rasterRC      = [(5, 15), (5, 15), (5, 15)] # (row, col)
 
 
-################################################################################
-# Examples of velocity fitting lines
 class VelLinesPlotter(FigurePlotter):
+    '''Examples of velocity fitting lines.'''
     def __init__(self, *args, **kwargs):
         super(VelLinesPlotter, self).__init__(*args, **kwargs)
 
@@ -152,8 +167,8 @@ class VelLinesPlotter(FigurePlotter):
 
 
 ###############################################################################
-#EI13Root  = 'simulation_data/submission/detailed_noise/velocity/EI-1_3'
-#EI31Root  = 'simulation_data/submission/detailed_noise/velocity/EI-3_1'
+#EI13Root  = 'simulation_data/main_network/detailed_noise/velocity/EI-1_3'
+#EI31Root  = 'simulation_data/main_network/detailed_noise/velocity/EI-3_1'
 #detailedShape = (31, 9)
 #
 #EI13PS = JobTrialSpace2D(detailedShape, EI13Root)
@@ -288,11 +303,8 @@ class VelSlopeSweepPlotter(SweepPlotter):
                             **self.config['sweeps']['contours_kwargs'])
 
 
-##############################################################################
-#                           Raster and rate plots
-##############################################################################
-
 class VelocityRasterPlotter(FigurePlotter):
+    '''Raster plots during velocity calibration.'''
     def __init__(self, *args, **kwargs):
         super(VelocityRasterPlotter, self).__init__(*args, **kwargs)
 
@@ -329,10 +341,8 @@ class VelocityRasterPlotter(FigurePlotter):
             plt.close()
 
 
-
-##############################################################################
-
 class VelocityRatePlotter(FigurePlotter):
+    '''Population-average firing rates during velocity calibration.'''
     def __init__(self, *args, **kwargs):
         super(VelocityRatePlotter, self).__init__(*args, **kwargs)
 
@@ -388,9 +398,6 @@ class VelocityRatePlotter(FigurePlotter):
             plt.close()
 
 
-##############################################################################
-#                           Raster and rate zoom-ins
-##############################################################################
 class VelocityRasterZoomPlotter(FigurePlotter):
     def __init__(self, *args, **kwargs):
         super(VelocityRasterZoomPlotter, self).__init__(*args, **kwargs)
@@ -429,9 +436,8 @@ class VelocityRasterZoomPlotter(FigurePlotter):
             plt.close()
 
 
-##############################################################################
-# Scatter plot of gridness score vs. bump speed line fit error
 class GridsLineErrScatterPlotter(FigurePlotter):
+    '''Scatter plot of gridness score vs. bump speed line fit error.'''
     def __init__(self, *args, **kwargs):
         super(GridsLineErrScatterPlotter, self).__init__(*args, **kwargs)
 
@@ -472,9 +478,8 @@ class GridsLineErrScatterPlotter(FigurePlotter):
         fig.savefig(fname, dpi=300)
 
 
-##############################################################################
-# Scatter plot of gridness score vs. bump speed line slope
 class GridsLineSlopeScatterPlotter(FigurePlotter):
+    '''Scatter plot of gridness score vs. bump speed line slope.'''
     def __init__(self, *args, **kwargs):
         super(GridsLineSlopeScatterPlotter, self).__init__(*args, **kwargs)
 
@@ -515,9 +520,8 @@ class GridsLineSlopeScatterPlotter(FigurePlotter):
         fig.savefig(fname, dpi=300)
 
 
-##############################################################################
-# Scatter plot of line fit error vs line slope
 class LineErrSlopeScatterPlotter(FigurePlotter):
+    '''Scatter plot of line fit error vs line slope.'''
     def __init__(self, *args, **kwargs):
         super(LineErrSlopeScatterPlotter, self).__init__(*args, **kwargs)
 
@@ -662,7 +666,7 @@ class VelFitStdSweepPlotter(SweepPlotter):
 
 
 class GridsVelFitErrProbabilityPlotter(ProbabilityPlotter):
-    '''Probability plots of Grids vs. velocity fit error.'''
+    '''Probability plots of Grids as a function velocity fit error.'''
     def __init__(self, *args, **kwargs):
         super(GridsVelFitErrProbabilityPlotter, self).__init__(*args, **kwargs)
 

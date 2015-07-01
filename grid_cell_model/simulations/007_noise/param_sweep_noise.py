@@ -5,33 +5,36 @@
 #   Detailed noise level parameter sweeps.
 #
 #       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
+#
 #       This program is free software: you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
 #       the Free Software Foundation, either version 3 of the License, or
 #       (at your option) any later version.
-#       
+#
 #       This program is distributed in the hope that it will be useful,
 #       but WITHOUT ANY WARRANTY; without even the implied warranty of
 #       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #       GNU General Public License for more details.
-#       
+#
 #       You should have received a copy of the GNU General Public License
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from submitting.factory   import SubmitterFactory
-from submitting.arguments import ArgumentCreator
-from otherpkg.log         import log_info
-from data_storage         import DataStorage
+from grid_cell_model.submitting.factory import SubmitterFactory
+from grid_cell_model.submitting.arguments import ArgumentCreator
+from grid_cell_model.otherpkg.log import log_info
+from simtools.storage import DataStorage
 
 
 def submitNoiseSweep(p, gEp, gIp, noisep,
-        ENV, simRootDir, simLabel, appName, rtLimit, numCPU, blocking,
-        timePrefix, numRepeat, dry_run, extraIterparams={}):
+                     ENV, simRootDir, simLabel, appName, rtLimit, numCPU,
+                     blocking, timePrefix, numRepeat, dry_run,
+                     extraIterparams=None):
     '''
     Submit a parameter sweep with an extra dimension: noise_sigma.
     '''
+    if extraIterparams is None:
+        extraIterparams = {}
     noise_sigma_arr  = []
     g_AMPA_total_arr = []
     g_GABA_total_arr = []
@@ -57,12 +60,16 @@ def submitNoiseSweep(p, gEp, gIp, noisep,
 
     ###############################################################################
     submitter = SubmitterFactory.getSubmitter(ac, appName, envType=ENV,
-            rtLimit=rtLimit, output_dir=simRootDir, label=simLabel,
-            blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
+                                              rtLimit=rtLimit,
+                                              output_dir=simRootDir,
+                                              label=simLabel,
+                                              blocking=blocking,
+                                              timePrefix=timePrefix,
+                                              numCPU=numCPU)
     ac.setOption('output_dir', submitter.outputDir())
     startJobNum = 0
     submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
-    submitter.saveIterParams(iterparams, dry_run=dry_run)
+    submitter.saveIterParams(iterparams, None, None, dry_run=dry_run)
 
 
 class SweepParams(object):
@@ -76,6 +83,9 @@ class SweepParams(object):
 
     def values(self):
         return np.linspace(self.start, self.end, self.nVals)
+
+    def __len__(self):
+        return len(self.values())
 
 
 def getBumpCurrentSlope(simLabel, threshold=0):

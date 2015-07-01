@@ -12,6 +12,7 @@ parser.add_flag('--theta_signal')
 parser.add_flag('--rastersFlag')
 parser.add_flag('--rates')
 parser.add_flag('--maxFRSweeps')
+parser.add_flag('--seizureProportion')
 parser.add_flag('--maxFRGridsProbability')
 parser.add_flag('--maxFRGridsScatter')
 parser.add_flag('--PSeizureGridsProbability')
@@ -43,6 +44,9 @@ if args.PSeizureGridsProbability or args.all:
 
 if args.PSeizureGridsScatter or args.all:
     env.register_plotter(noisefigs.plotters.PSeizureGridsScatterAllPlotter)
+
+if args.seizureProportion or args.all:
+    env.register_plotter(noisefigs.plotters.PSeizureSweepPlotter)
 
 env.plot()
 

@@ -17,7 +17,6 @@ parser.add_flag('--freqHist')
 parser.add_flag('--detailed_noise')
 parser.add_flag('--examples')
 parser.add_flag('--scatter_all')
-parser.add_flag('--scatter_gamma_pbumps_all')
 parser.add_flag('--gamma_pbumps_prob')
 parser.add_flag('--gamma_grids_prob')
 parser.add_flag('--gridness_stats')
@@ -38,9 +37,6 @@ if args.examples or args.all:
 if args.scatter_all or args.all:
     env.register_plotter(noisefigs.plotters.GammaScatterAllPlotter)
     env.register_plotter(noisefigs.plotters.GammaFreqGridsScatterAllPlotter)
-
-if args.scatter_gamma_pbumps_all or args.all:
-    env.register_plotter(noisefigs.plotters.GammaScatterPBumpsAllPlotter)
 
 if args.gamma_pbumps_prob or args.all:
     env.register_plotter(noisefigs.plotters.GammaPBumpsProbabilityPlotter)
@@ -77,29 +73,6 @@ if args.gridness_stats or args.all:
         noisefigs.plotters.GammaSweepsPlotter,
         config=stats_config,
     )
-
-    # Figures for Matt's SfN presentation
-    stats_config_matt = {
-        'output_dir': "panels/matt_sfn/",
-        'GammaSweepsPlotter': {
-            'filter_with_gridness': False,
-            'gridness_threshold': .5,
-            'fname_prefix': 'matt_sfn_',
-            'ann': None,
-            'annF': None,
-            'plot_grid_contours': [1, 1, 1],
-            'cbar': [1, 1, 1],
-            'AC_xticks': [1, 1, 1],
-            'AC_yticks': [1, 1, 1],
-            'F_xticks': [1, 1, 1],
-            'F_yticks': [1, 1, 1],
-        }
-    }
-    env.register_plotter(
-        noisefigs.plotters.GammaSweepsPlotter,
-        config=stats_config_matt,
-    )
-
 
 
 env.plot()

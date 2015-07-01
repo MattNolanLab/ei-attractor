@@ -36,6 +36,7 @@ if args.grids or args.all:
                                  'cbar_kw': {
                                      'ticks': ti.MultipleLocator(0.2),
                                  },
+                                 'ann': None,
                              }
                          })
 

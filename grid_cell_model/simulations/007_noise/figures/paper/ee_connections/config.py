@@ -11,7 +11,7 @@ def get_config():
     return _config
 
 
-ROOT_DIR = ['simulation_data', 'submission', 'ee_connections']
+ROOT_DIR = ['simulation_data', 'ee_connections']
 
 _config = {
     'grids_data_root': os.path.join(*(ROOT_DIR + ['grids'])),

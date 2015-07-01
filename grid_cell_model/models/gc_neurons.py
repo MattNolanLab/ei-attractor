@@ -1,4 +1,18 @@
-'''Grid cell network neuron definitions.'''
+'''Grid cell network neuron definitions.
+
+.. currentmodule:: grid_cell_model.models.gc_neurons
+
+A helper module to set up parameters of E and I populations.
+
+Functions
+---------
+
+.. autosummary::
+
+    getENeuronParams
+    getINeuronParams
+
+'''
 from __future__ import absolute_import, print_function, division
 
 import numpy as np
@@ -8,7 +22,7 @@ __all__ = ['getENeuronParams', 'getINeuronParams']
 
 def getENeuronParams(no):
     '''
-    Return a dictionary of E neuron parameters, using 'no': neuron options
+    Return a dictionary of E neuron parameters, using `no`: neuron options
     object.
     '''
     return {
@@ -44,7 +58,7 @@ def getENeuronParams(no):
 
 def getINeuronParams(no):
     '''
-    Return a dictionary of I neuron parameters, using 'no': neuron options
+    Return a dictionary of I neuron parameters, using `no`: neuron options
     object.
     '''
     return {
@@ -63,7 +77,7 @@ def getINeuronParams(no):
             "tau_NMDA_fall"    : no.tau_NMDA_fall,
             "tau_GABA_A_fall"  : no.tau_GABA_A_fall,
             "tau_AHP"          : no.ad_tau_i_mean,
-            "E_AHP"            : no.EL_i,  # AHP has a role of adaptation here 
+            "E_AHP"            : no.EL_i,  # AHP has a role of adaptation here
             "g_AHP_max"        : no.ad_i_g_inc,
             "g_AHP_ad"         : True,
             "I_const"          : no.Iext_i_const,

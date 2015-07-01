@@ -7,10 +7,10 @@ from nest.hl_api import NESTError
 from grid_cell_model.models.parameters import getOptParser
 from grid_cell_model.models.gc_net_nest import BasicGridCellNetwork
 from grid_cell_model.models.seeds import TrialSeedGenerator
-from grid_cell_model.data_storage import DataStorage
 from grid_cell_model.parameters.data_sets import DictDataSet
 from grid_cell_model.visitors.spikes import SpikeStatsVisitor
 from grid_cell_model.visitors.signals import AutoCorrelationVisitor
+from simtools.storage import DataStorage
 
 
 def signal_analysis(data):
@@ -51,7 +51,7 @@ d = DataStorage.open(output_fname, 'a')
 if "trials" not in d.keys():
     d['trials'] = []
 
-seed_gen = TrialSeedGenerator(options.master_seed)
+seed_gen = TrialSeedGenerator(int(options.master_seed))
 
 overalT = 0.
 
@@ -59,7 +59,7 @@ overalT = 0.
 for trial_idx in range(len(d['trials']), options.ntrials):
     print("\n\t\tStarting trial no. {0}\n".format(trial_idx))
     seed_gen.set_generators(trial_idx)
-    d['master_seed'] = options.master_seed
+    d['master_seed'] = int(options.master_seed)
     d['invalidated'] = 1
     try:
         ei_net = BasicGridCellNetwork(options, simulationOpts=None)
