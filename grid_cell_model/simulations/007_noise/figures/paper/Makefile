@@ -24,7 +24,6 @@ fast: figure_bumps.dummy						\
 	figure_model.dummy							\
 	figure_isBump.dummy							\
 	figure_seizures.dummy						\
-	figure_velocity.dummy					    \
 	suppFigure_gamma.dummy						\
 	suppFigure_grids_vs_bumps.dummy				\
 	suppFigure_grids_vs_line_fit_err.dummy		\

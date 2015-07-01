@@ -9,9 +9,8 @@ parser = flagparse.FlagParser()
 parser.add_flag('--velSweep')
 parser.add_flag('--velFitStdSweep')
 parser.add_flag('--velLines')
+parser.add_flag('--vel_slope_sweeps')
 args = parser.parse_args()
-
-#ps = ds.getDefaultParamSpaces()
 
 env = NoiseEnvironment()
 
@@ -23,5 +22,8 @@ if args.velFitStdSweep or args.all:
 
 if args.velLines or args.all:
     env.register_plotter(noisefigs.plotters.VelLinesPlotter)
+
+if args.vel_slope_sweeps or args.all:
+    env.register_plotter(noisefigs.plotters.VelSlopeSweepPlotter)
 
 env.plot()
