@@ -585,6 +585,8 @@ you need to have completed all the steps simulations from section
 :ref:`grids_main_3noise` because the generation process requires gridness
 scores from this data set as well.
 
+.. _bumps_common_3noise:
+
 Generate common data of stationary bump attractors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -709,6 +711,8 @@ except that some parameters need to be changed. Therefore, there is a separate
 set of simulation scripts that are pertinent to this figure. These scripts have
 the ``_no_theta`` suffix in their file names.
 
+.. _no_theta_bumps:
+
 Simulations of stationary attractors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -832,6 +836,7 @@ are:
   * ``grid_sweeps*.pdf``
 
 
+.. _fig7_II:
 
 Figure 7 -- I --> I synapses
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1003,3 +1008,353 @@ for the main figures, some of them need the whole cycles of velocity
 calibration / grid field simulations. You can find the simulation scripts in
 ``grid_cell_model/simulations/007_noise`` and the figure generation sripts in
 the ``figures/paper`` sub-directory.
+
+
+Figure 1 -- figure supplement 1 -- Connection weights for scaled and probabilistic networks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Not described yet. Perhaps at some point in the future.
+
+
+Figure 2 -- figure supplement 1 -- examples of E cell firing fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This figure contains examples of E cell firing fields from data in Section
+:ref:`grids_main_3noise`. Once you have finished the full simulations of animal
+movement and performed the data analysis and 'aggregation' steps, you can
+simply go to ``007_noise/figures/paper`` and run
+``suppFigure_grid_examples.py`` in that directory (provided you have saved the
+data according to the instructions). Unlike with other figures, the separate
+pages of this figure supplement are in the ``panels`` directory and are named
+``suppFigure_grid_examples_NN.pdf``, where ``NN`` stands for page number.
+
+
+Figure 2 -- figure supplement 2 -- Gridness scores of E cells in probabilistic networks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Not described yet. Perhaps at some point in the future.
+
+
+Figure 2 -- figure supplement 3 -- Spatial information and sparsity of E and I cells
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We again assume that the working directory is in ``007_noise/figures/paper``
+and that all the steps in Section :ref:`grids_main_3noise`, especially the full
+simulations of animal movement, have been completed.  In order to generate the
+panels, run::
+    
+    ./figure_grids.py --sparsity --spatial_info
+
+This will generate PDF files in the ``panels`` sub-directory. You are looking
+for ``grids_spatial_info*.pdf`` and ``grids_spatial_sparsity*.pdf``. The
+assembled AI figure is in ``ai/figure_grids_info_scores.ai``.
+
+
+Figure 2 -- figure supplement 4 -- gridness scores of I cells.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here we assume the same conditions hold as in the previous figure supplement.
+To generate the panels, run::
+
+    ./figure_grids.py --grids
+
+and you are looking for files titled ``grids_sweeps*I.pdf``, i.e. gridness
+scores of I cells. The assembled figure is in ``ai/figure_grids_i_fields.ai``.
+
+
+Figure 2 -- figure supplement 5 -- Uncorrelated spatial inputs to I cells
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is quite tricky, because the simulations and data analysis are
+non-standard.
+
+Prerequisites
+^^^^^^^^^^^^^
+
+These simulations require that at least the velocity calibration step from
+Section :ref:`grids_main_3noise` is fully finished, including updating the bump
+slope data. These bump velocity slope data are required here, because the
+network must be properly calibrated before connecting place cells to I cells.
+If you have not done these simulations yet, you need to go back to Section
+:ref:`grids_main_3noise` and follow the *Velocity calibration simulations* and
+*Update bump slope data* steps.
+
+
+Generate simulation data
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Next, ensure your working directory is
+``grid_cell_model/simulations/007_noise`` and then run the grid field
+simulation with the ``_ipc`` suffix::
+
+    ./submit_param_sweep_grids_ipc.py -v DEBUG --time=600e3 --ntrials=1 \
+            --g_AMPA_total=3060 --g_AMPA_row=15 --g_GABA_total=1020 --g_GABA_col=5 \
+            cluster output/i_place_cells/10_trials_rate_100_field_std_80 \
+            ipc_weight master_seed \
+            --range2 123456 123546 10 --range1 0 6 0.25 --ns=150 \
+            --ipc_field_std=80 --ipc_max_rate=100 --ipc_nconn=3 --nrec_spikes_i=510 \
+            --rtLimit="08:00:00"
+
+This command will run the full animal movement simulations with various values
+of connection weights from place cells to I cells and with various values of
+random seeds (random seed here essentially stands for the trial number). This
+actually produces more data than needed, since only simulations where
+``ipc_weight=4`` are used for plotting the data.
+
+Run analysis
+^^^^^^^^^^^^
+
+To analyze the data, run::
+
+    ./submit_analysis_EI.py --shape 25 10 --ns=150 --ignoreErrors --rtLimit="10:00:00" \
+            cluster output/i_place_cells/10_trials_rate_100_field_std_80 grids-ipc
+
+This analysis can take several hours for a single job run (i.e. one value of
+``ipc_weight`` and ``master_seed``) and **it is important** that the analysis
+code **is not interrupted** in the process, because this particular analysis cannot
+recover from crashes. Therefore, make sure you have enough of memory and
+computing run time limit to do this step.
+
+Once this is finished, there is no need to run the 'aggregation' step, since
+during the figure generation process the data will be accessed directly.
+
+.. note::
+
+    Because the analysis script chooses 100 random neurons from each neural
+    populations and this particular analysis code does not have a means to
+    control random seeds, if you run a new batch of simulations you will
+    probably get a different set of 100 neurons that will have been analysed.
+
+
+Generate the figure
+^^^^^^^^^^^^^^^^^^^
+
+Once the data is ready, change your working directory to
+``007_noise/figures/paper/i_place_cells`` and run::
+
+    ./figure_grids_trials.py
+
+It might take a while for the script to crunch the data and produce output, but
+it should run without errors. This script actually produces a PDF file for each
+of the analysed neurons and put the files into
+``panels_weight_sparsity_trials``. The histogram plots are the following ones:
+
+    * ``histogram_gridness_150.pdf``
+
+    * ``histogram_info_150.pdf``
+
+    * ``histogram_spasity_150.pdf``
+
+And grid field examples named ``grid_example*.pdf``. As noted earlier, because
+of an issue with random seeds here, if you re-generate the data from scratch,
+the example firing fields will look different, while the histogram plots should
+look very similar. An assembled figure is then in
+``ai/ipc_examples_and_histograms.ai``.
+
+
+Figure 3 -- figure supplements 1-4 -- Figure supplements for gamma activity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Not described yet. Perhaps at some point in the future.
+
+
+Figure 4 -- figure supplement 1 -- Average bump drift
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The bump drift figures are generated from networks that simulate only the
+stationary bump attractors. To produce the figures, you need to complete
+Section :ref:`bumps_common_3noise` (including the 'aggregation' step). You also
+need the gridness score data (for 3 noise levels), generation of which is
+described in Section :ref:`grids_main_3noise`.
+
+Once this is done, change your working directory to ``007_noise/figures/paper``
+and run::
+
+    $ ./figure_seizures.py --theta
+    $ ./figure_drifts.py --bumpDriftSweep
+
+
+Figure 5 -- figure supplement 1 -- Raster plots of network activity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This figure supplement, again, uses data from the simulations of stationary
+bump attractors. You therefore need to complete Section
+:ref:`bumps_common_3noise`. Once this is done, change your working directory to
+``grid_cell_model/simulations/007_noise/figures/paper`` and run::
+
+    $ ./suppFigure_seizure_examples.py
+
+The generated files are in ``panels/`` and are named ``raster_examples_*.pdf``.
+There is no AI file for this figure supplement.
+
+
+Figure 6 -- figure supplement 1 -- Gamma activity in networks without theta frequency inputs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This figure supplement requires data generated by networks simulating
+stationary attractors without theta input. These simulations are described in
+Section :ref:`no_theta_bumps`. There is no need to run velocity calibration and
+animal movement simulations in this case. Once the data is generated and
+analyzed, switch to
+``grid_cell_model/simulations/007_noise/figures/paper/no_theta`` and run::
+
+    $ ./figure_gamma.py
+
+The generated panels (in the ``panels`` sub-directory) have the
+``paper_gamma_`` prefix and the assembled figure is in
+``ai/paper_figure_gamma.ai``.
+
+
+Figure 6 -- figure supplement 2 -- Difference in gridness score in networks without theta frequency inputs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Not described yet. Perhaps at some point in the future.
+
+
+Figure 6 -- figure supplement 3 -- Mean firing rate of E cells
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Not described yet. Perhaps at some point in the future.
+
+
+Figure 6 -- figure supplement 4 -- Velocity gain calibration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This figure supplement requires data from the *Velocity calibration
+simulations* in Section :ref:`grids_main_3noise` (you have to also perform the
+'aggregation' step). When the data is ready, change your working directory to
+``grid_cell_model/simulations/007_noise/figures/paper`` and run::
+
+    $ ./suppFigure_velocity.py
+
+The panels generated for this figure are the following:
+
+    * ``suppFigure_velocity_err_sweeps*.pdf``
+
+    * ``velocity_slope_examples_*.pdf``
+
+    * ``velocity_slope_sweeps*.pdf``
+
+The assembled figure is in ``ai/suppFigure_velocity.ai``.
+
+
+Figure 6 -- figure supplement 5 -- Effectivity of place cell inputs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Not described yet. Perhaps at some point in the future.
+
+
+
+Figure 7 -- figure supplement 1 -- E cell firing fields in networks with I-->I synapses
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For this figure supplement you need data from the networks with I-I synapses
+(Section :ref:`fig7_II`). In particular, you need to run the *Velocity
+calibration simulations* and *Simulations of animal movement*. Once the data
+has been generated, change your working directory to
+``grid_cell_model/simulations/007_noise/figure/paper/ii_connections`` and run::
+
+    $ ./figure_grids.py --examplesFlag --examples_colorbar
+
+The generated panels are in ``panels/`` and are named ``grids_examples*.pdf``
+and ``grids_examples_colorbar.pdf``. The assembled figure is in
+``ai/figure_grids_examples.ai``.
+
+
+Figure 7 -- figure supplement 2 -- Bump attractors in networks with I-->I synapses
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This figure supplement, again, requires data from networks with I-I synapses
+(Section :ref:`fig7_II``). In this case all data are required because the
+contour plots are the gridness score data generated from simulations of animal
+movement. Once you have the data switch yourself to
+``grid_cell_model/simulations/007_noise/figures/paper/ii_connections`` and
+run::
+
+    $ ./figure_bumps.py
+
+This will generate the panels into the ``panels/`` directory. The relevant
+files are:
+
+    * ``bumps_isBumpSnapshotExamples_*.pdf``
+
+    * ``bumps_mainFig_isBumpFracTotal_sweeps_annotated*.pdf``
+
+    * and a colorbar: ``bumps_examples_colorbar.pdf``.
+
+The assembled figure is in the usual location: ``ai/figure_bumps.ai``.
+
+
+Figure 7 -- figure supplement 3 -- Average bump drift in networks with I-->I synapses
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once you have the data from stationary attractors in I-I networks
+(:ref:`fig7_II`), switch yourself to 
+``grid_cell_model/simulations/007_noise/figures/paper/ii_connections`` and run
+the usual command::
+
+    $ ./figure_seizures.py --theta
+    $ ./figure_drifts.py
+
+The generated files in ``panels`` are ``bumps_drift_at_time_sweeps*.pdf``. The
+assembled figure is in ``ai/suppFigure_bumps_drift.ai``.
+
+
+Figure 7 -- figure supplement 4 -- Velocity calibration in networks with I-->I synapses
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The velocity calibration simulations require data from I-I networks (Section
+:ref:`fig7_II`; only the velocity calibration and animal movement simulation
+data). Once you have the data, go to 
+``grid_cell_model/simulations/007_noise/figures/paper/ii_connections`` and run
+the usual command::
+
+    $ ./suppFigure_velocity.py
+
+This will generate the panels:
+
+    * ``suppFigure_velocity_err_sweeps*.pdf``
+
+    * ``velocity_slope_examples_*.pdf``
+
+    * ``velocity_slope_sweeps*.pdf``
+
+The assembled figure is in ``ai/suppFigure_velocity.ai``.
+
+
+Figure 7 -- figure supplement 5 -- Seizure activity in networks with I-->I synapses
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As in other seizure figures, you need all data from Section :ref:`fig7_II`.
+Once you have it, go to the I-I figure directory:
+``grid_cell_model/simulations/007_noise/figures/paper/ii_connections`` and run::
+
+    $ ./figure_seizures.py
+
+This will generate the panels into ``panels`` sub-directory:
+
+    * ``bumps_raster*.pdf``
+
+    * ``bumps_rate*.pdf``
+
+    * ``bumps_popMaxFR_sweep*.pdf``
+
+    * ``bumps_seizureProportion_sweep0.pdf``
+
+    * ``maxFR_gridness_scatter_all.pdf``
+
+    * ``PSeizure_gridness_scatter_all.pdf``
+
+The fully assembled figure is in ``ai/figure_seizures.ai``
+
+
+Figure 7 -- figure supplements 6-9 -- Networks with E-->E synapses
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Not described yet. Perhaps at some point in the future.
+
+
+Figure 7 -- figure supplement 10 -- Networks with E-->E synapses and unstructured E-I connectivity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Not described yet. Perhaps at some point in the future.
