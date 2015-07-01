@@ -585,6 +585,8 @@ you need to have completed all the steps simulations from section
 :ref:`grids_main_3noise` because the generation process requires gridness
 scores from this data set as well.
 
+.. _bumps_common_3noise:
+
 Generate common data of stationary bump attractors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1155,6 +1157,18 @@ Not described yet. Perhaps at some point in the future.
 
 Figure 4 -- figure supplement 1 -- Average bump drift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The bump drift figures are generated from networks that simulate only the
+stationary bump attractors. To produce the figures, you need to complete
+Section :ref:`bumps_common_3noise` (including the 'aggregation' step). You also
+need the gridness score data (for 3 noise levels), generation of which is
+described in Section :ref:`grids_main_3noise`.
+
+Once this is done, change your working directory to ``007_noise/figures/paper``
+and run::
+
+    $ ./figure_seizures.py --theta
+    $ ./figure_drifts.py --bumpDriftSweep
 
 
 Figure 5 -- figure supplement 1 -- Raster plots of network activity
