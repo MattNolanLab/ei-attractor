@@ -63,6 +63,7 @@ other: \
 clean:
 	rm -f $$(git ls-files -i --exclude-standard -o panels_original_e_surround)
 	rm -f $$(git ls-files -i --exclude-standard -o panels_ratio_corrected)
+	rm -f $$(git ls-files -i --exclude-standard -o panels_e_const_375)
 	rm -f $$(git ls-files -i --exclude-standard -o panels_e_const_450)
 	rm -f $$(git ls-files -i --exclude-standard -o panels_e_theta_475)
 	rm -f $$(git ls-files -i --exclude-standard -o panels_pastoll_et_al)
