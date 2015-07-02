@@ -1,9 +1,0 @@
-*.swp
-*.aux
-*.bbl
-*.blg
-*.log
-*.out
-/noise_methods.pdf
-/velocity_estimation.pdf
-/SI_text.pdf
