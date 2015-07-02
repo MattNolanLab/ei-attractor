@@ -1,0 +1,6 @@
+** 0.1.0 (unreleased) **
+
+* Add argument type checkers for positive_int, nonnegative_int and
+  positive_float.
+
+* Add a plotting package: automatization of plotting figures (uses matplotlib).
