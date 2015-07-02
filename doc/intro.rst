@@ -16,3 +16,18 @@ The project source code is located in a `git repository
 <https://github.com/lsolanka/ei-attractor>`_.  The up to date project
 directory structure is located in README.rst and the installation instructions
 are in INSTALL.rst in the source code repository.
+
+
+See also
+========
+
+There are some associated python packages which are also essentially part of
+the project:
+
+    * gridcells_ -- A package for analysis/modelling of grid cells
+
+    * simtools_ -- A package for running simulations and storing data fast and
+      easy
+
+.. _gridcells: http://gridcells.readthedocs.org
+.. _simtools: https://github.com/lsolanka/simtools
